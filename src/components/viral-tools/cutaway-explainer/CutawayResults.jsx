@@ -3,6 +3,7 @@ import { ArrowLeft, Clapperboard, Layers, Loader2, Play, RotateCcw, ShieldCheck,
 import { clockLength, FAILED_MESSAGE, isWorking, recentOrExamples } from "./api/cutawayApi";
 import CutawayGenerating from "./CutawayGenerating";
 import CutawayHero from "./CutawayHero";
+import { TutorialCard } from "../../launch/LaunchUI.jsx";
 import CutawayResultView, { ExampleBadge } from "./CutawayResultView";
 
 export { ExampleBadge };
@@ -137,6 +138,7 @@ function Idle({ recent, onOpen, onRetry, onWatch, isDesktop }) {
   if (recent.length) return (
     <div ref={ref} className="cw-view relative flex flex-col gap-4 overflow-x-hidden rounded-2xl border border-white/[0.06] bg-[#0B0D0F] p-4 sm:p-5 lg:h-full lg:min-h-0 lg:overflow-y-auto [scrollbar-width:thin]">
       <Recents items={recent} onOpen={onOpen} onRetry={onRetry} onWatch={onWatch} flow />
+      <TutorialCard tool="cutaway" />
     </div>
   );
   return (
@@ -147,6 +149,8 @@ function Idle({ recent, onOpen, onRetry, onWatch, isDesktop }) {
         <div className="relative flex gap-6">
           <div className="flex min-w-0 flex-1 flex-col gap-4">
             <Intro size={width >= 860 ? "lg" : "md"} features />
+            {/* new here: the tutorial, beside the hero and well away from the form */}
+            <TutorialCard tool="cutaway" />
             <Recents items={recent} onOpen={onOpen} compact />
           </div>
           {/* the hero stays in view while the side scrolls; its height fits the panel */}
@@ -158,6 +162,7 @@ function Idle({ recent, onOpen, onRetry, onWatch, isDesktop }) {
         <>
           {isDesktop && <CutawayHero variant="tall" onWatch={onWatch} className="mx-auto aspect-[9/16] w-full max-w-[300px] shrink-0" />}
           <Intro size="sm" />
+          <TutorialCard tool="cutaway" />
           <Recents items={recent} onOpen={onOpen} flow />
         </>
       )}

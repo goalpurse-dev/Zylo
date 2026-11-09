@@ -73,7 +73,7 @@ function MadeWithZyvo() {
           </div>
         </a>
       ))}
-      <TutorialCard className="mt-2" />
+      <TutorialCard tool="long_form" className="mt-2" />
       <Link to="/ai-stickman-video-generator" className="mt-3 block px-1 text-[12.5px] font-semibold text-white/50 underline-offset-4 transition hover:text-lime-300 hover:underline">About Long Form: the AI stickman video generator →</Link>
     </>
   );
