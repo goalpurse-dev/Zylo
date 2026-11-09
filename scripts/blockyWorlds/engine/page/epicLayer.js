@@ -204,7 +204,7 @@ export async function makeEpicLayer({ THREE, scene, tl, ctx }) {
       // whole creature from inside its own body
       ctxE.focus = S.spots.center.clone(); ctxE.focusHeight = 12; ctxE.span = 48;
     }
-    else if (fw) { const g = worldG ?? anyGiant; ctxE.focus = g ? g.pos.clone() : S.spots.center.clone(); ctxE.focusHeight = g ? g.g.userData.height : 20; ctxE.span = g ? Math.max(g.g.userData.length, g.g.userData.height) * 1.1 : 60; }
+    else if (fw) { const g = worldG ?? anyGiant; ctxE.focus = g ? g.pos.clone() : S.spots.center.clone(); ctxE.focusHeight = g ? g.g.userData.height : 20; ctxE.span = g ? Math.max(g.g.userData.length, g.g.userData.height) * 1.1 : 60; if (shot.stage?.ground === "sea" && type === "establish") ctxE.fill = 0.32; } // GATE 2026-11-09 (#3: the turtle at sea was a speck in a blue frame): tighter at sea
     else if (where[f]) { ctxE.focus = where[f].clone(); ctxE.focusHeight = actorH[f] ?? 1.2; ctxE.kidHeight = actorH[f] ?? 1.2; ctxE.span = 4; }
     else { ctxE.focus = S.spots.center.clone(); ctxE.focusHeight = 2; ctxE.span = 20; }
     // the "other": the giant behind (hero_low), the second giant (duel)

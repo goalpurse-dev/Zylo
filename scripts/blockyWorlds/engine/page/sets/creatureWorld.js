@@ -55,7 +55,8 @@ export async function buildCreatureWorld(rawSpec, ctx) {
 export function sightSubject(shot, S, where = {}, epic = null) {
   const f = String(shot?.focus ?? "");
   const box = (g) => { const b = new (S.THREE.Box3)().setFromObject(g); const c = b.getCenter(new (S.THREE.Vector3)()); return { pos: new (S.THREE.Vector3)(c.x, b.min.y, c.z), height: b.max.y - b.min.y, radius: Math.max(b.max.x - b.min.x, b.max.z - b.min.z) / 2 }; };
-  if (where[f]) return { pos: where[f].clone(), height: 1.7, radius: 0.6 };
+  // GATE 2026-11-09: a close shot of a person keeps the line to the FACE clear (the grass in front of Tobin's close-up)
+  if (where[f]) return { pos: where[f].clone(), height: 1.7, radius: 0.6, close: ["closeup", "medium", "over_shoulder"].includes(shot?.camera) };
   if (f.startsWith("giant:") && epic?.GIANTS?.[f.slice(6)]?.visible) return box(epic.GIANTS[f.slice(6)]);
   if (S.giant && S.giant.visible !== false && S.giantView === "outside") return box(S.giant);
   const first = (shot?.actors ?? []).map((a) => where[a.id]).find(Boolean);
@@ -378,7 +379,7 @@ function buildInside(spec0, ctx) {
     actorMount: () => world, // ATTACH 2026-11-07: people + scene objects sway with the cavern floor (they stood still while it rocked)
     // GATE 2026-11-09 (#3 establish shots in the shell: a bone arch filled the foreground): rib blocks within 7 m of the
     // lens are hidden for the frame
-    afterCamera(camera) { camera.updateMatrixWorld(); const c = camera.getWorldPosition(new THREE.Vector3()), p = new THREE.Vector3(); for (const r of ribs) r.visible = r.getWorldPosition(p).distanceTo(c) > 7; return null; },
+    afterCamera(camera) { camera.updateMatrixWorld(); const c = camera.getWorldPosition(new THREE.Vector3()), p = new THREE.Vector3(); for (const r of ribs) r.visible = r.getWorldPosition(p).distanceTo(c) > 14; return null; },
   };
   mergeStatic(THREE, world);
   return S;

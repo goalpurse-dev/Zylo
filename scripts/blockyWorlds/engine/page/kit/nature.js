@@ -281,8 +281,8 @@ export async function makeNature(ctx, opts = {}) {
       camera.updateMatrixWorld(); const c = camera.getWorldPosition(new THREE.Vector3());
       const hgt = Math.max(0.5, subject.height ?? 1.7), rad = Math.max(0.4, subject.radius ?? hgt * 0.3);
       // aim at the lower third of the subject (its feet and body stay clear, the town on top always is)
-      uniforms.uCam.value.copy(c); uniforms.uSubj.value.set(subject.pos.x, subject.pos.y + hgt * 0.3, subject.pos.z);
-      uniforms.uR.value.set(1.2 + Math.min(4, c.distanceTo(subject.pos) * 0.01), rad * 0.9 + 1.5);
+      uniforms.uCam.value.copy(c); uniforms.uSubj.value.set(subject.pos.x, subject.pos.y + hgt * (subject.close ? 0.8 : 0.3), subject.pos.z); // (close: the face, GATE 2026-11-09)
+      uniforms.uR.value.set((subject.close ? 1.6 : 1.2) + Math.min(4, c.distanceTo(subject.pos) * 0.01), rad * 0.9 + (subject.close ? 1.8 : 1.5));
       uniforms.uSightOn.value = 1;
     },
     /** FRAMING-FIX: no plants in a region (null: all back). { xMin, zc, halfZ, seaX } */

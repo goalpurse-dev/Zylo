@@ -90,6 +90,12 @@ export function alternatives(s) {
   // GATE 2026-11-09 (#3 "the turtle stopped mid-step": its tilt_up move stood the lens against the turtle's head and
   // every re-plan kept the move, which replaces the framing): a re-planned framing drops the shot's camera move
   if (s.move) for (const a of out) a.patch.move = null;
+  // GATE 2026-11-09 (#3: the reaction close-up was the back of Grandma Wenna's head): a re-planned close-up / medium of a
+  // person turns that person to the lens (the shot grammar's faces rule)
+  for (const a of out) {
+    const fid = a.patch.focus ?? s.focus, cam = a.patch.camera ?? s.camera;
+    if (["closeup", "medium"].includes(cam) && ids.includes(fid) && (s.actors ?? []).some((x) => x.id === fid && x.facing !== "camera")) a.patch.actors = (s.actors ?? []).map((x) => (x.id === fid ? { ...x, facing: "camera" } : x));
+  }
   return out.filter((a) => !sameAs(s, a.patch));
 }
 

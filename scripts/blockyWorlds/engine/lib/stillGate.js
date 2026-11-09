@@ -281,7 +281,13 @@ export function measureGeometry(THREE, scene, camera, shot, { cols = 6, rows = 1
       rc.setFromCamera(ndc, camera);
       const hit = rc.intersectObjects(reach(rc.ray, T.rayFar), false)[0];
       total++;
-      if (!hit) { const fh = farHit(rc.ray); if (fh === "subject") subj++; else if (fh) far++; else none++; continue; }
+      if (!hit) {
+        const fh = farHit(rc.ray);
+        // the subject's box beyond rayFar (a giant 60 m away): a real full-range ray decides (trees in front hide it)
+        if (fh === "subject") { rc.far = 2000; const h2 = rc.intersectObjects(reach(rc.ray, 2000), false)[0]; rc.far = T.rayFar; if (h2 && rootOf(h2.object)) subj++; else if (h2) far++; else none++; }
+        else if (fh) far++; else none++;
+        continue;
+      }
       if (hit.distance < T.near) near++;
       if (hit.face) {
         nm.getNormalMatrix(hit.object.matrixWorld);
