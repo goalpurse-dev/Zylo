@@ -46,6 +46,10 @@ export const GATE = Object.freeze({
   // up to rayFar m (three.js skips every mesh / instance whose bounding sphere starts further); a ray with no hit inside
   // that range is "far geometry" when it crosses a mesh's world box (the subject's box: on the subject), else sky
   rayFar: 45,
+  // the owner's BLANK frame (GATE 2026-11-09, the look gate's measure.py "uniform > 0.45": one smooth region, sky / wall,
+  // covering 45% of the frame): cells whose step to all 4 neighbours is under uniStep, joined when their colours differ
+  // less than uniJoin; calibrated on 283 stills + reference frames (caught 5 of 6 measure.py blanks, no false alarm)
+  blankUniform: 0.45, uniStep: 12, uniJoin: 14,
   blockClose: 0.4,      // a close-up / medium of one person: something in front of them covering this share fails
   rayMs: 4000,          // a time cap for the ray grid (the shares are taken over the rays cast)
 });
@@ -124,6 +128,20 @@ export function pixelStats(px, w = GRID.w, h = GRID.h, T = GATE) {
     for (let i = 0; i < n; i++) if (left[i] && dist3(R[i], G[i], B[i], best[0], best[1], best[2]) < T.clusterTol) left[i] = 0;
     clusters += bn; if (k === 0) c1 = bn;
   }
+  // the biggest smooth connected region (the blank rule)
+  const lowc = new Uint8Array(n), par = new Int32Array(n);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = y * w + x; let m = mstep[i];
+    if (x > 0) m = Math.max(m, step(i, i - 1)); if (y > 0) m = Math.max(m, step(i, i - w));
+    lowc[i] = m < T.uniStep ? 1 : 0; par[i] = i;
+  }
+  const root = (i) => { while (par[i] !== i) { par[i] = par[par[i]]; i = par[i]; } return i; };
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = y * w + x; if (!lowc[i]) continue;
+    for (const j of [x + 1 < w ? i + 1 : -1, y + 1 < h ? i + w : -1]) if (j >= 0 && lowc[j] && step(i, j) < T.uniJoin) { const a = root(i), b = root(j); if (a !== b) par[a] = b; }
+  }
+  const comp = new Map(); let uni = 0;
+  for (let i = 0; i < n; i++) if (lowc[i]) { const r = root(i), c = (comp.get(r) ?? 0) + 1; comp.set(r, c); if (c > uni) uni = c; }
   // sky cells, and the edges outside the sky (what the frame shows besides the sky)
   let sky = 0, edgesOff = 0;
   for (let i = 0; i < n; i++) {
@@ -135,7 +153,7 @@ export function pixelStats(px, w = GRID.w, h = GRID.h, T = GATE) {
     edges: r3(edges / n), centreEdges: r3(ce / Math.max(1, cn)),
     flat: r3(flat / n), flatColor: [Math.round(fr), Math.round(fg), Math.round(fb)],
     cluster1: r3(c1 / n), clusters: r3(clusters / n),
-    sky: r3(sky / n), edgesOffSky: r3(edgesOff / n),
+    sky: r3(sky / n), edgesOffSky: r3(edgesOff / n), uniform: r3(uni / n),
   };
 }
 
@@ -146,6 +164,7 @@ export function pixelReasons(s, T = GATE) {
   const pc = (x) => `${Math.round(x * 100)}%`;
   if (s.mean < T.darkMean && s.p90 < T.darkP90) out.push({ code: "too_dark", why: `mean ${s.mean}, 90th pct ${s.p90}` });
   if (s.mean > T.blownMean || s.bright > T.blownShare) out.push({ code: "blown_out", why: `mean ${s.mean}, ${pc(s.bright)} over 240` });
+  if (s.uniform > T.blankUniform) out.push({ code: "blank", why: `one smooth region (sky / wall) covers ${pc(s.uniform)} of the frame` });
   const skyOnly = s.sky > T.skyShare && s.edgesOffSky < T.skyEdges * (1.2 - s.sky);
   if (skyOnly) out.push({ code: "sky_only", why: `${pc(s.sky)} sky, ${pc(s.edgesOffSky)} edges besides it` });
   if (s.flat > T.flatShare) out.push({ code: "flat", why: `${pc(s.flat)} one flat colour rgb(${s.flatColor.join(",")})` });

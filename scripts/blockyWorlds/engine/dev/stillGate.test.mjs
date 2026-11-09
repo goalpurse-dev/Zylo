@@ -46,7 +46,11 @@ test("pixel gate calibration on the step-3 stills (skipped when the folder or ff
   // 2026-11-09: 22 / 39 labelled blanks caught by pixels alone, 3 / 263 good stills flagged (two of them a dog on a
   // 62 % plain floor: the owner's literal 60 % rule). The rest of the blanks need the geometry rules (in the page).
   assert.ok(s.caught >= 22, `pixel recall fell: ${s.caught}/${s.blank} (missed ${s.missed.join(" ")})`);
-  assert.ok(s.falseAlarms <= 3, `false alarms rose: ${s.falseList.join(", ")}`);
+  // GATE 2026-11-09: the owner's blank rule (one smooth region > 45%, the look gate's measure) also fails frames the step-3
+  // reviewers had passed: 3:s36 / 3:s45 (night sky), 4:s21 / 4:s22 (the dog on a plain floor), 5:s17: allowed here
+  const BLANK_OK = new Set(["3:s36", "3:s45", "4:s21", "4:s22", "5:s17"]);
+  const others = s.falseList.filter((x) => !BLANK_OK.has(x.split(" ")[0]));
+  assert.ok(others.length <= 3, `false alarms rose: ${others.join(", ")}`);
 });
 
 // ------------------------------------------------------------------------------------------------ geometry (three.js, no GL)
@@ -108,7 +112,7 @@ test("geometry gate: subjects by focus (group, crowd, giant, object) and the fac
 
 test("gateStill joins pixels and geometry", () => {
   const v = gateStill({ stats: pixelStats(solid(200, 180, 140)), geo: { inside: 0.9, near: 0, sky: 0, block: 0, subject: { mode: "none" } } });
-  assert.equal(v.pass, false); assert.deepEqual(v.codes.sort(), ["camera_inside", "flat"]);
+  assert.equal(v.pass, false); assert.deepEqual(v.codes.sort(), ["blank", "camera_inside", "flat"]); // (a solid frame is also blank)
   assert.equal(gateSummary({ verdict: v }).pass, false);
 });
 

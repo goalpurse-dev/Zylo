@@ -23,7 +23,7 @@ const norm = (p) => p.replace(/\b(shot|shots|line|subject|visual)\s+\d+/gi, "$1 
 export const problemKeys = (check, tl) => { const m = new Map(); for (const p of problemList(check, tl)) { const k = norm(p); m.set(k, [...(m.get(k) ?? []), p]); } return m; };
 export const addedProblems = (before, after) => [...after].flatMap(([k, list]) => list.slice(before.get(k)?.length ?? 0));
 
-export const HARD_CODES = Object.freeze(["flat", "wall", "sky_only", "camera_inside", "blocked", "too_dark", "blown_out"]);
+export const HARD_CODES = Object.freeze(["flat", "wall", "sky_only", "camera_inside", "blocked", "too_dark", "blown_out", "blank"]);
 export const GATE_DEFAULTS = Object.freeze({ mode: "reject", rounds: 2, loadMs: 15000, stillMs: 400, minPassMs: 8000 });
 const EPIC_CAMS = new Set(["establish", "hero_low", "track", "aerial", "giant_close", "duel", "behind_army"]);
 const clone = (o) => JSON.parse(JSON.stringify(o));
@@ -40,7 +40,7 @@ export function gateSummary(g) {
   const st = g?.stats, geo = g?.geo;
   return {
     pass: v.pass ?? null, codes: v.codes ?? [], reasons: (v.reasons ?? []).map((r) => `${r.code}: ${r.why}`.slice(0, 160)), warn: (v.warn ?? []).map((r) => `${r.code}: ${r.why}`.slice(0, 120)),
-    ...(st ? { px: { mean: st.mean, flat: st.flat, clusters: st.clusters, centreEdges: st.centreEdges, sky: st.sky } } : {}),
+    ...(st ? { px: { mean: st.mean, flat: st.flat, clusters: st.clusters, centreEdges: st.centreEdges, sky: st.sky, uniform: st.uniform } } : {}),
     ...(geo ? { geo: { inside: geo.inside, near: geo.near, sky: geo.sky, block: geo.block, pitch: geo.pitch, subject: geo.subject ? { focus: geo.subject.focus, roots: geo.subject.roots, rays: geo.subject.rays } : null } } : {}),
     ...(g?.error ? { error: String(g.error).slice(0, 160) } : {}),
   };
