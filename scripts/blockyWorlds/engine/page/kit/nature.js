@@ -78,7 +78,7 @@ if (uSightOn > 0.5) {
   // reaches the subject collapses (the corridor test above only sees a plant whose ROOT stands between lens and subject)
   if (length(io.xz - uSubj.xz) < ${(topH * 0.6).toFixed(3)} * sx + 0.6 && top > uSubj.y - 0.2) transformed *= 0.0;` : ""}
   // WORLD-FIX: never a lens inside a crown (a track / low camera beside a giant stood in a tree)
-  if (length(io.xz - uCam.xz) < ${(topH * 0.4).toFixed(3)} * sx + 2.0 && top > uCam.y - 1.0) transformed *= 0.0;
+  if (length(io.xz - uCam.xz) < ${(topH * 0.7).toFixed(3)} * sx + 3.0 && top > uCam.y - 1.0) transformed *= 0.0; // (GATE 2026-11-09: was 0.4 / 2.0: a wide crown reached over the lens)
 }
 #endif`);
   };
