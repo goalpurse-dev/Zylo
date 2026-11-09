@@ -13,13 +13,17 @@
 //   the builder's still page (lib/builder/still.mjs: one page, the stills one after another), the blank guard + the
 //   flat numbers in the manifest (an object still is a check image: a flat one is flagged, never swapped).
 // Without out.uploads the JPEGs come back inline (base64 in the RESULT; at most INLINE_MAX bytes in all).
-// -> { role, stills: [{ label, file, t?, shot?, w, h, bytes, mean, flat, detail, safe?, bad, ms, uploaded?, b64? }],
-//      loadMs, renderer, guard?, timing }
+// -> { role, stills: [{ label, file, t?, shot?, w, h, bytes, mean, flat, detail, safe?, bad, gate?, ms, uploaded?, b64? }],
+//      loadMs, renderer, guard?, stillGate?, timing }
+// gate (2026-11-09, the HARD STILL GATE, lib/stillGate.js; job stills.gate = false skips it): each still's pass / fail
+// with its codes and reasons (flat, wall, sky_only, too_dark, blown_out, camera_inside, blocked, subject_missing) and
+// warnings (face_hidden); stillGate = { measured, failed: [{ label, shot, codes }] }.
 import fs from "node:fs";
 import path from "node:path";
 import { startServer, launchBrowser, openPage, flatGuard } from "../render.mjs";
 import { isBlack, isBad } from "../lib/frameGuard.js";
 import { subTimeline } from "../lib/vision/requirements.js";
+import { gateSummary } from "../lib/vision/gatePass.js";
 
 export const INLINE_MAX = 8 * 1024 * 1024;
 const coded = (code, message) => Object.assign(new Error(message), { code });
@@ -71,7 +75,7 @@ export function pickedTimeline(tl, list) {
   return { tl: sub.tl, at: (p) => sub.map(p.shot != null ? p.shot : shotAt(tl, p.t), p.t), shotOf: (i) => keep[i] ?? null };
 }
 
-export async function renderTimelineStills({ tl, picks, w = 540, h = 960, captions = false, whole = false, dir, browser: given = null, quality = 0.9, log = console.log }) {
+export async function renderTimelineStills({ tl, picks, w = 540, h = 960, captions = false, whole = false, gate = true, dir, browser: given = null, quality = 0.9, log = console.log }) {
   fs.mkdirSync(dir, { recursive: true });
   const list = resolvePicks(tl, picks), names = fileNames(list);
   // whole: the full timeline (exactly the video's state at t, e.g. captions); else only the picked shots (much faster)
@@ -84,7 +88,14 @@ export async function renderTimelineStills({ tl, picks, w = 540, h = 960, captio
     const page = await openPage(browser, { port: srv.port, tlName: "stills_tl.json", W: st.width, H: st.height, label: " stills" });
     const loadMs = Date.now() - t0;
     log(`stills: page loaded in ${loadMs} ms (${st.width}x${st.height}, ${tl.shots?.length ?? 0} shots, ${list.length} picks)`);
-    const grab = (t, force, safe = 0) => page.evaluate((t, safe, q) => { const r = window.renderAt(t, { safe }); return { ...r, data: window.frameData(q) }; }, t, safe, quality);
+    // every frame the guard grabs is also measured by the HARD STILL GATE (lib/stillGate.js, in the page, right after its
+    // render: pixels + rays from the camera), so the still the guard keeps carries its own verdict
+    const grab = (t, force, safe = 0) => page.evaluate(async (t, safe, q, gate) => {
+      const r = window.renderAt(t, { safe });
+      let g = null, gateError = null;
+      if (gate) { try { g = (await import("/lib/stillGate.js")).measurePage(window, r.shot); } catch (e) { gateError = String(e?.message ?? e).slice(0, 200); } }
+      return { ...r, gate: g, gateError, data: window.frameData(q) };
+    }, t, safe, quality, gate);
     const guard = flatGuard(grab), out = [];
     for (const [i, p] of list.entries()) {
       const a = Date.now();
@@ -96,11 +107,13 @@ export async function renderTimelineStills({ tl, picks, w = 540, h = 960, captio
         const jpeg = Buffer.from(r.data.slice(r.data.indexOf(",") + 1), "base64"), file = path.join(dir, names[i]);
         fs.writeFileSync(file, jpeg);
         const shot = r.shot == null ? p.shot : sub ? sub.shotOf(r.shot) : r.shot;
-        out.push({ label: p.label, file: names[i], t: p.t, shot, ...(sub ? { subT: +t.toFixed(3) } : {}), w: st.width, h: st.height, bytes: jpeg.length, mean: r.mean ?? null, flat: r.flat ?? null, detail: r.detail ?? null, safe: r.safe ?? 0, bad: isBad(r), ms: Date.now() - a });
+        out.push({ label: p.label, file: names[i], t: p.t, shot, ...(sub ? { subT: +t.toFixed(3) } : {}), w: st.width, h: st.height, bytes: jpeg.length, mean: r.mean ?? null, flat: r.flat ?? null, detail: r.detail ?? null, safe: r.safe ?? 0, bad: isBad(r),
+          ...(gate ? { gate: r.gate ? gateSummary(r.gate) : { pass: null, error: r.gateError ?? "not measured" } } : {}), ms: Date.now() - a });
       } catch (e) { out.push({ label: p.label, file: null, t: p.t, error: String(e.message ?? e).slice(0, 200), ms: Date.now() - a }); }
     }
     await page.close().catch(() => {});
-    return { stills: out, loadMs, guard: guard.report(), ms: Date.now() - t0 };
+    const gated = out.filter((s) => s.gate && s.gate.pass != null);
+    return { stills: out, loadMs, guard: guard.report(), ...(gate ? { stillGate: { measured: gated.length, failed: gated.filter((s) => !s.gate.pass).map((s) => ({ label: s.label, shot: s.shot, codes: s.gate.codes })) } } : {}), ms: Date.now() - t0 };
   } finally { if (!given) await browser.close().catch(() => {}); srv.close(); }
 }
 
@@ -160,12 +173,12 @@ export async function stillsJob(job, dir, { gpuCheck, get, put }) {
   if (!tl && s.timelineUrl) { t = Date.now(); tl = JSON.parse(String(await get(s.timelineUrl))); timing.download = +((Date.now() - t) / 1000).toFixed(2); }
   if (!tl?.shots) throw coded("BAD_JOB", "no timeline (timeline or timelineUrl)");
   t = Date.now();
-  const res = await renderTimelineStills({ tl, picks: s.picks ?? "all", w: s.w ?? 540, h: s.h ?? 960, captions: Boolean(s.captions), whole: Boolean(s.whole), dir: path.join(dir, "stills") });
+  const res = await renderTimelineStills({ tl, picks: s.picks ?? "all", w: s.w ?? 540, h: s.h ?? 960, captions: Boolean(s.captions), whole: Boolean(s.whole), gate: s.gate !== false, dir: path.join(dir, "stills") });
   timing.render = +((Date.now() - t) / 1000).toFixed(2);
   t = Date.now();
   await deliver(res, path.join(dir, "stills"), s.out, put);
   timing.upload = +((Date.now() - t) / 1000).toFixed(2);
-  return { role: "stills", renderer, loadMs: res.loadMs, guard: res.guard, stills: res.stills, timing };
+  return { role: "stills", renderer, loadMs: res.loadMs, guard: res.guard, ...(res.stillGate ? { stillGate: res.stillGate } : {}), stills: res.stills, timing };
 }
 
 export async function objectStillsJob(job, dir, { gpuCheck, put, makeRenderer = null }) {

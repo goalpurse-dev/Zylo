@@ -89,7 +89,9 @@ export const ROLES = Object.freeze(["prepare", "chunk", "finish"]);
 // (PRODUCTION_CHECK: a line misses an item the story director listed; the same plan misses it again, and a retry would
 // pay the director and the builder twice)
 // (CRITICAL_UNBUILT: the builder couldn't make a story-critical thing before the plan; worker.mjs criticalUnbuilt)
-export const NO_RETRY = new Set(["VISUAL_CHECK", "SUBJECT_CHECK", "PRODUCTION_CHECK", "PLAN_FAILED", "CRITICAL_UNBUILT", "KIT_MISSING", "TIMELINE_INVALID", "VOICE_CONFIG", "PROVIDER_BALANCE", "BAD_JOB", "NOT_CONFIGURED"]);
+// (STILL_GATE, 2026-11-09: a shot still blank / wall / sky-only / camera-inside after every re-plan; the same plan would
+// fail the same way: worker.mjs stillGateFailure)
+export const NO_RETRY = new Set(["VISUAL_CHECK", "SUBJECT_CHECK", "PRODUCTION_CHECK", "PLAN_FAILED", "CRITICAL_UNBUILT", "STILL_GATE", "KIT_MISSING", "TIMELINE_INVALID", "VOICE_CONFIG", "PROVIDER_BALANCE", "BAD_JOB", "NOT_CONFIGURED"]);
 // a worker that can't run the job (no graphics; an older image than the job needs: worker.mjs staleBuild) is retired by
 // handler.py and the piece is retried elsewhere: these tries don't count as failed ones (noGpuRetries caps them)
 const NO_GPU = new Set(["NO_GPU", "STALE_WORKER"]);

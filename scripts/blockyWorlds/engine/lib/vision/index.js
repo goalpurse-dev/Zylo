@@ -10,6 +10,7 @@ import path from "node:path";
 import { reviewShots } from "./shotReview.js";
 import { anthropicJudge, REVIEW_MODELS } from "./judge.js";
 import { mockJudge } from "./mock.js";
+import { makeGateCache } from "./gatePass.js";
 
 // stillSize 480 (270 x 480, 2026-11-07): the judge needs the framing, not detail; ~170 image tokens a still instead of
 // ~440, and a faster frame on a software-GL laptop. maxMs: with a prepare job's `until` the window is the job's own
@@ -24,9 +25,13 @@ export const REVIEW_DEFAULTS = Object.freeze({ provider: "off", model: REVIEW_MO
  *   const rs = makeReviewStills({ dir, size, beforeStills, log });  rs.warm(earlyTl)  (never awaited, never throws)
  *   reviewForPrepare({ ..., stills: rs })  (waits for the warm-up, then reuses the same Chrome for every pass)
  *   await rs.close()
+ * rs.gateCache (2026-11-09, the HARD STILL GATE): every still this renderer makes is measured by lib/stillGate.js in the
+ * page (lib/vision/stills.mjs); the measurements are kept by shot content, so the gate pass after the review renders only
+ * the shots the review did not render (or changed).
  */
 export function makeReviewStills({ dir, size = REVIEW_DEFAULTS.stillSize, beforeStills = null, log = () => {}, factory = null } = {}) {
   let r = null, warming = null, warmMs = null, closed = false;
+  const gateCache = makeGateCache();
   const open = () => (r ??= (async () => {
     await beforeStills?.();
     const make = factory ?? (await import("./stills.mjs")).makeShotStills;
@@ -34,6 +39,7 @@ export function makeReviewStills({ dir, size = REVIEW_DEFAULTS.stillSize, before
   })());
   return {
     size,
+    gateCache,
     get warmMs() { return warmMs; },
     get warming() { return Boolean(warming) && warmMs == null; },
     /** load this timeline's page once (no stills): Chrome + the caches are hot for the real passes */
@@ -52,7 +58,7 @@ export function makeReviewStills({ dir, size = REVIEW_DEFAULTS.stillSize, before
     async get() {
       if (warming) await warming;
       const s = await open();
-      return { renderTimeline: (...a) => s.renderTimeline(...a), close: async () => {} };
+      return { renderTimeline: async (...a) => { const res = await s.renderTimeline(...a); for (const st of res?.stills ?? []) gateCache.add(st); return res; }, close: async () => {} };
     },
     async close() { if (closed) return; closed = true; if (warming) await warming; if (r) await (await r.catch(() => null))?.close?.().catch?.(() => {}); },
   };

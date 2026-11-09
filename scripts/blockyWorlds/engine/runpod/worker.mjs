@@ -123,6 +123,15 @@ export function checkFailure(c) {
   if (c.timeline.length) return coded("PLAN_FAILED", `the timeline has ${c.timeline.length} problem(s): ${c.timeline.slice(0, 5).join("; ")}`);
   return null;
 }
+/** the still gate's verdict (lib/vision/gatePass.js report): a shot still failing a HARD rule after every re-plan -> STILL_GATE */
+export function stillGateFailure(report, mode = "reject") {
+  if (mode !== "reject") return null;
+  const hard = (report?.unresolved ?? []).filter((u) => u.hard);
+  if (!hard.length) return null;
+  const e = coded("STILL_GATE", `${hard.length} shot(s) still blank after every re-plan (the still gate): ${hard.slice(0, 5).map((u) => `shot ${u.shot}${u.line != null ? ` (#${u.line})` : ""} ${u.codes.join("+")}`).join(", ")}`);
+  e.stillGate = hard.slice(0, 20);
+  return e;
+}
 /**
  * The plan was rejected (lib/critical.js criticalGate, mode "reject"): a story-critical item the builder could not make
  * (failed, cap reached, builder off). CRITICAL_UNBUILT: no retry, the run is refunded (render.js NO_RETRY); the page says
@@ -160,6 +169,20 @@ async function stillChrome(mode) {
  * end REVIEW_AFTER_SEC before the limit (music + SFX + the mix ~40 s, the uploads and a margin).
  */
 const PREPARE_SEC = 420, AFTER_BUILDER_SEC = 75, BUILDER_END_SEC = 225, REVIEW_AFTER_SEC = 70;
+/**
+ * THE HARD STILL GATE (owner, 2026-11-09; lib/stillGate.js + lib/vision/gatePass.js): after the review, a still of every
+ * shot through the free pixel + geometry gate, failing shots re-planned (action -> reaction -> world wide -> a passing
+ * shot's framing) and gated again; a shot still failing a HARD rule (flat / wall / sky-only / camera inside / blocked /
+ * too dark / blown out) fails the run (STILL_GATE, nothing rendered). Its window: the last GATE_SEC before the review's
+ * old end (the review ends that much earlier; the gate reuses the review's stills of unchanged shots, so it renders few).
+ * job.prepare.stillGate = { mode: "reject" (default) | "report" | "off", rounds } (env BLOCKY_WORLDS_STILL_GATE).
+ */
+const GATE_SEC = 45;
+// default "reject" on RunPod (mode gpu / cpu); "off" for a job of mode "local" unless it asks (2026-11-08: no renders
+// on the laptop: a local dry run / test must never open Chrome for the gate by surprise)
+export const stillGateMode = (p = {}, jobMode = "gpu") => { const m = String(p.stillGate?.mode ?? process.env.BLOCKY_WORLDS_STILL_GATE ?? (jobMode === "local" ? "off" : "reject")).toLowerCase(); return ["reject", "report", "off"].includes(m) ? m : "reject"; };
+/** the gate's report for visual-check.json / "planned": counts + the shots it touched (bounded) */
+export const gateBrief = (r) => (r ? { cached: r.cached, passes: r.passes.length, failedFirst: r.shots.filter((x) => Array.isArray(x.first)).length, fixed: r.fixed.length, unresolved: r.unresolved.map((u) => ({ shot: u.shot, codes: u.codes, hard: u.hard })).slice(0, 30), unverified: r.unverified.length, warn: r.warn.length, ms: r.ms, stopped: r.stopped ?? null } : null);
 
 export async function prepare(job, dir, post, { planModule = null, voiceFn = null, kitModule = null, builder: builderIn = null } = {}) {
   const p = job.prepare ?? {}, timing = {}, jobT0 = Date.now();
@@ -180,7 +203,9 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
   const libraryFind = (name) => library.find?.("object", [name]) ?? null;
   const prepareSec = Number(p.limits?.prepareSec) || PREPARE_SEC;
   const until = jobT0 + Math.min(BUILDER_END_SEC, prepareSec - AFTER_BUILDER_SEC) * 1000;
-  const reviewUntil = jobT0 + (prepareSec - REVIEW_AFTER_SEC) * 1000;
+  const gateMode = stillGateMode(p, job.mode ?? "gpu"), gateOn = gateMode !== "off";
+  const gateUntil = jobT0 + (prepareSec - REVIEW_AFTER_SEC) * 1000;
+  const reviewUntil = gateUntil - (gateOn ? GATE_SEC * 1000 : 0);
   const builder = builderIn ?? B.makeBuilder({
     provider: await B.providerFromConfig({ provider: p.builder?.provider ?? process.env.BLOCKY_WORLDS_BUILDER ?? "off", idea: p.idea ?? null }),
     cache: library, budget: { ...(p.builder?.budget ?? {}), until }, stillDir: path.join(dir, "stills"), log: (m) => { blog.push(m); console.log(`builder: ${m}`); },
@@ -191,7 +216,8 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
   // with the first early plan (below) while the voice, the director and the builder run; off when the review is off.
   const V = await import(pathToFileURL(path.join(ENGINE, "lib", "vision", "index.js")).href);
   const reviewOn = Boolean(V.judgeFromConfig(p.review ?? {}, { apiKey: process.env.ANTHROPIC_KEY ?? null }));
-  const reviewStills = reviewOn ? V.makeReviewStills({ dir: path.join(dir, "review"), size: Number(p.review?.stillSize) || undefined, beforeStills: () => stillChrome(job.mode ?? "gpu"), log: (m) => console.log(`review: ${m}`) }) : null;
+  // the still gate renders on the same warm page (its own stills, and the review's measured ones): on when either is on
+  const reviewStills = reviewOn || gateOn ? V.makeReviewStills({ dir: path.join(dir, "review"), size: Number(p.review?.stillSize) || undefined, beforeStills: () => stillChrome(job.mode ?? "gpu"), log: (m) => console.log(`review: ${m}`) }) : null;
   const warmReview = (early) => { if (reviewStills) { console.log(`review: warming the stills page at ${((Date.now() - jobT0) / 1000).toFixed(1)} s`); reviewStills.warm(early); } };
   // what the director and the builder spent, for the server's cost ledger (render.js aiLedger): "planned" reports the
   // spend so far; the job's end (done output / failed event) reports the totals and what "planned" said, so a call that
@@ -327,13 +353,24 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
     spend.reviewUsd = Number(review?.costUsd) || 0; spend.reviewModel = review?.summary?.model ?? null;
     if (review?.report && p.out?.shotReview) await put(p.out.shotReview, path.join(dir, "shot-review.json"), "application/json").catch((e) => console.log(`shot-review.json upload: ${e.message}`)); // bookkeeping never fails a run
   } catch (e) { console.log(`review: skipped (${String(e.message).slice(0, 160)})`); }
-  finally { await reviewStills?.close().catch(() => {}); } // its Chrome is not needed after the review
+  // 2c. THE HARD STILL GATE (lib/vision/gatePass.js): every shot's still through the pixel + geometry gate (the review's
+  //     measurements of unchanged shots reused), failing shots re-planned and gated again, each change re-checked
+  let gate = null;
+  try {
+    if (gateOn && reviewStills) {
+      const { gateShots } = await import(pathToFileURL(path.join(ENGINE, "lib", "vision", "gatePass.js")).href);
+      gate = await lap("stillGate", () => gateShots({ tl, stills: () => reviewStills.get(), cache: reviewStills.gateCache, check: V.checksFor(plan, script, kit, kitProblems), until: gateUntil, rounds: Math.max(0, Math.min(3, Number(p.stillGate?.rounds ?? 2))), log: (m) => console.log(`gate: ${m}`) }));
+    }
+  } catch (e) { console.log(`gate: skipped (${String(e.message).slice(0, 160)})`); }
+  finally { await reviewStills?.close().catch(() => {}); } // its Chrome is not needed after the review and the gate
   const checks = preRenderChecks(plan, tl, script, kit);
   const checkFile = path.join(dir, "visual-check.json");
-  fs.writeFileSync(checkFile, JSON.stringify({ ...checks, report: tl.visualReport ?? null, builder: { ...built, log: blog }, review: review?.summary ?? null }, null, 1));
+  fs.writeFileSync(checkFile, JSON.stringify({ ...checks, report: tl.visualReport ?? null, builder: { ...built, log: blog }, review: review?.summary ?? null, stillGate: gate ? { mode: gateMode, ...gate.report } : { mode: gateMode, ran: false } }, null, 1));
   if (p.out?.visualCheck) await put(p.out.visualCheck, checkFile, "application/json");
   const bad = checkFailure(checks);
   if (bad) throw bad;
+  const gateBad = gate ? stillGateFailure(gate.report, gateMode) : null;
+  if (gateBad) throw gateBad;
   const tlPath = path.join(dir, "timeline.json");
   fs.writeFileSync(tlPath, JSON.stringify(tl));
   // WORLD CONTINUITY: the story's world bible (tl.world) next to the timeline (bookkeeping: never fails the run)
@@ -342,6 +379,7 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
   const planned = { frames: Math.round(tl.duration * (tl.fps ?? 24)), duration: tl.duration, shots: tl.shots.length, builder: { costUsd: built.report.costUsd, built: built.applied.length, cards: built.cards.length, ms: built.report.ms, needs: builderLines(built.report) },
     ...(direction ? { director: { provider: direction.provider, model: direction.model ?? null, fellBack: !!direction.fellBack, reused: !!direction.reused, costUsd: direction.costUsd ?? 0, ms: direction.ms ?? null }, gaps: (direction.match?.gaps ?? []).slice(0, 200) } : {}),
     ...(review?.summary ? { review: review.summary } : {}),
+    ...(gate ? { stillGate: gateBrief(gate.report) } : {}),
     ...(tl.critical ? { critical: (tl.critical.items ?? []).slice(0, 20).map((r) => ({ name: String(r.name).slice(0, 60), why: r.why, source: r.source })) } : {}),
     timing: { ...timing } };
   await post("planned", planned);

@@ -65,7 +65,7 @@ export async function timelineStills({ tl, picks, w = 540, h = 960, captions = f
         if (buf) fs.writeFileSync(local, buf);
         results.push({ ...s, job: gi, local: buf ? local : null });
       }
-      log(`job ${gi + 1}: ${stt.output.stills.length} stills, page load ${stt.output.loadMs} ms, renderer ${String(stt.output.renderer).slice(0, 60)}, worker timing ${JSON.stringify(stt.output.timing)}${stt.output.guard?.length ? `, flat guard ${JSON.stringify(stt.output.guard)}` : ""}`);
+      log(`job ${gi + 1}: ${stt.output.stills.length} stills, page load ${stt.output.loadMs} ms, renderer ${String(stt.output.renderer).slice(0, 60)}, worker timing ${JSON.stringify(stt.output.timing)}${stt.output.guard?.length ? `, flat guard ${JSON.stringify(stt.output.guard)}` : ""}${stt.output.stillGate ? `, still gate ${stt.output.stillGate.failed.length}/${stt.output.stillGate.measured} failing` : ""}`);
     }));
   } finally {
     const n = await st.cleanup().catch((e) => { log(`cleanup failed: ${e.message}`); return 0; });
@@ -98,6 +98,9 @@ if (path.resolve(process.argv[1] ?? "") === fileURLToPath(import.meta.url)) {
     const r = await timelineStills({ tl, picks, w: Number(arg("w", 540)), h: Number(arg("h", 960)), captions: argv.includes("--captions"), whole: argv.includes("--whole"), out, workers: Number(arg("workers", 3)), minBuild });
     const bad = r.stills.filter((s) => s.bad || s.error);
     console.log(`${r.stills.filter((s) => s.local).length}/${picks.length} stills -> ${path.resolve(out)}; ${bad.length ? `flagged: ${bad.map((s) => `${s.label} ${s.error ?? `flat ${s.flat} detail ${s.detail}`}`).join("; ")}; ` : ""}billed ${r.seconds} s = $${r.usd} (${r.jobs} job(s))`);
+    // the HARD STILL GATE per still (an image built before 2026-11-09 sends no gate: "n/a")
+    const gated = r.stills.filter((s) => s.gate && s.gate.pass != null);
+    console.log(gated.length ? `still gate: ${gated.filter((s) => s.gate.pass).length} pass, ${gated.filter((s) => !s.gate.pass).length} fail${gated.some((s) => !s.gate.pass) ? `:\n${gated.filter((s) => !s.gate.pass).map((s) => `  ${s.label} ${s.gate.reasons.join("; ")}`).join("\n")}` : ""}` : "still gate: n/a (this image has no gate)");
   } else {
     const items = readObjectItems(arg("objects"));
     const e = estimate({ jobs: Math.ceil(items.length / 8), objects: items.length });

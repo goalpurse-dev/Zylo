@@ -5,7 +5,11 @@
 // round renders only the re-planned shots from a SUB-timeline (those shots, re-timed back to back), so its page loads
 // only their sets.
 //   const r = await makeShotStills({ dir, size, browser? })
-//   await r.renderTimeline(tl, picks)  picks = [{ key, t }] (timeline seconds) -> [{ key, t, file, jpeg, w, h, ms, mean, shot }]
+//   await r.renderTimeline(tl, picks)  picks = [{ key, t }] (timeline seconds) -> [{ key, t, file, jpeg, w, h, ms, mean, shot, gate, gateKey }]
+//     gate (2026-11-09, lib/stillGate.js, the HARD STILL GATE): every still is measured in the page right after its render
+//     (pixels of the output canvas + rays from the real camera): { pass, codes, reasons, warn, stats, geo }; gateKey =
+//     frameKey(shot, phase): the same shot content at the same phase in any (sub-)timeline (the gate pass reuses the
+//     review's measurements). { gate: false } skips it.
 //   await r.close()
 //   node lib/vision/stills.mjs <timeline.json> [--out dir] [--size 768] [--limit n]   (free: renders every shot's stills, prints the timings)
 import fs from "node:fs";
@@ -13,7 +17,20 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { startServer, launchBrowser, openPage } from "../../render.mjs";
 import { stillPicks, stillTimeline } from "./requirements.js";
+import { frameKey, shotKey, gateSummary } from "./gatePass.js";
 export { stillTimeline, subTimeline } from "./requirements.js";
+
+/**
+ * In the page: render t (twice after a GPU blank), then the still gate's measurement (lib/stillGate.js measurePage:
+ * pixels of the output canvas + rays from the camera) before the JPEG is taken. Never throws for the gate.
+ */
+const MEASURE = async (t, gate, again) => {
+  if (again) window.renderAt(t);
+  const r = window.renderAt(t);
+  let g = null, gateError = null;
+  if (gate) { try { const G = await import("/lib/stillGate.js"); g = G.measurePage(window, r.shot); } catch (e) { gateError = String(e?.message ?? e).slice(0, 200); } }
+  return { ...r, gate: g, gateError, data: window.frameData(0.85) };
+};
 
 export async function makeShotStills({ dir, size = 768, browser: given = null, log = () => {} } = {}) {
   fs.mkdirSync(dir, { recursive: true });
@@ -23,7 +40,7 @@ export async function makeShotStills({ dir, size = 768, browser: given = null, l
   return {
     dir,
     /** one page load for the timeline, then every pick in order; a pick that fails is returned with an error, never thrown */
-    async renderTimeline(tl, picks, { name = `review${++n}`, onLoad = null } = {}) {
+    async renderTimeline(tl, picks, { name = `review${++n}`, onLoad = null, gate = true } = {}) {
       const st = stillTimeline(tl, { size });
       const tlName = `${name}.json`;
       fs.writeFileSync(path.join(dir, tlName), JSON.stringify(st));
@@ -37,13 +54,15 @@ export async function makeShotStills({ dir, size = 768, browser: given = null, l
         for (const p of picks) {
           const a = Date.now();
           try {
-            let r = await page.evaluate((t) => { const r = window.renderAt(t); return { ...r, data: window.frameData(0.85) }; }, p.t);
+            let r = await page.evaluate(MEASURE, p.t, gate, false);
             // the blank-frame guard (as render.mjs): an empty frame is rendered once more
-            if (r.mean != null && r.mean < 3) r = await page.evaluate((t) => { window.renderAt(t); const r = window.renderAt(t); return { ...r, data: window.frameData(0.85) }; }, p.t);
+            if (r.mean != null && r.mean < 3) r = await page.evaluate(MEASURE, p.t, gate, true);
             const jpeg = Buffer.from(r.data.slice(r.data.indexOf(",") + 1), "base64");
             const file = path.join(dir, `${name}-${p.key}.jpg`);
             fs.writeFileSync(file, jpeg);
-            out.push({ ...p, file, jpeg, w: st.width, h: st.height, ms: Date.now() - a, mean: r.mean ?? null, shot: r.shot ?? null });
+            const sh = st.shots[r.shot] ?? null, phase = sh ? (p.t - sh.start) / Math.max(1e-3, sh.end - sh.start) : null;
+            out.push({ ...p, file, jpeg, w: st.width, h: st.height, ms: Date.now() - a, mean: r.mean ?? null, shot: r.shot ?? null,
+              ...(gate ? { gate: r.gate ? gateSummary(r.gate) : { pass: null, error: r.gateError ?? "not measured" }, gateKey: sh ? frameKey(sh, phase) : null, shotKey: sh ? shotKey(sh) : null } : {}) });
           } catch (e) { out.push({ ...p, error: String(e.message ?? e).slice(0, 200), ms: Date.now() - a }); }
         }
       } finally { await page.close().catch(() => {}); }
