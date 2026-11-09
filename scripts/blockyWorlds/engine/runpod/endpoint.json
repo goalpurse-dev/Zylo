@@ -1,8 +1,8 @@
 {
  "name": "zyvo-blocky-render",
- "image": "registry.fly.io/zyvo-cutaway-render-staging@sha256:9a6d58d7cd321f1310567d7cd268c4d0fb9aba30f20f69a054b7697f7903999e",
+ "image": "registry.fly.io/zyvo-cutaway-render-staging@sha256:1926e8fbfebebb7babed8ac58e10ce88ee87d3b6ffe5cc7d6427ca15a2d0ba86",
  "registryAuthId": "cmvlelgjk00593mjx9gycdtjw",
- "templateId": "1z7uufpskx",
+ "templateId": "pfnqlc7fm8",
  "endpointId": "gm9eqdkuyc2ofs",
  "gpus": [
   "NVIDIA RTX A4000",
@@ -12,6 +12,6 @@
  ],
  "workersMax": 6,
  "idleTimeout": 5,
- "build": "20261109T185645-5ac28f7af535",
- "createdAt": "2026-11-09T18:58:37.602Z"
+ "build": "20261109T191028-ecf49b563f07",
+ "createdAt": "2026-11-09T19:11:19.254Z"
 }

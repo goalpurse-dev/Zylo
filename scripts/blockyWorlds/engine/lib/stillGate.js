@@ -211,6 +211,26 @@ export function measureGeometry(THREE, scene, camera, shot, { cols = 6, rows = 1
   const camPos = camera.getWorldPosition(new THREE.Vector3());
   const keyOf = (o) => { for (let n = o; n; n = n.parent) if (nameOf(n).includes(":") && n.parent) return n.uuid; return o.parent && o.parent !== scene ? o.parent.uuid : o.uuid; };
   try {
+    // GATE 2026-11-09 (speed): every mesh's world bounding sphere once; a ray only tests the meshes its line can reach
+    // (three.js re-transforms each sphere per mesh per ray: ~1.4 s a still on a busy set before this)
+    const spheres = meshes.map((m) => {
+      try {
+        if (m.isInstancedMesh || m.isSkinnedMesh) { m.computeBoundingSphere(); return m.boundingSphere ? m.boundingSphere.clone().applyMatrix4(m.matrixWorld) : null; }
+        if (!m.geometry) return null; if (!m.geometry.boundingSphere) m.geometry.computeBoundingSphere();
+        return m.geometry.boundingSphere ? m.geometry.boundingSphere.clone().applyMatrix4(m.matrixWorld) : null;
+      } catch { return null; }
+    });
+    const reach = (ray, far) => meshes.filter((m, k) => { const sp = spheres[k]; return !sp || !Number.isFinite(sp.radius) || (ray.intersectsSphere(sp) && sp.center.distanceTo(ray.origin) - sp.radius <= far); });
+    // a back face counts as "inside" only when the camera is inside that mesh's (instance's) box: a creature's interior
+    // (the turtle's town under its shell) or a one-sided floor seen from below are not a lens inside a closed mesh
+    const M4 = new THREE.Matrix4();
+    const holdsCam = (hit) => {
+      const o = hit.object, g = o.geometry; if (!g) return true;
+      if (!g.boundingBox) g.computeBoundingBox(); if (!g.boundingBox) return true;
+      const b = g.boundingBox.clone();
+      if (o.isInstancedMesh && hit.instanceId != null) { o.getMatrixAt(hit.instanceId, M4); b.applyMatrix4(M4); }
+      return b.applyMatrix4(o.matrixWorld).expandByScalar(0.05).containsPoint(camPos);
+    };
     // the subject anchors first (their distance bounds what counts as a blocker in front of them)
     const anchors = [];
     for (const root of roots) {
@@ -222,7 +242,7 @@ export function measureGeometry(THREE, scene, camera, shot, { cols = 6, rows = 1
       const inFrame = v.z < 1 && v.z > -1 && Math.abs(v.x) <= 0.95 && v.y <= 0.97 && v.y >= -0.92;
       const dir = p.clone().sub(camPos), d = dir.length();
       rc.set(camPos, dir.normalize()); rc.near = 0.02; rc.far = d + 0.01;
-      const first = d > 0.05 ? rc.intersectObjects(meshes, false)[0] : null;
+      const first = d > 0.05 ? rc.intersectObjects(reach(rc.ray, d), false)[0] : null;
       const hidden = !!first && first.distance < d - 0.35 && rootOf(first.object) !== root;
       const a = { id: nameOf(root), inFrame, hidden, dist: r3(d), ndc: [r3(v.x), r3(v.y)] };
       if (nameOf(root).startsWith("person:")) {
@@ -257,14 +277,14 @@ export function measureGeometry(THREE, scene, camera, shot, { cols = 6, rows = 1
       if (total >= 12 && Date.now() - gridT0 > T.rayMs) { partial = true; continue; }
       ndc.set(((i + 0.5) / cols) * 2 - 1, 1 - ((j + 0.5) / rows) * 2);
       rc.setFromCamera(ndc, camera);
-      const hit = rc.intersectObjects(meshes, false)[0];
+      const hit = rc.intersectObjects(reach(rc.ray, T.rayFar), false)[0];
       total++;
       if (!hit) { const fh = farHit(rc.ray); if (fh === "subject") subj++; else if (fh) far++; else none++; continue; }
       if (hit.distance < T.near) near++;
       if (hit.face) {
         nm.getNormalMatrix(hit.object.matrixWorld);
         nrm.copy(hit.face.normal).applyMatrix3(nm).normalize();
-        if (nrm.dot(rc.ray.direction) > 0.05) back++;
+        if (nrm.dot(rc.ray.direction) > 0.05 && holdsCam(hit)) back++;
       }
       if (rootOf(hit.object)) { subj++; continue; }
       if (hit.distance < blockDist) { const k = keyOf(hit.object); cover.set(k, (cover.get(k) ?? 0) + 1); }

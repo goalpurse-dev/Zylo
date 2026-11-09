@@ -842,7 +842,7 @@ async function main() {
         if (!shotObjs[0].u.big && Math.max(s.x, s.y, s.z) <= 3.5) subjBox = b;
       }
       else if (shot.focus === "insert" && ins?.obj) subjBox = new THREE.Box3().setFromObject(ins.obj);
-      else if (where[shot.focus] && PEOPLE[shot.focus] && (shot.camera === "medium" || shot.camera === "closeup")) { const p = toScene(where[shot.focus].clone()); subjBox = new THREE.Box3(p.clone().add(new THREE.Vector3(-0.4, 0, -0.4)), p.clone().add(new THREE.Vector3(0.4, PEOPLE[shot.focus].h, 0.4))); }
+      else if (where[shot.focus] && PEOPLE[shot.focus] && (shot.camera === "medium" || shot.camera === "closeup")) { const p = toScene(where[shot.focus].clone()); subjBox = new THREE.Box3(p.clone().add(new THREE.Vector3(-0.4, PEOPLE[shot.focus].h * 0.62, -0.4)), p.clone().add(new THREE.Vector3(0.4, PEOPLE[shot.focus].h, 0.4))); } // GATE 2026-11-09: the HEAD (characters v2: ~1/3 of the body): a white face is measured as a white face, not averaged with dark clothes
     }
     winter?.update(t, camera); // LOOK-FIX: falling snow, deterministic in t
     const subjLit = subjLight.aim(camera, subjBox, shot.light);

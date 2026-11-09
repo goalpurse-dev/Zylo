@@ -232,6 +232,7 @@ export async function makeNature(ctx, opts = {}) {
   for (let i = 0; i < nUnder; i++) {
     const a = R() * Math.PI * 2, r = Math.sqrt(R()) * uR, x = center.x + Math.cos(a) * r, z = center.z + Math.sin(a) * r;
     if (clear(x, z) && R() < 0.85) continue;
+    if (opts.hardClear?.(x, z)) continue; // GATE 2026-11-09 (#3: a 3 m fern between the lens and Tobin's face): none at all here
     const k = R();
     if (k < 0.07) L.rock.push(place(x, z, 0.8 + R() * 1.4, R() * 6.28, 0.3));
     else if (k < 0.1) L.boulder.push(place(x, z, 0.4 + R() * 0.7, R() * 6.28, 0.3));

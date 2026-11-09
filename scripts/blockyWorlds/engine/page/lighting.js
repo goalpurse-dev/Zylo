@@ -234,6 +234,9 @@ export function makeRigLayer(THREE, scene) {
         const pr = spec && spec.at !== "rim" ? prac.shift() : null; // a lantern of the dressing stands in for a side key
         if (!spec) { p.intensity = 0; return; }
         p.position.copy(pr?.pos ?? at[spec.at] ?? at.side);
+        // GATE 2026-11-09 (#4 night square: white blobs on the tower / walls): a dressing lantern hangs on a wall; its light
+        // stands 1.2 m out from it toward the street (a point light against a wall burns a hot spot into it)
+        if (pr) { const o = new THREE.Vector3(cw.x - p.position.x, 0, cw.z - p.position.z); if (o.lengthSq() > 1e-4) p.position.addScaledVector(o.normalize(), 1.2); p.position.y += 0.3; }
         // GATE 2026-11-09 (#4 belfry: a lantern 1.4 m from the face blew it white): never closer than 2.2 m (horizontal)
         // to the subject spot, and at least 2.2 m up
         const hx = p.position.x - cw.x, hz = p.position.z - cw.z, hd = Math.hypot(hx, hz);

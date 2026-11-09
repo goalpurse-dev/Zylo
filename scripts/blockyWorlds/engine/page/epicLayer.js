@@ -166,12 +166,17 @@ export async function makeEpicLayer({ THREE, scene, tl, ctx }) {
     const f = String(shot.focus ?? "");
     const fg = f.startsWith("giant:") ? f.slice(6) : null, fc = f === "crowd" || f.startsWith("crowd:"), fw = f === "world";
     if (!type && !(fg || fc || fw) && !shot.move) return false;
-    if (!type) type = MAP_STD[shot.camera] ?? "establish";
+    // GATE 2026-11-09 (#3 "our streets tilted", "the whole town froze": a crowd medium looked straight up at the shell):
+    // a crowd is never framed as a giant's close-up: its medium / closeup / low is the crowd establish
+    if (!type) type = fc && ["medium", "closeup", "low"].includes(shot.camera) ? "establish" : MAP_STD[shot.camera] ?? "establish";
     const firstGiant = [...live.giants.values()][0];
     const worldG = S.giant && S.giant.visible !== false ? { g: S.giant, pos: S.giant.position.clone() } : null;
     const giantInfo = (id) => (id === "world" ? worldG : live.giants.get(id)) ?? null;
     const gInfo = fg ? giantInfo(fg) : null;
     const anyGiant = gInfo ?? firstGiant ?? worldG;
+    // GATE 2026-11-09 (#3: the wolf's hero_low stood in the forest, its head far above the frame): a rival giant beside
+    // the world creature seen from outside gets the establish two-shot (both at scale), which passes the still gate
+    if (type === "hero_low" && gInfo && worldG && gInfo.g !== worldG.g && tl.worlds?.[String(S.name ?? "").slice(9)]?.view === "outside") type = "establish";
     const ctxE = { THREE, camera, t: lt, dur, seed, side: S.camDir };
     const crowdAt = (i = 0) => {
       const L = live.crowds[i]; if (!L) return null;
