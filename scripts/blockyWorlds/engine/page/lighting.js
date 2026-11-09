@@ -234,6 +234,11 @@ export function makeRigLayer(THREE, scene) {
         const pr = spec && spec.at !== "rim" ? prac.shift() : null; // a lantern of the dressing stands in for a side key
         if (!spec) { p.intensity = 0; return; }
         p.position.copy(pr?.pos ?? at[spec.at] ?? at.side);
+        // GATE 2026-11-09 (#4 belfry: a lantern 1.4 m from the face blew it white): never closer than 2.2 m (horizontal)
+        // to the subject spot, and at least 2.2 m up
+        const hx = p.position.x - cw.x, hz = p.position.z - cw.z, hd = Math.hypot(hx, hz);
+        if (hd < 2.2) { const k = hd > 0.05 ? 2.2 / hd : 0; p.position.x = cw.x + (k ? hx * k : l.x * 2.2); p.position.z = cw.z + (k ? hz * k : l.z * 2.2); }
+        p.position.y = Math.max(p.position.y, cw.y + 2.2);
         p.color.set(rid === "neon" || rid === "alarm_red" ? spec.colour : pr?.colour ?? spec.colour);
         p.distance = S.indoor ? 9 : 18;
         base[i] = spec.k * indoorK; p.intensity = base[i];

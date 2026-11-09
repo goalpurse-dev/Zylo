@@ -12,12 +12,15 @@
 //   screenRect(corners01) -> { x0, y0, x1, y1 } clamped to 0..1 (pure, tested)
 
 export const NIGHT_MIN_LUM = 62;       // 0-255: the subject's mean luminance must reach this at night
-export const NIGHT_MIN_CONTRAST = 14;  // its luminance spread (std dev): carved lines / windows / a face must read
+export const NIGHT_MIN_CONTRAST = 14;
+export const NIGHT_MAX_LUM = 205;      // over this the subject box is mostly clipped (a white face): the key goes down  // its luminance spread (std dev): carved lines / windows / a face must read
 const BASE = { night: 1, dusk: 0.45 };
 
 /** how much to raise the key for a measured subject (1 = fine) */
 export function boostFor(m, { minLum = NIGHT_MIN_LUM, minContrast = NIGHT_MIN_CONTRAST } = {}) {
   if (!m || !Number.isFinite(m.lum)) return 1;
+  // GATE 2026-11-09 (#4 belfry at night: a white, unreadable face): an already blown subject gets LESS key
+  if (m.lum > NIGHT_MAX_LUM) return Math.max(0.3, (NIGHT_MAX_LUM - 40) / m.lum);
   const kL = m.lum < minLum ? minLum / Math.max(6, m.lum) : 1;
   const kC = m.contrast < minContrast ? Math.min(2, minContrast / Math.max(3, m.contrast)) : 1;
   return Math.min(5, Math.max(kL, kC));

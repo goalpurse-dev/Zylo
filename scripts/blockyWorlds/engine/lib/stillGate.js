@@ -42,6 +42,12 @@ export const GATE = Object.freeze({
   blockDistEmpty: 1.5,  // ... with no subject on screen: this close
   geoSkyShare: 0.72,    // rays that hit nothing (sky dome excluded): sky-only
   geoSkyNoSubject: 0.55, //  ... or this many when the subject is not in frame
+  // GATE 2026-11-09 (cost: 17-27 s a still on the vegetation sets with rays to 2 km): the grid rays test triangles only
+  // up to rayFar m (three.js skips every mesh / instance whose bounding sphere starts further); a ray with no hit inside
+  // that range is "far geometry" when it crosses a mesh's world box (the subject's box: on the subject), else sky
+  rayFar: 45,
+  blockClose: 0.4,      // a close-up / medium of one person: something in front of them covering this share fails
+  rayMs: 4000,          // a time cap for the ray grid (the shares are taken over the rays cast)
 });
 
 const lum = (r, g, b) => 0.299 * r + 0.587 * g + 0.114 * b;
@@ -185,7 +191,9 @@ export function measureGeometry(THREE, scene, camera, shot, { cols = 6, rows = 1
       const mats = Array.isArray(o.material) ? o.material : [o.material];
       const back = mats.every((m) => m.side === THREE.BackSide);
       const ghost = mats.every((m) => m.visible === false || (m.transparent && (m.opacity ?? 1) < 0.25) || m.colorWrite === false);
-      if (!back && !ghost && !/sky/i.test(nameOf(o))) meshes.push(o);
+      // (GATE 2026-11-09: the instanced grass carpet is left out too: ground cover, collapsed on the sight line by its
+      // shader, and 40 000 instances per ray were most of the gate's 17-27 s a still)
+      if (!back && !ghost && !/sky/i.test(nameOf(o)) && !(o.isInstancedMesh && nameOf(o) === "grass")) meshes.push(o);
     }
     for (const c of o.children) walk(c);
   };
@@ -230,13 +238,28 @@ export function measureGeometry(THREE, scene, camera, shot, { cols = 6, rows = 1
     let back = 0, near = 0, none = 0, total = 0, subj = 0;
     const cover = new Map();
     const nrm = new THREE.Vector3(), nm = new THREE.Matrix3(), ndc = new THREE.Vector2();
-    rc.near = 0; rc.far = 2000;
+    rc.near = 0; rc.far = T.rayFar;
+    let boxes = null, rootBoxes = null;
+    const worldBox = (m) => {
+      if (m.isInstancedMesh || m.isSkinnedMesh) { m.computeBoundingBox(); return m.boundingBox ? m.boundingBox.clone().applyMatrix4(m.matrixWorld) : null; }
+      if (!m.geometry) return null; if (!m.geometry.boundingBox) m.geometry.computeBoundingBox();
+      return m.geometry.boundingBox.clone().applyMatrix4(m.matrixWorld);
+    };
+    const farHit = (ray) => {
+      rootBoxes ??= [...roots].map((r) => new THREE.Box3().setFromObject(r)).filter((b) => !b.isEmpty());
+      if (rootBoxes.some((b) => ray.intersectsBox(b))) return "subject";
+      boxes ??= meshes.map(worldBox).filter((b) => b && !b.isEmpty());
+      return boxes.some((b) => ray.intersectsBox(b)) ? "far" : null;
+    };
+    const gridT0 = Date.now();
+    let far = 0, partial = false;
     for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) {
+      if (total >= 12 && Date.now() - gridT0 > T.rayMs) { partial = true; continue; }
       ndc.set(((i + 0.5) / cols) * 2 - 1, 1 - ((j + 0.5) / rows) * 2);
       rc.setFromCamera(ndc, camera);
       const hit = rc.intersectObjects(meshes, false)[0];
       total++;
-      if (!hit) { none++; continue; }
+      if (!hit) { const fh = farHit(rc.ray); if (fh === "subject") subj++; else if (fh) far++; else none++; continue; }
       if (hit.distance < T.near) near++;
       if (hit.face) {
         nm.getNormalMatrix(hit.object.matrixWorld);
@@ -248,7 +271,7 @@ export function measureGeometry(THREE, scene, camera, shot, { cols = 6, rows = 1
     }
     const fwdCam = camera.getWorldDirection(new THREE.Vector3());
     return {
-      rays: total, inside: r3(back / total), near: r3(near / total), sky: r3(none / total), block: r3(Math.max(0, ...cover.values()) / total), blockDist: r3(blockDist),
+      rays: total, ...(far ? { far: r3(far / total) } : {}), ...(partial ? { partial: true, gridMs: Date.now() - gridT0 } : {}), inside: r3(back / total), near: r3(near / total), sky: r3(none / total), block: r3(Math.max(0, ...cover.values()) / total), blockDist: r3(blockDist),
       pitch: Math.round((Math.asin(Math.max(-1, Math.min(1, fwdCam.y))) * 180) / Math.PI), meshes: meshes.length,
       subject: { focus: shot?.focus ?? null, mode: spec.mode, soft: !!spec.soft, roots: roots.size, rays: r3(subj / total), anchors },
     };
@@ -269,8 +292,9 @@ export function geoReasons(g, shot = null, T = GATE) {
   const pc = (x) => `${Math.round(x * 100)}%`;
   if (g.inside >= T.insideShare) fail.push({ code: "camera_inside", why: `${pc(g.inside)} of the rays start inside a mesh (back faces first)` });
   else if (g.near >= T.nearShare) fail.push({ code: "camera_inside", why: `${pc(g.near)} of the rays hit a surface closer than ${T.near} m` });
-  if (g.block >= T.blockShare) fail.push({ code: "blocked", why: `one object covers ${pc(g.block)} of the frame within ${g.blockDist} m (in front of the subject)` });
   const s = g.subject ?? { mode: "none" };
+  const closeOne = ["closeup", "medium"].includes(shot?.camera) && s.mode === "one";
+  if (g.block >= T.blockShare || (closeOne && g.block >= T.blockClose)) fail.push({ code: "blocked", why: `one object covers ${pc(g.block)} of the frame within ${g.blockDist} m (in front of the subject)` });
   const ok = subjectSeen(s);
   if (g.sky >= T.geoSkyShare || (g.sky >= T.geoSkyNoSubject && !ok)) fail.push({ code: "sky_only", why: `${pc(g.sky)} of the rays hit nothing (sky), pitch ${g.pitch} deg` });
   if (!ok) {

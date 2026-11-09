@@ -255,7 +255,11 @@ export async function makeNature(ctx, opts = {}) {
       const a = R() * Math.PI * 2, r = Math.sqrt(R()) * gR, x = gc.x + Math.cos(a) * r, z = gc.z + Math.sin(a) * r;
       if ((opts.noGrass ?? clear)(x, z)) continue;
       if (R() < (r / gR) ** 2) continue; // thins out toward the edge (no hard-edged grass carpet)
-      const s = (0.7 + R() * 0.9) * (1 - (r / gR) * 0.4);
+      // GATE 2026-11-09 (#3 turtle: knee-high clumps between the lens and a close-up face): opts.lawn(x, z) -> 0..1 scales
+      // the clumps (0 = none) where people stand
+      const lk = opts.lawn ? opts.lawn(x, z) : 1;
+      if (!(lk > 0)) continue;
+      const s = (0.7 + R() * 0.9) * (1 - (r / gR) * 0.4) * lk;
       im.setMatrixAt(n++, new THREE.Matrix4().compose(v.set(x, H(x, z) - 0.02, z), q.setFromEuler(e.set(0, R() * 6.28, 0)), sv.set(s, s, s)));
     }
     im.count = n; im.instanceMatrix.needsUpdate = true; im.receiveShadow = true; im.castShadow = false; im.frustumCulled = false; im.name = "grass";

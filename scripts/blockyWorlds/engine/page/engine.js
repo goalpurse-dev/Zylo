@@ -413,7 +413,9 @@ async function main() {
     const P0 = performance.now();
     t = Math.max(0, Math.min(Number(t) || 0, tl.duration - 1e-6));
     const si = shotIndex(t), shot = tl.shots[si], lt = t - shot.start, dur = shot.end - shot.start;
-    if (!opts?.calib && post.needsGrade?.(si)) { const c0 = performance.now(); renderAt(shot.start, { calib: true }); PROF.calib += performance.now() - c0; } // SETS-V2: the shot's grade is measured at its first frame (page/post.js), the same in every chunk
+    const c0 = performance.now();
+    if (!opts?.calib && post.needsGrade?.(si)) renderAt(shot.start, { calib: true });
+    if (!opts?.calib) PROF.calib += performance.now() - c0; // SETS-V2: the shot's grade is measured at its first frame (page/post.js), the same in every chunk
     const S = SETS[shot.set], spots = S.spots;
     for (const [n, s] of Object.entries(SETS)) s.root.visible = n === shot.set;
     const key = `${shot.set}|${shot.light}`;
@@ -630,6 +632,9 @@ async function main() {
       // centred view, vertical span 2.4 H); medium / closeup / over_shoulder: its key detail (userData.detail) like a
       // person of that height; low: from the ground, its full height
       const { obj, u } = shotObjs[0];
+      // GATE 2026-11-09 (#4 bell dog: "low" on the dog = a lens on the cobbles, the frame two thirds blurred ground): a
+      // small thing (under 1.2 m: a pet, a bag, a box) is never shot from the ground; it gets the medium object framing
+      const smallLow = shot.camera === "low" && (u.fitH ?? u.height ?? 2) < 1.2;
       const at = (v) => { const p = obj.localToWorld((v ?? new THREE.Vector3()).clone()); p.y = obj.position.y; return p; };
       other = placed[0]?.pos;
       if (shot.camera === "wide" || shot.camera === "insert") {
@@ -643,13 +648,13 @@ async function main() {
         focusHeight = Math.max(fitH / 2.1, fitW / 1.35);
         focus = c; focus.y = obj.position.y + fitY - focusHeight / 2;
         camType = "insert";
-      } else if (shot.camera === "low") { focus = at(u.focus); focusHeight = u.fitH ?? u.height ?? 2; }
+      } else if (shot.camera === "low" && !smallLow) { focus = at(u.focus); focusHeight = u.fitH ?? u.height ?? 2; }
       else {
         const d = at(u.detail?.at ?? u.focus);
         // somebody standing between the lens and the detail (Dobbs in front of the bakery): frame the two together
         const blocker = placed.find((p) => { if (p.fixed) return false; const v = hz(p.pos).sub(hz(d)); const f = -v.dot(S.depth); return f > -0.2 && f < 2.8 && Math.abs(v.dot(S.lateral)) < 1.6; });
         if (blocker) { ({ focus, focusHeight } = fitPair(blocker.pos, PEOPLE[blocker.id]?.h ?? 1.7, shotObjs[0], Math.max(2.6, PEOPLE[blocker.id]?.h ?? 1.7))); camType = "insert"; }
-        else if (shot.camera === "medium" || shot.camera === "closeup") {
+        else if (shot.camera === "medium" || shot.camera === "closeup" || smallLow) {
           // LOOK-FIX 2026-11-08 (owner: "the tower close-up is a flat wall", "the base block shot is a wall"): an object is
           // not a person: frame it straight and centred (the "insert" framing) from its FRONT face, never its middle:
           // medium = the whole thing (a big one: its lower 9 m), closeup = its key detail (userData.detail) at full width
@@ -849,7 +854,7 @@ async function main() {
     if (subjLit && safe < 2) {
       subj = subjLight.measure(renderer.domElement, camera, subjBox, subjCtx);
       const k = Math.min(shot.focus === "object" || shot.focus === "insert" ? 5 : 2, boostFor(subj)); // a face: at most twice the lantern
-      if (k > 1.05) { subjLight.boost(k); post.render(); subj = { ...subj, boost: +k.toFixed(2), after: subjLight.measure(renderer.domElement, camera, subjBox, subjCtx) }; }
+      if (k > 1.05 || k < 0.95) { subjLight.boost(k); post.render(); subj = { ...subj, boost: +k.toFixed(2), after: subjLight.measure(renderer.domElement, camera, subjBox, subjCtx) }; }
     }
     if (washed) { renderer.toneMappingExposure = expo0; if (scene.fog && fog0) [scene.fog.near, scene.fog.far] = fog0; }
     if (safe >= 1) scene.fog = savedFog;
