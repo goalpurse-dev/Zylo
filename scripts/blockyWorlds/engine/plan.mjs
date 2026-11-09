@@ -40,6 +40,7 @@ import { camMoveProblems } from "./lib/camMove.js";
 import { cameraMovePass, storyShapePass, duplicateCastProblems, kitNeedsPass } from "./lib/shotFlow.js";
 import { criticalGate, storyObjects, kitFor, worldObject, SCENERY, headNoun as critHead, kitCoversAll } from "./lib/critical.js";
 import { propSensePass } from "./lib/propSense.js";
+import { shotGrammarPass } from "./lib/shotGrammar.js";
 
 export { estimateWords, subjectOf };
 /**
@@ -984,6 +985,12 @@ export function planVideo({ script, words, idea = {}, lengthSec = null, directio
   if (D && critical?.unresolved?.length) tl.criticalHosts = criticalNeedsPass(tl, critical, D, check4);
   tl.shape = storyShapePass(tl, { check: check4 });
   tl.shape.kitShown = kn;
+  // SHOT GRAMMAR v2 (owner 2026-11-09, lib/shotGrammar.js): the framing mix (~40 % faces, ~20 % hero inserts of the
+  // story objects, ~25 % world, ~15 % action / groups), crowd shots <= 10 % and busy, town backgrounds 3-12 people doing
+  // things, every character shot's face to the lens. A library object waits for the builder's tl.assets after planning,
+  // so its "unknown built asset" line is no new problem here (the run checks it once the assets are in)
+  const checkG = (t) => ({ ...check4(t), timeline: checkTimeline(t).filter((p) => !/unknown built asset/.test(p)).length });
+  tl.shape.grammar = shotGrammarPass(tl, { check: checkG, critical, production: tl.production ?? production, targets: rec?.mix ?? null });
   tl.shape.moves = cameraMovePass(tl);
   if (critical) tl.critical = critical;
   tl.needs = collectNeeds(tl, script, idea, world.baseSet, mood, D);

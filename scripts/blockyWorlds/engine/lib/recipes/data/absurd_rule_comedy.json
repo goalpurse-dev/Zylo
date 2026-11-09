@@ -20,6 +20,13 @@
   "maxShot": 2.2,
   "maxPerLine": 4
  },
+ "mix": {
+  "character": 0.39,
+  "insert": 0.21,
+  "world": 0.24,
+  "action": 0.16,
+  "crowdMax": 0.05
+ },
  "beats": {
   "rule": {
    "mode": "flow",
@@ -402,15 +409,15 @@
      "cutOn": "word"
     },
     {
-     "role": "humour",
+     "role": "reveal",
      "share": 0.08,
      "cam": {
-      "distance": "medium",
+      "distance": "close",
       "height": "eye_level",
       "move": "push_in",
       "speed": "slow"
      },
-     "subject": "crowd",
+     "subject": "prop",
      "action": "line",
      "cutOn": "line",
      "causes": true

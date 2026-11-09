@@ -20,6 +20,13 @@
   "maxShot": 2.2,
   "maxPerLine": 4
  },
+ "mix": {
+  "character": 0.39,
+  "insert": 0.21,
+  "world": 0.24,
+  "action": 0.16,
+  "crowdMax": 0.05
+ },
  "beats": {
   "rule": {
    "mode": "flow",

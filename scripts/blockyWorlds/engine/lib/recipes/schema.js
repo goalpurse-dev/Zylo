@@ -58,6 +58,15 @@ export function validateRecipe(r) {
   const p = r.pace ?? {};
   for (const k of ["targetShot", "minShot", "maxShot"]) if (!isNum(p[k]) || p[k] <= 0) bad.push(`pace.${k}`);
   if (isNum(p.minShot) && isNum(p.maxShot) && p.minShot >= p.maxShot) bad.push("pace: minShot >= maxShot");
+  // SHOT GRAMMAR v2 (owner 2026-11-09, lib/shotGrammar.js): the framing mix the planner steers this story type to
+  //   mix: { character, insert, world, action (shares summing to 1), crowdMax (share of crowd shots) }
+  if (r.mix != null) {
+    const m = r.mix, ks = ["character", "insert", "world", "action"];
+    for (const k of ks) if (!isNum(m[k]) || m[k] < 0 || m[k] > 1) bad.push(`mix.${k}`);
+    if (ks.every((k) => isNum(m[k])) && Math.abs(ks.reduce((a, k) => a + m[k], 0) - 1) > 0.05) bad.push("mix: the four shares must sum to 1");
+    if (m.crowdMax != null && (!isNum(m.crowdMax) || m.crowdMax < 0 || m.crowdMax > 0.3)) bad.push("mix.crowdMax");
+    for (const k of Object.keys(m)) if (![...ks, "crowdMax"].includes(k)) bad.push(`mix: unknown field "${k}"`);
+  }
   for (const b of BEATS) {
     const B = r.beats?.[b];
     if (!B) { bad.push(`beat ${b}: missing`); continue; }

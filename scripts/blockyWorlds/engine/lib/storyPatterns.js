@@ -119,7 +119,8 @@ const REACT_POSES = /scared|look_up|cheer|gasp|point|shock|cry|wave|jump|hug/;
 /** distance index of our shot (0 farthest .. 4 closest; null for a card) */
 export const distanceOfShot = (s) => (isCard(s) ? null : CAMERA_DISTANCE[s?.camera] ?? 2);
 /** is this an anchor wide: a far view of the creature / the town (the "recurring wide") */
-export const isAnchorWide = (s) => !isCard(s) && WIDE_CAMERAS.has(s?.camera);
+// (a hero insert framed "wide" is the object alone, never the world's wide: lib/shotGrammar.js)
+export const isAnchorWide = (s) => !isCard(s) && !s?.hero && WIDE_CAMERAS.has(s?.camera);
 
 /** what our shot does in a sequence (same SEQ_ROLES as the reference descriptions) */
 export function roleOfShot(s, i = 1) {

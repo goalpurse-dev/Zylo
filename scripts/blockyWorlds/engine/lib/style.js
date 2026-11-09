@@ -9,6 +9,8 @@
 //       plan (planVideo stores it as tl.style; the run report shows it). Not part of checkTimeline: a style miss never
 //       fails a run, it tells the planner work where it falls short of the reference.
 
+import { mixReport, GRAMMAR } from "./shotGrammar.js";
+
 export const STYLE = Object.freeze({
   openerSec: 5, openerShots: 3,            // R1 the opener: >= 3 shots in the first 5 s (target: 4)
   creatureShare: 0.6,                       // R2 a creature story shows a giant in >= 60% of its time (target 72%)
@@ -29,7 +31,8 @@ const wordsOf = (tl, s) => (tl.captions ?? []).filter((c) => c.start >= s.start 
 const dur = (s) => Math.max(0, (s.end ?? 0) - (s.start ?? 0));
 const isCard = (s) => s.camera === "insert" || !!s.insert;
 const showsGiant = (s) => !isCard(s) && ((s.giants ?? []).length > 0 || /^(giant:|world$)/.test(s.focus ?? "") || (isCreature(s) && ["establish", "aerial", "giant_close", "hero_low", "duel"].includes(s.camera)));
-const moves = (s) => !!(s.move || s.beat || s.shake || s.tilt || (s.giants ?? []).some((g) => g.action && g.action !== "idle") || (s.crowds ?? []).some((c) => c.action && c.action !== "stand") || (s.actors ?? []).some((a) => a.pose && !["stand", "sit", "sleep"].includes(a.pose)) || (s.tethers ?? []).some((t) => ["snap", "fire", "swing"].includes(t.state)) || (s.siege ?? []).length || (s.fx ?? []).length || (s.acts ?? []).length);
+// (the shot's camMove counts: lib/camMove.js, every real shot gets one since VISUAL-FIX 2026-11-08; 2026-11-09)
+const moves = (s) => !!(s.move || (s.camMove && s.camMove.type !== "static") || s.beat || s.shake || s.tilt || (s.giants ?? []).some((g) => g.action && g.action !== "idle") || (s.crowds ?? []).some((c) => c.action && c.action !== "stand") || (s.actors ?? []).some((a) => a.pose && !["stand", "sit", "sleep"].includes(a.pose)) || (s.tethers ?? []).some((t) => ["snap", "fire", "swing"].includes(t.state)) || (s.siege ?? []).length || (s.fx ?? []).length || (s.acts ?? []).length);
 
 export function motionPass(tl, { check = null } = {}) {
   const res = { moved: 0, reverted: 0 };
@@ -84,8 +87,18 @@ export function styleReport(tl) {
   // R8 close / low cameras on giants
   const gf = shots.filter((s) => /^(giant:|world$)/.test(s.focus ?? "") && !isCard(s)), close = gf.filter((s) => ["giant_close", "hero_low"].includes(s.camera)).length;
   if (gf.length >= 5 && close / gf.length < STYLE.closeGiantShare) problems.push({ rule: "R8 close giant cameras", msg: `${close} of ${gf.length} giant shots are close / low (want >= ${STYLE.closeGiantShare * 100}%)` });
+  // R9-R11 SHOT GRAMMAR v2 (owner 2026-11-09, lib/shotGrammar.js): the framing mix, crowd shots, readable faces
+  let mix = null;
+  try { mix = mixReport(tl); } catch { mix = null; }
+  if (mix && mix.n >= 10) {
+    const offs = Object.entries(mix.off).filter(([, d]) => Math.abs(d) > GRAMMAR.tol + 1e-9);
+    if (offs.length) problems.push({ rule: "R9 framing mix", msg: offs.map(([k, d]) => `${k} ${Math.round(mix.share[k] * 100)}% (target ${Math.round(mix.target[k] * 100)}%)`).join(", ") });
+    if (mix.crowd.share > GRAMMAR.crowdMax + 1e-9) problems.push({ rule: "R10 crowd shots", msg: `${mix.crowd.shots} crowd shot(s), ${Math.round(mix.crowd.share * 100)}% (max ${GRAMMAR.crowdMax * 100}%)` });
+    if (mix.crowd.standing.length) problems.push({ rule: "R10 crowd shots", msg: `${mix.crowd.standing.length} crowd shot(s) where everyone just stands`, shots: mix.crowd.standing });
+    if (mix.faces.bad.length) problems.push({ rule: "R11 faces", msg: `${mix.faces.bad.length} of ${mix.faces.shots} character shots without a readable face`, shots: mix.faces.bad.map((b) => b.shot) });
+  }
   return {
-    metrics: { shots: shots.length, median: +median.toFixed(2), openerShots: opener, creatureShare: +gShare.toFixed(2), nightShare: +night.toFixed(2), staticShare: +(still.length / N).toFixed(2), onsetShare: cuts.length ? +(onset / cuts.length).toFixed(2) : 1, closeGiantShare: gf.length ? +(close / gf.length).toFixed(2) : null },
+    metrics: { mix, shots: shots.length, median: +median.toFixed(2), openerShots: opener, creatureShare: +gShare.toFixed(2), nightShare: +night.toFixed(2), staticShare: +(still.length / N).toFixed(2), onsetShare: cuts.length ? +(onset / cuts.length).toFixed(2) : 1, closeGiantShare: gf.length ? +(close / gf.length).toFixed(2) : null },
     problems,
   };
 }

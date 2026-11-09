@@ -36,6 +36,27 @@ function freeDist(THREE, set, from, dir, want, key) {
   _ray.set(key, d); return d;
 }
 
+/**
+ * SHOT GRAMMAR v2 (2026-11-09, lib/shotGrammar.js): the share of the frame height a person's head takes in a framing
+ * (the same lens / distance numbers as frameShot below; the head ~0.2 of an adult blocky person's height). Pure: the planner
+ * reads it to keep every character shot's face readable (>= GRAMMAR.headMin). framing: a set's roomier factor.
+ */
+export function headShare(type, H = 1.7, { framing = 1, otherDist = 2.2, headFrac = 0.2 } = {}) {
+  H = Math.max(0.3, Number(H) || 1.7);
+  const head = H * headFrac, t = (deg) => Math.tan((deg * DEG) / 2);
+  let span;
+  switch (type) {
+    case "closeup": span = Math.max(1.0, H * 0.72); break;
+    case "medium": span = Math.max(1.05, H * 0.95); break;
+    case "low": span = 2 * Math.min(7, Math.max(2.4, H * 1.05)) * t(62); break;
+    case "over_shoulder": span = 2 * (2.1 + otherDist) * t(42); break;
+    case "wide": span = 2 * Math.max(5.6, H * 1.5) * t(56); break;
+    case "insert": span = Math.max(1.4, H * 2.4); break;
+    default: span = 2 * 30 * t(50); break; // EPIC cameras: a person is a speck
+  }
+  return Math.round((head / (span * Math.max(1, Number(framing) || 1))) * 1000) / 1000;
+}
+
 export function frameShot(type, ctx) {
   const { THREE, camera, set, focus, t = 0, dur = 1, seed = 1 } = ctx;
   const H = Math.max(0.3, Number(ctx.focusHeight) || 1.7);

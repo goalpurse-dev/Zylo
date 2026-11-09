@@ -28,7 +28,8 @@ test("styleReport: each mechanical rule fires on a bad plan and stays quiet on a
   // target-like: 1.2 s shots cut on word starts, the creature in every shot, all moving, day, close giant cameras
   const good = { duration: 36, lines: [{ text: "The turtle walks." }], captions: [], shots: [] };
   for (let i = 0; i < 30; i++) { good.captions.push(cap("w", i * 1.2)); good.shots.push(shot(i * 1.2, (i + 1) * 1.2, { light: "day", camera: i % 2 ? "giant_close" : "establish", giants: [{ id: "world", action: "walk" }], lines: [0], line: 0 })); }
-  assert.deepEqual(styleReport(good).problems, []);
+  // (R9-R11, the shot grammar mix / crowds / faces, have their own tests: dev/shotGrammar.test.mjs; this giant-only plan is no mix example)
+  assert.deepEqual(styleReport(good).problems.filter((p) => !/^R(9|10|11) /.test(p.rule)), []);
   // bad: 3 long shots, night, nothing moving, off-onset cuts, a person-only opener, an action verb carded
   const bad = { duration: 36, lines: [{ text: "Then he lunged." }, { text: "The end." }], captions: [cap("w", 0.3), cap("x", 5.3)], shots: [
     { start: 0, end: 12, set: "creature:t_on", camera: "medium", focus: "me", actors: [{ id: "me", pose: "stand" }], light: "night", line: 1 },

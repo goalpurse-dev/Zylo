@@ -21,6 +21,13 @@
   "maxShot": 2.2,
   "maxPerLine": 4
  },
+ "mix": {
+  "character": 0.39,
+  "insert": 0.21,
+  "world": 0.24,
+  "action": 0.16,
+  "crowdMax": 0.05
+ },
  "beats": {
   "rule": {
    "mode": "flow",
@@ -193,7 +200,7 @@
      "cutOn": "word"
     },
     {
-     "role": "life",
+     "role": "character",
      "share": 0.07,
      "cam": {
       "distance": "medium",
@@ -201,7 +208,7 @@
       "move": "push_in",
       "speed": "slow"
      },
-     "subject": "crowd",
+     "subject": "narrator",
      "action": "line",
      "cutOn": "word"
     },
@@ -412,15 +419,15 @@
      "cutOn": "word"
     },
     {
-     "role": "life",
+     "role": "explain",
      "share": 0.07,
      "cam": {
-      "distance": "medium",
+      "distance": "close",
       "height": "eye_level",
       "move": "push_in",
       "speed": "slow"
      },
-     "subject": "crowd",
+     "subject": "prop",
      "action": "line",
      "cutOn": "word"
     },
@@ -918,12 +925,12 @@
      "role": "character",
      "share": 0.15,
      "cam": {
-      "distance": "wide",
+      "distance": "medium",
       "height": "eye_level",
       "move": "push_in",
       "speed": "slow"
      },
-     "subject": "crowd",
+     "subject": "narrator",
      "action": "line",
      "cutOn": "word"
     },

@@ -46,6 +46,10 @@ export function applyCamMove(camera, cm, t = 0, dur = 1, seed = 1) {
   const k = ease(Math.min(1, Math.max(0, t / Math.max(1e-3, dur))));
   const sp = CAM_SPEEDS.includes(cm.speed) ? cm.speed : "medium";
   const dir = hash01(seed * 31 + 5) < 0.5 ? -1 : 1;
+  // SHOT GRAMMAR v2 (2026-11-09): a hero insert's fit (0.3-1): the object framing fills the frame edge to edge, so the
+  // lens first widens to `fit` of it (the object 40-70 % of the frame, never cut off at the edge), then the move runs
+  const fit = Number(cm.fit);
+  if (fit >= 0.3 && fit < 1) zoom(camera, fit);
   switch (cm.type) {
     case "push_in": zoom(camera, 1 + ZOOM[sp] * k); break;
     case "pull_out": zoom(camera, 1 + ZOOM[sp] * (1 - k)); break;
@@ -81,6 +85,7 @@ export function camMoveProblems(shots = []) {
     if (s?.camMove == null) return;
     if (!CAM_MOVES.includes(s.camMove.type)) bad.push(`shot ${i}: unknown camMove "${s.camMove.type}" (${CAM_MOVES.join(", ")})`);
     if (s.camMove.speed != null && !CAM_SPEEDS.includes(s.camMove.speed)) bad.push(`shot ${i}: camMove speed "${s.camMove.speed}"`);
+    if (s.camMove.fit != null && !(Number(s.camMove.fit) >= 0.3 && Number(s.camMove.fit) <= 1)) bad.push(`shot ${i}: camMove fit ${s.camMove.fit} (0.3-1)`);
     if (s.move) bad.push(`shot ${i}: both a caps move and a camMove (one move per shot)`);
   });
   return bad;
