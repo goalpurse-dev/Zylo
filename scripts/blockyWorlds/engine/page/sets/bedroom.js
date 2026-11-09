@@ -174,17 +174,76 @@ export async function build(ctx) {
     for (const [ox, oy] of [[-2.4, 1.6], [2.4, 1.6], [-2.4, 4.0], [2.4, 4.0]]) { bx(1.3, 1.4, 0.1, solid("#fbfbf6"), { x: hx + ox, y: oy, z: hz + hd / 2 + 0.02 }); bx(1.1, 1.2, 0.1, nWin, { x: hx + ox, y: oy, z: hz + hd / 2 + 0.06, shadow: false }); }
   }
 
+  // ---------- SETS-V2 2026-11-09: the home's second room, the KITCHEN / living room (shot.place "kitchen") ----------
+  // owner D: "a story moves through 3-6 different places, so no single room dominates" (step-3 #2: 62% in one bedroom).
+  // A closed room beside the bedroom (x 40), its window onto the same yard and forest; saturated cabinets, a red fridge,
+  // a table with chairs, a sofa, a pendant lamp (the warm practical at night). Walls take the place theme's palette.
+  const KX = 40;
+  {
+    const o = (x, y, z, extra = {}) => ({ x: KX + x, y, z, ...extra });
+    plane(W, D, pbr("interior_tiles", { repeat: [W / 1.2, D / 1.2], tint: "#cfe0ee", rough: 0.6 }), { x: KX, y: 0, z: (ZB + ZF) / 2 });
+    const kw = pbr("painted_plaster_wall", { repeat: [3, 1.4], tint: "#9ad0a8" }), kw2 = pbr("painted_plaster_wall", { repeat: [3, 1.4], tint: "#f2b8a0" });
+    kw.userData.themeWall = true; kw2.userData.themeWall = true;
+    bx(WIN.x0 - X0, HT, T, kw, o((X0 + WIN.x0) / 2, HT / 2, ZB - T / 2, { block: true }));
+    bx(X1 - WIN.x1, HT, T, kw, o((WIN.x1 + X1) / 2, HT / 2, ZB - T / 2, { block: true }));
+    bx(WIN.x1 - WIN.x0, WIN.y0, T, kw, o((WIN.x0 + WIN.x1) / 2, WIN.y0 / 2, ZB - T / 2, { block: true }));
+    bx(WIN.x1 - WIN.x0, HT - WIN.y1, T, kw, o((WIN.x0 + WIN.x1) / 2, (HT + WIN.y1) / 2, ZB - T / 2, { block: true }));
+    bx(T, HT, D, kw2, o(X0 - T / 2, HT / 2, (ZB + ZF) / 2, { block: true }));
+    bx(T, HT, D, kw2, o(X1 + T / 2, HT / 2, (ZB + ZF) / 2, { block: true }));
+    bx(W + 2 * T, HT, T, kw, o(0, HT / 2, ZF + T / 2, { block: true }));
+    bx(W + 2 * T, 0.1, D + 2 * T, solid("#f7f4ee", { roughness: 0.9 }), o(0, HT + 0.05, (ZB + ZF) / 2));
+    for (const yy of [WIN.y0, WIN.y1]) bx(WIN.x1 - WIN.x0, 0.1, 0.24, white, o((WIN.x0 + WIN.x1) / 2, yy, ZB - 0.1));
+    // the counter row along the back wall, right of the window: base cabinets, worktop, stove, sink; upper cabinets
+    const cab = solid("#2e86de", { roughness: 0.5 }), top = solid("#f4f1ea", { roughness: 0.35 }), steel = solid("#b8bec8", { metalness: 0.7, roughness: 0.3 });
+    const cx0 = WIN.x1 + 0.15, cw = X1 - 0.75 - cx0;
+    bx(cw, 0.86, 0.6, cab, o(cx0 + cw / 2, 0.43, ZB + 0.32)); bx(cw + 0.04, 0.05, 0.64, top, o(cx0 + cw / 2, 0.885, ZB + 0.33));
+    for (let k = 0; k < 3; k++) bx(0.02, 0.6, 0.02, white, o(cx0 + (k + 0.5) * cw / 3, 0.5, ZB + 0.63));
+    bx(0.6, 0.02, 0.5, solid("#2a2c34"), o(cx0 + 0.45, 0.92, ZB + 0.32)); // the stove top
+    for (const [dx, dz] of [[-0.14, -0.1], [0.14, -0.1], [-0.14, 0.12], [0.14, 0.12]]) cyl(0.08, 0.08, 0.015, 14, solid("#111"), o(cx0 + 0.45 + dx, 0.935, ZB + 0.32 + dz));
+    bx(0.5, 0.08, 0.38, steel, o(cx0 + cw - 0.4, 0.88, ZB + 0.32));
+    bx(cw, 0.6, 0.35, solid("#f7d038", { roughness: 0.5 }), o(cx0 + cw / 2, 1.95, ZB + 0.2)); // upper cabinets (yellow)
+    rbx(0.75, 1.85, 0.7, 0.06, solid("#e84a5f", { roughness: 0.4 }), o(X1 - 0.42, 0.93, ZB + 0.4)); // the red fridge
+    bx(0.04, 0.5, 0.04, steel, o(X1 - 0.75, 1.2, ZB + 0.77));
+    // the table, chairs, a fruit bowl; the sofa on the left wall; a rug
+    const tw = solid("#b07a4a", { roughness: 0.55 });
+    bx(1.3, 0.06, 0.85, tw, o(-1.2, 0.74, 1.2)); for (const [dx, dz] of [[-0.58, -0.35], [0.58, -0.35], [-0.58, 0.35], [0.58, 0.35]]) bx(0.06, 0.72, 0.06, tw, o(-1.2 + dx, 0.36, 1.2 + dz));
+    for (const [dx, dz, c] of [[-0.35, -0.65, "#20bf6b"], [0.35, -0.65, "#f7b731"], [-0.95, 0, "#2e86de"]]) { bx(0.42, 0.05, 0.42, solid(c), o(-1.2 + dx, 0.45, 1.2 + dz)); bx(0.42, 0.5, 0.05, solid(c), o(-1.2 + dx, 0.7, 1.2 + dz - Math.sign(dz || -1) * 0.19)); for (const ex of [-0.17, 0.17]) for (const ez of [-0.17, 0.17]) bx(0.04, 0.45, 0.04, solid("#5a3e28"), o(-1.2 + dx + ex, 0.22, 1.2 + dz + ez)); }
+    cyl(0.2, 0.14, 0.1, 16, solid("#f4f1ea"), o(-1.2, 0.82, 1.2)); for (const [dx, c] of [[-0.06, "#e84a3a"], [0.07, "#f7d038"], [0, "#7bd148"]]) mesh(new THREE.SphereGeometry(0.06, 10, 8), solid(c), o(-1.2 + dx, 0.9, 1.2 + (dx > 0 ? 0.03 : -0.02)));
+    const sofa = solid("#8a5ad8", { roughness: 0.9 });
+    rbx(0.85, 0.45, 2.0, 0.08, sofa, o(X0 + 0.5, 0.25, 3.4)); rbx(0.25, 0.85, 2.0, 0.08, sofa, o(X0 + 0.15, 0.5, 3.4)); for (const dz of [-0.95, 0.95]) rbx(0.85, 0.6, 0.22, 0.06, sofa, o(X0 + 0.5, 0.35, 3.4 + dz));
+    mesh(new THREE.CircleGeometry(1.1, 32), solid("#e8a030", { roughness: 1 }), o(0.6, 0.012, 2.2, { rx: -Math.PI / 2, cast: false }));
+    cyl(0.01, 0.01, 0.7, 6, solid("#222"), o(-1.2, HT - 0.35, 1.2));
+    const pend = glow.add(new THREE.MeshStandardMaterial({ color: "#fff2d0", emissive: "#ffd9a0" }), { day: 0.4, night: 3, warm: 1.4 });
+    mesh(new THREE.ConeGeometry(0.28, 0.25, 16, 1, true), pend, o(-1.2, HT - 0.78, 1.2, { shadow: false }));
+  }
+  const KLAMP = V(KX - 1.2, HT - 0.9, 1.2);
+
   mergeStatic(THREE, root);
 
-  return {
+  // the places of this set: the bedroom (as it was) and the kitchen
+  const BASE = { center: V(0, 0, 0.4), left: V(-1.15, 0, 0.65), right: V(1.15, 0, 0.65), back: V(0.1, 0, -1.7), far: V(-0.6, 0, -9.5), door: V(2.55, 0, 2.55), closet: V(2.45, 0, 0.0), bed: V(bedX + 0.7, 0, bedZ0 + 1.2) };
+  const KSPOTS = { center: V(KX + 0.4, 0, 1.0), left: V(KX - 0.75, 0, 1.25), right: V(KX + 1.5, 0, 1.25), back: V(KX + 0.6, 0, -1.2), far: V(KX - 0.6, 0, -9.5), door: V(KX + 2.55, 0, 3.4), closet: V(KX + 2.2, 0, 0.6), bed: V(KX + 0.4, 0, 1.0) };
+  const PLACE_BOUNDS = { bedroom: new THREE.Box3(V(X0 + 0.25, 0.3, ZB + 0.3), V(X1 - 0.25, HT - 0.25, ZF - 0.25)), kitchen: new THREE.Box3(V(KX + X0 + 0.25, 0.3, ZB + 0.3), V(KX + X1 - 0.25, HT - 0.25, ZF - 0.25)) };
+  let placeNow = null;
+  const S = {
     root, indoor: true, windowY: 1.55, windowAt: V(WIN.x0 + (WIN.x1 - WIN.x0) * 0.74, 1.55, ZB),
-    spots: { center: V(0, 0, 0.4), left: V(-1.15, 0, 0.65), right: V(1.15, 0, 0.65), back: V(0.1, 0, -1.7), far: V(-0.6, 0, -9.5), door: V(2.55, 0, 2.55), closet: V(2.45, 0, 0.0), bed: V(bedX + 0.7, 0, bedZ0 + 1.2) },
+    spots: Object.fromEntries(Object.entries(BASE).map(([k, v]) => [k, v.clone()])),
     camDir: V(0, 0, 1),
     views: { door: V(-1, 0, 0.25).normalize(), closet: V(-1, 0, 0.45).normalize() },
-    bounds: [new THREE.Box3(V(X0 + 0.25, 0.3, ZB + 0.3), V(X1 - 0.25, HT - 0.25, ZF - 0.25))],
+    bounds: [PLACE_BOUNDS.bedroom.clone()],
+    /** SETS-V2: shot.place "kitchen" -> the kitchen room; anything else the bedroom */
+    setPlace(name0) {
+      const name = name0 === "kitchen" ? "kitchen" : "bedroom";
+      if (name === placeNow) return;
+      placeNow = name;
+      const src = name === "kitchen" ? KSPOTS : BASE;
+      for (const [k, v] of Object.entries(src)) S.spots[k].copy(v);
+      S.bounds.length = 0; S.bounds.push(PLACE_BOUNDS[name].clone());
+      S.windowAt = V(WIN.x0 + (WIN.x1 - WIN.x0) * 0.74 + (name === "kitchen" ? KX : 0), 1.55, ZB);
+    },
     rig: {
       indoor: true,
-      shadow: { center: [-0.4, 0, -3], half: 13, far: 120, map: 2048 },
+      shadow: { center: [19.6, 0, -3], half: 30, far: 140, map: 4096 }, // SETS-V2: covers the kitchen (x 40) too
       sunDir: { day: [7, 13, -16], night: [-6, 11, -18], warm: [12, 5, -22] },
       sunScale: { day: 1.0, night: 1.5, warm: 1.2 },
       envScale: { day: 0.75, night: 0.4, warm: 0.7 },
@@ -199,9 +258,13 @@ export async function build(ctx) {
         } else {
           const f = new THREE.PointLight(mode === "warm" ? "#ffcf9a" : "#fff6e6", mode === "warm" ? 2 : 3.5, 9, 1.5); f.position.set(0.4, 1.9, 2.6); L.push(f);
         }
+        // SETS-V2: the kitchen's pendant lamp (the warm key at night, a soft fill by day)
+        { const k = new THREE.PointLight("#ffd29a", mode === "night" ? 9 : 3, 7, 1.6); k.position.copy(KLAMP); L.push(k); }
         return L;
       },
       onLight(mode) { glow.apply(mode); onLight.forEach((f) => f(mode)); },
     },
   };
+  wall.userData.themeWall = true; wall2.userData.themeWall = true; // SETS-V2: the bedroom walls take the place palette
+  return S;
 }

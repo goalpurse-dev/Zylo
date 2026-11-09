@@ -31,7 +31,7 @@ export async function build(ctx) {
     bx(60, 0.1, 320, pbr("leafy_grass", { repeat: [20, 100], tint: "#9fe06a", normal: 0.6 }), { x: sx * (SIDE + 0.3 + WALK + 30), y: 0.05, z: -120 });
   }
   // LOOK-FIX 2026-11-08: the style-test world around the town (forest, hills, real grass), never the pastel plane + cones
-  const SQ = { x: 0, z: 140 }, inTown = (x, z) => (Math.abs(x) < 72 && z > -295 && z < 60) || (Math.abs(x) < 26 && z > 40 && z < 205) || Math.hypot(x - 60, z - 140) < 42;
+  const SQ = { x: 0, z: 140 }, inTown = (x, z) => (Math.abs(x) < 72 && z > -295 && z < 60) || (Math.abs(x) < 26 && z > 40 && z < 205) || Math.hypot(x - 60, z - 140) < 42 || Math.hypot(x + 60, z - 140) < 30 || Math.hypot(x - 60, z - 232) < 32; // SETS-V2: + the park and the back lane (./townPlaces.js)
   const nature = await natureBackdrop(K, ctx, (f) => onLight.push(f), { seed: 7, center: { x: 0, z: -60 }, flatR: 320, nearR: 380, farR: 1500, trees: 7000, ferns: 900, underR: 260, clear: inTown, grass: 30000, grassR: 34, grassCenter: SQ, noGrass: (x, z) => (Math.abs(x - SQ.x) < 23 && Math.abs(z - SQ.z) < 21) || (Math.abs(x) < 72 && z < 60) });
   void nature;
   // the landmark: the water tower on a hill where the street ends

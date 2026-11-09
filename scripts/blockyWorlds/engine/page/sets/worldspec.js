@@ -13,6 +13,7 @@
 import { makeKit, mergeStatic, glowList, lcg } from "./util.js";
 import { validateWorld } from "../../lib/builder/spec.js";
 import { preloadEnv } from "../lighting.js";
+import { attachDresser } from "./themes.js"; // SETS-V2
 
 const GROUND_TEX = { grass: "leafy_grass", dirt: "brown_mud_dry", sand: "coast_sand_01", rock: "dark_rock", tiles: "interior_tiles", wood: "laminate_floor_02", gravel: "gravel" };
 
@@ -171,14 +172,14 @@ export async function buildWorld(rawSpec, ctx) {
   mergeStatic(THREE, root);
   if (ctx.scene && !root.parent) ctx.scene.add(root);
   const door = opening ?? V(-3.2, 0, -5);
-  return {
+  return attachDresser({ // SETS-V2: a built world takes a theme preset too when its words fit one (cave, desert, neon...)
     root, indoor: type === "room", spec, problems,
     spots: { center: V(0, 0, 0), left: V(-1.3, 0, 0.3), right: V(1.3, 0, 0.3), back: V(0.2, 0, -2.4), far: V(0, groundY(spec, 0, -14), -14), door: V(door.x, groundY(spec, door.x, door.z + 0.6), door.z + 0.6) },
     camDir: V(0, 0, 1), views: {},
     bounds: [new THREE.Box3(V(enclosed && R < 20 ? -R + 1.2 : -12, 0.3, -24), V(enclosed && R < 20 ? R - 1.2 : 12, enclosed && R < 20 ? H - 0.6 : 14, Z0 - 1))],
     blockers: [], rig,
     update(t) { for (const u of updates) u(t); },
-  };
+  }, ctx);
 
   /** the floor height under (x, z) (hilly grounds rise only away from the playing area; it stays flat there) */
   function groundY(s, x, z) {

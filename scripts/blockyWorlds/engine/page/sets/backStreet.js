@@ -86,7 +86,7 @@ export function addPlaces(S, { ctx, K, world, plan, surface, toWorld, seed = 1 }
     const g = new THREE.Group(); g.name = `place:${name}`; g.position.copy(at); S.root.add(g);
     const W = 7, D = 7.5, H = 3.2;
     const floorM = new THREE.MeshStandardMaterial({ map: townTex(THREE, "planks", { color: "#b48a5e", seed: 21 }), roughness: 0.8 });
-    const wallM = new THREE.MeshStandardMaterial({ map: townTex(THREE, name === "classroom" ? "plaster" : "timber", { color: name === "classroom" ? "#f0e6c8" : "#f4ead2", seed: 22 }), roughness: 0.9, side: THREE.DoubleSide });
+    const wallM = new THREE.MeshStandardMaterial({ map: townTex(THREE, name === "classroom" ? "plaster" : "timber", { color: name === "classroom" ? "#f0e6c8" : "#f4ead2", seed: 22 }), roughness: 0.9, side: THREE.DoubleSide }); wallM.userData.themeWall = true; // SETS-V2: tinted by the place theme (page/sets/themes.js)
     box(W, 0.2, D, floorM, 0, -0.1, 0, 0, g); box(W, 0.2, D, wallM, 0, H, 0, 0, g);
     box(W, H, 0.2, wallM, 0, H / 2, -D / 2, 0, g); box(0.2, H, D, wallM, -W / 2, H / 2, 0, 0, g); box(0.2, H, D, wallM, W / 2, H / 2, 0, 0, g);
     const winM = new THREE.MeshBasicMaterial({ color: "#cfe8ff" });

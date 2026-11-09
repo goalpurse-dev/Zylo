@@ -8,6 +8,8 @@ import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js"
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { N8AOPass } from "n8ao";
+import { RIGS, gradeFor, frameStats, onTarget } from "/lib/setThemes.js"; // SETS-V2: rigs + the per-shot auto grade
+import { makeRigLayer } from "/page/lighting.js";
 
 // per light: AO intensity, bloom (strength, radius, threshold), grade (sat, con, warm). day/night = look/scene.js L/Ln.
 export const POST = {
@@ -59,5 +61,54 @@ export function makePost({ renderer, scene, camera, W, H, query = new URLSearchP
     grade.uniforms.sat.value = p.sat; grade.uniforms.con.value = p.con; grade.uniforms.warm.value = p.warm;
   };
   setLight("day");
-  return { composer, setLight, bloom, render: () => (plain ? renderer.render(scene, camera) : composer.render()) };
+
+  // SETS-V2 2026-11-09 (owner D + F, LOOK-TARGET): per shot the RIG (page/lighting.js makeRigLayer: fill, hemi tint,
+  // practicals) and the AUTO GRADE toward the rig's target (brightness ~0.65-0.72 by day, contrast ~0.52, the beige /
+  // orange cast pulled back; lib/setThemes.js gradeFor). The grade is measured ONCE per shot, at the shot's first frame
+  // (the engine renders shot.start first: renderAt(.., { calib })), so every chunk of a parallel render grades a shot
+  // the same. Everything is applied on top of whatever set the uniforms (setLight, the winter bloom, a flashback) and
+  // restored right after the render. ?nograde=1 turns the auto grade off.
+  const auto = !query.has("nograde");
+  const GRADES = new Map();
+  const N = { expo: 1, sat: 1, warm: 0, con: 1 };
+  let cur = null, rigLayer = null;
+  const probe = document.createElement("canvas"); probe.width = 36; probe.height = 64;
+  const pctx = probe.getContext("2d", { willReadFrequently: true });
+  const setShot = (si, shot, S, t = 0) => {
+    cur = { si, shot, t };
+    rigLayer ??= makeRigLayer(THREE, scene);
+    rigLayer.sync({ shot, S, t });
+  };
+  const needsGrade = (si) => auto && !plain && !GRADES.has(si);
+  const applyLook = (g) => {
+    const sh = cur.shot, rig = RIGS[sh.rig], rp = rig?.post ?? {};
+    const u = grade.uniforms, b0 = [bloom.strength, bloom.threshold], g0 = [u.sat.value, u.con.value, u.warm.value], e0 = renderer.toneMappingExposure;
+    if (sh.grade !== "flashback") {
+      u.sat.value = g0[0] * (rp.satK ?? 1) * g.sat;
+      u.con.value = g0[1] * (rp.conK ?? 1) * g.con;
+      u.warm.value = g0[2] + (rp.warmAdd ?? 0) + g.warm;
+      bloom.strength = b0[0] * (rp.bloomK ?? 1);
+      if (rp.bloomTh) bloom.threshold = Math.min(b0[1], rp.bloomTh);
+    }
+    renderer.toneMappingExposure = e0 * (rig?.expoK ?? 1) * g.expo;
+    return () => { [bloom.strength, bloom.threshold] = b0; [u.sat.value, u.con.value, u.warm.value] = g0; renderer.toneMappingExposure = e0; };
+  };
+  const measure = () => { pctx.drawImage(renderer.domElement, 0, 0, 36, 64); return frameStats(pctx.getImageData(0, 0, 36, 64).data); };
+  const shoot = (g) => { const undo = applyLook(g); composer.render(); undo(); };
+  const render = () => {
+    if (plain) return renderer.render(scene, camera);
+    if (!cur) return composer.render();
+    rigLayer?.frame(camera);
+    let g = GRADES.get(cur.si);
+    if (!g && auto) {
+      // calibrate: the rig's look without a grade, measured; one refine pass when the first guess is still off
+      shoot(N); const st = measure();
+      g = gradeFor(st, cur.shot.rig);
+      shoot(g); const st2 = measure();
+      if (!onTarget(st2, cur.shot.rig)) g = gradeFor(st2, cur.shot.rig, g);
+      GRADES.set(cur.si, { ...g, before: st, after1: st2 });
+    }
+    shoot(g ?? N);
+  };
+  return { composer, setLight, bloom, render, setShot, needsGrade, grades: GRADES, rigInfo: () => rigLayer?.info() ?? null };
 }

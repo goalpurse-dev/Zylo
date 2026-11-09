@@ -14,6 +14,7 @@
 // The giant (page/kit/giants.js) is in set.giant; the engine may animate it per shot (shot.giants with id "world").
 import { makeKit, glowList, mergeStatic } from "./util.js";
 import { preloadEnv } from "../lighting.js";
+import { attachDresser } from "./themes.js"; // SETS-V2
 import { makeGiant, animateGiant, giantSurface } from "../kit/giants.js";
 import { makeTown, townLayout } from "../kit/town.js";
 import { gaitOf, prng, giantFootfalls } from "../../lib/epic.js";
@@ -41,9 +42,9 @@ export function normCreatureSpec(spec = {}) {
 export async function buildCreatureWorld(rawSpec, ctx) {
   const spec = normCreatureSpec(rawSpec);
   await preloadEnv(ctx.THREE);
-  if (spec.view === "outside") return buildCreatureOutside(spec, ctx);
-  if (spec.view === "on" || spec.view === "street") return buildOn(spec, ctx);
-  return buildInside(spec, ctx);
+  // SETS-V2: every place on / in the creature dressed with its theme preset (page/sets/themes.js)
+  const S = spec.view === "outside" ? await buildCreatureOutside(spec, ctx) : spec.view === "on" || spec.view === "street" ? await buildOn(spec, ctx) : await buildInside(spec, ctx);
+  return attachDresser(S, ctx);
 }
 
 // ------------------------------------------------------------------------------------------------ shared pieces
@@ -252,7 +253,7 @@ function buildInside(spec0, ctx) {
   const R = prng(spec.seed * 13 + 5);
   const V = (x, y, z) => new THREE.Vector3(x, y, z);
   const glow = glowList();
-  const haze = (k, toward = "#e8d8a0") => `#${new THREE.Color(pal[5]).lerp(new THREE.Color(toward), k).getHexString()}`;
+  const haze = (k, toward = "#a8c4c8") /* SETS-V2: was #e8d8a0 (beige) */ => `#${new THREE.Color(pal[5]).lerp(new THREE.Color(toward), k).getHexString()}`;
   // the cavern: half-ellipsoid, length L along z, half-width A, height Hh (a big turtle: ~100 x 64 x 30 m)
   // 2026-11-06 (turtle run 7b4c0d8b): the old cavern (half-width 0.3 x size, 0.24 x size high = 36 x 29 m for a 120 m
   // turtle) put the shell far above 8 m houses: every kid-height medium / closeup shot showed only houses and a sandy
@@ -260,7 +261,7 @@ function buildInside(spec0, ctx) {
   // houses are low cottages, the floor is the creature's own scaly skin and the haze is the shell's colour, not sky.
   const L = spec.size * 0.85, A = spec.size * 0.19, Hh = spec.size * 0.13, Zc = -L * 0.38;
   // [shell plate, plate seam, bone, skin floor, skin seam, cavern haze]
-  const pal = { turtle: ["#5b8a2e", "#1f3314", "#e8d6a0", "#a39a62", "#6b6236", "#4d5a2c"], whale: ["#c96b7a", "#5a2430", "#f0c0b0", "#d98a8f", "#8a3c48", "#6a3038"], elephant: ["#8a7a8a", "#3a2f3a", "#e0c8b8", "#9a8e8e", "#5a4e50", "#4a4048"], snail: ["#b0632e", "#4a2410", "#f0d8a8", "#c69a6a", "#7a5030", "#5a3a20"] }[spec.kind] ?? ["#7a6a4a", "#2a2018", "#e8d6a0", "#a08a68", "#5e4c34", "#4a3e2c"];
+  const pal = { turtle: ["#5b8a2e", "#1f3314", "#cfd8b8", "#6f8a4a", "#4a5a30", "#3e5a4a"] /* SETS-V2: greener floor + cooler haze (#3 "inside too beige") */, whale: ["#c96b7a", "#5a2430", "#f0c0b0", "#d98a8f", "#8a3c48", "#6a3038"], elephant: ["#8a7a8a", "#3a2f3a", "#e0c8b8", "#9a8e8e", "#5a4e50", "#4a4048"], snail: ["#b0632e", "#4a2410", "#f0d8a8", "#c69a6a", "#7a5030", "#5a3a20"] }[spec.kind] ?? ["#7a6a4a", "#2a2018", "#e8d6a0", "#a08a68", "#5e4c34", "#4a3e2c"];
   // the shell: plates on the inside, a back-side half ellipsoid
   const tex = plateTexture(THREE, pal[0], pal[1], spec.seed); tex.repeat.set(10, 4);
   const shellM = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.75, side: THREE.BackSide, color: "#ffffff" });
@@ -353,17 +354,17 @@ function buildInside(spec0, ctx) {
       shadow: { center: [0, 0, -18], half: 46, far: 260, map: 4096 },
       sunDir: { day: [12, 60, -18], night: [-12, 60, -18], warm: [20, 40, -30] },
       sunScale: { day: 0.6, night: 0.15, warm: 0.5 }, envScale: { all: 0 },
-      hemi: { day: ["#ffe2b8", "#5a4028", 0.85], night: ["#3a4a80", "#120c08", 0.3], warm: ["#ffcf9a", "#5a3a20", 0.5] },
+      hemi: { day: ["#dce8ff", "#4a5a30", 0.8], night: ["#3a5090", "#120c08", 0.4], warm: ["#ffd8b0", "#4a3a30", 0.5] } /* SETS-V2: cool sky fill (was beige-orange) */,
       fog: { day: [haze(0.4), 45, L * 1.6], night: ["#141a18", 25, L * 1.0], warm: [haze(0.25, "#ffb070"), 45, L * 1.5] },
-      exposure: { day: 0.8, night: 0.95, warm: 0.8 },
+      exposure: { day: 0.8, night: 1.1, warm: 0.74 }, // SETS-V2: night readable, the warm ending not blown
       practicals: (mode) => {
         const out = [];
-        for (const s of spots.slice(0, 3)) { const l = new THREE.SpotLight(mode === "night" ? "#9fb6ff" : "#ffe2a8", mode === "night" ? 300 : 900, 80, 0.5, 0.7, 1.4); l.position.copy(s.from); l.target.position.copy(s.to); l.castShadow = false; out.push(l); }
+        for (const s of spots.slice(0, 3)) { const l = new THREE.SpotLight(mode === "night" ? "#9fb6ff" : "#fff4e4", mode === "night" ? 300 : 900, 80, 0.5, 0.7, 1.4); l.position.copy(s.from); l.target.position.copy(s.to); l.castShadow = false; out.push(l); }
         const ml = new THREE.SpotLight("#ffe0a8", mode === "night" ? 300 : 1500, L, 0.55, 0.8, 1.2); ml.position.set(0, Hh * 0.3, mouthZ - 2); ml.target.position.set(0, 0, 0); out.push(ml);
         const warm = new THREE.PointLight("#ffb860", mode === "night" ? 140 : 60, 40, 1.6); warm.position.set(0, 6, -2); out.push(warm);
         return out;
       },
-      onLight: (mode) => { glow.apply(mode); town.userData.setLit(mode !== "day", mode === "night" ? 1 : 0.6); skyM.emissiveIntensity = mode === "night" ? 0.6 : 3; skyM.emissive.set(mode === "night" ? "#8fa8ff" : "#fff2c8"); sM.uniforms.k.value = mode === "night" ? 0.06 : 0.2; dust.material.opacity = mode === "night" ? 0.15 : 0.6; mouth.material.color.set(mode === "night" ? "#30406a" : mode === "warm" ? "#ffb060" : "#ffe9c0"); },
+      onLight: (mode) => { glow.apply(mode); town.userData.setLit(mode !== "day", mode === "night" ? 1 : 0.6); skyM.emissiveIntensity = mode === "night" ? 0.6 : 3; skyM.emissive.set(mode === "night" ? "#8fa8ff" : mode === "warm" ? "#ffe0c0" : "#eef4ff"); sM.uniforms.k.value = mode === "night" ? 0.06 : 0.2; dust.material.opacity = mode === "night" ? 0.15 : 0.3; mouth.material.color.set(mode === "night" ? "#30406a" : mode === "warm" ? "#ffb060" : "#ffe9c0"); },
     },
     sway(t) { return creatureSway(spec.kind, spec.size, t); },
     update(t) {

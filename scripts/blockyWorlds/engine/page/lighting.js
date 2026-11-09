@@ -4,6 +4,7 @@
 // (street lamps, the bedside lamp, the hallway lights). "warm" = a golden-hour ending: low orange sun, long shadows,
 // a peach horizon. One shadow-casting light per set; switching is undone completely by dispose().
 import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
+import { RIGS } from "../lib/setThemes.js"; // SETS-V2: the lighting rigs (makeRigLayer)
 
 const HDR = { day: "/assets/ph/hdri/kloofendal_43d_clear_puresky.hdr", night: "/assets/ph/hdri/moonlit_golf.hdr" };
 const ENV = new Map();
@@ -15,6 +16,10 @@ export function preloadEnv(THREE) {
     return ENV.get(k);
   }));
 }
+
+let LIGHT_GEN = 0;
+/** how many base light switches so far (the rig layer re-syncs on a change) */
+export const lightGen = () => LIGHT_GEN;
 
 /** per light: everything that is not set-specific */
 const MODES = {
@@ -99,6 +104,7 @@ export function applyLight(name, ctx) {
   const M = MODES[name];
   if (!M) throw new Error(`applyLight: unknown light "${name}" (${Object.keys(MODES).join(" | ")})`);
   const rig = set?.rig ?? {};
+  LIGHT_GEN++; // SETS-V2: the rig layer re-syncs after every base light switch
   const prev = { fog: scene.fog, background: scene.background, environment: scene.environment, envI: scene.environmentIntensity, bgI: scene.backgroundIntensity, envRot: scene.environmentRotation?.clone(), exposure: renderer.toneMappingExposure };
   const added = [], disposables = [];
   const add = (o, parent = scene) => { parent.add(o); added.push(o); return o; };
@@ -183,4 +189,68 @@ export function applyLight(name, ctx) {
       added.length = 0;
     },
   };
+}
+
+// ------------------------------------------------------------------------------------------------ SETS-V2 rig layer
+/**
+ * SETS-V2 2026-11-09 (owner F: "LIGHTING RIGS per mood: day, sunset, night-with-practicals, neon/emissive + bloom,
+ * interior warm, alarm red. Never flat beige, never unreadably dark"). A layer ON TOP of the base light (applyLight):
+ * a camera-side FILL (soft, no shadow: faces and a tower's front never read as a dark slab), a rig HEMISPHERE tint, and
+ * up to four PRACTICAL point lights placed from the place (the theme dressing's lanterns / fire / neon first, else the
+ * rig's side / other side / rim / back positions round the group): warm key + cool rim at night, magenta + cyan for
+ * neon, a pulsing red for an alarm. The light COUNT never changes (no shader recompiles between shots); unused = 0.
+ *   makeRigLayer(THREE, scene) -> { sync({ shot, S, t }), frame(camera, t), info() }
+ */
+export function makeRigLayer(THREE, scene) {
+  const fill = new THREE.DirectionalLight("#ffffff", 0); fill.castShadow = false; fill.name = "rig:fill";
+  const hemi = new THREE.HemisphereLight("#ffffff", "#000000", 0); hemi.name = "rig:hemi";
+  const pts = [0, 1, 2, 3].map((i) => { const l = new THREE.PointLight("#ffffff", 0, 18, 1.6); l.castShadow = false; l.name = `rig:p${i}`; return l; });
+  scene.add(fill, fill.target, hemi, ...pts);
+  let key = null, rig = RIGS.day, base = [], fogBase = null, fogGen = -1, indoorK = 1;
+  const V = () => new THREE.Vector3();
+  function sync({ shot, S, t = 0 }) {
+    const rid = RIGS[shot?.rig] ? shot.rig : null;
+    const c = S?.spots?.center;
+    const k = `${LIGHT_GEN}|${rid}|${shot?.placeId ?? ""}|${c ? c.toArray().map((x) => x.toFixed(1)).join() : ""}|${S?.themePracticals?.length ?? 0}`;
+    if (k !== key) {
+      key = k; rig = rid ? RIGS[rid] : null;
+      // fog tint (neon / alarm): from the base light's fog colour, restored when the rig has none
+      if (scene.fog && fogGen !== LIGHT_GEN) { fogGen = LIGHT_GEN; fogBase = scene.fog.color.clone(); }
+      if (scene.fog && fogBase) scene.fog.color.copy(fogBase).lerp(new THREE.Color(rig?.fogTint ?? fogBase), rig?.fogTint ? 0.6 : 0);
+      indoorK = S?.indoor ? 0.6 : 1;
+      if (!rig || !c) { fill.intensity = 0; hemi.intensity = 0; for (const p of pts) p.intensity = 0; base = []; return; }
+      fill.color.set(rig.fill[0]); fill.intensity = rig.fill[1] * (S?.indoor ? 0.8 : 1);
+      if (rig.hemi) { hemi.color.set(rig.hemi[0]); hemi.groundColor.set(rig.hemi[1]); hemi.intensity = rig.hemi[2]; } else hemi.intensity = 0;
+      // where the practicals stand (world space): the dressing's own lamps first, then the rig's positions
+      const mount = S.actorMount?.() ?? null, W = (v) => (mount ? mount.localToWorld(v.clone()) : v.clone());
+      const cw = W(c), fw = W(S.spots.far ?? c.clone().add(new THREE.Vector3(0, 0, -10)));
+      const d = fw.clone().sub(cw).setY(0); if (d.lengthSq() < 1e-4) d.set(0, 0, -1); d.normalize();
+      const l = new THREE.Vector3(-d.z, 0, d.x), sc = S.indoor ? 0.45 : 1;
+      const at = { side: cw.clone().addScaledVector(l, 3 * sc).addScaledVector(d, 1 * sc).setY(cw.y + 2.6 * (S.indoor ? 0.8 : 1)), otherSide: cw.clone().addScaledVector(l, -3 * sc).setY(cw.y + 2.6 * (S.indoor ? 0.8 : 1)), rim: cw.clone().addScaledVector(d, 3.5 * sc).setY(cw.y + 3 * (S.indoor ? 0.75 : 1)), back: cw.clone().addScaledVector(d, 7 * sc).addScaledVector(l, -2 * sc).setY(cw.y + 3) };
+      const prac = [...(S.themePracticals ?? [])].sort((a, b) => a.pos.distanceTo(cw) - b.pos.distanceTo(cw)).filter((p) => p.pos.distanceTo(cw) < 16);
+      base = [];
+      pts.forEach((p, i) => {
+        const spec = rig.points[i];
+        const pr = spec && spec.at !== "rim" ? prac.shift() : null; // a lantern of the dressing stands in for a side key
+        if (!spec) { p.intensity = 0; return; }
+        p.position.copy(pr?.pos ?? at[spec.at] ?? at.side);
+        p.color.set(rid === "neon" || rid === "alarm_red" ? spec.colour : pr?.colour ?? spec.colour);
+        p.distance = S.indoor ? 9 : 18;
+        base[i] = spec.k * indoorK; p.intensity = base[i];
+      });
+    }
+    // the alarm pulses (deterministic in t)
+    if (rig) rig.points.forEach((spec, i) => { if (spec.pulse && pts[i]) pts[i].intensity = (base[i] ?? 0) * (0.55 + 0.45 * Math.sin(t * Math.PI * 2 * spec.pulse)); });
+  }
+  const fwd = V(), up = V(), right = V();
+  /** every frame, after the camera is set: the fill stands just above / beside the camera, aimed along its view */
+  function frame(camera) {
+    if (!fill.intensity) return;
+    camera.updateMatrixWorld();
+    camera.getWorldDirection(fwd); up.set(0, 1, 0); right.crossVectors(fwd, up).normalize();
+    fill.position.copy(camera.position).addScaledVector(up, 2.5).addScaledVector(right, 1.5).addScaledVector(fwd, -2);
+    fill.target.position.copy(camera.position).addScaledVector(fwd, 12);
+    fill.target.updateMatrixWorld();
+  }
+  return { sync, frame, info: () => ({ key, rig: rig?.label ?? null, fill: fill.intensity, points: pts.map((p) => +p.intensity.toFixed(2)) }) };
 }
