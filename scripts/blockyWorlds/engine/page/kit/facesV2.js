@@ -2,6 +2,9 @@
 // shapes, extras (sweat drop, blush, tears, anger mark)"). Our own design: big oval eyes with a coloured iris, a pupil and
 // two highlights, skin-coloured eyelids (upper + lower) with a lash line, chunky brows in the hair colour, a parametric
 // mouth (18 named shapes), and the extras. Never the classic two-dots-and-a-smile.
+// CHARACTERS-V3 (2026-11-10): simpler, bolder decals: big round white eyes, small dark pupils, one tiny highlight, flat
+// lids (no lashes), thick brows, no nose, bolder mouth strokes; blush only for embarrassed / love, no sparkles or star
+// eyes by default (the fx stay drawable); facial hair decals (full / moustache / goatee / chinstrap).
 //
 // Everything is PARAMETRIC, so two faces blend (an expression change animates: lerpFace + the person's own blend canvas).
 //   FACES                              the face names (lib/expressions.js FACE_NAMES is the same list)
@@ -17,7 +20,8 @@ import * as THREE from "three";
 import { cachedMat } from "./kitCommon.js";
 
 const INK = "#24171d", MOUTH_IN = "#55141f", TONGUE = "#ff8a9a";
-export const EYE = Object.freeze({ y: 114, lx: 82, rx: 174, rw: 29, rh: 33 });
+export const EYE = Object.freeze({ y: 118, lx: 82, rx: 174, rw: 33, rh: 34 });
+export const PUPIL_R = 11.5; // CHARACTERS-V3: a small dark pupil (x eye.pupil), about a third of the eye
 const BROW_Y = 66, MOUTH_Y = 192;
 
 // ------------------------------------------------------------------------------------------------- parameter shapes
@@ -52,10 +56,10 @@ export const MOUTHS = Object.freeze({
 const F = (o) => o;
 const PRESETS = {
   // the planner's faces (+ mime)
-  neutral: F({ eye: { lid: 0.12 }, brow: { dy: 4 }, mouth: "softSmile" }), // owner: never a blank face; neutral is a soft, friendly rest
-  calm: F({ eye: { lid: 0.2, low: 0.08 }, brow: { dy: 4, arch: 0.4 }, mouth: "softSmile", fx: { blush: 0.25 } }),
-  happy: F({ eye: { lid: 0.08, low: 0.22, pupil: 1.05 }, brow: { dy: -4, arch: 0.6 }, mouth: "smile", fx: { blush: 0.45 } }),
-  excited: F({ eye: { open: 1.12, wide: 1.06, pupil: 1.15, lid: 0, shape: "star" }, brow: { dy: -10, arch: 0.7 }, mouth: "grin", fx: { blush: 0.55, sparkle: 1 } }),
+  neutral: F({ eye: { lid: 0.04 }, brow: { dy: 4 }, mouth: "softSmile" }), // owner: never a blank face; neutral is a soft, friendly rest
+  calm: F({ eye: { lid: 0.2, low: 0.08 }, brow: { dy: 4, arch: 0.4 }, mouth: "softSmile" }),
+  happy: F({ eye: { lid: 0.04, low: 0.22, pupil: 1.05 }, brow: { dy: -4, arch: 0.6 }, mouth: "smile" }),
+  excited: F({ eye: { open: 1.12, wide: 1.06, pupil: 1.15, lid: 0 }, brow: { dy: -10, arch: 0.7 }, mouth: "grin" }),
   sad: F({ eye: { lid: 0.3, tilt: -0.35, lookY: 6 }, brow: { dy: 6, inner: 12 }, mouth: "frown", fx: {} }),
   scared: F({ eye: { open: 1.2, wide: 1.06, pupil: 0.55, lid: 0 }, brow: { dy: -8, inner: 12 }, mouth: "grimace", fx: { sweat: 1, gloom: 0.6 } }),
   surprised: F({ eye: { open: 1.25, wide: 1.08, pupil: 0.7, lid: 0 }, brow: { dy: -14, arch: 0.8 }, mouth: "o" }),
@@ -68,23 +72,23 @@ const PRESETS = {
   sneeze: F({ eye: { squeeze: 1 }, brow: { dy: 12, inner: -4 }, mouth: { w: 24, open: 0.7, round: 0.8, tongue: 0.3 }, fx: { spray: 1 } }),
   mime: F({ eye: { open: 1.05, lid: 0.05 }, brow: { dy: -8, inner: 3 }, mouth: "pout", fx: { mime: 1 } }),
   // CHARACTERS-V2: the richer faces
-  laugh: F({ eye: { open: 0.05, arc: 1 }, brow: { dy: -8, arch: 0.7 }, mouth: "laugh", fx: { blush: 0.6, tears: 0.35 } }),
-  proud: F({ eye: { lid: 0.36, low: 0.12, lookY: -2 }, brow: { dy: -4, arch: 0.5 }, mouth: "smile", fx: { blush: 0.3, sparkle: 0.5 } }),
+  laugh: F({ eye: { open: 0.05, arc: 1 }, brow: { dy: -8, arch: 0.7 }, mouth: "laugh", fx: { tears: 0.35 } }),
+  proud: F({ eye: { lid: 0.36, low: 0.12, lookY: -2 }, brow: { dy: -4, arch: 0.5 }, mouth: "smile" }),
   worried: F({ eye: { lid: 0.12, pupil: 0.8, lookX: -5 }, brow: { dy: -2, inner: 14 }, mouth: "wavy", fx: { sweat: 0.8 } }),
   determined: F({ eye: { lid: 0.3, tilt: 0.3, pupil: 0.95, low: 0.12 }, brow: { dy: 8, inner: -10, thick: 1.15 }, mouth: { w: 24, curve: -0.25, skew: 0.15 }, fx: { effort: 0.4 } }),
   embarrassed: F({ eye: { lid: 0.22, lookX: 9, lookY: 6, pupil: 0.85 }, brow: { dy: 0, inner: 9 }, mouth: "wavy", fx: { blush: 1, hatch: 1, sweat: 0.7 } }),
   confused: F({ eyeL: { open: 0.82, lid: 0.25 }, eyeR: { open: 1.15, lid: 0 }, browL: { dy: 8, inner: -4 }, browR: { dy: -14, arch: 0.8 }, mouth: { w: 18, curve: -0.2, skew: -0.7, wavy: 0.4 } }),
   disgusted: F({ eye: { lid: 0.42, low: 0.3, tilt: 0.15, lookX: -6 }, brow: { dy: 10, inner: -8 }, mouth: "tongueOut", fx: { gloom: 0.7 } }),
   love: F({ eye: { open: 1.08, pupil: 1.25, lid: 0.04, shape: "heart" }, brow: { dy: -6, arch: 0.6 }, mouth: "smile", fx: { blush: 0.9 } }),
-  nervous: F({ eye: { open: 1.05, pupil: 0.6, lid: 0.04, lookX: 7 }, brow: { dy: -4, inner: 11 }, mouth: "grimace", fx: { sweat: 1, blush: 0.2 } }),
+  nervous: F({ eye: { open: 1.05, pupil: 0.6, lid: 0.04, lookX: 7 }, brow: { dy: -4, inner: 11 }, mouth: "grimace", fx: { sweat: 1 } }),
   curious: F({ eye: { open: 1.08, pupil: 1.05, lid: 0.05, lookX: 6, lookY: -3 }, browL: { dy: 2 }, browR: { dy: -12, arch: 0.7 }, mouth: { w: 16, open: 0.25, round: 0.8 } }),
-  relieved: F({ eye: { open: 0.05, arc: -1 }, brow: { dy: -2, inner: 6 }, mouth: "smile", fx: { sweat: 0.6, blush: 0.3 } }),
+  relieved: F({ eye: { open: 0.05, arc: -1 }, brow: { dy: -2, inner: 6 }, mouth: "smile", fx: { sweat: 0.6 } }),
   grumpy: F({ eye: { lid: 0.45, tilt: 0.2, lookY: 3 }, brow: { dy: 10, inner: -9, thick: 1.15 }, mouth: "pout", fx: {} }),
-  awe: F({ eye: { open: 1.2, wide: 1.05, pupil: 1.3, lid: 0, lookY: -6, shape: "star" }, brow: { dy: -12, inner: 6, arch: 0.6 }, mouth: "o", fx: { sparkle: 0.8 } }),
-  silly: F({ eyeL: { open: 0.05, arc: 1 }, eyeR: { open: 1.15, pupil: 1.1, lid: 0 }, brow: { dy: -8, arch: 0.7 }, mouth: "tongueOut", fx: { blush: 0.5 } }),
+  awe: F({ eye: { open: 1.2, wide: 1.05, pupil: 1.3, lid: 0, lookY: -6 }, brow: { dy: -12, inner: 6, arch: 0.6 }, mouth: "o" }),
+  silly: F({ eyeL: { open: 0.05, arc: 1 }, eyeR: { open: 1.15, pupil: 1.1, lid: 0 }, brow: { dy: -8, arch: 0.7 }, mouth: "tongueOut" }),
   shocked: F({ eye: { open: 1.32, wide: 1.12, pupil: 0.42, lid: 0 }, brow: { dy: -18, inner: 8 }, mouth: "gasp", fx: { gloom: 1, sweat: 0.6 } }),
   bored: F({ eye: { lid: 0.55, lookX: -8, lookY: 2 }, brow: { dy: 8 }, mouth: { w: 20, curve: -0.15, skew: -0.3 } }),
-  hopeful: F({ eye: { open: 1.1, pupil: 1.15, lid: 0, lookY: -6, shine: 1.4 }, brow: { dy: -6, inner: 10 }, mouth: "softSmile", fx: { blush: 0.4, sparkle: 0.4 } }),
+  hopeful: F({ eye: { open: 1.1, pupil: 1.15, lid: 0, lookY: -6, shine: 1.4 }, brow: { dy: -6, inner: 10 }, mouth: "softSmile" }),
 };
 export const FACES = Object.freeze(Object.keys(PRESETS));
 
@@ -130,12 +134,12 @@ const IRIS = ["#5a3a22", "#3d6fb0", "#3f8a55", "#7a5230", "#2f2a28", "#6a7f9a", 
 export function faceLook(look = {}) {
   const hair = look.hairColor ?? "#2a1a10";
   const c = new THREE.Color(hair), hsl = {}; c.getHSL(hsl);
-  // brows: the hair colour, darkened so grey / blonde brows still read on the skin
-  const brow = `#${c.clone().multiplyScalar(hsl.l > 0.55 ? 0.5 : hsl.l > 0.3 ? 0.62 : 0.85).getHexString()}`;
+  // brows: the hair colour, darkened (linear space: 0.12 ~ 40% in sRGB) so grey / blonde brows read bold on the skin
+  const brow = `#${c.clone().multiplyScalar(hsl.l > 0.55 ? 0.12 : hsl.l > 0.3 ? 0.2 : 0.6).getHexString()}`;
   const seed = Math.abs(Math.round((look.phase ?? 0) * 1000));
-  return { skin: look.skin ?? "#e7b38e", iris: look.eyeColor ?? IRIS[seed % IRIS.length], brow: look.role === "baby" ? "#c8a07a" : brow, glasses: look.glasses || false, beard: look.beard ?? null, mime: !!look.mimePaint };
+  return { skin: look.skin ?? "#e7b38e", iris: look.eyeColor ?? IRIS[seed % IRIS.length], brow: look.role === "baby" ? "#c8a07a" : brow, glasses: look.glasses || false, beard: look.beard ?? null, facial: look.beard ? look.facial ?? "full" : null, mime: !!look.mimePaint };
 }
-const lookKey = (L) => `${L.skin}|${L.iris}|${L.brow}|${L.glasses}|${L.beard ?? ""}`;
+const lookKey = (L) => `${L.skin}|${L.brow}|${L.glasses}|${L.beard ?? ""}|${L.facial ?? ""}`;
 
 // ------------------------------------------------------------------------------------------------- drawing
 function heartPath(p, x, y, r) {
@@ -149,70 +153,69 @@ function starPath(p, x, y, r, n = 4, inner = 0.38) {
   p.closePath();
 }
 
+// CHARACTERS-V3 (owner 2026-11-10: "simpler bold cartoon decals like the reference: big round eyes with small pupils,
+// eyebrows, simple expressive mouths, sweat drops; remove the anime eyelashes, sparkles and blush as defaults"): the
+// eye is a big round white disc with a bold outline, a small dark pupil and ONE tiny highlight; a lid is a flat skin
+// band with the same bold line (no lash line, no lash flick). Never the classic two-dots-and-a-smile: ours always has
+// whites, pupils and thick brows.
+const OUT = 7.5;
 function drawEye(p, e, cx, side, L) {
   // side: +1 = the viewer's left eye (its inner corner toward +x), -1 = the right one
   const cy = EYE.y;
   p.strokeStyle = INK; p.lineCap = p.lineJoin = "round";
   if (e.squeeze > 0.5) { // > <
-    p.lineWidth = 9; p.beginPath();
+    p.lineWidth = 10; p.beginPath();
     p.moveTo(cx - side * 18, cy - 15); p.lineTo(cx + side * 14, cy); p.lineTo(cx - side * 18, cy + 15); p.stroke();
     return;
   }
   const rw = EYE.rw * e.wide, rh = EYE.rh * e.open;
   if (e.open < 0.14) { // shut: ∩ (a happy squint) or ∪ (relaxed / asleep)
-    p.lineWidth = 9; p.beginPath();
+    p.lineWidth = 10; p.beginPath();
     if (e.arc > 0) p.arc(cx, cy + 14, rw * 0.85, Math.PI * 1.15, Math.PI * 1.85); else p.arc(cx, cy - 6, rw * 0.85, Math.PI * 0.15, Math.PI * 0.85);
     p.stroke();
     return;
   }
   const tilt = e.tilt * side, lidY = -rh + Math.max(0, Math.min(0.92, e.lid)) * 2 * rh, lowY = rh - Math.max(0, Math.min(0.6, e.low)) * 2 * rh;
-  // the visible part: the eye ellipse between the upper lid line (tilted) and the lower lid (a curve pushed up)
-  const visible = () => {
-    p.beginPath(); p.ellipse(cx, cy, rw, rh, 0, 0, Math.PI * 2); p.clip();
-    p.translate(cx, cy); p.rotate(tilt);
-    p.beginPath(); p.moveTo(-rw * 2, lidY);
-    p.lineTo(rw * 2, lidY); p.lineTo(rw * 2, rh * 2); p.lineTo(-rw * 2, rh * 2); p.closePath(); p.clip();
-    p.rotate(-tilt); p.translate(-cx, -cy);
-  };
-  p.save(); visible();
+  p.save(); p.beginPath(); p.ellipse(cx, cy, rw, rh, 0, 0, Math.PI * 2); p.clip();
   p.fillStyle = "#ffffff"; p.fillRect(cx - rw - 4, cy - rh - 4, rw * 2 + 8, rh * 2 + 8);
-  // iris + pupil + highlights
-  const ix = cx + e.lookX, iy = cy + e.lookY + 2, ir = 17 * e.pupil;
-  if (e.shape === "heart") { p.fillStyle = "#e8365d"; heartPath(p, ix, iy, ir * 0.95); p.fill(); }
-  else {
-    p.fillStyle = L.iris; p.beginPath(); p.arc(ix, iy, ir, 0, Math.PI * 2); p.fill();
-    p.fillStyle = "#120c0e"; if (e.shape === "star") { starPath(p, ix, iy, ir * 0.78, 4, 0.42); p.fill(); } else { p.beginPath(); p.arc(ix, iy, ir * 0.52, 0, Math.PI * 2); p.fill(); }
-  }
-  p.fillStyle = "#ffffff";
-  p.beginPath(); p.arc(ix + ir * 0.38, iy - ir * 0.42, Math.max(3.2, ir * 0.3) * Math.min(1.4, e.shine), 0, Math.PI * 2); p.fill();
-  p.beginPath(); p.arc(ix - ir * 0.4, iy + ir * 0.38, Math.max(1.8, ir * 0.14), 0, Math.PI * 2); p.fill();
-  // the lower lid (a skin crescent) for a smiling / squinting eye
+  // the pupil (small, dark) + one tiny highlight; a heart for love
+  const ix = cx + e.lookX, iy = cy + e.lookY + 1, pr = PUPIL_R * e.pupil;
+  if (e.shape === "heart") { p.fillStyle = "#e8365d"; heartPath(p, ix, iy, 19 * e.pupil); p.fill(); }
+  else { p.fillStyle = INK; p.beginPath(); p.arc(ix, iy, pr, 0, Math.PI * 2); p.fill(); }
+  p.fillStyle = "#ffffff"; p.beginPath(); p.arc(ix + pr * 0.38, iy - pr * 0.4, Math.max(2.4, pr * 0.3) * Math.min(1.3, e.shine), 0, Math.PI * 2); p.fill();
+  // a smiling / squinting lower lid: a skin crescent from below
   if (e.low > 0.02) { p.fillStyle = L.skin; p.beginPath(); p.ellipse(cx, cy + rh + (lowY - rh) * 0.2, rw * 1.3, (rh - lowY) * 0.9, 0, Math.PI, 0, true); p.fill(); }
+  // the upper lid: a flat skin band above the lid line
+  if (e.lid > 0.02) { p.translate(cx, cy); p.rotate(tilt); p.fillStyle = L.skin; p.fillRect(-rw * 2, -rh * 2 - 4, rw * 4, rh * 2 + 4 + lidY); p.rotate(-tilt); p.translate(-cx, -cy); }
   p.restore();
-  // the upper lid: a skin band above the lid line (inside the eye), then the lash line
-  p.save(); p.beginPath(); p.ellipse(cx, cy, rw + 3, rh + 3, 0, 0, Math.PI * 2); p.clip();
-  p.translate(cx, cy); p.rotate(tilt);
-  p.fillStyle = L.skin; p.fillRect(-rw * 2, -rh * 2 - 4, rw * 4, rh * 2 + 4 + lidY);
-  p.strokeStyle = INK; p.lineWidth = 8; p.beginPath(); p.moveTo(-rw * 1.4, lidY); p.lineTo(rw * 1.4, lidY); p.stroke();
-  p.restore();
-  // the outline (the lower half thinner)
-  p.strokeStyle = INK; p.lineWidth = 6; p.beginPath(); p.ellipse(cx, cy, rw, rh, 0, Math.PI * 1.02, Math.PI * 1.98); p.stroke();
-  p.lineWidth = 4.5; p.beginPath(); p.ellipse(cx, cy, rw, rh, 0, 0, Math.PI); p.stroke();
-  if (e.low > 0.02) { p.lineWidth = 3.5; p.beginPath(); p.ellipse(cx, cy + rh + (lowY - rh) * 0.2, rw * 1.05, (rh - lowY) * 0.9, 0, Math.PI * 1.15, Math.PI * 1.85); p.stroke(); }
-  // a lash flick at the outer corner
-  p.lineWidth = 5; p.beginPath(); p.moveTo(cx - side * rw * 0.92, cy - rh * 0.45); p.lineTo(cx - side * (rw + 8), cy - rh * 0.7); p.stroke();
+  // the bold outline, the lid line in the same weight
+  p.strokeStyle = INK; p.lineWidth = OUT; p.beginPath(); p.ellipse(cx, cy, rw, rh, 0, 0, Math.PI * 2); p.stroke();
+  if (e.lid > 0.02) {
+    p.save(); p.beginPath(); p.ellipse(cx, cy, rw + 4, rh + 4, 0, 0, Math.PI * 2); p.clip();
+    p.translate(cx, cy); p.rotate(tilt); p.lineWidth = OUT; p.beginPath(); p.moveTo(-rw * 1.4, lidY); p.lineTo(rw * 1.4, lidY); p.stroke(); p.restore();
+  }
+  if (e.low > 0.02) { p.save(); p.beginPath(); p.ellipse(cx, cy, rw + 4, rh + 4, 0, 0, Math.PI * 2); p.clip(); p.lineWidth = 6; p.beginPath(); p.ellipse(cx, cy + rh + (lowY - rh) * 0.2, rw * 1.3, (rh - lowY) * 0.9, 0, Math.PI * 1.08, Math.PI * 1.92); p.stroke(); p.restore(); }
 }
 
 function drawBrow(p, b, cx, side, color) {
-  // inner > 0 raises the inner end (worried / sad), < 0 lowers it (angry); the inner end is toward the nose
-  const half = 25 * b.len, y = BROW_Y + b.dy;
+  // a thick, simple, rounded stroke; inner > 0 raises the inner end (worried / sad), < 0 lowers it (angry)
+  const half = 23 * b.len, y = BROW_Y + b.dy;
   const xi = cx + side * half * 0.85, xo = cx - side * half;
   const yi = y - b.inner * 0.9, yo = y + b.inner * 0.25 + b.outer;
-  const mx = (xi + xo) / 2, my = (yi + yo) / 2 - 10 * b.arch;
-  p.strokeStyle = color; p.lineCap = "round"; p.lineWidth = 12 * b.thick;
+  const mx = (xi + xo) / 2, my = (yi + yo) / 2 - 9 * b.arch;
+  p.strokeStyle = color; p.lineCap = "round"; p.lineWidth = 13 * b.thick;
   p.beginPath(); p.moveTo(xo, yo); p.quadraticCurveTo(mx, my, xi, yi); p.stroke();
-  // a darker top edge so a light brow reads on light skin
-  p.strokeStyle = "rgba(36,23,29,0.35)"; p.lineWidth = 3; p.beginPath(); p.moveTo(xo, yo - 5 * b.thick); p.quadraticCurveTo(mx, my - 5 * b.thick, xi, yi - 5 * b.thick); p.stroke();
+}
+
+/** facial hair decals (CHARACTERS-V3): bold flat shapes in the beard colour, drawn under the mouth so it stays readable */
+function drawFacial(p, L) {
+  if (!L.beard) return;
+  p.fillStyle = L.beard; p.strokeStyle = L.beard; p.lineCap = p.lineJoin = "round";
+  const k = L.facial ?? "full";
+  if (k === "full") { p.beginPath(); p.moveTo(24, 168); p.lineTo(48, 168); p.quadraticCurveTo(70, 210, 128, 212); p.quadraticCurveTo(186, 210, 208, 168); p.lineTo(232, 168); p.lineTo(232, 256); p.lineTo(24, 256); p.closePath(); p.fill(); }
+  if (k === "full" || k === "moustache") { p.beginPath(); p.moveTo(84, 182); p.quadraticCurveTo(100, 160, 128, 168); p.quadraticCurveTo(156, 160, 172, 182); p.quadraticCurveTo(150, 176, 128, 180); p.quadraticCurveTo(106, 176, 84, 182); p.closePath(); p.fill(); p.lineWidth = 6; p.stroke(); }
+  if (k === "goatee") { p.beginPath(); p.roundRect(104, 212, 48, 40, 14); p.fill(); p.beginPath(); p.roundRect(96, 168, 64, 14, 7); p.fill(); }
+  if (k === "chinstrap") { p.lineWidth = 18; p.beginPath(); p.moveTo(26, 140); p.quadraticCurveTo(40, 246, 128, 246); p.quadraticCurveTo(216, 246, 230, 140); p.stroke(); }
 }
 
 function mouthEdges(m, cy) {
@@ -235,18 +238,17 @@ function drawMouth(p, m, L) {
   const cy = MOUTH_Y + m.dy;
   p.strokeStyle = INK; p.lineCap = p.lineJoin = "round";
   if (m.cat > 0.5) { // a little "w"
-    p.lineWidth = 8; p.beginPath();
+    p.lineWidth = 10; p.beginPath();
     p.moveTo(128 - m.w, cy - 6); p.quadraticCurveTo(128 - m.w / 2, cy + 12, 128, cy - 2); p.quadraticCurveTo(128 + m.w / 2, cy + 12, 128 + m.w, cy - 6); p.stroke();
     return;
   }
   if (m.pout > 0.5 && m.open < 0.1) { // pursed lips pushed out
-    p.fillStyle = "#c95a6a"; p.lineWidth = 5;
+    p.fillStyle = MOUTH_IN; p.lineWidth = 7;
     p.beginPath(); p.ellipse(128, cy, m.w + 3, 9, 0, 0, Math.PI * 2); p.fill(); p.stroke();
-    p.lineWidth = 3; p.beginPath(); p.moveTo(128 - m.w + 2, cy + 1 + 4 * m.curve); p.quadraticCurveTo(128, cy - 3, 128 + m.w - 2, cy + 1 + 4 * m.curve); p.stroke();
     return;
   }
   if (m.open < 0.08) { // a line mouth (smile / frown / flat / wavy / smirk), the middle dipping for a smile
-    p.lineWidth = 9; p.beginPath();
+    p.lineWidth = 11; p.beginPath();
     for (let i = 0; i <= 24; i++) {
       const s = -1 + i / 12, x = 128 + m.w * s;
       const y = cy - m.curve * 13 * s * s - m.skew * 10 * s + m.curve * 6 * (1 - s * s) + m.wavy * 4 * Math.sin(s * Math.PI * 3);
@@ -271,7 +273,7 @@ function drawMouth(p, m, L) {
       }
     }
     p.restore();
-    path(); p.strokeStyle = INK; p.lineWidth = 6.5; p.stroke();
+    path(); p.strokeStyle = INK; p.lineWidth = 8; p.stroke();
   }
   if (m.tongueOut > 0.02) { // the tongue poking out of a smile, at one side
     const k = m.tongueOut, tx = 128 + m.w * 0.25, ty = cy + 3;
@@ -361,16 +363,11 @@ function drawGlasses(p, kind) {
 /** draws a face (params P) for a person's face look L onto a 256 x 256 design square */
 export function drawFaceV2(p, P, L) {
   p.lineCap = p.lineJoin = "round";
-  if (L.beard) { // under everything else, so every mouth stays readable on it
-    p.fillStyle = L.beard;
-    p.beginPath(); p.moveTo(30, 150); p.lineTo(56, 150); p.lineTo(64, 176); p.quadraticCurveTo(128, 160, 192, 176); p.lineTo(200, 150); p.lineTo(226, 150); p.lineTo(226, 256); p.lineTo(30, 256); p.closePath(); p.fill();
-  }
+  drawFacial(p, L); // under everything else, so every mouth stays readable on it
   drawEye(p, P.eyeL, EYE.lx, 1, L); drawEye(p, P.eyeR, EYE.rx, -1, L);
   if (L.glasses) drawGlasses(p, L.glasses);
   drawBrow(p, P.browL, EYE.lx, 1, L.brow); drawBrow(p, P.browR, EYE.rx, -1, L.brow);
-  // a small blocky nose (a soft shade, our style: no classic dot-face)
-  p.fillStyle = "rgba(120,60,50,0.22)"; p.beginPath(); p.roundRect(118, 146, 20, 14, 6); p.fill();
-  drawMouth(p, P.mouth, L);
+  drawMouth(p, P.mouth, L); // CHARACTERS-V3: no nose (the reference's simple decal faces)
   drawFx(p, P.fx, L);
 }
 
@@ -382,7 +379,7 @@ function paint(c, P, L) {
   p.setTransform?.(1, 0, 0, 1, 0, 0); p.clearRect?.(0, 0, RES, RES);
   p.save(); p.scale(RES / 256, RES / 256); drawFaceV2(p, P, L); p.restore();
 }
-const faceMat = (tex) => new THREE.MeshStandardMaterial({ map: tex, transparent: true, roughness: 0.6, polygonOffset: true, polygonOffsetFactor: -2 });
+const faceMat = (tex) => new THREE.MeshStandardMaterial({ map: tex, transparent: true, roughness: 0.5, polygonOffset: true, polygonOffsetFactor: -2 });
 /** the cached face material for a face + variant + the person's face look */
 export function faceMaterialV2(name, variant, look) {
   if (!PRESETS[name]) name = "neutral";

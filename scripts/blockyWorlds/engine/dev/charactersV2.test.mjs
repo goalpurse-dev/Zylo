@@ -20,7 +20,7 @@ test("faces: the kit's faces = lib/expressions FACE_NAMES; every planner expr is
   assert.deepEqual([...EXPRS].sort(), [...F.FACES].sort(), "people.js EXPRS are the face kit's");
   for (const x of EXPRS_N) assert.ok(F.FACES.includes(x), `planner expr ${x}`);
   assert.ok(Object.keys(F.MOUTHS).length >= 12);
-  for (const fx of ["sweat", "blush", "tears", "anger", "stream", "sparkle", "gloom"]) assert.ok(F.FACES.some((n) => F.faceParams(n).fx[fx] > 0), `some face uses ${fx}`);
+  for (const fx of ["sweat", "blush", "tears", "anger", "stream", "gloom"]) assert.ok(F.FACES.some((n) => F.faceParams(n).fx[fx] > 0), `some face uses ${fx}`); // CHARACTERS-V3: no sparkles by default
   const mouths = new Set(F.FACES.map((n) => JSON.stringify(F.faceParams(n).mouth)));
   assert.ok(mouths.size >= 12, `distinct mouths in use: ${mouths.size}`);
 });
@@ -65,16 +65,16 @@ test("faces: an expression change animates (blend canvas at the shot start, the 
 });
 
 // ------------------------------------------------------------------------------------------------- the rig
-test("rig: the head is ~1/3 of the height and sits on the collar (no neck gap); heights stay real", () => {
+test("rig: the head sits on the torso (no neck gap); heights stay real (CHARACTERS-V3: the blocky avatar head, ~1/5 of the height)", () => {
   for (const [role, lo, hi] of [["kid", 1.15, 1.55], ["adult", 1.65, 2.0], ["elder", 1.55, 1.9]]) {
     const p = makePerson({ role, seed: 9 });
     p.updateMatrixWorld(true);
     const H = p.userData.height, hb = new THREE.Box3().setFromObject(p.userData.joints.head.children[0]);
     const share = (hb.max.y - hb.min.y) / H;
     assert.ok(H > lo && H < hi, `${role} height ${H.toFixed(2)}`);
-    assert.ok(share > 0.24 && share < 0.4, `${role} head share ${share.toFixed(2)}`);
-    // the torso top (spine y 0.52) meets the head bottom
-    const torsoTop = new THREE.Vector3(0, 0.52, 0).applyMatrix4(p.userData.joints.spine.matrixWorld).y;
+    assert.ok(share > 0.17 && share < 0.27, `${role} head share ${share.toFixed(2)}`);
+    // the torso top (spine y 0.6, hair.js BODY.HEAD_Y) meets the head bottom
+    const torsoTop = new THREE.Vector3(0, 0.6, 0).applyMatrix4(p.userData.joints.spine.matrixWorld).y;
     assert.ok(Math.abs(hb.min.y - torsoTop) < 0.01, `${role}: the head on the collar (${hb.min.y.toFixed(3)} vs ${torsoTop.toFixed(3)})`);
   }
 });

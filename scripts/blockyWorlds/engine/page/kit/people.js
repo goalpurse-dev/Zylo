@@ -11,10 +11,11 @@
 //         └ head (y 0.60; kids' heads are scaled up)
 // Index 0 = the person's RIGHT side (-x), index 1 = their LEFT (+x). Pointing, waving and single-hand props use the right.
 import * as THREE from "three";
-import { rng, hashSeed, cloth, fabric, skinMat, solid, darker, rbx, bx, addMesh, cachedGeo, cachedMat } from "./kitCommon.js";
+import { rng, hashSeed, solid, darker, rbx, bx, addMesh, cachedGeo, cachedMat } from "./kitCommon.js";
 import { FACES as FACE_EXPRS, faceMaterialV2, blendMaterialV2 } from "./facesV2.js";
 import { garment, dressPerson, animateOutfit } from "./outfits.js";
-import { outfitLook } from "./outfitsData.js";
+import { outfitLook, hairFor, HAIR_COLORS, HAT_KINDS } from "./outfitsData.js";
+import { BODY, toy, buildHair, chinBeard } from "./hair.js";
 import { makeHeld } from "./props.js";
 import { SMALL_HELD } from "./heldMore.js";
 
@@ -53,35 +54,38 @@ const TOPS = ["#18b8a5", "#ff7a1a", "#ffd32a", "#c0392b", "#ff6fb5", "#273c75", 
 const ELDER_TOPS = ["#7f8c8d", "#a0522d", "#6d8a5a", "#8e7cc3", "#b5838d", "#c0392b", "#5d6d7e", "#d4a373", "#4a6fa5", "#e1c699"];
 const PANTS = ["#2f4f86", "#3b5b8f", "#2d3436", "#57606f", "#d63031", "#c8a96a", "#1e272e", "#6d4c41", "#273c75", "#4b6584", "#00b894"];
 const SHOES = ["#ffffff", "#ff3b5c", "#3742fa", "#3d2b1f", "#1e1e1e", "#00d2d3", "#f9ca24", "#ff9f43"];
-const HAIR = ["#1b1410", "#2b1d14", "#3a2a1e", "#6b3e1f", "#b5651d", "#d9a441", "#8b2e16", "#20140e"];
-const GREY = ["#d8d8d8", "#bfbfbf", "#efefef", "#9a9a9a"];
 const HATS = ["#e74c3c", "#2d98da", "#6c5ce7", "#c8a96a", "#20bf6b", "#f7b731", "#2d3436", "#fd79a8"];
 const ACC = ["#e84a5f", "#2e86de", "#00b894", "#ffd32a", "#6c5ce7", "#ff9f43"];
-// CHARACTERS-V2 2026-11-09 (owner: "larger head, ~1/3 of body height, still blocky"; LOOK-TARGET: the head sits on the
-// collar, no visible neck): the head is ~2x and rests on the torso (HEAD_Y); the root scale keeps each role's height in
-// metres (adult ~1.80, kid ~1.30, elder ~1.72: scale = metres / (HEAD_Y_WORLD + 0.38 x head))
-const HEAD_Y = 0.52, HEAD_Y_WORLD = 0.9 + 0.17 + HEAD_Y;
-const roleOf = (metres, head, o = {}) => ({ scale: +(metres / (HEAD_Y_WORLD + 0.38 * head)).toFixed(4), head, ...o });
-const ROLE = { kid: roleOf(1.3, 2.35), adult: roleOf(1.8, 2.0), elder: roleOf(1.72, 1.95, { stoop: 0.13 }), baby: { scale: 0.33, head: 1.9, baby: true } };
+// CHARACTERS-V3 2026-11-10 (owner: "blocky avatar proportions like the reference (head sits on the torso, chunky limbs)"):
+// the hair.js BODY (wide boxy torso, chunky arms and legs, a rounded head ~0.6 of the torso's width resting right on it).
+// The root scale keeps each role's height in metres (adult ~1.80, kid ~1.30, elder ~1.72): scale = metres / (the head's
+// bottom + 0.34 x head scale, the hair included)
+const HEAD_Y = BODY.HEAD_Y, HEAD_Y_WORLD = BODY.HIP_Y + BODY.SPINE_Y + HEAD_Y;
+const roleOf = (metres, head, o = {}) => ({ scale: +(metres / (HEAD_Y_WORLD + 0.34 * head)).toFixed(4), head, ...o });
+const ROLE = { kid: roleOf(1.3, 1.7), adult: roleOf(1.8, 1.45), elder: roleOf(1.72, 1.45, { stoop: 0.13 }), baby: { scale: 0.33, head: 1.9, baby: true } };
 /** where the face sits on a standing person: the eyes' height / the person's height (the camera's close-up aim) */
-export const FACE_AT = 0.8;
+export const FACE_AT = +((HEAD_Y_WORLD + 0.17 * ROLE.adult.head) / (HEAD_Y_WORLD + 0.34 * ROLE.adult.head)).toFixed(3);
 const ONESIE = ["#ffd1dc", "#bfe3ff", "#fff1a8", "#c8f7c5", "#e3d1ff", "#ffd8b0"];
 const wpick = (R, pairs) => { let x = R() * pairs.reduce((s, p) => s + p[1], 0); for (const [v, w] of pairs) { x -= w; if (x <= 0) return v; } return pairs[0][0]; };
+// the hair styles that read as one gender (a woman never gets a buzz cut by chance, a man never pigtails)
+const M_HAIR = new Set(["buzz", "receding", "bald", "slicked", "quiff", "mohawk", "spiky"]);
+const F_HAIR = new Set(["ponytail", "pigtails", "bun", "topknot", "braids", "bangs", "long", "bob", "wavyBob"]);
 
-/** spec.gender "f" | "m" (planner): a woman never gets a beard and reads as one (longer hair / bun, a skirt or dress
- *  half the time); a man never gets a ponytail, bun, skirt or dress. Its own rng, so nothing else about the look moves. */
+/** spec.gender "f" | "m" (planner): a woman never gets a beard and reads as one (a longer hairdo, a skirt or dress half
+ *  the time); a man never gets pigtails, a bun, a skirt or a dress. Its own rng, so nothing else about the look moves. */
 export function genderLook(o, gender, seed, kid = false, elder = false) {
   if (gender !== "f" && gender !== "m") return o;
   const R = rng(seed * 104729 + 5);
+  const age = kid ? "kid" : elder ? "elder" : "adult";
   if (gender === "f") {
-    o.beard = null;
-    if (!["long", "ponytail", "bun"].includes(o.hair)) o.hair = elder ? (R() < 0.6 ? "bun" : "long") : R.pick(kid ? ["ponytail", "long", "bun"] : ["long", "ponytail", "bun"]);
+    o.beard = null; o.facial = null;
+    if (!F_HAIR.has(o.hair) && o.hair !== "curly" && o.hair !== "afro") o.hair = hairFor({ seed: seed + 3, age, gender: "f" }).hair;
     if (!kid && o.bottom === "shorts") o.bottom = "pants";
     if (!["skirt", "dress"].includes(o.bottom) && R() < 0.5) o.bottom = R() < 0.5 ? "skirt" : "dress";
     if (o.bottom === "dress" && o.pattern === "pinstripe") o.pattern = "cotton";
     o.acc = o.acc.filter((x) => x !== "tie" && x !== "briefcase");
   } else {
-    if (["ponytail", "bun"].includes(o.hair) || (o.hair === "long" && R() < 0.7)) o.hair = elder ? (R() < 0.5 ? "bald" : "short") : "short";
+    if (F_HAIR.has(o.hair)) o.hair = hairFor({ seed: seed + 3, age, gender: "m" }).hair;
     if (["skirt", "dress"].includes(o.bottom)) o.bottom = "pants";
   }
   return o;
@@ -96,8 +100,8 @@ export function lookFor(spec) {
   const o = { role, skin: R.pick(SKIN) };
   if (role === "baby") { // a footed onesie (top, legs and feet one colour and pattern), a tuft or a bald head, nothing else
     o.top = R.pick(ONESIE); o.pattern = R.pick(["cotton", "dots", "stripes", "cotton"]); o.sleeve = "long"; o.bottom = "pants";
-    o.pants = o.top; o.pantsKind = o.pattern; o.shoes = o.top; o.hair = R() < 0.7 ? "tuft" : "bald"; o.hairColor = R.pick(HAIR);
-    o.tieColor = "#ffffff"; o.hat = null; o.hatColor = "#ffffff"; o.capBack = false; o.glasses = false; o.beard = null; o.acc = [];
+    o.pants = o.top; o.pantsKind = o.pattern; o.shoes = o.top; o.hair = R() < 0.7 ? "tuft" : "bald"; o.hairColor = R.pick(HAIR_COLORS.natural);
+    o.tieColor = "#ffffff"; o.hat = null; o.hatColor = "#ffffff"; o.capBack = false; o.glasses = false; o.beard = null; o.facial = null; o.acc = [];
     o.packColor = o.bagColor = o.phonesColor = "#ffffff"; o.phase = R() * 10;
     return Object.assign(o, spec.look ?? {});
   }
@@ -109,18 +113,18 @@ export function lookFor(spec) {
   o.pants = R.pick(PANTS); while (o.pants === o.top) o.pants = R.pick(PANTS);
   o.pantsKind = ["#2f4f86", "#3b5b8f", "#4b6584"].includes(o.pants) ? "denim" : "cotton";
   o.shoes = R.pick(SHOES);
-  o.hair = wpick(R, kid ? [["short", 3], ["spiky", 2], ["ponytail", 2], ["bun", 1], ["afro", 1], ["long", 2]] : elder ? [["short", 4], ["bald", 3], ["bun", 2], ["long", 1]] : [["short", 5], ["long", 3], ["ponytail", 2], ["bun", 1], ["afro", 2], ["bald", 1], ["spiky", 1]]);
-  o.hairColor = elder ? R.pick(GREY) : R.pick(HAIR);
+  // CHARACTERS-V3: chunky hair on (nearly) everyone, from the hair kit's own seeded table (outfitsData.js hairFor)
+  const hl = hairFor({ seed, age: role, gender: spec.gender ?? null });
+  o.hair = hl.hair; o.hairColor = hl.hairColor; o.facial = hl.facial;
   o.tieColor = R.pick(["#ff5c8a", "#ffd32a", "#2e86de", "#00b894"]);
-  const hatRoll = R();
-  o.hat = hatRoll < (kid ? 0.35 : elder ? 0.3 : 0.22) ? wpick(R, kid ? [["cap", 6], ["beanie", 3], ["bucket", 1]] : elder ? [["bucket", 4], ["beanie", 3], ["cap", 1]] : [["cap", 4], ["beanie", 3], ["bucket", 2]]) : null;
+  // hats only when the story / role asks for one (look.hat or an outfit head piece); the rolls stay so colours don't move
+  R(); o.hat = null;
   o.hatColor = R.pick(HATS); o.capBack = R() < 0.5;
   o.glasses = R() < (kid ? 0.12 : elder ? 0.6 : 0.22);
-  const beardOk = ["short", "bald", "afro", "spiky"].includes(o.hair) && !kid && (o.bottom === "pants" || o.bottom === "shorts");
-  o.beard = beardOk && R() < (elder ? 0.45 : 0.25) ? (elder ? R.pick(GREY) : o.hairColor) : null;
+  o.beard = o.facial ? o.hairColor : null; R();
   o.acc = [];
   if (R() < (kid ? 0.4 : 0.1)) o.acc.push("backpack");
-  if (R() < (kid ? 0.1 : 0.08) && !o.hat) o.acc.push("headphones");
+  if (R() < (kid ? 0.1 : 0.08)) o.acc.push("headphones");
   if (!kid && o.bottom === "pants" && (o.pattern === "cotton" || o.pattern === "pinstripe") && R() < 0.3) o.acc.push("tie");
   const handRoll = R();
   if (!kid && handRoll < 0.15) o.acc.push("bag"); else if (!kid && !elder && handRoll < 0.22 && o.acc.includes("tie")) o.acc.push("briefcase");
@@ -128,6 +132,9 @@ export function lookFor(spec) {
   o.phase = R() * 10; // so a crowd never moves in sync
   genderLook(o, spec.gender, seed, kid, elder);
   Object.assign(o, spec.look ?? {});
+  if (o.facial && !(spec.look && "beard" in spec.look)) o.beard = o.hairColor; // the beard in the (bible's) hair colour
+  if (o.beard && !o.facial) o.facial = "full"; // an older look naming only a beard colour
+  if (!o.beard) o.facial = null;
   return withOutfit(o, spec, seed);
 }
 /** CHARACTERS-V2: a look naming an outfit (look.outfit) without its pieces gets them (outfitsData.outfitLook, seeded) */
@@ -146,8 +153,12 @@ function withOutfit(o, spec, seed) {
 }
 
 // ---------- build ----------
-const Rv = 0.012; // L keeps A's crisp blocks with a hairline bevel
+const Rv = 0.02; // the blocky avatar's soft plastic edge
 const LT = 0.42, LS = 0.4875, LEG = LT + LS; // thigh, knee->sole
+const THIGH_HALF = 0.19; // a sitting thigh's underside below the hip (hip -1.45: its far corner 0.22 down; ~0.03 cushion sink)
+const { LEG: LG, SHOE, PELVIS, TORSO, SH, ARM, HAND } = BODY;
+/** true when a head piece is a hat (the hair under it is flattened); crowns, bows, goggles sit on the hair */
+const isHat = (kind) => HAT_KINDS.includes(kind);
 
 /** a person from a cast entry { id, role: "kid"|"adult"|"elder", name, seed, look? } */
 export function makePerson(spec = {}) {
@@ -156,92 +167,78 @@ export function makePerson(spec = {}) {
   root.scale.setScalar(role.scale);
   const rig = new THREE.Group(); root.add(rig);
   const baby = !!role.baby;
-  const skin = skinMat(o.skin), top = garment(o.top, o.pattern), pants = garment(o.pants, o.pantsKind ?? (o.bottom === "pants" ? "denim" : "cotton")), shoe = baby ? pants : cloth(o.shoes, "leather");
-  const sole = baby ? pants : solid("#f7f7f2", { roughness: 0.7 });
+  // CHARACTERS-V3: clean plastic everywhere (flat colours; stripes / dots / plaid as crisp graphic prints)
+  const skin = toy(o.skin, { rough: 0.5 }), top = garment(o.top, o.pattern), pants = garment(o.pants, o.pantsKind ?? (o.bottom === "pants" ? "denim" : "cotton")), shoe = baby ? pants : toy(o.shoes, { rough: 0.38 });
+  const sole = baby ? pants : toy(darker(o.shoes, 0.55), { rough: 0.5 });
   const bare = o.bottom === "skirt" || o.bottom === "dress";
 
-  const pelvis = new THREE.Group(); pelvis.position.y = 0.9; rig.add(pelvis);
+  const pelvis = new THREE.Group(); pelvis.position.y = BODY.HIP_Y; rig.add(pelvis);
   const hip = [], knee = [];
   for (const [i, s] of [[0, -1], [1, 1]]) {
-    const h = new THREE.Group(); h.position.set(s * 0.11, 0, 0); pelvis.add(h);
-    const k = new THREE.Group(); k.position.y = -0.42; h.add(k);
-    rbx(0.19, 0.42, 0.22, Rv * 0.7, bare ? skin : pants, { y: -0.21, parent: h });
-    rbx(0.18, 0.38, 0.21, Rv * 0.7, bare || o.bottom === "shorts" ? skin : pants, { y: -0.19, parent: k });
-    if (o.bottom === "shorts") bx(0.21, 0.08, 0.24, pants, { y: -0.36, parent: h });
-    rbx(0.21, 0.11, 0.32, Rv, shoe, { y: -0.43, z: 0.05, parent: k });
-    bx(0.215, 0.035, 0.325, sole, { y: -0.47, z: 0.05, parent: k });
+    const h = new THREE.Group(); h.position.set(s * BODY.HIP_X, 0, 0); pelvis.add(h);
+    const k = new THREE.Group(); k.position.y = -LT; h.add(k);
+    rbx(LG.w, LG.thigh + 0.02, LG.d, Rv, bare ? skin : pants, { y: -LG.thigh / 2 + 0.01, parent: h });
+    rbx(LG.w - 0.005, LG.shin, LG.d - 0.005, Rv, bare || o.bottom === "shorts" ? skin : pants, { y: -LG.shin / 2, parent: k });
+    if (o.bottom === "shorts") rbx(LG.w + 0.02, 0.1, LG.d + 0.02, 0.015, pants, { y: -0.36, parent: h });
+    rbx(SHOE.w, SHOE.h, SHOE.d, Rv, shoe, { y: SHOE.y + 0.012, z: SHOE.z, parent: k });
+    bx(SHOE.w + 0.004, 0.03, SHOE.d + 0.002, sole, { y: -0.4725, z: SHOE.z, parent: k });
     hip[i] = h; knee[i] = k;
   }
   let skirt = null;
   if (bare) {
     skirt = new THREE.Group(); skirt.position.y = 0.12; pelvis.add(skirt);
-    rbx(0.5, 0.36, 0.3, Rv, garment(o.bottom === "dress" ? o.top : o.pants, o.bottom === "dress" ? o.pattern : "cotton"), { y: -0.18, parent: skirt });
+    rbx(0.78, 0.4, 0.42, Rv, garment(o.bottom === "dress" ? o.top : o.pants, o.bottom === "dress" ? o.pattern : "cotton"), { y: -0.2, parent: skirt });
   }
-  rbx(0.42, 0.2, 0.24, Rv, o.bottom === "dress" ? top : pants, { y: 0.09, parent: pelvis });
-  if (o.bottom !== "dress" && !baby) { bx(0.43, 0.05, 0.25, solid("#2b2018", { roughness: 0.45 }), { y: 0.17, parent: pelvis }); bx(0.07, 0.05, 0.02, solid("#d8b45a", { metalness: 0.8, roughness: 0.3 }), { y: 0.17, z: 0.126, parent: pelvis }); }
+  rbx(PELVIS.w, PELVIS.h, PELVIS.d, Rv, o.bottom === "dress" ? top : pants, { y: PELVIS.y, parent: pelvis });
+  if (o.bottom !== "dress" && !baby) { bx(PELVIS.w + 0.01, 0.055, PELVIS.d + 0.01, toy("#2b2018", { rough: 0.45 }), { y: 0.2, parent: pelvis }); rbx(0.1, 0.07, 0.02, 0.008, toy("#e0b84a", { rough: 0.3, metal: 0.3 }), { y: 0.2, z: PELVIS.d / 2 + 0.01, parent: pelvis }); }
 
-  const spine = new THREE.Group(); spine.position.y = 0.17; pelvis.add(spine);
-  rbx(0.48, 0.5, 0.26, Rv, top, { y: 0.27, parent: spine });
-  bx(0.2, 0.06, 0.03, cloth(o.top, "cotton"), { y: 0.5, z: 0.13, parent: spine });
-  if (!baby) bx(0.12, 0.1, 0.02, solid(darker(o.top, 0.85)), { x: 0.12, y: 0.33, z: 0.135, parent: spine });
-  else bx(0.2, 0.16, 0.02, solid("#ffffff", { roughness: 0.7 }), { y: 0.36, z: 0.135, parent: spine }); // a bib
-  if (o.acc.includes("tie")) { bx(0.07, 0.34, 0.02, solid("#c0392b", { roughness: 0.4 }), { y: 0.33, z: 0.137, parent: spine }); bx(0.16, 0.48, 0.02, solid("#f5f5f5"), { y: 0.27, z: 0.131, parent: spine }); }
+  const spine = new THREE.Group(); spine.position.y = BODY.SPINE_Y; pelvis.add(spine);
+  const FZ = TORSO.d / 2; // the torso's front
+  rbx(TORSO.w, TORSO.h, TORSO.d, Rv, top, { y: TORSO.y, parent: spine });
+  if (!baby) bx(0.13, 0.11, 0.015, toy(darker(o.top, 0.82)), { x: 0.19, y: 0.4, z: FZ + 0.006, parent: spine }); // a chest pocket
+  else bx(0.3, 0.22, 0.015, toy("#ffffff", { rough: 0.6 }), { y: 0.42, z: FZ + 0.006, parent: spine }); // a bib
+  if (o.acc.includes("tie")) { bx(0.22, 0.56, 0.012, toy("#f5f5f5"), { y: 0.3, z: FZ + 0.004, parent: spine }); rbx(0.09, 0.42, 0.02, 0.006, toy("#c0392b", { rough: 0.35 }), { y: 0.36, z: FZ + 0.014, parent: spine }); }
   if (o.acc.includes("backpack")) {
-    rbx(0.4, 0.46, 0.18, 0.04, cloth(o.packColor, "cotton"), { y: 0.25, z: -0.22, parent: spine });
-    for (const s of [-1, 1]) bx(0.05, 0.42, 0.02, solid(darker(o.packColor, 0.6)), { x: s * 0.13, y: 0.3, z: 0.132, parent: spine });
+    rbx(0.52, 0.52, 0.2, 0.05, toy(o.packColor), { y: 0.3, z: -FZ - 0.1, parent: spine });
+    rbx(0.36, 0.18, 0.06, 0.03, toy(darker(o.packColor, 0.8)), { y: 0.17, z: -FZ - 0.22, parent: spine });
+    for (const s of [-1, 1]) bx(0.06, 0.5, 0.015, toy(darker(o.packColor, 0.6)), { x: s * 0.19, y: 0.33, z: FZ + 0.007, parent: spine });
   }
 
   const sh = [], el = [], hand = [], handAcc = [];
   for (const [i, s] of [[0, -1], [1, 1]]) {
-    const a = new THREE.Group(); a.position.set(s * 0.315, 0.49, 0); spine.add(a);
-    const e = new THREE.Group(); e.position.y = -0.3; a.add(e);
+    const a = new THREE.Group(); a.position.set(s * SH.x, SH.y, 0); spine.add(a);
+    const e = new THREE.Group(); e.position.y = -ARM.upper; a.add(e);
     const shortSleeve = o.sleeve === "short";
-    rbx(0.15, 0.3, 0.17, Rv * 0.6, top, { y: -0.15, parent: a });
-    rbx(0.14, 0.27, 0.16, Rv * 0.5, shortSleeve ? skin : top, { y: -0.135, parent: e });
-    if (!shortSleeve) bx(0.15, 0.04, 0.17, solid(darker(o.top, 0.75)), { y: -0.25, parent: e });
-    const hd = new THREE.Group(); hd.position.y = -0.33; e.add(hd);
-    rbx(0.13, 0.13, 0.14, Rv, skin, { parent: hd });
-    if (s > 0 && o.acc.includes("bag")) handAcc.push(rbx(0.34, 0.28, 0.12, 0.03, cloth(o.bagColor, "leather"), { y: -0.2, parent: hd }));
-    if (s > 0 && o.acc.includes("briefcase")) handAcc.push(rbx(0.42, 0.3, 0.1, 0.02, cloth("#5a3b24", "leather"), { y: -0.2, parent: hd }));
+    rbx(ARM.w, ARM.up + ARM.upper + 0.01, ARM.d, Rv, top, { y: (ARM.up - ARM.upper) / 2, parent: a });
+    rbx(ARM.w - 0.006, ARM.fore, ARM.d - 0.006, Rv, shortSleeve ? skin : top, { y: -ARM.fore / 2, parent: e });
+    if (!shortSleeve) bx(ARM.w + 0.004, 0.035, ARM.d + 0.004, toy(darker(o.top, 0.78)), { y: -ARM.fore + 0.02, parent: e });
+    const hd = new THREE.Group(); hd.position.y = ARM.handY; e.add(hd);
+    rbx(HAND.w, HAND.h, HAND.d, 0.03, skin, { y: HAND.y, parent: hd });
+    if (s > 0 && o.acc.includes("bag")) handAcc.push(rbx(0.36, 0.3, 0.13, 0.03, toy(o.bagColor, { rough: 0.38 }), { y: -0.26, parent: hd }));
+    if (s > 0 && o.acc.includes("briefcase")) handAcc.push(rbx(0.44, 0.32, 0.11, 0.02, toy("#5a3b24", { rough: 0.38 }), { y: -0.27, parent: hd }));
     sh[i] = a; el[i] = e; hand[i] = hd;
   }
-  const finger = bx(0.04, 0.11, 0.045, skin, { y: -0.1, z: 0.035, parent: hand[0] }); finger.visible = false; // pointing finger
+  const finger = rbx(0.07, 0.13, 0.08, 0.015, skin, { y: -0.15, z: 0.05, parent: hand[0] }); finger.visible = false; // pointing finger
 
-  // CHARACTERS-V2: no visible neck: a collar band, the big head resting right on it
-  if (!baby) bx(0.26, 0.04, 0.24, solid(darker(o.top === o.skin ? o.pants : o.top, 0.8)), { y: 0.52, parent: spine });
+  // the head: a rounded box resting right on the torso (no neck, no collar)
   const head = new THREE.Group(); head.position.y = HEAD_Y; head.scale.setScalar(role.head); spine.add(head);
-  rbx(0.3, 0.32, 0.3, baby ? 0.045 : 0.014, skin, { y: 0.16, parent: head });
+  rbx(BODY.HEAD.w, BODY.HEAD.h, BODY.HEAD.d, baby ? 0.06 : BODY.HEAD.r, skin, { y: BODY.HEAD.h / 2, parent: head });
   const face = addMesh(cachedGeo("facePlane", () => new THREE.PlaneGeometry(0.28, 0.28)), faceMaterialV2("neutral", "base", o), { y: 0.15, z: 0.151, parent: head, shadow: false });
   face.receiveShadow = true;
-  const hm = cloth(o.hairColor, "cotton"), hair = o.hair;
-  if (hair === "tuft") { // a baby's little curl on top
-    rbx(0.07, 0.07, 0.07, 0.02, hm, { y: 0.335, z: 0.04, parent: head });
-    rbx(0.05, 0.08, 0.05, 0.015, hm, { x: 0.025, y: 0.39, z: 0.06, rz: -0.6, parent: head });
-  } else if (hair !== "bald") {
-    rbx(0.32, 0.09, 0.32, Rv * 0.5, hm, { y: 0.335, parent: head });
-    rbx(0.32, 0.22, 0.07, Rv * 0.5, hm, { y: 0.24, z: -0.13, parent: head });
-    for (const s of [-1, 1]) rbx(0.05, 0.14, 0.26, 0.01, hm, { x: s * 0.155, y: 0.26, z: -0.01, parent: head });
-    rbx(0.3, 0.06, 0.06, 0.01, hm, { y: 0.3, z: 0.14, parent: head });
-  } else if (o.role === "elder") { for (const s of [-1, 1]) rbx(0.04, 0.1, 0.2, 0.01, hm, { x: s * 0.16, y: 0.2, z: -0.04, parent: head }); }
-  if (hair === "long") { // falls behind the shoulders, never under the chin
-    rbx(0.34, 0.3, 0.08, Rv * 0.5, hm, { y: 0.17, z: -0.15, parent: head });
-    if (o.role !== "kid") rbx(0.4, 0.18, 0.07, Rv * 0.5, hm, { y: 0.49, z: -0.17, parent: spine });
-  }
-  if (hair === "ponytail") { rbx(0.12, 0.3, 0.1, Rv, hm, { y: 0.12, z: -0.2, parent: head }); bx(0.13, 0.05, 0.11, solid(o.tieColor), { y: 0.26, z: -0.2, parent: head }); }
-  if (hair === "bun") rbx(0.16, 0.14, 0.16, 0.04, hm, { y: 0.44, z: -0.04, parent: head });
-  // behind the face plane (z 0.16) and above the eyes: the deeper 0.42 box at z -0.03 stuck out over the face (2026-11-04)
-  if (hair === "afro") rbx(0.44, 0.3, 0.38, 0.02, hm, { y: 0.37, z: -0.06, parent: head });
-  if (hair === "spiky") for (const [sx, sz] of [[-0.08, 0.05], [0.06, -0.03], [0, 0.1], [0.1, 0.08]]) bx(0.08, 0.12, 0.08, hm, { x: sx, y: 0.41, z: sz, rz: sx * 3, parent: head });
-  const hatMat = cloth(o.hatColor, "cotton"), hatY = hair === "afro" ? 0.12 : 0;
-  if (o.hat === "cap") { rbx(0.33, 0.12, 0.33, Rv, hatMat, { y: 0.37 + hatY, parent: head }); bx(0.3, 0.025, 0.16, hatMat, { y: 0.32 + hatY, z: o.capBack ? -0.22 : 0.22, parent: head }); }
-  if (o.hat === "beanie") { rbx(0.34, 0.16, 0.34, Rv + 0.02, hatMat, { y: 0.38 + hatY, parent: head }); bx(0.35, 0.05, 0.35, solid(darker(o.hatColor, 0.8)), { y: 0.31 + hatY, parent: head }); }
-  if (o.hat === "bucket") { rbx(0.3, 0.14, 0.3, Rv, hatMat, { y: 0.39 + hatY, parent: head }); bx(0.46, 0.025, 0.46, hatMat, { y: 0.32 + hatY, parent: head }); }
-  if ((o.acc ?? []).includes("headphones")) { bx(0.36, 0.035, 0.07, solid("#202024", { roughness: 0.3 }), { y: 0.39, parent: head }); for (const s of [-1, 1]) rbx(0.06, 0.12, 0.11, 0.02, solid(o.phonesColor, { roughness: 0.3 }), { x: s * 0.175, y: 0.17, parent: head }); }
+  const headKind = o.ohead?.kind ?? null;
+  const hatted = !!o.hat || (headKind && isHat(headKind));
+  const hr = buildHair(head, o, { underHat: hatted, spine: baby ? null : spine, seed: Math.round((o.phase ?? 0) * 1000) });
+  chinBeard(head, o);
+  const hatMat = toy(o.hatColor), hatY = 0;
+  if (o.hat === "cap") { rbx(0.34, 0.12, 0.34, 0.03, hatMat, { y: 0.38 + hatY, parent: head }); rbx(0.3, 0.03, 0.17, 0.01, hatMat, { y: 0.33 + hatY, z: o.capBack ? -0.23 : 0.23, parent: head }); }
+  if (o.hat === "beanie") { rbx(0.35, 0.16, 0.35, 0.05, hatMat, { y: 0.39 + hatY, parent: head }); rbx(0.36, 0.05, 0.36, 0.02, toy(darker(o.hatColor, 0.8)), { y: 0.325 + hatY, parent: head }); }
+  if (o.hat === "bucket") { rbx(0.31, 0.14, 0.31, 0.03, hatMat, { y: 0.4 + hatY, parent: head }); rbx(0.47, 0.03, 0.47, 0.01, hatMat, { y: 0.335 + hatY, parent: head }); }
+  if ((o.acc ?? []).includes("headphones")) { rbx(0.37, 0.04, 0.08, 0.015, toy("#202024", { rough: 0.3 }), { y: o.hat ? 0.46 : hr.hb + 0.08, parent: head }); for (const s of [-1, 1]) rbx(0.06, 0.13, 0.12, 0.025, toy(o.phonesColor, { rough: 0.3 }), { x: s * 0.2, y: 0.19, parent: head }); }
 
   // CHARACTERS-V2: the outfit's layers and head piece (look.parts / look.ohead; page/kit/outfits.js)
   const joints = { rig, pelvis, spine, head, face, sh, el, hand, hip, knee, skirt, finger, handAcc, flaps: [], cape: null };
-  if (!baby && (o.parts?.length || o.ohead)) dressPerson(joints, o, { hb: hair === "afro" ? 0.43 : hair === "bald" ? 0.315 : hair === "bun" || hair === "spiky" ? 0.36 : 0.33 });
-  if (baby) { for (let i = 0; i < 2; i++) { hip[i].scale.set(1.25, 0.6, 1.25); sh[i].scale.set(1.2, 0.68, 1.2); } } // short, chubby limbs
+  if (!baby && (o.parts?.length || o.ohead)) dressPerson(joints, o, { hb: hr.hb });
+  if (baby) { for (let i = 0; i < 2; i++) { hip[i].scale.set(1.1, 0.6, 1.1); sh[i].scale.set(1.05, 0.68, 1.05); } } // short, chubby limbs
 
   root.updateMatrixWorld(true);
   const box = new THREE.Box3().setFromObject(root);
@@ -421,7 +418,7 @@ export function posePerson(person, pose, t = 0, opts = {}) {
       }
       // thigh underside (at the hip) rests on the seat (0.02 cushion sink); thighs reach forward 0.42 so the knees
       // sit over the root
-      rig.position.y = seat / s0 + 0.09 - 0.9;
+      rig.position.y = seat / s0 + THIGH_HALF - 0.9;
       rig.position.z = -0.38;
       spine.rotation.x += 0.012 * breathe;
       if (j.skirt) j.skirt.rotation.x = -1.3;
@@ -465,7 +462,7 @@ export function posePerson(person, pose, t = 0, opts = {}) {
     case "sleep": {
       plant = false; eyesShut = true;
       rig.rotation.x = -Math.PI / 2;
-      rig.position.y = 0.135 + (opts.bed ?? 0) / s0;
+      rig.position.y = TORSO.d / 2 + 0.005 + (opts.bed ?? 0) / s0;
       for (let i = 0; i < 2; i++) { const s = i ? 1 : -1; sh[i].rotation.set(0, 0, s * 0.12); el[i].rotation.x = -0.1; hip[i].rotation.z = s * 0.04; }
       head.rotation.y = 0.35; spine.rotation.x = 0.015 * Math.sin(TAU * tt / 4.5);
       for (let q = 0; q < j.handAcc.length; q++) j.handAcc[q].visible = false;
@@ -580,7 +577,7 @@ export function posePerson(person, pose, t = 0, opts = {}) {
         }
         spine.rotation.x = -0.28 * k2 + bounce; head.rotation.x = 0.18 * k2;
         rig.rotation.x = -0.35 * (1 - k2);
-        rig.position.y = -0.78 * k2 + bounce * 0.3; rig.position.z = 0.05 * k2;
+        rig.position.y = -(0.9 - THIGH_HALF - 0.03) * k2 + bounce * 0.3; rig.position.z = 0.05 * k2;
       }
       for (let q = 0; q < j.handAcc.length; q++) j.handAcc[q].visible = false;
       break;
@@ -605,7 +602,7 @@ export function posePerson(person, pose, t = 0, opts = {}) {
       for (let i = 0; i < 2; i++) { const s = i ? 1 : -1; hip[i].rotation.set(-1.3, 0, s * 0.42); knee[i].rotation.x = 1.5; }
       armTo(j, 0, v1.set(-0.12, 0.12, 0.42), 1); armTo(j, 1, v2.set(0.12, 0.12, 0.42), 1);
       const trot = Math.abs(Math.sin(TAU * 1.6 * tt));
-      rig.position.y = (opts.seat ?? 0.9) / s0 + 0.09 - 0.9 + 0.04 * trot; rig.position.z = -0.32;
+      rig.position.y = (opts.seat ?? 0.9) / s0 + THIGH_HALF - 0.9 + 0.04 * trot; rig.position.z = -0.32;
       spine.rotation.x += 0.08 + 0.03 * trot; head.rotation.x = -0.08;
       if (j.skirt) j.skirt.rotation.x = -1.2;
       for (let q = 0; q < j.handAcc.length; q++) j.handAcc[q].visible = false;
@@ -725,7 +722,7 @@ export function posePerson(person, pose, t = 0, opts = {}) {
       const P = poseProps(person); P.cart.visible = true;
       const seat = 0.57;
       for (let i = 0; i < 2; i++) { hip[i].rotation.x = -1.45; knee[i].rotation.x = 1.45; }
-      rig.position.y = seat / s0 + 0.09 - 0.9; rig.position.z = -0.38;
+      rig.position.y = seat / s0 + THIGH_HALF - 0.9; rig.position.z = -0.38;
       const steer = 0.25 * Math.sin(TAU * 0.4 * tt);
       armTo(j, 0, v1.set(-0.17 + 0.03 * steer, 0.26 - 0.06 * steer, 0.5), 1); armTo(j, 1, v2.set(0.17 + 0.03 * steer, 0.26 + 0.06 * steer, 0.5), 1);
       P.wheel.rotation.z = -steer;
@@ -750,7 +747,7 @@ export function posePerson(person, pose, t = 0, opts = {}) {
   if (u.baby && pose !== "sleep") {
     plant = false;
     for (let i = 0; i < 2; i++) { const s = i ? 1 : -1; hip[i].rotation.set(-1.45, 0, s * 0.3); knee[i].rotation.set(0.12, 0, 0); }
-    rig.position.y = -0.9 + 0.14; rig.position.z = 0;
+    rig.position.y = -0.9 + THIGH_HALF * 1.1 + 0.02; rig.position.z = 0;
   }
   // plant the lowest foot on the floor (bent knees lower the body)
   if (plant) rig.position.y += Math.max(footDrop(hip[0].rotation.x, knee[0].rotation.x), footDrop(hip[1].rotation.x, knee[1].rotation.x)) - 0.9; // the hip (pelvis) is 0.9 up; the legs reach 0.9075: soles 7.5 mm under the floor before
@@ -889,7 +886,7 @@ export function gripOrder(kind) { return kind === "umbrella" ? ["overhead", "ove
 /** arm angles for a grip (hand index i: 0 = the right arm at -x, 1 = the left) */
 function longArms(j, grip, breathe) {
   const i = /_l$/.test(grip) ? 1 : 0, s = i ? 1 : -1, o = 1 - i;
-  const A = { side: [[-0.3, 0, s * 0.04], [-0.45, 0, 0]], side_l: [[-0.3, 0, s * 0.04], [-0.45, 0, 0]], wide: [[-0.25, 0, s * 0.26], [-0.3, 0, 0]], out: [[-0.15, 0, s * 0.95], [-0.1, 0, 0]], out_l: [[-0.15, 0, s * 0.95], [-0.1, 0, 0]], shoulder: [[-0.2, 0, s * 0.18], [-2.05, 0, 0]], overhead: [[-0.95, 0, s * 0.38], [-0.55, 0, 0]], overhead_l: [[-0.95, 0, s * 0.38], [-0.55, 0, 0]] }[grip] ?? [[-0.3, 0, s * 0.12], [-0.45, 0, 0]];
+  const A = { side: [[-0.3, 0, s * 0.04], [-0.45, 0, 0]], side_l: [[-0.3, 0, s * 0.04], [-0.45, 0, 0]], wide: [[-0.25, 0, s * 0.26], [-0.3, 0, 0]], out: [[-0.15, 0, s * 0.95], [-0.1, 0, 0]], out_l: [[-0.15, 0, s * 0.95], [-0.1, 0, 0]], shoulder: [[-0.2, 0, s * 0.18], [-2.05, 0, 0]], overhead: [[-2.2, 0, s * 0.5], [-0.3, 0, 0]], overhead_l: [[-2.2, 0, s * 0.5], [-0.3, 0, 0]] }[grip] ?? [[-0.3, 0, s * 0.12], [-0.45, 0, 0]];
   j.sh[i].rotation.set(...A[0]); j.el[i].rotation.set(...A[1]); j.hand[i].rotation.set(0, 0, 0);
   j.sh[o].rotation.set(0.05 + 0.03 * breathe, 0, -s * 0.08); j.el[o].rotation.set(-0.15, 0, 0); j.hand[o].rotation.set(0, 0, 0);
 }

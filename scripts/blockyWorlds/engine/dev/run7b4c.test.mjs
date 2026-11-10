@@ -135,8 +135,9 @@ test("looks: a woman never has a beard, a man never a skirt; nothing else of the
   for (let seed = 0; seed < 300; seed++) {
     const f = lookFor({ role: "adult", seed, gender: "f" }), m = lookFor({ role: "elder", seed, gender: "m" }), n = lookFor({ role: "adult", seed });
     assert.equal(f.beard, null);
-    assert.ok(["long", "ponytail", "bun"].includes(f.hair));
-    assert.ok(!["skirt", "dress"].includes(m.bottom) && !["ponytail", "bun"].includes(m.hair));
+    // CHARACTERS-V3: the hair kit (a woman a longer / tied / curly hairdo, a man never pigtails, a bun, braids...)
+    assert.ok(["long", "ponytail", "bun", "pigtails", "topknot", "braids", "bangs", "bob", "wavyBob", "curly", "afro"].includes(f.hair), f.hair);
+    assert.ok(!["skirt", "dress"].includes(m.bottom) && !["ponytail", "bun", "pigtails", "braids", "topknot", "bangs", "long", "bob", "wavyBob"].includes(m.hair), m.hair);
     assert.equal(f.skin, n.skin); assert.equal(f.top, n.top);
   }
   assert.deepEqual(genderLook({ hair: "short", beard: "#000", bottom: "pants", acc: [] }, null, 1), { hair: "short", beard: "#000", bottom: "pants", acc: [] });

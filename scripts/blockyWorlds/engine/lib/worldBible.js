@@ -17,7 +17,7 @@
 //   saveWorldBible(dir, tl)                     world-bible.json next to timeline.json (Node only)
 import { hashSeed, rng } from "./rng.js";
 import { petsOf } from "./pets.js";
-import { outfitFor, outfitLook, outfitText, eraOf, OUTFITS } from "../page/kit/outfitsData.js"; // CHARACTERS-V2: cast outfits
+import { outfitFor, outfitLook, outfitText, eraOf, OUTFITS, hairFor } from "../page/kit/outfitsData.js"; // CHARACTERS-V2: cast outfits
 import { themeFor, rigFor, storyStyle, MAX_PLACE_SHARE, THEMES } from "./setThemes.js"; // SETS-V2: place themes + rigs
 
 export const BIBLE_VERSION = 1;
@@ -70,7 +70,8 @@ const GARMENT = [
   [/\bhoodie|sweater|jumper|shirt|t-shirt|tee|jacket|coat|vest|apron|robe|uniform|overalls|cardigan\b/, "top"],
   [/\bdress\b/, "dress"], [/\bskirt\b/, "skirt"], [/\bshorts\b/, "shorts"], [/\bpants|trousers|jeans\b/, "pants"],
 ];
-const HAIR_WORDS = [[/\bpigtails?|ponytail\b/, "ponytail"], [/\bbun\b/, "bun"], [/\bbald\b/, "bald"], [/\bafro|curly\b/, "afro"], [/\bspiky|messy\b/, "spiky"], [/\blong hair|braid\b/, "long"], [/\bshort hair|crew cut\b/, "short"]];
+// CHARACTERS-V3: the hair kit's styles (page/kit/outfitsData.js HAIR_STYLES)
+const HAIR_WORDS = [[/\bpigtails?\b/, "pigtails"], [/\bponytail\b/, "ponytail"], [/\b(braids?|braided)\b/, "braids"], [/\btop ?knot\b/, "topknot"], [/\bbun\b/, "bun"], [/\bbald\b/, "bald"], [/\bmohawk\b/, "mohawk"], [/\bafro\b/, "afro"], [/\b(curly|curls)\b/, "curly"], [/\bspiky\b/, "spiky"], [/\bmessy\b/, "messy"], [/\bquiff\b/, "quiff"], [/\bslicked\b/, "slicked"], [/\bbowl cut\b/, "bowl"], [/\b(buzz ?cut|shaved head)\b/, "buzz"], [/\bwavy\b/, "wavyBob"], [/\bbob\b/, "bob"], [/\b(bangs|fringe)\b/, "bangs"], [/\blong hair\b/, "long"], [/\b(short hair|crew cut)\b/, "short"]];
 const HAIR_COLOR = { grey: "#bfbfbf", gray: "#bfbfbf", white: "#efefef", silver: "#d8d8d8", blonde: "#e8c872", blond: "#e8c872", red: "#b5482a", ginger: "#c1652f", brown: "#5a3b25", black: "#1e1e1e", dark: "#2a2a2a" };
 const TOPS = ["#2e86de", "#e74c3c", "#20bf6b", "#f7b731", "#8854d0", "#fa8231", "#0fb9b1", "#eb3b5a"];
 const PANTS = ["#2f4f86", "#3b5b8f", "#4b6584", "#5d4037", "#2d3436", "#6d6875"];
@@ -110,7 +111,7 @@ export function lookOf(c, seed, era = "modern") {
   if (!look.pants) { look.pants = R.pick(PANTS); if (look.pants === look.top) look.pants = PANTS[(PANTS.indexOf(look.pants) + 1) % PANTS.length]; }
   if (look.bottom === "dress") look.pants = look.top;
   look.pattern = /\bstriped|stripes\b/.test(t) ? "stripes" : /\bplaid|checked\b/.test(t) ? "plaid" : /\bdots|spotted|polka\b/.test(t) ? "dots" : "cotton";
-  look.hair = HAIR_WORDS.find(([re]) => re.test(t))?.[1] ?? (gender === "f" ? R.pick(age === "elder" ? ["bun", "long"] : ["long", "ponytail", "bun"]) : age === "elder" ? R.pick(["short", "bald"]) : R.pick(["short", "spiky", "short"]));
+  look.hair = HAIR_WORDS.find(([re]) => re.test(t))?.[1] ?? (R(), hairFor({ seed, age, gender }).hair); // CHARACTERS-V3: the hair kit's seeded pick (the old roll kept: colours stay)
   look.hairColor ??= age === "elder" ? "#bfbfbf" : (Object.entries(HAIR_COLOR).find(([w]) => new RegExp(`\\b${w}\\b(?= (hair|bun|braid|curls))`).test(t))?.[1] ?? R.pick(HAIRS));
   // hat / glasses / accessories only when the hint names them: otherwise the people kit's own seeded choice (the seed is
   // the bible's, so it is the same in every shot)
@@ -136,7 +137,7 @@ export function dressLook(look, c, seed, era = "modern", age = "adult", gender =
   if (named.top) keep.top = look.top;
   if (named.bottom) { keep.bottom = look.bottom; keep.pants = look.pants; }
   if (named.hair || !ol.hair) keep.hair = look.hair;
-  if (named.hat) { keep.hat = look.hat; keep.hatColor = look.hatColor; keep.ohead = null; }
+  if (named.hat) { const oh = outfitLook(id, { seed, age, gender, variant, withHat: true }).ohead; if (oh) keep.ohead = oh; else { keep.hat = look.hat; keep.hatColor = look.hatColor; keep.ohead = null; } } // CHARACTERS-V3: the role's own hat when the story names one
   if (named.glasses) keep.glasses = look.glasses;
   Object.assign(look, ol, keep);
   if (look.bottom === "dress" && look.top !== "skin") look.pants = look.top;

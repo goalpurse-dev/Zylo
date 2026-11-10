@@ -79,7 +79,7 @@ export const OUTFITS = {
   },
   caveman: {
     label: "cave clothes", ages: ["adult", "kid", "elder"], eras: ["stoneage"], words: "caveman|cavemen|cavewoman|cavewomen|cavekid|caveboy|cavegirl|cave|tribe|hunter|stone age",
-    base: { top: "skin", pattern: "cotton", sleeve: "short", bottom: "shorts", pants: "a", pantsKind: "fur", shoes: "skin", hair: "spiky" },
+    base: { top: "skin", pattern: "cotton", sleeve: "short", bottom: "shorts", pants: "a", pantsKind: "fur", shoes: "skin", hair: "messy" },
     colors: { a: C.fur, b: ["#e9e2cf", "#f2ead6"], c: ["#5a3b24", "#6b4a2b"], d: C.fur },
     parts: [P("pelt", "a"), P("bones", "b"), P("belt", "c", { rope: true })],
     head: { kind: "bone", color: "b" },
@@ -103,21 +103,21 @@ export const OUTFITS = {
     base: { top: "a", pattern: "cotton", sleeve: "short", bottom: "shorts", pants: "b", shoes: "#2d3436" },
     colors: { a: ["#4a90d9", "#5b8cc4", "#6fa8dc"], b: C.navy, c: ["#c0392b", "#e74c3c"], d: ["#8a5a32", "#7b4a2a"] },
     parts: [P("satchel", "d", { letter: true }), P("badge", "c"), P("pockets", "a"), P("stripes", "c", { where: "sleeve" })],
-    head: { kind: "peakedCap", color: "b", badge: "c" },
+    head: null, storyHead: { kind: "peakedCap", color: "b", badge: "c" },
   },
   mayor: {
     label: "mayor's suit and sash", ages: ["adult", "elder"], eras: ["modern", "western"], words: "mayor|mayors|governor|president|councillor|councilman|councilwoman|boss|ceo|banker|tycoon|rich",
     base: { top: "#f5f5f0", pattern: "cotton", sleeve: "long", bottom: "pants", pants: "a", shoes: "#1e1e1e" },
     colors: { a: [...C.navy, "#2d3436", "#5d2a6e"], b: [...C.red, "#8e44ad"], c: C.gold, d: C.white },
     parts: [P("jacket", "a"), P("sash", "b"), P("medal", "c"), P("bowtie", "b")],
-    head: { kind: "tophat", color: "a", band: "b" }, femaleHead: null,
+    head: null, storyHead: { kind: "tophat", color: "a", band: "b" }, femaleHead: null,
   },
   farmer: {
     label: "farmer's overalls", ages: ["adult", "elder", "kid"], eras: ["modern", "western", "medieval"], words: "farmer|farmers|farm|rancher|shepherd|shepherdess|milkmaid|harvest|crops|barn",
     base: { top: "a", pattern: "plaid", sleeve: "long", bottom: "pants", pants: "b", pantsKind: "denim", shoes: "#5a3b24" },
     colors: { a: [...C.red, ...C.green, "#e67e22"], b: C.denim, c: C.gold, d: C.tan },
     parts: [P("overalls", "b"), P("neckerchief", "a"), P("boots", "#5a3b24")],
-    head: { kind: "strawhat", color: "d", band: "a" },
+    head: null, storyHead: { kind: "strawhat", color: "d", band: "a" },
   },
   grandma: {
     label: "cardigan and pearls", ages: ["elder", "adult"], eras: ["modern", "medieval", "western", "pirate", "future"], words: "grandma|granny|gran|nana|grandmother|old lady|old woman|nan",
@@ -131,14 +131,14 @@ export const OUTFITS = {
     base: { top: "#f5f5f0", pattern: "pinstripe", sleeve: "long", bottom: "pants", pants: "a", shoes: "#3d2b1f" },
     colors: { a: ["#6d4c41", "#57606f", "#4b6584", "#7f8c8d"], b: ["#a0522d", "#6d8a5a", "#8e7cc3", "#c8a96a"], c: [...C.red, "#2e86de"], d: ["#6d4c41", "#57606f"] },
     parts: [P("vest", "b", { tweed: true }), P("bowtie", "c"), P("buttons", "#3d2b1f")],
-    head: { kind: "flatcap", color: "d" }, glasses: "square",
+    head: null, storyHead: { kind: "flatcap", color: "d" }, glasses: "square",
   },
   villain: {
     label: "villain's cape", ages: ["adult", "elder", "kid"], eras: ["modern", "medieval", "western", "pirate", "future"], words: "villain|villains|evil|baddie|bad guy|thief|thieves|robber|crook|bandit|baron|tyrant|mastermind|outlaw",
-    base: { top: "#2b2b33", pattern: "pinstripe", sleeve: "long", bottom: "pants", pants: "#1e1e24", shoes: "#111111" },
+    base: { top: "#2b2b33", hair: "slicked", pattern: "pinstripe", sleeve: "long", bottom: "pants", pants: "#1e1e24", shoes: "#111111" },
     colors: { a: ["#1e1e24", "#2b1a33", "#1b2631"], b: ["#b71c1c", "#6a1b9a", "#1b5e20"], c: ["#c0c0c0", "#d4a017"], d: ["#b71c1c", "#6a1b9a"] },
     parts: [P("cape", "a", { lining: "b", collar: true, tall: true }), P("gloves", "b"), P("medal", "c"), P("belt", "c")],
-    head: { kind: "tophat", color: "a", band: "b" },
+    head: null, storyHead: { kind: "tophat", color: "a", band: "b" },
   },
   wizard: {
     label: "wizard's robe", ages: ["elder", "adult", "kid"], eras: ["medieval", "modern"], words: "wizard|wizards|witch|witches|sorcerer|sorceress|magician|mage|warlock|enchanter|fairy godmother",
@@ -180,7 +180,7 @@ export const OUTFITS = {
     base: { top: "a", pattern: "canvas", sleeve: "short", bottom: "shorts", pants: "b", shoes: "#5a3b24" },
     colors: { a: C.khaki, b: ["#8a7a52", "#6b5a3a", "#a89a5b"], c: ["#5a3b24", "#7b4a2a"], d: ["#2e9e4f", "#e67e22"] },
     parts: [P("pockets", "a", { flaps: true }), P("satchel", "c"), P("neckerchief", "d"), P("boots", "#5a3b24"), P("belt", "c")],
-    head: { kind: "safari", color: "a", band: "c" },
+    head: null, storyHead: { kind: "safari", color: "a", band: "c" },
   },
   builder: {
     label: "builder's hi-vis and tool belt", ages: ["adult", "kid"], eras: ["modern", "future"], words: "builder|builders|construction|plumber|carpenter|engineer|mechanic|handyman|electrician|worker|workers|repairman|janitor",
@@ -194,14 +194,14 @@ export const OUTFITS = {
     base: { top: "a", pattern: "cotton", sleeve: "long", bottom: "pants", pants: "b", shoes: "#3d2b1f" },
     colors: { a: [...C.white, "#a5d8ff", "#ffe29a"], b: ["#57606f", "#2d3436", "#6d4c41"], c: ["#2e9e4f", "#c0392b", "#2e86de"], d: C.white },
     parts: [P("apron", "c", { stripes: true, pocket: true }), P("bowtie", "c"), P("pen", "#2d3436")],
-    head: { kind: "cap", color: "c" },
+    head: null, storyHead: { kind: "cap", color: "c" },
   },
   fisher: {
     label: "fisher's raincoat", ages: ["adult", "elder", "kid"], eras: ["modern", "pirate", "western"], words: "fisherman|fishermen|fisher|fisherwoman|fishmonger|lighthouse keeper|sailor|sailors|boatman|harbour master|harbor master",
     base: { top: "a", pattern: "canvas", sleeve: "long", bottom: "pants", pants: "a", pantsKind: "canvas", shoes: "#2d3436" },
     colors: { a: ["#ffd32a", "#f7b731", "#ff9f1a"], b: ["#2d3436", "#273c75"], c: C.white, d: ["#ffd32a", "#f7b731"] },
     parts: [P("buttons", "#2d3436", { clasps: true }), P("boots", "#2d3436"), P("scarf", "b", { knit: true })],
-    head: { kind: "sunhat", color: "d", fisher: true },
+    head: null, storyHead: { kind: "sunhat", color: "d", fisher: true },
   },
   astronaut: {
     label: "space suit", ages: ["adult", "kid"], eras: ["future", "modern"], words: "astronaut|astronauts|spaceman|spacewoman|cosmonaut|pilot|space captain|rocket pilot",
@@ -229,21 +229,21 @@ export const OUTFITS = {
     base: { top: "a", pattern: "cotton", sleeve: "long", bottom: "pants", pants: "b", shoes: "#2d3436" },
     colors: { a: [...C.white, "#f5ecd7"], b: ["#2d3436", "#273c75"], c: [...C.red, "#8854d0", "#2e86de"], d: C.bright },
     parts: [P("apron", "a", { paint: true, long: true }), P("scarf", "c")],
-    head: { kind: "beret", color: "c" },
+    head: null, storyHead: { kind: "beret", color: "c" },
   },
   athlete: {
     label: "tracksuit and whistle", ages: ["adult", "kid"], eras: ["modern", "future"], words: "coach|athlete|runner|player|players|footballer|referee|gym teacher|sports|team captain|champion",
     base: { top: "a", pattern: "cotton", sleeve: "long", bottom: "pants", pants: "a", shoes: "#ffffff" },
     colors: { a: [...C.red, ...C.blue, ...C.green, "#8854d0"], b: C.white, c: C.silver, d: C.white },
     parts: [P("stripes", "b", { where: "all", sport: true }), P("whistle", "c"), P("collar", "b", { zip: true })],
-    head: { kind: "cap", color: "a" },
+    head: null, storyHead: { kind: "cap", color: "a" },
   },
   gardener: {
     label: "gardener's apron and sun hat", ages: ["adult", "elder"], eras: ["modern", "medieval", "western"], words: "gardener|gardeners|florist|beekeeper|botanist|groundskeeper",
     base: { top: "a", pattern: "plaid", sleeve: "short", bottom: "pants", pants: "b", shoes: "#6d4c41" },
     colors: { a: [...C.pastel, "#badc58"], b: ["#6d4c41", "#57606f", "#2f4f86"], c: ["#2e9e4f", "#3c8d2f"], d: C.tan },
     parts: [P("apron", "c", { pocket: true }), P("gloves", "#e1c699"), P("boots", "#2e9e4f")],
-    head: { kind: "sunhat", color: "d", band: "c" },
+    head: null, storyHead: { kind: "sunhat", color: "d", band: "c" },
   },
   peasant: {
     label: "village tunic", ages: ["adult", "kid", "elder"], eras: ["medieval"], words: "peasant|peasants|villager|villagers|miller|blacksmith|innkeeper|stable boy|maid|servant|jester|monk|nun|townsfolk",
@@ -259,9 +259,9 @@ export const OUTFITS = {
     parts: [],
     variants: [
       { id: "hoodie", base: { sleeve: "long", bottom: "pants", pantsKind: "denim" }, parts: [P("hoodie", "a")], head: null },
-      { id: "overshirt", base: { pattern: "band" }, parts: [P("overshirt", "c", { plaid: true })], head: { kind: "cap", color: "c" } },
+      { id: "overshirt", base: { pattern: "band" }, parts: [P("overshirt", "c", { plaid: true })], head: null, storyHead: { kind: "cap", color: "c" } },
       { id: "sporty", base: { sleeve: "long", bottom: "pants", pants: "a" }, parts: [P("stripes", "#ffffff", { where: "all", sport: true }), P("collar", "#ffffff", { zip: true })], head: null },
-      { id: "overalls", base: { pattern: "stripes" }, parts: [P("overalls", "b", { short: true })], head: { kind: "beanie", color: "c" } },
+      { id: "overalls", base: { pattern: "stripes" }, parts: [P("overalls", "b", { short: true })], head: null, storyHead: { kind: "beanie", color: "c" } },
       { id: "dress", gender: "f", base: { bottom: "dress", pattern: "dots" }, parts: [P("collar", "#ffffff", { round: true })], head: { kind: "bow", color: "c" } },
     ],
   },
@@ -273,12 +273,58 @@ export const OUTFITS = {
     variants: [
       { id: "jacket", parts: [P("jacket", "c", { open: true, casual: true })], head: null },
       { id: "sweater", base: { pattern: "knit" }, parts: [P("collar", "#ffffff", {})], head: null },
-      { id: "shirt", base: { pattern: "plaid", sleeve: "short" }, parts: [P("pockets", "a")], head: { kind: "cap", color: "c" } },
+      { id: "shirt", base: { pattern: "plaid", sleeve: "short" }, parts: [P("pockets", "a")], head: null, storyHead: { kind: "cap", color: "c" } },
       { id: "dress", gender: "f", base: { bottom: "dress", pattern: "dots" }, parts: [P("cardigan", "c", { buttons: true })], head: null },
-      { id: "vest", parts: [P("vest", "c", { puffer: true })], head: { kind: "beanie", color: "c" } },
+      { id: "vest", parts: [P("vest", "c", { puffer: true })], head: null, storyHead: { kind: "beanie", color: "c" } },
     ],
   },
 };
+
+// ------------------------------------------------------------------------------------------------- CHARACTERS-V3 hair
+// (owner 2026-11-10: "chunky stylised HAIR on most characters instead of hats; hats only when the story needs one").
+// PURE data (the bible picks in Node); page/kit/hair.js builds the pieces. weights per [age][gender].
+export const HAIR_STYLES = Object.freeze({
+  short: { label: "short hair" }, sidePart: { label: "side-parted hair" }, spiky: { label: "spiky hair" }, messy: { label: "messy hair" },
+  quiff: { label: "a quiff" }, slicked: { label: "slicked-back hair" }, bowl: { label: "a bowl cut" }, buzz: { label: "a buzz cut" },
+  mohawk: { label: "a mohawk" }, afro: { label: "an afro" }, curly: { label: "curly hair" }, curtains: { label: "centre-parted hair" },
+  bob: { label: "a bob" }, wavyBob: { label: "a wavy bob" }, long: { label: "long hair" }, bangs: { label: "long hair with bangs" },
+  ponytail: { label: "a ponytail" }, pigtails: { label: "pigtails" }, bun: { label: "a bun" }, topknot: { label: "a top knot" },
+  braids: { label: "braids" }, receding: { label: "receding hair" }, bald: { label: "bald" }, tuft: { label: "a baby tuft" },
+});
+export const HAIR_KINDS = Object.freeze(Object.keys(HAIR_STYLES));
+const HW = {
+  kid: { m: { short: 3, spiky: 3, messy: 3, bowl: 2, sidePart: 2, curly: 2, afro: 1, buzz: 1, quiff: 1, mohawk: 1, curtains: 1 },
+    f: { ponytail: 3, pigtails: 3, bob: 2, wavyBob: 2, long: 2, bun: 1, braids: 2, curly: 1, afro: 1, bangs: 2, topknot: 1 } },
+  adult: { m: { short: 3, sidePart: 3, quiff: 2, messy: 2, slicked: 2, buzz: 2, spiky: 1, curly: 2, afro: 1, mohawk: 0.5, curtains: 1, bald: 1 },
+    f: { long: 3, ponytail: 2, bun: 2, bob: 2, wavyBob: 2, braids: 1, curly: 1, afro: 1, bangs: 2, topknot: 1, pigtails: 0.5 } },
+  elder: { m: { short: 2, sidePart: 2, receding: 3, bald: 2, slicked: 1, buzz: 1 }, f: { bun: 3, bob: 2, wavyBob: 2, curly: 2, short: 1 } },
+};
+/** natural hair colours, a few fun ones (kids / adults ~8%), greys for elders */
+export const HAIR_COLORS = Object.freeze({
+  natural: ["#1b1410", "#2b1d14", "#3a2a1e", "#6b3e1f", "#8b4a22", "#8b2e16", "#c1652f", "#d9a441", "#e8c872"],
+  fun: ["#3d7bd9", "#ff7eb6", "#8a5cd6", "#19b5a8", "#3fbf5f"],
+  grey: ["#d8d8d8", "#bfbfbf", "#efefef", "#a6a6a6"],
+});
+/** facial hair kinds (bold face decals in the hair colour + a chunky chin block for "full") */
+export const FACIAL_KINDS = Object.freeze(["full", "moustache", "goatee", "chinstrap"]);
+const wp = (R, w) => { const e = Object.entries(w); let x = R() * e.reduce((s, [, v]) => s + v, 0); for (const [k, v] of e) { x -= v; if (x <= 0) return k; } return e[0][0]; };
+/** a seeded hair look for (age, gender): { hair, hairColor, facial } (facial: a FACIAL_KINDS id or null) */
+export function hairFor({ seed = 1, age = "adult", gender = null } = {}) {
+  const R = rng((Number(seed) || 1) * 69621 + 17);
+  const a = HW[age] ? age : age === "baby" ? "baby" : "adult";
+  if (a === "baby") return { hair: R() < 0.7 ? "tuft" : "bald", hairColor: R.pick(HAIR_COLORS.natural), facial: null };
+  const g = gender === "f" || gender === "m" ? gender : R() < 0.5 ? "m" : "f";
+  const hair = wp(R, HW[a][g]);
+  const hairColor = a === "elder" ? R.pick(HAIR_COLORS.grey) : R() < 0.08 ? R.pick(HAIR_COLORS.fun) : R.pick(HAIR_COLORS.natural);
+  const fr = R();
+  const facial = g === "m" && a !== "kid" && gender === "m" && fr < (a === "elder" ? 0.5 : 0.25) ? FACIAL_KINDS[Math.floor(R() * FACIAL_KINDS.length)] : null;
+  return { hair, hairColor, facial };
+}
+/** CHARACTERS-V3: head pieces that are hats (they flatten the hair under them); the rest (crown, tiara, bow, bone,
+ *  goggles) sit ON the hair. Roles whose outfit needs a hat keep it; everyone else shows hair (storyHead: the hat the
+ *  role wears only when the story names one, lib/worldBible.js dressLook) */
+export const HAT_KINDS = Object.freeze(["tophat", "chefhat", "bakerhat", "helmetKnight", "hardhat", "fireHelmet", "peakedCap", "strawhat", "cowboy", "tricorn", "wizard", "beret", "flatcap", "sunhat", "pirateBandana", "vikingHelmet", "safari", "cap", "beanie", "bucket"]);
+export const HAT_ROLES = Object.freeze(["royal", "knight", "chef", "baker", "wizard", "firefighter", "builder", "cowboy", "pirate", "viking", "police"]);
 
 /** the words that name an outfit (role words), for the picker and the vision judge */
 export const OUTFIT_WORDS = Object.freeze(Object.fromEntries(Object.entries(OUTFITS).map(([id, o]) => [id, o.words])));
@@ -320,21 +366,22 @@ const pickC = (R, list) => list[Math.floor(R() * list.length)];
  * The look fields for an outfit (people.js lookFor overrides): the garments with the outfit's colours (seeded per
  * character), the parts list, the head piece, glasses. variant: a variant id (else seeded; a "dress" variant only for f).
  */
-export function outfitLook(id, { seed = 1, age = "adult", gender = null, variant = null } = {}) {
+export function outfitLook(id, { seed = 1, age = "adult", gender = null, variant = null, withHat = false } = {}) {
   const O = OUTFITS[id] ?? OUTFITS.adult_casual;
   const R = rng((Number(seed) || 1) * 48271 + hashSeed(id));
   const oc = { a: pickC(R, O.colors.a), b: pickC(R, O.colors.b), c: pickC(R, O.colors.c), d: pickC(R, O.colors.d) };
   if (oc.b === oc.a) oc.b = O.colors.b[(O.colors.b.indexOf(oc.b) + 1) % O.colors.b.length];
   if (oc.c === oc.a && O.colors.c.length > 1) oc.c = O.colors.c[(O.colors.c.indexOf(oc.c) + 1) % O.colors.c.length];
-  let base = { ...O.base }, parts = [...O.parts], head = O.head ?? null, vid = null;
+  let base = { ...O.base }, parts = [...O.parts], head = O.head ?? null, story = O.storyHead ?? null, vid = null;
   if (O.variants?.length) {
     const ok = O.variants.filter((v) => !v.gender || v.gender === gender);
     const v = ok.find((x) => x.id === variant) ?? ok[Math.floor(R() * ok.length)];
-    vid = v.id; base = { ...base, ...(v.base ?? {}) }; parts = [...parts, ...(v.parts ?? [])]; head = v.head === undefined ? head : v.head;
+    vid = v.id; base = { ...base, ...(v.base ?? {}) }; parts = [...parts, ...(v.parts ?? [])]; head = v.head === undefined ? head : v.head; if (v.storyHead) story = v.storyHead;
   }
   if (gender === "f" && O.femaleBase) base = { ...base, ...O.femaleBase };
   if (gender === "f" && O.femaleHead !== undefined) head = O.femaleHead;
   if (age === "kid" && O.kidHead !== undefined) head = O.kidHead;
+  if (!head && withHat && story) head = story; // CHARACTERS-V3: the role's hat only when the story names one
   const col = (v) => (v == null ? v : v === "skin" ? "skin" : /^[abcd]$/.test(v) ? oc[v] : v);
   const look = {
     outfit: id, outfitVariant: vid, oc,
@@ -347,6 +394,7 @@ export function outfitLook(id, { seed = 1, age = "adult", gender = null, variant
   if (look.bottom === "dress") look.pants = look.top === "skin" ? oc.a : look.top;
   if (base.hair) look.hair = base.hair;
   if (O.glasses) look.glasses = O.glasses;
+  if (["knight", "caveman", "viking", "astronaut", "pirate", "royal"].includes(id)) look.glasses = false; // CHARACTERS-V3: no seeded glasses on armour, furs, space suits, crowns
   return look;
 }
 
