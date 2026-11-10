@@ -391,8 +391,11 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
   const { bedFromLoop, mixAudio } = await import(pathToFileURL(path.join(ENGINE, "audio", "mix.mjs")).href);
   const { sfxCues } = await import(pathToFileURL(path.join(ENGINE, "lib", "sfx.js")).href);
   await lap("music", () => bedFromLoop(p.music ?? "A", tl.duration, musicWav));
-  const cues = p.sfx === false ? [] : sfxCues(tl);
-  const audio = await lap("mix", () => mixAudio({ voice: v.wav, music: musicWav, out: mixM4a, duration: tl.duration, sfxCues: cues }));
+  // SIMPLE LOOK (owner 2026-11-10): almost no SFX (one low boom on the rule's key word), the music ~12 dB under the voice
+  const { simpleCues, AUDIO_SIMPLE } = await import(pathToFileURL(path.join(ENGINE, "lib", "audioPlan.js")).href);
+  const simpleAudio = tl.look === "simple";
+  const cues = p.sfx === false ? [] : simpleAudio ? simpleCues(tl, sfxCues(tl)) : sfxCues(tl);
+  const audio = await lap("mix", () => mixAudio({ voice: v.wav, music: musicWav, out: mixM4a, duration: tl.duration, sfxCues: cues, ...(simpleAudio ? { musicUnderVoiceDb: AUDIO_SIMPLE.musicUnderVoiceDb } : {}) }));
   await put(p.out.mix, mixM4a, "audio/mp4");
   return { role: "prepare", planned, builder: { ...built.report, applied: built.applied, reverted: built.reverted, cards: built.cards, added: library.added.map((a) => ({ id: a.id, kind: a.kind, name: a.name })) }, voice: { reused: reuse, costUsd: reuse ? 0 : v.costUsd ?? null, billedChars: v.billedChars ?? null, chars: v.chars ?? null, wpm: v.wpm, duration: v.duration }, audio: { lufs: audio.lufs, truePeak: audio.truePeak, sfxCues: cues.length }, timing, spend: spendNow() };
   } catch (e) {
@@ -428,8 +431,11 @@ async function resumePrepare(job, dir, post, { voiceFn, script, mp3, takeJson, t
   const { bedFromLoop, mixAudio } = await import(pathToFileURL(path.join(ENGINE, "audio", "mix.mjs")).href);
   const { sfxCues } = await import(pathToFileURL(path.join(ENGINE, "lib", "sfx.js")).href);
   await lap("music", () => bedFromLoop(p.music ?? "A", tl.duration, musicWav));
-  const cues = p.sfx === false ? [] : sfxCues(tl);
-  const audio = await lap("mix", () => mixAudio({ voice: v.wav, music: musicWav, out: mixM4a, duration: tl.duration, sfxCues: cues }));
+  // SIMPLE LOOK (owner 2026-11-10): almost no SFX (one low boom on the rule's key word), the music ~12 dB under the voice
+  const { simpleCues, AUDIO_SIMPLE } = await import(pathToFileURL(path.join(ENGINE, "lib", "audioPlan.js")).href);
+  const simpleAudio = tl.look === "simple";
+  const cues = p.sfx === false ? [] : simpleAudio ? simpleCues(tl, sfxCues(tl)) : sfxCues(tl);
+  const audio = await lap("mix", () => mixAudio({ voice: v.wav, music: musicWav, out: mixM4a, duration: tl.duration, sfxCues: cues, ...(simpleAudio ? { musicUnderVoiceDb: AUDIO_SIMPLE.musicUnderVoiceDb } : {}) }));
   await put(p.out.mix, mixM4a, "audio/mp4");
   const spend = { directorUsd: 0, directorModel: null, builderUsd: 0, plannedDirectorUsd: 0, plannedBuilderUsd: 0 };
   return { role: "prepare", resumed: true, planned: { frames: Math.round(tl.duration * (tl.fps ?? 24)), duration: tl.duration, shots: tl.shots?.length ?? 0 }, voice: { reused: true, costUsd: 0, wpm: v.wpm, duration: v.duration }, audio: { lufs: audio.lufs, truePeak: audio.truePeak, sfxCues: cues.length }, timing, spend };

@@ -131,9 +131,11 @@ export async function makeVideo({ script, idea = {}, out, workers = 2, mode = "p
   await lap("mix", async () => {
     const { mixAudio } = await need("audio/mix.mjs", ["mixAudio"]);
     const { sfxCues } = await import(pathToFileURL(path.join(ENGINE, "lib", "sfx.js")).href);
-    const cues = sfx ? sfxCues(tl).filter((c) => c.t < length) : [];
+    const { simpleCues, AUDIO_SIMPLE } = await import(pathToFileURL(path.join(ENGINE, "lib", "audioPlan.js")).href);
+    const simpleAudio = tl.look === "simple"; // SIMPLE LOOK: one boom on the rule's key word, music ~12 dB under
+    const cues = sfx ? (simpleAudio ? simpleCues(tl, sfxCues(tl)) : sfxCues(tl)).filter((c) => c.t < length) : [];
     fs.writeFileSync(path.join(out, "sfx_cues.json"), JSON.stringify(cues, null, 1));
-    audioInfo = await mixAudio({ voice: voiceWav, music: musicWav, out: mixM4a, duration: length, sfxCues: cues });
+    audioInfo = await mixAudio({ voice: voiceWav, music: musicWav, out: mixM4a, duration: length, sfxCues: cues, ...(simpleAudio ? { musicUnderVoiceDb: AUDIO_SIMPLE.musicUnderVoiceDb } : {}) });
     audioInfo.musicOption = music ?? `mood ${idea.mood ?? "horror"}`;
   });
 

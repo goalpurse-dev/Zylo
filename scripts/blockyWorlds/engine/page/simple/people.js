@@ -71,6 +71,8 @@ export function makePerson(spec = {}) {
     shoes: solidOf(look.shoes === "skin" ? look.skin : look.shoes, "#2b2b33"),
     hair: solidOf(look.hairColor, "#6b3d1f"),
   };
+  // a kid never has grey / white hair (an elder outfit's colour can reach a kid through the bible)
+  if (role === "kid") { const hsl = {}; new THREE.Color(C.hair).getHSL(hsl); if (hsl.s < 0.18 && hsl.l > 0.45) C.hair = "#6b3d1f"; }
   if (cos.kind === "uniform") Object.assign(C, cos.variant === "postal" ? { shirt: "#5b9bd5", pants: "#1f3a6e" } : cos.variant === "fire" ? { shirt: "#c0392b", pants: "#2d3436" } : { shirt: "#24407a", pants: "#1b2440" }, { shoes: "#1e1e24" });
   if (cos.kind === "knight") Object.assign(C, { shirt: "#8b939c", pants: "#6f7780", shoes: "#4d5660" });
   const shirt = mat(C.shirt, { rough: 0.55 }), pants = mat(C.pants, { rough: 0.6 }), skin = mat(skinC, { rough: 0.5 }), shoe = mat(C.shoes, { rough: 0.5 }), hair = mat(C.hair, { rough: 0.6 });

@@ -38,10 +38,11 @@ test("shots tile [0, duration] exactly, cut at word starts", () => {
   });
 });
 
-test("cut pace: median shot 1.3-2.6 s", () => {
+// SIMPLE LOOK 2026-11-10 (owner): shots pinned to words at ~1.4 s on average (lib/wordTiming.js): the median sits lower
+test("cut pace: median shot 1.0-2.6 s", () => {
   const l = tl.shots.map(len).sort((a, b) => a - b);
   const median = l[l.length >> 1];
-  assert.ok(median >= 1.3 && median <= 2.6, `median ${median}`);
+  assert.ok(median >= 1.0 && median <= 2.6, `median ${median}`);
 });
 
 test("every line is covered", () => {

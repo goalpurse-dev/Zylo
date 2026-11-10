@@ -87,8 +87,9 @@ for (const id of RECIPE_IDS) {
     const { script, idea } = FAKE_SCRIPTS[id];
     const direction = await directStory({ script, idea, provider: "mock", exists });
     const words = estimateWords(script, 212);
-    const plain = planVideo({ script, words, idea, lengthSec: 90, direction, exists });
-    const tl = planVideo({ script, words, idea, lengthSec: 90, direction, exists, recipe: id });
+    // the recipe's own cuts (the simple look's word pacing re-cuts both plans afterwards: off here)
+    const plain = planVideo({ script, words, idea, lengthSec: 90, direction, exists, pace: false });
+    const tl = planVideo({ script, words, idea, lengthSec: 90, direction, exists, recipe: id, pace: false });
     const c0 = counts(plain, script), c1 = counts(tl, script);
     for (const k of Object.keys(c0)) assert.ok(c1[k] <= c0[k], `${k}: ${c1[k]} > ${c0[k]}`);
     assert.equal(tl.recipe.id, id);
@@ -99,7 +100,7 @@ for (const id of RECIPE_IDS) {
     for (let i = 1; i < tl.shots.length; i++) assert.ok(Math.abs(tl.shots[i].start - tl.shots[i - 1].end) < 1e-6, `gap at shot ${i}`);
     assert.ok(Math.abs(tl.shots.at(-1).end - tl.duration) < 0.05);
     // deterministic
-    const again = planVideo({ script, words, idea, lengthSec: 90, direction, exists, recipe: id });
+    const again = planVideo({ script, words, idea, lengthSec: 90, direction, exists, recipe: id, pace: false });
     assert.deepEqual(again.shots, tl.shots);
   });
 }

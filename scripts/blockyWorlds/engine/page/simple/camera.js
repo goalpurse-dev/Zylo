@@ -14,8 +14,8 @@ export { headShare };
 
 const DEG = Math.PI / 180;
 const ease = (p) => p * p * (3 - 2 * p);
-const SPAN_K = { medium: 1.25, closeup: 1.55 };
-const AIM_DROP = { medium: 0.05, closeup: 0.14 }; // aim a little below the head top: the hair never cut by the frame
+const SPAN_K = { medium: 1.25, closeup: 1.75 };
+const AIM_DROP = { medium: 0.05, closeup: 0.1 }; // aim a little below the head top: the hair never cut by the frame
 
 export function frameShot(type, ctx) {
   const { THREE, camera, set, t = 0, dur = 1 } = ctx;

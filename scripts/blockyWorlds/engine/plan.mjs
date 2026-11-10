@@ -20,6 +20,7 @@
 // still missing a noun first gets a catalog visual, else a picture card shot cut into its time -> timeline.visualReport.
 import { hashSeed } from "./lib/rng.js";
 import { norm, tokens, estimateWords, alignTokens, badgeWord } from "./lib/planText.js";
+import { pacePass } from "./lib/wordTiming.js";
 import { MUSIC_WORDS, notInHand, FAR_CAMERAS, OBJECT_CATALOG, HOLDABLE, extractKeys, covers, describeShot, cardFor, anchorsOf, ruleById, cleanTokens, heldKind, objectForNoun, ABSTRACT, ICONS, PLACE_SCENERY } from "./lib/visuals.js";
 import { subjectOf, genderOf, subjectLabel } from "./lib/subjects.js";
 import { creatureFor, CREATURES } from "./lib/catalog.js";
@@ -547,7 +548,7 @@ function pickCamera(prefs, hist, seg, focus, actorsN, monster) {
 }
 
 // ---------------------------------------------------------------- 6. the plan
-export function planVideo({ script, words, idea = {}, lengthSec = null, direction = null, exists = null, recipe = null, criticalMode = null, library = null, built = null } = {}) {
+export function planVideo({ script, words, idea = {}, lengthSec = null, direction = null, exists = null, recipe = null, criticalMode = null, library = null, built = null, pace = true } = {}) {
   if (!script?.lines?.length) throw new Error("planVideo: script.lines is empty");
   idea ??= {};
   const W = Array.isArray(words) && words.length ? words : estimateWords(script);
@@ -1014,6 +1015,14 @@ export function planVideo({ script, words, idea = {}, lengthSec = null, directio
   // CHARACTERS v2 (owner 2026-11-09): every actor's face from the line's emotion (never neutral by default);
   // sets a.face only, a.expr stays for the checks (lib/expressions.js)
   try { exprPass(tl, { production: tl.production ?? production, mood }); } catch (e) { tl.exprError = String(e?.message ?? e); }
+  // SIMPLE LOOK pacing (owner 2026-11-10): shots pinned to words ~1.4 s, every shot moves, faces / poses keyed on words
+  // (lib/wordTiming.js; every change kept only when the four pre-render checks are no worse)
+  if (tl.look === "simple" && pace !== false) {
+    try { tl.pacing = pacePass(tl, { check: check4, minPiece: PACE.minShot }); } catch (e) { tl.pacing = { error: String(e?.message ?? e) }; }
+    // the advisory reports describe the final cut
+    tl.style = styleReport(tl);
+    try { tl.story = storyReport(tl); } catch (e) { tl.story = { error: String(e?.message ?? e) }; }
+  }
   return tl;
 }
 

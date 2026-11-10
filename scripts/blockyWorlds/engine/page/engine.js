@@ -740,6 +740,21 @@ async function main() {
     const nudge = guardNudge(si, shot, camType, fctx, placed, where, carried);
     frameShot(camType, { ...fctx, other: other?.clone(), t: lt, nudge });
     }
+    // WORD DIRECTOR (experimental, lib/wordDirector.js): the director's own camera numbers for this shot (target,
+    // distance, yaw round the place's camera side, pitch, fov), kept inside the set's camera area
+    if (shot.cam && !epicCam) {
+      const c = shot.cam, tgt = new THREE.Vector3();
+      if (where[c.target] && PEOPLE[c.target]) tgt.copy(toScene(where[c.target].clone().setY(where[c.target].y + PEOPLE[c.target].h * 0.8)));
+      else if (c.target === "object" && shotObjs[0]) new THREE.Box3().setFromObject(shotObjs[0].obj).getCenter(tgt);
+      else if (c.target === "monster" && monster?.visible) tgt.copy(monster.position).setY(monster.position.y + monsterH * 0.6);
+      else if (placed.length) { placed.forEach((p) => tgt.add(toScene(p.pos))); tgt.divideScalar(placed.length); tgt.y += 1.2; }
+      else tgt.copy(toScene(spots.center.clone())).setY(spots.center.y + 1.4);
+      const side = (S.camDir ?? new THREE.Vector3(0, 0, 1)).clone().setY(0).normalize().applyAxisAngle(new THREE.Vector3(0, 1, 0), (Number(c.yaw) || 0) * Math.PI / 180);
+      const pitch = (Number(c.pitch) || 0) * Math.PI / 180, dist = Math.max(0.8, Number(c.distance) || 3);
+      const pos = tgt.clone().addScaledVector(side, Math.cos(pitch) * dist); pos.y += Math.sin(pitch) * dist;
+      if (S.bounds?.length && !S.bounds.some((b) => b.containsPoint(pos))) { let best = null, bd = Infinity; for (const b of S.bounds) { const q = b.clampPoint(pos, new THREE.Vector3()); const d = q.distanceTo(pos); if (d < bd) { bd = d; best = q; } } if (best) pos.copy(best); }
+      camera.position.copy(pos); camera.fov = Number(c.fov) || 40; camera.updateProjectionMatrix(); camera.up.set(0, 1, 0); camera.lookAt(tgt); camera.updateMatrixWorld();
+    }
     // VISUAL-FIX 2026-11-08: the shot's camera move (lib/camMove.js) over whichever framing placed the camera
     if (shot.camMove && !shot.move) applyCamMove(camera, shot.camMove, lt, dur, shot.seed ?? si);
     // LOOK-FIX 2026-11-08 (owner: "the tower close-up is a flat maroon wall"): never inside or touching a scene object
