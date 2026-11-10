@@ -49,11 +49,7 @@ export default function HomeV2() {
       <div className={`mx-auto w-full ${HOME_MAX_W}`}>
       <WhatsNewRow />
 
-      <TutorialsRow />
-
-      <LongFormSection />
-
-      {/* Short Form: the "short form suite" coverflow is the templates section */}
+      {/* Short Form: the "short form suite" coverflow is the templates section (owner, 2026-11-10: above Long Form) */}
       <div className="mt-12">
         {/* The coverflow keeps animating when hidden, so a phone drops it once it knows (the first render keeps its links for crawlers). */}
         {!phone && <div className="hidden md:block"><ZyvoSuiteCarousel title="short form suite" items={templates} subtitle="Short Form templates for TikTok, Reels & Shorts" /></div>}
@@ -65,11 +61,16 @@ export default function HomeV2() {
         </p>
       </div>
 
+      <LongFormSection />
+
       {/* Blocky Stories' own section, right above the featured template and built the same way (launched only). */}
       {blockyLive && <FeaturedTemplate template={BLOCKY_TEMPLATE} testId="featured-blocky" />}
 
       {/* Featured template (src/data/homeContent.js: FEATURED_TEMPLATE) */}
       <FeaturedTemplate />
+
+      {/* Tutorials, under the featured template (owner, 2026-11-10) */}
+      <TutorialsRow />
 
       {/* Hidden for users without projects */}
       <JumpBackInV2 />

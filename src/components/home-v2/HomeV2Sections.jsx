@@ -273,7 +273,15 @@ export function WhatsNewRow() {
     hunt && <BannerCard key="yt" testId="wn-showcase" art={<LazyLoopVideo {...MADE_WITH_ZYVO_LOOP} className="absolute inset-0" />}
       title={`Made with Zyvo: ${hunt.title}`} cta="Watch on YouTube" href={hunt.youtube_url}
       onClick={() => trackLaunch("showcase_click", { placement: "whats_new_row", target: hunt.youtube_url, videoId: hunt.id })} />,
-    tutorial && <BannerCard key="tut" testId="wn-tutorial" art={<img src={showcaseThumb(tutorial)} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />}
+    // the thumbnail whole, in its own 16:9 shape on the right (never stretched or cropped to the card), a blurred copy
+    // behind it, and the words on a dark fade on the left
+    tutorial && <BannerCard key="tut" testId="wn-tutorial" art={(
+      <div className="absolute inset-0 overflow-hidden">
+        <img src={showcaseThumb(tutorial)} alt="" aria-hidden="true" loading="lazy" className="absolute inset-0 h-full w-full scale-125 object-cover opacity-35 blur-2xl" />
+        <img src={showcaseThumb(tutorial)} alt="" loading="lazy" className="absolute right-0 top-0 aspect-video h-full max-w-none object-cover transition duration-500 group-hover:scale-[1.03]" />
+        <div className="absolute inset-y-0 left-0 w-[75%] bg-gradient-to-r from-[#101312] via-[#101312]/85 to-transparent" />
+      </div>
+    )}
       title="Watch the tutorial" sub={tutorial.title} cta="Watch" href={tutorial.youtube_url}
       onClick={() => trackLaunch("tutorial_click", { placement: "whats_new_row", target: tutorial.youtube_url })} />,
     <BannerCard key="earn" testId="wn-earn" display="hidden min-[1920px]:block" art={<CreditsArt />} title="Earn free credits" sub="Post about Zyvo and earn credits for every view" cta="Learn more"
