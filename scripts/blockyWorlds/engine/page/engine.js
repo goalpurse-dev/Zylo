@@ -135,7 +135,27 @@ function validate(tl, { setNames = null, poses = null, exprs = null, objects = n
 }
 
 const hz = (v) => new THREE.Vector3(v.x, 0, v.z);
+const ms0 = (s) => !!(s.monsterState || s.focus === "monster");
 const yawTo = (from, to) => Math.atan2(to.x - from.x, to.z - from.z);
+
+// SIMPLE LOOK: a group's formation round the centre spot ([lateral, depth] metres; depth < 0 = further from the lens):
+// the subject in front, the next two half a step behind to each side, then a back row; extras last
+const FORMATION = [[0, 0], [-0.66, -0.72], [0.66, -0.72], [-1.25, -1.45], [1.25, -1.45], [-0.1, -1.5], [-1.9, -2.1], [1.9, -2.1]];
+function simpleFormation(placed, spots, S, shot) {
+  const free = placed.filter((p) => !p.fixed);
+  const subj = free.find((p) => p.id === shot.subject) ?? free.find((p) => p.id === "me") ?? null;
+  const order = [...(subj ? [subj] : []), ...free.filter((p) => p !== subj && !/^extra\d/.test(p.id)), ...free.filter((p) => p !== subj && /^extra\d/.test(p.id))];
+  const base = spots.center;
+  order.forEach((p, i) => { const [l, d] = FORMATION[Math.min(i, FORMATION.length - 1)]; p.pos.copy(base).addScaledVector(S.lateral, l).addScaledVector(S.depth, -d).setY(base.y); });
+}
+/** the value of a word-keyed list ([{ at, ... }], at = shot-local seconds, sorted) at lt: { cur, prev, since } */
+function keyAt(list, lt) {
+  if (!Array.isArray(list) || !list.length) return null;
+  let i = -1; for (let k = 0; k < list.length; k++) if ((list[k].at ?? 0) <= lt + 1e-6) i = k;
+  return i < 0 ? { cur: list[0], prev: null, since: Infinity } : { cur: list[i], prev: i > 0 ? list[i - 1] : null, since: lt - (list[i].at ?? 0) };
+}
+/** a pose change (on a word, or from the same person's pose in the shot before, on the same set) blends over this */
+const POSE_BLEND_SEC = 0.25;
 
 async function main() {
   const tlUrl = Q.get("tl");
@@ -144,6 +164,12 @@ async function main() {
   if (!res.ok) throw new Error(`engine: timeline ${tlUrl}: HTTP ${res.status}`);
   const tl = await res.json();
   const W = tl.width ?? 1080, H = tl.height ?? 1920;
+  // SIMPLE LOOK 2026-11-10 (owner: "the simple test look is the production look"): timeline.look === "simple" swaps in
+  // the simple-look people, sets + light, camera and post chain (page/simple/*.js); everything else (objects, monsters,
+  // EPIC, the checks' fields) is shared. Stubs still win (?stubs=...).
+  const SIMPLE_LOOK = tl.look === "simple";
+  if (SIMPLE_LOOK) Object.assign(REAL, { people: "/page/simple/people.js", sets: "/page/simple/sets.js", camera: "/page/simple/camera.js" });
+  const postM = SIMPLE_LOOK ? await import("/page/simple/post.js") : { makeRenderer, makePost };
 
   const [peopleM, monstersM, propsM, setsM, cameraM, captionsM] = await Promise.all(["people", "monsters", "props", "sets", "camera", "captions"].map(load));
   const makePerson = need(peopleM, "makePerson"), posePerson = need(peopleM, "posePerson"), setFace = need(peopleM, "setFace"), personHeight = need(peopleM, "personHeight");
@@ -181,7 +207,7 @@ async function main() {
   });
 
   // ---------- renderer, output canvas, post ----------
-  const renderer = makeRenderer(W, H);
+  const renderer = postM.makeRenderer(W, H);
   renderer.domElement.id = "gl";
   document.body.appendChild(renderer.domElement);
   const out = document.createElement("canvas"); out.width = W; out.height = H; out.id = "out";
@@ -198,7 +224,7 @@ async function main() {
   const subjLight = makeSubjectLight(THREE, scene);
   const winter = isWinter(tl) ? makeWinter(THREE, scene, { seed: tl.world?.seed ?? 1 }) : null;
   if (winter) console.log("engine: winter world (snow, frost, falling snow)");
-  const post = makePost({ renderer, scene, camera, W, H, query: Q });
+  const post = postM.makePost({ renderer, scene, camera, W, H, query: Q, tl });
 
   // ---------- loading (tracked so ready waits for every texture and model) ----------
   const LM = THREE.DefaultLoadingManager, loadErrors = [];
@@ -230,7 +256,7 @@ async function main() {
   if (epic) { const p = epic.problems(); if (p.length) throw new Error(`engine: the timeline has ${p.length} EPIC problem(s):\n- ${p.slice(0, 25).join("\n- ")}`); }
   for (const name of [...new Set(tl.shots.map((s) => s.set))]) {
     const S = /^world:/.test(name) ? await worldM.buildWorld(tl.assets[name.slice(6)].spec, { THREE, scene, renderer, gltf, tex, ...(epic ? { buildCreatureWorld: epic.buildCreatureWorld } : {}) })
-      : epic && /^creature:/.test(name) ? await epic.buildSet(name) : await buildSet(name, { THREE, scene, renderer, gltf, tex, bus: busNamed }); // LOOK-LEFTOVERS: the town bus only when a line names one
+      : epic && /^creature:/.test(name) ? await epic.buildSet(name) : await buildSet(name, { THREE, scene, renderer, gltf, tex, bus: busNamed, tl }); // LOOK-LEFTOVERS: the town bus only when a line names one
     if (S?.problems?.length) console.warn(`engine: built world ${name}: ${S.problems.slice(0, 8).join("; ")}`);
     S.blockers ??= [];
     if (!S?.root?.isObject3D) throw new Error(`engine: buildSet("${name}") returned no root Object3D`);
@@ -239,7 +265,7 @@ async function main() {
     if (!S.root.parent) scene.add(S.root);
     S.root.visible = false;
     // the set's depth axis (center -> far) and its lateral axis, for spreading people sideways
-    const d = hz(S.spots.far).sub(hz(S.spots.center));
+    const d = S.depthDir ? S.depthDir.clone().setY(0) : hz(S.spots.far).sub(hz(S.spots.center)); // SIMPLE LOOK: a set may name its depth axis (the street's far spot is down the road)
     S.depth = d.lengthSq() > 1e-4 ? d.normalize() : new THREE.Vector3(0, 0, -1);
     S.lateral = new THREE.Vector3(-S.depth.z, 0, S.depth.x);
     S.setWindows ??= () => {}; // only the street has houses with windows
@@ -504,7 +530,9 @@ async function main() {
       const half = (u.width ?? 1) / 2 + 0.45;
       side.forEach((a, i) => { const s = i % 2 ? 1 : -1, k = Math.floor(i / 2); placed.push({ id: a.id, a, pos: base.clone().addScaledVector(S.lateral, s * (half + k * 0.9)).addScaledVector(fwd, 0.15).setY(base.y) }); });
     }
-    if (shot.focus === "group" && EXTRAS.length) {
+    // SIMPLE LOOK: a wide place shot nobody stands in is the set's establishing view (no townsfolk added)
+    const establishShot = SIMPLE_LOOK && !(shot.actors ?? []).length && !(shot.objects ?? []).length && !ms0(shot) && shot.camera === "wide";
+    if (shot.focus === "group" && EXTRAS.length && !establishShot) {
       const r = rng((shot.seed ?? 1) * 7 + 3), n = 2 + r.int(0, 2), mood = shot.actors?.[0]?.pose;
       for (let i = 0; i < n; i++) {
         const pos = spots.back.clone().addScaledVector(S.lateral, (i - (n - 1) / 2) * 1.15 + r.range(-0.2, 0.2)).addScaledVector(S.depth, r.range(-0.4, 0.4));
@@ -512,6 +540,8 @@ async function main() {
         placed.push({ id: EXTRAS[i], a: { id: EXTRAS[i], pose, expr: pose === "scared" ? "scared" : r.pick(["neutral", "happy", "smirk"]), facing: "camera", phase: r.range(0, 2) }, pos });
       }
     }
+    // SIMPLE LOOK (owner 2026-11-10: "group shots: characters fill the frame"): a group stands in a staggered formation
+    if (SIMPLE_LOOK && shot.focus === "group") simpleFormation(placed, spots, S, shot);
     // 2026-11-05 (GAPS): actions that place people relative to someone / something
     //   hug: two people both posed "hug" stand face to face, close (their arms round each other), side-on to the lens
     //   ride: the rider sits on the shot's mount (the object at their spot, else an animal / vehicle / built thing in the
@@ -703,7 +733,10 @@ async function main() {
       const c = carried.get(shot.focus);
       focus = where[c.id].clone(); focusHeight = PEOPLE[c.id].h * 0.85;
     }
-    const fctx = { THREE, camera, set: S, focus, focusHeight, other, otherHeight: otherH, otherRadius: otherR, dur, seed: shot.seed ?? si };
+    const fctx = { THREE, camera, set: S, focus, focusHeight, other, otherHeight: otherH, otherRadius: otherR, dur, seed: shot.seed ?? si,
+      // SIMPLE LOOK: a group's people (the lens fits the formation), a place shot with nobody in it (the establishing view)
+      ...(SIMPLE_LOOK && shot.focus === "group" && placed.length >= 2 ? { group: placed.filter((p) => PEOPLE[p.id]).map((p) => ({ pos: p.pos.clone(), h: PEOPLE[p.id].h })) } : {}),
+      ...(establishShot ? { establish: true } : {}) };
     const nudge = guardNudge(si, shot, camType, fctx, placed, where, carried);
     frameShot(camType, { ...fctx, other: other?.clone(), t: lt, nudge });
     }
@@ -748,8 +781,18 @@ async function main() {
       if (p.faceAt) yaw = yawTo(p.pos, p.faceAt);
       o.rotation.set(0, yaw, 0);
       const baby = a.id && carried.size ? [...carried].find(([, c]) => c === a)?.[0] : null;
-      const pose = p.noMount ? "walk" : a.pose ?? "stand";
-      const poseArgs = [pose, lt + (a.phase ?? 0), { ...(p.opts ?? {}), ...(extra ?? {}), hold: baby ? null : a.hold ?? null }];
+      // POSES / FACES ON WORDS (owner 2026-11-10): a.poses / a.faces = [{ at (shot-local s, a word's start), pose | face }]
+      // (lib/wordTiming.js); a pose change blends over POSE_BLEND_SEC, also from this person's pose in the shot before
+      // when that shot is on the same set (the cut keeps the motion going)
+      const pk = keyAt(a.poses, lt);
+      const pose = p.noMount ? "walk" : pk?.cur?.pose ?? a.pose ?? "stand";
+      let blendFrom = null;
+      if (pk?.prev && pk.since < POSE_BLEND_SEC && pk.prev.pose !== pose) blendFrom = { pose: pk.prev.pose, t: lt + (a.phase ?? 0), k: pk.since / POSE_BLEND_SEC };
+      else if (lt < POSE_BLEND_SEC && si > 0 && tl.shots[si - 1].set === shot.set) {
+        const pa = (tl.shots[si - 1].actors ?? []).find((x) => x.id === a.id), pp = pa ? pa.poses?.at(-1)?.pose ?? pa.pose ?? "stand" : null;
+        if (pp && pp !== pose) blendFrom = { pose: pp, t: lt + (a.phase ?? 0), k: lt / POSE_BLEND_SEC };
+      }
+      const poseArgs = [pose, lt + (a.phase ?? 0), { ...(p.opts ?? {}), ...(extra ?? {}), hold: baby ? null : a.hold ?? null, ...(blendFrom ? { blendFrom } : {}) }];
       o.userData.grip = null;
       posePerson(o, ...poseArgs);
       // LOOK-FIX 2026-11-08 (owner: "held props must never cover a face"): a long prop's grip is the first one (side,
@@ -765,7 +808,7 @@ async function main() {
         if (o.userData.grip !== best.g) { o.userData.grip = best.g; posePerson(o, ...poseArgs); }
         o.userData.faceCover = best.ov;
       }
-      setFace(o, a.face ?? a.expr ?? "neutral");
+      setFace(o, keyAt(a.faces, lt)?.cur?.face ?? a.face ?? a.expr ?? "neutral");
       // ATTACH: on a sloped back (the shell's dome) the planted sole edge sits ON the slope: the lowest foot's gap to the
       // walkable surface under it (S.surface, memoised, mount coordinates) is taken out every frame
       if (mount && S.surface && !o.userData.offGround && !baby) {
@@ -850,6 +893,12 @@ async function main() {
     }
     winter?.update(t, camera); // LOOK-FIX: falling snow, deterministic in t
     const subjLit = subjLight.aim(camera, subjBox, shot.light);
+    // SIMPLE LOOK: the close-up's depth of field focuses on the subject's head (page/simple/post.js)
+    if (post.setFocus && shot.camera === "closeup") {
+      const fid = where[shot.focus] && PEOPLE[shot.focus] ? shot.focus : placed[0]?.id;
+      if (fid && where[fid] && PEOPLE[fid]) post.setFocus(camPos.distanceTo(toScene(where[fid].clone().setY(where[fid].y + PEOPLE[fid].headC))));
+      else post.setFocus(Math.max(1, camPos.distanceTo(toScene(spots.center.clone().setY(spots.center.y + 1.4)))));
+    }
     // render, then the caption on top in the output canvas
     const R0 = performance.now();
     post.render();

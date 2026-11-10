@@ -78,6 +78,8 @@ export const SPOTS = ["center", "left", "right", "back", "far", "door"];
 export const MONSTER_STATES = ["lurk", "reach", "reveal", "flee"];
 
 export const PACE = Object.freeze({ minShot: 0.8, splitAt: 2.3, split3At: 4.6, tail: 0.4 });
+/** the render look of every planned timeline (owner 2026-11-10: the simple test look is the production look; page/simple/*.js) */
+export const LOOK = "simple";
 
 const r3 = (x) => Math.round(x * 1000) / 1000;
 const has = (re, s) => re.test(s);
@@ -930,7 +932,7 @@ export function planVideo({ script, words, idea = {}, lengthSec = null, directio
   }
 
   const tl = {
-    version: 1, fps: 24, width: 1080, height: 1920, duration, title, lengthSec,
+    version: 1, fps: 24, width: 1080, height: 1920, duration, title, lengthSec, look: LOOK,
     cast,
     ...(Object.keys(world.pets ?? {}).length ? { pets: world.pets } : {}),
     monster: world.monster ? { type: world.monster.type, name: world.monster.name, glow: world.monster.glow, ...(world.monster.variant ? { variant: world.monster.variant, ...(world.monster.species ? { species: world.monster.species } : {}) } : {}), ...(world.monster.lairPhrase ? { lair: world.monster.lairPhrase } : {}) } : null,
