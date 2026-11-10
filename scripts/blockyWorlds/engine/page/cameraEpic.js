@@ -147,6 +147,29 @@ export function frameEpic(type, ctx) {
   return camera;
 }
 
+/**
+ * INSERTS 2026-11-10 (#3 at sea): the camera that makes a giant FILL the frame, seen from horizontal direction dir (from
+ * the giant toward the camera): the distance where its box's projected width fills `fill` of the narrow 9:16 width and
+ * its height fills at most `fillV` of the frame height, a low camera (heightK of its height above its base, never under
+ * minY) aimed at its middle: a creature against the sky / the far sea, not a speck in a blue frame. Pure.
+ *   -> { pos, aim, dist, fov }
+ */
+export function giantFillView({ THREE, box, dir, aspect = 9 / 16, fov = 50, fill = 0.82, fillV = 0.62, heightK = 0.28, minY = 2, push = 0 }) {
+  const c = box.getCenter(new THREE.Vector3()), d = dir.clone().setY(0).normalize();
+  const perp = new THREE.Vector3(d.z, 0, -d.x);
+  let halfW = 0, halfD = 0;
+  for (const x of [box.min.x, box.max.x]) for (const z of [box.min.z, box.max.z]) {
+    const v = new THREE.Vector3(x - c.x, 0, z - c.z);
+    halfW = Math.max(halfW, Math.abs(v.dot(perp))); halfD = Math.max(halfD, Math.abs(v.dot(d)));
+  }
+  const h = Math.max(0.5, box.max.y - box.min.y), vf = fov * DEG, hf = 2 * Math.atan(Math.tan(vf / 2) * aspect);
+  const dist = Math.max(halfW / fill / Math.tan(hf / 2), (h / 2) / fillV / Math.tan(vf / 2)) + halfD;
+  const D = dist * (1 - push);
+  const pos = c.clone().addScaledVector(d, D); pos.y = Math.max(minY, box.min.y + h * heightK);
+  const aim = new THREE.Vector3(c.x, box.min.y + h * 0.5, c.z);
+  return { pos, aim, dist: D, fov };
+}
+
 /** applyShake(camera, preset, t, opts): offsets the already-framed camera (position in its own axes + small rotations) */
 export function applyShake(camera, preset, t, opts = {}) {
   const s = shake(preset, t, opts);

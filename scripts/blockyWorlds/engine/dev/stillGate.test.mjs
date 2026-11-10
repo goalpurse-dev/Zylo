@@ -105,6 +105,20 @@ test("geometry gate: subjects by focus (group, crowd, giant, object) and the fac
   assert.deepEqual(codesOf(measureGeometry(THREE, scene, cam, { focus: "giant:watcher" }), { focus: "giant:watcher" }), []);
   giant.visible = false;
   assert.ok(codesOf(measureGeometry(THREE, scene, cam, { focus: "giant:watcher" }), { focus: "giant:watcher" }).includes("subject_missing"), "an invisible giant is not on screen");
+  // INSERTS 2026-11-10 (#3 s67 / s68): a wolf whose head pokes in at the frame's edge, the body out of frame, is NOT
+  // seen (the head anchor alone passed it); the whole wolf in frame is; its close-up keeps the head-anchor rule
+  const wolf = new THREE.Group(); wolf.name = "giant:wolf"; const mat = new THREE.MeshStandardMaterial();
+  for (let k = 0; k < 6; k++) { const b = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), mat); b.position.set(-k * 1.0, 1, 0); wolf.add(b); }
+  const hj = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.6, 0.6), mat); hj.position.set(0.8, 1.2, 0); wolf.add(hj); wolf.userData.joints = { head: hj };
+  wolf.position.set(-1.85, 0, -2); scene.add(wolf); scene.updateMatrixWorld(true);
+  const W = { focus: "giant:wolf", camera: "establish", actors: [] };
+  const gw = measureGeometry(THREE, scene, cam, W);
+  assert.ok(gw.subject.anchors[0].inFrame, "the head anchor is in frame");
+  assert.ok(codesOf(gw, W).includes("subject_missing"), `a head at the edge is no wolf: ${JSON.stringify(gw.subject)}`);
+  assert.deepEqual(codesOf(measureGeometry(THREE, scene, cam, { ...W, camera: "giant_close" }), { ...W, camera: "giant_close" }).filter((c) => c === "subject_missing"), [], "giant_close: the head is the subject");
+  wolf.position.set(1.0, 0, -12); scene.updateMatrixWorld(true);
+  assert.ok(!codesOf(measureGeometry(THREE, scene, cam, W), W).includes("subject_missing"), "the whole wolf in frame is seen");
+  wolf.visible = false; scene.updateMatrixWorld(true);
   p.rotation.y = Math.PI; scene.updateMatrixWorld(true);
   const w = geoReasons(measureGeometry(THREE, scene, cam, SHOT), SHOT);
   assert.deepEqual(w.fail, []); assert.equal(w.warn[0]?.code, "face_hidden");

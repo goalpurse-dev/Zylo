@@ -46,6 +46,10 @@ export const GATE = Object.freeze({
   // up to rayFar m (three.js skips every mesh / instance whose bounding sphere starts further); a ray with no hit inside
   // that range is "far geometry" when it crosses a mesh's world box (the subject's box: on the subject), else sky
   rayFar: 45,
+  // INSERTS 2026-11-10: a giant subject counts by its body (#3 s67 / s68 passed on a head at the frame's edge): at least
+  // giantBody of up to giantSamples part centres in frame and unhidden, or giantRays of the ray grid on it
+  // (giant_close keeps the head anchor rule)
+  giantBody: 0.25, giantSamples: 24, giantRays: 0.12,
   // the owner's BLANK frame (GATE 2026-11-09, the look gate's measure.py "uniform > 0.45": one smooth region, sky / wall,
   // covering 45% of the frame): cells whose step to all 4 neighbours is under uniStep, joined when their colours differ
   // less than uniJoin; calibrated on 283 stills + reference frames (caught 5 of 6 measure.py blanks, no false alarm)
@@ -266,6 +270,10 @@ export function measureGeometry(THREE, scene, camera, shot, { cols = 6, rows = 1
       const first = d > 0.05 ? rc.intersectObjects(reach(rc.ray, d), false)[0] : null;
       const hidden = !!first && first.distance < d - 0.35 && rootOf(first.object) !== root;
       const a = { id: nameOf(root), inFrame, hidden, dist: r3(d), ndc: [r3(v.x), r3(v.y)] };
+      // INSERTS 2026-11-10 (#3 s67 / s68: forest + sea, the wolf only a head at the frame's edge, passed on its head
+      // anchor): a giant counts by its BODY: rays to up to giantSamples of its parts' centres; seen = in frame and the
+      // first hit is the giant itself. The giant's close-up (its head on purpose) keeps the anchor rule.
+      if (nameOf(root).startsWith("giant:")) a.body = giantBody(THREE, root, camera, camPos, rc, reach, rootOf, shot?.camera === "giant_close" ? null : T.giantBody ?? 0.25, T.giantSamples ?? 24);
       if (nameOf(root).startsWith("person:")) {
         const fwd = new THREE.Vector3(0, 0, 1).applyQuaternion(root.getWorldQuaternion(new THREE.Quaternion())).setY(0).normalize();
         a.face = r3(fwd.dot(camPos.clone().sub(p).setY(0).normalize()));
@@ -325,11 +333,36 @@ export function measureGeometry(THREE, scene, camera, shot, { cols = 6, rows = 1
   } finally { for (const [mat, side] of saved) mat.side = side; }
 }
 
-/** is the shot's subject on screen (geo.subject): no subject asked, a ray on it, or an anchor in frame and not hidden */
+/** a giant's body seen from the camera: { pts, inFrame, seen, share, need } (rays to its parts' centres) */
+function giantBody(THREE, root, camera, camPos, rc, reach, rootOf, need, max) {
+  const parts = [];
+  root.traverse((o) => { if (isMeshLike(o) && o.geometry && visibleChain(o) && !o.isPoints && !o.isLine) parts.push(o); });
+  const step = Math.max(1, parts.length / max);
+  let pts = 0, inF = 0, seen = 0;
+  for (let f = 0; f < parts.length && pts < max; f += step) {
+    const m = parts[Math.floor(f)];
+    if (!m.geometry.boundingSphere) m.geometry.computeBoundingSphere();
+    const bs = m.geometry.boundingSphere; if (!bs || !Number.isFinite(bs.radius)) continue;
+    const q = bs.center.clone().applyMatrix4(m.matrixWorld); pts++;
+    const v = q.clone().project(camera);
+    if (!(v.z < 1 && v.z > -1 && Math.abs(v.x) <= 1 && Math.abs(v.y) <= 1)) continue;
+    inF++;
+    const dir = q.clone().sub(camPos), d = dir.length(); if (d < 0.05) continue;
+    rc.set(camPos, dir.normalize()); rc.near = 0.02; rc.far = d + 0.01;
+    const first = rc.intersectObjects(reach(rc.ray, d), false)[0];
+    if (!first || rootOf(first.object) === root || first.distance >= d - 0.35) seen++;
+  }
+  return { pts, inFrame: inF, seen, share: pts ? r3(seen / pts) : 0, need };
+}
+
+/** is the shot's subject on screen (geo.subject): no subject asked, a ray on it, or an anchor in frame and not hidden.
+ *  A giant (anchor with a body measure): its body share seen >= its need, or giantRays of the ray grid on it */
 export function subjectSeen(s) {
   if (!s || s.mode === "none") return true;
   if (!s.roots) return !!s.soft;
-  return s.rays > 0 || (s.anchors ?? []).some((a) => a.inFrame && !a.hidden);
+  const an = s.anchors ?? [];
+  if (an.length && an.every((a) => a.body && a.body.need != null)) return s.rays >= (GATE.giantRays ?? 0.12) || an.some((a) => a.body.share >= a.body.need);
+  return s.rays > 0 || an.some((a) => a.inFrame && !a.hidden);
 }
 
 /** the geometry rules -> { fail, warn } */
@@ -346,7 +379,7 @@ export function geoReasons(g, shot = null, T = GATE) {
   if (g.sky >= T.geoSkyShare || (g.sky >= T.geoSkyNoSubject && !ok)) fail.push({ code: "sky_only", why: `${pc(g.sky)} of the rays hit nothing (sky), pitch ${g.pitch} deg` });
   if (!ok) {
     const a = s.anchors ?? [];
-    fail.push({ code: "subject_missing", why: `${s.focus}: ${!s.roots ? "not on the set in this shot" : a.map((x) => `${x.id} ${!x.inFrame ? `out of frame ${JSON.stringify(x.ndc)}` : "hidden behind something"}`).join("; ") || "not visible"}` });
+    fail.push({ code: "subject_missing", why: `${s.focus}: ${!s.roots ? "not on the set in this shot" : a.map((x) => `${x.id} ${x.body?.need != null ? `body ${x.body.seen}/${x.body.pts} parts seen (${x.body.inFrame} in frame; want ${Math.round(x.body.need * 100)}%)` : !x.inFrame ? `out of frame ${JSON.stringify(x.ndc)}` : "hidden behind something"}`).join("; ") || "not visible"}` });
   }
   const close = ["closeup", "medium"].includes(shot?.camera);
   const faces = (s.anchors ?? []).filter((a) => a.inFrame && !a.hidden && a.face != null);

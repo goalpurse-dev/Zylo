@@ -19,6 +19,7 @@
 //   shotGrammarPass(tl, { check, critical, production }) -> report (tl.shape.grammar)
 import { headShare } from "../page/camera.js";
 import { OBJECT_CATALOG } from "./visuals.js";
+import { designedInsertFor, isDesignedInsert, clockTime } from "./insertKit.js";
 
 export const GRAMMAR = Object.freeze({
   // calibrated 2026-11-09 to the LOOK-TARGET reference (73 frames): face close-up 22 % + medium single 16 %, full-frame
@@ -35,6 +36,10 @@ export const GRAMMAR = Object.freeze({
   insertMinShot: 0.9,        // a split never leaves a shot shorter than this (s); a spare shot is re-dressed first (the
                              // reference holds ~1.8 s a shot: inserts never make the cutting faster than it must)
   maxPerItem: 3,             // hero inserts per story object (first mention + payoff + one more when the mix is short)
+  // INSERTS 2026-11-10 (owner: "bold designed props and screens like the reference"): a line that names a time /
+  // countdown / sign / poster / screen / notice gets the designed insert (lib/insertKit.js), framed nearly full-frame
+  designedFit: 0.85,         // the designed insert's share of the frame at the start of its push in (the clock face fills it)
+  designedMax: 4,            // designed inserts per video (one per line)
 });
 
 const CLASSES = ["character", "insert", "world", "action"];
@@ -129,6 +134,9 @@ function heroItems(critical, production, shots) {
 function heroObject(it, shots) {
   const assetId = it.asset?.id ?? null;
   const nm = String(it.name ?? "").toLowerCase();
+  // INSERTS 2026-11-10: a story's clock (not a clock tower) gets the designed wall clock (its face full-frame)
+  if (it.kitName === "clock" && !/\btower\b/.test(nm)) return { name: /\balarm\b/.test(nm) ? "alarm_clock" : "wall_clock", facing: "camera" };
+  if (isDesignedInsert(it.kitName)) return { name: it.kitName, facing: "camera" };
   const match = (o) => (assetId && o.asset === assetId) || (it.kitName && (o.name === it.kitName || (o.name === "item" && o.state === it.kitName))) || (!it.kitName && !assetId && String(o.name).toLowerCase() === nm);
   for (const s of shots) for (const o of s.objects ?? []) if (!o.life && match(o)) { const { spot, facing, ...rest } = o; return { ...rest, facing: "camera" }; }
   if (assetId) return { name: nm, asset: assetId, ...(it.asset.aliases?.length ? { aliases: it.asset.aliases } : {}), facing: "camera" };
@@ -170,9 +178,9 @@ function cutIn(tl, s, words) {
 }
 
 /** dress shot s as the hero insert of item (the object alone, whole, centred, a slow push in from GRAMMAR.insertFit) */
-function dressInsert(s, item, at, camera) {
+function dressInsert(s, item, at, camera, lineText = null) {
   const keep = (s.objects ?? []).find((o) => o.name === item.obj.name && (o.asset ?? null) === (item.obj.asset ?? null) && (o.state ?? null) === (item.obj.state ?? null));
-  s.objects = [{ ...item.obj, spot: keep?.spot ?? "center", facing: "camera" }];
+  s.objects = [{ ...item.obj, ...designedContent(item.obj, lineText), spot: keep?.spot ?? "center", facing: "camera" }];
   s.actors = [];
   s.focus = "object";
   s.camera = camera;
@@ -180,8 +188,18 @@ function dressInsert(s, item, at, camera) {
   for (const k of ["subjectWith", "subjectAbsent", "markers", "crowds", "giants", "beat", "tethers", "siege", "fx", "acts", "move", "shake", "tilt", "seq", "monsterState"]) delete s[k];
   s.monsterState = null; s.marker = null; s.insert = null;
   s.visuals = [];
-  s.hero = { item: item.id, name: item.name, at };
-  s.camMove = { type: "push_in", speed: "slow", fit: GRAMMAR.insertFit };
+  s.hero = { item: item.id, name: item.name, at, ...(isDesignedInsert(item.obj.name) ? { designed: item.obj.name } : {}) };
+  s.camMove = { type: "push_in", speed: "slow", fit: isDesignedInsert(item.obj.name) ? GRAMMAR.designedFit : GRAMMAR.insertFit };
+}
+
+/** a designed insert's content from its line (the clock's time, the countdown, the screen's words); the object's own
+ *  content (a designed-pass item) wins; a clock with no time in the line shows 7:00 */
+function designedContent(obj, lineText) {
+  if (!isDesignedInsert(obj.name) || obj.text != null || obj.secs != null) return {};
+  const d = lineText ? designedInsertFor(lineText) : null;
+  if (d && d.name === obj.name) return { ...(d.text != null ? { text: d.text } : {}), ...(d.secs != null ? { secs: d.secs } : {}), ...(d.state ? { state: d.state } : {}) };
+  if (/clock$/.test(obj.name)) return { text: clockTime(lineText ?? "") ?? "7:00" };
+  return {};
 }
 
 /** shots of `item` already framed as its hero (or a lone object shot of it that can simply be marked) */
@@ -189,8 +207,10 @@ function markExisting(tl, item, li) {
   for (const [s] of shotsOfLine(tl, li)) {
     if (isHeroOf(s, item)) return true;
     const o = s.objects?.[0];
-    if (!isCard(s) && s.focus === "object" && !(s.actors ?? []).length && o && o.name === item.obj.name && (o.asset ?? null) === (item.obj.asset ?? null) && ["medium", "wide"].includes(s.camera)) {
-      s.hero = { item: item.id, name: item.name, at: "marked" }; s.camMove = { type: "push_in", speed: "slow", fit: GRAMMAR.insertFit }; delete s.move;
+    const des = isDesignedInsert(item.obj.name);
+    if (!isCard(s) && s.focus === "object" && !(s.actors ?? []).length && o && o.name === item.obj.name && (o.asset ?? null) === (item.obj.asset ?? null) && (des ? s.camera === "wide" : ["medium", "wide"].includes(s.camera))) {
+      s.hero = { item: item.id, name: item.name, at: "marked", ...(des ? { designed: o.name } : {}) }; s.camMove = { type: "push_in", speed: "slow", fit: des ? GRAMMAR.designedFit : GRAMMAR.insertFit }; delete s.move;
+      if (des) Object.assign(o, designedContent(o, tl.lines?.[li]?.text ?? null));
       return true;
     }
   }
@@ -361,12 +381,14 @@ function splitAt(tl, i, t) {
 function heroInsert(tl, item, li, at, tryChange) {
   if (markExisting(tl, item, li)) return "marked";
   const words = itemWords(item);
-  const cams = item.big ? ["wide", "medium"] : ["medium", "wide"];
+  // a designed insert: only the "wide" object framing (it centres on the face at fitY; the medium one on fitH / 2)
+  const cams = isDesignedInsert(item.obj.name) ? ["wide"] : item.big ? ["wide", "medium"] : ["medium", "wide"];
+  const lineText = tl.lines?.[li]?.text ?? null;
   const own = shotsOfLine(tl, li).filter(([s]) => !isCard(s) && !s.hero && s.seq !== "threat");
   // 1. a spare shot of the line (the line keeps another shot for its people)
   if (own.length >= 2) {
     for (const [, i0] of [...own].filter(([, i]) => i > 0).sort(([a], [b]) => (classOf(a) === "character") - (classOf(b) === "character"))) {
-      for (const cam of cams) if (tryChange(() => { dressInsert(tl.shots[i0], item, at, cam); return true; })) return "converted";
+      for (const cam of cams) if (tryChange(() => { dressInsert(tl.shots[i0], item, at, cam, lineText); return true; })) return "converted";
     }
   }
   // 2. split the longest shot of the line (the cut on the item's word)
@@ -375,7 +397,7 @@ function heroInsert(tl, item, li, at, tryChange) {
     if (dur(s0) < 2 * GRAMMAR.insertMinShot) continue;
     const t = cutIn(tl, s0, words); if (t == null) continue;
     for (const cam of cams) {
-      if (tryChange(() => { const j = splitAt(tl, i0, t); dressInsert(tl.shots[j], item, at, cam); return true; })) return "split";
+      if (tryChange(() => { const j = splitAt(tl, i0, t); dressInsert(tl.shots[j], item, at, cam, lineText); return true; })) return "split";
     }
   }
   return null;
@@ -418,6 +440,31 @@ function heroPass(tl, items, tryChange, report) {
       if (li != null) add(it, li, "extra");
     }
   }
+}
+
+/**
+ * INSERTS 2026-11-10: the designed inserts (lib/insertKit.js designedInsertFor): one per line that names a time, a
+ * countdown, days left, a screen with words, a wanted / missing poster, a notice, carved words or a sign with words
+ * (at most GRAMMAR.designedMax a video, never on a line that already has a hero insert, never past the insert share
+ * target + tol). Made like a hero insert (a spare shot of the line, else a split at a word), kept only when the checks
+ * are no worse. -> report.inserts.designed [{ item, line, why, text, how }]
+ */
+function designedPass(tl, tryChange, report) {
+  report.inserts.designed = [];
+  const heroLines = new Set(tl.shots.filter((s) => s.hero).flatMap((s) => s.lines ?? [s.line]));
+  let made = 0;
+  (tl.lines ?? []).forEach((L, li) => {
+    if (made >= GRAMMAR.designedMax || heroLines.has(li)) return;
+    const d = designedInsertFor(L?.text, { cast: tl.cast });
+    if (!d) return;
+    const { c, n } = mixCounts(tl);
+    if (c.insert / Math.max(1, n) > TG.insert + GRAMMAR.tol) { report.inserts.failed.push({ item: d.name, line: li, at: "designed", why: "the insert share is already over its target" }); return; }
+    const obj = { name: d.name, state: d.state, facing: "camera", ...(d.text != null ? { text: d.text } : {}), ...(d.secs != null ? { secs: d.secs } : {}), ...(d.look ? { look: d.look } : {}) };
+    const item = { id: `designed:${d.name}:${li}`, name: d.name.replace(/_/g, " "), why: [d.why], obj, lines: [li], big: false, row: null };
+    const how = heroInsert(tl, item, li, "designed", tryChange);
+    if (how) { made++; report.inserts.designed.push({ item: d.name, line: li, why: d.why, text: d.text ?? (d.secs != null ? `${d.secs}s` : null), how }); }
+    else report.inserts.failed.push({ item: d.name, line: li, at: "designed", why: report.lastWhy ?? "no shot of the line can be split or spared" });
+  });
 }
 
 // ------------------------------------------------------------------------------------------------ faces
@@ -537,6 +584,8 @@ export function shotGrammarPass(tl, { check = null, critical = null, production 
   report.inserts.skipped = skipped;
   const tryHero = (fn) => { const g0 = Math.max(13.5, wideGap(tl)); return tryChange(() => fn() && wideGap(tl) <= g0 + 1e-6); };
   heroPass(tl, items, tryHero, report);
+  // 2b. designed inserts (INSERTS 2026-11-10): a line naming a time / countdown / sign / poster / screen / notice
+  designedPass(tl, tryHero, report);
   // 3. the framing mix toward the targets
   balance(tl, tryChange, report);
   // 4. faces: every character shot's focus person faces the lens (kept only when the checks are no worse)

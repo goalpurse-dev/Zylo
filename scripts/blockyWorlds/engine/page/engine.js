@@ -303,14 +303,18 @@ async function main() {
   // ---------- scene objects: one instance per (name, state) per use in a shot (a shot may hold three cribs) ----------
   const OBJ = new Map(); // "name|state" -> [Group]
   // PETS (2026-11-07, lib/pets.js): a pet object is built with its one look (tl.pets[id]: species, variant, colours, size)
-  const objKey = (o) => { if (o.asset) return `asset:${o.asset}|${o.state ?? "on"}`; const k = objectsM.resolveObject(o.name); return `${k}|${o.state ?? objectsM.OBJECTS[k].state}${o.pet && tl.pets?.[o.pet] ? `|${o.pet}` : ""}`; };
+  // INSERTS 2026-11-10: a designed insert (lib/insertKit.js) is built with the line's own words / time / countdown /
+  // portrait (o.text, o.secs, o.look): one instance per distinct content (4th key part, URI-encoded JSON)
+  const insOpts = (o) => (o.text != null || o.secs != null || o.look ? { text: o.text ?? null, secs: o.secs ?? null, look: o.look ?? null } : null);
+  const objKey = (o) => { if (o.asset) return `asset:${o.asset}|${o.state ?? "on"}`; const k = objectsM.resolveObject(o.name); const io = insOpts(o); return `${k}|${o.state ?? objectsM.OBJECTS[k].state}${(o.pet && tl.pets?.[o.pet]) || io ? `|${o.pet && tl.pets?.[o.pet] ? o.pet : ""}` : ""}${io ? `|${encodeURIComponent(JSON.stringify(io))}` : ""}`; };
   if (objectsM || blueprintM) {
     const counts = new Map();
     for (const s of tl.shots) { const c = new Map(); for (const o of s.objects ?? []) { const k = objKey(o); c.set(k, (c.get(k) ?? 0) + 1); } for (const [k, n] of c) counts.set(k, Math.max(counts.get(k) ?? 0, n)); }
     for (const [k, n] of counts) {
-      const [name, state, petId] = k.split("|"), list = [];
+      const [name, state, petId, insJ] = k.split("|"), list = [];
+      const io = insJ ? JSON.parse(decodeURIComponent(insJ)) : null;
       for (let i = 0; i < n; i++) {
-        const o = name.startsWith("asset:") ? blueprintM.buildBlueprint(tl.assets[name.slice(6)].blueprint) : objectsM.makeObject(name, { state, ...(petId ? { pet: tl.pets[petId] } : {}) });
+        const o = name.startsWith("asset:") ? blueprintM.buildBlueprint(tl.assets[name.slice(6)].blueprint) : objectsM.makeObject(name, { state, ...(petId ? { pet: tl.pets[petId] } : {}), ...(io ?? {}) });
         if (o?.userData?.problems?.length) console.warn(`engine: built object ${name}: ${o.userData.problems.slice(0, 8).join("; ")}`);
         if (!o?.isObject3D) throw new Error(`engine: makeObject("${name}", ${state}) returned no Object3D`);
         scene.add(o); o.visible = false; list.push(o);

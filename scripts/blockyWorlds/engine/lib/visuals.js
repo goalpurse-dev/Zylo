@@ -12,7 +12,7 @@
 //         "name"   a name said aloud that no cast member owns ("Barnaby") -> a name tag with that text
 //         "noun"   any other content noun -> held prop if holdable, else a picture card
 import { norm, tokens } from "./planText.js";
-import { catalogObjects, heldIndex } from "./catalog.js";
+import { catalogObjects, heldIndex, HELD } from "./catalog.js";
 import { petShows, ANIMAL_POSE } from "./pets.js";
 
 // ------------------------------------------------------------------ the object catalog (mirror of page/kit/objects.js)
@@ -32,6 +32,7 @@ export const OBJECT_CATALOG = Object.freeze({
 
 /** Hand props page/kit/props.js makeHeld draws (anything else -> a simple box, so we prefer a card for those). */
 const HELD_INDEX = heldIndex();
+const DESIGNED_HELD = ["music_box"]; // INSERTS 2026-11-10: hand props whose two-word name is one noun (extractKeys 1b)
 // the first kit's hand props (kit/props.js makeHeld) by word -> builder
 const BASE_HELD = { sock: "sock", socks: "sock", flashlight: "flashlight", torch: "flashlight", candle: "candle", candles: "candle", book: "book", books: "book", phone: "phone",
   bag: "bag", sack: "bag", purse: "bag", key: "key", keys: "key", ball: "ball", balls: "ball", box: "box", boxes: "box", present: "box", presents: "box", gift: "box", gifts: "box",
@@ -415,6 +416,17 @@ export function extractKeys(text, vw, opts = {}) {
   });
   // the monster's lair words ("water tower") are the tower rule's
 
+  // 1b. INSERTS 2026-11-10 (#3: "the music box" was the music rule + a crate, "a tin music box" a jar): the designed
+  // hand props' two-word names are one noun ("music box"), the word before them their modifier ("tin")
+  for (const kind of DESIGNED_HELD) for (const al of HELD[kind] ?? []) {
+    const ws = al.split(/[\s-]+/); if (ws.length < 2) continue;
+    toks.forEach((t, k) => {
+      if (!ws.every((w, i) => toks[k + i]?.c === w) || !free(k, k + ws.length - 1)) return;
+      keys.push({ kind: "noun", noun: al, label: al, k, end: k + ws.length - 1, neg: negAt(k) }); take(k, k + ws.length - 1);
+      for (let i = k - 1; i >= Math.max(0, k - 3) && !used[i] && !toks[i].end && /^(tin|old|little|small|tiny|wooden|silver|gold|golden|brass|metal|wind|up|windup|broken|grandma's|grandmas)$/.test(toks[i].c); i--) take(i, i);
+    });
+  }
+
   // 2. the rules, in order; each match consumes its tokens, `also` words in the text are consumed with it
   const hits = [];
   for (const rule of RULES) {
@@ -543,6 +555,8 @@ export function covers(key, s, cast = {}) {
     if (actors.some((a) => a.hold && singular(a.hold) === key.noun)) return true;
     const hk = heldKind(key.noun) ?? heldKind(key.label);
     if (hk && actors.some((a) => a.hold && heldKind(a.hold) === hk)) return true;
+    // INSERTS 2026-11-10: the story's own thing ("the box" = its music box): held or standing as itself
+    if (key.object) { const ok = String(key.object).replace(/_/g, " "), ohk = heldKind(ok); if ((ohk && actors.some((a) => a.hold && heldKind(a.hold) === ohk)) || objs.includes(key.object)) return true; }
     if (hk && (s.objects ?? []).some((o) => objName(o) === "item" && o.state === hk)) return true;
     if (objs.some((o) => OBJECT_CATALOG[o]?.aliases.some((al) => al === key.label || al === key.noun))) return true;
     return textual(key.noun) || textual(key.label);

@@ -10,6 +10,7 @@ import { makeHeld } from "./props.js";
 import { townTex } from "./townTex.js"; // LOOK-FIX 2026-11-08: textured tower walls
 import { makeMonster, animateMonster } from "./monsters.js";
 import { makeAnimal, animateAnimal, animalGait } from "./animals/index.js";
+import { INSERT_BUILD } from "./inserts.js";
 
 const TAU = Math.PI * 2;
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
@@ -922,6 +923,8 @@ for (const [kind] of Object.entries(CREATURE_OBJECTS)) {
 // the dragon and the yeti as creatures: the blocky animal kit too (2026-11-06)
 THING_BUILD.dragon_creature = (g, state) => rigAnimal(g, "dragon", null, state);
 THING_BUILD.yeti_creature = (g, state) => rigAnimal(g, "yeti", null, state);
+// INSERTS 2026-11-10: the designed hero-insert props (clocks, timers, neon screens, posters, signs, the music box)
+for (const [k, f] of Object.entries(INSERT_BUILD)) THING_BUILD[k] ??= f;
 
 /** sanity: every catalog name has a builder (checked by dev/coverage.test.mjs through objects.js) */
 export const THING_NAMES = Object.keys(THING_BUILD);

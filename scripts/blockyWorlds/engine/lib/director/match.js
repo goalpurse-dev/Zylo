@@ -55,10 +55,13 @@ export function nodeKit() {
     const joined = ws.join(" "), under = ws.join("_");
     if (OBJECT_CATALOG[under]) return { name: under, via: "name" };
     for (const [k, o] of Object.entries(OBJECT_CATALOG)) if ((o.aliases ?? []).includes(joined)) return { name: k, via: "alias" };
+    // INSERTS 2026-11-10: a two-word name at the end ("tin wind-up MUSIC BOX") before the bare head noun ("box" = a crate)
+    const tail2 = ws.length > 2 ? ws.slice(-2).join(" ") : null;
+    if (tail2) for (const [k, o] of Object.entries(OBJECT_CATALOG)) if ((o.aliases ?? []).includes(tail2)) return { name: k, via: "alias" };
     const head = objectForNoun(ws.at(-1));
     return head ? { name: head, via: ws.length > 1 ? "head noun" : "noun" } : null;
   };
-  const heldFor = (name) => { const ws = words(name); const h = heldKind(ws.join(" ")) ?? heldKind(ws.at(-1)); return h ? { name: h } : null; };
+  const heldFor = (name) => { const ws = words(name); const h = heldKind(ws.join(" ")) ?? (ws.length > 2 ? heldKind(ws.slice(-2).join(" ")) : null) ?? heldKind(ws.at(-1)); return h ? { name: h } : null; }; // (the two-word tail: INSERTS 2026-11-10, "tin music box")
   const animalFor = (species) => { for (const w of words(species).reverse()) for (const [k, al] of Object.entries(ANIMALS)) if (k === w || al.includes(w)) return k; return null; };
   const smallCreatureFor = (name) => { for (const w of words(name).reverse()) for (const [k, al] of Object.entries(CREATURE_OBJECTS)) if (k === w || al.includes(w)) return `${k}_creature`; return null; };
   const lookFor = (name, about = "") => creatureFor(words(name), about);

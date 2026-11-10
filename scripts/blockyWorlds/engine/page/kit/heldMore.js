@@ -3,6 +3,7 @@
 // real sizes a little oversized so they read on a phone. HELD_BUILD[kind](g)
 import * as THREE from "three";
 import { cachedGeo, cachedMat, solid, fabric, rbx, bx, addMesh } from "./kitCommon.js";
+import { heldMusicBox } from "./inserts.js";
 
 const TAU = Math.PI * 2;
 const M = addMesh;
@@ -77,6 +78,7 @@ export const HELD_BUILD = {
   envelope(g) { rbx(0.22, 0.14, 0.008, 0.004, solid("#fbf3dc"), { parent: g }); const s = new THREE.Shape([new THREE.Vector2(-0.11, 0.07), new THREE.Vector2(0.11, 0.07), new THREE.Vector2(0, -0.01)]); M(cachedGeo("henv", () => new THREE.ShapeGeometry(s)), solid("#efe2c0"), { z: 0.005, parent: g }); M(cyl(0.015, 0.015, 0.004, 12), solid("#c0392b"), { y: -0.005, z: 0.008, rx: Math.PI / 2, parent: g }); },
   coat(g) { const m = fabric("#f2c511", "cotton"); rbx(0.3, 0.38, 0.08, 0.03, m, { y: -0.22, parent: g }); for (const s of [-1, 1]) rbx(0.08, 0.32, 0.08, 0.03, m, { x: s * 0.19, y: -0.22, parent: g }); M(tor(0.05, 0.008, Math.PI), metal("#c8ced4"), { y: 0.0, parent: g }); for (let k = 0; k < 3; k++) M(sph(0.012), solid("#1b1b1f"), { y: -0.1 - k * 0.09, z: 0.045, parent: g }); },
   skateboard(g) { rbx(0.12, 0.02, 0.42, 0.02, solid("#ff5e57"), { parent: g }); for (const z of [-0.14, 0.14]) for (const s of [-1, 1]) M(cyl(0.025, 0.025, 0.025, 10), solid("#ffd32a"), { x: s * 0.05, y: -0.035, z, rz: Math.PI / 2, parent: g }); },
+  music_box: heldMusicBox, // INSERTS 2026-11-10: the tin music box in a hand (kit/inserts.js), never a crate
 };
 /** one-hand props (people.js holds them upright in front of the chest) */
 export const SMALL_HELD = ["coin", "hand_mirror", "hat", "shoe", "mitten", "crown", "handbell", "egg", "potato", "cookie", "apple", "cake", "jar", "spoon", "pencil", "ring", "star", "pebble", "horn", "teddy", "rubber_duck", "feather", "lightbulb", "magnet", "glasses", "toast", "cheese", "wand", "envelope", "flag", "kite"];

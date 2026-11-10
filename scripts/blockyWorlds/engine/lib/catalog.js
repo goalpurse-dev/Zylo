@@ -11,6 +11,8 @@
 //   CREATURES[variant] = { base: "tall" | "furry", words: [...] }   monster looks (kit/monsters.js) chosen by the
 //     monster's name / description ("the Detention Dragon" -> dragon)
 
+import { INSERT_THINGS } from "./insertKit.js";
+
 const A = (s) => s.split(",").map((x) => x.trim()).filter(Boolean);
 
 /** Animals as scene objects (one builder, a species per name). 2026-11-06 (BLOCKY-ANIMALS): most of them are now the
@@ -126,6 +128,7 @@ export const HELD = Object.freeze({
   coat: A("coat,coats,raincoat,raincoats,jacket,jackets,sweater,sweaters,hoodie,hoodies,cape,capes,cloak,cloaks,apron,aprons,pajamas,costume,costumes,uniform"),
   skateboard: A("skateboard,skateboards,wheel,wheels,tricycle,tricycles,scooter,scooters,roller skates"),
   sign: A("sign,signs,label,labels,tag,tags,poster,posters,notice,sticker,stickers"),
+  music_box: A("music box,music boxes,musical box,musicbox,wind-up music box,windup music box"), // INSERTS 2026-11-10 (#3: the tin music box was a crate)
 });
 
 /** Monster looks: the name's head word (or the idea's words) picks one. base = which rig it builds on. */
@@ -161,6 +164,7 @@ export function catalogObjects() {
   for (const [k, v] of Object.entries(THINGS)) out[k] = { ...v };
   for (const [k, al] of Object.entries(ANIMALS)) out[k] = { aliases: al, place: "floor", states: ["on", ...ANIMAL_STATES], state: "on", animal: true, ...(ANIMAL_SETS[k] ? { sets: ANIMAL_SETS[k] } : {}) };
   for (const [k, al] of Object.entries(CREATURE_OBJECTS)) out[`${k}_creature`] = { aliases: al, place: "floor", states: ["on"], state: "on", creature: k };
+  for (const [k, v] of Object.entries(INSERT_THINGS)) out[k] ??= { ...v, aliases: [...v.aliases], states: [...v.states] }; // INSERTS 2026-11-10: the designed inserts (lib/insertKit.js)
   return out;
 }
 

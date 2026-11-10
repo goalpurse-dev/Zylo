@@ -992,6 +992,16 @@ export function planVideo({ script, words, idea = {}, lengthSec = null, directio
   // so its "unknown built asset" line is no new problem here (the run checks it once the assets are in)
   const checkG = (t) => ({ ...check4(t), timeline: checkTimeline(t).filter((p) => !/unknown built asset/.test(p)).length });
   tl.shape.grammar = shotGrammarPass(tl, { check: checkG, critical, production: tl.production ?? production, targets: rec?.mix ?? null });
+  // INSERTS 2026-11-10 (#3: "I pulled out the music box" held a crate): a hand prop word that is the story's own thing
+  // (world.own: "box" -> music_box) is held as that thing when it is a hand prop of its own; kept only when no check grows
+  if (world.own && Object.keys(world.own).length) {
+    const snap = JSON.stringify(tl.shots), b0 = checkG(tl); let n = 0;
+    for (const s of tl.shots) for (const a of s.actors ?? []) {
+      const o = a.hold ? world.own[a.hold] ?? world.own[`${a.hold}s`] : null, w = o ? String(o).replace(/_/g, " ") : null;
+      if (w && w !== a.hold && heldKind(w) && heldKind(w) !== heldKind(a.hold)) { a.hold = w; n++; }
+    }
+    if (n) { const b1 = checkG(tl); if (Object.keys(b1).some((k) => (b1[k] ?? 0) > (b0[k] ?? 0))) tl.shots = JSON.parse(snap); }
+  }
   tl.shape.moves = cameraMovePass(tl);
   if (critical) tl.critical = critical;
   tl.needs = collectNeeds(tl, script, idea, world.baseSet, mood, D);
@@ -1969,7 +1979,10 @@ function forceKey(s, key, aux) {
     if ((HOLDABLE.has(key.noun) || heldKind(key.noun)) && !notInHand(s.text, key.noun)) {
       const free = (s.actors ?? []).filter((x) => !x.hold && !/^baby/.test(x.id) && aux.buildCast?.()[x.id]?.role !== "baby");
       const a = free.find((x) => x.id === s.subject) ?? free.find((x) => !x.id.startsWith("town")) ?? free[0];
-      if (a) { a.hold = key.noun; if (!HOLD_POSES.has(a.pose)) a.pose = "carry"; return true; }
+      // INSERTS 2026-11-10 (#3 "Now I play the box"): the story's own thing that is also a hand prop (the music box) is
+      // held as itself, never the generic word's prop (a crate)
+      const ownHeld = key.object && heldKind(String(key.object).replace(/_/g, " ")) ? String(key.object).replace(/_/g, " ") : null;
+      if (a) { a.hold = ownHeld ?? key.noun; if (!HOLD_POSES.has(a.pose)) a.pose = "carry"; return true; }
     }
     let name = key.object ?? objectForNoun(key.noun) ?? objectForNoun(key.label);
     // nobody can hold it: the hand prop itself, big, on a little crate (the "item" display)

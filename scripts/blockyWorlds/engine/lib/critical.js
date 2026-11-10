@@ -64,6 +64,8 @@ export function kitFor(phrase, { own = null } = {}) {
   const cands = [];
   if (OBJECT_CATALOG[under]) cands.push(under);
   for (const [k, o] of Object.entries(OBJECT_CATALOG)) if ((o.aliases ?? []).includes(joined)) cands.push(k);
+  // INSERTS 2026-11-10 (#3 "tin wind-up music box" -> a crate): a two-word catalog name at the end of the phrase
+  if (ws.length > 2) { const tail2 = ws.slice(-2).join(" "); for (const [k, o] of Object.entries(OBJECT_CATALOG)) if ((o.aliases ?? []).includes(tail2) && !cands.includes(k)) cands.push(k); }
   const head = headNoun(phrase);
   const byHead = head ? objectForNoun(head) : null; if (byHead) cands.push(byHead);
   for (const k of cands) if (kitMatchOk(phrase, k, OBJECT_CATALOG[k]?.aliases ?? [])) return { kind: "object", name: k };

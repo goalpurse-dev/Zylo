@@ -13,7 +13,7 @@
 import { makeGiant, animateGiant, updateGiantLOD } from "/page/kit/giants.js";
 import { makeCrowd, updateCrowd, crowdExtent } from "/page/kit/crowd.js";
 import { buildCreatureWorld } from "/page/sets/creatureWorld.js";
-import { frameEpic, applyShake, EPIC_CAMERA_TYPES } from "/page/cameraEpic.js";
+import { frameEpic, applyShake, EPIC_CAMERA_TYPES, giantFillView } from "/page/cameraEpic.js";
 import { validateEpic, beatPlan, beatProgress, CROWD_MOTION, EPIC_SPOTS } from "/lib/epic.js";
 // 2026-11-06 (CAPABILITIES): tethers, siege, back towns, camera moves, fx, acts, grade, tilt (page/capsLayer.js)
 import { makeCapsLayer } from "/page/capsLayer.js";
@@ -159,6 +159,46 @@ export async function makeEpicLayer({ THREE, scene, tl, ctx }) {
     return live;
   }
 
+  /**
+   * INSERTS 2026-11-10: a giant at sea fills the frame (cameraEpic giantFillView). The side is chosen once per shot
+   * (the camera side +-35 / 60 / 90 degrees, then the back): over the sea when the coast is up (the background the far
+   * sea + sky, not the forest), a clear line of sight to the giant's middle (no tree, hill or other giant in front).
+   * Then a slow 4 % push. Deterministic (the choice is from the shot's start pose).
+   */
+  const seaDirs = new Map();
+  function seaFrame(shot, lt, S, camera, g) {
+    g.updateMatrixWorld(true);
+    const box = new THREE.Box3().setFromObject(g); if (box.isEmpty()) return;
+    const DEG = Math.PI / 180, up = V(0, 1, 0), base = (S.camDir ?? V(0, 0, 1)).clone().setY(0).normalize();
+    const dur = Math.max(1e-3, shot.end - shot.start), k = Math.min(1, Math.max(0, lt / dur));
+    const groundAt = (x, z) => (S.coast?.active && x < S.coast.shoreX ? S.coast.hillY(x, z) : 0.6);
+    const key = `${shot.start}|${g.name}`;
+    let dir = seaDirs.get(key);
+    if (!dir) {
+      const turn = (shot.seed ?? 1) % 2 ? 1 : -1, cands = [35, 60, 0, 90, -35, -60, -90, 135, -135, 180].map((a) => base.clone().applyAxisAngle(up, turn * a * DEG));
+      const meshes = (h) => h.object.isMesh && h.object.visible !== false && !/sky/i.test(h.object.name ?? "") && (Array.isArray(h.object.material) ? h.object.material : [h.object.material]).every((m) => m && m.side !== THREE.BackSide && !(m.transparent && (m.opacity ?? 1) < 0.3));
+      const inG = (o) => { for (let n = o; n; n = n.parent) if (n === g) return true; return false; };
+      // the blockers: every visible mesh but the grass carpet (40 000 instances: ground cover, never a wall)
+      const list = []; scene.traverseVisible((o) => { if ((o.isMesh || o.isInstancedMesh) && !(o.isInstancedMesh && o.name === "grass") && !inG(o)) list.push(o); });
+      const score = (d) => {
+        const v = giantFillView({ THREE, box, dir: d, aspect: camera.aspect || 9 / 16, minY: 2 });
+        v.pos.y = Math.max(v.pos.y, groundAt(v.pos.x, v.pos.z) + 2.5);
+        const ray = new THREE.Raycaster(v.pos, v.aim.clone().sub(v.pos).normalize(), 0.5, v.pos.distanceTo(v.aim) * 0.92);
+        const hit = ray.intersectObjects(list, false).find((h) => meshes(h));
+        const overSea = !S.coast?.active || v.pos.x >= S.coast.shoreX ? 1 : 0;
+        return (hit ? 0 : 2) + overSea;
+      };
+      let best = cands[0], bs = -1;
+      for (const d of cands) { const s = score(d); if (s > bs) { bs = s; best = d; } if (s >= 3) break; }
+      dir = best; seaDirs.set(key, dir);
+    }
+    const v = giantFillView({ THREE, box, dir, aspect: camera.aspect || 9 / 16, minY: 2, push: 0.04 * k * k * (3 - 2 * k) });
+    v.pos.y = Math.max(v.pos.y, groundAt(v.pos.x, v.pos.z) + 2.5);
+    camera.position.copy(v.pos); camera.fov = v.fov; camera.near = Math.max(0.05, Math.min(0.3, v.dist / 400)); camera.far = Math.max(camera.far, 6000);
+    camera.updateProjectionMatrix(); camera.up.set(0, 1, 0); camera.lookAt(v.aim); camera.updateMatrixWorld();
+    camera.userData.epicAim = v.aim.clone();
+  }
+
   /** the EPIC camera for a shot: returns true when it framed the camera */
   function frame(shot, lt, S, where, camera, actorH = {}) {
     const dur = shot.end - shot.start, seed = shot.seed ?? 1;
@@ -260,6 +300,13 @@ export async function makeEpicLayer({ THREE, scene, tl, ctx }) {
       const aim = V(ctxE.focus.x, ctxE.twoShot.aimY, ctxE.focus.z);
       if (camera.position.y < ctxE.twoShot.minY) camera.position.y = ctxE.twoShot.minY;
       camera.userData.epicAim = aim; camera.lookAt(aim); camera.updateMatrixWorld();
+    }
+    // INSERTS 2026-11-10 (#3: the establishing at sea mostly blue; s67 / s68 forest + sea, the wolf a head at the edge):
+    // a giant on the sea stage (the world creature floating, or a rival giant in that shot) on an establish / hero_low
+    // fills the frame against a clear sea / sky: a low 3/4 camera at its fit distance, aimed at its body
+    if (shot.stage?.ground === "sea" && !shot.move && (type === "establish" || type === "hero_low")) {
+      const gi = fg ? gInfo : fw ? worldG : null;
+      if (gi) seaFrame(shot, lt, S, camera, gi.g);
     }
     // REBUILD 2026-11-06: never inside another giant (wolf, bear, bird...): out of its bounding box, sideways from its
     // centre, still aimed where it was (the world creature has its own ray guard below)

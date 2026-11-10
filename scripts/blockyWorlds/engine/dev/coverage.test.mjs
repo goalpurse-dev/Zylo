@@ -9,6 +9,7 @@ import { runAll, summarize, CARD_TARGET, standInScript, loadIdeas } from "./cove
 import { planVideo, estimateWords, checkTimeline, checkVisuals, checkSubjects } from "../plan.mjs";
 import { OBJECT_CATALOG, HOLDABLE } from "../lib/visuals.js";
 import { HELD, CREATURES, THINGS, ANIMALS, CREATURE_OBJECTS } from "../lib/catalog.js";
+import { INSERT_THINGS } from "../lib/insertKit.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const results = runAll();
@@ -51,11 +52,11 @@ test("deterministic: the same idea plans to the same timeline", () => {
 
 test("every name the planner can emit is in the kit catalog (objects, states, hand props, creature looks)", () => {
   // objects: the planner's catalog is the kit's (lib/catalog.js THINGS / ANIMALS / creatures + kit/objects.js's first nine)
-  const kitSrc = fs.readFileSync(path.join(ROOT, "page/kit/objects.js"), "utf8") + fs.readFileSync(path.join(ROOT, "page/kit/things.js"), "utf8");
+  const kitSrc = fs.readFileSync(path.join(ROOT, "page/kit/objects.js"), "utf8") + fs.readFileSync(path.join(ROOT, "page/kit/things.js"), "utf8") + fs.readFileSync(path.join(ROOT, "page/kit/inserts.js"), "utf8"); // + the designed inserts (INSERTS 2026-11-10)
   const first = ["ice_cream_truck", "football_field", "birthday_party", "bakery", "car", "photo_set", "crib", "house_front", "stories_book"];
   for (const name of Object.keys(OBJECT_CATALOG)) {
     const built = first.includes(name) ? new RegExp(`\\n  ${name}\\(g`).test(kitSrc)
-      : name in THINGS ? new RegExp(`\\n  ${name}\\(g`).test(kitSrc) || name === "item"
+      : name in THINGS || name in INSERT_THINGS ? new RegExp(`\\n  ${name}\\(g`).test(kitSrc) || name === "item"
       : name in ANIMALS || name.replace(/_creature$/, "") in CREATURE_OBJECTS || name === "item";
     assert.ok(built, `object ${name} has no kit builder`);
   }
@@ -65,7 +66,7 @@ test("every name the planner can emit is in the kit catalog (objects, states, ha
     if (o.state) assert.ok(OBJECT_CATALOG[o.name].states.includes(o.state), `${r.i}: ${o.name}/${o.state}`);
   }
   // hand props: every HELD kind has a builder in kit/heldMore.js or kit/props.js
-  const heldSrc = fs.readFileSync(path.join(ROOT, "page/kit/heldMore.js"), "utf8") + fs.readFileSync(path.join(ROOT, "page/kit/props.js"), "utf8");
+  const heldSrc = fs.readFileSync(path.join(ROOT, "page/kit/heldMore.js"), "utf8") + fs.readFileSync(path.join(ROOT, "page/kit/props.js"), "utf8") + fs.readFileSync(path.join(ROOT, "page/kit/inserts.js"), "utf8"); // the music box: kit/inserts.js
   for (const k of Object.keys(HELD)) assert.ok(new RegExp(`\\n  ${k}\\(g`).test(heldSrc), `hand prop ${k} has no builder`);
   assert.ok(HOLDABLE.size > 200);
   // creature looks
