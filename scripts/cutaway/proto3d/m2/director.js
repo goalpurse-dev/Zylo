@@ -394,8 +394,9 @@ export function directCamera(layout, shots, marks) {
       // from the second line on, the build fills at least 40% of a planned shot: the house may be cut off at the top (the
       // owner's review of the real bunker run, 2026-11-04: the house filled the top half, the bunker small at the bottom)
       // (not the "This is a…" line: its named part stays as big as "closer" made it; widening to the whole build shrank the
-      // traffic light's controller from 65% to 12% of the width, and a failing name line stops the video)
-      if (layout.codeShots && !opening && s.at?.s !== "congrats" && s.at?.s !== "name" && measureKey(layout, k.pos, k.tgt).subject < SUBJECT_FILL) {
+      // traffic light's controller from 65% to 12% of the width, and a failing name line stops the video; a premade template
+      // keeps the shots the owner approved: its "This is a…" line as before)
+      if (layout.codeShots && !opening && s.at?.s !== "congrats" && (s.at?.s !== "name" || layout.template) && measureKey(layout, k.pos, k.tgt).subject < SUBJECT_FILL) {
         // (the part the sentence shows, with the shot's own focus: both stay in the frame)
         const shows = (layout.beats ?? []).find((x) => x.s === s.at?.s)?.shows, sp = shows && parts.get(String(shows.p));
         let spBox = null; try { spBox = sp ? focusOf(sp, layout.world?.cut) : null; } catch {}

@@ -199,6 +199,8 @@ export function fillGaps(layout, tracks, sentences, gaps) {
     // dust is real, a workshop or a basement room, and subtle)
     const on = (key) => { tracks[key] = tracks[key] ?? { base: 0, ramps: [] }; tracks[key].ramps.push({ t0: a + 0.2, t1: a + 0.6, amp: 1, e: "inOut", auto: true }, { t0: b - 0.2, t1: b + 0.3, amp: -1, e: "inOut", auto: true }); };
     const mode = ambientFor(layout, beat), id = `auto_life${i + 1}`, { at, size } = spot(layout, beat, mode === "steam" ? "smoke" : "motes");
+    // (a premade template keeps the life it was approved with: the drifting specks of the live worker, as they were)
+    if (layout.template) { layout.parts.push({ id, kind: "fx", params: { type: "motes", at, size: Math.max(size, 1) } }); tracks[`${id}.go`] = { base: 0, ramps: [] }; on(`${id}.on`); notes.push(`still ${a.toFixed(1)}-${b.toFixed(1)} s: specks (premade, as approved)`); return; }
     if (mode.startsWith("ripple:")) { const w = mode.slice(7); on(`${w}.flow`); notes.push(`still ${a.toFixed(1)}-${b.toFixed(1)} s: the water ripples (${w})`); return; }
     if (mode === "dust") { layout.parts.push({ id, kind: "fx", params: { type: "motes", at, size: Math.min(size, 0.7) } }); tracks[`${id}.go`] = { base: 0, ramps: [] }; }
     else layout.parts.push({ id, kind: "ambient", params: { mode, target: String(beat.shows?.p ?? layout.parts.find((p) => p.main)?.id ?? "").split(".")[0] || null, at, size } });
