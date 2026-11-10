@@ -151,7 +151,12 @@ export function beatSheetProblems(script, map = {}, card = null, lengthSec = 90)
   const meIdx = of("me");
   // the map's "worst" quote counts only in the first half (the hero is the worst before the trouble starts)
   const worstQ = norm(map.worst).length ? lines.findIndex((l, i) => PCT(i) < 40 && plantedShare(map.worst, l.text) >= 0.8) : -1;
-  if (!meIdx.some((i) => isWorst(lines[i].text)) && !(worstQ >= 0 && isWorst(lines[worstQ].text))) bad('"Then there\'s me" should say plainly that the hero is the WORST at the rule (the lowest, the smallest, the quietest).');
+  // or by the picture: a "me" line that shows the hero's rule-visual value (round 2: "My sign says 94", "Our dented tin
+  // bell goes clonk, not ding" for a hero value of the slowest tuck-time / the ugliest bell)
+  const valWords = (t) => [...contentWords(t), ...(String(t ?? "").match(/\d+/g) ?? [])];
+  const heroVal = new Set(valWords(card?.ruleVisual?.hero?.shows));
+  const showsHero = (t) => new Set(valWords(t).filter((w) => heroVal.has(w))).size >= 2;
+  if (!meIdx.some((i) => isWorst(lines[i].text) || showsHero(lines[i].text)) && !(worstQ >= 0 && isWorst(lines[worstQ].text))) bad('"Then there\'s me" should say plainly that the hero is the WORST at the rule (the lowest, the smallest, the quietest).');
   // 3. the ally's planted line: said before the trigger, and reused in the save
   const planted = String(map.ally_line || card?.plantedLine || "").trim();
   const trigger0 = of("trigger")[0] ?? Math.round(n * 0.38);

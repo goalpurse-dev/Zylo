@@ -301,6 +301,14 @@ test("beat sheet run fixes (2026-11-10): the free trim keeps named lines and \"T
   assert.match(BEAT_SHEET_TEXT, /never "Until one night the\.\.\."/);
 });
 
+test("beat sheet (round 2): a \"me\" line that shows the hero's rule-visual value counts as the worst at the rule", () => {
+  const c = { ...card(), ruleVisual: { ...card().ruleVisual, hero: { name: "Tilly", shows: "a flashing red 94, so big the sign had to be widened" } } };
+  const s = clone(SCRIPT);
+  s.lines = s.lines.map((l) => (l.beat === "me" ? { ...l, text: l.text === "Then there's me." ? l.text : "My sign says 94 and it flashes." } : l));
+  assert.ok(!beatSheetProblems(s, { ...MAP, worst: "" }, c).some((x) => /WORST/.test(x)));
+  assert.ok(beatSheetProblems(s, { ...MAP, worst: "" }, card()).some((x) => /WORST/.test(x)));
+});
+
 test("rule visual: the plan's parameter with each neighbour's value and the hero's, or null without one", () => {
   const rv = ruleVisualOf(PLAN);
   assert.equal(rv.parameter, "how high your house floats");
