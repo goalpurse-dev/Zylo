@@ -19,10 +19,68 @@
 // Assets (CC0, Poly Haven; listed in assets/SOURCES.json): /assets/styletest/<model>/<model>.gltf (island_tree_02,
 // fir_sapling, fern_02, rock_moss_set_01, boulder_01, dead_tree_trunk, tree_stump_01), forest_ground_04 (dirt),
 // /assets/leafy_grass (grass).
+//
+// PLASTIC-WORLD 2026-11-10 (owner: "Replace the realistic forest with clean stylised trees/bushes in the reference
+// style ... terrain as bright clean green grass + clean paths"): with PLASTIC_LOOK (page/kit/plastic.js, the default)
+// no Poly Haven model or photo texture is loaded here. The same instanced parts are built from clean shapes instead:
+// round lollipop trees (stacked balls on a brown trunk), stacked-cone firs, blocky stacked-cube canopies, round bushes,
+// smooth blue-grey stones, logs / stumps, little flowers; every canopy / flower takes a bright colour per instance.
+// The ground is one smooth bright green (vertex colours: a gentle large-scale shade, never noise) with the creature's
+// lane as a clean light stone path. Grass clumps are off (clean grass); the sight-line rule works unchanged.
+//   TOY_GREENS / TOY_FLOWERS   the canopy / flower colours                                               (tested)
+//   toyParts(THREE, kind, lod) -> [{ geometry, material, tint? }]  kind: round | fir | blocky | bush | rock | log | stump | flower
+//   toyModelFor(THREE, url) -> Group | null   a stylised stand-in for a Poly Haven foliage model (sets/util.js model())
 import { prng } from "../../lib/epic.js";
+import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
+import { PLASTIC_LOOK, makePlastic } from "./plastic.js";
 
 export const NATURE_MODELS = Object.freeze(["island_tree_02", "fir_sapling", "fern_02", "rock_moss_set_01", "boulder_01", "dead_tree_trunk", "tree_stump_01"]);
 const A = "/assets/styletest";
+
+// ------------------------------------------------------------------------------------------------ PLASTIC-WORLD toy nature
+export const TOY_GREENS = Object.freeze(["#3cbf3a", "#58d03e", "#2fb24c", "#7ad43a", "#45c95a"]);
+export const TOY_FLOWERS = Object.freeze(["#ff4a5a", "#ffd23a", "#ff7ad0", "#ffffff", "#9a6aff", "#ff8a2a"]);
+export const TOY_GROUND = Object.freeze({ grass: "#56c63e", grass2: "#4cba3c", hills: "#46b04a", path: "#d6dce6" });
+const TOY_MATS = new Map();
+const toyMat = (THREE, key, colour, o = {}) => { let m = TOY_MATS.get(key); if (!m) { m = makePlastic(THREE, colour, { keepColour: true, ...o }); m.name = key; TOY_MATS.set(key, m); } return m; };
+const TOY_GEO = new Map();
+/** clean toy shapes as instanced parts (lod 1 near, 0 far: fewer segments). tint: the part takes a colour per instance */
+export function toyParts(THREE, kind, lod = 1) {
+  const key = `${kind}|${lod}`;
+  if (TOY_GEO.has(key)) return TOY_GEO.get(key);
+  const seg = lod ? 12 : 7, rings = lod ? 9 : 5;
+  const ball = (r, x, y, z) => { const g = new THREE.SphereGeometry(r, seg, rings); g.translate(x, y, z); return g; };
+  const cone = (r, h, y) => { const g = new THREE.ConeGeometry(r, h, lod ? 14 : 7); g.translate(0, y, 0); return g; };
+  const cube = (s, x, y, z, ry = 0) => { const g = new THREE.BoxGeometry(s, s, s); g.rotateY(ry); g.translate(x, y, z); return g; };
+  const cyl = (rt, rb, h, y = h / 2) => { const g = new THREE.CylinderGeometry(rt, rb, h, lod ? 10 : 6); g.translate(0, y, 0); return g; };
+  const bark = toyMat(THREE, "toyBark", "#9a5a2c"), canopy = toyMat(THREE, "toyCanopy", "#ffffff"), stone = toyMat(THREE, "toyStone", "#8e9cb4"), wood = toyMat(THREE, "toyWood", "#b0682c"), cut = toyMat(THREE, "toyCut", "#f2b64a");
+  const merge = (gs) => mergeGeometries(gs.map((g) => (g.index ? g.toNonIndexed() : g)), false);
+  let parts;
+  if (kind === "round") parts = [{ geometry: cyl(0.32, 0.42, 3.6), material: bark }, { geometry: merge([ball(2.3, 0, 5.0, 0), ball(1.7, 1.35, 4.4, 0.3), ball(1.6, -1.2, 4.5, -0.4), ball(1.5, 0.3, 6.5, -0.2)]), material: canopy, tint: true }];
+  else if (kind === "fir") parts = [{ geometry: cyl(0.25, 0.32, 2.2), material: bark }, { geometry: merge([cone(2.4, 3.0, 3.2), cone(1.9, 2.6, 4.9), cone(1.3, 2.2, 6.4)]), material: canopy, tint: true }];
+  else if (kind === "blocky") parts = [{ geometry: cyl(0.3, 0.36, 3.2), material: bark }, { geometry: merge([cube(3.2, 0, 4.6, 0, 0.2), cube(2.3, 0.4, 6.4, -0.2, 0.7), cube(1.8, -1.2, 4.2, 1.0, 1.1)]), material: canopy, tint: true }];
+  else if (kind === "bush") parts = [{ geometry: merge([ball(0.75, 0, 0.6, 0), ball(0.6, 0.6, 0.45, 0.2), ball(0.55, -0.55, 0.45, -0.15), ball(0.5, 0.1, 1.05, 0)]), material: canopy, tint: true }];
+  else if (kind === "rock") { const g = new THREE.IcosahedronGeometry(1, lod ? 1 : 0); g.scale(1.25, 0.75, 1); g.translate(0, 0.45, 0); parts = [{ geometry: g, material: stone }]; }
+  else if (kind === "log") { const g = new THREE.CylinderGeometry(0.42, 0.42, 3.2, lod ? 12 : 6); g.rotateZ(Math.PI / 2); g.translate(0, 0.42, 0); const c1 = new THREE.CylinderGeometry(0.36, 0.36, 3.24, lod ? 12 : 6); c1.rotateZ(Math.PI / 2); c1.translate(0, 0.42, 0); parts = [{ geometry: g, material: wood }, { geometry: c1, material: cut }]; }
+  else if (kind === "stump") parts = [{ geometry: cyl(0.55, 0.65, 0.7), material: wood }, { geometry: cyl(0.48, 0.48, 0.04, 0.71), material: cut }];
+  else if (kind === "flower") parts = [{ geometry: cyl(0.025, 0.03, 0.32), material: toyMat(THREE, "toyStem", "#2fae3a") }, { geometry: (() => { const h = new THREE.IcosahedronGeometry(0.13, 0); h.scale(1, 0.6, 1); h.translate(0, 0.36, 0); return h; })(), material: canopy, tint: true }];
+  else throw new Error(`toyParts: unknown kind "${kind}"`);
+  TOY_GEO.set(key, parts);
+  return parts;
+}
+// the Poly Haven foliage models the sets used -> a toy kind (+ a fixed canopy colour)
+const TOY_FOR_URL = [[/jacaranda_tree|island_tree/, "round", "#3cbf3a"], [/fir_sapling/, "fir", "#2fb24c"], [/shrub_0?2/, "bush", "#58d03e"], [/shrub_0?4|fern/, "bush", "#45c95a"]];
+/** a stylised stand-in for a Poly Haven foliage model (a fresh Group; shared geometry), or null */
+export function toyModelFor(THREE, url) {
+  const hit = TOY_FOR_URL.find(([re]) => re.test(String(url)));
+  if (!hit) return null;
+  const g = new THREE.Group(); g.name = `toy:${hit[1]}`;
+  for (const p of toyParts(THREE, hit[1], 1)) {
+    const mesh = new THREE.Mesh(p.geometry, p.tint ? toyMat(THREE, `toyCanopy${hit[2]}`, hit[2]) : p.material);
+    mesh.castShadow = mesh.receiveShadow = true; g.add(mesh);
+  }
+  return g;
+}
 
 // ------------------------------------------------------------------------------------------------ pure helpers (tested)
 /** the terrain height: flat (0) inside flatR, gentle undulation outside, rolling hills rising toward the horizon */
@@ -159,6 +217,7 @@ function grassClumpGeometry(THREE, R) {
 
 // ------------------------------------------------------------------------------------------------ the world
 export async function makeNature(ctx, opts = {}) {
+  if (PLASTIC_LOOK && opts.style !== "photo") return makeToyNature(ctx, opts);
   const { THREE, renderer } = ctx;
   const seed = opts.seed ?? 3, R = prng(seed * 7919 + 11);
   const center = opts.center ?? { x: 0, z: 0 };
@@ -291,6 +350,119 @@ export async function makeNature(ctx, opts = {}) {
   };
 }
 
+// ------------------------------------------------------------------------------------------------ PLASTIC-WORLD toy nature
+/** the toy world (same options + return shape as the photo one): clean shapes, bright colours, no texture */
+async function makeToyNature(ctx, opts = {}) {
+  const { THREE } = ctx;
+  const seed = opts.seed ?? 3, R = prng(seed * 7919 + 11);
+  const center = opts.center ?? { x: 0, z: 0 };
+  const flatR = opts.flatR ?? 220, hills = opts.hills !== false;
+  const H = (x, z) => terrainHeight(x, z, { flatR, hills, cx: center.x, cz: center.z });
+  const clear = opts.clear ?? (() => false);
+  const nearR = opts.nearR ?? 230, farR = opts.farR ?? 1500;
+  const group = new THREE.Group(); group.name = "nature";
+  const uniforms = SIGHT_UNIFORMS(); uniforms.uCam.value = new THREE.Vector3(); uniforms.uSubj.value = new THREE.Vector3(); uniforms.uR.value = new THREE.Vector2(1.5, 4); uniforms.uClip.value = new THREE.Vector4(1e9, 0, 0, 1e9);
+  const topOf = (parts) => { const b = new THREE.Box3(); for (const p of parts) { p.geometry.computeBoundingBox(); b.union(p.geometry.boundingBox); } return b.max.y; };
+
+  // ground: one smooth bright green, a gentle large-scale shade (never noise), hills a deeper green, the lane a clean path
+  const size = Math.max(3200, farR * 2.4), seg = 300;
+  const g = new THREE.PlaneGeometry(size, size, seg, seg); g.rotateX(-Math.PI / 2);
+  const p = g.attributes.position, col = new Float32Array(p.count * 3);
+  const dirtLane = opts.dirt ?? (() => 0);
+  const cG = new THREE.Color(TOY_GROUND.grass), cG2 = new THREE.Color(TOY_GROUND.grass2), cH = new THREE.Color(TOY_GROUND.hills), cP = new THREE.Color(TOY_GROUND.path), c = new THREE.Color();
+  const ss = (a, b, v) => { const u = Math.min(1, Math.max(0, (v - a) / (b - a))); return u * u * (3 - 2 * u); };
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i) + center.x, z = p.getZ(i) + center.z, y = H(x, z); p.setX(i, x); p.setZ(i, z); p.setY(i, y - 0.03);
+    const n = 0.5 + 0.5 * Math.sin(x * 0.012 + 1.7) * Math.sin(z * 0.01 + 0.3);
+    c.copy(cG).lerp(cG2, ss(0.3, 0.8, n)).lerp(cH, ss(6, 40, y)).lerp(cP, ss(0.35, 0.65, dirtLane(x, z)));
+    col.set([c.r, c.g, c.b], i * 3);
+  }
+  g.setAttribute("color", new THREE.BufferAttribute(col, 3)); g.computeVertexNormals();
+  const groundMat = makePlastic(THREE, "#ffffff", { keepColour: true, vertexColors: true, roughness: 0.55, clearcoat: 0 });
+  const ground = new THREE.Mesh(g, groundMat); ground.receiveShadow = true; ground.name = "ground"; group.add(ground);
+  if (opts.water) ground.visible = false;
+
+  const q = new THREE.Quaternion(), e = new THREE.Euler(), v = new THREE.Vector3(), sv = new THREE.Vector3();
+  const place = (x, z, s, rot, tilt = 0, sink = 0.15) => { q.setFromEuler(e.set((R() - 0.5) * tilt, rot, (R() - 0.5) * tilt)); return new THREE.Matrix4().compose(v.set(x, H(x, z) - sink * s, z), q, sv.set(s, s * (0.9 + R() * 0.25), s)).clone(); };
+  const sightMats = [];
+  const instanced = (parts, list, { cast = true, receive = true, topH = 1, name = "", palette = TOY_GREENS } = {}) => {
+    const grp = new THREE.Group(); grp.name = name;
+    if (!list.length) return grp;
+    for (const part of parts) {
+      const mat = part.material.clone(); sightPatch(THREE, mat, uniforms, topH); sightMats.push(mat);
+      const im = new THREE.InstancedMesh(part.geometry, mat, list.length);
+      list.forEach((m, i) => { im.setMatrixAt(i, m.m ?? m); if (part.tint) im.setColorAt(i, c.set(palette[(m.k ?? i) % palette.length])); });
+      im.instanceMatrix.needsUpdate = true; if (im.instanceColor) im.instanceColor.needsUpdate = true;
+      im.castShadow = cast; im.receiveShadow = receive; im.frustumCulled = false; grp.add(im);
+    }
+    group.add(grp); return grp;
+  };
+
+  // trees: round lollipops, firs and blocky canopies; full detail near the action, low detail far
+  const KINDS = ["round", "fir", "blocky"];
+  const T = Object.fromEntries(KINDS.map((k) => [k, { near: [], far: [], h: topOf(toyParts(THREE, k, 1)) }]));
+  const nTrees = opts.trees ?? 5200;
+  for (let i = 0; i < nTrees; i++) {
+    const a = R() * Math.PI * 2, r = Math.sqrt(R()) * farR, x = center.x + Math.cos(a) * r, z = center.z + Math.sin(a) * r;
+    if (clear(x, z)) continue;
+    const kr = R(), kind = kr < 0.5 ? "round" : kr < 0.82 ? "fir" : "blocky";
+    const s = ((10 + R() * 8) / T[kind].h) * (opts.treeScale ?? 1);
+    T[kind][r < nearR ? "near" : "far"].push({ m: place(x, z, s, R() * 6.28, 0.06, 0.05), k: Math.floor(R() * 97) });
+  }
+  for (const k of KINDS) {
+    instanced(toyParts(THREE, k, 1), T[k].near, { topH: T[k].h, name: `${k}Near` });
+    instanced(toyParts(THREE, k, 0), T[k].far, { cast: false, topH: T[k].h, name: `${k}Far` });
+  }
+  // undergrowth near the action: bushes, stones, logs, stumps
+  const L = { rock: [], boulder: [], bush: [], log: [], stump: [] };
+  const nUnder = opts.ferns ?? 1400, uR = opts.underR ?? Math.min(nearR, 160);
+  for (let i = 0; i < nUnder; i++) {
+    const a = R() * Math.PI * 2, r = Math.sqrt(R()) * uR, x = center.x + Math.cos(a) * r, z = center.z + Math.sin(a) * r;
+    if (clear(x, z) && R() < 0.85) continue;
+    if (opts.hardClear?.(x, z)) continue;
+    const k = R(), it = (s, tilt, sink = 0.15) => ({ m: place(x, z, s, R() * 6.28, tilt, sink), k: Math.floor(R() * 97) });
+    if (k < 0.07) L.rock.push(it(0.6 + R() * 0.9, 0.2));
+    else if (k < 0.1) L.boulder.push(it(1.4 + R() * 1.4, 0.2));
+    else if (k < 0.12) L.log.push(it(0.8 + R() * 0.5, 0, 0));
+    else if (k < 0.14) L.stump.push(it(0.9 + R() * 0.6, 0, 0));
+    else L.bush.push(it(1.2 + R() * 1.3, 0.1, 0.1));
+  }
+  const tp = (k) => toyParts(THREE, k, 1);
+  instanced(tp("rock"), L.rock, { topH: topOf(tp("rock")), name: "rocks" });
+  instanced(tp("rock"), L.boulder, { topH: topOf(tp("rock")), name: "boulders" });
+  instanced(tp("bush"), L.bush, { topH: topOf(tp("bush")), name: "bushes" });
+  instanced(tp("log"), L.log, { topH: topOf(tp("log")), name: "logs" });
+  instanced(tp("stump"), L.stump, { topH: topOf(tp("stump")), name: "stumps" });
+  // flowers instead of photo grass clumps: little bright dots on the lawn round the action (none where people stand)
+  const nFl = opts.flowers ?? Math.min(3000, Math.round((opts.grass ?? 90000) / 15)), gR = opts.grassR ?? 90, fl = [];
+  if (nFl > 0 && !opts.water) {
+    const gc = opts.grassCenter ?? center;
+    for (let i = 0; i < nFl * 3 && fl.length < nFl; i++) {
+      const a = R() * Math.PI * 2, r = Math.sqrt(R()) * gR, x = gc.x + Math.cos(a) * r, z = gc.z + Math.sin(a) * r;
+      if ((opts.noGrass ?? clear)(x, z) || dirtLane(x, z) > 0.3) continue;
+      const lk = opts.lawn ? opts.lawn(x, z) : 1;
+      if (!(lk > 0.5)) continue;
+      fl.push({ m: place(x, z, 0.8 + R() * 0.7, R() * 6.28, 0.2, 0), k: Math.floor(R() * 97) });
+    }
+    instanced(tp("flower"), fl, { cast: false, topH: 0.45, name: "flowers", palette: TOY_FLOWERS });
+  }
+
+  return {
+    group, groundH: H, uniforms,
+    counts: { trees: KINDS.reduce((s, k) => s + T[k].near.length, 0), impostors: KINDS.reduce((s, k) => s + T[k].far.length, 0), under: Object.values(L).reduce((s, a) => s + a.length, 0), flowers: fl.length },
+    sight(camera, subject) {
+      if (!subject?.pos) { uniforms.uSightOn.value = 0; return; }
+      camera.updateMatrixWorld(); const cw = camera.getWorldPosition(new THREE.Vector3());
+      const hgt = Math.max(0.5, subject.height ?? 1.7), rad = Math.max(0.4, subject.radius ?? hgt * 0.3);
+      uniforms.uCam.value.copy(cw); uniforms.uSubj.value.set(subject.pos.x, subject.pos.y + hgt * (subject.close ? 0.8 : 0.3), subject.pos.z);
+      uniforms.uR.value.set((subject.close ? 1.6 : 1.2) + Math.min(4, cw.distanceTo(subject.pos) * 0.01), rad * 0.9 + (subject.close ? 1.8 : 1.5));
+      uniforms.uSightOn.value = 1;
+    },
+    clip(r) { if (!r) { uniforms.uClipOn.value = 0; return; } uniforms.uClip.value.set(r.xMin, r.zc, r.halfZ, r.seaX); uniforms.uClipOn.value = 1; },
+    update() {},
+  };
+}
+
 // ------------------------------------------------------------------------------------------------ dust and leaves
 function puffTexture(THREE) {
   const c = document.createElement("canvas"); c.width = c.height = 128; const x = c.getContext("2d"), R = prng(11);
@@ -310,7 +482,7 @@ export function makeDust(THREE, bursts, { seed = 5, max = 600 } = {}) {
   PUFF ??= puffTexture(THREE);
   const group = new THREE.Group(); group.name = "dust"; const sprites = []; const R = prng(seed);
   for (const b of bursts) for (let i = 0; i < b.n && sprites.length < max; i++) {
-    const mat = new THREE.SpriteMaterial({ map: PUFF, color: new THREE.Color(b.color ?? "#a49d93"), transparent: true, depthWrite: false, opacity: 0, fog: true });
+    const mat = new THREE.SpriteMaterial({ map: PUFF, color: new THREE.Color(b.color ?? (PLASTIC_LOOK ? "#d4d8e2" : "#a49d93")), transparent: true, depthWrite: false, opacity: 0, fog: true });
     const s = new THREE.Sprite(mat); s.visible = false; s.raycast = () => {}; group.add(s); // camera.js ray checks skip dust (a Sprite needs raycaster.camera)
     const a = R() * Math.PI * 2, sp = (0.4 + R()) * b.spread;
     sprites.push({ s, b, dt: R() * (b.dur ?? 0.8), vx: Math.cos(a) * sp + (b.dir?.x ?? 0), vz: Math.sin(a) * sp + (b.dir?.z ?? 0), vy: (0.3 + R()) * b.rise, size: b.size * (0.7 + R() * 0.9), life: 2.8 + R() * 2.2, rot: R() * 6 });
@@ -337,7 +509,7 @@ export function makeLeaves(THREE, bursts, { seed = 9 } = {}) {
   const im = new THREE.InstancedMesh(new THREE.PlaneGeometry(0.35, 0.22), new THREE.MeshStandardMaterial({ color: "#ffffff", side: THREE.DoubleSide, roughness: 0.8 }), total);
   im.frustumCulled = false; im.name = "leaves";
   const R = prng(seed), P = [];
-  for (const b of bursts) for (let i = 0; i < b.n; i++) { const a = R() * 6.28; P.push({ b, vx: Math.cos(a) * (2 + R() * 5) + (b.dir?.x ?? 0), vz: Math.sin(a) * (2 + R() * 5) + (b.dir?.z ?? 0), vy: 3 + R() * 8, y0: (b.h ?? 8) * (0.4 + R() * 0.6), spin: R() * 10, c: new THREE.Color().setHSL(0.2 + R() * 0.1, 0.6, 0.18 + R() * 0.2, THREE.SRGBColorSpace), s: 0.6 + R() * 1.6 }); }
+  for (const b of bursts) for (let i = 0; i < b.n; i++) { const a = R() * 6.28; P.push({ b, vx: Math.cos(a) * (2 + R() * 5) + (b.dir?.x ?? 0), vz: Math.sin(a) * (2 + R() * 5) + (b.dir?.z ?? 0), vy: 3 + R() * 8, y0: (b.h ?? 8) * (0.4 + R() * 0.6), spin: R() * 10, c: PLASTIC_LOOK ? new THREE.Color(TOY_GREENS[Math.floor(R() * TOY_GREENS.length)]) : new THREE.Color().setHSL(0.2 + R() * 0.1, 0.6, 0.18 + R() * 0.2, THREE.SRGBColorSpace), s: 0.6 + R() * 1.6 }); }
   P.forEach((p, i) => im.setColorAt(i, p.c));
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), v = new THREE.Vector3(), sc = new THREE.Vector3();
   return {

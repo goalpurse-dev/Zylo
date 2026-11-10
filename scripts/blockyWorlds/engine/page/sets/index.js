@@ -11,7 +11,8 @@
 //   rig      lighting hooks: shadow box, practical lights per light, glow switching
 // The root is added to ctx.scene if ctx.scene is given (the engine shows/hides it with root.visible).
 import { preloadEnv } from "../lighting.js";
-import { attachDresser } from "./themes.js"; // SETS-V2: every place dressed with its theme preset
+import { attachDresser } from "./themes.js";
+import { plasticize } from "../kit/plastic.js"; // SETS-V2: every place dressed with its theme preset
 export { applyLight } from "../lighting.js";
 
 export const SETS = ["street", "bedroom", "school", "woods"];
@@ -29,5 +30,6 @@ export async function buildSet(name, ctx) {
   set.root.traverse((o) => { if (o.userData.camBlock) set.blockers.push(o); });
   if (ctx.scene && !set.root.parent) ctx.scene.add(set.root);
   attachDresser(set, ctx);
+  plasticize(set.root); // PLASTIC-WORLD 2026-11-10: the safety net (no photo map, plastic roughness, no beige)
   return set;
 }

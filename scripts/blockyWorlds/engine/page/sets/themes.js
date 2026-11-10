@@ -9,11 +9,13 @@
 // corridor (behind the group or wide at the sides), off the set's own solid things (box overlap) and on flat ground.
 import { THEMES, DENSITY } from "../../lib/setThemes.js";
 import { rng, hashSeed } from "../../lib/rng.js";
+import { PLASTIC_LOOK, makePlastic } from "../kit/plastic.js";
 
 // ------------------------------------------------------------------------------------------------ the props
 // each maker(T, pal, R) -> THREE.Group, origin on the ground, faces +z; userData { r: footprint radius, h, glow: [{ y, colour }]? }
 const MAT = new Map();
-const mat = (T, color, o = {}) => { const k = `${color}|${JSON.stringify(o)}`; if (!MAT.has(k)) MAT.set(k, new T.MeshStandardMaterial({ color, roughness: 0.8, ...o })); return MAT.get(k); };
+// PLASTIC-WORLD 2026-11-10: every dressing prop is smooth toy plastic in its toy colour (page/kit/plastic.js)
+const mat = (T, color, o = {}) => { const k = `${color}|${JSON.stringify(o)}`; if (!MAT.has(k)) MAT.set(k, PLASTIC_LOOK ? makePlastic(T, color, o) : new T.MeshStandardMaterial({ color, roughness: 0.8, ...o })); return MAT.get(k); };
 const GLOW = new Set();
 const glowMat = (T, color) => { const m = mat(T, color, { emissive: color, emissiveIntensity: 1 }); m.userData.themeGlow = true; GLOW.add(m); return m; };
 function box(T, g, w, h, d, m, x = 0, y = 0, z = 0, ry = 0) { const o = new T.Mesh(new T.BoxGeometry(w, h, d), m); o.position.set(x, y, z); o.rotation.y = ry; o.castShadow = o.receiveShadow = true; g.add(o); return o; }

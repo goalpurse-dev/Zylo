@@ -8,6 +8,8 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { prng } from "../../lib/epic.js";
+import { PLASTIC_LOOK, toyColour, plasticize } from "./plastic.js"; // PLASTIC-WORLD 2026-11-10
+const tc = (x) => (PLASTIC_LOOK ? toyColour(x) : x);
 
 const WALLS = ["#fff3d6", "#cfe8ff", "#ffd9cc", "#d8f2d0", "#f6e3b4", "#ffe0f0", "#e8e0ff", "#fdfdf6"];
 const ROOFS = ["#c0392b", "#a8432b", "#6d7a8a", "#8e4a3a", "#d0603a", "#4f5d6e"];
@@ -58,6 +60,7 @@ function mat(key, make) { if (!MATS.has(key)) MATS.set(key, make()); return MATS
  *         lamps: [{x,y,z}], detail: true (frames, chimneys; false for far-away towns) }
  */
 export function makeTown(houses, opts = {}) {
+  if (PLASTIC_LOOK && opts.tex) opts = { ...opts, tex: null }; // PLASTIC-WORLD: no photo walls / roofs
   const g = new THREE.Group(); g.name = "town";
   const R = prng((opts.seed ?? 7) * 17 + houses.length);
   const n = houses.length;
@@ -79,7 +82,7 @@ export function makeTown(houses, opts = {}) {
     q.setFromAxisAngle(up, h.ry ?? 0);
     const place = (im, k, lx, ly, lz, sx, sy, sz, col) => {
       v.set(lx, ly, lz).applyQuaternion(q).add(s.set(h.x, h.y, h.z));
-      m4.compose(v, q, new THREE.Vector3(sx, sy, sz)); im.setMatrixAt(k, m4); if (col) im.setColorAt(k, c.set(col));
+      m4.compose(v, q, new THREE.Vector3(sx, sy, sz)); im.setMatrixAt(k, m4); if (col) im.setColorAt(k, c.set(tc(col)));
     };
     const W = tower ? h.w * 0.7 : h.w, D = tower ? h.w * 0.7 : h.d, H = tower ? hh * 1.7 : hh;
     place(walls, i, 0, -sink + H / 2, 0, W, H, D, WALLS[Math.floor(R() * WALLS.length)]);
@@ -103,8 +106,8 @@ export function makeTown(houses, opts = {}) {
     const trunk = inst(plainBox, plain, trees.length, "trunks"), leaf = inst(boxG, leafMat, trees.length * 2, "leaves");
     trees.forEach((t, i) => {
       const k = t.s ?? 1;
-      m4.compose(v.set(t.x, t.y + 1.2 * k, t.z), q.identity(), s.set(0.5 * k, 2.4 * k, 0.5 * k)); trunk.setMatrixAt(i, m4); trunk.setColorAt(i, c.set("#6b4a2e"));
-      const col = TREES[i % TREES.length];
+      m4.compose(v.set(t.x, t.y + 1.2 * k, t.z), q.identity(), s.set(0.5 * k, 2.4 * k, 0.5 * k)); trunk.setMatrixAt(i, m4); trunk.setColorAt(i, c.set(tc("#6b4a2e")));
+      const col = tc(TREES[i % TREES.length]);
       m4.compose(v.set(t.x, t.y + 3.0 * k, t.z), q.setFromAxisAngle(up, i), s.set(2.6 * k, 2.0 * k, 2.6 * k)); leaf.setMatrixAt(i * 2, m4); leaf.setColorAt(i * 2, c.set(col));
       m4.compose(v.set(t.x, t.y + 4.4 * k, t.z), q.setFromAxisAngle(up, i + 0.7), s.set(1.7 * k, 1.4 * k, 1.7 * k)); leaf.setMatrixAt(i * 2 + 1, m4); leaf.setColorAt(i * 2 + 1, c.set(col).multiplyScalar(1.1));
     });
@@ -127,5 +130,6 @@ export function makeTown(houses, opts = {}) {
   g.userData.setLit = (on, k = 1) => { winMat.emissiveIntensity = on ? 1.6 * k : 0; winMat.color.set(on ? "#ffd892" : "#2a3a4c"); if (lampHeads) lampHeads.material.emissiveIntensity = on ? 3 * k : 0.4; };
   g.userData.setLit(!!opts.lit);
   g.userData.houses = houses;
+  plasticize(g);
   return g;
 }

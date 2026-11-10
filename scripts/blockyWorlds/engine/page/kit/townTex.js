@@ -4,6 +4,7 @@
 //   townTex(THREE, kind, { color }) -> CanvasTexture (sRGB, repeat-wrapped)   kind: planks | plaster | timber | tiles |
 //   shingles | cobbles | cobblesRich (512 px: the town square / streets) | stone | dirt
 import { prng } from "../../lib/epic.js";
+import { PLASTIC_LOOK, toyColour, hsvOf } from "./plastic.js"; // PLASTIC-WORLD 2026-11-10
 
 const CACHE = new Map();
 const hex = (c) => `#${c.toString(16).padStart(6, "0")}`;
@@ -83,13 +84,37 @@ const DRAW = {
 };
 export const TOWN_TEX_KINDS = Object.freeze(Object.keys(DRAW));
 
+// PLASTIC-WORLD 2026-11-10 (owner: "no photo textures, no noisy cobbles ... clean paths (smooth stone tiles in clear
+// colours, no noise)"): the same kinds as CLEAN toy patterns: one flat toy colour (page/kit/plastic.js toyColour) with
+// thin even lines (plank seams, beams, roof rows, paving joints); no specks, grain, moss or per-stone noise
+const rr = (x, ox, oy, ww, hh, fill, rad = 0.3) => { x.fillStyle = fill; x.beginPath(); if (x.roundRect) x.roundRect(ox, oy, ww, hh, Math.min(ww, hh) * rad); else x.rect(ox, oy, ww, hh); x.fill(); };
+const CLEAN = {
+  planks(x, w, h, R, col) { x.fillStyle = col; x.fillRect(0, 0, w, h); const rows = 6; for (let r = 0; r < rows; r++) { const y = (r * h) / rows; if (r % 2) { x.fillStyle = shade(col, 0.94); x.fillRect(0, y, w, h / rows); } x.fillStyle = shade(col, 0.72); x.fillRect(0, y, w, 3); x.fillRect(((r * 97) % (w - 40)) + 20, y, 3, h / rows); } },
+  plaster(x, w, h, R, col) { x.fillStyle = col; x.fillRect(0, 0, w, h); },
+  timber(x, w, h, R, col) { CLEAN.plaster(x, w, h, R, col); x.fillStyle = "#9a5224"; x.fillRect(0, 0, w, 14); x.fillRect(0, h - 14, w, 14); x.fillRect(0, h / 2 - 7, w, 14); for (const fx of [0, 0.5]) x.fillRect(fx * w, 0, 14, h); x.save(); x.lineWidth = 12; x.strokeStyle = "#9a5224"; x.beginPath(); x.moveTo(0, h / 2); x.lineTo(w / 2, 0); x.moveTo(w / 2, h); x.lineTo(w, h / 2); x.stroke(); x.restore(); },
+  tiles(x, w, h, R, col) { const rows = 8, cols = 6; x.fillStyle = shade(col, 0.74); x.fillRect(0, 0, w, h); for (let r = 0; r < rows; r++) for (let c = 0; c <= cols; c++) { const cx = (c + (r % 2 ? 0.5 : 0)) * (w / cols), y = (r * h) / rows; x.fillStyle = col; x.beginPath(); x.ellipse(cx, y + (h / rows) * 0.5, (w / cols) * 0.47, (h / rows) * 0.6, 0, 0, Math.PI); x.fill(); } },
+  shingles(x, w, h, R, col) { const rows = 8; x.fillStyle = shade(col, 0.74); x.fillRect(0, 0, w, h); for (let r = 0; r < rows; r++) { const sw = w / 5; for (let xx = r % 2 ? -sw / 2 : 0; xx < w; xx += sw) rr(x, xx + 2, (r * h) / rows + 1, sw - 4, h / rows - 4, col, 0.2); } },
+  cobbles(x, w, h, R, col) { x.fillStyle = shade(col, 0.84); x.fillRect(0, 0, w, h); const n = 4, s = w / n; for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) rr(x, c * s + 3, r * s + 3, s - 6, s - 6, (r + c) % 2 ? col : shade(col, 0.95), 0.12); },
+  cobblesRich(x, w, h, R, col) { CLEAN.cobbles(x, w, h, R, col); },
+  stone(x, w, h, R, col) { const rows = 6; x.fillStyle = shade(col, 0.78); x.fillRect(0, 0, w, h); for (let r = 0; r < rows; r++) { const bw = w / 3; for (let xx = r % 2 ? -bw / 2 : 0; xx < w; xx += bw) rr(x, xx + 3, (r * h) / rows + 3, bw - 6, h / rows - 6, r % 2 ? col : shade(col, 0.95), 0.1); } },
+  dirt(x, w, h, R, col) { x.fillStyle = col; x.fillRect(0, 0, w, h); },
+};
+// the toy colour of a town surface: paths / cobbles / dirt that were beige-brown become clean light stone
+const TOY_SURF = { cobbles: "#d0d8e4", cobblesRich: "#d0d8e4", dirt: "#d6dce6" };
+export function townTexColour(kind, color) {
+  if (!PLASTIC_LOOK) return color;
+  const { s, h } = hsvOf(color);
+  if (TOY_SURF[kind] && (s < 0.3 || (h >= 15 && h <= 50))) return TOY_SURF[kind];
+  return toyColour(color);
+}
+
 export function townTex(THREE, kind, { color = "#b08a5a", seed = 1 } = {}) {
   const k = `${kind}|${color}|${seed}`;
   if (CACHE.has(k)) return CACHE.get(k);
-  const draw = DRAW[kind] ?? DRAW.plaster;
-  const N = kind === "cobblesRich" ? 512 : 256;
+  const draw = (PLASTIC_LOOK ? CLEAN : DRAW)[kind] ?? (PLASTIC_LOOK ? CLEAN : DRAW).plaster;
+  const N = kind === "cobblesRich" && !PLASTIC_LOOK ? 512 : 256;
   const c = document.createElement("canvas"); c.width = c.height = N;
-  draw(c.getContext("2d"), N, N, prng(seed * 31 + kind.length), color);
+  draw(c.getContext("2d"), N, N, prng(seed * 31 + kind.length), townTexColour(kind, color));
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8;
   CACHE.set(k, t); return t;
 }

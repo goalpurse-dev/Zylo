@@ -87,7 +87,9 @@ test("lights: dusk and dawn exist everywhere; night is dark navy with stars; one
   for (const l of ["day", "night", "warm", "dusk", "dawn"]) { assert.ok(LIGHT_MODES.includes(l)); assert.ok(LIGHTS.includes(l)); }
   const n = timeLook("night");
   const lum = (h) => { const v = parseInt(h.slice(1), 16); return 0.299 * (v >> 16) + 0.587 * ((v >> 8) & 255) + 0.114 * (v & 255); };
-  assert.ok(lum(n.sky.zen) < 20 && lum(n.sky.hor) < 50, "night sky is dark");
+  // PLASTIC-WORLD 2026-11-10: night is a DEEP BLUE (owner: "never muddy"), dark at the zenith, a readable blue horizon
+  assert.ok(lum(n.sky.zen) < 25 && lum(n.sky.hor) < 75, "night sky is dark");
+  assert.ok((parseInt(n.sky.hor.slice(5, 7), 16)) > 2 * (parseInt(n.sky.hor.slice(1, 3), 16)), "night sky is blue");
   assert.equal(n.stars, 1); assert.equal(timeLook("day").stars, 0); assert.equal(timeLook("day").windows, 0);
   assert.ok(timeLook("dusk").windows > 0 && timeLook("night").windows === 1);
   assert.ok(MOVES.includes("on_back") && LANDMARKS.includes("clocktower") && WORLD_VIEWS.includes("street"));

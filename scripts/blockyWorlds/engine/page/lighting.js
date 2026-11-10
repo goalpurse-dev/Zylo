@@ -5,6 +5,19 @@
 // a peach horizon. One shadow-casting light per set; switching is undone completely by dispose().
 import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
 import { RIGS } from "../lib/setThemes.js"; // SETS-V2: the lighting rigs (makeRigLayer)
+import { PLASTIC_LOOK } from "./kit/plastic.js"; // PLASTIC-WORLD 2026-11-10
+
+/**
+ * PLASTIC-WORLD fog rule (owner: "no fog/haze by default (only a tiny distance fade far away)"): whatever a set or a
+ * light asks for, the fog starts at least FOG_MIN_NEAR m out and ends at least 4 x further, unless the set opts in with
+ * rig.haze (a deliberate mood). [colour, near, far] | null -> the same shape.  (pure, tested)
+ */
+export const FOG_MIN_NEAR = 420;
+export function fogPolicy(fog, { haze = false, plastic = PLASTIC_LOOK } = {}) {
+  if (!fog || haze || !plastic) return fog;
+  const near = Math.max(fog[1], FOG_MIN_NEAR);
+  return [fog[0], near, Math.max(fog[2], near * 4)];
+}
 
 const HDR = { day: "/assets/ph/hdri/kloofendal_43d_clear_puresky.hdr", night: "/assets/ph/hdri/moonlit_golf.hdr" };
 const ENV = new Map();
@@ -22,7 +35,53 @@ let LIGHT_GEN = 0;
 export const lightGen = () => LIGHT_GEN;
 
 /** per light: everything that is not set-specific */
-const MODES = {
+// PLASTIC-WORLD 2026-11-10 (owner: "bright sun key light + sky fill + rim light, crisp shadows, soft bloom on emissives.
+// No haze by default. Night = deep blue with strong coloured practical lights, never muddy"): a whiter, stronger sun, a
+// clear toy-blue sky, a blue sky fill with a GREEN grass bounce (was a beige-brown one), fog only as a far fade; night a
+// deep saturated blue (sky, fill and moon), never black-brown. The old values are kept in OLD_MODES for an A/B.
+const PLASTIC_MODES = {
+  day: {
+    env: "day", envI: 0.7, exposure: 0.9,
+    sky: { zen: "#1f6fe0", hor: "#8fd0fa", k: 1.0, clouds: 1, cloudLit: "#ffffff", cloudShade: "#d6e2f4", sunCol: "#fff6e0", sunGlow: 0.25 },
+    fog: ["#a8d4f6", 900, 4200],
+    sun: { color: "#fff3dc", intensity: 4.6, dir: [30, 40, 34] },
+    hemi: ["#bfe0ff", "#7fbf6a", 0.75],
+  },
+  night: {
+    env: "night", envI: 0.35, exposure: 1.0,
+    sky: { zen: "#06123e", hor: "#1f3c8c", k: 1.0, clouds: 0, cloudLit: "#2a3a66", cloudShade: "#0c1430", sunCol: "#9fb6ff", sunGlow: 0.0 },
+    fog: ["#1a2c66", 500, 2400],
+    sun: { color: "#9ab8ff", intensity: 1.3, dir: [-30, 50, -20] },
+    hemi: ["#4a6ae0", "#1a2458", 0.6],
+    stars: 1, moon: true, windows: 1,
+  },
+  dusk: {
+    env: "night", envI: 0.4, exposure: 0.98,
+    sky: { zen: "#1a2a7a", hor: "#ff7a4e", k: 1.0, clouds: 0.55, cloudLit: "#ffa07a", cloudShade: "#5a4a8a", sunCol: "#ff8a4a", sunGlow: 0.8 },
+    fog: ["#7a6a9a", 700, 3600],
+    sun: { color: "#ffa060", intensity: 2.0, dir: [40, 6, -12] },
+    hemi: ["#9a9ae0", "#3a3a7a", 0.6],
+    stars: 0.45, windows: 0.8,
+  },
+  dawn: {
+    env: "day", envI: 0.4, exposure: 0.92,
+    sky: { zen: "#3a6ad0", hor: "#ffb0a8", k: 1.0, clouds: 0.6, cloudLit: "#ffd8d0", cloudShade: "#9a9ad0", sunCol: "#ffc090", sunGlow: 0.7 },
+    fog: ["#d0c0e0", 800, 3800],
+    sun: { color: "#ffd0a8", intensity: 2.8, dir: [-40, 8, -20] },
+    hemi: ["#c8d8ff", "#5a7a6a", 0.6],
+    stars: 0.2, windows: 0.5,
+  },
+  warm: {
+    env: "day", envI: 0.45, exposure: 0.92,
+    sky: { zen: "#2a6ae0", hor: "#ffa060", k: 1.0, clouds: 0.9, cloudLit: "#ffe0b8", cloudShade: "#e8909a", sunCol: "#ffb35c", sunGlow: 1.0 },
+    fog: ["#f0b08a", 800, 4000],
+    sun: { color: "#ffb060", intensity: 4.4, dir: [42, 11, -6] },
+    hemi: ["#ffe0c0", "#6a8a5a", 0.55],
+    windows: 0.5,
+  },
+};
+/** the look before PLASTIC-WORLD (photo textures, beige bounce, haze) */
+const OLD_MODES = {
   day: {
     env: "day", envI: 0.55, exposure: 0.86,
     sky: { zen: "#0b52d0", hor: "#4ea6f2", k: 1.0, clouds: 1, cloudLit: "#ffffff", cloudShade: "#c7d1e6", sunCol: "#fff2d6", sunGlow: 0.25 },
@@ -65,6 +124,10 @@ const MODES = {
     windows: 0.5,
   },
 };
+const MODES = PLASTIC_LOOK ? PLASTIC_MODES : OLD_MODES;
+
+/** PLASTIC-WORLD: one light's table (tests) */
+export const modeOf = (name) => MODES[name] ?? null;
 /** every light the engine knows (day | night | warm | dusk | dawn) */
 export const LIGHT_MODES = Object.freeze(Object.keys(MODES));
 /**
@@ -149,7 +212,7 @@ export function applyLight(name, ctx) {
   // fog
   // rig.fogDist: the set gives only the distances, the colour is the light's (sky and fog always match)
   const fd = rig.fogDist?.[name] ?? rig.fogDist?.all ?? null;
-  const fog = rig.fog?.[name] ?? (fd ? [M.fog[0], fd[0], fd[1]] : rig.indoor ? null : M.fog);
+  const fog = fogPolicy(rig.fog?.[name] ?? (fd ? [M.fog[0], fd[0], fd[1]] : rig.indoor ? null : M.fog), { haze: !!rig.haze });
   // a fog whose far end is not well past its near end fogs EVERY pixel to one colour (turtle run 1620fc3e: a 30 m
   // turtle's inside had near 45 / far 41 m: every day shot inside was a flat beige frame, every night one black)
   scene.fog = fog ? new THREE.Fog(fog[0], fog[1], Math.max(fog[2], fog[1] * 2.5, fog[1] + 60)) : null;
@@ -161,7 +224,7 @@ export function applyLight(name, ctx) {
   const sun = add(new THREE.DirectionalLight(rig.sunColor?.[name] ?? M.sun.color, sunI));
   sun.position.copy(c).addScaledVector(sunDir, 70); sun.target.position.copy(c); add(sun.target);
   sun.castShadow = sunI > 0.01;
-  const ms = sh.map ?? 2048;
+  const ms = sh.map ?? (PLASTIC_LOOK && sh.half > 30 ? 4096 : 2048); // PLASTIC-WORLD: crisp shadows on a wide set too
   sun.shadow.mapSize.set(ms, ms);
   Object.assign(sun.shadow.camera, { left: -sh.half, right: sh.half, top: sh.half, bottom: -sh.half, near: 1, far: sh.far ?? 160 });
   sun.shadow.camera.updateProjectionMatrix();
@@ -205,7 +268,10 @@ export function makeRigLayer(THREE, scene) {
   const fill = new THREE.DirectionalLight("#ffffff", 0); fill.castShadow = false; fill.name = "rig:fill";
   const hemi = new THREE.HemisphereLight("#ffffff", "#000000", 0); hemi.name = "rig:hemi";
   const pts = [0, 1, 2, 3].map((i) => { const l = new THREE.PointLight("#ffffff", 0, 18, 1.6); l.castShadow = false; l.name = `rig:p${i}`; return l; });
-  scene.add(fill, fill.target, hemi, ...pts);
+  // PLASTIC-WORLD 2026-11-10: the RIM light (owner: "sun key light + sky fill + rim light"): a soft directional from
+  // behind the subject toward the lens (no shadow), so the toy shapes get a bright edge against the background
+  const rim = new THREE.DirectionalLight("#ffffff", 0); rim.castShadow = false; rim.name = "rig:rim";
+  scene.add(fill, fill.target, hemi, rim, rim.target, ...pts);
   let key = null, rig = RIGS.day, base = [], fogBase = null, fogGen = -1, indoorK = 1;
   const V = () => new THREE.Vector3();
   function sync({ shot, S, t = 0 }) {
@@ -218,6 +284,7 @@ export function makeRigLayer(THREE, scene) {
       if (scene.fog && fogGen !== LIGHT_GEN) { fogGen = LIGHT_GEN; fogBase = scene.fog.color.clone(); }
       if (scene.fog && fogBase) scene.fog.color.copy(fogBase).lerp(new THREE.Color(rig?.fogTint ?? fogBase), rig?.fogTint ? 0.6 : 0);
       indoorK = S?.indoor ? 0.6 : 1;
+      rim.intensity = rig?.rim && c ? rig.rim[1] * (S?.indoor ? 0.6 : 1) : 0; if (rig?.rim) rim.color.set(rig.rim[0]);
       if (!rig || !c) { fill.intensity = 0; hemi.intensity = 0; for (const p of pts) p.intensity = 0; base = []; return; }
       fill.color.set(rig.fill[0]); fill.intensity = rig.fill[1] * (S?.indoor ? 0.8 : 1);
       if (rig.hemi) { hemi.color.set(rig.hemi[0]); hemi.groundColor.set(rig.hemi[1]); hemi.intensity = rig.hemi[2]; } else hemi.intensity = 0;
@@ -253,12 +320,15 @@ export function makeRigLayer(THREE, scene) {
   const fwd = V(), up = V(), right = V();
   /** every frame, after the camera is set: the fill stands just above / beside the camera, aimed along its view */
   function frame(camera) {
-    if (!fill.intensity) return;
+    if (!fill.intensity && !rim.intensity) return;
     camera.updateMatrixWorld();
     camera.getWorldDirection(fwd); up.set(0, 1, 0); right.crossVectors(fwd, up).normalize();
+    // the rim: high behind the subject (along the view, a little to the side), aimed back at the lens' side
+    rim.position.copy(camera.position).addScaledVector(fwd, 40).addScaledVector(up, 18).addScaledVector(right, -8);
+    rim.target.position.copy(camera.position).addScaledVector(fwd, 6); rim.target.updateMatrixWorld();
     fill.position.copy(camera.position).addScaledVector(up, 2.5).addScaledVector(right, 1.5).addScaledVector(fwd, -2);
     fill.target.position.copy(camera.position).addScaledVector(fwd, 12);
     fill.target.updateMatrixWorld();
   }
-  return { sync, frame, info: () => ({ key, rig: rig?.label ?? null, fill: fill.intensity, points: pts.map((p) => +p.intensity.toFixed(2)) }) };
+  return { sync, frame, info: () => ({ key, rig: rig?.label ?? null, fill: fill.intensity, rim: rim.intensity, points: pts.map((p) => +p.intensity.toFixed(2)) }) };
 }

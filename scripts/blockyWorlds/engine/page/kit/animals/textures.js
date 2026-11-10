@@ -5,6 +5,10 @@
 //                                 spiral | plain); in Node (tests) a plain material without the canvas map.
 import * as THREE from "three";
 import { rng, hashSeed } from "../../../lib/rng.js";
+import { PLASTIC_LOOK, plasticRough, toyColour } from "../plastic.js"; // PLASTIC-WORLD 2026-11-10
+// PLASTIC-WORLD: smooth toy plastic: the noise kinds (fur, wool, skin, specks...) become a flat colour; the PATTERN kinds
+// (feathers, scales, plates, scutes, spirals) keep their clean colour patches, without the speck noise
+export const PATTERN_KINDS = Object.freeze(["feather", "scale", "plate", "scute", "spiral"]);
 
 const MAT = new Map();
 const hasCanvas = () => typeof document !== "undefined" && typeof document.createElement === "function";
@@ -14,7 +18,7 @@ const ROUGH = { smooth: 0.38, shiny: 0.28, slime: 0.3, skin: 0.55, warts: 0.7, s
 function paint(p, S, color, kind, R) {
   p.fillStyle = color; p.fillRect(0, 0, S, S);
   const base = new THREE.Color(color), tmp = new THREE.Color();
-  const speck = (n, w, h, lo, hi) => { for (let i = 0; i < n; i++) { p.fillStyle = `#${tmp.copy(base).multiplyScalar(lo + R() * (hi - lo)).getHexString()}`; p.fillRect(R() * S, R() * S, w, h); } };
+  const speck = (n, w, h, lo, hi) => { if (PLASTIC_LOOK) return; for (let i = 0; i < n; i++) { p.fillStyle = `#${tmp.copy(base).multiplyScalar(lo + R() * (hi - lo)).getHexString()}`; p.fillRect(R() * S, R() * S, w, h); } };
   const strokes = (n, len, width, alpha, dark = true) => {
     p.lineWidth = width; p.lineCap = "round";
     for (let i = 0; i < n; i++) {
@@ -80,9 +84,10 @@ export function animalMat(color, kind = "plain", o = {}) {
   const key = `${color}|${kind}|${JSON.stringify(o)}`;
   let m = MAT.get(key);
   if (m) return m;
-  const rough = o.roughness ?? ROUGH[kind] ?? 0.7;
+  if (PLASTIC_LOOK && typeof color === "string" && /^#[0-9a-f]{6}$/i.test(color) && !o.emissive) color = toyColour(color, { minSat: 0.3, minVal: 0.3 }); // PLASTIC-WORLD: clean toy colours (no muddy brown / beige)
+  const rough = PLASTIC_LOOK ? plasticRough(o.roughness ?? ROUGH[kind] ?? 0.45) : o.roughness ?? ROUGH[kind] ?? 0.7;
   const params = { color: "#ffffff", roughness: rough, metalness: 0, ...(o.emissive ? { emissive: o.emissive, emissiveIntensity: o.emissiveIntensity ?? 1.5 } : {}) };
-  if (hasCanvas() && kind !== "plain") {
+  if (hasCanvas() && kind !== "plain" && (!PLASTIC_LOOK || PATTERN_KINDS.includes(kind))) {
     const S = 128, c = document.createElement("canvas"); c.width = c.height = S;
     paint(c.getContext("2d"), S, color, kind, rng(hashSeed(`animal/${color}/${kind}`)));
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4;

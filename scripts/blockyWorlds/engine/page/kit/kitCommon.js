@@ -4,6 +4,7 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { rng, hashSeed } from "../../lib/rng.js";
+import { PLASTIC_LOOK, PLASTIC, plasticRough } from "./plastic.js"; // PLASTIC-WORLD
 
 export { rng, hashSeed };
 
@@ -33,7 +34,9 @@ export function cachedMat(key, make) {
   if (!m) { m = make(); MAT.set(key, m); }
   return m;
 }
-export const solid = (color, o = {}) => cachedMat(`s${new THREE.Color(color).getHexString()}|${JSON.stringify(o)}`, () => new THREE.MeshStandardMaterial({ color, roughness: 0.6, ...o }));
+// PLASTIC-WORLD 2026-11-10: every kit solid is smooth plastic (roughness into 0.3..0.55, page/kit/plastic.js); the colour
+// is the caller's (people / faces keep theirs), o.matte keeps a high roughness
+export const solid = (color, o = {}) => cachedMat(`s${new THREE.Color(color).getHexString()}|${JSON.stringify(o)}`, () => { const { matte, ...p } = o; return new THREE.MeshStandardMaterial({ color, ...p, roughness: PLASTIC_LOOK && !matte ? plasticRough(p.roughness ?? PLASTIC.roughness) : p.roughness ?? 0.6 }); });
 export const skinMat = (c) => cachedMat(`skin${c}`, () => new THREE.MeshStandardMaterial({ color: c, roughness: 0.55 }));
 export const darker = (c, k) => `#${new THREE.Color(c).multiplyScalar(k).getHexString()}`;
 

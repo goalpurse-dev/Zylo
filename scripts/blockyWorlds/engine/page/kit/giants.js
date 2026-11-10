@@ -18,7 +18,9 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
-import { fabric, solid } from "./kitCommon.js";
+import { fabric as fabricLook, solid } from "./kitCommon.js";
+import { PLASTIC_LOOK, toyColour } from "./plastic.js"; // PLASTIC-WORLD 2026-11-10: smooth plastic giants, flat colour patches
+const fabric = (c, kind) => (PLASTIC_LOOK ? solid(toyColour(c), { roughness: 0.5 }) : fabricLook(c, kind));
 import { gaitOf, PLAN_OF, prng } from "../../lib/epic.js";
 import { makeTown, townLayout } from "./town.js";
 import { makeAnimal, animateAnimal, animalGait, resolveAnimal } from "./animals/index.js";
@@ -153,7 +155,7 @@ const glowMat = (c, k = 2.5) => new THREE.MeshStandardMaterial({ color: c, emiss
 
 /** the materials of a giant from its palette (fur = the look's procedural fabric "fur") */
 function materials(p) {
-  const P = p.palette;
+  const P = PLASTIC_LOOK && p.plan !== "biped" /* a human giant keeps its skin tones */ ? Object.fromEntries(Object.entries(p.palette).map(([k, v]) => [k, typeof v === "string" && /^#/.test(v) && !["eye", "glow"].includes(k) ? toyColour(v, { minSat: 0.3, minVal: 0.4 }) : v])) : p.palette;
   const body = p.fur ? fabric(P.body, "fur") : solid(P.body, { roughness: 0.7 });
   return {
     body, belly: p.fur ? fabric(P.belly, "fur") : solid(P.belly, { roughness: 0.75 }), accent: p.fur ? fabric(P.accent, "fur") : solid(P.accent, { roughness: 0.7 }),
@@ -560,10 +562,10 @@ function dressGiantShell(g, R) {
   const a = (S.body.w ?? 5) / 2, cc = (S.body.len ?? 6) / 2, h = S.shell?.h ?? 2.5;
   const dome = J.body.children.find((o) => o.isMesh && o.geometry?.type === "SphereGeometry");
   const seam = new THREE.Color(c.seam ?? "#2e1e10");
-  if (dome) dome.material = new THREE.MeshStandardMaterial({ color: seam.clone().multiplyScalar(1.15), roughness: 0.95 });
+  if (dome) dome.material = new THREE.MeshStandardMaterial({ color: seam.clone().multiplyScalar(PLASTIC_LOOK ? 1.6 : 1.15), roughness: PLASTIC_LOOK ? 0.5 : 0.95 });
   const shades = [c.shell ?? "#6a4a2a", c.shell2 ?? "#8a6636", c.shell ?? "#6a4a2a"].map((x) => new THREE.Color(x));
   shades.push(shades[0].clone().multiplyScalar(0.78));
-  for (const x of shades) x.multiplyScalar(0.8); // the outdoor sun lifts them: the kit's dark brown under daylight
+  if (!PLASTIC_LOOK) for (const x of shades) x.multiplyScalar(0.8); // (PLASTIC-WORLD: bright toy plates) the outdoor sun lifts them: the kit's dark brown under daylight
   const pts = [], rad = 0.46, mean = (a + cc) / 2;
   // the rows on the sides (what the outside shots see); the top under the town stays the dark dome: a flat plate on
   // the flatter top stood up out of the streets at its edges (the street camera saw it as a brown slab)
@@ -573,9 +575,9 @@ function dressGiantShell(g, R) {
     for (let k = 0; k < n; k++) pts.push({ th: off + (k / n) * Math.PI * 2, ph });
   }
   const geo = new THREE.CylinderGeometry(1, 1.08, 1, 6);
-  const plates = new THREE.InstancedMesh(geo, new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 0.82 }), pts.length);
+  const plates = new THREE.InstancedMesh(geo, new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: PLASTIC_LOOK ? 0.45 : 0.82 }), pts.length);
   const mossN = Math.round(pts.length * 0.3);
-  const moss = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ color: c.moss ?? "#4f6e2a", roughness: 1 }), mossN);
+  const moss = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ color: PLASTIC_LOOK ? "#4cc43c" : c.moss ?? "#4f6e2a", roughness: PLASTIC_LOOK ? 0.5 : 1 }), mossN);
   const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0), p = new THREE.Vector3(), n = new THREE.Vector3(), s = new THREE.Vector3();
   let mi = 0;
   pts.forEach((o, i) => {
@@ -595,7 +597,7 @@ function dressGiantShell(g, R) {
   g.traverse((o) => {
     if (!o.isMesh || o === dome || o === plates || o === moss || !o.material?.color) return;
     const l = o.material.map ? 0.5 : o.material.color.getHSL({}).l;
-    if (l > 0.8 || l < 0.12) return; // eye whites, pupils, glints
+    if (PLASTIC_LOOK || l > 0.8 || l < 0.12) return; // eye whites, pupils, glints (PLASTIC-WORLD: no darkening)
     if (!done.has(o.material)) { const m = o.material.clone(); m.color.multiplyScalar(0.78); done.set(o.material, m); }
     o.material = done.get(o.material);
   });

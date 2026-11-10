@@ -22,8 +22,9 @@ test("cobblesRich: a 512 px texture of many stones with moss in the grout", () =
   assert.ok(TOWN_TEX_KINDS.includes("cobblesRich"));
   calls.length = 0;
   const t = townTex(THREE, "cobblesRich", { color: "#a0603c", seed: 2 });
-  assert.equal(t.image.width, 512);
-  assert.ok(calls.filter((k) => k === "fill").length > 300, "hundreds of stones drawn");
+  // PLASTIC-WORLD 2026-11-10 (owner: "no noisy cobbles ... smooth stone tiles in clear colours"): clean paving, 256 px
+  assert.equal(t.image.width, 256);
+  assert.ok(calls.filter((k) => k === "fill").length >= 16, "a clean grid of paving stones");
   assert.match(src("../page/sets/townPlaces.js"), /TT\("cobblesRich", "#a0603c"/);
   assert.doesNotMatch(src("../page/sets/townPlaces.js"), /TT\("cobbles", "#8c7f6c"/, "the pale beige cobbles are gone from the square");
 });
@@ -56,7 +57,7 @@ test("winter: practicals dimmed and bloom tamed at night (no glare blobs on snow
   assert.ok(practicalScale("night") < 0.5);
   const [s, r, th] = snowBloom([0.5, 0.45, 0.85], "night");
   assert.ok(s < 0.5 && r === 0.45 && th >= 1.2);
-  assert.match(src("../page/winter.js"), /roughnessFactor = mix\(roughnessFactor, 0\.97, gSnowAmt\)/);
+  assert.match(src("../page/winter.js"), /roughnessFactor = mix\(roughnessFactor, \$\{PLASTIC_LOOK \? "0\.5" : "0\.97"\}, gSnowAmt\)/); // PLASTIC-WORLD: white plastic snow
 });
 
 test("weatherOf: snow from the director's list or the script, never from ice cream", () => {

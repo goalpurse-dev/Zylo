@@ -11,6 +11,8 @@
 //     W.update(t, camera)       falling snow around the camera, deterministic in t (a frame depends only on t + camera)
 //   snowFlake(i, t, seed) -> [x, y, z] in the 0..1 box (pure, tested)
 
+import { PLASTIC_LOOK } from "./kit/plastic.js"; // PLASTIC-WORLD 2026-11-10 (owner: "Keep winter (snow = clean white plastic + light blue shadows)")
+
 const WORDS = /\b(snow\w*|winter\w*|frost\w*|frozen|freez\w*|blizzard\w*|ice|icy|icicle\w*|sleet|christmas|yule)\b/i;
 
 /** is this story a winter one? the bible first, then the director's shot weather, then the script's words */
@@ -70,11 +72,11 @@ export function makeWinter(THREE, scene, { seed = 1 } = {}) {
         .replace("#include <map_fragment>", `#include <map_fragment>
 { float nz = 0.5 + 0.5 * sin(vSnowP.x * 2.3 + sin(vSnowP.z * 1.7) * 2.0) * sin(vSnowP.z * 2.9);
   float sn = smoothstep(0.38 + 0.12 * nz, 0.72, vSnowN.y);
-  vec3 snowC = mix(vec3(0.74, 0.80, 0.90), vec3(0.90, 0.93, 0.97), nz);
+  vec3 snowC = ${PLASTIC_LOOK ? "vec3(0.90, 0.94, 1.0)" : "mix(vec3(0.74, 0.80, 0.90), vec3(0.90, 0.93, 0.97), nz)"}; // PLASTIC-WORLD: one clean white
   snowC = mix(snowC, snowC * vec3(0.48, 0.54, 0.66), uSnowNight);
   diffuseColor.rgb = mix(diffuseColor.rgb, snowC, sn); gSnowAmt = sn; }`)
         // LOOK-LEFTOVERS 2026-11-08: snow is matte (no specular hot spot under a porch light / lamp)
-        .replace("#include <roughnessmap_fragment>", "#include <roughnessmap_fragment>\nroughnessFactor = mix(roughnessFactor, 0.97, gSnowAmt);");
+        .replace("#include <roughnessmap_fragment>", `#include <roughnessmap_fragment>\nroughnessFactor = mix(roughnessFactor, ${PLASTIC_LOOK ? "0.5" : "0.97"}, gSnowAmt);`); // PLASTIC-WORLD: snow is white plastic (a soft sheen)
       if (isGlass) {
         sh.fragmentShader = sh.fragmentShader.replace("#include <emissivemap_fragment>", `#include <emissivemap_fragment>
 { vec2 fu = abs(vUv - 0.5) * 2.0; float e = max(fu.x, fu.y);
@@ -112,7 +114,8 @@ export function makeWinter(THREE, scene, { seed = 1 } = {}) {
     light(sc, mode) {
       U.uSnowNight.value = mode === "night" ? 1 : mode === "dusk" ? 0.5 : 0;
       sc.traverse((l) => {
-        if (l.isHemisphereLight) { l.groundColor.set(mode === "night" ? "#2a3658" : "#e4ecf8"); l.color.lerp(new THREE.Color(mode === "night" ? "#3a58a8" : "#dfe8ff"), 0.6); l.intensity *= mode === "night" ? 0.85 : 1.15; }
+        // PLASTIC-WORLD: light blue shadows on the snow (a blue sky fill), a deep blue night (never grey-black)
+        if (l.isHemisphereLight) { l.groundColor.set(mode === "night" ? (PLASTIC_LOOK ? "#3a4a90" : "#2a3658") : "#e4ecf8"); l.color.lerp(new THREE.Color(mode === "night" ? (PLASTIC_LOOK ? "#4a6ae0" : "#3a58a8") : (PLASTIC_LOOK ? "#a8c8ff" : "#dfe8ff")), 0.6); l.intensity *= mode === "night" ? 0.85 : 1.15; }
         else if (l.isDirectionalLight && mode === "night") { l.color.set("#9fb6f0"); l.intensity *= 0.8; }
         // LOOK-LEFTOVERS 2026-11-08 (lead: "porch-light glare on the snow"): the set's lamps / porch lights / lantern
         // strings over white snow blew out into a bloom blob; snow throws ~3x the light back of grass / asphalt, so

@@ -22,6 +22,9 @@ import { gaitOf, prng, giantFootfalls } from "../../lib/epic.js";
 // (page/kit/backTown.js), the street-level places in that town (page/sets/backStreet.js), the foreground rule and the
 // fog guard per frame (S.afterCamera, called by the engine once the camera is set)
 import { makeNature, makeDust } from "../kit/nature.js";
+import { plasticize, PLASTIC_LOOK, toyColour } from "../kit/plastic.js";
+// PLASTIC-WORLD: a creature's inside palette in toy colours (clean saturated plates / skin, no olive / beige)
+const toyPal = (a) => (PLASTIC_LOOK ? a.map((c) => toyColour(c, { minSat: 0.4, minVal: 0.4 })) : a);
 import { walkable, groundUnder } from "../ground.js";
 import { addBackTown, backSurface } from "../kit/backTown.js";
 import { addPlaces } from "./backStreet.js";
@@ -44,6 +47,7 @@ export async function buildCreatureWorld(rawSpec, ctx) {
   await preloadEnv(ctx.THREE);
   // SETS-V2: every place on / in the creature dressed with its theme preset (page/sets/themes.js)
   const S = spec.view === "outside" ? await buildCreatureOutside(spec, ctx) : spec.view === "on" || spec.view === "street" ? await buildOn(spec, ctx) : await buildInside(spec, ctx);
+  plasticize(S.root); // PLASTIC-WORLD 2026-11-10: the safety net (no photo map, plastic roughness, no beige) over the whole world
   return attachDresser(S, ctx);
 }
 
@@ -262,7 +266,7 @@ function buildInside(spec0, ctx) {
   // houses are low cottages, the floor is the creature's own scaly skin and the haze is the shell's colour, not sky.
   const L = spec.size * 0.85, A = spec.size * 0.19, Hh = spec.size * 0.13, Zc = -L * 0.38;
   // [shell plate, plate seam, bone, skin floor, skin seam, cavern haze]
-  const pal = { turtle: ["#5b8a2e", "#1f3314", "#cfd8b8", "#6f8a4a", "#4a5a30", "#3e5a4a"] /* SETS-V2: greener floor + cooler haze (#3 "inside too beige") */, whale: ["#c96b7a", "#5a2430", "#f0c0b0", "#d98a8f", "#8a3c48", "#6a3038"], elephant: ["#8a7a8a", "#3a2f3a", "#e0c8b8", "#9a8e8e", "#5a4e50", "#4a4048"], snail: ["#b0632e", "#4a2410", "#f0d8a8", "#c69a6a", "#7a5030", "#5a3a20"] }[spec.kind] ?? ["#7a6a4a", "#2a2018", "#e8d6a0", "#a08a68", "#5e4c34", "#4a3e2c"];
+  const pal = toyPal({ turtle: ["#5b8a2e", "#1f3314", "#cfd8b8", "#6f8a4a", "#4a5a30", "#3e5a4a"] /* SETS-V2: greener floor + cooler haze (#3 "inside too beige") */, whale: ["#c96b7a", "#5a2430", "#f0c0b0", "#d98a8f", "#8a3c48", "#6a3038"], elephant: ["#8a7a8a", "#3a2f3a", "#e0c8b8", "#9a8e8e", "#5a4e50", "#4a4048"], snail: ["#b0632e", "#4a2410", "#f0d8a8", "#c69a6a", "#7a5030", "#5a3a20"] }[spec.kind] ?? ["#7a6a4a", "#2a2018", "#e8d6a0", "#a08a68", "#5e4c34", "#4a3e2c"]);
   // the shell: plates on the inside, a back-side half ellipsoid
   const tex = plateTexture(THREE, pal[0], pal[1], spec.seed); tex.repeat.set(10, 4);
   const shellM = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.75, side: THREE.BackSide, color: "#ffffff" });
@@ -356,7 +360,7 @@ function buildInside(spec0, ctx) {
       shadow: { center: [0, 0, -18], half: 46, far: 260, map: 4096 },
       sunDir: { day: [12, 60, -18], night: [-12, 60, -18], warm: [20, 40, -30] },
       sunScale: { day: 0.6, night: 0.15, warm: 0.5 }, envScale: { all: 0 },
-      hemi: { day: ["#dce8ff", "#4a5a30", 0.8], night: ["#3a5090", "#120c08", 0.4], warm: ["#ffd8b0", "#4a3a30", 0.5] } /* SETS-V2: cool sky fill (was beige-orange) */,
+      hemi: PLASTIC_LOOK ? { day: ["#dce8ff", "#5aa04a", 0.9], night: ["#4a6ae0", "#1a2458", 0.6], warm: ["#ffe0c0", "#5a6a4a", 0.6] } : { day: ["#dce8ff", "#4a5a30", 0.8], night: ["#3a5090", "#120c08", 0.4], warm: ["#ffd8b0", "#4a3a30", 0.5] } /* SETS-V2: cool sky fill (was beige-orange) */,
       fog: { day: [haze(0.4), 45, L * 1.6], night: ["#141a18", 25, L * 1.0], warm: [haze(0.25, "#ffb070"), 45, L * 1.5] },
       exposure: { day: 0.8, night: 1.1, warm: 0.74 }, // SETS-V2: night readable, the warm ending not blown
       practicals: (mode) => {
@@ -637,7 +641,7 @@ function addCoastStage(S, { spec, ctx, K, land, giant, dist, gait, yaw, giantPat
   // the sea from the shore to the horizon, a sand strip along the shore
   const seaM = new THREE.MeshStandardMaterial({ color: "#2f7fb8", roughness: 0.12, metalness: 0.15 });
   const sea = new THREE.Mesh(new THREE.PlaneGeometry(6000, 6000), seaM); sea.rotation.x = -Math.PI / 2; sea.position.set(shoreX + 3000, 0.6, 0); sea.receiveShadow = true; coast.add(sea);
-  const sand = new THREE.Mesh(new THREE.BoxGeometry(s * 0.35, 1, 6000), new THREE.MeshStandardMaterial({ color: "#e9d3a0", roughness: 1 })); sand.position.set(shoreX - s * 0.1, 0.2, 0); coast.add(sand);
+  const sand = new THREE.Mesh(new THREE.BoxGeometry(s * 0.35, 1, 6000), new THREE.MeshStandardMaterial({ color: PLASTIC_LOOK ? "#ffd64f" : "#e9d3a0", roughness: 1 })); sand.position.set(shoreX - s * 0.1, 0.2, 0); coast.add(sand);
   // the grass in front of / behind the hill on the land side (the plain fields' trees would stand in the sea)
   // FRAMING-FIX 2026-11-08 (lead review: "the army on a flat green field with pastel triangle mountains"): no flat
   // pastel plane and no cone mountains here any more. The realistic forest (land = the nature group) stays visible on

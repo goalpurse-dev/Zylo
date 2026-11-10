@@ -12,6 +12,7 @@ import { makeTown } from "./town.js";
 import { giantSurface } from "./giants.js";
 import { prng } from "../../lib/epic.js";
 import { townTex } from "./townTex.js";
+import { PLASTIC_LOOK, toyColour, plasticize } from "./plastic.js"; // PLASTIC-WORLD 2026-11-10
 
 const SIGN = {
   school: { text: "SCHOOL", wall: "#f6c453", roof: "#c0392b", sign: "#1f6f8b", w: 16, d: 11, h: 9 },
@@ -351,7 +352,7 @@ function denseTownMesh(plan, { seed = 5 } = {}) {
     }
   }
   // the detail pieces: one instanced mesh with a colour per piece; the lanterns glow at night; barrels
-  for (const [list, nm] of [[det, "streetDetail"], [props, "streetProps"]]) if (list.length) { const im = new THREE.InstancedMesh(box, new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 0.8 }), list.length), col = new THREE.Color(); im.userData.placeProp = nm === "streetProps"; list.forEach((r, i) => { const [lx, ly, lz, sx, sy, sz, h, c] = r; q.setFromAxisAngle(up, h.ry ?? 0); v.set(lx, ly - (h.sinkFix ?? 0), lz).applyQuaternion(q).add(s.set(h.x, h.y, h.z)); m4.compose(v, q, new THREE.Vector3(sx, sy, sz)); im.setMatrixAt(i, m4); im.setColorAt(i, col.set(c)); }); im.instanceMatrix.needsUpdate = true; im.instanceColor.needsUpdate = true; im.castShadow = true; im.receiveShadow = true; im.frustumCulled = false; im.name = nm; g.add(im); }
+  for (const [list, nm] of [[det, "streetDetail"], [props, "streetProps"]]) if (list.length) { const im = new THREE.InstancedMesh(box, new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 0.8 }), list.length), col = new THREE.Color(); im.userData.placeProp = nm === "streetProps"; list.forEach((r, i) => { const [lx, ly, lz, sx, sy, sz, h, c] = r; q.setFromAxisAngle(up, h.ry ?? 0); v.set(lx, ly - (h.sinkFix ?? 0), lz).applyQuaternion(q).add(s.set(h.x, h.y, h.z)); m4.compose(v, q, new THREE.Vector3(sx, sy, sz)); im.setMatrixAt(i, m4); im.setColorAt(i, col.set(PLASTIC_LOOK ? toyColour(c) : c)); }); im.instanceMatrix.needsUpdate = true; im.instanceColor.needsUpdate = true; im.castShadow = true; im.receiveShadow = true; im.frustumCulled = false; im.name = nm; g.add(im); }
   const lanternMat = new THREE.MeshStandardMaterial({ color: "#ffe6a8", emissive: "#ffb347", emissiveIntensity: 0.4, roughness: 0.4 });
   const inst = (geo, mat, rows, name, cast = true) => { if (!rows.length) return null; const im = new THREE.InstancedMesh(geo, mat, rows.length); rows.forEach((r, i) => { const [lx, ly, lz, sx, sy, sz, h] = r; q.setFromAxisAngle(up, h.ry ?? 0); v.set(lx, ly, lz).applyQuaternion(q).add(s.set(h.x, h.y, h.z)); m4.compose(v, q, new THREE.Vector3(sx, sy, sz)); im.setMatrixAt(i, m4); }); im.instanceMatrix.needsUpdate = true; im.castShadow = cast; im.receiveShadow = true; im.frustumCulled = false; im.name = name; g.add(im); return im; };
   for (const [k, b] of buckets) { const im = new THREE.InstancedMesh(b.geo, b.mat, b.list.length); b.list.forEach((m, i) => im.setMatrixAt(i, m)); im.instanceMatrix.needsUpdate = true; im.castShadow = im.receiveShadow = true; im.frustumCulled = false; im.name = k; g.add(im); }
@@ -558,5 +559,6 @@ export function addBackTown(g, opts = {}) {
   town.userData.setLit = (on, k = 1) => { for (const m of litMats) m.emissiveIntensity = on ? 1.8 * k : 0; town.userData.houses?.userData.setLit?.(on, k); };
   town.userData.setLit(!!spec.lit);
   g.userData.backTown = town;
+  plasticize(town); // PLASTIC-WORLD: plastic roughness, no beige (the town rides a giant outside any set too)
   return town;
 }

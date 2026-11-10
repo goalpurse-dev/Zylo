@@ -14,6 +14,7 @@ import { makeKit, mergeStatic, glowList, lcg } from "./util.js";
 import { validateWorld } from "../../lib/builder/spec.js";
 import { preloadEnv } from "../lighting.js";
 import { attachDresser } from "./themes.js"; // SETS-V2
+import { plasticize } from "../kit/plastic.js";
 
 const GROUND_TEX = { grass: "leafy_grass", dirt: "brown_mud_dry", sand: "coast_sand_01", rock: "dark_rock", tiles: "interior_tiles", wood: "laminate_floor_02", gravel: "gravel" };
 
@@ -31,7 +32,7 @@ export async function buildWorld(rawSpec, ctx) {
   const rnd = lcg(hash(spec.name) + 17);
   const glow = glowList(), onLight = [], updates = [];
   const E = spec.enclosure, type = E.type;
-  const pal = spec.palette.length ? spec.palette : ["#6aa84f", "#a9d18e", "#e6b85c", "#8e6c4a"];
+  const pal = spec.palette.length ? spec.palette : ["#4cc43c", "#5ab0f0", "#ffc23a", "#e8504a"]; // PLASTIC-WORLD: toy defaults (was olive / beige / brown)
   const col = (i) => pal[i % pal.length];
   const enclosed = type !== "sky";
   // the corridor: half-width R (shells), length from the camera end (+Z0) to the far end (-Z1)
@@ -141,15 +142,15 @@ export async function buildWorld(rawSpec, ctx) {
   if (type === "room" && !practical.length) practical.push({ color: "#ffe2b0", pos: [0, H - 0.4, -3], intensity: 9 });
   const fogFor = (mode) => {
     if (spec.fog) { const d = spec.fog.density; const near = 3 + (1 - d) * 30, far = near + 18 + (1 - d) * 160; return [spec.fog.color, near, far]; }
-    const base = { cave: ["#2a241e", 10, 60], inside_creature: ["#5a1f2c", 12, 55], room: null, underwater: ["#1a6fa8", 3, 34], space: ["#05060f", 60, 400], sky: null }[type];
+    const base = { cave: ["#2a2e5a", 10, 60], inside_creature: ["#5a1f2c", 12, 55], room: null, underwater: ["#1a6fa8", 3, 34], space: ["#05060f", 60, 400], sky: null }[type];
     if (!base) return mode === "night" ? ["#16244c", 30, 260] : mode === "warm" ? ["#f0a06a", 140, 1600] : ["#9cc8ec", 120, 1600];
     return mode === "night" ? [darkenHex(base[0], 0.6), base[1] * 0.8, base[2] * 0.8] : base;
   };
   const tint = L.tint;
   const hemiFor = (mode) => {
-    const sky = tint ?? { cave: "#b8a890", inside_creature: "#ffb0c0", underwater: "#8fd8ff", space: "#8890b0", room: "#fff0dc" }[type] ?? (mode === "night" ? "#2c3f78" : "#cfe6ff");
-    const gnd = { inside_creature: "#5a1a28", cave: "#2a2018", underwater: "#0a2a44", space: "#101018" }[type] ?? (mode === "night" ? "#07070f" : "#8a7a52");
-    const k = (enclosed ? 1.15 : mode === "night" ? 0.22 : 0.45) * L.ambient;
+    const sky = tint ?? { cave: "#a8b8e0", inside_creature: "#ffb0c0", underwater: "#8fd8ff", space: "#8890b0", room: "#f4f8ff" }[type] ?? (mode === "night" ? "#4a6ae0" : "#bfe0ff"); // PLASTIC-WORLD: no beige bounce
+    const gnd = { inside_creature: "#7a2a48", cave: "#2a2a50", underwater: "#0a2a44", space: "#101030" }[type] ?? (mode === "night" ? "#1a2458" : "#7fbf6a");
+    const k = (enclosed ? 1.15 : mode === "night" ? 0.6 : 0.75) * L.ambient;
     return [sky, gnd, k];
   };
   const rig = {
@@ -160,6 +161,7 @@ export async function buildWorld(rawSpec, ctx) {
     ...(tint ? { sunColor: { day: tint, warm: tint, night: tint } } : {}),
     envScale: { all: enclosed ? 0.6 : 1 },
     indoor: type === "room",
+    haze: !!spec.fog || type === "underwater", // PLASTIC-WORLD: fog only when the world asks for it (lighting.js fogPolicy)
     practicals(mode) {
       return practical.map((p) => {
         const l = new THREE.PointLight(p.color, p.intensity * (mode === "night" ? 1.4 : mode === "warm" ? 1 : 0.8), 16, 2);
@@ -170,6 +172,7 @@ export async function buildWorld(rawSpec, ctx) {
   };
 
   mergeStatic(THREE, root);
+  plasticize(root); // PLASTIC-WORLD 2026-11-10: the safety net (no photo map, plastic roughness, no beige)
   if (ctx.scene && !root.parent) ctx.scene.add(root);
   const door = opening ?? V(-3.2, 0, -5);
   return attachDresser({ // SETS-V2: a built world takes a theme preset too when its words fit one (cave, desert, neon...)

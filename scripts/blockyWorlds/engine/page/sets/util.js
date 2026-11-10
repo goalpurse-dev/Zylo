@@ -4,6 +4,8 @@
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { PLASTIC_LOOK, makePlastic, flatFor, TILE_KIND, cleanPattern, plasticize } from "../kit/plastic.js"; // PLASTIC-WORLD 2026-11-10
+import { toyModelFor } from "../kit/nature.js"; // PLASTIC-WORLD: stylised trees / shrubs instead of the Poly Haven foliage
 
 /** Loaders for when the caller's ctx has none (the dev preview passes its own, the engine passes its own). */
 let _gl = null;
@@ -47,6 +49,15 @@ export function makeKit(ctx, root) {
   function pbr(name, { repeat = [1, 1], tint = "#ffffff", rough = 1, normal = 1, ao = false } = {}) {
     const k = `${name}|${repeat}|${tint}|${rough}|${normal}`;
     if (MATS.has(k)) return MATS.get(k);
+    // PLASTIC-WORLD 2026-11-10 (owner: "no photo textures, no noisy cobbles"): the Poly Haven surface becomes a flat toy
+    // colour (its old tint honoured when it is a real colour); paving / bricks / planks keep a CLEAN line pattern
+    if (PLASTIC_LOOK) {
+      const col = flatFor(name, tint), pat = cleanPattern(THREE, TILE_KIND[name], col);
+      if (pat) pat.repeat.set(...repeat);
+      const m = makePlastic(THREE, pat ? "#ffffff" : col, pat ? { map: pat, keepColour: true, roughness: 0.5 } : { roughness: /grass/.test(name) ? 0.55 : 0.45, keepColour: true });
+      m.userData.fromPbr = name;
+      MATS.set(k, m); return m;
+    }
     const m = new THREE.MeshStandardMaterial({ color: tint, map: L.tex(name, "diff", true), normalMap: L.tex(name, "nor", false), roughnessMap: L.tex(name, "rough", false), roughness: rough });
     if (ao) { m.aoMap = L.tex(name, "ao", false); }
     m.normalScale.set(normal, normal);
@@ -55,7 +66,7 @@ export function makeKit(ctx, root) {
   }
   const solid = (color, o = {}) => {
     const k = `solid|${color}|${JSON.stringify(o)}`;
-    if (!MATS.has(k)) MATS.set(k, new THREE.MeshStandardMaterial({ color, roughness: 0.6, ...o }));
+    if (!MATS.has(k)) MATS.set(k, PLASTIC_LOOK ? makePlastic(THREE, color, o) : new THREE.MeshStandardMaterial({ color, roughness: 0.6, ...o })); // PLASTIC-WORLD
     return MATS.get(k);
   };
   const glass = (color = "#20303f") => new THREE.MeshPhysicalMaterial({ color, roughness: 0.06, metalness: 0.1, envMapIntensity: 1.6, clearcoat: 1 });
@@ -75,8 +86,12 @@ export function makeKit(ctx, root) {
 
   /** a CC0 model, normalised: origin at the bottom centre; height / length (longest side along z) in metres */
   async function model(url, { height = null, length = null, width = null, alongZ = true, first = false } = {}) {
-    const r = await L.gltf(url);
-    const g = (r.scene ?? r).clone(true);
+    // PLASTIC-WORLD 2026-11-10: photo-scanned foliage (jacaranda, shrubs, island tree, fir, fern) -> a stylised toy tree /
+    // bush (same normalising below); other Poly Haven models keep their shape, their photo maps become flat toy colours
+    const toy = PLASTIC_LOOK ? toyModelFor(THREE, url) : null;
+    const r = toy ?? await L.gltf(url);
+    const g = toy ?? (r.scene ?? r).clone(true);
+    if (PLASTIC_LOOK && !toy) { if (/\/assets\/(ph|styletest)\//.test(url)) g.traverse((o) => { for (const m of o.isMesh ? [o.material].flat() : []) if (m) m.userData.photo = true; }); plasticize(g); }
     if (first) { let rt = g; while (rt.children.length === 1 && rt.children[0].children.length) rt = rt.children[0]; rt.children.slice(1).forEach((c) => rt.remove(c)); }
     g.traverse((o) => { if (o.isMesh) { o.castShadow = o.receiveShadow = true; if (o.material?.map) o.material.map.anisotropy = 8; } });
     g.updateMatrixWorld(true);
@@ -158,7 +173,7 @@ export function makeKit(ctx, root) {
       if (kind === "dots") { p.fillStyle = "rgba(255,255,255,0.9)"; for (let y = 8; y < 128; y += 24) for (let x = (y / 24) % 2 ? 8 : 20; x < 128; x += 24) { p.beginPath(); p.arc(x, y, 5, 0, Math.PI * 2); p.fill(); } }
     });
     t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(...repeat);
-    const m = new THREE.MeshStandardMaterial({ map: t, roughness: 0.85 });
+    const m = PLASTIC_LOOK ? makePlastic(THREE, kind === "stripes" || kind === "plaid" || kind === "dots" ? "#ffffff" : color, kind === "stripes" || kind === "plaid" || kind === "dots" ? { map: t, keepColour: true, roughness: 0.55 } : { roughness: 0.55 }) : new THREE.MeshStandardMaterial({ map: t, roughness: 0.85 }); // PLASTIC-WORLD: plain cloth = flat colour
     MATS.set(k, m); return m;
   }
 
