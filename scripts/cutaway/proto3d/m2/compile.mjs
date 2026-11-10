@@ -124,6 +124,9 @@ export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
   // (its beats); the layout itself gets the parts it adds, so the page has them (CUTAWAY_STORYFX=0 turns it off)
   // (not an approved layout with its own camera path: the owner approved those as they are)
   const fxOn = process.env.CUTAWAY_STORYFX !== "0" && Array.isArray(layout0.beats) && layout0.beats.length && roles.length && (layout0.codeShots || !layout0.camera);
+  // (the still-moment life of an earlier compile, saved with the plan, goes: it is filled again below from today's rules,
+  // and a second auto_life1 next to the old one was a duplicate id; 10 saved plans still carried the old dust specks)
+  if (fxOn && Array.isArray(layout0.parts)) { layout0.parts = layout0.parts.filter((p) => !/^auto_life\d+$/.test(p.id)); if (Array.isArray(layout0.cues)) layout0.cues = layout0.cues.filter((c) => !/^auto_life\d+$/.test(String(c.p))); }
   const story = fxOn ? soft("story effects", () => storyFx(layout0, sentencesOf(words, roles).map((s) => ({ role: s.role, text: s.text }))), { notes: [], stats: {} }) : { notes: [], stats: {} };
   // (a position or size that is not three numbers gets safe ones: a NaN or a word in the main subject's position stopped
   // the page, the crash sweep of 2026-11-05; each is our bug, logged, and the part is drawn at the fallback)
