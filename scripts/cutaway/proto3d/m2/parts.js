@@ -540,9 +540,13 @@ export const KINDS = {
     let tube = null;
     const target = () => {
       if (!p.of || !ctx.outlinePass) return null;
-      const [pid, nid] = String(p.of).split("."), e = api.part(pid), b = e?.obj;
-      const one = (nid ? b?.nodes?.get(nid)?.g : null) ?? b?.group ?? b?.mesh ?? null;
-      return one ? [one] : e?.added?.length ? e.added : null;
+      // (one part or several, "tankA,tankB": each one's silhouette glows)
+      const all = String(p.of).split(",").map((s) => s.trim()).filter(Boolean).flatMap((id) => {
+        const [pid, nid] = id.split("."), e = api.part(pid), b = e?.obj;
+        const one = (nid ? b?.nodes?.get(nid)?.g : null) ?? b?.group ?? b?.mesh ?? null;
+        return one ? [one] : e?.added?.length ? e.added : [];
+      });
+      return all.length ? all : null;
     };
     return {
       update(t) {

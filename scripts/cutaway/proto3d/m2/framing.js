@@ -194,7 +194,9 @@ export function placeLifeProps(L, home, project) {
  */
 export function signObstacles(L, sign) {
   const cut = cutOf(L);
-  return [...sceneryBoxes(L).map((b) => ({ min: [b.min[0], 0, b.min[2]], max: b.max })), ...worldTrees(L), ...L.parts.filter((p) => p !== sign).map((p) => focusOf(p, cut)).filter((b) => b && b.max[1] > 0.2)];
+  // (a ceiling or a roof slice stays overhead: dropped to the floor it filled the whole room, so the end sign could never
+  // stand inside a room and the end view pulled back to frame room and sign: the appliance ended tiny, 2026-11-09)
+  return [...sceneryBoxes(L).map((b) => ({ min: [b.min[0], b.min[1] > 2.5 ? b.min[1] : 0, b.min[2]], max: b.max })), ...worldTrees(L), ...L.parts.filter((p) => p !== sign).map((p) => focusOf(p, cut)).filter((b) => b && b.max[1] > 0.2)];
 }
 /** the world's two big trees (real.js; world.trees moves them, [] removes them): crown about 3.2 m round, 7.8 m tall */
 export function worldTrees(L) {
@@ -238,7 +240,9 @@ export function placeSign(L, home, project) {
   const [, y0, z0] = sign.params.at;
   // spots nearest the build first (1 m apart, either side), each at the sign's size, then a little smaller (1.0)
   const cands = [], dxs = Array.from({ length: 33 }, (_, i) => (i === 0 ? 0 : (i % 2 ? 1 : -1) * Math.ceil(i / 2)));
-  for (const scale of [...new Set([sign.params.scale ?? 1.5, 1.0])]) for (const dx of dxs) for (const dz of [0, -2, -4, -6]) cands.push({ at: [subj.max[0] + 2 + dx, y0, Math.min(z0, -1) + dz], scale });
+  // (indoors a smaller board too, so it fits under the ceiling beside the appliance)
+  const indoor = ["room", "kitchen", "workshop", "carwash", "garage"].includes(L.world?.backdrop?.type);
+  for (const scale of [...new Set([sign.params.scale ?? 1.5, 1.0, ...(indoor ? [0.7, 0.55] : [])])]) for (const dx of dxs) for (const dz of [0, -2, -4, -6]) cands.push({ at: [subj.max[0] + 2 + dx, y0, Math.min(z0, -1) + dz], scale });
   // first a spot inside the home view; else the free spot nearest the build (the end views frame the sign with it)
   for (const need of [true, false]) {
     const ok = cands.map(({ at, scale }) => ({ ...sign, params: { ...sign.params, at, scale } })).filter((q) => { const c = cover(q); return c.share <= 0.1 && (c.inFrame || !need) && !hits(focusOf(q, cut)) && seen(focusOf(q, cut)); });

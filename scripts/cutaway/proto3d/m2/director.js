@@ -8,6 +8,7 @@
 // It also projects boxes to the screen, for the code checks. Pure math: runs in node and in the page.
 import { boxCenter, focusOf, focusOfId, union } from "./focus.js";
 import { reportBug, soft } from "./bookkeeping.js";
+import { rigBox } from "./rig.js";
 import { LENS, CAMERA_LIMITS, measureKey, settingBoxes, subjectBox, turnBetween } from "./framing.js";
 
 export { LENS };
@@ -290,7 +291,11 @@ export function directCamera(layout, shots, marks) {
   // shot's other parts (the spray) beside it
   const hookB = (() => {
     const b = (layout.beats ?? []).find((x) => x.s === "hook");
-    const bs = (b?.do ?? []).map((a) => parts.get(a.p)).filter((p) => p && !["flow", "pipeRun", "pipeRunFlow", "light", "rain", "outline", "sign", "dig", "water", "arrow"].includes(p.kind)).map((p) => { try { return focusOf(p, cut); } catch { return null; } }).filter(Boolean);
+    // (a designed part at rest, with only its pieces shown by the hook: its swept box, with pieces that appear later and
+    // every move played out, made the visible appliance 22-33% of the width while the box met the 36%, 2026-11-09)
+    const acted = new Set((b?.do ?? []).map((a) => a.v));
+    const hookBox = (p) => { if (p.kind !== "rig") return focusOf(p, cut); const hide = (p.params?.nodes ?? []).filter((n) => (n.moves ?? []).some((m) => m.type === "appear" && !acted.has(m.name))).map((n) => n.id); return rigBox(p.params ?? {}, { swept: false, hide }) ?? focusOf(p, cut); };
+    const bs = (b?.do ?? []).map((a) => parts.get(a.p)).filter((p) => p && !["flow", "pipeRun", "pipeRunFlow", "light", "rain", "outline", "sign", "dig", "water", "arrow"].includes(p.kind)).map((p) => { try { return hookBox(p); } catch { return null; } }).filter(Boolean);
     return bs.sort((a, c) => (c.max[0] - c.min[0]) * (c.max[1] - c.min[1]) - (a.max[0] - a.min[0]) * (a.max[1] - a.min[1]))[0] ?? null;
   })();
   const hookClose = (k, box, s) => {

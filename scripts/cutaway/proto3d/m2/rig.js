@@ -151,11 +151,14 @@ function nodeBoxes(p) {
 /** the rig's box in world space (at rest and through its moves), for the camera and the checks */
 /** rigBox, softly (its crash is our bug, logged; no box) */
 export function rigBox(p, opts = {}) { return soft("a designed part's box (rigBox)", () => rigBoxRaw(p, opts), null); }
-function rigBoxRaw(p, { swept = true, node = null } = {}) {
+function rigBoxRaw(p, { swept = true, node = null, hide = null } = {}) {
   // (node: one piece and the pieces hung on it, for a shot of "part.node": the camera frames the motor, not the garage)
   const keep = node ? new Set([node]) : null;
   if (keep) for (let grown = true; grown;) { grown = false; for (const n of nodesOf(p)) if (n.parent && keep.has(n.parent) && !keep.has(n.id)) { keep.add(n.id); grown = true; } }
-  const b = unionB([...nodeBoxes(p)].filter(([id]) => !keep || keep.has(id)).map(([, x]) => (swept ? x.swept : x.rest)));
+  // (hide: pieces not shown yet, and the pieces hung on them: the hook's opening frame measured pieces that appear later)
+  const gone = hide ? new Set(hide) : null;
+  if (gone) for (let grown = true; grown;) { grown = false; for (const n of nodesOf(p)) if (n.parent && gone.has(n.parent) && !gone.has(n.id)) { gone.add(n.id); grown = true; } }
+  const b = unionB([...nodeBoxes(p)].filter(([id]) => (!keep || keep.has(id)) && (!gone || !gone.has(id))).map(([, x]) => (swept ? x.swept : x.rest)));
   if (!b) return null;
   const s = num(p.scale, 1), pos = v3(p.pos), ry = num(p.rotY, 0);
   // a turned rig: the box of its corners turned about y

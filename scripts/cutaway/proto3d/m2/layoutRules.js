@@ -240,9 +240,13 @@ function layoutRulesRaw(L) {
     const NOT = new Set(["outline", "arrows", "light", "sign", "rain", "lawnWet", "counter", "book", "sheet", "flag", "fx"]);
     const target = p.params?.of ?? (shownOnName ? (heroIds.find((id) => byId.get(String(id).split(".")[0])?.kind === "rig") ?? heroIds.find((id) => byId.get(String(id).split(".")[0]) && !NOT.has(byId.get(String(id).split(".")[0]).kind))) : null);
     if (!target) continue;
+    // (the plan's own drawn outline, points and no part named: kept as drawn; a volcano's profile became a rectangle round the
+    // whole land, 2026-11-09)
+    if (!p.params?.of && Array.isArray(p.params?.points) && p.params.points.length >= 3) continue;
+    // (several parts named, "tankA,tankB": the page glows each one's silhouette; the drawn fallback goes round the first)
     // (a designed part at rest: its swept box, every move played at once, ran the outline off the frame)
-    const [tp, tn] = String(target).split("."), tpart = byId.get(tp);
-    const bx = tpart?.kind === "rig" ? rigBox(tpart.params ?? {}, { swept: false, node: tn ?? null }) : focusOfId(byId, target, world.cut ?? null);
+    const [tp, tn] = String(target).split(",")[0].trim().split("."), tpart = byId.get(tp);
+    const first = String(target).split(",")[0].trim(), bx = tpart?.kind === "rig" ? rigBox(tpart.params ?? {}, { swept: false, node: tn ?? null }) : focusOfId(byId, first, world.cut ?? null);
     if (!bx) continue;
     const m = Math.max(0.06, 0.035 * Math.max(bx.max[0] - bx.min[0], bx.max[1] - bx.min[1])), z = +((bx.min[2] + bx.max[2]) / 2).toFixed(3), r3 = (v) => +v.toFixed(3);
     const [x0, x1, y0, y1] = [r3(bx.min[0] - m), r3(bx.max[0] + m), r3(bx.min[1] >= -0.05 ? Math.max(bx.min[1] - m, 0.02) : bx.min[1] - m), r3(bx.max[1] + m + 0.12 * (bx.max[1] - bx.min[1]))]; // (the top edge clear of what stands on it: drawn on the front, it crossed the flame ring)
@@ -429,7 +433,11 @@ function layoutRulesRaw(L) {
     if (z > -1.2 || over) { z = over ? +(world.cut.z0 - 1.4).toFixed(2) : -1.2; c.params.pos = [x, y, z]; notes.push(`${c.id} stands on the ground`); }
   }
   // 15. a meter is readable on a phone: at least 1.4 m (the free runs' 0.8 m meters read as specks in a wide shot)
-  for (const c of parts.filter((p) => p.kind === "counter")) if (!(Number(c.params.size) >= 1.4)) { c.params.size = 1.4; notes.push(`${c.id} is 1.4 m, readable on a phone`); }
+  // (in scale with the build: beside a small appliance a 1.4 m meter pulled the shot wide and the fridge shrank, the old
+  // fridge problem2 failure, 2026-11-09; at least a third of the main part's width, 0.6 to 1.4 m)
+  const mainP = parts.find((p) => p.main), mainB = mainP ? (() => { try { return focusOf(mainP, world.cut ?? null); } catch { return null; } })() : null;
+  const minMeter = mainB ? Math.max(0.6, Math.min(1.4, 0.35 * Math.max(mainB.max[0] - mainB.min[0], mainB.max[1] - mainB.min[1]))) : 1.4;
+  for (const c of parts.filter((p) => p.kind === "counter")) if (!(Number(c.params.size) >= minMeter)) { c.params.size = +minMeter.toFixed(2); notes.push(`${c.id} is ${minMeter.toFixed(2)} m, readable on a phone`); }
   // 16. a roof stops hiding what is under it: in each sentence after the one that builds it whose showing part stands under
   // it (not the finish and congrats: the finished build has its roof), the roof turns see-through, and back after
   // (the free aquarium run: a shade roof covered the tank and its pipes in every later shot)
