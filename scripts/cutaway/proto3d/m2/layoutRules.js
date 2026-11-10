@@ -19,6 +19,10 @@ const near = (a, b, d) => Math.hypot(a[0] - b[0], a[2] - b[2]) <= d;
 const hexClose = (a, b) => { const p = (h) => [1, 3, 5].map((i) => parseInt(String(h).slice(i, i + 2), 16)); try { const x = p(a), y = p(b); return Math.hypot(x[0] - y[0], x[1] - y[1], x[2] - y[2]) < 60; } catch { return false; } };
 // the interior settings, where a machine is the subject (not a cut in the ground)
 const INDOOR = new Set(["room", "kitchen", "workshop"]);
+// the appliances whose setting is the kitchen, and the laundry room's (the setting steer, 2026-11-10; planner.mjs tells
+// the planner the same). A dishwasher is checked first: "dish washer" also says "washer".
+export const KITCHEN_APPLIANCE = /\b(dish ?washers?|dishwashers?|fridges?|refrigerators?|freezers?|stoves?|ovens?|cookers?|cooktops?|hobs?|range hoods?|microwaves?|kettles?|toasters?|coffee (machines?|makers?)|espresso|blenders?|air fryers?|rice cookers?|food processors?|cuisini[eè]res?)\b/i;
+export const LAUNDRY_APPLIANCE = /\b(washing machines?|(?<!(pressure|power|dish) )washers?|clothes dryers?|tumble dryers?|(?<!hair )dryers?|laundry)\b/i;
 
 /** How far behind the stop line the first car waits on a street (m): the loop glows in the road in front of it. */
 export const FIRST_CAR = 6;
@@ -228,6 +232,29 @@ function layoutRulesRaw(L) {
         notes.push(`${p.id} grown with ${mainRig.id}`);
       }
     }
+  }
+  // the setting steer's free fallback (owner, 2026-11-10: the real dishwasher run was planned in the plain room, a "flat
+  // orange wall"): a kitchen appliance planned in the room gets the kitchen; a washing machine or a dryer in the room or
+  // the plain kitchen gets the kitchen as a laundry room (kit/backdrops.js use "laundry"). Named by the main part's name,
+  // its synonyms, its id or the video's title.
+  if (mainRig && ["room", "kitchen"].includes(world.backdrop?.type)) {
+    const said = [mainRig.id, mainRig.params?.name, ...(Array.isArray(mainRig.params?.synonyms) ? mainRig.params.synonyms : []), L.title].filter((x) => typeof x === "string").join(" | ");
+    const kitchenThing = KITCHEN_APPLIANCE.test(said), laundryThing = !kitchenThing && LAUNDRY_APPLIANCE.test(said);
+    if (kitchenThing || laundryThing) {
+      const B = world.backdrop, rb = rigBox(mainRig.params ?? {}, { swept: false }), cx = Array.isArray(mainRig.params?.pos) ? Number(mainRig.params.pos[0]) || 0 : 0;
+      const hw = rb ? Math.max(cx - rb.min[0], rb.max[0] - cx) : 1.4, gw = +Math.max(1.8, hw + 0.4).toFixed(2);
+      if (B.type === "room") {
+        world.backdrop = { type: "kitchen", ...(B.back != null ? { back: B.back } : {}), gap: [+(cx - gw).toFixed(2), +(cx + gw).toFixed(2)], ...(B.color ? { color: B.color } : {}), ...(laundryThing ? { use: "laundry" } : {}) };
+        notes.push(`${mainRig.id} is a ${laundryThing ? "laundry" : "kitchen"} appliance: the room became the ${laundryThing ? "laundry room" : "kitchen"}`);
+      } else if (laundryThing && !B.use) { world.backdrop = { ...B, use: "laundry" }; notes.push(`${mainRig.id} is a laundry appliance: the kitchen is a laundry room`); }
+    }
+  }
+  // a room is open-topped since 2026-11-10 (kit/backdrops.js: its roof slice filled the top of high shots); it keeps its
+  // ceiling when something hangs up there (a smoke detector, a ceiling light)
+  if (world.backdrop?.type === "room" && world.backdrop.ceiling == null) {
+    const H = Number(world.backdrop.h) || 4.2;
+    const high = parts.some((p) => { if (p.main || ["light", "sign", "rain", "outline", "arrows", "fx"].includes(p.kind)) return false; if (p.kind === "prop" && p.params?.type === "ceilingLight") return true; try { const b = focusOf(p, cut); return b.min[1] > 1.5 && b.max[1] >= 0.12 + H - 0.6; } catch { return false; } });
+    if (high) { world.backdrop = { ...world.backdrop, ceiling: true }; notes.push("the room keeps its ceiling: something hangs from it"); }
   }
   // an outline traces what it names, by code: outline {of: "stove"} or {of: "stove.head"} goes round that part or piece on
   // its front; on the "This is a…" line an outline round a designed part always traces the hero shot's part (the real

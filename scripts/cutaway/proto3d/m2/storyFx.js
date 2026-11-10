@@ -138,7 +138,9 @@ export function storyFx(layout, sentences) {
       // (a leak of gas, air, steam or fumes is a puff of smoke, not water drops)
       const type = ev.type === "drip" && low.some((x) => /^(gas|air|steam|fumes?|vapou?r|smoke)$/.test(x)) ? "smoke" : ev.type;
       const id = `auto_fx${++k}`, { at, size } = spot(layout, b, type);
-      layout.parts.push({ id, kind: "fx", params: { type, at, size } });
+      // (water in a planned video as droplets, not blue balls: the owner on the dishwasher run, 2026-11-10; a premade
+      // video keeps its approved look)
+      layout.parts.push({ id, kind: "fx", params: { type, at, size, ...(["splash", "drip"].includes(type) && layout.approved !== true ? { look: "drops" } : {}) } });
       b.do.push({ p: id, v: ONE_SHOT.has(type) ? "go" : "start", w: words[i].replace(/[^A-Za-z0-9'-]/g, ""), auto: true });
       // a state stops when the build fixes it: at the next sentence that is a fix (or the finish)
       if (!ONE_SHOT.has(type)) { const nb = layout.beats.slice(layout.beats.indexOf(b) + 1).find((x) => /^(fix|finish|name|congrats)/.test(x.s)); if (nb) nb.do.push({ p: id, v: "stop", auto: true }); }
@@ -203,8 +205,10 @@ export function fillGaps(layout, tracks, sentences, gaps) {
     // dust is real, a workshop or a basement room, and subtle)
     const on = (key) => { tracks[key] = tracks[key] ?? { base: 0, ramps: [] }; tracks[key].ramps.push({ t0: a + 0.2, t1: a + 0.6, amp: 1, e: "inOut", auto: true }, { t0: b - 0.2, t1: b + 0.3, amp: -1, e: "inOut", auto: true }); };
     const mode = ambientFor(layout, beat), id = `auto_life${i + 1}`, { at, size } = spot(layout, beat, mode === "steam" ? "smoke" : "motes");
-    // (a premade template keeps the life it was approved with: the drifting specks of the live worker, as they were)
-    if (layout.template) { layout.parts.push({ id, kind: "fx", params: { type: "motes", at, size: Math.max(size, 1) } }); tracks[`${id}.go`] = { base: 0, ramps: [] }; on(`${id}.on`); notes.push(`still ${a.toFixed(1)}-${b.toFixed(1)} s: specks (premade, as approved)`); return; }
+    // (a premade video keeps the life it was approved with: the drifting specks of the live worker, as they were. Premade =
+    // approved: true, set by the worker for a saved approved layout; every planned layout has template: true, so that flag
+    // is no premade marker)
+    if (layout.approved === true) { layout.parts.push({ id, kind: "fx", params: { type: "motes", at, size: Math.max(size, 1) } }); tracks[`${id}.go`] = { base: 0, ramps: [] }; on(`${id}.on`); notes.push(`still ${a.toFixed(1)}-${b.toFixed(1)} s: specks (premade, as approved)`); return; }
     if (mode.startsWith("ripple:")) { const w = mode.slice(7); on(`${w}.flow`); notes.push(`still ${a.toFixed(1)}-${b.toFixed(1)} s: the water ripples (${w})`); return; }
     if (mode === "dust") { layout.parts.push({ id, kind: "fx", params: { type: "motes", at, size: Math.min(size, 0.7) } }); tracks[`${id}.go`] = { base: 0, ramps: [] }; }
     else layout.parts.push({ id, kind: "ambient", params: { mode, target: String(beat.shows?.p ?? layout.parts.find((p) => p.main)?.id ?? "").split(".")[0] || null, at, size } });

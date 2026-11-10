@@ -72,7 +72,7 @@ export const FIELDS = Object.freeze({
   arrows: { f: { list: { each: { at: "vec3", dir: "vec2|vec3", travel: "num", phase: "num" } }, opts: { obj: { color: "color", scale: "num", speed: "num", flat: "bool" } } }, need: ["list"] },
   outline: { f: { of: "str", points: "path", opts: { obj: { color: "color", r: "num", closed: "bool", over: "bool" } } } },
   seepFlow: { f: { count: "num", width: "num", y0: "num", fall: "num", floor: "num" } },
-  fx: { f: { type: "one:blast,crash,crack,collapse,fire,smoke,drip,splash,spark,frost,swirl,motes", at: "vec3", size: "num", color: "color" }, need: ["type", "at"] },
+  fx: { f: { type: "one:blast,crash,crack,collapse,fire,smoke,drip,splash,spark,frost,swirl,motes", at: "vec3", size: "num", color: "color", look: "one:drops" }, need: ["type", "at"] },
   wires: { f: { points: "path", sag: "num", count: "num", spacing: "num", color: "color", glow: "color" }, need: ["points"] },
   model: { f: { keyword: "str", pos: "vec3", rotY: "num", scale: "num", size: "num" }, need: ["keyword", "pos"] },
   road: { f: { points: "points", width: "num", surface: "one:asphalt,gravel,rail,path,track", lines: "bool", y: "num", bridge: { obj: { from: "num", to: "num", height: "num", type: "one:beam,arch,suspension", tower: "num" } } }, need: ["points"] },
@@ -98,12 +98,16 @@ export const RIG_SHAPE_FIELDS = Object.freeze({
   cone: { r: "num", r2: "num", h: "num", axis: "one:x,y,z" }, sphere: { r: "num" }, torus: { r: "num", tube: "num", axis: "one:x,y,z" },
   fan: { r: "num", blades: "num", w: "num", axis: "one:x,y,z" }, element: { r: "num", turns: "num", wire: "num", axis: "one:x,y,z" },
   flame: { r: "num", h: "num", cap: "bool" }, bellows: { r: "num", h: "num", folds: "num", axis: "one:x,y,z" },
+  // the household things (the owner's look round of 2026-11-10: plates, a dish rack, recognizable parts)
+  plate: { r: "num", axis: "one:x,y,z", stain: "bool|num", stainColor: "color" }, bowl: { r: "num", h: "num", axis: "one:x,y,z", stain: "bool|num", stainColor: "color" },
+  cup: { r: "num", h: "num", axis: "one:x,y,z", handle: "bool" }, glass: { r: "num", h: "num", axis: "one:x,y,z" }, smear: { r: "num", axis: "one:x,y,z", amount: "num" },
+  rack: { size: "vec3", gap: "num", wire: "num", tines: "bool|num" }, nozzle: { r: "num", h: "num", axis: "one:x,y,z" },
 });
 const MOVE_COMMON = { name: "str", type: "str" };
 export const RIG_MOVE_FIELDS = Object.freeze({
   appear: {}, slide: { to: "vec3" }, swing: { axis: "one:x,y,z", angle: "num" }, track: { path: "path" }, spin: { axis: "one:x,y,z", turns: "num" },
   extend: { axis: "one:x,y,z", k: "num" }, light: {}, blink: { rate: "num" }, fill: { box: { obj: { size: "vec3", at: "vec3", color: "color" } } },
-  flow: { path: "path", color: "color", speed: "num" }, count: { from: "num", to: "num" }, snap: { axis: "one:x,y,z", gap: "num" }, heat: { color: "color" }, chill: { color: "color" },
+  flow: { path: "path", color: "color", speed: "num", size: "num", look: "one:spray,stream,dots,water,oil,mud,sludge" }, count: { from: "num", to: "num" }, snap: { axis: "one:x,y,z", gap: "num" }, heat: { color: "color" }, chill: { color: "color" },
   burn: {}, pump: { axis: "one:x,y,z", stroke: "num", rate: "num" }, shake: { amp: "num", rate: "num" }, follow: { of: "str", ratio: "num", axis: "one:x,y,z" }, crank: { of: "str", axis: "one:x,y,z", throw: "num", phase: "num" },
 });
 // (both lists cover every shape and move rig.js builds)

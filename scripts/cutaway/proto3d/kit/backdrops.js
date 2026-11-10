@@ -76,6 +76,43 @@ function pegMat(ctx, w, h) {
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8; t.repeat.set(w / 0.8, h / 0.8);
   return std({ map: t, color: C("#ffffff"), roughness: 0.8 });
 }
+/** daylight through a window, drawn here (no asset): a soft sky over a far hedge and tree tops, glowing (its own emissive
+ * map) but pale and soft, so it reads as "outside, daytime" without pulling the eye off the subject (owner, 2026-11-10) */
+function skyMat(ctx, w, h) {
+  const { THREE, std, C } = ctx;
+  const c = document.createElement("canvas"); c.width = 256; c.height = Math.max(64, Math.round(256 * h / Math.max(0.1, w))); const g = c.getContext("2d"), H = c.height;
+  const sky = g.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, "#a9cfe8"); sky.addColorStop(0.7, "#dcebf3"); sky.addColorStop(1, "#eef3ee");
+  g.fillStyle = sky; g.fillRect(0, 0, 256, H);
+  g.fillStyle = "rgba(255,255,255,0.55)"; for (const [x, y, r] of [[60, 0.25, 26], [90, 0.22, 20], [190, 0.33, 22]]) { g.beginPath(); g.ellipse(x, y * H, r * 1.8, r * 0.6, 0, 0, Math.PI * 2); g.fill(); }
+  g.fillStyle = "#9db59a"; for (let x = -10, i = 0; x < 270; x += 34, i++) { g.beginPath(); g.arc(x, H * 0.86 - (i % 3) * 6, 26 + (i % 2) * 8, 0, Math.PI * 2); g.fill(); }
+  g.fillStyle = "#b9c8b0"; g.fillRect(0, H * 0.9, 256, H * 0.1);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+  return std({ map: t, emissiveMap: t, color: C("#ffffff"), emissive: C("#ffffff"), emissiveIntensity: 0.45, roughness: 0.2 });
+}
+/** a framed picture (a calm landscape, drawn here) for a room's wall */
+function pictureMat(ctx) {
+  const { THREE, std, C } = ctx;
+  const c = document.createElement("canvas"); c.width = 192; c.height = 128; const g = c.getContext("2d");
+  const s = g.createLinearGradient(0, 0, 0, 128); s.addColorStop(0, "#c9dbe4"); s.addColorStop(1, "#eef0e6"); g.fillStyle = s; g.fillRect(0, 0, 192, 128);
+  g.fillStyle = "#8fa9a0"; g.beginPath(); g.moveTo(0, 90); g.lineTo(55, 48); g.lineTo(100, 82); g.lineTo(140, 55); g.lineTo(192, 88); g.lineTo(192, 128); g.lineTo(0, 128); g.fill();
+  g.fillStyle = "#b9b48a"; g.fillRect(0, 100, 192, 28);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+  return std({ map: t, color: C("#ffffff"), roughness: 0.6 });
+}
+/** a window in a back wall at (x, yMid, z): the daylight pane, a white frame, a mullion and a sill (w x h the glass) */
+function windowAt(ctx, { x, y, z, w, h, f = 0.13, curtains = null }) {
+  const { box, scene, std, C } = ctx;
+  const frame = std({ color: C("#f7f5ef"), roughness: 0.5 });
+  face(ctx, skyMat(ctx, w, h), w, h, x, y, z + 0.015);
+  for (const sy of [-1, 1]) box(frame, w + 2 * f, f, f, x, y + sy * (h / 2 + f / 2), z + 0.05, scene, 0.02);
+  for (const sx of [-1, 1]) box(frame, f, h + 2 * f, f, x + sx * (w / 2 + f / 2), y, z + 0.05, scene, 0.02);
+  box(frame, f * 0.6, h, f * 0.6, x, y, z + 0.05, scene, 0.01);
+  box(frame, w + 4 * f, f * 0.8, f * 2.6, x, y - h / 2 - f, z + f * 1.3, scene, 0.02); // the sill
+  // (curtains: two soft panels either side, hung from a rail, in a calm colour)
+  if (curtains) { const cm = std({ color: C(curtains), roughness: 0.95 }); box(std({ color: C("#8a8f94"), roughness: 0.4, metalness: 0.5 }), w + 1.4 * h * 0.5, 0.05, 0.05, x, y + h / 2 + 2.2 * f, z + 0.18, scene, 0.01);
+    for (const sx of [-1, 1]) box(cm, h * 0.28, h + 4 * f, 0.08, x + sx * (w / 2 + h * 0.14 + f * 0.3), y + f * 0.4, z + 0.16, scene, 0.03); }
+}
+
 /** an interior's shell in section (the room's): the back wall, the left wall with its cut edge, the ceiling and the roof
  * slice, the far city; `upper`: the house's storey above it with windows (a kitchen is in a house, a workshop need not be) */
 function shell(ctx, { L0, R0, back, H, top, color, outside, upper = true, ceiling = true }) {
@@ -244,40 +281,68 @@ export function backdrop(ctx, opts) {
   } else if (opts.type === "room") {
     // a room in section (the creator's air-conditioner world): a wood floor over the cut ground, a back wall with a
     // window, the left wall, the ceiling and a slice of the roof on top; an armchair, a lamp and a rug
-    const top = 0.12, back = opts.back ?? -7, L0 = opts.x0 ?? -9, R0 = opts.x1 ?? 9, H = opts.h ?? 4.2;
-    const floor = std({ color: C("#b98a5a"), roughness: 0.6 });
+    // Open-topped by default since 2026-11-10 (owner: the dishwasher video's top half was "a flat orange wall": a high
+    // camera looked down on the roof slice's top, #b5533c, and the ceiling's grey edge). ceiling true keeps the old ceiling,
+    // roof slice and storey above (a thing on the ceiling: a smoke detector, a ceiling light; layoutRules sets it then).
+    const top = 0.12, back = opts.back ?? -7, L0 = opts.x0 ?? -9, R0 = opts.x1 ?? 9, H = opts.h ?? 4.2, ceiling = opts.ceiling === true;
+    const floor = std({ color: C("#b08d68"), roughness: 0.6 });
     slabAround(ctx, floor, [L0, R0, back, 0.04], -0.2, top, lip); // a floor in section: it covers the turf band at the face
-    if (ctx.gltf) floorOver(ctx, "laminate_floor_02", "#c4935f", 2.2, [L0, R0, back, 0.04], top, lip, { roughness: 0.45 });
+    // (a calmer, less orange wood than the old #c4935f: the floor fills much of an indoor frame)
+    if (ctx.gltf) floorOver(ctx, "laminate_floor_02", "#b39575", 2.2, [L0, R0, back, 0.04], top, lip, { roughness: 0.45 });
     const plank = std({ color: C("#9c6f44"), roughness: 0.7 });
     for (let x = L0 + 0.6; x < R0 && !ctx.gltf; x += 0.6) { if (hole && x > hole[0] - 0.05 && x < hole[1] + 0.05) continue; const j = box(plank, 0.03, 0.004, -back, x, top + 0.002, back / 2, scene, 0.001); j.castShadow = false; }
     const wall = ctx.gltf ? pbrSized(ctx, "painted_plaster_wall", R0 - L0, H, 2.5, { color: C(opts.color ?? "#e9e1cf") }) : PBR("painted_plaster_wall", 0.25, { color: C(opts.color ?? "#e9e1cf") }), cutFace = std({ color: C("#f4f1ea"), roughness: 0.8 });
     box(wall, R0 - L0, H, 0.35, (L0 + R0) / 2, top + H / 2, back - 0.17, scene, 0.02);
     box(wall, 0.35, H, -back, L0 - 0.17, top + H / 2, back / 2, scene, 0.02);
     box(cutFace, 0.37, H, 0.05, L0 - 0.17, top + H / 2, 0.01, scene, 0.005); // the wall's cut edge
-    box(std({ color: C("#f4f1ea"), roughness: 0.6 }), R0 - L0, 0.14, 0.05, (L0 + R0) / 2, top + 0.07, back + 0.03, scene, 0.01); // baseboard
-    // the ceiling and the roof slice above it
-    box(cutFace, R0 - L0 + 0.35, 0.3, -back + 0.35, (L0 + R0) / 2 - 0.17, top + H + 0.15, back / 2 - 0.17, scene, 0.02);
-    box(std({ color: C("#b5533c"), roughness: 0.8 }), R0 - L0 + 0.8, 0.35, -back + 0.8, (L0 + R0) / 2 - 0.17, top + H + 0.47, back / 2 - 0.17, scene, 0.03);
-    // the house the room is in: the storey above (windows) and its roof, set back behind the room
-    const up = PBR("painted_plaster_wall", 0.25, { color: C(opts.outside ?? "#d9c7a3") }), hz = back - 2.2, hw = R0 - L0 + 6;
-    box(up, hw, H + 5.5, 4, (L0 + R0) / 2, top + (H + 5.5) / 2, hz - 2, scene, 0.04);
-    box(std({ color: C("#b5533c"), roughness: 0.8 }), hw + 1, 0.5, 5, (L0 + R0) / 2, top + H + 5.75, hz - 2, scene, 0.04);
-    const g2 = std({ color: C("#bcd8ea"), emissive: C("#dfeaf3"), emissiveIntensity: 0.15, roughness: 0.15 }), f2 = std({ color: C("#f7f5ef"), roughness: 0.5 });
-    for (let x = L0 - 1.5; x <= R0 + 1.5; x += 3.6) { box(f2, 1.7, 1.7, 0.1, x, top + H + 2.6, hz + 0.02, scene, 0.02); box(g2, 1.5, 1.5, 0.1, x, top + H + 2.6, hz + 0.06, scene, 0.01); }
+    const trim = std({ color: C("#f4f1ea"), roughness: 0.6 });
+    // a painted panelled lower wall (wainscot) under a rail, and a deeper skirting: a lived-in room, not one flat wall
+    const wains = std({ color: C(opts.panel ?? "#c9cfc6"), roughness: 0.7 }), wy = 1.05;
+    box(wains, R0 - L0, wy, 0.04, (L0 + R0) / 2, top + wy / 2, back + 0.02, scene, 0.005);
+    box(wains, 0.04, wy, -back, L0 + 0.02, top + wy / 2, back / 2, scene, 0.005);
+    const panelM = std({ color: C(opts.panel ? opts.panel : "#d4d9d0"), roughness: 0.6 });
+    for (let x = L0 + 0.9; x < R0 - 0.5; x += 1.4) { const p = box(panelM, 1.1, wy - 0.45, 0.03, x + 0.25, top + wy / 2 + 0.05, back + 0.05, scene, 0.01); p.castShadow = false; }
+    box(trim, R0 - L0, 0.07, 0.07, (L0 + R0) / 2, top + wy, back + 0.05, scene, 0.01); // the rail
+    box(trim, R0 - L0, 0.18, 0.06, (L0 + R0) / 2, top + 0.09, back + 0.05, scene, 0.01); // baseboard
+    box(trim, 0.06, 0.18, -back, L0 + 0.05, top + 0.09, back / 2, scene, 0.01);
+    if (ceiling) {
+      // the ceiling and the roof slice above it
+      box(cutFace, R0 - L0 + 0.35, 0.3, -back + 0.35, (L0 + R0) / 2 - 0.17, top + H + 0.15, back / 2 - 0.17, scene, 0.02);
+      box(std({ color: C("#b5533c"), roughness: 0.8 }), R0 - L0 + 0.8, 0.35, -back + 0.8, (L0 + R0) / 2 - 0.17, top + H + 0.47, back / 2 - 0.17, scene, 0.03);
+      // the house the room is in: the storey above (windows) and its roof, set back behind the room
+      const up = PBR("painted_plaster_wall", 0.25, { color: C(opts.outside ?? "#d9c7a3") }), hz = back - 2.2, hw = R0 - L0 + 6;
+      box(up, hw, H + 5.5, 4, (L0 + R0) / 2, top + (H + 5.5) / 2, hz - 2, scene, 0.04);
+      box(std({ color: C("#b5533c"), roughness: 0.8 }), hw + 1, 0.5, 5, (L0 + R0) / 2, top + H + 5.75, hz - 2, scene, 0.04);
+      const g2 = std({ color: C("#bcd8ea"), emissive: C("#dfeaf3"), emissiveIntensity: 0.15, roughness: 0.15 }), f2 = std({ color: C("#f7f5ef"), roughness: 0.5 });
+      for (let x = L0 - 1.5; x <= R0 + 1.5; x += 3.6) { box(f2, 1.7, 1.7, 0.1, x, top + H + 2.6, hz + 0.02, scene, 0.02); box(g2, 1.5, 1.5, 0.1, x, top + H + 2.6, hz + 0.06, scene, 0.01); }
+    } else box(trim, R0 - L0 + 0.35, 0.12, 0.4, (L0 + R0) / 2 - 0.17, top + H + 0.06, back - 0.17, scene, 0.02); // the wall's cut top (open-topped)
     farRow(ctx, back - 26);
-    // the window: a bright sky behind glass, a frame and a sill
-    const wx = opts.windowX ?? 3, frame = std({ color: C("#f7f5ef"), roughness: 0.5 });
-    const sky = std({ color: C("#bfe0f5"), emissive: C("#d9efff"), emissiveIntensity: 0.55, roughness: 0.2 });
-    box(sky, 2.6, 1.8, 0.05, wx, top + 2.3, back + 0.02, scene, 0.005);
-    box(frame, 2.9, 0.12, 0.12, wx, top + 3.25, back + 0.05, scene, 0.02); box(frame, 2.9, 0.12, 0.12, wx, top + 1.35, back + 0.05, scene, 0.02);
-    box(frame, 0.12, 2.0, 0.12, wx - 1.4, top + 2.3, back + 0.05, scene, 0.02); box(frame, 0.12, 2.0, 0.12, wx + 1.4, top + 2.3, back + 0.05, scene, 0.02); box(frame, 0.08, 1.8, 0.08, wx, top + 2.3, back + 0.05, scene, 0.01);
-    box(frame, 3.1, 0.1, 0.35, wx, top + 1.28, back + 0.17, scene, 0.02);
-    // an armchair, a floor lamp and a rug
+    // the window: daylight behind glass, a frame, a sill and curtains
+    const wx = opts.windowX ?? 3;
+    windowAt(ctx, { x: wx, y: top + 2.3, z: back, w: 2.6, h: 1.8, f: 0.12, curtains: opts.curtains ?? "#b9c4cc" });
+    // a framed picture over a low sideboard (a vase and books on it), just left of the middle: every director view looks
+    // from +x, so that is the wall seen behind the subject (the stills of 2026-11-10 showed a bare plaster half-frame);
+    // clear of the window
+    const px0 = (L0 + R0) / 2 - 1.6, px = Number.isFinite(opts.pictureX) ? opts.pictureX : Math.abs(px0 - wx) > 2.7 ? px0 : wx < px0 ? wx + 3.4 : wx - 3.4;
+    if (opts.picture !== false && px - 1.3 > L0 && px + 1.3 < R0) {
+      box(std({ color: C("#5b4a3c"), roughness: 0.5 }), 1.5, 1.05, 0.05, px, top + 2.45, back + 0.03, scene, 0.01); face(ctx, pictureMat(ctx), 1.3, 0.85, px, top + 2.45, back + 0.06);
+      const sb = std({ color: C("#9a7a5c"), roughness: 0.55 }), sbDark = std({ color: C("#6d5440"), roughness: 0.6 });
+      box(sb, 2.4, 0.75, 0.5, px, top + 0.45, back + 0.3, scene, 0.03);
+      for (const sx of [-0.6, 0.6]) { box(sbDark, 1.1, 0.6, 0.02, px + sx, top + 0.45, back + 0.56, scene, 0.01).castShadow = false; box(std({ color: C("#c9a45c"), roughness: 0.35, metalness: 0.7 }), 0.04, 0.16, 0.04, px + sx * 0.12, top + 0.5, back + 0.58, scene, 0.01); }
+      for (const sx of [-1.05, 1.05]) box(sbDark, 0.06, 0.08, 0.06, px + sx, top + 0.04, back + 0.3, scene, 0.01);
+      cyl(std({ color: C("#7f9aa6"), roughness: 0.3 }), 0.12, 0.4, px + 0.7, top + 1.03, back + 0.3, scene, "y", 16); // a vase
+      ["#b9c4cc", "#c9b48a", "#8fa39a"].forEach((c, i) => box(std({ color: C(c), roughness: 0.7 }), 0.4, 0.07, 0.28, px - 0.6, top + 0.87 + i * 0.07, back + 0.3, scene, 0.01)); // books
+    }
+    // an armchair, a floor lamp and a rug (the rug a calm grey-green: the old brick-red one read as more orange)
     const fabric = std({ color: C(opts.chair ?? "#4f7fa8"), roughness: 0.85 }), ch = new THREE.Group(); ch.position.set(opts.chairX ?? -5, top, back + 1.6); ch.rotation.y = 0.35; scene.add(ch);
     box(fabric, 1.6, 0.5, 1.4, 0, 0.45, 0, ch, 0.12); box(fabric, 1.6, 1.1, 0.35, 0, 0.95, -0.55, ch, 0.12); for (const sx of [-0.7, 0.7]) box(fabric, 0.3, 0.75, 1.4, sx, 0.6, 0, ch, 0.1);
     const brass = std({ color: C("#c9a45c"), roughness: 0.35, metalness: 0.7 }), lx = opts.lampX ?? -7.6;
     cyl(brass, 0.04, 2.2, lx, top + 1.1, back + 0.8, scene, "y", 10); const shade = cyl(std({ color: C("#fff3d6"), emissive: C("#ffe3a8"), emissiveIntensity: 0.6, roughness: 0.6 }), 0.32, 0.4, lx, top + 2.3, back + 0.8, scene, "y", 16); shade.castShadow = false;
-    const rug = box(std({ color: C("#b4553e"), roughness: 0.9 }), 4.2, 0.01, 2.6, opts.rugX ?? -3.5, top + 0.006, back + 2.6, scene, 0.002); rug.castShadow = false;
+    const rug = box(std({ color: C(opts.rug ?? "#7f8f86"), roughness: 0.9 }), 4.2, 0.01, 2.6, opts.rugX ?? -3.5, top + 0.006, back + 2.6, scene, 0.002); rug.castShadow = false;
+    // a small side table with a plant beside the armchair (back, by the wall)
+    const tx = (opts.chairX ?? -5) + 1.6;
+    if (tx + 0.4 < R0) { const wood = std({ color: C("#8a6a4c"), roughness: 0.6 }); box(wood, 0.7, 0.06, 0.7, tx, top + 0.66, back + 0.7, scene, 0.02); for (const [dx, dz] of [[-0.28, -0.28], [0.28, -0.28], [-0.28, 0.28], [0.28, 0.28]]) box(wood, 0.05, 0.64, 0.05, tx + dx, top + 0.32, back + 0.7 + dz, scene, 0.01);
+      cyl(std({ color: C("#d9d2c4"), roughness: 0.6 }), 0.16, 0.28, tx, top + 0.83, back + 0.7, scene, "y", 14); for (const [dx, dy, r] of [[0, 0.32, 0.22], [-0.12, 0.22, 0.16], [0.13, 0.25, 0.15]]) { const l = new THREE.Mesh(new THREE.SphereGeometry(r, 12, 10), std({ color: C("#6f8f62"), roughness: 0.8 })); l.position.set(tx + dx, top + 0.83 + dy, back + 0.7); l.castShadow = true; scene.add(l); } }
   } else if (opts.type === "kitchen") {
     // a kitchen in section (the room's shell): a tiled floor (top y 0.12) over the cut ground; base cabinets with a wood
     // worktop, a tiled splashback and wall cabinets along the back wall on BOTH sides of an open slot (gap [x0, x1]): the
@@ -287,52 +352,121 @@ export function backdrop(ctx, opts) {
     // ~2 m tall): the worktop at ~2 m, the cabinets ~1.36 m deep, the wall cabinets from ~3.4 m, the walls 6.2 tall.
     // Open-topped by default (a high camera sees the wall cabinets and the window over the walls; ceiling true adds
     // the ceiling, the roof slice, the storey above and the pendant lights, as the room has)
+    // The kitchen round of 2026-11-10 (owner: "a nicer kitchen backdrop: cabinets, tiles, a window, not a flat orange
+    // wall"): calmer, slightly desaturated colours so the appliance reads first (a sage cabinet, not the old teal), shaker
+    // door fronts, a tiled wall behind the appliance's slot (it was a bare plaster wall filling half of every close-up),
+    // wall cabinets over the slot, the window just left of the slot (it sat off-frame at the far right) with daylight drawn in
+    // it, and a few small things on the worktops (canisters, a board, a plant), all against the back wall: nothing ever
+    // stands between the camera and the subject. use "laundry": the same room as a laundry / utility room (a washing
+    // machine, a dryer, a water heater): pale tiles, blue-grey cabinets, open shelves with bottles and towels, a basket,
+    // a utility sink; the same boxes (counters, gap, floor), so the camera rules see the same room.
     const k = opts.scale ?? 2.2, top = 0.12, back = opts.back ?? -7, L0 = opts.x0 ?? -12, R0 = opts.x1 ?? 12, H = opts.h ?? 6.2;
-    const [g0, g1] = opts.gap ?? [opts.gapX0 ?? -1.8, opts.gapX1 ?? 1.8];
+    const laundry = opts.use === "laundry";
+    const gp = Array.isArray(opts.gap) && opts.gap.length === 2 && opts.gap.every(Number.isFinite) ? opts.gap : [opts.gapX0 ?? -1.8, opts.gapX1 ?? 1.8];
+    const [g0, g1] = gp[0] <= gp[1] ? gp : [gp[1], gp[0]];
     // (a thin-slab world: the floor runs on to the camera, so no lawn strip shows in front of it)
     const zf = opts.apron ? 40 : 0.04;
     slabAround(ctx, std({ color: C("#d8cdb8"), roughness: 0.4 }), [L0, R0, back, zf], -0.2, top, lip);
-    tileFloor(ctx, opts.floor ?? "#d9cbb2", [L0, R0, back, zf], top, lip, 0.5 * k);
+    // (a mid-tone floor, smaller tiles: a white fridge or washer stood out poorly on the old pale one)
+    tileFloor(ctx, opts.floor ?? (laundry ? "#9da5a9" : "#c8b89c"), [L0, R0, back, zf], top, lip, 0.32 * k);
     shell(ctx, { L0, R0, back, H, top, color: opts.color ?? "#f1e6cf", outside: opts.outside ?? "#d9c7a3", ceiling: opts.ceiling === true });
-    const cab = std({ color: C(opts.cabinets ?? "#6f9c88"), roughness: 0.55 }), wood = std({ color: C("#d6a466"), roughness: 0.5 });
-    const seam = std({ color: C("#4e7564"), roughness: 0.7 }), steel = std({ color: C("#cfd4d8"), roughness: 0.25, metalness: 0.7 }), dark = std({ color: C("#3a3f44"), roughness: 0.6 });
+    const cabHex = opts.cabinets ?? (laundry ? "#9fb0ba" : "#8ea597");
+    const cab = std({ color: C(cabHex), roughness: 0.55 }), wood = std({ color: C(laundry ? "#e9e6df" : "#cfa472"), roughness: 0.5 });
+    const seam = std({ color: C(cabHex).multiplyScalar(0.7), roughness: 0.7 }), steel = std({ color: C("#cfd4d8"), roughness: 0.25, metalness: 0.7 }), dark = std({ color: C("#3a3f44"), roughness: 0.6 });
     const D = 0.62 * k, zc = back + D, wt = top + 0.91 * k; // the cabinets' depth and front face, the worktop's middle
     const uY = top + 1.95 * k, uH = 0.8 * k, uD = 0.36 * k; // the wall cabinets' middle, height and depth
-    // a run of cabinets from x a to b (doors every ~0.6 m real: a thin darker seam, a steel handle); uppers: the wall
-    // cabinets' spans (none over the window)
-    const run = (a, b, uppers = [[a, b]]) => {
+    const splash = opts.splash ?? (laundry ? "#e3e9ec" : "#efe9dc"), sTop = top + 1.56 * k; // the tiles' colour and top edge
+    // a run of base cabinets from x a to b (doors every ~0.6 m real: a seam, a raised shaker panel, a steel handle)
+    const run = (a, b) => {
       if (b - a < 0.5 * k) return;
       const m = (a + b) / 2, n = Math.max(1, Math.round((b - a) / (0.6 * k))), dw = (b - a) / n;
       box(dark, b - a - 0.04, 0.1 * k, D - 0.06 * k, m, top + 0.05 * k, back + D / 2 - 0.03 * k, scene, 0.01); // the plinth, set back
       box(cab, b - a, 0.78 * k, D, m, top + 0.49 * k, back + D / 2, scene, 0.03 * k);
       box(wood, b - a + 0.04 * k, 0.06 * k, D + 0.06 * k, m, wt, back + (D + 0.06 * k) / 2, scene, 0.015 * k); // the worktop
-      for (let i = 0; i < n; i++) { const x = a + (i + 0.5) * dw; if (i) box(seam, 0.025 * k, 0.7 * k, 0.01 * k, a + i * dw, top + 0.49 * k, zc + 0.005 * k, scene, 0.003); box(steel, 0.28 * k, 0.035 * k, 0.04 * k, x, top + 0.78 * k, zc + 0.02 * k, scene, 0.01 * k); }
-      face(ctx, tileMat(ctx, opts.splash ?? "#f4f1ea", b - a, 0.62 * k, 0.15 * k), b - a, 0.62 * k, m, top + 1.25 * k, back + 0.01); // the splashback
-      for (const [u0, u1] of uppers) {
-        if (u1 - u0 < 0.5 * k) continue;
-        const um = (u0 + u1) / 2, un = Math.max(1, Math.round((u1 - u0) / (0.6 * k))), uw = (u1 - u0) / un;
-        box(cab, u1 - u0, uH, uD, um, uY, back + uD / 2, scene, 0.03 * k);
-        for (let i = 0; i < un; i++) { if (i) box(seam, 0.025 * k, 0.72 * k, 0.01 * k, u0 + i * uw, uY, back + uD + 0.005 * k, scene, 0.003); box(steel, 0.035 * k, 0.22 * k, 0.04 * k, u0 + (i + 0.5) * uw + uw * 0.3, uY - 0.25 * k, back + uD + 0.02 * k, scene, 0.01 * k); }
+      for (let i = 0; i < n; i++) {
+        const x = a + (i + 0.5) * dw;
+        if (i) box(seam, 0.025 * k, 0.74 * k, 0.01 * k, a + i * dw, top + 0.49 * k, zc + 0.005 * k, scene, 0.003);
+        const p = box(cab, dw - 0.16 * k, 0.52 * k, 0.02 * k, x, top + 0.43 * k, zc + 0.01 * k, scene, 0.008 * k); p.castShadow = false; // the shaker panel
+        box(steel, 0.28 * k, 0.035 * k, 0.04 * k, x, top + 0.78 * k, zc + 0.02 * k, scene, 0.01 * k);
+      }
+      face(ctx, tileMat(ctx, splash, b - a, 0.62 * k, 0.15 * k), b - a, 0.62 * k, m, top + 1.25 * k, back + 0.01); // the splashback
+    };
+    // wall cabinets from u0 to u1 (doors, seams, handles)
+    const uppers = (u0, u1) => {
+      if (!(u1 - u0 >= 0.5 * k)) return;
+      const um = (u0 + u1) / 2, un = Math.max(1, Math.round((u1 - u0) / (0.6 * k))), uw = (u1 - u0) / un;
+      box(cab, u1 - u0, uH, uD, um, uY, back + uD / 2, scene, 0.03 * k);
+      for (let i = 0; i < un; i++) {
+        if (i) box(seam, 0.025 * k, 0.76 * k, 0.01 * k, u0 + i * uw, uY, back + uD + 0.005 * k, scene, 0.003);
+        const p = box(cab, uw - 0.14 * k, uH - 0.16 * k, 0.02 * k, u0 + (i + 0.5) * uw, uY, back + uD + 0.01 * k, scene, 0.008 * k); p.castShadow = false;
+        box(steel, 0.035 * k, 0.22 * k, 0.04 * k, u0 + (i + 0.5) * uw + uw * 0.3, uY - 0.25 * k, back + uD + 0.02 * k, scene, 0.01 * k);
+      }
+      box(dark, u1 - u0, 0.02 * k, 0.02 * k, um, uY - uH / 2 - 0.01 * k, back + uD - 0.03 * k, scene, 0.002).castShadow = false; // the light strip's edge
+    };
+    // open shelves (laundry) from u0 to u1: two planks with bottles and folded towels on them
+    const shelves = (u0, u1) => {
+      if (!(u1 - u0 >= 0.6 * k)) return;
+      const plank = std({ color: C("#d9d4ca"), roughness: 0.6 }), cols = ["#7fa1b5", "#e9ecef", "#8fb3a3", "#d7c7a9", "#b9c6d2"];
+      for (const [j, y] of [[0, uY - 0.32 * k], [1, uY + 0.2 * k]]) {
+        box(plank, u1 - u0, 0.035 * k, 0.3 * k, (u0 + u1) / 2, y, back + 0.15 * k, scene, 0.008 * k);
+        for (let x = u0 + 0.22 * k, i = j * 2; x < u1 - 0.2 * k; x += 0.34 * k, i++) {
+          const c = std({ color: C(cols[i % cols.length]), roughness: 0.6 });
+          if (i % 3 === 2) for (let t = 0; t < 3; t++) box(c, 0.28 * k, 0.05 * k, 0.22 * k, x, y + 0.045 * k + t * 0.052 * k, back + 0.15 * k, scene, 0.015 * k); // towels
+          else { const h = (i % 2 ? 0.2 : 0.26) * k; cyl(c, 0.06 * k, h, x, y + 0.02 * k + h / 2, back + 0.14 * k, scene, "y", 14); cyl(std({ color: C("#f4f4f2"), roughness: 0.4 }), 0.03 * k, 0.05 * k, x, y + 0.045 * k + h, back + 0.14 * k, scene, "y", 10); }
+        }
       }
     };
-    // the window over the right run's sink (wall cabinets either side of it): sky behind glass, a frame and a mullion
-    const ww = 2.0 * k, wh = 0.95 * k, wy = top + 1.66 * k + wh / 2, wx = opts.windowX ?? (g1 + R0) / 2 + 0.4, frame = std({ color: C("#f7f5ef"), roughness: 0.5 });
-    run(L0, g0); run(g1, R0, [[g1, wx - ww / 2 - 0.15 * k], [wx + ww / 2 + 0.15 * k, R0]]);
-    const sky = std({ color: C("#bfe0f5"), emissive: C("#d9efff"), emissiveIntensity: 0.55, roughness: 0.2 }), fw = 0.06 * k;
-    box(sky, ww, wh, 0.05, wx, wy, back + 0.02, scene, 0.005);
-    for (const sy of [-1, 1]) box(frame, ww + 2 * fw, fw, fw, wx, wy + sy * (wh / 2 + fw / 2), back + 0.05, scene, 0.02);
-    for (const sx of [-1, 1]) box(frame, fw, wh + 2 * fw, fw, wx + sx * (ww / 2 + fw / 2), wy, back + 0.05, scene, 0.02);
-    box(frame, fw * 0.7, wh, fw * 0.7, wx, wy, back + 0.05, scene, 0.01);
-    // the sink (a steel basin set in the worktop) and its tap
-    if (g1 < wx - 0.6 * k && wx + 0.6 * k < R0) {
-      box(steel, 1.0 * k, 0.03 * k, 0.45 * k, wx, wt + 0.035 * k, back + 0.34 * k, scene, 0.02 * k); box(dark, 0.85 * k, 0.02 * k, 0.33 * k, wx, wt + 0.045 * k, back + 0.34 * k, scene, 0.01 * k);
+    // the window beside the slot, over the sink: daylight drawn in it, a frame, a mullion, a sill. On the LEFT of the slot
+    // by default: every view of the director looks from +x (VIEWS in m2/director.js), so what shows behind the appliance
+    // is the wall left of it; on the right the window sat off-frame in every close-up (the stills of 2026-11-10)
+    const ww = 2.0 * k, wh = 0.95 * k, wy = top + 1.66 * k + wh / 2, fw = 0.06 * k;
+    const wx = Number.isFinite(opts.windowX) ? opts.windowX : Math.max(g0 - 0.7 * k, L0 + ww / 2 + 0.4 * k);
+    const wLeft = wx < (g0 + g1) / 2, side = wLeft ? 1 : -1; // side: toward the run without the window
+    run(L0, g0); run(g1, R0);
+    // the slot behind the appliance: tiled from the floor to the splashback's top, a skirting at its foot (no bare wall)
+    if (g1 - g0 > 0.1) { face(ctx, tileMat(ctx, splash, g1 - g0, sTop - top, 0.15 * k), g1 - g0, sTop - top, (g0 + g1) / 2, (top + sTop) / 2, back + 0.01);
+      box(std({ color: C("#f4f1ea"), roughness: 0.6 }), g1 - g0, 0.06 * k, 0.03 * k, (g0 + g1) / 2, top + 0.03 * k, back + 0.03, scene, 0.005); }
+    // wall cabinets either side of the window, over the slot too; a laundry has open shelves over the slot instead (seen
+    // behind the machine), its cabinets on the far side of the window
+    const wl = wx - ww / 2 - 0.15 * k, wr = wx + ww / 2 + 0.15 * k;
+    if (laundry && !wLeft) shelves(L0 + 0.3 * k, wl); else uppers(L0, wl);
+    if (laundry && wLeft) shelves(wr, R0 - 0.3 * k); else uppers(wr, R0);
+    windowAt(ctx, { x: wx, y: wy, z: back, w: ww, h: wh, f: fw });
+    // the sink (a steel basin set in the worktop; a deep white tub in a laundry) and its tap, when the window is over a run
+    if ((wx + 0.6 * k < g0 && wx - 0.6 * k > L0) || (wx - 0.6 * k > g1 && wx + 0.6 * k < R0)) {
+      if (laundry) { box(std({ color: C("#f2f3f1"), roughness: 0.3 }), 0.9 * k, 0.05 * k, 0.5 * k, wx, wt + 0.04 * k, back + 0.34 * k, scene, 0.02 * k); box(std({ color: C("#c9ced2"), roughness: 0.3 }), 0.76 * k, 0.02 * k, 0.38 * k, wx, wt + 0.06 * k, back + 0.34 * k, scene, 0.01 * k); }
+      else { box(steel, 1.0 * k, 0.03 * k, 0.45 * k, wx, wt + 0.035 * k, back + 0.34 * k, scene, 0.02 * k); box(dark, 0.85 * k, 0.02 * k, 0.33 * k, wx, wt + 0.045 * k, back + 0.34 * k, scene, 0.01 * k); }
       cyl(steel, 0.03 * k, 0.4 * k, wx, wt + 0.23 * k, back + 0.1 * k, scene, "y", 10); box(steel, 0.05 * k, 0.05 * k, 0.22 * k, wx, wt + 0.42 * k, back + 0.2 * k, scene, 0.02 * k);
+      // a soap bottle beside it, away from the slot
+      cyl(std({ color: C(laundry ? "#7fa1b5" : "#9cb79a"), roughness: 0.4 }), 0.045 * k, 0.17 * k, wx - side * 0.62 * k, wt + 0.115 * k, back + 0.18 * k, scene, "y", 12);
     }
-    // the hob on the left run: a black glass top with four rings
-    const hx = opts.hobX ?? (L0 + g0) / 2;
-    if (hx - 0.4 * k > L0 && hx + 0.4 * k < g0) {
+    // the hob on the run without the window (a kitchen): a black glass top with four rings
+    const hx = opts.hobX ?? (wLeft ? (g1 + R0) / 2 : (L0 + g0) / 2);
+    const onRun = (x, r) => (x - r > L0 && x + r < g0) || (x - r > g1 && x + r < R0);
+    if (!laundry && onRun(hx, 0.4 * k)) {
       box(std({ color: C("#25282c"), roughness: 0.15 }), 0.75 * k, 0.015 * k, 0.5 * k, hx, wt + 0.037 * k, back + 0.34 * k, scene, 0.005);
       for (const [dx, dz] of [[-0.18, -0.12], [0.18, -0.12], [-0.18, 0.12], [0.18, 0.12]]) { const r = cyl(std({ color: C("#5a5f66"), roughness: 0.4 }), 0.09 * k, 0.006 * k, hx + dx * k, wt + 0.047 * k, back + (0.34 + dz) * k, scene, "y", 20); r.castShadow = false; }
+    }
+    // small things on the worktops, against the splashback (never in front of the counters): beside the slot on the run
+    // without the window, a leaning board and canisters (a kitchen) or a laundry basket (a laundry); a potted plant on
+    // the window's far side
+    const wy0 = wt + 0.03 * k, zb = back + 0.2 * k, xs = wLeft ? g1 + 0.45 * k : g0 - 0.45 * k;
+    if (opts.props !== false && onRun(xs + side * 0.6 * k, 0.7 * k)) {
+      if (laundry) {
+        const wick = std({ color: C("#c9ad84"), roughness: 0.85 }), bx = xs + side * 0.2 * k;
+        box(wick, 0.62 * k, 0.32 * k, 0.42 * k, bx, wy0 + 0.16 * k, back + 0.32 * k, scene, 0.04 * k);
+        box(std({ color: C("#eef1f3"), roughness: 0.8 }), 0.52 * k, 0.06 * k, 0.32 * k, bx, wy0 + 0.33 * k, back + 0.32 * k, scene, 0.03 * k); // the laundry in it
+      } else {
+        const board = box(std({ color: C("#c79a62"), roughness: 0.6 }), 0.42 * k, 0.5 * k, 0.03 * k, xs, wy0 + 0.25 * k, zb - 0.05 * k, scene, 0.02 * k); board.rotation.x = -0.12;
+        const jar = std({ color: C("#f2efe8"), roughness: 0.35 }), lid = std({ color: C("#a87c55"), roughness: 0.6 });
+        [0.24, 0.19, 0.15].forEach((h, i) => { const x = xs + side * (0.42 + i * 0.19) * k; cyl(jar, 0.075 * k, h * k, x, wy0 + (h * k) / 2, zb + 0.08 * k, scene, "y", 16); cyl(lid, 0.078 * k, 0.025 * k, x, wy0 + h * k + 0.012 * k, zb + 0.08 * k, scene, "y", 16); });
+      }
+    }
+    const xp = wLeft ? wl - 0.35 * k : wr + 0.35 * k;
+    if (opts.props !== false && onRun(xp, 0.2 * k)) {
+      cyl(std({ color: C("#d8cfc2"), roughness: 0.6 }), 0.11 * k, 0.17 * k, xp, wy0 + 0.085 * k, zb + 0.1 * k, scene, "y", 16);
+      const leaf = std({ color: C("#6f8f62"), roughness: 0.8 });
+      for (const [dx, dy, r] of [[0, 0.28, 0.14], [-0.09, 0.22, 0.1], [0.1, 0.24, 0.1], [0.02, 0.36, 0.09]]) { const l = new THREE.Mesh(new THREE.SphereGeometry(r * k, 12, 10), leaf); l.position.set(xp + dx * k, wy0 + dy * k, zb + 0.1 * k); l.castShadow = true; scene.add(l); }
     }
     // two pendant lights from the ceiling, over the runs' front edge (a cord, a dark shade, a warm glow under it)
     const shade = std({ color: C("#2f4f46"), roughness: 0.5 }), glow = std({ color: C("#fff6dc"), emissive: C("#ffe3a8"), emissiveIntensity: 0.9, roughness: 0.3 });

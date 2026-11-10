@@ -37,7 +37,9 @@ export function settingBoxes(B, cut = null) {
       const b = back ?? -8; return [{ min: [-14, 0, b - 6], max: [14, 7.5, b] }];
     }
     case "garage": { const b = back ?? -9, x = B.x ?? 0; return [{ min: [x - 4.7, 0, b - 7], max: [x + 4.7, 4.9, b] }, { min: [x - 14.7, 0, b - 7], max: [x - 4.7, 8, b] }]; }
-    case "room": { const b = back ?? -7, x0 = B.x0 ?? -9, x1 = B.x1 ?? 9, h = B.h ?? 4.2; return [{ min: [x0 - 3, 0, b - 6.2], max: [x1 + 3, h + 6, b - 2.2] }, { min: [x0, 0, b - 0.35], max: [x1, h + 0.8, b] }, { min: [x0 - 0.35, 0, b], max: [x0, h + 0.8, 0] }, { min: [x0 - 0.35, h, b - 0.35], max: [x1 + 0.4, h + 0.8, 0.4] }]; }
+    // (the room is open-topped since 2026-11-10, kit/backdrops.js: the upper floor and the ceiling slab are there only with
+    // ceiling: true; counted anyway, the end-card check found the sign "inside or under something" in every room)
+    case "room": { const b = back ?? -7, x0 = B.x0 ?? -9, x1 = B.x1 ?? 9, h = B.h ?? 4.2, walls = [{ min: [x0, 0, b - 0.35], max: [x1, h + 0.8, b] }, { min: [x0 - 0.35, 0, b], max: [x0, h + 0.8, 0] }]; return B.ceiling === true ? [{ min: [x0 - 3, 0, b - 6.2], max: [x1 + 3, h + 6, b - 2.2] }, ...walls, { min: [x0 - 0.35, h, b - 0.35], max: [x1 + 0.4, h + 0.8, 0.4] }] : walls; }
     case "carwash": { const b = back ?? -8, x0 = B.x0 ?? -7, x1 = B.x1 ?? 7, h = B.h ?? 5.2; return [{ min: [x0, 0, b - 0.3], max: [x1, h + 0.5, b] }, { min: [x0 - 0.4, 0, b], max: [x0, h + 0.5, 0] }, { min: [x0 - 0.3, h, b - 0.3], max: [x1 + 0.3, h + 0.5, 0.2] }]; }
     // (the kitchen and the workshop, kit/backdrops.js: the back wall, the side walls, the kitchen's two cabinet runs)
     case "kitchen": { const b = back ?? -7, x0 = B.x0 ?? -12, x1 = B.x1 ?? 12, h = B.h ?? 6.2, k = B.scale ?? 2.2, [g0, g1] = B.gap ?? [B.gapX0 ?? -1.8, B.gapX1 ?? 1.8], D = 0.62 * k, wt = 0.12 + 0.94 * k; return [{ min: [x0, 0, b - 0.35], max: [x1, h, b] }, { min: [x0 - 0.35, 0, b], max: [x0, h, 0] }, { min: [x1, 0, b], max: [x1 + 0.35, h, 0] }, { min: [x0, 0, b], max: [g0, wt, b + D] }, { min: [g1, 0, b], max: [x1, wt, b + D] }]; }

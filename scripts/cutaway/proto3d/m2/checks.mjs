@@ -94,7 +94,11 @@ export function timelineChecks(layout, tl) {
     const b = layout.beats?.find((x) => x.s === pt.role); if (!b?.shows) continue;
     const part = layout.parts.find((p) => p.id === b.shows.p); let box = null; try { box = part && focusOf(part, layout.world?.cut); } catch {}
     if (!box) continue;
-    const k = cameraAt(tl.camera.end, pt.t), r = projectBox(k.pos, k.tgt, box);
+    const k = cameraAt(tl.camera.end, pt.t);
+    let r = projectBox(k.pos, k.tgt, box);
+    // (a part that reaches past the camera, an open dishwasher door swung toward a close-up, counted as "behind" by one
+    // corner while it filled the frame, 2026-11-10: then judged by its middle, a box a fifth of its size round the centre)
+    if (r.behind) { const c = box.min.map((v, i) => (v + box.max[i]) / 2), h = box.min.map((v, i) => (box.max[i] - v) / 10), rc = projectBox(k.pos, k.tgt, { min: c.map((v, i) => v - h[i]), max: c.map((v, i) => v + h[i]) }); if (!rc.behind && rc.x1 > 0 && rc.x0 < 1 && rc.y1 > 0 && rc.y0 < 1) r = { x0: 0, x1: 1, y0: 0, y1: 1, w: 1, h: 1, behind: false }; }
     if (r.behind || r.x1 < 0.02 || r.x0 > 0.98 || r.y1 < 0.02 || r.y0 > 0.98) problems.push(`sentence ${pt.role}: ${b.shows.p} is not in the frame at its moment`);
     else if (Math.min(1, r.x1) - Math.max(0, r.x0) < 0.12) problems.push(`sentence ${pt.role}: ${b.shows.p} is only ${((Math.min(1, r.x1) - Math.max(0, r.x0)) * 100).toFixed(0)}% of the frame width at its moment (at least 12%)`);
   }

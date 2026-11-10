@@ -21,12 +21,22 @@
 //   element {r, turns (3), wire (0.03), axis (y)} (a flat spiral heating coil: a stove ring, a heater; glows on heat)
 //   flame {r, h (0.18)} (a ring of gas flames: hidden until a burn move on its node)
 //   bellows {r, h, folds (5), axis} (an accordion air bag: grows with extend, breathes with pump)
+// The household things (the owner's look round of 2026-11-10: "plates look like white plates with food stains, a dish
+// rack, ... recognizable parts, not abstract shapes"; the dishwasher's plates were wheels, black tyres with white hubs):
+//   plate {r (0.12), axis (y: lying flat; z: standing in a rack facing the camera), stain (0-1), stainColor} (a white
+//   glazed plate, a well and a raised rim; stain draws food smears on its face)   bowl {r (0.08), h, stain, stainColor}
+//   cup {r (0.04), h, handle (true)} (a mug)   glass {r (0.035), h} (a drinking glass)
+//   smear {r (0.05), axis, color, amount (0.6)} (soft food or grease smears on a surface: put it on its own node with an
+//   appear move, so "<name>Back" washes it off)
+//   rack {size [w,h,d], gap, wire, tines (true or a row count)} (a wire dish basket: a rod grid, sides, rows of prongs; a
+//   fridge or oven shelf with h small and tines false)   nozzle {r (0.02), h, axis} (a spout pointing along +axis)
 // Moves (each is a timeline channel named by its name; the verb "<name>" plays it, "<name>Back" undoes it):
 //   appear (the piece pops in on its word: hidden until then, so a thing is built step by step)
 //   slide {to [dx,dy,dz]}   swing {axis, angle (degrees)}   track {path [[x,y,z]...]} (the pivot runs along the path)
 //   spin {axis, turns (per second while on)}   extend {axis, k (the scale reached)}   light (its lamps on)
 //   blink {rate (per second)}   fill {box {size [w,h,d], at, color}} (rises from the box floor)
-//   flow {path, color} (dots run along the path while on)   count {from, to} (its screen's number ticks)
+//   flow {path, color, look (spray | stream | dots), size, speed} (water as spray streaks and droplets, a liquid as a
+//   stream, or dots running along the path while on; no look: guessed from its words, see flowLook)   count {from, to} (its screen's number ticks)
 // The mechanism kit's moves:
 //   heat {color ("#ff3a0a")} (the node's shapes glow, a coil going red-hot)   chill {color ("#bfe6ff")} (they frost over)
 //   burn (its flame shapes light and flicker while on)   pump {axis, stroke (0.2), rate (1.5)} (back and forth while on:
@@ -36,7 +46,7 @@
 //   axis by throw x sin of that node's turn: a piston on a crankshaft; always on)
 // Every part also has show / hide (it pops in, pops out).
 
-export const RIG_SHAPES = ["box", "panel", "cylinder", "wheel", "gear", "hinge", "spring", "tube", "cable", "rail", "track", "chain", "belt", "button", "light", "beam", "screen", "model", "drum", "cone", "sphere", "torus", "fan", "element", "flame", "bellows"];
+export const RIG_SHAPES = ["box", "panel", "cylinder", "wheel", "gear", "hinge", "spring", "tube", "cable", "rail", "track", "chain", "belt", "button", "light", "beam", "screen", "model", "drum", "cone", "sphere", "torus", "fan", "element", "flame", "bellows", "plate", "bowl", "cup", "glass", "smear", "rack", "nozzle"];
 // snap {axis, gap (m)}: the piece breaks in two along its axis and the halves stay apart, tilted (the damage stays in
 // place until "<name>Back", the fix); the garage door's spring "snaps in two" could not be shown (2026-10-28)
 export const RIG_MOVES = ["appear", "slide", "swing", "track", "spin", "extend", "light", "blink", "fill", "flow", "count", "snap", "heat", "chill", "burn", "pump", "shake", "follow", "crank"];
@@ -52,6 +62,64 @@ const v3 = (a, d = [0, 0, 0]) => (Array.isArray(a) && a.length === 3 && a.every(
 const AX = { x: 0, y: 1, z: 2 };
 const nodesOf = (p) => (Array.isArray(p?.nodes) ? p.nodes : []);
 const movesOf = (p) => nodesOf(p).flatMap((n) => (Array.isArray(n.moves) ? n.moves : []).map((m) => ({ ...m, node: n.id })));
+
+// ---------- the household things and the water look (the owner's look round of 2026-11-10) ----------
+// each household shape's own default size (a plate is not 0.1 m like a gear): the box and the builder agree on it
+const HOUSE_R = { plate: 0.12, bowl: 0.08, cup: 0.04, glass: 0.035, smear: 0.05, nozzle: 0.02 };
+const rOf = (s) => Math.abs(num(s.r, HOUSE_R[s.shape] ?? 0.1));
+// a household shape's length along its axis (its thickness for a plate, its height for a cup)
+const houseLen = (s, r) => ({ plate: r * 0.22, bowl: num(s.h, r * 0.6), cup: num(s.h, r * 2.3), glass: num(s.h, r * 3.2), smear: 0.012, nozzle: num(s.h, r * 2.5) })[s.shape];
+const rgbOf = (c) => { const m = /^#([0-9a-f]{6})$/i.exec(String(c ?? "")) ?? (/^#([0-9a-f]{3})$/i.exec(String(c ?? "")) && [0, String(c).slice(1).split("").map((x) => x + x).join("")]); return m ? [0, 2, 4].map((i) => parseInt(m[1].slice(i, i + 2), 16) / 255) : null; };
+const hslOf = (c) => {
+  const v = rgbOf(c); if (!v) return null;
+  const mx = Math.max(...v), mn = Math.min(...v), l = (mx + mn) / 2, d = mx - mn;
+  if (d < 1e-6) return { h: 0, s: 0, l };
+  const s = d / (1 - Math.abs(2 * l - 1)), [r, g, b] = v;
+  const h = (mx === r ? ((g - b) / d + 6) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4) / 6;
+  return { h, s, l };
+};
+/** a colour that reads as water (a clear blue, not the pale near-white the plans draw air with), or none given */
+export const wateryColor = (c) => { if (c == null) return true; const q = hslOf(c); return !!q && q.h > 0.48 && q.h < 0.7 && q.s > 0.35 && q.l > 0.3 && q.l < 0.86; };
+export const FLOW_LOOKS = ["spray", "stream", "dots"];
+// the liquid words the flow kind uses work here too (a stream in that liquid's colour when none is given)
+export const LIQUID_COLOR = { water: "#6fc3ff", oil: "#4a3010", mud: "#6b4a2a", sludge: "#5a5638" };
+/** a flow move's colour: its own, else its liquid's */
+export const flowColor = (m) => m?.color ?? LIQUID_COLOR[m?.look] ?? null;
+const GASSY = /air|gas|blow|vent|steam|smoke|soot|stink|fume|exhaust|breath|wind|vapou?r|puff|spark|current|power|signal|chain|belt|carr(y|ies)|conveyor|item/i;
+const SPRAYY = /spray|jet|drizzle|squirt|shower|sprinkl|mist|rinse|nozzle/i;
+const WET = /water|drain|pour|siphon|flush|drip|faucet|splash/i;
+const WETISH = /leak|rush|rain|refill|tap\b|wash/i;
+const WET_PART = /wash|sink|toilet|shower|faucet|sprinkler|fountain/i;
+/**
+ * which look a flow move draws (pure: the free tests call it): its own look field, else a guess from its words. The
+ * real dishwasher's water ran as chains of big blue balls (the owner, 2026-11-10): water words (spray, jet, drizzle) and
+ * a water colour now draw spray streaks and droplets, a drain or a pour a stream; air, gas, a chain or a belt keep the
+ * dots they were planned with, and so does anything the words do not say is wet.
+ */
+export function flowLook(m, nodeId = "", p = {}) {
+  if (FLOW_LOOKS.includes(m?.look)) return m.look;
+  if (m?.look in LIQUID_COLOR) return m.look === "water" && SPRAYY.test(`${m?.name ?? ""} ${nodeId ?? ""}`) ? "spray" : "stream";
+  const own = `${m?.name ?? ""} ${nodeId ?? ""}`, part = [p?.name, ...(Array.isArray(p?.synonyms) ? p.synonyms : [])].join(" ");
+  if (GASSY.test(own)) return "dots";
+  const wet = wateryColor(m?.color);
+  if (SPRAYY.test(own)) return wet ? "spray" : "stream";
+  if (WET.test(own)) return "stream";
+  if (wet && m?.color != null && (WETISH.test(own) || WET_PART.test(part))) return "stream";
+  return "dots";
+}
+const whiteish = (c) => { const v = rgbOf(c); return !!v && Math.min(...v) > 0.78 && Math.max(...v) - Math.min(...v) < 0.14; };
+/**
+ * an old plan's plate drawn as a plate: a thin white wheel on a node the plan calls plates (or dishes, in a washing
+ * thing) is a plate, not a tyre (the real dishwasher, 2026-11-10). null when the wheel is a wheel.
+ */
+export function plateFromWheel(s, nodeId, p = {}) {
+  if (s?.shape !== "wheel") return null;
+  const r = num(s.r, 0.1), w = num(s.w, 0.2), id = String(nodeId ?? ""), words = [p?.name, ...(Array.isArray(p?.synonyms) ? p.synonyms : []), id].join(" ");
+  if (!(r > 0 && w <= r * 0.4) || !whiteish(s.color)) return null;
+  if (!(/plate|saucer/i.test(id) || (/dish/i.test(id) && /wash|rack|sink|kitchen|cupboard/i.test(words)))) return null;
+  const { w: _w, ...rest } = s;
+  return { ...rest, shape: "plate", r };
+}
 
 /** the timeline channels of a rig: its pop and one per move */
 export const rigChannels = (p) => ["pop", ...new Set(movesOf(p).map((m) => m.name).filter(Boolean))];
@@ -69,15 +137,18 @@ export function rigVerb(p, v) {
 
 // ---------- the pure geometry: a shape's box at rest, a node's pivot, the whole rig's box (for the camera) ----------
 function shapeBox(s) {
-  const at = v3(s.at), r = num(s.r, 0.1);
+  const at = v3(s.at), r = s.shape in HOUSE_R ? rOf(s) : num(s.r, 0.1);
   let half;
+  if (s.shape === "rack") half = v3(s.size, [0.5, 0.2, 0.5]).map((x) => Math.abs(x) / 2);
+  else if (s.shape in HOUSE_R) { const rad = s.shape === "cup" && s.handle !== false ? r * 1.5 : r; half = [rad, rad, rad]; half[AX[s.axis] ?? 1] = Math.abs(houseLen(s, r)) / 2; }
   if (s.shape === "beam") { const a = v3(s.from), b = v3(s.to), w = num(s.r, 0.04) + 0.03; return { min: [0, 1, 2].map((i) => Math.min(a[i], b[i]) - w), max: [0, 1, 2].map((i) => Math.max(a[i], b[i]) + w) }; }
   if (PATHS.has(s.shape)) {
     const pts = (Array.isArray(s.path) ? s.path : []).map((q) => v3(q)), w = Math.max(num(s.r, 0), num(s.w, 0.12)) / 2 + 0.02;
     if (!pts.length) return null;
     return { min: [0, 1, 2].map((i) => Math.min(...pts.map((q) => q[i])) - w), max: [0, 1, 2].map((i) => Math.max(...pts.map((q) => q[i])) + w) };
   }
-  if (s.shape === "box") half = v3(s.size, [0.5, 0.5, 0.5]).map((x) => Math.abs(x) / 2);
+  if (half) { /* a household shape or a rack, sized above */ }
+  else if (s.shape === "box") half = v3(s.size, [0.5, 0.5, 0.5]).map((x) => Math.abs(x) / 2);
   else if (s.shape === "panel") { const [w, h] = Array.isArray(s.size) ? s.size.map(Number) : [1, 1]; half = [w / 2, h / 2, num(s.thick, 0.05) / 2]; }
   else if (s.shape === "screen") { const [w, h] = Array.isArray(s.size) ? s.size.map(Number) : [0.5, 0.35]; half = [w / 2 + 0.04, h / 2 + 0.04, 0.05]; }
   // (a model stands on its base at the shape's point: it rises from there)
@@ -252,13 +323,124 @@ export function rig(ctx, p, api) {
   const groups = new Map(), lamps = new Map(), screens = new Map(), flames = new Map(), fills = [], flows = [], snaps = [];
   // (the owner's rule of 2026-11-05: one bad shape or move of a designed part is skipped and logged as our bug, the part is still drawn)
   const deadMoves = new Set(), rigBug = (what, e) => console.error(`[cutaway-bug] ${p.name ?? "rig"}: ${what} skipped: ${e?.message ?? e}`);
-  const screenTex = new Map();
+  const screenTex = new Map(), notedPlates = new Set();
   const numTex = (v, col) => {
     const key = `${v}|${col}`; if (screenTex.has(key)) return screenTex.get(key);
     const cv = typeof document !== "undefined" ? document.createElement("canvas") : null; if (!cv) return null;
     cv.width = 256; cv.height = 180; const g = cv.getContext("2d");
     g.fillStyle = "#06120a"; g.fillRect(0, 0, 256, 180); g.fillStyle = col; g.font = "bold 140px Arial, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(String(v), 128, 98);
     const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; screenTex.set(key, t); return t;
+  };
+  // ----- the household looks (2026-11-10): glazed white china, clear glass, food smears, soft mist -----
+  const glaze = (col) => (ctx.phys ? ctx.phys({ color: C(col), roughness: 0.22, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.08 }) : std({ color: C(col), roughness: 0.2, metalness: 0 }));
+  const glassMat = (col) => { const m = (ctx.phys ?? std)({ color: C(col ?? "#e6f4fb"), roughness: 0.05, metalness: 0, ...(ctx.phys ? { clearcoat: 1 } : {}) }); m.transparent = true; m.opacity = 0.32; m.depthWrite = false; return m; };
+  // a shape built in the y-up frame laid along its axis (y: as built; z: its top toward the camera; x: toward +x)
+  const orient = (g, axis) => { if (axis === "z") g.rotation.x = Math.PI / 2; else if (axis === "x") g.rotation.z = -Math.PI / 2; const w = new THREE.Group(); w.add(g); return w; };
+  const seedOf = (s) => { const a = v3(s.at); return Math.abs(Math.round(a[0] * 7919 + a[1] * 104729 + a[2] * 1299709 + rOf(s) * 15485863)) + 1; };
+  const canvas = (n) => { const cv = typeof document !== "undefined" ? document.createElement("canvas") : null; if (cv) { cv.width = n; cv.height = n; } return cv; };
+  const texs = new Map();
+  // food smears: a few soft strokes of sauce and some crumbs, drawn once per colour, amount and seed (no canvas: none)
+  const smearTex = (col, amount, seed) => {
+    const key = `smear|${col}|${amount.toFixed(2)}|${seed}`; if (texs.has(key)) return texs.get(key);
+    const cv = canvas(256); if (!cv) return null;
+    const g2 = cv.getContext("2d"), [r, gg, b] = rgbOf(col) ?? [0.54, 0.29, 0.11], rgba = (k, a) => `rgba(${Math.round(r * k * 255)},${Math.round(gg * k * 255)},${Math.round(b * k * 255)},${a})`;
+    let st = (seed % 2147483646) + 1; const rnd = () => (st = (st * 16807) % 2147483647) / 2147483647;
+    g2.save(); g2.beginPath(); g2.arc(128, 128, 124, 0, Math.PI * 2); g2.clip();
+    const n = 2 + Math.round(amount * 5);
+    for (let i = 0; i < n; i++) {
+      const a = rnd() * Math.PI * 2, d = Math.sqrt(rnd()) * 78, cx = 128 + Math.cos(a) * d, cy = 128 + Math.sin(a) * d, dir = rnd() * Math.PI, len = 20 + rnd() * 50, k = 0.75 + rnd() * 0.4;
+      for (let j = 0; j < 7; j++) {
+        const f = j / 6 - 0.5, x = cx + Math.cos(dir) * len * f + (rnd() - 0.5) * 8, y = cy + Math.sin(dir) * len * f + (rnd() - 0.5) * 8, rad = (9 + rnd() * 15) * (0.6 + amount * 0.6);
+        const gr = g2.createRadialGradient(x, y, 0, x, y, rad); gr.addColorStop(0, rgba(k, 0.8)); gr.addColorStop(0.55, rgba(k, 0.55)); gr.addColorStop(1, rgba(k, 0));
+        g2.fillStyle = gr; g2.beginPath(); g2.arc(x, y, rad, 0, Math.PI * 2); g2.fill();
+      }
+    }
+    for (let i = 0, nc = Math.round(amount * 16); i < nc; i++) { const a = rnd() * Math.PI * 2, d = Math.sqrt(rnd()) * 100; g2.fillStyle = rgba(0.5, 0.9); g2.beginPath(); g2.arc(128 + Math.cos(a) * d, 128 + Math.sin(a) * d, 1.5 + rnd() * 3, 0, Math.PI * 2); g2.fill(); }
+    g2.restore();
+    const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; texs.set(key, t); return t;
+  };
+  // a disc of smears facing +y (laid on a plate's well, or turned with its shape's axis)
+  const smearMesh = (rad, col, amount, seed) => {
+    const map = smearTex(col, amount, seed); if (!map) return null;
+    const mt = std({ map, color: C("#ffffff"), roughness: 0.45, metalness: 0, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
+    const geo = new THREE.CircleGeometry(rad, 32); geo.rotateX(-Math.PI / 2);
+    const o = new THREE.Mesh(geo, mt); o.receiveShadow = true; o.castShadow = false; return o;
+  };
+  // a soft round puff (white centre fading out): the mist where a spray lands
+  const puffTex = () => {
+    if (texs.has("puff")) return texs.get("puff");
+    const cv = canvas(64); if (!cv) return null;
+    const g2 = cv.getContext("2d"), gr = g2.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, "rgba(255,255,255,0.9)"); gr.addColorStop(0.5, "rgba(255,255,255,0.35)"); gr.addColorStop(1, "rgba(255,255,255,0)");
+    g2.fillStyle = gr; g2.fillRect(0, 0, 64, 64);
+    const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; texs.set("puff", t); return t;
+  };
+  /**
+   * water and other liquids along a flow path (2026-11-10, the owner: "water as spray streams and droplets instead of
+   * balls"). spray: thin bright streaks fanning out along the path, droplets breaking off and falling, a light mist where
+   * it lands; stream: a liquid running the path (a translucent water stream, or an opaque oil or mud one) with moving
+   * glints. Everything is placed from t alone (frames render out of order).
+   */
+  const liquid = (c, m, look, g) => {
+    const water = wateryColor(flowColor(m)), col = C(flowColor(m) ?? "#6fc3ff"), size = Math.max(0.005, num(m.size, 0.05)), L = Math.max(0.02, c.getLength()), rate = Math.max(0.2, num(m.speed, 0.6));
+    const bright = col.clone().lerp(C("#ffffff"), water ? 0.3 : 0.12);
+    const mat = (op, ei, base = bright) => { const mt = std({ color: base.clone(), emissive: col.clone(), emissiveIntensity: ei, roughness: water ? 0.06 : 0.3, metalness: 0 }); mt.transparent = true; mt.opacity = op; mt.depthWrite = false; return mt; };
+    const up = new THREE.Vector3(0, 1, 0), t0 = c.getTangentAt(0), side = new THREE.Vector3().crossVectors(t0, Math.abs(t0.y) > 0.9 ? new THREE.Vector3(1, 0, 0) : up).normalize(), side2 = new THREE.Vector3().crossVectors(t0, side).normalize();
+    const end = c.getPointAt(1), tEnd = c.getTangentAt(1);
+    const at = (u, out) => (u <= 1 ? out.copy(c.getPointAt(Math.max(0, u))) : out.copy(end).addScaledVector(tEnd, (u - 1) * L));
+    const tan = (u) => c.getTangentAt(Math.min(1, Math.max(0, u)));
+    const parts = [], mats = [];
+    const frac = (x) => x - Math.floor(x);
+    if (look === "spray") {
+      // the streaks (thin streaks pointed at both ends): a centre lane and five round it, widening toward the end
+      const nS = Math.max(3, Math.min(8, Math.round(L / (size * 3)))), sl = Math.min((L / nS) * 1.1, size * 8), sr = size * 0.075;
+      const sm = mat(0.7, water ? 0.7 : 0.15), geo = new THREE.SphereGeometry(sr, 8, 6).scale(1, sl / (2 * sr), 1); mats.push([sm, 0.6]);
+      const core = new THREE.Mesh(new THREE.TubeGeometry(c, 24, size * 0.1, 6), mat(0.35, 0.5)); core.castShadow = false; g.add(core); mats.push([core.material, 0.35]);
+      const lanes = [[0, 0], ...[0, 1, 2, 3, 4].map((k) => [Math.cos((k * 2 * Math.PI) / 5), Math.sin((k * 2 * Math.PI) / 5)])];
+      lanes.forEach(([a, b], k) => { for (let i = 0; i < nS; i++) { const o = new THREE.Mesh(geo, sm); o.castShadow = false; o.visible = false; g.add(o); parts.push({ o, kind: "streak", k, i, a, b }); } });
+      // the droplets breaking off along the second half, and the mist where it lands
+      const dg = new THREE.SphereGeometry(size * 0.11, 8, 6), dm = mat(0.9, water ? 0.4 : 0.15); mats.push([dm, 0.9]);
+      for (let i = 0; i < 14; i++) { const o = new THREE.Mesh(dg, dm); o.castShadow = false; o.visible = false; o.scale.setScalar(0.6 + frac(i * 0.754877) * 0.8); g.add(o); parts.push({ o, kind: "drop", i }); }
+      const pt = water ? puffTex() : null;
+      if (pt) for (let i = 0; i < 4; i++) { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: pt, color: bright.clone(), transparent: true, opacity: 0, depthWrite: false })); sp.visible = false; g.add(sp); parts.push({ o: sp, kind: "mist", i }); }
+      return {
+        update(v, t) {
+          for (const [mt, op] of mats) mt.opacity = op * v;
+          const pt = new THREE.Vector3();
+          for (const q of parts) {
+            q.o.visible = v > 0.05; if (!q.o.visible) continue;
+            if (q.kind === "streak") {
+              const u = frac(t * rate * 1.6 + q.i / nS + q.k * 0.37), spread = size * 1.3 * u;
+              if (u > v * 1.05) { q.o.visible = false; continue; }
+              at(u, pt).addScaledVector(side, q.a * spread).addScaledVector(side2, q.b * spread); q.o.position.copy(pt);
+              q.o.quaternion.setFromUnitVectors(up, tan(u)); q.o.scale.set(1, 0.6 + 0.4 * Math.min(1, u * 4), 1);
+            } else if (q.kind === "drop") {
+              const u = 0.35 + frac(t * rate * 1.2 + q.i * 0.618034) * 0.8, ang = q.i * 2.39996, sc = size * 2.4 * (u - 0.3);
+              at(u, pt).addScaledVector(side, Math.cos(ang) * sc).addScaledVector(side2, Math.sin(ang) * sc); pt.y -= size * 3 * Math.max(0, u - 0.7) ** 2 * 4;
+              q.o.position.copy(pt);
+            } else {
+              const k = 1 + 0.25 * Math.sin(t * 3 + q.i * 1.7), ang = q.i * 1.9; at(1, pt).addScaledVector(side, Math.cos(ang) * size * 1.2).addScaledVector(side2, Math.sin(ang) * size * 1.2);
+              q.o.position.copy(pt); q.o.scale.setScalar(size * 5 * k); q.o.material.opacity = 0.22 * v;
+            }
+          }
+        },
+      };
+    }
+    // stream: the liquid itself, drawn from the start as it switches on (its index runs segment by segment along the path)
+    const S = Math.max(16, Math.min(96, Math.round(L / (size * 0.5)))), R = 10, rT = size * (water ? 0.42 : 0.55);
+    const geo = new THREE.TubeGeometry(c, S, rT, R), body = new THREE.Mesh(geo, water ? mat(0.62, 0.3, col.clone().lerp(C("#ffffff"), 0.1)) : mat(0.95, 0.06, col.clone())); body.castShadow = false; g.add(body); mats.push([body.material, body.material.opacity]);
+    const nG = Math.max(3, Math.min(12, Math.round(L / (size * 4)))), gm = mat(0.85, water ? 0.6 : 0.2, col.clone().lerp(C("#ffffff"), water ? 0.75 : 0.35)), gg = new THREE.CapsuleGeometry(rT * 0.55, size * 1.8, 3, 8); mats.push([gm, 0.85]);
+    for (let i = 0; i < nG; i++) { const o = new THREE.Mesh(gg, gm); o.castShadow = false; o.visible = false; g.add(o); parts.push({ o, i }); }
+    return {
+      update(v, t) {
+        for (const [mt, op] of mats) mt.opacity = op * Math.min(1, v * 1.5);
+        body.visible = v > 0.02; geo.setDrawRange(0, Math.ceil(S * Math.min(1, v)) * R * 6);
+        const pt = new THREE.Vector3();
+        for (const q of parts) {
+          const u = frac(t * rate + q.i / nG); q.o.visible = v > 0.05 && u <= v;
+          if (q.o.visible) { at(u, pt); q.o.position.copy(pt); q.o.quaternion.setFromUnitVectors(up, tan(u)); }
+        }
+      },
+    };
   };
   const build = (s, parent, nodeId) => {
     const r = num(s.r, 0.1);
@@ -391,6 +573,73 @@ export function rig(ctx, p, api) {
         if (s.axis === "z") g.rotation.x = Math.PI / 2; else if (s.axis === "x") g.rotation.z = Math.PI / 2;
         const w = new THREE.Group(); w.add(g); return place(w, s, parent);
       }
+      // ----- the household things (the owner's look round of 2026-11-10: recognizable parts, not abstract shapes) -----
+      case "plate": case "bowl": case "cup": case "glass": {
+        // turned on a lathe in the y-up frame, then laid along its axis: a plate's well top is its point (a smear at the
+        // plate's own point sits on its face)
+        const rr = rOf(s), h = Math.abs(houseLen(s, rr)), g = new THREE.Group(), t = Math.max(0.003, rr * 0.045);
+        const V = (pts) => new THREE.LatheGeometry(pts.map(([x, y]) => new THREE.Vector2(Math.max(0, x), y)), 48);
+        const glazed = !s.look || s.look === "paint";
+        const m = s.shape === "glass" ? glassMat(s.color) : glazed ? glaze(s.color ?? "#f7f5f0") : matOf(s);
+        m.side = THREE.DoubleSide;
+        let stainAt = null;
+        if (s.shape === "plate") {
+          const rim = rr * 0.12;
+          g.add(new THREE.Mesh(V([[0, 0], [rr * 0.6, 0], [rr * 0.78, rr * 0.05], [rr * 0.95, rim], [rr, rim], [rr, rim - t], [rr * 0.94, rim - t * 1.2], [rr * 0.76, rr * 0.05 - t], [rr * 0.58, -t], [rr * 0.56, -t - rr * 0.035], [rr * 0.47, -t - rr * 0.035], [rr * 0.45, -t], [0, -t]]), m));
+          stainAt = { y: 0.0015, r: rr * 0.66 };
+        } else if (s.shape === "bowl") {
+          const y0 = -h / 2, fl = y0 + h * 0.1 + t;
+          g.add(new THREE.Mesh(V([[0, y0], [rr * 0.42, y0], [rr * 0.45, y0 + h * 0.06], [rr * 0.7, y0 + h * 0.25], [rr * 0.9, y0 + h * 0.6], [rr, h / 2], [rr - t, h / 2], [rr * 0.88 - t, y0 + h * 0.62], [rr * 0.66 - t * 0.5, y0 + h * 0.3], [rr * 0.38, fl], [0, fl]]), m));
+          stainAt = { y: fl + 0.0015, r: rr * 0.42 };
+        } else if (s.shape === "cup") {
+          g.add(new THREE.Mesh(V([[0, -h / 2], [rr * 0.9, -h / 2], [rr, -h / 2 + h * 0.06], [rr, h / 2], [rr - t, h / 2], [rr - t, -h / 2 + t * 1.6], [0, -h / 2 + t * 1.6]]), m));
+          if (s.handle !== false) { const hd = new THREE.Mesh(new THREE.TorusGeometry(h * 0.27, Math.max(t * 0.9, rr * 0.11), 8, 20, Math.PI), m); hd.rotation.z = -Math.PI / 2; hd.position.x = rr * 0.98; g.add(hd); }
+        } else {
+          g.add(new THREE.Mesh(V([[0, -h / 2], [rr * 0.84, -h / 2], [rr, h / 2], [rr - t, h / 2], [rr * 0.84 - t, -h / 2 + t * 3], [0, -h / 2 + t * 3]]), m));
+        }
+        // (the stain drawn on the plate's face or in the bowl: soft food smears, not brown boxes)
+        const amount = s.stain === true ? 0.6 : Math.min(1, Math.max(0, num(s.stain, 0)));
+        if (stainAt && amount > 0.01) { const sm = smearMesh(stainAt.r, s.stainColor ?? "#8b5a2b", amount, seedOf(s)); if (sm) { sm.position.y = stainAt.y; g.add(sm); } }
+        g.traverse((x) => { if (x.isMesh) { x.castShadow = s.shape !== "glass"; x.receiveShadow = true; } });
+        return place(orient(g, s.axis), s, parent);
+      }
+      case "smear": {
+        const sm = smearMesh(rOf(s), s.color ?? "#8b5a2b", Math.min(1, Math.max(0.05, num(s.amount, 0.6))), seedOf(s));
+        if (!sm) return null;
+        const g = new THREE.Group(); g.add(sm); const o = place(orient(g, s.axis), s, parent); o.castShadow = false; return o;
+      }
+      case "rack": {
+        // a wire dish basket: a floor grid, rimmed sides of upright rods, rows of prongs the plates stand in, and rollers
+        const [w, h, d] = v3(s.size, [0.5, 0.2, 0.5]).map(Math.abs), g = new THREE.Group();
+        const gap = Math.max(0.015, num(s.gap, Math.min(0.08, Math.max(0.025, Math.min(w, d) / 9)))), wr = Math.max(0.002, num(s.wire, Math.min(0.02, Math.max(0.004, Math.min(w, d) * 0.012))));
+        const m = s.look ? matOf(s) : std({ color: C(s.color ?? "#d8dcdf"), roughness: 0.35, metalness: 0.25 });
+        const unit = new THREE.CylinderGeometry(wr, wr, 1, 6), thick = new THREE.CylinderGeometry(wr * 1.5, wr * 1.5, 1, 8), up = new THREE.Vector3(0, 1, 0);
+        const rod = (a, b, geo = unit) => { const A = new THREE.Vector3(...a), B = new THREE.Vector3(...b), L = A.distanceTo(B); if (L < 1e-4) return; const c = new THREE.Mesh(geo, m); c.position.copy(A).lerp(B, 0.5); c.quaternion.setFromUnitVectors(up, B.clone().sub(A).normalize()); c.scale.y = L; c.castShadow = true; g.add(c); };
+        const steps = (a, b, st) => { const n = Math.min(40, Math.max(1, Math.round((b - a) / st))), out = []; for (let i = 0; i <= n; i++) out.push(a + ((b - a) * i) / n); return out; };
+        const x0 = -w / 2, x1 = w / 2, y0 = -h / 2, y1 = h / 2, z0 = -d / 2, z1 = d / 2;
+        for (const z of steps(z0, z1, gap)) rod([x0, y0, z], [x1, y0, z]);
+        for (const x of steps(x0, x1, gap)) rod([x, y0, z0], [x, y0, z1]);
+        const rimAt = h > 0.06 ? [y0, (y0 + y1) / 2, y1] : [y0, y1];
+        for (const y of rimAt) { rod([x0, y, z0], [x1, y, z0], thick); rod([x0, y, z1], [x1, y, z1], thick); rod([x0, y, z0], [x0, y, z1], thick); rod([x1, y, z0], [x1, y, z1], thick); }
+        if (h > 0.02) {
+          for (const x of steps(x0, x1, gap * 1.5)) { rod([x, y0, z0], [x, y1, z0]); rod([x, y0, z1], [x, y1, z1]); }
+          for (const z of steps(z0, z1, gap * 1.5)) { rod([x0, y0, z], [x0, y1, z]); rod([x1, y0, z], [x1, y1, z]); }
+        }
+        // (rows of prongs across the width: the plates stand between them, facing the front)
+        const rows = s.tines === false ? 0 : Number.isFinite(Number(s.tines)) && s.tines !== true ? Math.min(12, Math.max(0, Math.round(Number(s.tines)))) : Math.max(1, Math.round(d / 0.09) - 1);
+        const tH = Math.min(h * 0.9, Math.max(0.04, Math.min(w, d) * 0.2));
+        for (let k = 0; k < rows; k++) { const z = z0 + (d * (k + 1)) / (rows + 1); for (const x of steps(x0 + gap / 2, x1 - gap / 2, gap * 0.8)) rod([x, y0, z], [x, y0 + tH, z]); }
+        if (h > 0.06) { const rm = std({ color: C("#3a3f45"), roughness: 0.5 }); for (const x of [x0, x1]) for (const z of [z0 + d * 0.15, z1 - d * 0.15]) { const wl = new THREE.Mesh(alongAxis(new THREE.CylinderGeometry(gap * 0.45, gap * 0.45, gap * 0.3, 14), "x"), rm); wl.position.set(x + Math.sign(x) * gap * 0.15, y0, z); g.add(wl); } }
+        return place(g, s, parent);
+      }
+      case "nozzle": {
+        // a spout along +axis: a tapered body, a collar at its foot, a dark hole at its tip
+        const rr = rOf(s), h = Math.abs(houseLen(s, rr)), g = new THREE.Group(), m = matOf({ look: "metal", ...s });
+        const body = new THREE.Mesh(new THREE.CylinderGeometry(rr * 0.55, rr, h * 0.8, 20), m); body.position.y = h * 0.1; g.add(body);
+        const collar = new THREE.Mesh(new THREE.CylinderGeometry(rr * 1.25, rr * 1.25, h * 0.2, 20), m); collar.position.y = -h * 0.4; g.add(collar);
+        const hole = new THREE.Mesh(new THREE.CircleGeometry(rr * 0.3, 16), std({ color: C("#0c0d0f"), roughness: 0.9 })); hole.rotation.x = -Math.PI / 2; hole.position.y = h / 2 + 0.001; g.add(hole);
+        return place(orient(g, s.axis), s, parent);
+      }
       case "model": {
         // a CC0 model (kit/models.js), on its base at the shape's point
         const g = new THREE.Group(); place(g, s, parent);
@@ -410,7 +659,9 @@ export function rig(ctx, p, api) {
     // (its own materials, as built: a heat or chill move tints them from there)
     const mats = [];
     groups.set(n.id, { g, n, base: g.position.clone(), mats });
-    for (const s of n.shapes ?? []) {
+    for (const s0 of n.shapes ?? []) {
+      // (an old plan's plates drawn as wheels are drawn as plates, 2026-11-10: the owner saw black tyres in the dishwasher)
+      let s = s0; try { const pl = plateFromWheel(s0, n.id, p); if (pl) { s = pl; if (!notedPlates.has(n.id)) { notedPlates.add(n.id); console.log(`[cutaway-note] ${p.name ?? "rig"}: the white wheels on ${n.id} are drawn as plates`); } } } catch { s = s0; }
       let o = null; try { o = build(s, g, n.id); } catch (e) { rigBug(`shape ${s?.shape} on ${n.id}`, e); continue; }
       if (o && !["flame", "light", "beam"].includes(s.shape)) o.traverse((x) => { if (x.isMesh && x.material?.color && !mats.some((q) => q.m === x.material)) mats.push({ m: x.material, col: x.material.color.clone(), em: x.material.emissive?.clone(), ei: x.material.emissiveIntensity ?? 0 }); });
     }
@@ -426,7 +677,10 @@ export function rig(ctx, p, api) {
         fm.geometry.translate(0, h / 2, 0); const [x, y, z] = v3(m.box.at); fm.position.set(x, y - h / 2, z); fm.scale.y = 0.001; fm.visible = false; g.add(fm); fills.push({ fm, m });
       }
       if (m.type === "flow" && Array.isArray(m.path) && m.path.length >= 2) {
-        const c = curve(m.path), dots = [], dm = std({ color: C(m.color ?? "#5aa9e6"), roughness: 0.3 });
+        const c = curve(m.path), look = flowLook(m, n.id, p);
+        // (water as spray or a stream, 2026-11-10; a broken liquid look falls back to the dots, logged as our bug)
+        if (look !== "dots") { try { flows.push({ m, ...liquid(c, m, look, g) }); continue; } catch (e) { rigBug(`the ${look} look of flow ${m.name} on ${n.id}`, e); } }
+        const dots = [], dm = std({ color: C(m.color ?? "#5aa9e6"), roughness: 0.3 });
         // (spaced about five dot widths apart: packed bead to bead on a short pipe they read as a still stack of balls, not
         // something moving; the free stove proof's checker, 2026-11-04)
         const size = num(m.size, 0.05), nDots = Math.max(3, Math.min(14, Math.round(c.getLength() / (size * 2 * 5))));
@@ -500,7 +754,7 @@ export function rig(ctx, p, api) {
       };
       for (const gg of groups.values()) runLink(gg);
       for (const { fm, m } of fills) { const v = clamp01(api.ch(m.name, t)); fm.visible = v > 0.002; fm.scale.y = Math.max(0.001, v); }
-      for (const { c, dots, m } of flows) { const v = clamp01(api.ch(m.name, t)); dots.forEach((d, i) => { d.visible = v > 0.05; if (d.visible) { d.position.copy(c.getPointAt((((t * num(m.speed, 0.6)) + i / dots.length) % 1))); d.scale.setScalar(v); } }); }
+      for (const { c, dots, m, update } of flows) { const v = clamp01(api.ch(m.name, t)); if (update) { try { update(v, t); } catch (e) { if (!deadMoves.has(m)) { deadMoves.add(m); rigBug(`flow ${m.name} look`, e); } } continue; } dots.forEach((d, i) => { d.visible = v > 0.05; if (d.visible) { d.position.copy(c.getPointAt((((t * num(m.speed, 0.6)) + i / dots.length) % 1))); d.scale.setScalar(v); } }); }
     },
   };
 }

@@ -4,6 +4,7 @@
 import fs from "node:fs";
 import { resolveAnchor, sentencesOf } from "./curves.js";
 import { fillGaps, motionGaps, storyFx } from "./storyFx.js";
+import { varietyShots } from "./variety.js";
 import { reportBug, soft } from "./bookkeeping.js";
 import { KIND_CHANNELS } from "./parts.js";
 const KIND_OK = (k) => !!KIND_CHANNELS[k];
@@ -256,6 +257,8 @@ export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
   if (layout.camera?.keys?.length) camera = { end: keysFor("end"), noend: keysFor("noend") };
   else {
     const shots = layout.shots.map((s) => soft(`shot at ${JSON.stringify(s.at)}`, () => ({ ...s, t: at(s.at) }), null)).filter(Boolean).sort((a, b) => a.t - b.t);
+    // a machine indoors: detail cuts and close-ups inside its sentences, no framing held over ~4 s (variety.js)
+    soft("shot variety", () => { const v = varietyShots(layout, tracks, sentences, shots); shots.push(...v.shots); shots.sort((a, b) => a.t - b.t); notes.push(...v.notes); }, null);
     director = soft("camera director", () => directCamera(layout, shots, marks), () => plainCamera(layout, marks));
     // every sentence's showing part at least 12% wide and in the frame while it acts: a shot on it where the camera
     // would miss it (then the camera is directed once more)

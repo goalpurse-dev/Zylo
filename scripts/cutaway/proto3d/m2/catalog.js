@@ -47,22 +47,27 @@ export const WORLD_DOC = `THE WORLD (units are about 1 m; y up, the cut face is 
     The world's cut is left open in the sidewalk.
   world.backdrop {type: "park", lampX, benchX}: a gravel path, a bench and a lamp on the lawn. It suits a playground, a fountain, a pond.
   world.backdrop {type: "garage", x (0), back (-9), color}: a concrete driveway (top y 0.08) up to a garage with its door half open
-    (lit shelves and a workbench inside), the side of the house to its left. It suits a car, a garage door (a water heater or a sump pump goes in the room: the basement).
+    (lit shelves and a workbench inside), the side of the house to its left. It suits a car, a garage door (a sump pump goes in the room: the basement; a water heater in the laundry room).
     The garage stands with its front at z = back, its opening from x - 4.05 to x + 4.05 and 3.1 tall (floor y 0.08), the wall
     over it 0.4 thick (z back - 0.2 to back + 0.2: hang a piece meant to be seen in front of it, z > back + 0.25); a video
     about the door builds its own door there as a rig named a door (the backdrop then leaves its own out).
-  world.backdrop {type: "room", x0 (-9), x1 (9), back (-7), h (4.2), windowX, chairX}: a room in section: a wood floor (top y 0.12)
-    over the cut ground, a back wall with a window, the left wall, the ceiling and a roof slice; an armchair, a lamp, a rug.
-    It suits things inside a home: an air conditioner, a radiator, a toilet, a sump pump in the floor, a smoke detector.
-    Use it for every basement or indoor topic (a sump pump, a water heater, a furnace): the cut below its floor is the basement.
+  world.backdrop {type: "room", x0 (-9), x1 (9), back (-7), h (4.2), windowX, chairX, ceiling (false)}: a living room in section: a
+    wood floor (top y 0.12) over the cut ground, a back wall with a panelled lower half, a window with curtains and a picture,
+    the left wall; an armchair, a side table with a plant, a lamp, a rug. Open-topped (a high camera sees in); ceiling true
+    adds the ceiling and a roof slice, for a thing mounted on the ceiling (a smoke detector, a ceiling light; set by code
+    when something hangs up there). It suits indoor things that are not kitchen or laundry appliances: an air conditioner,
+    a radiator, a toilet, a sump pump in the floor, a smoke detector, a furnace: the cut below its floor is the basement.
+    Never a kitchen appliance (it goes in the kitchen) nor a washing machine, a dryer or a water heater (the laundry room).
   world.backdrop {type: "carwash", x0 (-7), x1 (7), back (-8), h (5.2), sign, color}: a car wash bay: a wet concrete floor (top
     y 0.1) whose drain is the cut, a tiled back wall, the left wall, a canopy with the lit sign. It suits a car wash, a garage pit.
-  world.backdrop {type: "kitchen", x0 (-12), x1 (12), back (-7), h (6.2), gap ([-1.8, 1.8]), color}: a kitchen in section: a tiled
-    floor (top y 0.12), counters with a wood worktop (about 2 m high, 1.4 m deep) and wall cabinets along the back wall on both
-    sides of an open gap, a window over the sink. The appliance the topic is about stands in front of the gap, centred near
-    x 0, z -1.8 (a wider one: widen the gap, gap [-2.4, 2.4]). It suits kitchen and home appliances: a stove or oven, a fridge,
-    a dishwasher, a microwave, a kettle, a toaster, a coffee machine, a washing machine, a dryer (a water heater goes in
-    the room: the basement).
+  world.backdrop {type: "kitchen", x0 (-12), x1 (12), back (-7), h (6.2), gap ([-1.8, 1.8]), color, use}: a kitchen in section: a
+    tiled floor (top y 0.12), base cabinets with doors and a wood worktop (about 2 m high, 1.4 m deep) on both sides of an
+    open gap, a tiled wall behind the gap, wall cabinets, a window with daylight over the sink just right of the gap, a few
+    small things against the splashback (canisters, a board, a plant). The appliance the topic is about stands in front of
+    the gap, centred near x 0, z -1.8 (a wider one: widen the gap, gap [-2.4, 2.4]). The setting of every kitchen
+    appliance: a dishwasher, a fridge, a stove or oven, a microwave, a kettle, a toaster, a coffee machine.
+    use "laundry": the same room as a laundry / utility room (pale tiles, blue-grey cabinets, open shelves with bottles and
+    towels, a basket, a utility sink): the setting of a washing machine, a dryer, a water heater, a boiler.
   world.backdrop {type: "workshop", x0 (-10), x1 (10), back (-8), h (5), color}: a home workshop (a garage seen from inside): a
     concrete floor (top y 0.08), a closed roll-up door in the back wall, a pegboard of tools over a workbench on the left, a
     tool chest and a shelf of boxes on the right; the floor x -3.5 to 3.5 in front is free. It suits a car (its engine,
@@ -178,13 +183,25 @@ each with its own moves. Build it the way the real thing is built, simple and re
   fan {r, blades, w, axis} (a fan, an impeller, a turbine: give it a spin), element {r, turns, wire, axis} (a flat spiral
   heating coil: give it a heat move), flame {r, h, color} (a ring of gas flames, hidden until its node's burn move; blue by default, color "#ffb020" for a lazy yellow flame),
   bellows {r, h, folds, axis} (an accordion air bag: an air spring, a pump; extend it or pump it).
+  The household things (use them, not wheels or boxes, for what a viewer knows from home): plate {r, axis, stain,
+  stainColor} (a white glazed plate with a raised rim; axis "z" stands it in a rack facing the camera, "y" lays it flat;
+  stain 0-1 draws food smears on it), bowl {r, h, stain, stainColor}, cup {r, h, handle} (a mug), glass {r, h} (a
+  drinking glass), smear {r, axis, color, amount} (soft food or grease smears on a surface: on a plate, the plate's at and
+  axis nudged 0.003 along the axis; put smears on their own node with an appear move, then "<name>Back" washes them off),
+  rack {size [w,h,d], gap, wire, tines} (a wire dish basket: rod grid, sides, rows of prongs the plates stand between;
+  tines false and h 0.02 for a fridge or oven wire shelf), nozzle {r, h, axis} (a spout pointing along +axis; rot
+  [180,0,0] points it down).
 - Moves (each one a verb by its name; "<name>Back" undoes it; one name on several nodes moves them together): appear (the piece pops in on its word; it is hidden
   until then: build a thing step by step), slide {to [dx,dy,dz]}, swing {axis, angle (deg)} (about the
   node's pivot: put a door's pivot on its hinge edge), track {path} (the pivot runs along the path: a door rolling up its
   rails), spin {axis, turns per second} (stays on until "<name>Back"), extend {axis, k}, light, blink {rate},
-  fill {box {size, at (the box centre), color}} (a level rising from the box floor: water in a tank), flow {path, color} (dots running along a path), count {from, to}, snap {axis, gap} (the piece breaks in two along its axis and the halves stay apart, tilted, until "<name>Back": a spring or cable that snaps), heat {color} (its shapes glow red-hot: a coil, an element, a brake disc), chill {color} (they frost over: a fridge's coils), burn (its flame shapes light and flicker), pump {axis, stroke, rate} (back and forth while on: a piston, a compressor, an agitator), shake {amp, rate} (a jitter while on: a drum spinning fast), follow {of, ratio} (it turns whenever node "of" turns, times ratio: a meshing gear -r1/r2, a belt-driven pulley r1/r2, rear wheels steering -0.3; no verb needed), crank {of, axis, throw} (it slides along axis by throw x sine of node "of"'s turn: a piston on a crankshaft; no verb needed).
+  fill {box {size, at (the box centre), color}} (a level rising from the box floor: water in a tank), flow {path, color, look, size} (something running along a path; look "spray": water jets as streaks and droplets with mist where they land (a spray arm, a shower, a hose nozzle), "stream": a liquid pouring or running in a pipe (water clear blue; oil, mud, blood opaque in its color; look "oil", "mud" or "sludge" gives the color), "dots": things carried, air or gas; no look: water words and a blue color draw water, the rest dots), count {from, to}, snap {axis, gap} (the piece breaks in two along its axis and the halves stay apart, tilted, until "<name>Back": a spring or cable that snaps), heat {color} (its shapes glow red-hot: a coil, an element, a brake disc), chill {color} (they frost over: a fridge's coils), burn (its flame shapes light and flicker), pump {axis, stroke, rate} (back and forth while on: a piston, a compressor, an agitator), shake {amp, rate} (a jitter while on: a drum spinning fast), follow {of, ratio} (it turns whenever node "of" turns, times ratio: a meshing gear -r1/r2, a belt-driven pulley r1/r2, rear wheels steering -0.3; no verb needed), crank {of, axis, throw} (it slides along axis by throw x sine of node "of"'s turn: a piston on a crankshaft; no verb needed).
 - Machines (an appliance, an engine, a car's insides): build them cut open the way the real one is, with the working parts
-  in front where the camera sees them (no front panel or door in the way, or glass); real sizes in metres (indoors the code
+  in front where the camera sees them (no front panel or door in the way, or glass). A door that opens is a swing on a
+  node whose pivot is the hinge: a dishwasher or oven door is a node at its bottom front edge, its panel built up from
+  there (panel at [0, h/2, t/2]), move {"name":"open","type":"swing","axis":"x","angle":85} (it opens down toward the
+  camera: play it on the hook before the insides act, "openBack" closes it at the end); a fridge or washer door hinged
+  on its left edge: the node at the hinge, the panel offset +x, axis "y", angle -100 (+100 for a right hinge). Real sizes in metres (indoors the code
   builds a small machine bigger so it reads); one thing driving the next (a motor's spin, a belt, a follow, a crank), so
   a single verb sets the whole chain moving. A beam shape (a light ray across an opening) is r 0.06 or more, and the box it comes from (a sensor, an opener) at least 0.5 m, so it reads at phone size. Sections that roll up a door's tracks: a track move on EACH section along the track's path (up, then back along the ceiling), not one swing.
 - Rules (code checks them): pos y is the floor top and the lowest shape rests on it (or the part sits in the cut); every

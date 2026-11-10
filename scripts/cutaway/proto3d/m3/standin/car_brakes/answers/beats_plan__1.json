@@ -232,12 +232,12 @@
           "shape": "box",
           "size": [
            0.3,
-           4.4,
+           6.4,
            0.3
           ],
           "at": [
            0,
-           2.2,
+           3.2,
            -1.05
           ],
           "look": "metal",
@@ -252,7 +252,7 @@
           ],
           "at": [
            0,
-           4.32,
+           6.32,
            -0.85
           ],
           "look": "metal",
@@ -520,20 +520,20 @@
         "parent": "stand",
         "at": [
          0,
-         3.7,
+         5.7,
          -0.75
         ],
         "shapes": [
          {
           "shape": "box",
           "size": [
-           0.62,
-           0.34,
-           0.5
+           0.85,
+           0.45,
+           0.6
           ],
           "at": [
            0,
-           0.17,
+           0.225,
            0
           ],
           "look": "wood",
@@ -548,7 +548,7 @@
           ],
           "at": [
            0,
-           0.6,
+           0.7,
            -0.1
           ],
           "look": "metal",
@@ -561,7 +561,7 @@
           "type": "slide",
           "to": [
            0,
-           -1.38,
+           -3.37,
            0
           ]
          }
@@ -1041,11 +1041,11 @@
      "params": {
       "type": "spark",
       "at": [
-       0.75,
-       2.4,
-       -2.45
+       0.6,
+       2.45,
+       -2.4
       ],
-      "size": 0.5
+      "size": 1
      }
     },
     {
@@ -1142,7 +1142,7 @@
      "s": "hook",
      "shows": {
       "p": "brake",
-      "does": "a wooden block slides a long way down from the top of the stand and presses on the spinning tyre"
+      "does": "a wooden block starts high at the top of a tall stand, slides a long way down and presses on the spinning tyre, sparks fly where it touches"
      },
      "do": [
       {
@@ -1168,7 +1168,16 @@
        "v": "press",
        "w": "press",
        "o": 0,
-       "d": 1,
+       "d": 2.2,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "rub",
+       "v": "start",
+       "w": "tire",
+       "o": 0,
+       "d": 0,
        "amp": 1,
        "ch": ""
       }

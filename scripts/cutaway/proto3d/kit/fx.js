@@ -80,15 +80,21 @@ export function fx(ctx, p, api) {
     }[type] ?? { n: 10, col: "#ffffff" };
     // (a colour of its own: brown sewage drips, amber fuel, black smoke; the owner's list of 2026-11-07)
     if (typeof p.color === "string") { spec.col = p.color; spec.col2 = null; }
+    // (look "drops": water as small clear droplets stretched along their flight, not blue balls; the owner on the real
+    // dishwasher run, 2026-11-10. Only when asked for: a premade video keeps its approved splash)
+    const drops = p.look === "drops" && (type === "splash" || type === "drip");
+    if (drops) spec.n = type === "splash" ? 30 : 14;
     const P = Array.from({ length: spec.n }, (_, i) => {
       let geo;
       if (type === "swirl") { const curve = new THREE.EllipseCurve(0, 0, 1.1 * s, 0.7 * s, i * 2.1, i * 2.1 + 1.6); geo = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(curve.getPoints(16).map((q) => new THREE.Vector3(q.x, 0, q.y))), 24, 0.06 * s, 6); }
       else if (type === "frost") geo = new THREE.OctahedronGeometry(0.09 * s * (0.6 + rand(i, 3)), 0);
       else if (type === "spark") geo = new THREE.BoxGeometry(0.02 * s, 0.22 * s, 0.02 * s);
       else if (type === "fire") geo = new THREE.SphereGeometry(0.16 * s, 12, 10);
+      else if (drops) geo = new THREE.SphereGeometry(0.03 * s * (0.7 + rand(i, 3) * 0.6), 10, 8);
       else geo = new THREE.SphereGeometry((type === "smoke" ? 0.28 : type === "motes" ? Math.min(0.075, 0.1 / Math.max(s, 0.01)) : 0.07) * s, 10, 8);
       const mat = spec.glow ? glowM(i % 2 && spec.col2 ? spec.col2 : spec.col, 0.9) : solid(spec.col, type === "frost" ? 0.3 : 0.6);
       // (smoke with more contrast against a pale sky: darker and denser, unless it was given a colour)
+      if (drops) { mat.transparent = true; mat.opacity = 0.72; mat.roughness = 0.08; mat.depthWrite = false; if (typeof p.color !== "string") mat.color.set("#bfe4ff"); }
       if (type === "smoke") { mat.transparent = true; mat.opacity = 0.78; mat.depthWrite = false; if (typeof p.color !== "string") mat.color.set("#55585e"); }
       return { m: mesh(geo, mat), ph: rand(i, 1), a: rand(i, 2) * Math.PI * 2, k: rand(i, 4) };
     });
@@ -102,6 +108,13 @@ export function fx(ctx, p, api) {
         m.visible = true;
         if (type === "fire") { m.position.set(Math.cos(q.a) * 0.35 * s * (1 - f), f * 0.9 * s, Math.sin(q.a) * 0.2 * s); m.scale.set(1 - f * 0.7, 1.6 - f, 1 - f * 0.7); }
         else if (type === "smoke") { m.position.set(Math.sin(f * 3 + q.a) * 0.3 * s, f * 2.2 * s, 0.1); m.scale.setScalar(0.5 + f * 1.6); m.material.opacity = 0.6 * (1 - f) * on; }
+        else if (drops) {
+          // stretched along the way it flies: up and out, then down (a splash); straight down (a drip)
+          const d = f, v = type === "splash" ? [Math.cos(q.a) * 0.9, 1.6 - 4.4 * d, Math.sin(q.a) * 0.5] : [0, -1.6, 0];
+          if (type === "splash") m.position.set(Math.cos(q.a) * d * 0.9 * s, d * 1.6 * s - d * d * 2.2 * s, Math.sin(q.a) * d * 0.5 * s + 0.1);
+          else m.position.set((q.k - 0.5) * 0.4 * s, -f * 1.6 * s, 0.05);
+          const len = Math.hypot(...v) || 1; m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(v[0] / len, v[1] / len, v[2] / len)); m.scale.set(1, 1.8 + Math.min(1.6, len * 0.6), 1);
+        }
         else if (type === "drip") { m.position.set((q.k - 0.5) * 0.4 * s, -f * 1.6 * s, 0.05); m.scale.set(1, 1.6, 1); }
         else if (type === "splash") { const d = f; m.position.set(Math.cos(q.a) * d * 0.9 * s, d * 1.6 * s - d * d * 2.2 * s, Math.sin(q.a) * d * 0.5 * s + 0.1); }
         else if (type === "spark") { m.position.set(Math.cos(q.a) * f * 0.8 * s, Math.sin(q.a) * f * 0.8 * s, 0.1); m.rotation.z = q.a + Math.PI / 2; m.visible = f < 0.6; }

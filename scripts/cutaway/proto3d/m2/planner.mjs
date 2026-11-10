@@ -21,6 +21,7 @@ import { VERBS } from "./verbs.js";
 import { classifyTopic, normTopic, PREMADE, premadeByKey } from "../../../../supabase/functions/_shared/cutaway/topics.js";
 import { focusOf, union } from "./focus.js";
 import { KIND_DOCS } from "./catalog.js";
+import { KITCHEN_APPLIANCE, LAUNDRY_APPLIANCE } from "./layoutRules.js";
 import { modelMatches, wordsOf } from "./models.js";
 
 // the bookkeeping bugs met while the current plan is made (planTopic starts a new list; bookkeeping.js): a crashed
@@ -70,9 +71,10 @@ WHAT THE SETTINGS REALLY CONTAIN (promise only what is there):
 - street: ONE straight road going away from the camera, one crosswalk, one signal on its corner, a sidewalk with shop fronts. Cars drive one way along that road: they arrive, stop, queue nose to tail at the line, wait, drive off, and can bump the car ahead. There is no cross road or second road, no turning, no pedestrians: say "cars pile up at the red", never "on both roads" or "the cross street".
 - yard: a house, a lawn, a fence, trees and the ground cut open in section below; rain, water and pipes.
 - garage: a garage with one wide opening on a driveway, a car, shelves inside.
-- room: a room with a floor (the basement below in section), a wall with a window, an armchair.
+- room: a room with a floor (the basement below in section), a panelled wall with a window and a picture, an armchair; for indoor things that are not kitchen or laundry appliances (an air conditioner, a radiator, a toilet, a sump pump, a smoke detector).
 - car wash: a lot with a wash bay, a car going through.
-- kitchen: a kitchen in section (counters, cabinets, a splashback, a window); the appliance the topic is about stands in the middle, cut open so its working parts show (burners and flames, a heating coil, a drum, a motor, a fan, coils and pipes).
+- kitchen: a kitchen in section (counters, wall cabinets, a tiled wall, a window with daylight); the setting of every kitchen appliance (a dishwasher, a fridge, a stove or oven, a microwave, a kettle, a toaster, a coffee machine); the appliance the topic is about stands in the middle, cut open so its working parts show (burners and flames, a heating coil, a drum, a motor, a fan, coils and pipes).
+- laundry room: the kitchen built as a laundry / utility room (tiles, cabinets, open shelves with bottles and towels, a utility sink); the setting of a washing machine, a dryer, a water heater, a boiler, standing in the middle cut open.
 - workshop: a home workshop (a concrete floor, a pegboard tool wall, a workbench, shelves); a car or a machine stands in the middle, cut open so its working parts show (pistons and a crankshaft, gears, wheels and steering, brakes, air bags).
 The account's formula:
 
@@ -210,7 +212,7 @@ const propWords = (setting) => (SETTING_PROPS[setting] ?? []).map((k) => PROP_WO
 export function finishPropsLine(topic) {
   const t = ` ${normTopic(topic)} `;
   const pre = premadeByKey(classifyTopic(topic).premade ?? "") ?? PREMADE.find((p) => p.setting && p.aliases.some((x) => t.includes(` ${x} `)));
-  const setting = pre?.setting ?? (INDOOR.test(topic) ? "room" : null);
+  const set0 = pre?.setting ?? topicSetting(topic), setting = set0 === "laundry" ? "kitchen" : set0;
   // (the finish completes the thing itself: the topic props first; the setting's own props are not finishing touches)
   if (setting) return `The "Add ..." finishing line completes the thing itself (topic props: ${TOPIC_WORDS}; a lid, a cover, a car arriving (only in a garage, a street or a car wash), the grass back on top); never generic decor (a trash can, a bench, a planter, a potted plant, a toolbox). Nothing out of place in this setting: ${propWords(setting)} are its scenery, not finishing touches.`;
   // (the same rule as a known setting: the garage list, a toolbox and a trash can, was offered here and then refused as
@@ -220,14 +222,25 @@ export function finishPropsLine(topic) {
 
 // topics that happen inside a home go in the room setting (its cut below the floor is the basement)
 export const INDOOR = /\b(basement|sump|crawl ?space|indoor|inside (a|the|your) (house|home)|water heater|boiler|furnace|radiator|air condition\w*|\bac unit|heat pump|toilet|sink|shower|bathtub|dishwasher|smoke detector|fireplace|chimney|floor heating|underfloor)\b/i;
-// the setting a topic belongs in: a premade topic's own (topics.js), else the room for indoor topics
+// the setting steer (owner, 2026-11-10: the real dishwasher run went to the plain room, "a flat orange wall"): a kitchen
+// appliance (a dishwasher, a fridge, a stove or oven, a microwave, a kettle, a toaster) goes to the kitchen; a washing
+// machine, a dryer, a water heater or a boiler to the laundry / utility room (the kitchen with use "laundry"); other
+// indoor topics to the room. layoutRules.js moves a kitchen appliance planned in the room anyway (free fallback).
+export function topicSetting(topic) {
+  const t = String(topic ?? "");
+  if (KITCHEN_APPLIANCE.test(t)) return "kitchen";
+  if (LAUNDRY_APPLIANCE.test(t) || /\b(water heaters?|hot water tanks?|boilers?)\b/i.test(t)) return "laundry";
+  return INDOOR.test(t) ? "room" : null;
+}
+// the setting a topic belongs in: a premade topic's own (topics.js), else the kitchen, laundry room or room (topicSetting)
 export function settingHint(topic) {
   // a premade topic, or a custom one that names it ("how a traffic light knows your car is there")
   const t = ` ${normTopic(topic)} `;
   const pre = premadeByKey(classifyTopic(topic).premade ?? "") ?? PREMADE.find((p) => p.setting && p.aliases.some((x) => t.includes(` ${x} `)));
-  const type = pre?.setting ?? (INDOOR.test(topic) ? "room" : null);
+  const type = pre?.setting ?? topicSetting(topic);
   if (!type) return "";
-  return ` This topic belongs in the ${type} setting: use world.backdrop {type: "${type}"}${type === "room" ? " (the cut below its floor is the basement)" : ""}, and set house, worker, moreTrees and road to false. It is about the ${pre?.topic ?? "thing"} itself, as people meet it there.`;
+  const use = type === "laundry" ? "world.backdrop {type: \"kitchen\", use: \"laundry\"} (the kitchen built as a laundry / utility room)" : `world.backdrop {type: "${type}"}${type === "room" ? " (the cut below its floor is the basement)" : type === "kitchen" ? " (the appliance stands in front of the gap between the counters)" : ""}`;
+  return ` This topic belongs in the ${type === "laundry" ? "laundry room" : type} setting: use ${use}, and set house, worker, moreTrees and road to false. It is about the ${pre?.topic ?? "thing"} itself, as people meet it there.`;
 }
 /**
  * The saved parts of the kit's library (parts designed for earlier videos that passed every check: the kit grows by
@@ -515,9 +528,10 @@ WHAT THE SETTINGS REALLY CONTAIN (plan only what is there):
 - street: ONE straight road going away from the camera, one crosswalk, one signal on its corner, a sidewalk with shop fronts. Cars drive one way along that road: they arrive, stop, queue nose to tail at the line, wait, drive off, and can bump the car ahead. No cross road or second road, no turning, no pedestrians.
 - yard: a house, a lawn, a fence, trees and the ground cut open in section below; rain, water and pipes.
 - garage: a garage with one wide opening on a driveway, a car, shelves inside.
-- room: a room with a floor (the basement below in section), a wall with a window, an armchair.
+- room: a room with a floor (the basement below in section), a panelled wall with a window and a picture, an armchair; for indoor things that are not kitchen or laundry appliances (an air conditioner, a radiator, a toilet, a sump pump, a smoke detector).
 - car wash: a lot with a wash bay, a car going through.
-- kitchen: a kitchen in section (counters, cabinets, a splashback, a window); the appliance the topic is about stands in the middle, cut open so its working parts show (burners and flames, a heating coil, a drum, a motor, a fan, coils and pipes).
+- kitchen: a kitchen in section (counters, wall cabinets, a tiled wall, a window with daylight); the setting of every kitchen appliance (a dishwasher, a fridge, a stove or oven, a microwave, a kettle, a toaster, a coffee machine); the appliance the topic is about stands in the middle, cut open so its working parts show (burners and flames, a heating coil, a drum, a motor, a fan, coils and pipes).
+- laundry room: the kitchen built as a laundry / utility room (tiles, cabinets, open shelves with bottles and towels, a utility sink); the setting of a washing machine, a dryer, a water heater, a boiler, standing in the middle cut open.
 - workshop: a home workshop (a concrete floor, a pegboard tool wall, a workbench, shelves); a car or a machine stands in the middle, cut open so its working parts show (pistons and a crankshaft, gears, wheels and steering, brakes, air bags).
 No people doing things, no maps, no long text on screens, no outer space or the body.`;
 

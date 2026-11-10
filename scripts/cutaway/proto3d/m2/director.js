@@ -396,7 +396,8 @@ export function directCamera(layout, shots, marks) {
       // (not the "This is a…" line: its named part stays as big as "closer" made it; widening to the whole build shrank the
       // traffic light's controller from 65% to 12% of the width, and a failing name line stops the video; a premade template
       // keeps the shots the owner approved: its "This is a…" line as before)
-      if (layout.codeShots && !opening && s.at?.s !== "congrats" && (s.at?.s !== "name" || layout.template) && measureKey(layout, k.pos, k.tgt).subject < SUBJECT_FILL) {
+      // (nor a variety cut, variety.js: a detail of the spinning arm widened to the whole machine is no detail)
+      if (layout.codeShots && !opening && !s.variety && s.at?.s !== "congrats" && (s.at?.s !== "name" || layout.approved === true) && measureKey(layout, k.pos, k.tgt).subject < SUBJECT_FILL) {
         // (the part the sentence shows, with the shot's own focus: both stay in the frame)
         const shows = (layout.beats ?? []).find((x) => x.s === s.at?.s)?.shows, sp = shows && parts.get(String(shows.p));
         let spBox = null; try { spBox = sp ? focusOf(sp, layout.world?.cut) : null; } catch {}
@@ -443,7 +444,7 @@ export function directCamera(layout, shots, marks) {
       // (not the opening's own hold: its drift key keeps the opening's aim, high over the hook object to leave the card
       // band free, and moving it in to the build's 85% dropped the object out of the bottom of the frame: the real
       // dishwasher run's hook ended on the lid alone, 2026-11-10)
-      if (!layout.template && frames[0]?.opening && JSON.stringify(keys[i][2]) === JSON.stringify(keys[0][2])) continue;
+      if (layout.approved !== true && frames[0]?.opening && JSON.stringify(keys[i][2]) === JSON.stringify(keys[0][2])) continue;
       const k = { pos: keys[i][1], tgt: keys[i][2] }, r = projectBox(k.pos, k.tgt, mb);
       if (r.behind || r.w >= LOOK.mainFill - 0.02) continue;
       let best = null;
