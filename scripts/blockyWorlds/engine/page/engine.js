@@ -738,7 +738,7 @@ async function main() {
       ...(SIMPLE_LOOK && shot.focus === "group" && placed.length >= 2 ? { group: placed.filter((p) => PEOPLE[p.id]).map((p) => ({ pos: p.pos.clone(), h: PEOPLE[p.id].h })) } : {}),
       ...(establishShot ? { establish: true } : {}),
       // SIMPLE LOOK: a close look at the monster frames its eye (page/simple/monsters.js userData.eyes)
-      ...(SIMPLE_LOOK && shot.focus === "monster" && monster?.userData?.eyes?.length ? (() => { monster.updateMatrixWorld(true); const w = monster.userData.eyes[0].e.getWorldPosition(new THREE.Vector3()); const mp = monster.getWorldPosition(new THREE.Vector3()); w.x = mp.x; w.z = mp.z; return { monsterEye: w }; })() /* the monster turns to the lens after the framing: its centre line, at the eye's height */ : {}) };
+      ...(SIMPLE_LOOK && shot.focus === "monster" && monster?.userData?.eyes?.length ? (() => { monster.updateMatrixWorld(true); const w = monster.userData.eyes[0].e.getWorldPosition(new THREE.Vector3()); const mp = monster.getWorldPosition(new THREE.Vector3()); w.x = mp.x; w.z = mp.z; const hb = new THREE.Box3().setFromObject(monster.userData.head); return { monsterEye: w, monsterHead: { center: hb.getCenter(new THREE.Vector3()), size: hb.getSize(new THREE.Vector3()) } }; })() /* the monster turns to the lens after the framing: its centre line, at the eye's height */ : {}) };
     const nudge = guardNudge(si, shot, camType, fctx, placed, where, carried);
     frameShot(camType, { ...fctx, other: other?.clone(), t: lt, nudge });
     }

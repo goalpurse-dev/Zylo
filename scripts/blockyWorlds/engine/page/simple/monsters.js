@@ -33,33 +33,49 @@ export function makeMonster(spec = {}) {
   rbox(head, [1.5, 1.4, 1.3], [0, 0.7, 0], dark, 0.12);
   const one = Number(spec.eyes) === 1;
   const eyes = [];
-  const sclera = new THREE.MeshStandardMaterial({ color: "#f2ecd8", roughness: 0.35, emissive: "#fff2c8", emissiveIntensity: 0.12 }); // lit, never blown out: the iris is what glows
-  const iris = new THREE.MeshStandardMaterial({ color: glow, roughness: 0.3, emissive: glow, emissiveIntensity: 1.3 });
+  // THE EYE (owner 2026-11-10 review: "read as an EYE, not a lit window or a lamp"): ROUND parts (the town's windows are
+  // square), a pale sclera, a coloured iris ring, a dark pupil, a highlight, a soft rim glow; every emissive under the
+  // night bloom threshold (page/simple/post.js 1.4), so nothing blows out
+  const disc = (rad) => { const g = new THREE.CylinderGeometry(rad, rad, 0.05, 40); g.rotateX(Math.PI / 2); return g; };
+  const rimM = new THREE.MeshStandardMaterial({ color: glow, roughness: 0.5, emissive: glow, emissiveIntensity: 0.55 });
+  const socketM = mat("#0a0c14", { rough: 0.6 });
+  const sclera = new THREE.MeshStandardMaterial({ color: "#fff4cf", roughness: 0.35, emissive: "#fff4cf", emissiveIntensity: 0.38 });
+  const iris = new THREE.MeshStandardMaterial({ color: "#ff8a1f", roughness: 0.35, emissive: "#ff8a1f", emissiveIntensity: 0.8 });
+  const irisIn = new THREE.MeshStandardMaterial({ color: "#ffd23a", roughness: 0.35, emissive: "#ffd23a", emissiveIntensity: 0.7 });
   const pupil = mat("#050508", { rough: 0.3 });
-  const lidM = mat("#151a28", { rough: 0.6 });
+  const shine = new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 0.2, emissive: "#ffffff", emissiveIntensity: 1.0 });
+  const lidM = mat("#56648c", { rough: 0.6 }), lashM = mat("#07080d", { rough: 0.5 });
+  const mesh = (geo, mt, z, parent, x = 0, y = 0) => { const o = new THREE.Mesh(geo, mt); o.position.set(x, y, z); parent.add(o); return o; };
   const makeEye = (x, y, r) => {
     const e = new THREE.Group(); e.position.set(x, y, 0.66); head.add(e);
-    rbox(e, [r * 2.1, r * 1.8, 0.1], [0, 0, 0], lidM, 0.06); // the socket rim
-    const ball = rbox(e, [r * 1.9, r * 1.6, 0.14], [0, 0, 0.04], sclera, r * 0.5);
-    const ir = new THREE.Group(); ir.position.z = 0.12; e.add(ir);
-    rbox(ir, [r * 0.95, r * 0.95, 0.06], [0, 0, 0], iris, r * 0.3);
-    rbox(ir, [r * 0.46, r * 0.62, 0.06], [0, 0, 0.03], pupil, r * 0.18); // a tall slit-ish pupil
-    box(ir, [r * 0.16, r * 0.16, 0.02], [r * 0.18, r * 0.2, 0.065], mat("#ffffff", { rough: 0.2, emissive: "#ffffff", ei: 1.5 }), { cast: false }); // the shine
-    const top = new THREE.Group(); top.position.y = r * 0.8; e.add(top); rbox(top, [r * 2.0, r * 1.6, 0.12], [0, r * 0.8, 0.22], lidM, 0.05);
-    const bot = new THREE.Group(); bot.position.y = -r * 0.8; e.add(bot); rbox(bot, [r * 2.0, r * 1.0, 0.12], [0, -r * 0.5, 0.22], lidM, 0.05);
-    eyes.push({ e, ball, ir, top, bot, r });
+    mesh(disc(r * 1.2), rimM, 0.0, e); // the soft rim glow
+    mesh(disc(r * 1.1), socketM, 0.02, e);
+    const ball = mesh(disc(r), sclera, 0.05, e);
+    const ir = new THREE.Group(); ir.position.z = 0.08; e.add(ir);
+    mesh(disc(r * 0.56), iris, 0, ir); mesh(disc(r * 0.4), irisIn, 0.01, ir); mesh(disc(r * 0.26), pupil, 0.02, ir);
+    mesh(disc(r * 0.1), shine, 0.03, ir, r * 0.17, r * 0.18); mesh(disc(r * 0.05), shine, 0.03, ir, -r * 0.12, -r * 0.15);
+    // lids: a lighter block than the head (top lid down to just under the middle, bottom lid up to meet it) + the lash line
+    const top = new THREE.Group(); top.position.set(0, r * 1.12, 0.22); e.add(top);
+    box(top, [r * 2.3, r * 1.17, 0.06], [0, -r * 0.585, 0], lidM, { cast: false });
+    const bot = new THREE.Group(); bot.position.set(0, -r * 1.12, 0.22); e.add(bot);
+    box(bot, [r * 2.3, r * 1.07, 0.06], [0, r * 0.535, 0], lidM, { cast: false });
+    const lash = new THREE.Group(); lash.position.set(0, -r * 0.05, 0.27); e.add(lash);
+    box(lash, [r * 2.0, r * 0.09, 0.03], [0, 0, 0], lashM, { cast: false });
+    for (const k of [-2, -1, 0, 1, 2]) box(lash, [r * 0.06, r * 0.22, 0.03], [k * r * 0.4, -r * 0.14, 0], lashM, { cast: false, rot: [0, 0, k * 0.18] });
+    eyes.push({ e, ball, ir, top, bot, lash, r });
   };
   if (one) makeEye(0, 0.72, 0.58); else { makeEye(-0.36, 0.78, 0.26); makeEye(0.36, 0.78, 0.26); }
   // two little horns of block
   for (const s of [-1, 1]) { const h = rbox(head, [0.2, 0.5, 0.2], [s * 0.55, 1.6, -0.1], dark2, 0.04); h.rotation.z = -s * 0.3; }
   // the pane the eye presses on (press state)
   const pane = new THREE.Group(); pane.position.set(0, 0.72, 1.05); head.add(pane); pane.visible = false;
-  const frameM = mat("#ffffff", { rough: 0.7 });
-  for (const [w, h, x, y] of [[1.9, 0.12, 0, 0.85], [1.9, 0.12, 0, -0.85], [0.12, 1.8, -0.9, 0], [0.12, 1.8, 0.9, 0], [0.08, 1.7, 0, 0]]) box(pane, [w, h, 0.1], [x, y, 0], frameM);
-  const glass = new THREE.Mesh(new THREE.PlaneGeometry(1.7, 1.6), new THREE.MeshStandardMaterial({ color: "#bfe6ff", roughness: 0.1, transparent: true, opacity: 0.28 }));
+  const frameM = mat("#fff6e6", { rough: 0.7 });
+  for (const [w, h, x, y] of [[2.3, 0.2, 0, 1.0], [2.3, 0.2, 0, -1.0], [0.2, 2.2, -1.05, 0], [0.2, 2.2, 1.05, 0], [0.08, 1.85, 0, 0], [1.95, 0.08, 0, 0]]) box(pane, [w, h, 0.12], [x, y, 0], frameM);
+  box(pane, [2.6, 0.14, 0.4], [0, -1.15, 0.12], frameM); // the sill
+  const glass = new THREE.Mesh(new THREE.PlaneGeometry(1.95, 1.85), new THREE.MeshStandardMaterial({ color: "#cfeaff", roughness: 0.05, transparent: true, opacity: 0.16 }));
   pane.add(glass);
   // a soft light of its own (the eye lights what it looks at)
-  const eyeLight = new THREE.PointLight(glow, 1.4, 10, 1.6); eyeLight.position.set(0, 0.72, 3.2); head.add(eyeLight); // well in front: it lights what the eye looks at, never the eye itself
+  const eyeLight = new THREE.PointLight(glow, 1.0, 10, 1.6); eyeLight.position.set(0, 0.72, 3.2); head.add(eyeLight); // well in front: it lights what the eye looks at, never the eye itself
   root.traverse((o) => { if (o.isMesh) { o.castShadow = o !== glass; o.receiveShadow = true; } });
   root.userData = { kind: "monster", height: H, body, torso, head, arms, legs, eyes, pane, one, iris, eyeLight, simple: true };
   return root;
@@ -68,7 +84,7 @@ export const monsterHeight = (m) => m.userData.height;
 
 const ease = (x) => { x = Math.min(1, Math.max(0, x)); return x * x * (3 - 2 * x); };
 /** lids: 0 = open, 1 = shut */
-function lids(u, k) { for (const e of u.eyes) { e.top.position.y = e.r * 0.8 - k * e.r * 1.12; e.bot.position.y = -e.r * 0.8 + k * e.r * 0.5; } }
+function lids(u, k) { for (const e of u.eyes) { const s = Math.max(0.001, k); e.top.scale.y = s; e.bot.scale.y = s; e.top.visible = e.bot.visible = k > 0.01; e.lash.visible = k > 0.9; } }
 /**
  * animateMonster(m, state, t, { eye, eyeAt }): the body state (lurk / reach / reveal / flee) + the eye's state.
  * Deterministic in t.
@@ -90,8 +106,8 @@ export function animateMonster(m, state = "lurk", t = 0, opts = {}) {
   const at = Number(opts.eyeAt) || 0;
   let lid = 0;
   u.pane.visible = false;
-  for (const e of u.eyes) e.ir.position.set(0, 0, 0.12);
-  u.iris.emissiveIntensity = 1.3 + 0.35 * Math.sin(t * 2.4);
+  for (const e of u.eyes) e.ir.position.set(0, 0, 0.08);
+  u.iris.emissiveIntensity = 0.8 + 0.2 * Math.sin(t * 2.4);
   switch (eye) {
     case "twitch": {
       lid = 0.25 + 0.2 * Math.abs(Math.sin(t * 31)) * (Math.sin(t * 5.3) > 0 ? 1 : 0.3);
@@ -109,8 +125,8 @@ export function animateMonster(m, state = "lurk", t = 0, opts = {}) {
       const k = ease((t - at + 0.2) / 0.5);
       torso.rotation.x = 0.22 + 0.35 * k; head.rotation.x = -0.35 * k; head.position.z = 0.05 + 0.25 * k;
       head.scale.set(1 + 0.12 * k, 1 + 0.12 * k, 1 - 0.18 * k); // squashed against the glass
-      u.pane.visible = true; u.pane.position.z = 1.05 - 0.28 * k;
-      for (const e of u.eyes) e.ir.position.z = 0.12 + 0.05 * k;
+      u.pane.visible = true; u.pane.position.z = 1.05 - 0.2 * k;
+      for (const e of u.eyes) e.ir.position.z = 0.08 + 0.02 * k;
       break;
     }
     default: { // stare: wide, still, a slow lean in; the pupil holds the lens

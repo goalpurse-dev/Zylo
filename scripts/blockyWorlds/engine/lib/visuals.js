@@ -26,7 +26,7 @@ export const OBJECT_CATALOG = Object.freeze({
   car: { aliases: ["car", "cars", "alarm", "car alarm", "honk", "horn"], states: ["alarm"], big: false },
   photo_set: { aliases: ["photo", "photos", "picture", "pictures", "camera", "school photo", "portrait", "selfie"], states: [], big: false },
   crib: { aliases: ["crib", "cribs", "cradle", "babies"], states: [], big: false },
-  house_front: { aliases: ["house", "houses", "home", "window", "windows", "lights", "roof", "roofs", "rooftop", "rooftops", "chimney", "chimneys", "attic", "attics", "windowsill", "windowsills", "shutters", "front door", "garage", "garages"], states: ["dark", "lit", "open"], big: true },
+  house_front: { aliases: ["house", "houses", "home", "window", "windows", "glass", "pane", "panes", "windowpane", "windowpanes", "lights", "roof", "roofs", "rooftop", "rooftops", "chimney", "chimneys", "attic", "attics", "windowsill", "windowsills", "shutters", "front door", "garage", "garages"], states: ["dark", "lit", "open"], big: true },
   stories_book: { aliases: ["story", "stories", "book", "books", "storybook", "tale", "tales"], states: [], big: false },
 });
 
@@ -38,7 +38,7 @@ const BASE_HELD = { sock: "sock", socks: "sock", flashlight: "flashlight", torch
   bag: "bag", sack: "bag", purse: "bag", key: "key", keys: "key", ball: "ball", balls: "ball", box: "box", boxes: "box", present: "box", presents: "box", gift: "box", gifts: "box",
   package: "box", parcel: "box", bread: "bread", loaf: "bread", loaves: "bread", roll: "bread", rolls: "bread", whistle: "whistle", tissue: "tissues", tissues: "tissues",
   camera: "camera", notebook: "book", diary: "book", journal: "book", string: "string", yarn: "string", thread: "string", note: "paper", notes: "paper", map: "paper", maps: "paper",
-  umbrella: "umbrella", glass: "cup", shoebox: "box", shoeboxes: "box", crate: "box", crates: "box", lostandfound: "box", lantern: "lantern", lanterns: "lantern", rope: "rope", ropes: "rope", cup: "cup", cups: "cup", mug: "cup", mugs: "cup", coffee: "cup", tea: "cup" };
+  umbrella: "umbrella", shoebox: "box", shoeboxes: "box", crate: "box", crates: "box", lostandfound: "box", lantern: "lantern", lanterns: "lantern", rope: "rope", ropes: "rope", cup: "cup", cups: "cup", mug: "cup", mugs: "cup", coffee: "cup", tea: "cup" };
 export const HOLDABLE = new Set([...Object.keys(BASE_HELD), ...[...HELD_INDEX.keys()].filter((w) => !/ /.test(w))]);
 /**
  * VERB OVER NOUN (turtle run 7b4c0d8b): a noun the line only perceives ("I hear the boots", "saw the torches") or the

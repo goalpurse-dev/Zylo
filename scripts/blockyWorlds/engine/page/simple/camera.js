@@ -61,14 +61,21 @@ export function frameShot(type, ctx) {
  *  eye's world point): low = from below the eye, the head + shoulders against the sky; medium / closeup = level with it */
 function frameEye(type, ctx) {
   const { THREE, camera, set, t = 0, dur = 1, seed = 1 } = ctx;
-  const eye = ctx.monsterEye.clone(), fov = 40, span = type === "closeup" ? 2.2 : type === "medium" ? 3.4 : 4.6;
-  const A = angleOf(seed), side = (set?.camDir ?? new THREE.Vector3(0, 0, 1)).clone().setY(0).normalize().applyAxisAngle(new THREE.Vector3(0, 1, 0), ((Math.max(-30, Math.min(30, A.yaw ?? 0))) * Math.PI) / 180);
+  // the WHOLE head (+ the pane when it presses) with the eye in the middle and a little sky above (owner review)
+  const hd = ctx.monsterHead ?? { center: ctx.monsterEye.clone(), size: new THREE.Vector3(1.6, 1.6, 1.4) };
+  const aspect = camera.aspect || 9 / 16, fov = 40, tanV = Math.tan((fov * DEG) / 2);
+  const hw = Math.max(hd.size.x, hd.size.z);
+  // vertical span: the head 40-55 % of the frame height, and its width inside 85 % of the frame width
+  const span = Math.max(hd.size.y / (type === "closeup" ? 0.5 : type === "medium" ? 0.42 : 0.34), hw / (0.85 * aspect));
+  const A = angleOf(seed), side = (set?.camDir ?? new THREE.Vector3(0, 0, 1)).clone().setY(0).normalize().applyAxisAngle(new THREE.Vector3(0, 1, 0), ((Math.max(-25, Math.min(25, A.yaw ?? 0))) * Math.PI) / 180);
   const k = ease(Math.min(1, Math.max(0, t / Math.max(dur, 1e-3))));
-  const dist = (span / 2 / Math.tan((fov * DEG) / 2)) * (1 - 0.07 * k); // a slow push into the eye
-  const p = eye.clone().addScaledVector(side, dist); p.y = eye.y - (type === "low" ? 0.7 : 0.15);
+  const dist = (span / 2 / tanV + hd.size.z / 2) * (1 - 0.06 * k); // a slow push into the eye
+  const eyeY = ctx.monsterEye?.y ?? hd.center.y;
+  const aimY = eyeY + span * 0.09; // the eye a touch below the centre: the head top + a strip of sky above
+  const p = hd.center.clone().addScaledVector(side, dist); p.y = eyeY - (type === "low" ? 0.6 : 0.1);
   if (set?.bounds?.length && !set.bounds.some((b) => b.containsPoint(p))) { let best = null, bd = Infinity; for (const b of set.bounds) { const q = b.clampPoint(p, new THREE.Vector3()); const d = q.distanceTo(p); if (d < bd) { bd = d; best = q; } } if (best) p.copy(best); }
   camera.position.copy(p); camera.fov = fov; camera.near = 0.1; camera.far = Math.max(camera.far, 3000); camera.updateProjectionMatrix();
-  camera.up.set(0, 1, 0); camera.lookAt(eye.x, eye.y - span * 0.14, eye.z); // the eye in the upper third, the hunched body below camera.updateMatrixWorld();
+  camera.up.set(0, 1, 0); camera.lookAt(hd.center.x, aimY, hd.center.z); camera.updateMatrixWorld();
   return camera;
 }
 
