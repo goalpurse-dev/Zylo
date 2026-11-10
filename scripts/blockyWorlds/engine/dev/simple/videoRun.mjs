@@ -75,12 +75,13 @@ if (!fs.existsSync(path.join(out, "timeline.json"))) {
   const s = await rp.wait(id, { maxSec: 900, pollMs: 4000 });
   const b = billed(s);
   logSpend(out, `Blocky Worlds #2 video prepare ${id} (${s.status})`, b);
-  costs[costs.prepareRunpod != null ? "prepareRunpod2" : "prepareRunpod"] = b.usd;
+  const run = 1 + Object.keys(costs).filter((k) => /^runpod_prepare_rund+$/.test(k)).length; // every run ADDS its own entries (never overwrites)
+  costs[`runpod_prepare_run${run}`] = b.usd;
   const o = s.output ?? {};
   fs.writeFileSync(path.join(out, "prepare-result.json"), JSON.stringify({ status: s.status, error: s.error ?? null, output: o }, null, 1));
   if (o.voice?.costUsd != null && !o.voice?.reused) costs.voice = o.voice.costUsd;
   if (!o.voice && !haveTake) { const t = await st.get("take.json"); if (t) costs.voice = JSON.parse(t).costUsd ?? costs.voice; } // a failed prepare still bought the take
-  if (o.spend) { costs[haveDirection ? "directorRerun" : "director"] = o.spend.directorUsd ?? 0; costs.builder = o.spend.builderUsd ?? 0; costs.review = o.spend.reviewUsd ?? o.planned?.review?.costUsd ?? 0; }
+  if (o.spend) { if (o.spend.directorUsd) costs[`director_run${run}`] = o.spend.directorUsd; if (o.spend.builderUsd) costs[`builder_run${run}`] = o.spend.builderUsd; if (o.spend.reviewUsd) costs[`review_run${run}`] = o.spend.reviewUsd; }
   saveCosts();
   say(`prepare ${s.status}: billed ${b.seconds} s $${b.usd}; voice $${o.voice?.costUsd ?? "?"}; spend ${JSON.stringify(o.spend ?? null)}; spent so far $${spent().toFixed(4)}`);
   if (!(s.status === "COMPLETED" && o.ok)) { say(`STOPPED: prepare failed: ${o.code ?? ""} ${String(s.error ?? o.error ?? "").slice(0, 1500)}`); process.exit(1); }
