@@ -13,7 +13,8 @@ import { judgePrompt, judgeReasons, judgeSchema, judgeScriptPrompt, JUDGE_SYSTEM
 import { pickRecipe } from "./recipes.js";
 import { ANGLES, BROAD_SCRIPT_SYSTEM, broadScriptSchema, examplesBlock, PLAN_SYSTEM, planPrompt, planSchema } from "./broad.js";
 import { skeletonProblems } from "./skeleton.js";
-import { HYBRID_LINES_SYSTEM, HYBRID_PLAN_SYSTEM, hybridChecks, hybridLinesPrompt, hybridPlanPrompt, hybridPlanSchema, planCard, planNotes } from "./hybrid.js";
+import { HYBRID_LINES_SYSTEM, HYBRID_PLAN_SYSTEM, hybridChecks, hybridLinesPrompt, hybridLinesSchema, hybridPlanPrompt, hybridPlanSchema, planCard, planNotes, withParts } from "./hybrid.js";
+import { beatBudgets, plantedShare } from "./beatSheet.js";
 import { copyProblems, copyReasons } from "./antiCopy.js";
 import { examplesByIds } from "./referenceTexts.js";
 import { rankTopicIdeas, topicElements, topicProblems } from "./topic.js";
@@ -686,8 +687,9 @@ export async function writeHybridPlan({ apiKey = "", topic, recipe = null, examp
 /** Sonnet's lines from the plan (a fix: previous + the failed hard checks): { script, skeleton, costUsd, usage }. */
 export async function writeHybridLines({ apiKey = "", plan, topic, examples = [], lengthSec = 90, previous = null, failed = [], note = "", meter = null, model = HYBRID.lines.model, effort = HYBRID.lines.effort, maxTokens = HYBRID.lines.maxTokens, cache = true, ttl = HYBRID.cacheTtl, timeoutMs = 300_000 }) {
   const { system, user } = hybridLinesRequest({ plan, topic, examples, lengthSec, previous, failed, note });
-  const reply = await callJson({ apiKey, model, system, user, schema: broadScriptSchema(), effort, maxTokens, timeoutMs, meter, cache, ttl });
-  return { script: normalizeScript(reply.data), skeleton: reply.data?.skeleton ?? {}, costUsd: reply.costUsd, usage: reply.usage ?? null };
+  const reply = await callJson({ apiKey, model, system, user, schema: hybridLinesSchema(), effort, maxTokens, timeoutMs, meter, cache, ttl });
+  // the beat sheet (2026-11-10): each line's part follows from its beat; the beat map is the skeleton the checks read
+  return { script: normalizeScript(withParts(reply.data)), skeleton: reply.data?.map ?? reply.data?.skeleton ?? {}, costUsd: reply.costUsd, usage: reply.usage ?? null };
 }
 
 /** What a failed call was, for the caller (the app maps a balance failure to "paused", a cap to "busy"). */
@@ -701,7 +703,23 @@ const stoppedText = (e) => (e?.cap ? `money cap: ${e.message}` : `a paid call fa
 function trimHybrid({ script, skeleton, card, examples, lengthSec, checks }) {
   if (!checks.hard.some((p) => /^Too long:/.test(p))) return { script, checks, changes: [] };
   const run = (x) => hybridChecks({ script: x, skeleton, card, examples, lengthSec });
-  const t = trimScript(script, lengthSec, { check: (x) => ({ problems: run(x).hard, warnings: [] }), keep: (l) => Boolean(card?.prop) && l.part === "climax" && propReference(card.prop, l.text) !== null, anchors: [card?.twist, card?.prop, card?.topic, card?.twist_clue].filter(Boolean).join(" ") });
+  // never trimmed: the climax line that pays off the planted object (older drafts), a line that says the ally's planted
+  // line (beat sheet: its plant and its payoff), the save beat's lines
+  const planted = String(skeleton?.ally_line || card?.plantedLine || "");
+  // (2026-11-10 run: the trim cut "Baker Thimble threw a flour cloud...", so a neighbour lost his only named line, and
+  // "Then there's me" lost its "Then"): a line that names a planned character in the tour, the ally's or the adults'
+  // beat is kept whole, and so is "Then there's me"
+  const names = [...(card?.neighbourNames ?? []), ...(card?.adults ?? []), String(card?.ally ?? "").split(",")[0], ...(skeleton?.neighbours ?? []).map((n) => n?.name), skeleton?.ally_name]
+    .flatMap((nm) => String(nm ?? "").split(/\s+/)).map((w) => w.replace(/[^A-Za-z]/g, "")).filter((w) => /^[A-Z][a-z]{2,}/.test(w) && !/^(Mr|Mrs|Ms|Miss|Dr|Old|The|Captain|Mayor|Grandma|Grandpa|Aunt|Auntie|Uncle|Baker)$/.test(w));
+  const nameRe = names.length ? new RegExp(`\\b(${[...new Set(names)].join("|")})\\b`) : null;
+  // (topic 4 of the same run: 9 lines cut, among them "Pickle's bell is dented and cracked", the hero's worst-at-the-rule
+  // line): the "me" and ally beats are kept whole, and whole lines are counted per BEAT (each beat's budget, its first
+  // line kept, at least two lines left)
+  const beats = script.lines.some((l) => l.beat);
+  const frozen = (l) => /^then there's me\b/i.test(l.text) || l.beat === "me" || l.beat === "ally" || (Boolean(nameRe) && ["neighbours", "adults"].includes(l.beat) && nameRe.test(l.text));
+  const keep = (l) => (Boolean(card?.prop) && l.part === "climax" && propReference(card.prop, l.text) !== null) || Boolean(planted && plantedShare(planted, l.text) >= 0.5) || l.beat === "save";
+  const t = trimScript(script, lengthSec, { check: (x) => ({ problems: run(x).hard, warnings: [] }), keep, frozen, anchors: [card?.twist, card?.prop, card?.topic, card?.twist_clue, card?.flaw].filter(Boolean).join(" "),
+    ...(beats ? { groupOf: (l) => l.beat ?? l.part, budgets: Object.fromEntries(beatBudgets(lengthSec).map((b) => [b.id, b.words])) } : {}) });
   if (!t.changes.length) return { script, checks, changes: [] };
   const after = run(t.script);
   return after.hard.length < checks.hard.length ? { script: t.script, checks: after, changes: t.changes } : { script, checks, changes: [] };

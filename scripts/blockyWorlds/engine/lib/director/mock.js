@@ -44,7 +44,7 @@ const toks = (low) => low.replace(/[^a-z' -]/g, " ").split(/\s+/).filter(Boolean
 
 /** the lines the director reads: the script, or the idea card's fields as stand-in lines (topic-only runs) */
 export function linesOf({ script, idea }) {
-  if (script?.lines?.length) return script.lines.map((l) => ({ part: l.part ?? "", text: String(l.text ?? "") }));
+  if (script?.lines?.length) return script.lines.map((l) => ({ part: l.part ?? "", text: String(l.text ?? ""), ...(l.beat ? { beat: String(l.beat) } : {}) }));
   const i = idea ?? {};
   return [["rule", i.opener], ["tour", i.premise], ["tour", i.price], ...(i.examples ?? []).map((e) => ["tour", e]), ["me", i.narrator], ["me", i.prop ? `I always keep ${i.prop} with me.` : ""], ["discovery", i.teaser], ["climax", i.twist], ["closer", i.closer]]
     .filter(([, t]) => t && String(t).trim()).map(([part, text]) => ({ part, text: String(text) }));

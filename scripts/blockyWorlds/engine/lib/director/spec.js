@@ -21,7 +21,10 @@ export function productionSchema() {
   return O({
     summary: S,
     // the WORLD BIBLE's hints (lib/worldBible.js builds the full bible from them; enum-free on purpose, small)
-    bible: O({ creature_look: S, town_name: S, building_style: S, palette: A(S), streets: A(S), places: A(O({ name: S, kind: S })), landmarks: A(S) }),
+    // rule_visual (BEAT-SHEET 2026-11-10, owner: "THE STORY IS IN THE PICTURE"): the one visible parameter that shows the
+    // world's rule (house height, a cloud over each head), each named character's value and the hero's
+    bible: O({ creature_look: S, town_name: S, building_style: S, palette: A(S), streets: A(S), places: A(O({ name: S, kind: S })), landmarks: A(S),
+      rule_visual: O({ parameter: S, description: S, values: A(O({ who: S, shows: S })), hero: S }) }),
     worlds: A(O({ id: S, name: S, kind: E(WORLD_KINDS), base: E(BASE_SETS), description: S, creature: O({ species: S, relation: E(CREATURE_RELATIONS), heightM: N }), light: E(LIGHTS) })),
     // species: the animal of a kind "animal" cast member (a named pet / animal character at real size: "dog", "cat"); "" for people
     cast: A(O({ id: S, name: S, kind: E(CHAR_KINDS), role: E(ROLES), look: S, job: S, species: S })),
@@ -32,7 +35,8 @@ export function productionSchema() {
     effects: A(O({ id: S, kind: E(EFFECT_KINDS), target: S, into: S })),
     events: A(O({ id: S, kind: E(EVENT_KINDS), what: S, scope: E(["shot", "world"]) })),
     scaleMoments: A(O({ line: N, big: S, small: S })),
-    lines: A(O({ line: N, world: S, subject: S, who: A(S), action: S, needs: A(S), camera: E(CAMERA_BEATS), light: E(LIGHTS) })),
+    // ruleVisual: what the rule visual shows on this line ("Mr. Pell's house ten floors up"; "" on lines without it)
+    lines: A(O({ line: N, world: S, subject: S, who: A(S), action: S, needs: A(S), camera: E(CAMERA_BEATS), light: E(LIGHTS), ruleVisual: S })),
   });
 }
 
@@ -89,8 +93,9 @@ export function validateProduction(raw, { lineCount = null, lines = null } = {})
     const who = [...new Set((Array.isArray(l.who) ? l.who : []).map(slug).filter(keep))];
     const world = all.get(slug(l.world))?.id && worlds.some((w) => w.id === slug(l.world)) ? slug(l.world) : worlds[0].id;
     const subject = keep(l.subject) ? slug(l.subject) : (who[0] ?? needs[0] ?? "");
+    const rv = str(l.ruleVisual, 160);
     byLine.set(i, { line: i, world, subject, who, action: oneOf(l.action, ACTIONS, str(l.action, 20).toLowerCase().replace(/[^a-z_]/g, "") || "stand"),
-      needs, camera: oneOf(l.camera, CAMERA_BEATS, "normal"), light: oneOf(l.light, LIGHTS, worlds.find((w) => w.id === world)?.light ?? "day") });
+      needs, camera: oneOf(l.camera, CAMERA_BEATS, "normal"), light: oneOf(l.light, LIGHTS, worlds.find((w) => w.id === world)?.light ?? "day"), ...(rv ? { ruleVisual: rv } : {}) });
   }
   const outLines = [];
   for (let i = 0; i < n; i++) {
@@ -106,6 +111,9 @@ export function validateProduction(raw, { lineCount = null, lines = null } = {})
   const sl = (v, n, len = 40) => (Array.isArray(v) ? v : []).map((x) => str(x, len)).filter(Boolean).slice(0, n);
   const bible = { creature_look: str(b.creature_look, 120), town_name: str(b.town_name, 40), building_style: str(b.building_style, 120), palette: sl(b.palette, 8, 20), streets: sl(b.streets, 4),
     places: (Array.isArray(b.places) ? b.places : []).filter(isObj).map((p) => ({ name: str(p.name, 40), kind: str(p.kind, 20).toLowerCase() })).filter((p) => p.name).slice(0, 10), landmarks: sl(b.landmarks, 6) };
+  // the rule visual (optional; only when the director gave a parameter)
+  const rvb = isObj(b.rule_visual) ? b.rule_visual : {};
+  if (str(rvb.parameter, 80)) bible.rule_visual = { parameter: str(rvb.parameter, 80), description: str(rvb.description, 240), values: (Array.isArray(rvb.values) ? rvb.values : []).filter(isObj).map((v) => ({ who: str(v.who, 40), shows: str(v.shows, 160) })).filter((v) => v.who).slice(0, 8), hero: str(rvb.hero, 160) };
   return {
     production: { version: PRODUCTION_VERSION, summary: str(r.summary, 300), bible, worlds, cast, creatures, crowds, vehicles, props, effects, events, scaleMoments, lines: outLines },
     problems,

@@ -181,7 +181,8 @@ export function scriptPrompt({ idea, lengthSec, previous = null, note = "", beat
 /** A script as returned (or edited), cleaned: pausing punctuation out, the opener fixed when it's a near miss. */
 export function normalizeScript(raw) {
   const lines = (Array.isArray(raw?.lines) ? raw.lines : [])
-    .map((l) => ({ part: PART_IDS.includes(l?.part) ? l.part : "own", text: paceClean(l?.text) }))
+    // the hybrid writer's beat (beatSheet.js) rides along on the line; the part stays one of the seven
+    .map((l) => ({ part: PART_IDS.includes(l?.part) ? l.part : "own", text: paceClean(l?.text), ...(typeof l?.beat === "string" && /^[a-z]{2,12}$/.test(l.beat) ? { beat: l.beat } : {}) }))
     .filter((l) => l.text && l.text !== ".");
   if (lines.length) {
     const fixed = fixOpener(lines[0].text);
@@ -255,11 +256,14 @@ export function checkScript(script, lengthSec, kind = "written") {
  * The trim never goes under the band. Returns { script, words, changes: [{ index, from, to }], fits }.
  */
 const TRIM_LEAD = /^(?:and then|then|so)[,]?\s+(?=\S)/i;
-const TRIM_INNER = /\s+(?:really|very|just|actually|totally|literally)\b/gi;
+// lowercase only: a sentence's own first word stays (2026-11-10: "Just like that, he was gone" became "like that")
+const TRIM_INNER = /\s+(?:really|very|just|actually|totally|literally)\b/g;
 const SHARE_STOP = new Set("the and was were that this with from they them their then there into onto what when where have had has his her she him our out all one but not you your for are its it's i'm i'd didn't don't can't".split(" "));
 const keyWords = (t) => String(t ?? "").toLowerCase().replace(/[’]/g, "'").split(/[^a-z']+/).map((w) => w.replace(/'s$/, "")).filter((w) => w.length > 3 && !SHARE_STOP.has(w));
 const PRONOUN_START = /^(?:\S+\s+){0,2}(?:he|she|it|they|him|her|them|his|its|their)\b/i;
-export function trimScript(script, lengthSec, { check = (s) => checkScript(s, lengthSec, "written"), keep = () => false, anchors = "" } = {}) {
+// frozen(line, i): a line neither pass may touch, not even its filler words (the beat sheet's "Then there's me.");
+// groupOf / budgets: the groups whole lines are counted in (default the seven parts; the beat sheet passes its beats)
+export function trimScript(script, lengthSec, { check = (s) => checkScript(s, lengthSec, "written"), keep = () => false, frozen = () => false, anchors = "", groupOf = (l) => l.part, budgets = null } = {}) {
   const anchorWords = new Set(keyWords(anchors));
   const target = targetWords(lengthSec), hi = Math.round(target * BAND.written[1]), lo = Math.round(target * BAND.written[0]);
   const count = (ls) => ls.reduce((a, l) => a + wordCount(l.text), 0);
@@ -272,32 +276,33 @@ export function trimScript(script, lengthSec, { check = (s) => checkScript(s, le
   const ok = (ls) => check({ ...script, lines: ls }).problems.every((p) => lengthKey(p) || had.has(norm(p)));
   // 1. filler words
   for (let i = 1; i < lines.length - 1 && count(lines) > hi; i++) {
-    if (wordCount(lines[i].text) <= 3) continue;
+    if (wordCount(lines[i].text) <= 3 || frozen(lines[i], i)) continue;
     const t = lines[i].text.replace(TRIM_LEAD, "").replace(TRIM_INNER, "").replace(/^./, (c) => c.toUpperCase());
     if (t === lines[i].text || count(lines) - (wordCount(lines[i].text) - wordCount(t)) < lo) continue;
     const next = lines.map((l, k) => (k === i ? { ...l, text: t } : l));
     if (ok(next)) { changes.push({ index: i, from: lines[i].text, to: t }); lines = next; }
   }
   // 2. whole lines
-  const budget = Object.fromEntries(partBudgets(lengthSec).map((b) => [b.id, b.words]));
+  const budget = budgets ?? Object.fromEntries(partBudgets(lengthSec).map((b) => [b.id, b.words]));
+  const g = groupOf;
   const tried = new Set();
   while (count(lines) > hi) {
     const used = {};
-    for (const l of lines) used[l.part] = (used[l.part] ?? 0) + wordCount(l.text);
-    const firstOf = new Set(PART_IDS.map((p) => lines.findIndex((l) => l.part === p)));
+    for (const l of lines) used[g(l)] = (used[g(l)] ?? 0) + wordCount(l.text);
+    const firstOf = new Set([...new Set(lines.map(g))].map((p) => lines.findIndex((l) => g(l) === p)));
     const total = count(lines);
     // what dropping line i loses: words other lines share (set-ups, payoffs), the card's key words (twist, object) count
     // double, and a next line that leans on it with a pronoun ("...rang right after her") counts 2 more
     const shared = (i) => {
       const others = new Set(lines.flatMap((l, k) => (k === i ? [] : keyWords(l.text))));
       const own = keyWords(lines[i].text);
-      const lean = lines[i + 1]?.part === lines[i].part && PRONOUN_START.test(lines[i + 1].text) ? 2 : 0;
+      const lean = lines[i + 1] && g(lines[i + 1]) === g(lines[i]) && PRONOUN_START.test(lines[i + 1].text) ? 2 : 0;
       return own.filter((w) => others.has(w)).length + 2 * own.filter((w) => anchorWords.has(w)).length + lean;
     };
     const cands = lines.map((l, i) => ({ l, i, n: wordCount(l.text) }))
-      .filter(({ l, i, n }) => i > 0 && i < lines.length - 1 && !firstOf.has(i) && !keep(l, i) && !tried.has(l.text)
-        && lines.filter((m) => m.part === l.part).length > 2 && used[l.part] - n >= 0.6 * (budget[l.part] ?? 0) && total - n >= lo)
-      .map((c) => ({ ...c, over: (used[c.l.part] - (budget[c.l.part] ?? used[c.l.part])) / Math.max(1, budget[c.l.part] ?? 1), cost: shared(c.i) }))
+      .filter(({ l, i, n }) => i > 0 && i < lines.length - 1 && !firstOf.has(i) && !keep(l, i) && !frozen(l, i) && !tried.has(l.text)
+        && lines.filter((m) => g(m) === g(l)).length > 2 && used[g(l)] - n >= 0.6 * (budget[g(l)] ?? 0) && total - n >= lo)
+      .map((c) => ({ ...c, over: (used[g(c.l)] - (budget[g(c.l)] ?? used[g(c.l)])) / Math.max(1, budget[g(c.l)] ?? 1), cost: shared(c.i) }))
       .sort((a, b) => b.over - a.over || a.cost - b.cost || b.n - a.n);
     let done = false;
     for (const c of cands) {

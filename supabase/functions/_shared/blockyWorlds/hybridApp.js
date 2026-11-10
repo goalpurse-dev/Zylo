@@ -6,6 +6,7 @@
 // hybrid wrote (the saved plan, Sonnet only). Library ideas and the user's own scripts keep the beats -> script path.
 // The switch: BLOCKY_WORLDS_HYBRID=off falls back to the old path (default on).
 import { partLines } from "./script.js";
+import { BEAT_PART, beatBudgets } from "./beatSheet.js";
 
 export const APP_HYBRID = Object.freeze({
   // what the emergency cap check counts one write as (the 2026-11-08 run: $0.10-0.13 a script, $0.22 with a medium-effort
@@ -25,6 +26,11 @@ export function hybridCard(result, recipe) {
 
 /** The plan's beats in the beat-sheet shape the drafts keep (part, summary, shows, words, uses). */
 export function hybridBeats(plan, lengthSec) {
+  // the beat sheet (2026-11-10): a plan beat names its beat; its part (the engine's seven) follows from it
+  if ((plan?.beats ?? []).some((b) => b?.beat)) {
+    const bw = Object.fromEntries(beatBudgets(lengthSec).map((b) => [b.id, b.words]));
+    return plan.beats.map((b) => ({ part: BEAT_PART[b.beat] ?? "tour", beat: b.beat, summary: String(b.intent ?? ""), shows: String(b.shows ?? ""), words: bw[b.beat] ?? 0, uses: [] }));
+  }
   const words = Object.fromEntries(partLines(lengthSec).map((b) => [b.id, b.words]));
   return (plan?.beats ?? []).map((b) => ({ part: b.part, summary: String(b.intent ?? ""), shows: String(b.shows ?? ""), words: words[b.part] ?? 0, uses: [] }));
 }

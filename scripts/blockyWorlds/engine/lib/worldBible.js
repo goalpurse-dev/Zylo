@@ -350,7 +350,43 @@ export function buildWorldBible({ production = null, script = null, idea = null,
   // kind + the story's era / style (castle, cave, desert, neon city, harbour) + the weather
   const eraStyle = storyStyle(allText, [H.building_style, H.town_name, ...(H.landmarks ?? []), ...(P.worlds ?? []).flatMap((w) => [w?.name, w?.description])].filter((x) => typeof x === "string").join(" "));
   const places = placesOf(spots, { style: eraStyle, weather: wx?.weather ?? null, onCreature: !!creature?.townView, townText: style.text });
-  return { version: BIBLE_VERSION, seed, title: name, kind: creature ? "creature" : "town", creature, town, spots, sets, cast, townsfolk, creatures, props, time, lights, fixedLines, linePlace, style: eraStyle, places, outfitEra: era, ...(wx ?? {}) };
+  const ruleVisual = ruleVisualFor({ production: P, script, idea });
+  return { version: BIBLE_VERSION, seed, title: name, kind: creature ? "creature" : "town", creature, town, spots, sets, cast, townsfolk, creatures, props, time, lights, fixedLines, linePlace, style: eraStyle, places, outfitEra: era, ...(wx ?? {}), ...(ruleVisual ? { ruleVisual } : {}) };
+}
+
+// BEAT-SHEET 2026-11-10 (owner: "THE STORY IS IN THE PICTURE: every rule must be visible in the world through a
+// parameter, not explained. E.g. friends = height, rich = house height, mood = weather cloud. The world bible gets a
+// 'rule visual' field the director must use in the opening and the neighbour shots."). The data only: the engine's
+// picture of it comes later.
+const RV_BEATS = new Set(["rule", "origin", "neighbours", "me"]);
+/**
+ * The story's RULE VISUAL, or null: { parameter, description, neighbours: [{ name, shows }], hero: { name, shows },
+ * lines: { [line]: what it shows on that line } }. The director's bible.rule_visual wins, the writer's plan
+ * (idea.ruleVisual) fills what it leaves open. Per line: the director's line.ruleVisual; else the opening lines (beat
+ * rule / origin, or the first two lines) show the description, a neighbour line (beat neighbours, or a line in the
+ * first third naming a neighbour) that neighbour's value, the "me" line the hero's.   (pure, tested)
+ */
+export function ruleVisualFor({ production = null, script = null, idea = null } = {}) {
+  const d = production?.bible?.rule_visual ?? null, w = idea?.ruleVisual ?? null;
+  const parameter = String(d?.parameter || w?.parameter || "").trim();
+  if (!parameter) return null;
+  const neighbours = (d?.values?.length ? d.values.map((v) => ({ name: v.who, shows: v.shows })) : (w?.neighbours ?? []).map((n) => ({ name: n.name, shows: n.shows }))).filter((n) => n.name);
+  const hero = { name: String(w?.hero?.name ?? ""), shows: String(d?.hero || w?.hero?.shows || "") };
+  const description = String(d?.description || w?.description || "");
+  const lines = {};
+  for (const l of production?.lines ?? []) if (l.ruleVisual) lines[l.line] = l.ruleVisual;
+  const sl = script?.lines ?? [];
+  const third = Math.max(3, Math.ceil(sl.length / 3));
+  const nameRe = (nm) => { const ws = String(nm).split(/\s+/).map((x) => x.replace(/[^A-Za-z]/g, "")).filter((x) => /^[A-Z]/.test(x) && !/^(Mr|Mrs|Ms|Miss|Dr|Old|The|Captain|Mayor|Grandma|Grandpa|Aunt|Uncle)$/.test(x)); return ws.length ? new RegExp(`\\b(${ws.join("|")})\\b`) : null; };
+  sl.forEach((l, i) => {
+    if (lines[i]) return;
+    const text = String(l.text ?? l), beat = l.beat ?? null;
+    const n = neighbours.find((x) => { const re = nameRe(x.name); return re && re.test(text); });
+    if (n && (beat ? RV_BEATS.has(beat) : i < third)) lines[i] = `${n.name}: ${n.shows}`;
+    else if (beat === "rule" || beat === "origin" || (!beat && i < 2)) lines[i] = description || parameter;
+    else if (beat === "me" && hero.shows) lines[i] = `${hero.name || "me"}: ${hero.shows}`;
+  });
+  return { parameter, description, neighbours, hero, lines };
 }
 
 const WINTER_WORDS = /\b(snow\w*|winter\w*|frost\w*|frozen|freez\w*|blizzards?|icy|icicles?|sleet|christmas|yule|ice(?! ?cream))\b/gi;
@@ -548,6 +584,12 @@ export function applyBible(tl, bible) {
     if (typeof s.world === "string" && fromDirector && kind === fromDirector) delete s.world;
     if (sp.place) s.place = sp.place; else delete s.place;
   });
+  // BEAT-SHEET 2026-11-10: the planner hint shot.ruleVisual on the opening, neighbour and "me" lines (data only for now:
+  // the engine's picture of the parameter comes later)
+  if (bible.ruleVisual) for (const s of shots) {
+    const v = (s.lines ?? [s.line]).map((li) => bible.ruleVisual.lines?.[li]).find(Boolean);
+    if (v) s.ruleVisual = { parameter: bible.ruleVisual.parameter, shows: v }; else delete s.ruleVisual;
+  }
   // THE CLOCK: a line the script's time words changed ("one night", "every night", "Evening, sir") takes the bible's light
   const fixedLines = new Set(bible.fixedLines ?? []);
   for (const s of shots) { const li = s.line; if (fixedLines.has(li) && bible.lights?.[li] && s.light !== bible.lights[li]) s.light = bible.lights[li]; }
