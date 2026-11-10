@@ -17,7 +17,7 @@ export const WD_VERSION = 1;
 export const WD_MODEL = "claude-sonnet-5-5";
 export const WD_MOVES = Object.freeze(["push_in", "pull_out", "pan", "track", "orbit", "tilt_up", "static"]);
 export const WD_TARGETS_FIXED = Object.freeze(["group", "object", "monster", "place"]);
-const POSES = ["stand", "walk", "run", "point", "scared", "sit", "carry", "wave", "look_up", "talk", "sleep", "cheer", "yell", "cover_mouth", "hug", "hide", "jump", "dance", "fight"];
+const POSES = ["stand", "walk", "run", "point", "scared", "sit", "carry", "wave", "look_up", "talk", "sleep", "cheer", "yell", "hug", "hide", "jump", "dance", "fight"];
 const FACES = ["neutral", "happy", "grin", "laugh", "sad", "crying", "angry", "surprised", "shocked", "scared", "smirk", "wink", "thinking", "sleepy", "worried"];
 const clamp = (x, a, b, d) => (Number.isFinite(Number(x)) ? Math.min(b, Math.max(a, Number(x))) : d);
 const r3 = (x) => Math.round(x * 1000) / 1000;
@@ -109,7 +109,7 @@ export function applyWordDirection(tl0, dir) {
     const camera = d.distance <= 1.6 ? "closeup" : d.distance <= 3.5 ? "medium" : "wide";
     return { start, end, line: p.line, lines: lines.length ? lines : [p.line], part: p.part, set: d.set, light: d.light, camera, focus, actors, monsterState: ms, insert: null, marker: null,
       ...(objects.length ? { objects } : {}), seed: (p.seed ?? i) + i, text: caps.slice(d.startWord, dir.shots[i + 1]?.startWord ?? caps.length).map((w) => w.word).join(" "), subject: p.subject ?? null,
-      ...(p.worldSpot ? { worldSpot: p.worldSpot } : {}), cam: { target: d.target, distance: d.distance, yaw: d.yaw, pitch: d.pitch, fov: d.fov }, camMove: { type: d.move === "orbit" ? "track" : d.move, speed: "slow" } };
+      ...((over.find((o) => o.set === d.set && o.worldSpot) ?? null) ? { worldSpot: over.find((o) => o.set === d.set && o.worldSpot).worldSpot } : {}), ...(over.find((o) => o.setState)?.setState ? { setState: over.find((o) => o.setState).setState } : {}), cam: { target: d.target, distance: d.distance, yaw: d.yaw, pitch: d.pitch, fov: d.fov }, camMove: { type: d.move === "orbit" ? "track" : d.move, speed: "slow" } };
   });
   tl.direction = { ...(tl.direction ?? {}), wordDirector: { version: WD_VERSION, shots: tl.shots.length } };
   return tl;
@@ -135,7 +135,7 @@ export function fakeWordDirector(tl) {
 
 /** the PAID call (Sonnet 5.5, the existing director's call shape: lib/director/design.js). Never called by the tests or
  *  the dev tools without --paid --yes and the owner's OK. -> { data, costUsd, usage, ms, model } */
-export function anthropicWordDirector({ apiKey, model = WD_MODEL, fetchFn = fetch, effort = "low", timeoutMs = 180000, maxTokens = 16000 } = {}) {
+export function anthropicWordDirector({ apiKey, model = WD_MODEL, fetchFn = fetch, effort = "low", timeoutMs = 240000, maxTokens = 12000 } = {}) { // 12k out: the worst case stays under $0.13
   if (!apiKey) throw new Error("anthropicWordDirector: no apiKey");
   const P = PRICE[model] ?? PRICE[WD_MODEL];
   return {

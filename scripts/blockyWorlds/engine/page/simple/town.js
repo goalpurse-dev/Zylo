@@ -291,7 +291,9 @@ export function buildStreet({ tl = null } = {}) {
   // the south row (behind the camera in the street shots; seen in the wides and reverse angles)
   [[-30, 4], [-18, 5], [-6, 0], [6, 1], [18, 2], [30, 3]].forEach(([x, p], i) => house(K, town, x, -(FRONT - 3.5), Math.PI, { ...pal(p), seed: seed * 17 + i * 11 }));
   // cloud trees: in the gaps between the houses (both rows), a park belt behind each row; a few cube bushes stay
-  for (const x of [-40, -28, -16, -4, 8, 20, 46]) cloudTree(town, x, FRONT - 1.2, 0.95 + R() * 0.15, seed + x);
+  for (const x of [-40, -28, -16, -4, 8, 20, 46]) cloudTree(town, x, FRONT - 1.2, 1.25 + R() * 0.2, seed + x);
+  // bigger, closer puffy trees (owner 2026-11-10): one in each front yard corner, near the fence, beside the people
+  for (const x of [-34, -22, -10, 2, 14, 26, 38]) for (const s of [-1, 1]) if (R() < 0.75) cloudTree(town, x + s * (3.9 + R() * 0.6), FRONT + 1.7 + R() * 0.6, 1.3 + R() * 0.25, seed * 7 + x * 3 + s);
   for (const x of [-36, -24, -12, 0, 12, 24, 36]) cloudTree(town, x, -(FRONT - 1.2), 1, seed + x * 3);
   for (let i = 0; i < 60; i++) { const a = i * 2.39996, r = 38 + (i % 9) * 6; cloudTree(town, Math.cos(a) * r * 1.4, -24 - Math.abs(Math.sin(a)) * 40 - (i % 5) * 3, 1.15, seed + i); cloudTree(town, Math.cos(a + 1) * r * 1.4, 24 + Math.abs(Math.sin(a)) * 40 + (i % 4) * 3, 1.15, seed + i + 99); }
   for (const x of [-28, -16, -4, 8, 20, 32]) cubeBush(town, x, FRONT + 1.6, 0.9);

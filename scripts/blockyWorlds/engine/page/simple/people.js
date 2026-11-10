@@ -75,6 +75,8 @@ export function makePerson(spec = {}) {
   if (role === "kid") { const hsl = {}; new THREE.Color(C.hair).getHSL(hsl); if (hsl.s < 0.18 && hsl.l > 0.45) C.hair = "#6b3d1f"; }
   if (cos.kind === "uniform") Object.assign(C, cos.variant === "postal" ? { shirt: "#5b9bd5", pants: "#1f3a6e" } : cos.variant === "fire" ? { shirt: "#c0392b", pants: "#2d3436" } : { shirt: "#24407a", pants: "#1b2440" }, { shoes: "#1e1e24" });
   if (cos.kind === "knight") Object.assign(C, { shirt: "#8b939c", pants: "#6f7780", shoes: "#4d5660" });
+  const sig = look.signature && /^#[0-9a-f]{6}$/i.test(String(look.signature.color)) ? look.signature : null; // THE HERO (lib/simpleStory.js heroSignature)
+  if (sig) Object.assign(C, { shirt: sig.color, pants: "#2f3b66", shoes: "#ffffff" });
   const shirt = mat(C.shirt, { rough: 0.55 }), pants = mat(C.pants, { rough: 0.6 }), skin = mat(skinC, { rough: 0.5 }), shoe = mat(C.shoes, { rough: 0.5 }), hair = mat(C.hair, { rough: 0.6 });
   const r = 0.035 * (U / 0.34);
 
@@ -115,6 +117,7 @@ export function makePerson(spec = {}) {
 
   const joints = { rig, pelvis, spine, head, face: { material: null, isDummy: true }, sh, el, hand, hip, knee, skirt: null, finger, handAcc: [], flaps: [], cape: null };
   dressCostume({ spine, pelvis, sh, hip, head, joints }, cos, look, C);
+  if (sig) dressSignature({ spine, sh, head }, sig, C);
   if (role === "baby") { for (let i = 0; i < 2; i++) { hip[i].scale.set(1.05, 0.55, 1.05); sh[i].scale.set(1, 0.7, 1); } }
 
   root.traverse((o) => { if (o.isMesh && o !== face) { o.castShadow = true; o.receiveShadow = true; } });
@@ -248,6 +251,36 @@ function dressCostume({ spine, pelvis, sh, hip, head, joints }, cos, look, C) {
     default: break;
   }
 }
+
+// ------------------------------------------------------------------------------------------------ the hero's signature
+/** a hoodie in the signature colour (hood, pocket, drawstrings, ribbed cuffs + hem) + the signature item */
+function dressSignature({ spine, sh, head }, sig, C) {
+  const FZ = 0.5 * U, dk = new THREE.Color(sig.color).multiplyScalar(0.72), dkHex = `#${dk.getHexString()}`, rib = mat(dkHex, { rough: 0.6 });
+  rbox(spine, [1.6 * U, 0.55 * U, 0.6 * U], [0, SH_Y - 0.05 * U, -0.62 * U], mat(sig.color, { rough: 0.6 }), 0.1 * U); // the hood down on the back
+  rbox(spine, [1.3 * U, 0.6 * U, 0.08 * U], [0, TORSO_C - 0.45 * U, FZ + 0.03 * U], rib, 0.04 * U); // the front pocket
+  for (const s of [-1, 1]) { box(spine, [0.08 * U, 0.6 * U, 0.06 * U], [s * 0.28 * U, TORSO_C + 0.6 * U, FZ + 0.04 * U], mat("#ffffff", { rough: 0.5 }), { cast: false }); box(spine, [0.14 * U, 0.14 * U, 0.08 * U], [s * 0.28 * U, TORSO_C + 0.28 * U, FZ + 0.05 * U], mat("#ffffff", { rough: 0.5 }), { cast: false }); }
+  box(spine, [2.04 * U, 0.2 * U, 1.04 * U], [0, TORSO_C - 0.9 * U, 0], rib); // the ribbed hem
+  for (const a of sh) box(a, [1.02 * U, 0.16 * U, 1.02 * U], [0, -1.3 * U, 0], rib); // the cuffs
+  switch (sig.item) {
+    case "sock": { // a striped sock pinned on the left sleeve (the story's own sock)
+      const t = canvasTex(64, 128, (c, W, Hh) => { for (let i = 0; i < 8; i++) { c.fillStyle = i % 2 ? "#ffffff" : "#e8323f"; c.fillRect(0, (i * Hh) / 8, W, Hh / 8 + 1); } });
+      const m = new THREE.MeshStandardMaterial({ map: t, roughness: 0.7 });
+      const g = new THREE.Group(); g.position.set(0.0, -0.5 * U, 0.51 * U); sh[1].add(g); // on the front of the left sleeve
+      const leg = new THREE.Mesh(BOX_GEO, m); leg.scale.set(0.42 * U, 0.7 * U, 0.07 * U); g.add(leg);
+      const foot = new THREE.Mesh(BOX_GEO, m); foot.scale.set(0.6 * U, 0.26 * U, 0.07 * U); foot.position.set(0.09 * U, -0.46 * U, 0); g.add(foot);
+      break;
+    }
+    case "scarf": rbox(spine, [2.1 * U, 0.32 * U, 1.12 * U], [0, SH_Y + 0.12 * U, 0], mat("#ffd23a", { rough: 0.7 }), 0.08 * U); box(spine, [0.36 * U, 0.9 * U, 0.1 * U], [0.45 * U, SH_Y - 0.4 * U, FZ + 0.08 * U], mat("#ffd23a", { rough: 0.7 })); break;
+    case "goggles": box(head, [1.32 * U, 0.16 * U, 1.26 * U], [0, 1.16 * U, 0], mat("#2b2b33", { rough: 0.5 })); for (const s of [-1, 1]) rbox(head, [0.42 * U, 0.34 * U, 0.12 * U], [s * 0.3 * U, 1.18 * U, 0.62 * U], mat("#7fd4ff", { rough: 0.2 }), 0.06 * U); break;
+    case "backpack": rbox(spine, [1.4 * U, 1.4 * U, 0.6 * U], [0, TORSO_C, -0.8 * U], mat("#ffd23a", { rough: 0.6 }), 0.1 * U); break;
+    case "cap": rbox(head, [1.42 * U, 0.5 * U, 1.38 * U], [0, 1.36 * U, -0.02 * U], mat("#ffd23a", { rough: 0.55 }), 0.08 * U); rbox(head, [1.3 * U, 0.12 * U, 0.7 * U], [0, 1.16 * U, 0.85 * U], mat("#ffd23a", { rough: 0.55 }), 0.04 * U); break;
+    default: { // a star badge on the chest
+      const t = canvasTex(128, 128, (c, S) => { c.fillStyle = "#ffd23a"; c.strokeStyle = "#1b1b22"; c.lineWidth = 6; c.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + (i * Math.PI) / 5, r2 = i % 2 ? S * 0.2 : S * 0.45; c.lineTo(S / 2 + Math.cos(a) * r2, S / 2 + Math.sin(a) * r2); } c.closePath(); c.fill(); c.stroke(); });
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(0.7 * U, 0.7 * U), new THREE.MeshStandardMaterial({ map: t, transparent: true, roughness: 0.6 })); m.position.set(0.45 * U, TORSO_C + 0.45 * U, FZ + 0.01); spine.add(m);
+    }
+  }
+}
+const BOX_GEO = new THREE.BoxGeometry(1, 1, 1);
 
 export const personHeight = (person) => person.userData.height;
 

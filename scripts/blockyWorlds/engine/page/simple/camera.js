@@ -17,6 +17,16 @@ const ease = (p) => p * p * (3 - 2 * p);
 const SPAN_K = { medium: 1.25, closeup: 1.75 };
 const AIM_DROP = { medium: 0.05, closeup: 0.1 }; // aim a little below the head top: the hair never cut by the frame
 
+// the angle per shot (by seed): ~1/3 straight on, the rest three-quarter / along the street / low / high
+const ANGLES = [{}, { yaw: 38 }, { yaw: -38 }, { low: true }, { yaw: 62 }, {}, { yaw: -24, high: true }, { yaw: 28, low: true }, { yaw: -60 }];
+function angleOf(seed) { const h = (Math.imul(((seed | 0) + 7) ^ 0x5bd1e995, 0x27d4eb2d) >>> 0) % ANGLES.length; return ANGLES[h]; }
+function rotated(THREE, set, deg) {
+  const s2 = Object.create(set);
+  s2.camDir = (set?.camDir ?? new THREE.Vector3(0, 0, 1)).clone().setY(0).normalize().applyAxisAngle(new THREE.Vector3(0, 1, 0), (deg * Math.PI) / 180);
+  s2.views = {};
+  return s2;
+}
+
 export function frameShot(type, ctx) {
   const { THREE, camera, set, t = 0, dur = 1 } = ctx;
   if (ctx.establish && set?.establish) {
@@ -27,13 +37,39 @@ export function frameShot(type, ctx) {
     return camera;
   }
   if (ctx.group?.length >= 2 && (type === "medium" || type === "wide")) return frameGroup(type, ctx);
+  if (ctx.monsterEye && ["low", "medium", "closeup"].includes(type)) return frameEye(type, ctx);
   const k = SPAN_K[type];
   if (k && ctx.focus && Number(ctx.focusHeight) > 0) {
     const H = Number(ctx.focusHeight), H2 = H * k;
     const focus = ctx.focus.clone(); focus.y -= (H2 - H) * 0.91 + AIM_DROP[type] * H; // aim just under the head top, a wider span
-    return baseFrame(type, { ...ctx, focus, focusHeight: H2 });
+    // BACKGROUND VARIETY (owner 2026-11-10: "not every medium in front of the same flat wall"): per shot an angle
+    // (front, three-quarter left / right = the street's depth and porches, along the street, low = sky + roofs, high)
+    const A = angleOf(ctx.seed);
+    const set2 = A.yaw ? rotated(THREE, set, A.yaw) : set;
+    baseFrame(type, { ...ctx, set: set2, focus, focusHeight: H2 });
+    if (A.low || A.high) {
+      const f = ctx.focus;
+      camera.position.y = A.low ? f.y + (type === "closeup" ? H * 0.5 : H * 0.32) : camera.position.y + (type === "closeup" ? 0.7 : 1.3);
+      camera.up.set(0, 1, 0); camera.lookAt(f.x, f.y + H * (A.low ? (type === "closeup" ? 0.86 : 0.72) : (type === "closeup" ? 0.8 : 0.6)), f.z); camera.updateMatrixWorld();
+    }
+    return camera;
   }
   return baseFrame(type, ctx);
+}
+
+/** THE EYE IS THE STAR (owner 2026-11-10): a close look at a monster frames its head and eye (ctx.monsterEye = the
+ *  eye's world point): low = from below the eye, the head + shoulders against the sky; medium / closeup = level with it */
+function frameEye(type, ctx) {
+  const { THREE, camera, set, t = 0, dur = 1, seed = 1 } = ctx;
+  const eye = ctx.monsterEye.clone(), fov = 40, span = type === "closeup" ? 2.2 : type === "medium" ? 3.4 : 4.6;
+  const A = angleOf(seed), side = (set?.camDir ?? new THREE.Vector3(0, 0, 1)).clone().setY(0).normalize().applyAxisAngle(new THREE.Vector3(0, 1, 0), ((Math.max(-30, Math.min(30, A.yaw ?? 0))) * Math.PI) / 180);
+  const k = ease(Math.min(1, Math.max(0, t / Math.max(dur, 1e-3))));
+  const dist = (span / 2 / Math.tan((fov * DEG) / 2)) * (1 - 0.07 * k); // a slow push into the eye
+  const p = eye.clone().addScaledVector(side, dist); p.y = eye.y - (type === "low" ? 0.7 : 0.15);
+  if (set?.bounds?.length && !set.bounds.some((b) => b.containsPoint(p))) { let best = null, bd = Infinity; for (const b of set.bounds) { const q = b.clampPoint(p, new THREE.Vector3()); const d = q.distanceTo(p); if (d < bd) { bd = d; best = q; } } if (best) p.copy(best); }
+  camera.position.copy(p); camera.fov = fov; camera.near = 0.1; camera.far = Math.max(camera.far, 3000); camera.updateProjectionMatrix();
+  camera.up.set(0, 1, 0); camera.lookAt(eye.x, eye.y - span * 0.14, eye.z); // the eye in the upper third, the hunched body below camera.updateMatrixWorld();
+  return camera;
 }
 
 /**
@@ -43,7 +79,8 @@ export function frameShot(type, ctx) {
  */
 function frameGroup(type, ctx) {
   const { THREE, camera, set, group, t = 0, dur = 1, seed = 1 } = ctx;
-  const side = (set?.camDir ?? new THREE.Vector3(0, 0, 1)).clone().setY(0).normalize();
+  const GA = angleOf(seed), gy = type === "wide" ? 0 : Math.max(-35, Math.min(35, GA.yaw ?? 0));
+  const side = (set?.camDir ?? new THREE.Vector3(0, 0, 1)).clone().setY(0).normalize().applyAxisAngle(new THREE.Vector3(0, 1, 0), (gy * Math.PI) / 180);
   const lat = new THREE.Vector3(side.z, 0, -side.x);
   // the FRONT ROW decides the framing (the three nearest the lens; the rows behind fill the gaps and may be cropped)
   const byNear = [...group].sort((a, b) => b.pos.clone().dot(side) - a.pos.clone().dot(side));

@@ -21,6 +21,7 @@
 import { hashSeed } from "./lib/rng.js";
 import { norm, tokens, estimateWords, alignTokens, badgeWord } from "./lib/planText.js";
 import { pacePass } from "./lib/wordTiming.js";
+import { heroSignature, propPass, eyePass } from "./lib/simpleStory.js";
 import { MUSIC_WORDS, notInHand, FAR_CAMERAS, OBJECT_CATALOG, HOLDABLE, extractKeys, covers, describeShot, cardFor, anchorsOf, ruleById, cleanTokens, heldKind, objectForNoun, ABSTRACT, ICONS, PLACE_SCENERY } from "./lib/visuals.js";
 import { subjectOf, genderOf, subjectLabel } from "./lib/subjects.js";
 import { creatureFor, CREATURES } from "./lib/catalog.js";
@@ -1018,7 +1019,10 @@ export function planVideo({ script, words, idea = {}, lengthSec = null, directio
   // SIMPLE LOOK pacing (owner 2026-11-10): shots pinned to words ~1.4 s, every shot moves, faces / poses keyed on words
   // (lib/wordTiming.js; every change kept only when the four pre-render checks are no worse)
   if (tl.look === "simple" && pace !== false) {
+    // the hero stands out (a signature in the bible), no hand prop the line does not call for (lib/simpleStory.js)
+    try { tl.hero = heroSignature(tl); tl.props = propPass(tl, { check: check4 }); } catch (e) { tl.props = { error: String(e?.message ?? e) }; }
     try { tl.pacing = pacePass(tl, { check: check4, minPiece: PACE.minShot }); } catch (e) { tl.pacing = { error: String(e?.message ?? e) }; }
+    try { tl.eyes = eyePass(tl); } catch (e) { tl.eyes = { error: String(e?.message ?? e) }; } // the monster's eye states on their words
     // the advisory reports describe the final cut
     tl.style = styleReport(tl);
     try { tl.story = storyReport(tl); } catch (e) { tl.story = { error: String(e?.message ?? e) }; }

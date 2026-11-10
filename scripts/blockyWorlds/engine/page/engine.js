@@ -168,7 +168,7 @@ async function main() {
   // the simple-look people, sets + light, camera and post chain (page/simple/*.js); everything else (objects, monsters,
   // EPIC, the checks' fields) is shared. Stubs still win (?stubs=...).
   const SIMPLE_LOOK = tl.look === "simple";
-  if (SIMPLE_LOOK) Object.assign(REAL, { people: "/page/simple/people.js", sets: "/page/simple/sets.js", camera: "/page/simple/camera.js" });
+  if (SIMPLE_LOOK) Object.assign(REAL, { people: "/page/simple/people.js", sets: "/page/simple/sets.js", camera: "/page/simple/camera.js", monsters: "/page/simple/monsters.js" });
   const postM = SIMPLE_LOOK ? await import("/page/simple/post.js") : { makeRenderer, makePost };
 
   const [peopleM, monstersM, propsM, setsM, cameraM, captionsM] = await Promise.all(["people", "monsters", "props", "sets", "camera", "captions"].map(load));
@@ -624,7 +624,7 @@ async function main() {
       monster.position.copy(spots[ms.spot ?? "far"] ?? spots.far);
       // 2026-11-05 (GAPS): a monster lurking at the far spot stands at most ~9 m behind the centre (it read as a dot)
       if ((ms.spot ?? "far") === "far" && ms.state === "lurk") { const d = hz(monster.position).sub(hz(spots.center)), L = d.length(), cap = Math.max(7, Math.min(9, monsterH * 2.4)); if (L > cap) monster.position.copy(spots.center).addScaledVector(d.normalize(), cap).setY(monster.position.y); }
-      animateMonster(monster, ms.state, lt);
+      animateMonster(monster, ms.state, lt, { eye: ms.eye ?? null, eyeAt: ms.eyeAt ?? 0 }); // SIMPLE LOOK: the eye's own state (page/simple/monsters.js)
     }
     if (epic) epic.place(shot, lt, S); // EPIC: this shot's giants + crowds (placed, animated)
 
@@ -736,7 +736,9 @@ async function main() {
     const fctx = { THREE, camera, set: S, focus, focusHeight, other, otherHeight: otherH, otherRadius: otherR, dur, seed: shot.seed ?? si,
       // SIMPLE LOOK: a group's people (the lens fits the formation), a place shot with nobody in it (the establishing view)
       ...(SIMPLE_LOOK && shot.focus === "group" && placed.length >= 2 ? { group: placed.filter((p) => PEOPLE[p.id]).map((p) => ({ pos: p.pos.clone(), h: PEOPLE[p.id].h })) } : {}),
-      ...(establishShot ? { establish: true } : {}) };
+      ...(establishShot ? { establish: true } : {}),
+      // SIMPLE LOOK: a close look at the monster frames its eye (page/simple/monsters.js userData.eyes)
+      ...(SIMPLE_LOOK && shot.focus === "monster" && monster?.userData?.eyes?.length ? (() => { monster.updateMatrixWorld(true); const w = monster.userData.eyes[0].e.getWorldPosition(new THREE.Vector3()); const mp = monster.getWorldPosition(new THREE.Vector3()); w.x = mp.x; w.z = mp.z; return { monsterEye: w }; })() /* the monster turns to the lens after the framing: its centre line, at the eye's height */ : {}) };
     const nudge = guardNudge(si, shot, camType, fctx, placed, where, carried);
     frameShot(camType, { ...fctx, other: other?.clone(), t: lt, nudge });
     }
