@@ -33,7 +33,7 @@ export function parsePicks(tl, { times = null, shots = null }) {
 }
 
 /** the timeline stills on RunPod -> { stills: [{ label, file (local), ... }], usd, seconds, jobs } */
-export async function timelineStills({ tl, picks, w = 540, h = 960, captions = false, whole = false, out, workers = 3, rp = rpClient(), store = null, minBuild = null, log = console.log }) {
+export async function timelineStills({ tl, picks, w = 540, h = 960, captions = false, whole = false, query = process.env.BW_STILLS_QUERY ?? "", out, workers = 3, rp = rpClient(), store = null, minBuild = null, log = console.log }) {
   fs.mkdirSync(out, { recursive: true });
   const st = store ?? storage(loadEnv(), `blocky-worlds-test/stills/${new Date().toISOString().replace(/[:.]/g, "-")}`);
   const groups = splitPicks(picks, workers), results = [];
@@ -45,7 +45,7 @@ export async function timelineStills({ tl, picks, w = 540, h = 960, captions = f
       const names = fileNames(g); // the worker names the files the same way
       const uploads = {};
       for (const nm of names) uploads[nm] = await st.signPut(`j${gi}/${nm}`);
-      const job = { role: "stills", mode: "gpu", ...(minBuild ? { minBuild } : {}), stills: { timelineUrl, picks: g.map((p) => ({ t: p.t, label: p.label, ...(p.shot != null ? { shot: p.shot } : {}) })), w, h, captions, whole, out: { uploads, manifest: await st.signPut(`j${gi}/manifest.json`) } } };
+      const job = { role: "stills", mode: "gpu", ...(minBuild ? { minBuild } : {}), stills: { timelineUrl, picks: g.map((p) => ({ t: p.t, label: p.label, ...(p.shot != null ? { shot: p.shot } : {}) })), w, h, captions, whole, ...(query ? { query } : {}), out: { uploads, manifest: await st.signPut(`j${gi}/manifest.json`) } } };
       let stt = null;
       for (let attempt = 1; attempt <= 2; attempt++) {
         const id = await rp.submit({ job });
@@ -87,6 +87,7 @@ if (path.resolve(process.argv[1] ?? "") === fileURLToPath(import.meta.url)) {
   const out = arg("out");
   if (!out || (!arg("timeline") && !arg("objects"))) { console.error("usage: node dev/runpodStills.mjs --timeline <tl.json> (--times a,b | --shots all|ids) [--w 540 --h 960] --out <dir> [--yes]\n       node dev/runpodStills.mjs --objects <specs.json> --out <dir> [--size 768] [--yes]"); process.exit(2); }
   let minBuild = null; try { minBuild = endpointInfo().build ?? null; } catch { /* none */ }
+  if (arg("query")) process.env.BW_STILLS_QUERY = arg("query"); // e.g. nolut=1 (the engine page query of every still)
   if (arg("timeline")) {
     const tl = JSON.parse(fs.readFileSync(arg("timeline"), "utf8"));
     const picks = parsePicks(tl, { times: arg("times"), shots: arg("shots") });

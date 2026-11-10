@@ -7,7 +7,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { resolvePicks, stillsTimeline, fileNames, objectStillsJob, deliver, INLINE_MAX } from "../runpod/stillsRole.mjs";
+import { resolvePicks, stillsTimeline, fileNames, objectStillsJob, deliver, INLINE_MAX, pageQuery } from "../runpod/stillsRole.mjs";
 import { runJob } from "../runpod/worker.mjs";
 import { splitPicks, parsePicks, timelineStills, readObjectItems } from "./runpodStills.mjs";
 import { makeStillRenderer } from "../runpod/stillRendererRunpod.mjs";
@@ -182,4 +182,10 @@ test("object specs file: a bare blueprint list is read as objects; billed + esti
 test("the builder: renderer 'runpod' is wired (index.js names the RunPod module)", () => {
   const src = fs.readFileSync(new URL("../lib/builder/index.js", import.meta.url), "utf8");
   assert.match(src, /renderer === "runpod"/); assert.match(src, /runpod\/stillRendererRunpod\.mjs/);
+});
+
+test("pageQuery: a stills job's page query keeps plain key=value flags only (nolut=1 for the colour re-fit)", () => {
+  assert.equal(pageQuery("nolut=1"), "nolut=1");
+  assert.equal(pageQuery("nolut=1&noao&x=<b>&y=a b"), "nolut=1&noao");
+  assert.equal(pageQuery(null), "");
 });

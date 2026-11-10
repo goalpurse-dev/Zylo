@@ -2,7 +2,7 @@
 // gateShots, the same ladder: action -> reaction -> world wide -> a borrowed passing framing, each change re-checked by
 // the pre-render checks) driven from the laptop, every still rendered on RunPod (dev/runpodStills.mjs timelineStills).
 // For look-gate rounds on stored plans: no AI calls, RunPod only (spends money: without --yes it only prints the plan).
-//   node dev/gateRunpod.mjs --timeline <tl.json> [--script <script.json>] --out <dir> [--rounds 2] [--workers 3] [--seed <pass-1 manifest.json>] [--yes]
+//   node dev/gateRunpod.mjs --timeline <tl.json> [--script <script.json>] --out <dir> [--rounds 2] [--workers 3] [--seed <pass-1 manifest.json>] [--query nolut=1] [--yes]
 // Writes <out>/timeline.json (the re-planned timeline), <out>/gate.json (gateShots' report + spend),
 // <out>/stills/NNN_sNN.jpg (the still of every shot's FINAL framing: the gate passes' stills by shot content, the
 // shots no pass rendered (inserts) in one last job), <out>/passes/* (every pass's stills), <out>/spend.jsonl.
@@ -77,6 +77,7 @@ if (path.resolve(process.argv[1] ?? "") === fileURLToPath(import.meta.url)) {
   const argv = process.argv.slice(2), arg = (k, d = null) => (argv.includes(`--${k}`) ? argv[argv.indexOf(`--${k}`) + 1] : d);
   const out = arg("out"), tlFile = arg("timeline");
   if (!out || !tlFile) { console.error("usage: node dev/gateRunpod.mjs --timeline <tl.json> [--script <script.json>] --out <dir> [--rounds 2] [--workers 3] [--yes]"); process.exit(2); }
+  if (arg("query")) process.env.BW_STILLS_QUERY = arg("query"); // --query nolut=1: the stills of a colour re-fit
   const tl = JSON.parse(fs.readFileSync(tlFile, "utf8"));
   const script = arg("script") ? JSON.parse(fs.readFileSync(arg("script"), "utf8")) : null;
   const workers = Number(arg("workers", 3));

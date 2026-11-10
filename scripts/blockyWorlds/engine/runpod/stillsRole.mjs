@@ -29,6 +29,9 @@ export const INLINE_MAX = 8 * 1024 * 1024;
 const coded = (code, message) => Object.assign(new Error(message), { code });
 const safeName = (s) => String(s ?? "").replace(/[^a-zA-Z0-9._-]+/g, "_").slice(0, 60);
 
+/** the engine page query a stills job may set (e.g. "nolut=1" for the colour re-fit): key=value pairs of word characters only */
+export const pageQuery = (q) => String(q ?? "").split("&").filter((p) => /^\w+(=[\w.,-]*)?$/.test(p)).join("&");
+
 /** picks -> [{ label, t, shot }]: "all" = every shot's middle; { shot } = that shot's middle; { t } as given */
 export function resolvePicks(tl, picks) {
   const shots = tl?.shots ?? [];
@@ -75,7 +78,7 @@ export function pickedTimeline(tl, list) {
   return { tl: sub.tl, at: (p) => sub.map(p.shot != null ? p.shot : shotAt(tl, p.t), p.t), shotOf: (i) => keep[i] ?? null };
 }
 
-export async function renderTimelineStills({ tl, picks, w = 540, h = 960, captions = false, whole = false, gate = true, dir, browser: given = null, quality = 0.9, log = console.log }) {
+export async function renderTimelineStills({ tl, picks, w = 540, h = 960, captions = false, whole = false, gate = true, query = "", dir, browser: given = null, quality = 0.9, log = console.log }) {
   fs.mkdirSync(dir, { recursive: true });
   const list = resolvePicks(tl, picks), names = fileNames(list);
   // whole: the full timeline (exactly the video's state at t, e.g. captions); else only the picked shots (much faster)
@@ -85,7 +88,7 @@ export async function renderTimelineStills({ tl, picks, w = 540, h = 960, captio
   const srv = await startServer(dir), browser = given ?? (await launchBrowser());
   const t0 = Date.now();
   try {
-    const page = await openPage(browser, { port: srv.port, tlName: "stills_tl.json", W: st.width, H: st.height, label: " stills" });
+    const page = await openPage(browser, { port: srv.port, tlName: "stills_tl.json", query: pageQuery(query), W: st.width, H: st.height, label: " stills" });
     const loadMs = Date.now() - t0;
     log(`stills: page loaded in ${loadMs} ms (${st.width}x${st.height}, ${tl.shots?.length ?? 0} shots, ${list.length} picks)`);
     // every frame the guard grabs is also measured by the HARD STILL GATE (lib/stillGate.js, in the page, right after its
@@ -178,7 +181,7 @@ export async function stillsJob(job, dir, { gpuCheck, get, put }) {
   if (!tl && s.timelineUrl) { t = Date.now(); tl = JSON.parse(String(await get(s.timelineUrl))); timing.download = +((Date.now() - t) / 1000).toFixed(2); }
   if (!tl?.shots) throw coded("BAD_JOB", "no timeline (timeline or timelineUrl)");
   t = Date.now();
-  const res = await renderTimelineStills({ tl, picks: s.picks ?? "all", w: s.w ?? 540, h: s.h ?? 960, captions: Boolean(s.captions), whole: Boolean(s.whole), gate: s.gate !== false, dir: path.join(dir, "stills") });
+  const res = await renderTimelineStills({ tl, picks: s.picks ?? "all", w: s.w ?? 540, h: s.h ?? 960, captions: Boolean(s.captions), whole: Boolean(s.whole), gate: s.gate !== false, query: s.query ?? "", dir: path.join(dir, "stills") });
   timing.render = +((Date.now() - t) / 1000).toFixed(2);
   t = Date.now();
   await deliver(res, path.join(dir, "stills"), s.out, put);
