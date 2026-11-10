@@ -31,7 +31,7 @@ const spent = () => Object.values(costs).reduce((a, b) => a + (Number(b) || 0), 
 // the RunPod prepare + chunks
 // the builder's cap must cover at least one design call's worst case (Sonnet object design ~/usr/bin/bash.065: a /usr/bin/bash.06 cap built
 // nothing and the run stopped CRITICAL_UNBUILT, 2026-11-10); --builder-usd sets it
-const B = { voiceWorst: +(chars * 0.5 * 0.0002).toFixed(4), director: 0.1, review: 0.04, builder: Number(arg("builder-usd", 0.15)), prepareRunpod: 0.06, chunks: 0.12 };
+const B = { voiceWorst: +(chars * 0.5 * 0.0002).toFixed(4), director: 0.1, review: Number(arg("review-usd", 0.03)), builder: Number(arg("builder-usd", 0.15)), prepareRunpod: 0.06, chunks: 0.12 };
 say(`plan: "${script.title}" ${script.lines.length} lines, ${chars} chars; worst case $${Object.values(B).reduce((a, b) => a + b, 0).toFixed(3)} (cap $${CAP})`);
 if (!argv.includes("--yes")) { say("dry run: nothing sent (add --yes)"); process.exit(0); }
 
@@ -52,6 +52,8 @@ async function libraryRows() {
 
 // ---------------------------------------------------------------- 1. prepare on RunPod
 if (!fs.existsSync(path.join(out, "timeline.json"))) {
+  const prepWorst = B.builder + B.review + 0.05 + (fs.existsSync(path.join(out, "costs.json")) ? 0 : B.voiceWorst + B.director);
+  if (spent() + prepWorst > CAP) { say(`STOPPED: prepare's worst case ${prepWorst.toFixed(3)} would take the spend ${spent().toFixed(3)} over ${CAP}`); process.exit(1); }
   const haveTake = !!(await st.get("take.json")), haveDirection = !!(await st.get("direction.json")); // a re-run pays for neither again
   const up = {}; for (const f of F) up[f] = await st.signPut(f);
   const library = await libraryRows();
