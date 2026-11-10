@@ -223,6 +223,23 @@ export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
       if (Math.sign(a.amp) && Math.sign(b.amp) === -Math.sign(a.amp) && b.t0 < a.t1 && a.t1 > a.t0) { const d = b.t1 - b.t0; b.t0 = +a.t1.toFixed(4); b.t1 = +(a.t1 + d).toFixed(4); }
     }
   }
+  // a designed part's piece is shown once: a show while it is already shown (or a hide while hidden) is dropped. Its
+  // value went to 2 and the piece was drawn twice its size: the dishwasher's grime, "shown" again where the planner meant
+  // to take it away, hung outside the glass (the real run of 2026-11-10)
+  soft("pieces shown twice", () => {
+    for (const p of layout.parts ?? []) {
+      if (p.kind !== "rig") continue;
+      for (const m of (p.params?.nodes ?? []).flatMap((n) => n.moves ?? []).filter((m) => m.type === "appear")) {
+        const tr = tracks[`${p.id}.${m.name}`]; if (!tr?.ramps?.length) continue;
+        let v = tr.base ?? 0; const keep = [];
+        for (const r of [...tr.ramps].sort((a, b) => a.t0 - b.t0)) {
+          if ((r.amp > 0 && v >= 0.99) || (r.amp < 0 && v <= 0.01)) { notes.push(`${p.id}.${m.name}: a second ${r.amp > 0 ? "show" : "hide"} at ${r.t0.toFixed(2)} s dropped (it was already ${r.amp > 0 ? "shown" : "hidden"})`); continue; }
+          keep.push(r); v += r.amp;
+        }
+        tr.ramps = keep;
+      }
+    }
+  }, null);
   // the "Add ..." line is over before "Congratulations": nothing it plays runs on into that line (the bunker rerun's decay
   // counter counted on 0.5 s into it)
   const finS = fxOn ? sentences.find((x) => x.role === "finish") : null, conS = finS ? sentences.find((x) => x.role === "congrats") : null;

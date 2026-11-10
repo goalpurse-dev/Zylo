@@ -440,6 +440,10 @@ export function directCamera(layout, shots, marks) {
     const mb = subjectBox(layout);
     for (let i = 1; i < keys.length; i++) {
       if (keys[i][0] >= marks.signPop - 0.5) break;
+      // (not the opening's own hold: its drift key keeps the opening's aim, high over the hook object to leave the card
+      // band free, and moving it in to the build's 85% dropped the object out of the bottom of the frame: the real
+      // dishwasher run's hook ended on the lid alone, 2026-11-10)
+      if (!layout.template && frames[0]?.opening && JSON.stringify(keys[i][2]) === JSON.stringify(keys[0][2])) continue;
       const k = { pos: keys[i][1], tgt: keys[i][2] }, r = projectBox(k.pos, k.tgt, mb);
       if (r.behind || r.w >= LOOK.mainFill - 0.02) continue;
       let best = null;

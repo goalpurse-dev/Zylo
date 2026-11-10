@@ -47,15 +47,19 @@ function strip(layout) {
 function spot(layout, beat, type) {
   const byId = new Map(layout.parts.map((p) => [p.id, p])), cut = layout.world?.cut ?? null;
   const ids = [beat.shows?.p, ...(beat.do ?? []).map((a) => a.p), ...layout.parts.filter((p) => p.main).map((p) => p.id)].filter(Boolean);
-  let box = null;
-  for (const id of ids) { try { box = focusOfId(byId, id, cut); } catch { box = null; } if (box) break; }
+  let box = null, boxId = null;
+  for (const id of ids) { try { box = focusOfId(byId, id, cut); } catch { box = null; } if (box) { boxId = id; break; } }
+  // (a designed machine is a closed box with a lid: a splash, frost, sparks or specks on its top sat on the lid, outside
+  // it; the dishwasher's "sprays" put water blobs on the lid, the real run of 2026-11-10. In a machine they go in the
+  // middle of it, where its works are; a blast, fire and smoke still rise from the top)
+  const inMachine = byId.get(String(boxId ?? "").split(".")[0])?.kind === "rig" && ["splash", "frost", "spark", "motes", "swirl"].includes(type);
   if (!box && cut) box = { min: [cut.x0, -cut.depth, cut.z0], max: [cut.x1, 0, 0] };
   if (!box) box = { min: [-1, 0, -2], max: [1, 2, 0] };
   const c = box.min.map((v, i) => (v + box.max[i]) / 2), w = Math.max(box.max[0] - box.min[0], box.max[1] - box.min[1]);
   const size = +Math.min(3.5, Math.max(0.5, w * 0.22)).toFixed(2), front = +(box.max[2] + 0.05).toFixed(2);
   // (on its top: a blast, fire, a splash, frost on a surface, specks in the air; frost in the soil under an ice rink read as
   // nothing, 2026-11-05)
-  const y = ["blast", "fire", "smoke", "spark", "swirl", "frost", "splash", "motes"].includes(type) ? box.max[1] : type === "drip" ? box.max[1] - (box.max[1] - box.min[1]) * 0.25 : c[1];
+  const y = inMachine ? c[1] : ["blast", "fire", "smoke", "spark", "swirl", "frost", "splash", "motes"].includes(type) ? box.max[1] : type === "drip" ? box.max[1] - (box.max[1] - box.min[1]) * 0.25 : c[1];
   return { at: [+c[0].toFixed(2), +Math.max(y, box.min[1]).toFixed(2), front], size };
 }
 

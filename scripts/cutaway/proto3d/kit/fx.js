@@ -105,7 +105,9 @@ export function fx(ctx, p, api) {
         else if (type === "drip") { m.position.set((q.k - 0.5) * 0.4 * s, -f * 1.6 * s, 0.05); m.scale.set(1, 1.6, 1); }
         else if (type === "splash") { const d = f; m.position.set(Math.cos(q.a) * d * 0.9 * s, d * 1.6 * s - d * d * 2.2 * s, Math.sin(q.a) * d * 0.5 * s + 0.1); }
         else if (type === "spark") { m.position.set(Math.cos(q.a) * f * 0.8 * s, Math.sin(q.a) * f * 0.8 * s, 0.1); m.rotation.z = q.a + Math.PI / 2; m.visible = f < 0.6; }
-        else if (type === "frost") { const r = Math.min(1, on * 1.2) * (0.2 + q.k * 1.2) * s; m.position.set(Math.cos(q.a) * r, Math.sin(q.a) * r * 0.6, 0.05); m.rotation.set(q.a, q.k * 3, 0); m.scale.setScalar(on); }
+        // (frost stays on the cold thing: a ring 1.4x its size wide put the dishwasher's crystals on the floor beside the
+        // machine, the real run of 2026-11-10; now at most 0.8x)
+        else if (type === "frost") { const r = Math.min(1, on * 1.2) * (0.15 + q.k * 0.65) * s; m.position.set(Math.cos(q.a) * r, Math.sin(q.a) * r * 0.6, 0.05); m.rotation.set(q.a, q.k * 3, 0); m.scale.setScalar(on); }
         else if (type === "swirl") { root.rotation.y = t * 2.4; m.position.set(0, i * 0.02, 0); }
         else if (type === "motes") { m.position.set((q.k - 0.5) * 3 * s + Math.sin(t * 0.9 + q.a) * 0.35 * s, ((q.ph + t * 0.22) % 1) * 2.4 * s, Math.cos(q.a) * 0.8 * s + 0.3); m.material.opacity = 0.95 * on * Math.sin(Math.PI * ((q.ph + t * 0.22) % 1)); }
       });
