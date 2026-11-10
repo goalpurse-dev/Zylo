@@ -19,7 +19,7 @@ import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { LUTPass } from "three/addons/postprocessing/LUTPass.js";
 
 const TUNE = {
-  day: { sun: ["#fff6e6", 3.0], sunDir: [-18, 30, 22], hemi: ["#d6ecff", "#9ccf7a", 1.5], skyTop: "#3f8ef0", skyHor: "#bfe4ff", exposure: 1.0 },
+  day: { sun: ["#fff6e6", 3.0], sunDir: [-18, 30, 22], hemi: ["#d6ecff", "#9ccf7a", 1.5], skyTop: "#2f7fe8", skyHor: "#aad8ff", exposure: 1.0 },
   night: { sun: ["#9bb4ff", 0.7], sunDir: [14, 30, 16], hemi: ["#3b5cb8", "#16223f", 0.8], skyTop: "#071440", skyHor: "#22408a", exposure: 1.0 },
 };
 const U = 0.34; // one avatar unit in metres (6-block body = 5.2 units + hair ~ 1.85 m)
@@ -354,6 +354,8 @@ function rr(c, x, y, w, h, r) { c.beginPath(); c.roundRect(x - w / 2, y - h / 2,
 function drawFace(c, S, name, blink) {
   const e = EXPR[name] ?? EXPR.neutral;
   c.clearRect(0, 0, S, S);
+  // round 2: the features 1.3x bigger (round 1 read too small next to the reference's faces)
+  c.save(); c.translate(S / 2, S * 0.55); c.scale(1.3, 1.3); c.translate(-S / 2, -S * 0.55);
   c.lineCap = "round"; c.lineJoin = "round";
   const ex = S * 0.2, ey = S * 0.44; // eye offsets from centre, eye height
   const eye = (side) => {
@@ -420,6 +422,7 @@ function drawFace(c, S, name, blink) {
   if (e.sweat) { c.fillStyle = "#7fd4ff"; c.strokeStyle = INK; c.lineWidth = S * 0.012; c.beginPath(); c.moveTo(S * 0.83, S * 0.2); c.quadraticCurveTo(S * 0.88, S * 0.3, S * 0.83, S * 0.32); c.quadraticCurveTo(S * 0.78, S * 0.3, S * 0.83, S * 0.2); c.fill(); c.stroke(); }
   if (e.zzz) { c.fillStyle = INK; c.font = `900 ${Math.round(S * 0.1)}px Arial`; c.fillText("z", S * 0.78, S * 0.2); c.font = `900 ${Math.round(S * 0.07)}px Arial`; c.fillText("z", S * 0.86, S * 0.12); }
   if (name === "happy" || name === "grin" || name === "laugh") { c.fillStyle = "rgba(255,110,130,0.35)"; for (const side of [-1, 1]) { c.beginPath(); c.ellipse(S / 2 + side * S * 0.3, S * 0.6, S * 0.06, S * 0.035, 0, 0, 7); c.fill(); } }
+  c.restore();
 }
 const FACE_TEX = new Map();
 function faceTex(name, blink) {
@@ -461,7 +464,8 @@ function avatar(id) {
   if (D.style === "fringe") {
     rbox(head, [1.4 * u, 0.42 * u, 1.36 * u], [0, 1.32 * u, -0.02 * u], hair, 0.06 * u);
     rbox(head, [1.4 * u, 1.0 * u, 0.3 * u], [0, 0.9 * u, -0.58 * u], hair, 0.05 * u);
-    for (const [x, w, h] of [[-0.45, 0.5, 0.42], [0.02, 0.55, 0.32], [0.46, 0.46, 0.48]]) rbox(head, [w * u, h * u, 0.3 * u], [x * u, (1.18 - h / 2 + 0.05) * u, 0.56 * u], hair, 0.05 * u);
+    // the fringe stops above the brows (round 1 hid them)
+    for (const [x, w, h] of [[-0.45, 0.5, 0.24], [0.02, 0.55, 0.18], [0.46, 0.46, 0.27]]) rbox(head, [w * u, h * u, 0.3 * u], [x * u, (1.24 - h / 2) * u, 0.56 * u], hair, 0.05 * u);
     for (const s of [-1, 1]) rbox(head, [0.22 * u, 0.7 * u, 1.1 * u], [s * 0.66 * u, 0.98 * u, -0.06 * u], hair, 0.04 * u);
     for (const [x, z, rz] of [[-0.3, 0.1, 0.4], [0.25, -0.2, -0.3], [0.05, 0.35, 0.1]]) { const t = rbox(head, [0.5 * u, 0.4 * u, 0.5 * u], [x * u, 1.55 * u, z * u], hair, 0.05 * u); t.rotation.z = rz; }
   } else if (D.style === "buns") {
@@ -493,7 +497,8 @@ function avatar(id) {
         walk: () => { RL.rotation.x = 0.5; LL.rotation.x = -0.5; R.rotation.x = -0.45; L.rotation.x = 0.45; },
         point: () => { R.rotation.set(-1.55, 0, -0.12); L.rotation.z = 0.07; head.rotation.y = -0.1; },
         cheer: () => { R.rotation.set(-0.2, 0, -2.75); L.rotation.set(-0.2, 0, 2.75); body.position.y = 0.06; head.rotation.x = -0.12; },
-        scared: () => { R.rotation.set(-2.25, 0, 0.45); L.rotation.set(-2.25, 0, -0.45); body.rotation.x = -0.08; head.rotation.x = 0.05; },
+        // hands up beside the head, never in front of the face (round 1 covered it)
+        scared: () => { R.rotation.set(-0.55, 0, -2.15); L.rotation.set(-0.55, 0, 2.15); body.rotation.x = -0.08; head.rotation.x = 0.05; },
         talk: () => { R.rotation.set(-0.7, 0, -0.35); L.rotation.z = 0.07; head.rotation.z = -0.05; },
         shrug: () => { R.rotation.set(-0.5, 0, -0.9); L.rotation.set(-0.5, 0, 0.9); head.rotation.z = 0.12; },
       };
