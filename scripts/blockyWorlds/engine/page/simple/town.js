@@ -195,7 +195,8 @@ function awning(g, x, y, z, w, c1, c2) {
 /** a house: front at local z = +d/2, faces +z; dressed per lot (seeded): porch + steps, flower boxes, fence, mailbox, bushes */
 function house(K, parent, x, z, face, { w = 7, d = 7, floors = 2, wall, roof, door, flat = false, dress = true, seed = 1, yardDepth = 3.0 } = {}) {
   const R = seeded(seed);
-  const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = face; parent.add(g);
+  const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = face; parent.add(g); g.name = "house";
+  if (face === 0) (K.northHouses ??= []).push(g);
   const H = floors * 3.1 + 0.3;
   const body = box(g, [w, H, d], [0, H / 2, 0], mat(wall)); body.userData.camBlock = true; K.blockers.push(body);
   box(g, [w + 0.2, 0.3, d + 0.2], [0, 0.15, 0], mat("#e9e4da"));
@@ -318,6 +319,8 @@ export function buildStreet({ tl = null } = {}) {
   };
   // one street, many stand points (world continuity: the same town): each line stands in front of one lot of it (the
   // town slides under the fixed spots), so the backdrop changes from line to line, never inside a line
+  /** the street's own house behind the stand point stands for a planned house front (the still gate's subject) */
+  S.standInHouse = (on) => { let best = null; for (const g of K.northHouses ?? []) { g.name = "house"; const d = Math.abs(g.position.x + (S.townX ?? 0)); if (!best || d < best.d) best = { g, d }; } if (on && best) best.g.name = "object:house_front:lit"; };
   const LOTS = [2, -10, 14, 26, -22, 38, -34];
   S.setPlace = (place, shot) => {
     const k = ((Number(shot?.line ?? 0) * 5 + seed) % LOTS.length + LOTS.length) % LOTS.length;
@@ -330,6 +333,7 @@ export function buildStreet({ tl = null } = {}) {
     let best = null;
     for (let i = 0; i + 1 < spans.length; i++) { const l = spans[i][0] + spans[i][1], r = spans[i + 1][0] - spans[i + 1][1]; if (r - l < 3) continue; const gx = (l + r) / 2 + x; if (!best || Math.abs(gx - 1.5) < Math.abs(best - 1.5)) best = gx; }
     S.loom = new THREE.Vector3(best ?? 6, 0.02, FRONT - 2.2);
+    S.townX = x;
     for (const g of [...(K.yardTrees ?? [])]) g.visible = Math.abs(g.position.x + x - S.loom.x) > 2.8; // the giant stands where a yard tree would hide it
   };
   return finishPlace(S, K);

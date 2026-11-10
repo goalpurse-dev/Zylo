@@ -96,8 +96,10 @@ function frameEye(type, ctx) {
   const k = ease(Math.min(1, Math.max(0, t / Math.max(dur, 1e-3))));
   const dist = (span / 2 / tanV + hd.size.z / 2) * (1 - 0.06 * k); // a slow push into the eye
   const eyeY = ctx.monsterEye?.y ?? hd.center.y;
-  const aimY = eyeY + span * 0.09; // the eye a touch below the centre: the head top + a strip of sky above
-  const p = hd.center.clone().addScaledVector(side, dist); p.y = eyeY - (type === "low" ? 0.6 : 0.1);
+  // looming behind the houses: a wider frame aimed lower, the roofs and lit houses filling the lower part (never 45 % sky)
+  const loom = set?.loom && Math.hypot(hd.center.x - set.loom.x, hd.center.z - set.loom.z) < 4;
+  const aimY = loom ? eyeY - span * 0.3 : eyeY + span * 0.09; // the eye a touch below the centre: the head top + a strip of sky above
+  const p = hd.center.clone().addScaledVector(side, loom ? dist * 1.9 : dist); p.y = loom ? eyeY - 3.5 : eyeY - (type === "low" ? 0.6 : 0.1);
   if (set?.bounds?.length && !set.bounds.some((b) => b.containsPoint(p))) { let best = null, bd = Infinity; for (const b of set.bounds) { const q = b.clampPoint(p, new THREE.Vector3()); const d = q.distanceTo(p); if (d < bd) { bd = d; best = q; } } if (best) p.copy(best); }
   camera.position.copy(p); camera.fov = fov; camera.near = 0.1; camera.far = Math.max(camera.far, 3000); camera.updateProjectionMatrix();
   camera.up.set(0, 1, 0); camera.lookAt(hd.center.x, aimY, hd.center.z); camera.updateMatrixWorld();

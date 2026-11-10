@@ -506,7 +506,8 @@ async function main() {
       shotObjs.push({ o, obj, u });
       if (mode !== "front" && !spotRule[spot]) spotRule[spot] = { obj, u, mode };
     }
-    S.setClutter?.(!anyBig && !shot.setState?.windows); // the bus shelter etc. step aside for big objects and window shots
+    S.setClutter?.(!anyBig && !shot.setState?.windows);
+    S.standInHouse?.(SIMPLE_LOOK && (shot.objects ?? []).some((o) => o.name === "house_front")); // SIMPLE LOOK: the real house is the house front // the bus shelter etc. step aside for big objects and window shots
 
     // people: grouped by spot, spread sideways, then pushed apart so nobody overlaps (people in / on an object stay put)
     const placed = []; // { id, a (timeline actor or null for extras), pos, fixed, opts }
