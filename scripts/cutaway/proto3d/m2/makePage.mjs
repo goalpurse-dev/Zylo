@@ -102,7 +102,7 @@ export function makePage(layout) {
   // the animated renderAt
   rep("window.renderAt = () => { const t0 = performance.now(); composer.render(); window.lastMs = performance.now() - t0; return true; };", "");
   rep("manager.onLoad = () => { window.ready = true; };", `{
-  const ctx = { THREE, scene, envBase: LOOK.env, outlinePass: OUTLINE, RoundedBoxGeometry, mergeVertices, rnd, grassM, soilM, box, cyl, P, bagGeo, std, phys, PBR, tex, C, sun, hemi: scene.children.find((o) => o.isHemisphereLight), cut: M2_CUT ?? PIT, soilU: soilM.userData.u, WET_LAWN, waterMesh: window.__water, sharedGeo: {}, gltf: (u, cb) => new GLTFLoader(manager).load(u, cb) };
+  const ctx = { THREE, scene, envBase: LOOK.env, outlinePass: OUTLINE, RoundedBoxGeometry, mergeVertices, rnd, grassM, soilM, box, cyl, P, bagGeo, std, phys, PBR, tex, C, sun, hemi: scene.children.find((o) => o.isHemisphereLight), cut: M2_CUT ?? PIT, soilU: soilM.userData.u, WET_LAWN, waterMesh: window.__water, leaves: window.__leaves, sharedGeo: {}, gltf: (u, cb) => new GLTFLoader(manager).load(u, cb) };
   // a thin-slab world (no soil cut): the ground runs on toward the camera, the lawn and the setting's floor alike, so a
   // pull-back never shows an edge over the table below (the haze band of 2026-10-25)
   if (M2_LAYOUT.world?.shallow) { const ap = new THREE.Mesh(new THREE.PlaneGeometry(2 * X, 60), grassM); ap.rotation.x = -Math.PI / 2; ap.position.set(0, -0.004, 29.6); ap.receiveShadow = true; scene.add(ap); }

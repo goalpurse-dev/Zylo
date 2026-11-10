@@ -185,7 +185,7 @@ export function buildTerrain(ctx, params = {}) {
   if (Array.isArray(params.trees) && ctx.P) for (const [x, z, sc = 1] of params.trees) {
     const y = T.h(x, z), t = new THREE.Group(); t.position.set(x, y, z); group.add(t);
     const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.26 * sc, 0.34 * sc, 3.2 * sc, 10), ctx.P.trunk); trunk.position.y = 1.6 * sc; trunk.castShadow = true; t.add(trunk);
-    for (let i = 0; i < 7; i++) { const l = new THREE.Mesh(new THREE.IcosahedronGeometry((1.1 + rnd() * 0.6) * sc, 2), i % 2 ? ctx.P.leaf : ctx.P.leaf2); const a = rnd() * 6.28, r = rnd() * 1.4 * sc; l.position.set(Math.cos(a) * r, (4.0 + rnd() * 1.6) * sc, Math.sin(a) * r); l.castShadow = true; t.add(l); }
+    for (let i = 0; i < 7; i++) { const l = new THREE.Mesh(new THREE.IcosahedronGeometry((1.1 + rnd() * 0.6) * sc, 2), i % 2 ? ctx.P.leaf : ctx.P.leaf2); const a = rnd() * 6.28, r = rnd() * 1.4 * sc; l.position.set(Math.cos(a) * r, (4.0 + rnd() * 1.6) * sc, Math.sin(a) * r); l.castShadow = true; t.add(l); (ctx.leaves ??= []).push(l); }
   }
   // the chambers glow (k: 0..1 more on an "erupt" or "glow" verb) and flicker
   const update = (t, k = 0) => { for (const m of chamberMats) { const f = 1 + 0.12 * Math.sin(t * 7) + 0.08 * Math.sin(t * 13.3); m.emissiveIntensity = (0.9 + 1.6 * k) * f; if (m.userData.light) m.userData.light.intensity = (30 + 60 * k) * f; } };

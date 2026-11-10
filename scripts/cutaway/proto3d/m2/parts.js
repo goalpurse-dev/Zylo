@@ -63,6 +63,23 @@ export const KINDS = {
   road(ctx, p, api) { const r = buildRoad(ctx, p), paved = !!api.cue("pave"), built = !!api.cue("build"); return { group: r.group, deckAt: r.deckAt, update(t) { r.update(t, { pave: paved ? api.ch("pave", t) : null, build: built ? api.ch("build", t) : null, twist: api.ch("twist", t), sway: api.ch("sway", t) }); } }; },
   // power lines between points, sagging, with current pulses (kit/wires.js)
   wires(ctx, p, api) { const w = buildWires(ctx, p), strung = !!api.cue("show"); return { group: w.group, update(t) { w.update(t, { show: strung ? api.ch("show", t) : null, live: api.ch("live", t), snap: api.ch("snap", t) }); } }; },
+  // life for a still moment, added by the code (storyFx.js ambientFor): a breeze in the trees and bushes, a machine's idle
+  // hum, steam over something hot. Channel: on
+  ambient(ctx, p, api) {
+    const target = p.target ? api.part(p.target)?.obj : null, g = target?.group ?? target?.mesh ?? null, base = g ? g.position.clone() : null;
+    const steam = p.mode === "steam" ? fx(ctx, { type: "smoke", at: p.at ?? [0, 1, 0], size: Math.min(1.2, Math.max(0.5, (p.size ?? 1) * 0.7)), color: "#eef1f4" }, api) : null;
+    // (the crowns of the yard's and the terrain's trees, the bushes and young trees: each sways on its own phase)
+    const crowns = p.mode === "breeze" ? [...(ctx.leaves ?? []), ...api.all().filter((e) => ["shrubs", "youngTrees"].includes(e.kind)).flatMap((e) => e.added ?? [])] : [];
+    const rest = crowns.map((o) => o.position.clone());
+    return {
+      update(t) {
+        const k = Math.max(0, Math.min(1, api.ch("on", t)));
+        if (p.mode === "hum" && g && base) { g.position.set(base.x + 0.012 * k * Math.sin(t * 53), base.y + 0.008 * k * Math.abs(Math.sin(t * 37)), base.z); }
+        if (p.mode === "breeze") crowns.forEach((o, i) => { const ph = i * 1.7; o.position.set(rest[i].x + 0.09 * k * Math.sin(t * 1.4 + ph), rest[i].y, rest[i].z + 0.05 * k * Math.sin(t * 1.1 + ph * 0.7)); });
+        steam?.update(t);
+      },
+    };
+  },
   terrain(ctx, p, api) { const T = ctx.terrain; return { group: T?.group, update(t) { T?.update(t, api.ch("glow", t)); } }; },
   // parts that make a sentence's action visible (clarityParts.js): separation in a tank, a creek, a flow along a path,
   // setting props, a roof on its posts
@@ -591,5 +608,5 @@ export const KIND_CHANNELS = {
   fence: ["pop", "rails"], youngTrees: ["pop"], sheet: ["up", "down", "pop"], book: ["up", "down"], flag: ["show", "cross", "gone"], shrubs: ["start"], sign: ["pop"], crack: ["grow"], drops: ["fall", "gone"],
   water: ["flood", "gone", "dirty", "clean"], gravel: ["fill", "lift", "squash", "drain", "pour"], soakPit: ["grow", "wetY", "wetOn"], wipe: ["grow"], wrap: ["start"], pipe: ["grow"], pipeFlow: ["on"], puddles: ["rise", "fall"],
   rain: ["on"], stream: ["on"], light: ["dip", "storm", "night"], lawnWet: ["amount"], soilLeak: ["y1", "a1", "y2", "a2", "murk", "murkA"], wetBand: ["amount"], soak: ["front", "on"],
-  arrows: ["on"], outline: ["on"], seepFlow: ["on"], fx: ["go", "on"], terrain: ["glow"], building: ["build", "lights", "lift", "run"], road: ["pave", "build", "twist", "sway"], wires: ["show", "live", "snap"], waterBody: ["rise", "fall", "flood", "dirty", "clear", "freeze", "flow"],
+  arrows: ["on"], outline: ["on"], seepFlow: ["on"], fx: ["go", "on"], terrain: ["glow"], ambient: ["on"], building: ["build", "lights", "lift", "run"], road: ["pave", "build", "twist", "sway"], wires: ["show", "live", "snap"], waterBody: ["rise", "fall", "flood", "dirty", "clear", "freeze", "flow"],
 };

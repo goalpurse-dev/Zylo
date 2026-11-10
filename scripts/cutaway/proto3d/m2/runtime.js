@@ -21,6 +21,8 @@ export function runLayout(ctx, layout, timeline, { endCard = true, look = null }
       cues: (name) => T[key(name)]?.ramps ?? [],
       other: (id, name, t) => channelValue(T[`${id}.${name}`], t),
       part: (id) => built.get(id),
+      // (every part built so far, with its kind and what it added to the scene: the ambient breeze sways bushes)
+      all: () => [...built.entries()].map(([id, e]) => ({ id, kind: layout.parts.find((q) => q.id === id)?.kind, added: e.added })),
       mat: (name) => mats.get(name),
       wetter: (name) => mats.wetter(name),
       endCard,

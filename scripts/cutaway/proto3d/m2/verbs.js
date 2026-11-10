@@ -70,6 +70,7 @@ export const VERBS = {
   wires: { show: [R("show", 0, 1.2, 1, "out")], live: [R("live", 0, 0.3)], off: [R("live", 0, 0.2, -1)], snap: [R("snap", 0, 0.5, 1, "in2")], fix: [R("snap", 0, 0.8, -1, "inOut")] },
   road: { pave: [R("pave", 0, 1.4, 1, "inOut")], build: [R("build", 0, 1.8, 1, "out")], twist: [R("twist", 0, 0.6, 1, "out")], calm: [R("twist", 0, 1.0, -1, "inOut"), R("sway", 0, 1.0, -1, "inOut")], sway: [R("sway", 0, 0.6, 1, "out")] },
   building: { build: [R("build", 0, 1.6, 1, "out")], lights: [R("lights", 0, 0.4)], dark: [R("lights", 0, 0.4, -1)], up: [R("lift", 0, 2.0, 1, "inOut")], down: [R("lift", 0, 2.0, -1, "inOut")], run: [R("run", -0.1, 0.1, 1, "step")], stop: [R("run", 0, 0.1, -1, "step")] },
+  ambient: { start: [R("on", 0, 0.4)], stop: [R("on", 0, 0.4, -1)] },
   terrain: { erupt: [R("glow", 0, 0.8, 1, "out")], calm: [R("glow", 0, 1.2, -1, "inOut")] },
   fx: { go: [R("go", 0, 1.6)], start: [R("on", -0.1, 0.3)], stop: [R("on", 0, 0.5, -1)] },
   arrows: ONOFF(), outline: { show: [R("on", -0.175, 0.075)], hide: [R("on", 0.025, 0.275, -1)] }, seepFlow: ONOFF(),

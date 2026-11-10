@@ -33,7 +33,7 @@ const clean = (w) => String(w ?? "").toLowerCase().replace(/[^a-z0-9']/g, "");
 const tokens = (text) => String(text ?? "").split(/\s+/).filter(Boolean);
 const AUTO = (id) => /^auto_/.test(String(id));
 // the things that move by themselves while on (a still moment has none of these on and no ramp playing)
-const MOVERS = { rain: ["on"], stream: ["on"], flow: ["on"], pipeFlow: ["on"], pipeRunFlow: ["on"], seepFlow: ["on"], arrows: ["on"], bubbles: ["on"], fx: ["on"], creek: ["*"] };
+const MOVERS = { ambient: ["on"], waterBody: ["flow"], rain: ["on"], stream: ["on"], flow: ["on"], pipeFlow: ["on"], pipeRunFlow: ["on"], seepFlow: ["on"], arrows: ["on"], bubbles: ["on"], fx: ["on"], creek: ["*"] };
 const RIG_MOVING = new Set(["spin", "flow", "pump", "shake", "burn", "blink"]);
 export const GAP = 2.5;
 
@@ -163,6 +163,25 @@ export function motionGaps(layout, tracks, sentences, { from = 0, to = null } = 
   return gaps;
 }
 
+/**
+ * The life a still moment gets, from the scene itself: "steam" over a real flame (a burner, a flare, a fire; not a heating move: a fridge compressor has one),
+ * "ripple:<id>" on open water, "hum" (a machine idling: the shown designed part trembles), "breeze" (outdoors: trees and
+ * bushes sway), "dust" (specks, only where dust is real: a workshop or a basement room).
+ */
+export function ambientFor(layout, beat) {
+  const parts = layout.parts ?? [], W = layout.world ?? {};
+  const shown = parts.find((p) => p.id === String(beat?.shows?.p ?? "").split(".")[0]) ?? parts.find((p) => p.main);
+  const setting = W.backdrop?.type ?? "yard", indoor = ["room", "kitchen", "workshop", "carwash", "garage"].includes(setting);
+  const hot = (p) => p && (p.kind === "flare" || (p.kind === "fx" && p.params?.type === "fire") || (p.kind === "rig" && (p.params?.nodes ?? []).some((n) => (n.moves ?? []).some((m) => m.type === "burn") || (n.shapes ?? []).some((s) => s.shape === "flame"))));
+  if (hot(shown)) return "steam";
+  const water = parts.find((p) => p.kind === "waterBody");
+  if (water && !indoor) return `ripple:${water.id}`;
+  if (shown?.kind === "rig") return "hum";
+  if (!indoor) return "breeze";
+  if (setting === "workshop" || setting === "room") return "dust";
+  return "hum";
+}
+
 /** fill the gaps (the layout and tracks mutated); returns notes */
 export function fillGaps(layout, tracks, sentences, gaps) {
   const notes = [];
@@ -176,11 +195,15 @@ export function fillGaps(layout, tracks, sentences, gaps) {
       const key = `${rig.id}.${move.name}`, now = channelValue(tracks[key], a);
       if (now < 0.5) { tracks[key].ramps.push({ t0: a + 0.2, t1: a + 0.5, amp: 1, e: "inOut", auto: true }, { t0: b - 0.3, t1: b, amp: -1, e: "inOut", auto: true }); notes.push(`still ${a.toFixed(1)}-${b.toFixed(1)} s: ${key} runs again`); return; }
     }
-    const id = `auto_life${i + 1}`, { at, size } = spot(layout, beat, "motes");
-    layout.parts.push({ id, kind: "fx", params: { type: "motes", at, size: Math.max(size, 1) } });
-    tracks[`${id}.on`] = { base: 0, ramps: [{ t0: a + 0.2, t1: a + 0.6, amp: 1, e: "inOut", auto: true }, { t0: b - 0.2, t1: b + 0.3, amp: -1, e: "inOut", auto: true }] };
-    tracks[`${id}.go`] = { base: 0, ramps: [] };
-    notes.push(`still ${a.toFixed(1)}-${b.toFixed(1)} s: specks drift round ${beat.shows?.p ?? "the build"}`);
+    // motion that belongs in the scene (the owner, 2026-11-10: dust specks read as stray floating dots; specks only where
+    // dust is real, a workshop or a basement room, and subtle)
+    const on = (key) => { tracks[key] = tracks[key] ?? { base: 0, ramps: [] }; tracks[key].ramps.push({ t0: a + 0.2, t1: a + 0.6, amp: 1, e: "inOut", auto: true }, { t0: b - 0.2, t1: b + 0.3, amp: -1, e: "inOut", auto: true }); };
+    const mode = ambientFor(layout, beat), id = `auto_life${i + 1}`, { at, size } = spot(layout, beat, mode === "steam" ? "smoke" : "motes");
+    if (mode.startsWith("ripple:")) { const w = mode.slice(7); on(`${w}.flow`); notes.push(`still ${a.toFixed(1)}-${b.toFixed(1)} s: the water ripples (${w})`); return; }
+    if (mode === "dust") { layout.parts.push({ id, kind: "fx", params: { type: "motes", at, size: Math.min(size, 0.7) } }); tracks[`${id}.go`] = { base: 0, ramps: [] }; }
+    else layout.parts.push({ id, kind: "ambient", params: { mode, target: String(beat.shows?.p ?? layout.parts.find((p) => p.main)?.id ?? "").split(".")[0] || null, at, size } });
+    on(`${id}.on`);
+    notes.push(`still ${a.toFixed(1)}-${b.toFixed(1)} s: ${mode} round ${beat.shows?.p ?? "the build"}`);
   });
   return notes;
 }

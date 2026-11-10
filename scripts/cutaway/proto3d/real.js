@@ -292,7 +292,7 @@ function tree(x, z, s = 1) {
   const t = cyl(P.trunk, 0.32 * s, 3.2 * s, x, 1.6 * s, z, scene, "y", 12); if (R === 3) t.geometry = new THREE.CylinderGeometry(0.22 * s, 0.42 * s, 3.2 * s, 14);
   const n = R === 1 ? 14 : R === 3 ? 7 : R === 4 ? 9 : 3;
   for (let i = 0; i < n; i++) { const r = (R === 2 ? 1.9 : 1.15 + rnd() * 0.7) * s; const lg = mergeVertices(new THREE.IcosahedronGeometry(r, R === 2 ? 4 : 3)); lg.deleteAttribute("uv"); if (R !== 2) { const p = lg.attributes.position, v = new THREE.Vector3(); for (let k = 0; k < p.count; k++) { v.fromBufferAttribute(p, k); v.multiplyScalar(1 + (R === 4 ? 0.12 : 0.08) * Math.sin(v.x * 4 + i) * Math.sin(v.y * 5 + i)); p.setXYZ(k, v.x, v.y, v.z); } lg.computeVertexNormals(); } else lg.computeVertexNormals();
-    const l = new THREE.Mesh(lg, i % 2 ? P.leaf : P.leaf2); const a = rnd() * Math.PI * 2, rr = n === 3 ? 0.6 * s : rnd() * 1.6 * s; l.position.set(x + Math.cos(a) * rr, (4.2 + rnd() * 1.8) * s, z + Math.sin(a) * rr); l.castShadow = l.receiveShadow = true; scene.add(l); }
+    const l = new THREE.Mesh(lg, i % 2 ? P.leaf : P.leaf2); const a = rnd() * Math.PI * 2, rr = n === 3 ? 0.6 * s : rnd() * 1.6 * s; l.position.set(x + Math.cos(a) * rr, (4.2 + rnd() * 1.8) * s, z + Math.sin(a) * rr); l.castShadow = l.receiveShadow = true; scene.add(l); (window.__leaves ??= []).push(l); }
 }
 tree(-13, -11.5); tree(14, -3.4, 0.9); tree(-16, -27, 1.2); tree(18, -31, 1.3); tree(-3, -44, 1.1); tree(-23, -15, 1.05);
 // road
