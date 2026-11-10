@@ -29,7 +29,9 @@ const saveCosts = () => fs.writeFileSync(path.join(out, "costs.json"), JSON.stri
 const spent = () => Object.values(costs).reduce((a, b) => a + (Number(b) || 0), 0);
 // the purse: voice (worst 0.5 ElevenLabs credits / char), the director (Sonnet, worst ~$0.10), review + builder caps,
 // the RunPod prepare + chunks
-const B = { voiceWorst: +(chars * 0.5 * 0.0002).toFixed(4), director: 0.1, review: 0.04, builder: 0.06, prepareRunpod: 0.06, chunks: 0.12 };
+// the builder's cap must cover at least one design call's worst case (Sonnet object design ~/usr/bin/bash.065: a /usr/bin/bash.06 cap built
+// nothing and the run stopped CRITICAL_UNBUILT, 2026-11-10); --builder-usd sets it
+const B = { voiceWorst: +(chars * 0.5 * 0.0002).toFixed(4), director: 0.1, review: 0.04, builder: Number(arg("builder-usd", 0.15)), prepareRunpod: 0.06, chunks: 0.12 };
 say(`plan: "${script.title}" ${script.lines.length} lines, ${chars} chars; worst case $${Object.values(B).reduce((a, b) => a + b, 0).toFixed(3)} (cap $${CAP})`);
 if (!argv.includes("--yes")) { say("dry run: nothing sent (add --yes)"); process.exit(0); }
 
@@ -50,14 +52,14 @@ async function libraryRows() {
 
 // ---------------------------------------------------------------- 1. prepare on RunPod
 if (!fs.existsSync(path.join(out, "timeline.json"))) {
-  const haveTake = !!(await st.get("take.json"));
+  const haveTake = !!(await st.get("take.json")), haveDirection = !!(await st.get("direction.json")); // a re-run pays for neither again
   const up = {}; for (const f of F) up[f] = await st.signPut(f);
   const library = await libraryRows();
   const job = {
     role: "prepare", mode: "gpu", runId: `test-${path.basename(out)}`, jobId: `prepare-${path.basename(out)}`, attempt: 1, ...(minBuild ? { minBuild } : {}),
     prepare: {
       script, idea, lengthSec: 90, music: "A",
-      director: { provider: "anthropic", model: "claude-sonnet-5-5" },
+      director: { provider: "anthropic", model: "claude-sonnet-5-5", ...(haveDirection ? { stored: await st.signGet("direction.json") } : {}) },
       builder: { provider: "anthropic", library, budget: { maxUsd: B.builder } },
       review: { provider: "anthropic", model: "claude-haiku-5-5", budget: { maxUsd: B.review } },
       voice: haveTake ? { get: { mp3: await st.signGet("voice.mp3"), take: await st.signGet("take.json") } } : { put: { mp3: up["voice.mp3"], take: up["take.json"] } },
@@ -65,17 +67,18 @@ if (!fs.existsSync(path.join(out, "timeline.json"))) {
       limits: { prepareSec: 420 },
     },
   };
-  say(`prepare: library ${library.length} rows, take ${haveTake ? "reused (no new voice)" : "new (ElevenLabs)"}; build ${minBuild}`);
+  say(`prepare: library ${library.length} rows, take ${haveTake ? "reused (no new voice)" : "new (ElevenLabs)"}, director list ${haveDirection ? "reused" : "new"}, builder cap ${B.builder}; build ${minBuild}`);
   const id = await rp.submit({ job });
   say(`prepare job ${id}`);
   const s = await rp.wait(id, { maxSec: 900, pollMs: 4000 });
   const b = billed(s);
   logSpend(out, `Blocky Worlds #2 video prepare ${id} (${s.status})`, b);
-  costs.prepareRunpod = b.usd;
+  costs[costs.prepareRunpod != null ? "prepareRunpod2" : "prepareRunpod"] = b.usd;
   const o = s.output ?? {};
   fs.writeFileSync(path.join(out, "prepare-result.json"), JSON.stringify({ status: s.status, error: s.error ?? null, output: o }, null, 1));
   if (o.voice?.costUsd != null && !o.voice?.reused) costs.voice = o.voice.costUsd;
-  if (o.spend) { costs.director = o.spend.directorUsd ?? 0; costs.builder = o.spend.builderUsd ?? 0; costs.review = o.spend.reviewUsd ?? o.planned?.review?.costUsd ?? 0; }
+  if (!o.voice && !haveTake) { const t = await st.get("take.json"); if (t) costs.voice = JSON.parse(t).costUsd ?? costs.voice; } // a failed prepare still bought the take
+  if (o.spend) { costs[haveDirection ? "directorRerun" : "director"] = o.spend.directorUsd ?? 0; costs.builder = o.spend.builderUsd ?? 0; costs.review = o.spend.reviewUsd ?? o.planned?.review?.costUsd ?? 0; }
   saveCosts();
   say(`prepare ${s.status}: billed ${b.seconds} s $${b.usd}; voice $${o.voice?.costUsd ?? "?"}; spend ${JSON.stringify(o.spend ?? null)}; spent so far $${spent().toFixed(4)}`);
   if (!(s.status === "COMPLETED" && o.ok)) { say(`STOPPED: prepare failed: ${o.code ?? ""} ${String(s.error ?? o.error ?? "").slice(0, 1500)}`); process.exit(1); }
