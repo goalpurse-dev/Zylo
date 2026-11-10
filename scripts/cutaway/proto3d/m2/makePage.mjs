@@ -80,7 +80,8 @@ export function makePage(layout) {
   const terrainPart = (layout.parts ?? []).find((p) => p.kind === "terrain");
   if (terrainPart) {
     rep("const grassM = lawnMaterial(), soilM = soilMaterial();\n{", "const grassM = lawnMaterial(), soilM = soilMaterial();\nif (false) {");
-    rep("if (R === 1 || R === 3) {\n  const rockM", "if (false) {\n  const rockM");
+    // (a shallow world has already cut the stones and roots out)
+    if (!W.shallow) rep("if (R === 1 || R === 3) {\n  const rockM", "if (false) {\n  const rockM");
     rep("tree(-13, -11.5); tree(14, -3.4, 0.9); tree(-16, -27, 1.2); tree(18, -31, 1.3); tree(-3, -44, 1.1); tree(-23, -15, 1.05);", "");
   }
   // the static landfill parts and the static truck + flying bags
