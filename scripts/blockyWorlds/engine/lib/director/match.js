@@ -160,7 +160,10 @@ export function matchProduction(production, { kit = nodeKit(), exists = () => fa
   // ---------------------------------------------------------------- creatures
   for (const cr of p.creatures) {
     const name = cr.name || cr.species;
-    const giant = ["giant", "colossal"].includes(cr.scale) || cr.heightM > 5;
+    // SIMPLE LOOK 2026-11-10 (#2: the Peeker, monster: true, 20 m, went to the builder as a static giant): the story's
+    // MONSTER is drawn by the monster kit at any size, unless its species is a real EPIC giant animal
+    const epicAnimal = /^(turtle|whale|elephant|snail|wolf|bear|dog|cat|frog|dragon|crab)$/.test(String(cr.species ?? "").toLowerCase());
+    const giant = (["giant", "colossal"].includes(cr.scale) || cr.heightM > 5) && !(cr.monster && !epicAnimal);
     if (giant) {
       const species = /^(human|man|woman|person|people|giant|giants|titan)$/.test(cr.species) ? "human" : cr.species;
       const c = ask("giant", { species, behaviour: cr.behaviours.filter((b) => b !== "stand" && b !== "idle"), heightM: cr.heightM || (cr.scale === "colossal" ? 100 : 25) }, cr, "creature", name);

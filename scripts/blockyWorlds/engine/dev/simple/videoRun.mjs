@@ -62,7 +62,7 @@ if (!fs.existsSync(path.join(out, "timeline.json"))) {
     prepare: {
       script, idea, lengthSec: 90, music: "A",
       director: { provider: "anthropic", model: "claude-sonnet-5-5", ...(haveDirection ? { stored: await st.signGet("direction.json") } : {}) },
-      builder: { provider: "anthropic", library, budget: { maxUsd: B.builder } },
+      builder: { provider: B.builder > 0 ? "anthropic" : "off", library, budget: { maxUsd: B.builder } }, // --builder-usd 0: the kit only, no design call
       review: { provider: "anthropic", model: "claude-haiku-5-5", budget: { maxUsd: B.review } },
       voice: haveTake ? { get: { mp3: await st.signGet("voice.mp3"), take: await st.signGet("take.json") } } : { put: { mp3: up["voice.mp3"], take: up["take.json"] } },
       out: { timeline: up["timeline.json"], mix: up["mix.m4a"], visualCheck: up["visual-check.json"], production: up["production.json"], direction: up["direction.json"], shotReview: up["shot-review.json"] },

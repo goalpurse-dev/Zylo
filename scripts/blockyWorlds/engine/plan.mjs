@@ -281,6 +281,8 @@ function readWorld(script, idea) {
   } else if (MONSTER_WORDS.test(ideaText)) { const w = ideaText.match(MONSTER_WORDS)[1].toLowerCase(); monster = { name: `The ${w[0].toUpperCase()}${w.slice(1)}`, key: w, keys: [w], words: [w] }; }
   if (monster) {
     const about = [ideaText, ...lines.filter((l) => monster.keys.some((k) => norm(l).includes(k)))].join(" ");
+    // SIMPLE LOOK 2026-11-10: a monster's own eyelid ("Its giant eyelid twitched") is the monster's (its eye has lids)
+    if (/\b(its|giant|huge|big) eyelids?\b/i.test(lowAll)) monster.keys = [...new Set([...monster.keys, "eyelid", "eyelids"])];
     monster.variant = creatureFor(monster.words, monster.words.length > 1 || !/^(monster|beast|creature)$/.test(monster.key) ? "" : about) ?? (monster.key === "beast" ? "beast" : null);
     // a generic name ("the Beast", "the Monster") never takes a bird / fish look from a passing word in the idea
     if (/^(monster|beast|creature)$/.test(monster.key) && monster.variant && CREATURES[monster.variant].base === "tall" && !["giant", "ghost", "goblin"].includes(monster.variant)) monster.variant = monster.key === "beast" ? "beast" : null;
@@ -1448,7 +1450,7 @@ function showsWorld(s, wo) {
   if (!s || !wo) return false;
   if (wo.kind === "creature") return /^creature:/.test(s.set ?? "") || (s.giants ?? []).some((g) => g.id === "world" || g.id === wo.id);
   const nm = String(wo.name).toLowerCase();
-  if ((s.objects ?? []).some((o) => o.item === wo.id || o.needId === wo.id || o.propId === wo.id || (wo.kit && o.name === wo.kit) || (wo.scenery && o.name === "house_front"))) return true;
+  if ((s.objects ?? []).some((o) => o.item === wo.id || o.needId === wo.id || o.propId === wo.id || (wo.kit && o.name === wo.kit) || (wo.scenery && (o.name === "house_front" || (o.name === "curtain_pile" && o.state !== "pile" && /window/i.test(String(wo.name))))))) return true; // SIMPLE LOOK: the curtains-in-a-window object is a window
   // the builder put the world object in (lib/builder/apply.js: a library / built asset or a kit object named for it,
   // its need marker removed): step-3 2026-11-09, the stilt houses / bell tower / clock tower were reverted for this
   if ((s.objects ?? []).some((o) => String(o.name ?? "").replace(/_/g, " ").toLowerCase() === nm || (o.asset && (o.aliases ?? []).some((a) => String(a).toLowerCase() === nm)))) return true;
@@ -1860,6 +1862,8 @@ function thingState(name, low) {
   switch (name) {
     case "cloud": return /\b(snow\w*|blizzard|flurr\w*)\b/.test(low) ? pick("snow") : /\b(storm\w*|thunder\w*|lightning)\b/.test(low) ? pick("storm") : /\b(rain\w*|drizzl\w*|wet|damp|pour\w*|soak\w*)\b/.test(low) ? pick("rain") : /\bcloud/.test(low) && !/\brain/.test(low) ? pick("plain") : null;
     case "fridge": return /\b(open\w*)\b/.test(low) ? pick("open") : null;
+    case "curtain_pile": return /\bthin\b/.test(low) ? pick("thin") : /\b(pile\w*|heap\w*|stack\w*)\b/.test(low) ? pick("pile") : pick("window");
+    case "patchwork_blanket": return /\b(fl(?:ew|y|ies|ying)|blew|blown|away)\b/.test(low) ? pick("flying") : /\bbed\b/.test(low) ? pick("bed") : pick("draped");
     case "drawer": return /\b(shut|closed|close)\b/.test(low) ? pick("closed") : null;
     case "mailbox": return /\bflag\b/.test(low) && /\b(down|lowered)\b/.test(low) ? pick("down") : null;
     case "porthole": return /\b(cover\w*|curtain\w*|shut)\b/.test(low) ? pick("covered") : null;

@@ -91,6 +91,9 @@ export const THINGS = Object.freeze({
   chair: { aliases: A("chair,chairs,seat,seats,stool,stools,armchair,armchairs,throne,thrones,bench,benches,cushion,cushions,beanbag"), place: "floor", states: ["chair", "throne", "pile"], state: "chair", icon: "🪑" },
   couch: { aliases: A("couch,couches,sofa,sofas,living room"), place: "floor", states: ["on"], state: "on", sets: ["bedroom"], icon: "🛋️" },
   table: { aliases: A("table,tables,desk,desks,counter,counters,kitchen counter,dinner table,workbench,cubby,cubbies"), place: "floor", states: ["on"], state: "on", icon: "🍽️" },
+  // SIMPLE LOOK 2026-11-10 (#2 The Kid Who Never Blinks: the story's critical blanket + curtains from the kit, never the builder)
+  patchwork_blanket: { aliases: A("patchwork blanket,patchwork quilt,patchwork,quilt,quilts,blanket,blankets,big blanket,big patchwork blanket,comforter,duvet,bedspread"), place: "floor", states: ["draped", "flying", "bed"], state: "draped", icon: "🛏️" },
+  curtain_pile: { aliases: A("curtain,curtains,drape,drapes,curtain pile,pile of curtains,bulging curtains,curtain bulge,forty curtains,forty curtains bulge,bulge,thin curtains,three thin curtains,net curtain,net curtains"), place: "floor", states: ["window", "pile", "thin"], state: "window", icon: "🪟" },
   fridge: { aliases: A("fridge,fridges,refrigerator,refrigerators,freezer,freezers,icebox,pantry"), place: "floor", states: ["closed", "open"], state: "closed", sets: ["bedroom"], icon: "🧊" },
   stove: { aliases: A("stove,stoves,oven,ovens,cooker,fireplace,hearth,furnace"), place: "floor", states: ["on"], state: "on", sets: ["bedroom"], icon: "🔥" },
   drawer: { aliases: A("drawer,drawers,sock drawer,dresser,dressers,cabinet,cabinets,cupboard,cupboards,shelf,shelves,bookshelf,wardrobe,closet,closets"), place: "floor", states: ["closed", "open"], state: "open", sets: ["bedroom"], icon: "🗄️" },

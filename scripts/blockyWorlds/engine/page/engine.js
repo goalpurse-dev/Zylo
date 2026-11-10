@@ -485,6 +485,8 @@ async function main() {
     const faceYaw = Math.atan2(-S.depth.x, -S.depth.z);
     let anyBig = false;
     for (const o of shot.objects ?? []) {
+      // SIMPLE LOOK: a house front never stands inside a room (the room's own window is the window it stands for)
+      if (SIMPLE_LOOK && S.indoor && o.name === "house_front") continue;
       const k = objKey(o), n = used.get(k) ?? 0; used.set(k, n + 1);
       const obj = OBJ.get(k)[n], u = obj.userData, spot = o.spot ?? "center", base = spots[spot] ?? spots.center;
       const here = free.filter((a) => a.spot === spot);
@@ -624,7 +626,21 @@ async function main() {
       monster.position.copy(spots[ms.spot ?? "far"] ?? spots.far);
       // 2026-11-05 (GAPS): a monster lurking at the far spot stands at most ~9 m behind the centre (it read as a dot)
       if ((ms.spot ?? "far") === "far" && ms.state === "lurk") { const d = hz(monster.position).sub(hz(spots.center)), L = d.length(), cap = Math.max(7, Math.min(9, monsterH * 2.4)); if (L > cap) monster.position.copy(spots.center).addScaledVector(d.normalize(), cap).setY(monster.position.y); }
+      // SIMPLE LOOK: a giant monster never stands inside a room: indoors it peers in at the window (just outside it, its
+      // eye at the window's height, the rest of it below the lawn), so the room's own window frames the eye
+      const peering = SIMPLE_LOOK && S.indoor && S.windowAt && monster.userData?.eyeY;
+      if (peering) {
+        const out = S.windowAt.clone().addScaledVector(S.depth, 1.3 + (monster.userData.headDepth ?? 1.2));
+        monster.position.set(out.x, (S.windowY ?? S.windowAt.y) - monster.userData.eyeY, out.z);
+      }
+      monster.userData.peering = !!peering;
+      for (const a of monster.userData?.arms ?? []) a.visible = !peering; // its long arms would reach in through the walls
       animateMonster(monster, ms.state, lt, { eye: ms.eye ?? null, eyeAt: ms.eyeAt ?? 0 }); // SIMPLE LOOK: the eye's own state (page/simple/monsters.js)
+      if (peering && monster.userData.eyes?.[0]) { // after the pose: the eye just outside the glass, at the window's height
+        monster.rotation.set(0, Math.atan2(-S.depth.x, -S.depth.z), 0); monster.updateMatrixWorld(true);
+        const ew = monster.userData.eyes[0].e.getWorldPosition(new THREE.Vector3()), want = S.windowAt.clone().addScaledVector(S.depth, 0.55);
+        monster.position.add(new THREE.Vector3(want.x - ew.x, (S.windowY ?? S.windowAt.y) - ew.y, want.z - ew.z)); monster.updateMatrixWorld(true);
+      }
     }
     if (epic) epic.place(shot, lt, S); // EPIC: this shot's giants + crowds (placed, animated)
 
@@ -771,7 +787,7 @@ async function main() {
     camera.updateMatrixWorld();
     camera.getWorldPosition(camPos);
     camRight.setFromMatrixColumn(camera.matrixWorld, 0).setY(0).normalize();
-    if (monster?.visible) monster.rotation.y = yawTo(monster.position, camPos) + (ms.state === "flee" ? Math.PI : 0);
+    if (monster?.visible && !monster.userData.peering) monster.rotation.y = yawTo(monster.position, camPos) + (ms.state === "flee" ? Math.PI : 0); // a monster peering in at a window keeps facing into the room
 
     // people: facing, pose, face, markers
     for (const p of placed) {

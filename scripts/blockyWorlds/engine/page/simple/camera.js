@@ -38,6 +38,7 @@ export function frameShot(type, ctx) {
   }
   if (ctx.group?.length >= 2 && (type === "medium" || type === "wide")) return frameGroup(type, ctx);
   if (ctx.monsterEye && ["low", "medium", "closeup"].includes(type)) return frameEye(type, ctx);
+  if (ctx.monsterEye && type === "wide" && !set?.indoor) return frameTower(ctx);
   const k = SPAN_K[type];
   if (k && ctx.focus && Number(ctx.focusHeight) > 0) {
     const H = Number(ctx.focusHeight), H2 = H * k;
@@ -57,10 +58,33 @@ export function frameShot(type, ctx) {
   return baseFrame(type, ctx);
 }
 
+/** TOWERING (owner 2026-11-10: "it towers over the houses"): a wide of the monster from the ground in front of it,
+ *  looking up past its body to the eye (the houses beside it, nothing between the lens and it) */
+function frameTower(ctx) {
+  const { THREE, camera, set, focus, t = 0, dur = 1, seed = 1 } = ctx;
+  const H = Math.max(3, Number(ctx.focusHeight) || 10), eyeY = ctx.monsterEye.y;
+  const A = angleOf(seed), side = (set?.camDir ?? new THREE.Vector3(0, 0, 1)).clone().setY(0).normalize().applyAxisAngle(new THREE.Vector3(0, 1, 0), ((Math.max(-30, Math.min(30, A.yaw ?? 0))) * Math.PI) / 180);
+  const k = ease(Math.min(1, Math.max(0, t / Math.max(dur, 1e-3))));
+  const p = focus.clone().addScaledVector(side, H * 0.62 * (1 - 0.05 * k)); p.y = (focus.y ?? 0) + 1.5;
+  if (set?.bounds?.length && !set.bounds.some((b) => b.containsPoint(p))) { let best = null, bd = Infinity; for (const b of set.bounds) { const q = b.clampPoint(p, new THREE.Vector3()); const d = q.distanceTo(p); if (d < bd) { bd = d; best = q; } } if (best) p.copy(best); }
+  camera.position.copy(p); camera.fov = 70; camera.near = 0.1; camera.far = Math.max(camera.far, 3000); camera.updateProjectionMatrix();
+  camera.up.set(0, 1, 0); camera.lookAt(focus.x, (focus.y ?? 0) + (eyeY - (focus.y ?? 0)) * 0.6, focus.z); camera.updateMatrixWorld();
+  return camera;
+}
+
 /** THE EYE IS THE STAR (owner 2026-11-10): a close look at a monster frames its head and eye (ctx.monsterEye = the
  *  eye's world point): low = from below the eye, the head + shoulders against the sky; medium / closeup = level with it */
 function frameEye(type, ctx) {
   const { THREE, camera, set, t = 0, dur = 1, seed = 1 } = ctx;
+  if (set?.indoor && set.windowAt) { // the eye at the window: from the front of the room, over the shoulder, toward the window
+    const W = set.windowAt, side = (set.camDir ?? new THREE.Vector3(0, 0, 1)).clone().setY(0).normalize(), lat = new THREE.Vector3(side.z, 0, -side.x);
+    const k = ease(Math.min(1, Math.max(0, t / Math.max(dur, 1e-3))));
+    const p = W.clone().addScaledVector(side, (type === "closeup" ? 3.2 : 4.4) * (1 - 0.08 * k)).addScaledVector(lat, ((seed | 0) % 2 ? 1 : -1) * 1.0); p.y = (set.windowY ?? W.y) + 0.15;
+    if (set.bounds?.length && !set.bounds.some((b) => b.containsPoint(p))) { let best = null, bd = Infinity; for (const b of set.bounds) { const q = b.clampPoint(p, new THREE.Vector3()); const d = q.distanceTo(p); if (d < bd) { bd = d; best = q; } } if (best) p.copy(best); }
+    camera.position.copy(p); camera.fov = 44; camera.near = 0.1; camera.far = Math.max(camera.far, 3000); camera.updateProjectionMatrix();
+    camera.up.set(0, 1, 0); camera.lookAt(W.x, (set.windowY ?? W.y) - 0.1, W.z); camera.updateMatrixWorld();
+    return camera;
+  }
   // the WHOLE head (+ the pane when it presses) with the eye in the middle and a little sky above (owner review)
   const hd = ctx.monsterHead ?? { center: ctx.monsterEye.clone(), size: new THREE.Vector3(1.6, 1.6, 1.4) };
   const aspect = camera.aspect || 9 / 16, fov = 40, tanV = Math.tan((fov * DEG) / 2);

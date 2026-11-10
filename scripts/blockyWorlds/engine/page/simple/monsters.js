@@ -12,8 +12,11 @@
 import * as THREE from "three";
 import { mat, box, rbox } from "./common.js";
 
-export const EYE_STATES = Object.freeze(["stare", "twitch", "blink", "press"]);
-const H = 4.6;
+export const EYE_STATES = Object.freeze(["stare", "squint", "twitch", "blink", "press"]);
+// TALLER + THINNER (owner 2026-11-10: "it towers over the houses in wide shots"): long legs and torso, a bigger head;
+// ~11.6 m, well over a two-storey roof (~9.3 m)
+const LEG = 5.6, TOR = 3.4, ARM = 4.4, HEADK = 1.6;
+const H = +(LEG + TOR + 1.4 * HEADK + 0.35 * HEADK).toFixed(2);
 
 export function makeMonster(spec = {}) {
   const root = new THREE.Group(); root.name = `monster:${spec.name ?? "x"}`;
@@ -21,15 +24,15 @@ export function makeMonster(spec = {}) {
   const dark = mat("#1d2233", { rough: 0.7 }), dark2 = mat("#2a3047", { rough: 0.7 }), claw = mat("#0d0f18", { rough: 0.5 });
   const glow = spec.glow && /^#[0-9a-f]{6}$/i.test(spec.glow) ? spec.glow : "#ffe14a";
   // legs + hips
-  const legs = [-1, 1].map((s) => { const p = new THREE.Group(); p.position.set(s * 0.42, 2.0, 0); body.add(p); rbox(p, [0.55, 2.0, 0.6], [0, -1.0, 0], dark, 0.08); rbox(p, [0.68, 0.22, 0.85], [0, -1.98, 0.1], claw, 0.05); return p; });
+  const legs = [-1, 1].map((s) => { const p = new THREE.Group(); p.position.set(s * 0.36, LEG, 0); body.add(p); rbox(p, [0.46, LEG, 0.52], [0, -LEG / 2, 0], dark, 0.08); rbox(p, [0.6, 0.24, 0.85], [0, -LEG + 0.02, 0.1], claw, 0.05); return p; });
   // a long narrow torso, hunched
-  const torso = new THREE.Group(); torso.position.set(0, 2.0, 0); body.add(torso);
-  rbox(torso, [1.45, 1.6, 0.85], [0, 0.8, 0], dark, 0.1);
-  rbox(torso, [1.1, 0.9, 0.12], [0, 0.8, 0.43], dark2, 0.05); // a chest plate in a lighter shade
+  const torso = new THREE.Group(); torso.position.set(0, LEG, 0); body.add(torso);
+  rbox(torso, [1.25, TOR, 0.78], [0, TOR / 2, 0], dark, 0.1);
+  rbox(torso, [0.9, TOR * 0.55, 0.12], [0, TOR * 0.55, 0.4], dark2, 0.05); // a chest plate in a lighter shade
   // long arms to the knees, three blocky claws each
-  const arms = [-1, 1].map((s) => { const p = new THREE.Group(); p.position.set(s * 0.92, 1.45, 0); torso.add(p); rbox(p, [0.42, 2.1, 0.45], [0, -1.05, 0], dark, 0.08); for (const k of [-1, 0, 1]) rbox(p, [0.12, 0.38, 0.12], [k * 0.13, -2.25, 0.05], claw, 0.03); return p; });
+  const arms = [-1, 1].map((s) => { const p = new THREE.Group(); p.position.set(s * 0.82, TOR - 0.15, 0); torso.add(p); rbox(p, [0.36, ARM, 0.4], [0, -ARM / 2, 0], dark, 0.08); for (const k of [-1, 0, 1]) rbox(p, [0.12, 0.45, 0.12], [k * 0.12, -ARM - 0.18, 0.05], claw, 0.03); return p; });
   // the head: a big block; its front is the eye
-  const head = new THREE.Group(); head.position.set(0, 1.62, 0.05); torso.add(head);
+  const head = new THREE.Group(); head.position.set(0, TOR + 0.02, 0.05); head.scale.setScalar(HEADK); torso.add(head);
   rbox(head, [1.5, 1.4, 1.3], [0, 0.7, 0], dark, 0.12);
   const one = Number(spec.eyes) === 1;
   const eyes = [];
@@ -48,6 +51,8 @@ export function makeMonster(spec = {}) {
   const mesh = (geo, mt, z, parent, x = 0, y = 0) => { const o = new THREE.Mesh(geo, mt); o.position.set(x, y, z); parent.add(o); return o; };
   const makeEye = (x, y, r) => {
     const e = new THREE.Group(); e.position.set(x, y, 0.66); head.add(e);
+    // a soft halo round the eye (additive, low: it lights the night sky round the eye, never blooms)
+    mesh(new THREE.PlaneGeometry(r * 4.4, r * 4.4), haloMat(glow), -0.02, e);
     mesh(disc(r * 1.2), rimM, 0.0, e); // the soft rim glow
     mesh(disc(r * 1.1), socketM, 0.02, e);
     const ball = mesh(disc(r), sclera, 0.05, e);
@@ -77,8 +82,19 @@ export function makeMonster(spec = {}) {
   // a soft light of its own (the eye lights what it looks at)
   const eyeLight = new THREE.PointLight(glow, 1.0, 10, 1.6); eyeLight.position.set(0, 0.72, 3.2); head.add(eyeLight); // well in front: it lights what the eye looks at, never the eye itself
   root.traverse((o) => { if (o.isMesh) { o.castShadow = o !== glass; o.receiveShadow = true; } });
-  root.userData = { kind: "monster", height: H, body, torso, head, arms, legs, eyes, pane, one, iris, eyeLight, simple: true };
+  root.userData = { kind: "monster", height: H, eyeY: LEG + TOR + 0.02 + 0.72 * HEADK, headDepth: 0.7 * HEADK, body, torso, head, arms, legs, eyes, pane, one, iris, eyeLight, simple: true };
   return root;
+}
+const HALO = new Map();
+function haloMat(color) {
+  if (HALO.has(color)) return HALO.get(color);
+  const cv = document.createElement("canvas"); cv.width = cv.height = 128;
+  const c = cv.getContext("2d"), g = c.createRadialGradient(64, 64, 10, 64, 64, 64);
+  g.addColorStop(0, color); g.addColorStop(0.45, color); g.addColorStop(1, "rgba(0,0,0,0)");
+  c.fillStyle = g; c.fillRect(0, 0, 128, 128);
+  const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace;
+  const mm = new THREE.MeshBasicMaterial({ map: t, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false });
+  HALO.set(color, mm); return mm;
 }
 export const monsterHeight = (m) => m.userData.height;
 
@@ -110,15 +126,21 @@ export function animateMonster(m, state = "lurk", t = 0, opts = {}) {
   u.iris.emissiveIntensity = 0.8 + 0.2 * Math.sin(t * 2.4);
   switch (eye) {
     case "twitch": {
+      if (t < at) { lid = 0; break; } // a wide stare until the word, then the lid flutters
       lid = 0.25 + 0.2 * Math.abs(Math.sin(t * 31)) * (Math.sin(t * 5.3) > 0 ? 1 : 0.3);
       for (const e of u.eyes) e.ir.position.x = e.r * 0.18 * Math.sin(t * 23);
       head.rotation.z += 0.03 * Math.sin(t * 27);
       break;
     }
+    case "squint": { // suspicious: the lids half down, narrowing a little more now and then
+      lid = 0.42 + 0.1 * Math.max(0, Math.sin(t * 1.7));
+      head.position.z = 0.05 + 0.12 * ease(t / 1.5);
+      break;
+    }
     case "blink": {
-      const d = t - at; // shut fast at the word, hold, open slowly, then flinch back
-      lid = d < 0 ? 0 : d < 0.08 ? d / 0.08 : d < 0.3 ? 1 : d < 0.55 ? 1 - (d - 0.3) / 0.25 : 0;
-      if (d > 0.3) { const f = ease((d - 0.3) / 0.5); head.position.z = 0.05 - 0.35 * f; torso.rotation.x -= 0.15 * f; }
+      const d = t - at; // a SLOW blink at the word: the lids sink, hold shut, lift slowly, then it flinches back
+      lid = d < 0 ? 0 : d < 0.35 ? ease(d / 0.35) : d < 0.65 ? 1 : d < 1.25 ? 1 - ease((d - 0.65) / 0.6) : 0;
+      if (d > 0.65) { const f = ease((d - 0.65) / 0.6); head.position.z = 0.05 - 0.35 * f; torso.rotation.x -= 0.15 * f; }
       break;
     }
     case "press": {

@@ -31,7 +31,7 @@ export function makeBundle({ timeline, files, stubs = { "/page/post.js": STUB_PO
   const all = [];
   const walk = (d) => { for (const e of fs.readdirSync(path.join(ENGINE, d), { withFileTypes: true })) { const p = `${d}/${e.name}`; if (e.isDirectory()) walk(p); else if (/\.js$/.test(e.name)) all.push(`/${p}`); } };
   walk("page"); walk("lib");
-  const want = new Set(files), hit = new Set(Object.keys(stubs));
+  const want = new Set(files), hit = new Set([...Object.keys(stubs), ...files]); // + every importer of a changed file (else it loads the image's old copy)
   for (let grew = true; grew;) {
     grew = false;
     for (const f of all) {

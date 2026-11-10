@@ -58,7 +58,9 @@ export function propPass(tl, { check = null } = {}) {
   return rep;
 }
 
-const EYE_WORDS = [[/\bblink\w*/, "blink"], [/\btwitch\w*/, "twitch"], [/\b(press\w*|glass|pane|lick\w*|window|filled)\b/, "press"]];
+// the eye's state from its words (owner 2026-11-10): twitch (lid flutter), a slow blink, pressed to the glass, a squint
+// where it stares / suspects / watches, else a wide stare
+const EYE_WORDS = [[/\btwitch\w*/, "twitch"], [/\bblink(?:ed|s|ing)?\b(?! first)/, "blink"], [/\b(press\w*|glass|pane|lick\w*|window|filled)\b/, "press"], [/\b(star(?:e|ed|es|ing)|suspect\w*|squint\w*|watch\w*|peek\w*|look\w*|glar\w*)\b/, "squint"]];
 export function eyePass(tl) {
   if (!tl?.monster) return null;
   const all = low((tl.lines ?? []).map((l) => l.text).join(" "));
@@ -68,9 +70,11 @@ export function eyePass(tl) {
     if (!s.monsterState && s.focus !== "monster") continue;
     const ws = (tl.captions ?? []).filter((w) => w.start >= s.start - 1e-6 && w.start < s.end - 1e-6);
     let eye = "stare", at = 0;
-    for (const [re, e] of EYE_WORDS) { const w = ws.find((x) => re.test(low(x.word))); if (w) { eye = e; at = +(w.start - s.start).toFixed(3); break; } }
+    for (const [re, e] of EYE_WORDS) { if (e === "blink" && /\bblinks? first\b/.test(low(s.text))) continue; /* the mantra is not the blink */ const w = ws.find((x) => re.test(low(x.word))); if (w) { eye = e; at = +(w.start - s.start).toFixed(3); break; } }
     if (eye === "stare" && EYE_WORDS.some(([re]) => re.test(low(s.text)))) eye = EYE_WORDS.find(([re]) => re.test(low(s.text)))[1];
     s.monsterState = { ...(s.monsterState ?? { spot: "far", state: "lurk" }), eye, eyeAt: at };
+    // the monster is framed by the simple camera (the whole creature / its eye), not the EPIC establish / aerial view
+    if (s.focus === "monster" && ["establish", "aerial"].includes(s.camera) && !/^creature:/.test(s.set ?? "")) s.camera = "wide";
     rep[eye] = (rep[eye] ?? 0) + 1;
   }
   return rep;

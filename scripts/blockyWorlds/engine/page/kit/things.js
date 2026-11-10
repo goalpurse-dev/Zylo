@@ -55,6 +55,23 @@ function lumps(g, n, seed, { x0 = -1, x1 = 1, z0 = -1, z1 = 0, y = 0, s = 0.25, 
   for (let i = 0; i < n; i++) { const w = s * (0.6 + R() * 0.8); rbx(w, w * (0.4 + R() * 0.5), w * (0.7 + R() * 0.6), r, mat, { x: x0 + R() * (x1 - x0), y: y + w * 0.2, z: z0 + R() * (z1 - z0), ry: R() * 3, parent: g }); }
 }
 const anims = (g) => (g.userData.animList ??= []);
+/** a patchwork quilt: 4 textures of colourful squares with white stitch lines (cached), { mat(k) } */
+let PATCH = null;
+function patchMat() {
+  if (PATCH) return PATCH;
+  const C = ["#e8505b", "#f9a03f", "#ffd23a", "#5bc0be", "#6c5ce7", "#ff7aa2", "#7bc96f", "#4b8bff", "#ffffff"];
+  const mats = [0, 1, 2, 3].map((v) => {
+    const cv = document.createElement("canvas"); cv.width = cv.height = 256;
+    const c = cv.getContext("2d"), n = 6, s = 256 / n;
+    for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) { c.fillStyle = C[(i * 3 + j * 5 + v * 2) % C.length]; c.fillRect(i * s, j * s, s, s); }
+    c.strokeStyle = "rgba(255,255,255,0.85)"; c.lineWidth = 3; c.setLineDash([8, 6]);
+    for (let i = 1; i < n; i++) { c.beginPath(); c.moveTo(i * s, 0); c.lineTo(i * s, 256); c.moveTo(0, i * s); c.lineTo(256, i * s); c.stroke(); }
+    const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    return new THREE.MeshStandardMaterial({ map: t, roughness: 0.8 });
+  });
+  PATCH = { mat: (k) => mats[((k % 4) + 4) % 4] };
+  return PATCH;
+}
 
 // =====================================================================================================
 /** VISUAL-FIX 2026-11-08: one pastel house block (a level of a stacked tower): walls, small square windows, a balcony */
@@ -680,6 +697,56 @@ export const THING_BUILD = {
       M(sph(0.1, 10, 8), solid("#ffd23a"), { x: 0.15, y: 0.9, z: z + 0.1, parent: g }).scale.set(1.3, 0.6, 1);
     }
     fin(g, { h: H, w: W + 0.2, d: 0.9, detailH: 1.8 });
+  },
+  // SIMPLE LOOK 2026-11-10 (#2 The Kid Who Never Blinks): the story's quilt and curtains from the kit
+  patchwork_blanket(g, state) {
+    // a quilt of colourful squares: draped as a canopy over the people in front ("under one blanket"), flying away
+    // (tilted, high, rippling), or spread on a low bed
+    const q = patchMat();
+    if (state === "flying") {
+      const fly = new THREE.Group(); fly.position.set(0, 3.0, -0.6); fly.rotation.set(-0.5, 0.3, 0.25); g.add(fly);
+      for (let k = 0; k < 4; k++) { const p = rbx(2.4, 0.05, 0.62, 0.02, q.mat(k), { y: Math.sin(k * 1.4) * 0.18, z: -0.93 + k * 0.62, parent: fly }); p.rotation.x = Math.sin(k * 1.4 + 0.5) * 0.35; }
+      anims(g).push((t) => { fly.position.y = 3.0 + 0.6 * t; fly.rotation.z = 0.25 + 0.2 * Math.sin(t * 3); });
+      fin(g, { h: 3.6, w: 2.6, d: 2.0, fitY: 2.4, actors: "front" });
+      return;
+    }
+    if (state === "bed") {
+      rbx(1.6, 0.45, 2.1, 0.05, solid("#b0753f", { roughness: 0.75 }), { y: 0.225, z: -0.6, parent: g });
+      rbx(1.7, 0.12, 2.0, 0.04, q.mat(0), { y: 0.5, z: -0.55, parent: g });
+      rbx(1.0, 0.18, 0.45, 0.06, solid("#ffffff", { roughness: 0.8 }), { y: 0.62, z: -1.35, parent: g });
+      fin(g, { h: 0.7, w: 1.8, d: 2.1, actors: "behind" });
+      return;
+    }
+    // draped: a canopy at head height reaching out over the people in front, its sides hanging down at the back
+    for (let k = 0; k < 4; k++) rbx(2.8, 0.05, 0.6, 0.02, q.mat(k), { y: 2.05 + Math.sin(k * 1.7) * 0.05, z: -0.9 + k * 0.6, parent: g });
+    for (const s of [-1, 1]) rbx(0.05, 1.3, 2.3, 0.02, q.mat(s > 0 ? 1 : 2), { x: s * 1.4, y: 1.4, z: -0.3, parent: g });
+    rbx(2.8, 1.6, 0.05, 0.02, q.mat(3), { y: 1.25, z: -1.2, parent: g });
+    fin(g, { h: 2.2, w: 2.9, d: 2.4, actors: "front" });
+  },
+  curtain_pile(g, state) {
+    // a window in a bit of house wall: curtains bulging out and spilling into a pile ("forty curtains"), a heap of
+    // folded curtains, or three thin sheer curtains hanging in a bare window
+    const FAB = ["#e8505b", "#f9a03f", "#ffd23a", "#5bc0be", "#6c5ce7", "#ff7aa2", "#7bc96f", "#4b8bff"];
+    const fab = (i) => solid(FAB[i % FAB.length], { roughness: 0.75 });
+    const pile = (n, x0, z0, s = 1) => { for (let k = 0; k < n; k++) rbx(0.9 * s, 0.22 * s, 0.6 * s, 0.09 * s, fab(k * 3 + 1), { x: x0 + ((k * 37) % 5 - 2) * 0.06, y: 0.11 * s + k * 0.2 * s, z: z0 + ((k * 13) % 3 - 1) * 0.05, parent: g }).rotation.y = ((k * 53) % 7 - 3) * 0.09; };
+    if (state === "pile") { pile(7, -0.35, -0.3); pile(5, 0.45, -0.1, 0.9); fin(g, { h: 1.5, w: 1.9, d: 1.0 }); return; }
+    const wall = solid("#ffd36b", { roughness: 0.9 }), frame = solid("#ffffff", { roughness: 0.7 });
+    const z = -0.6, wy = 1.75;
+    rbx(3.0, 3.4, 0.3, 0.03, wall, { y: 1.7, z, parent: g });
+    for (const [w, h, x, y] of [[1.9, 0.14, 0, wy + 0.85], [1.9, 0.14, 0, wy - 0.85], [0.14, 1.84, -0.88, wy], [0.14, 1.84, 0.88, wy]]) bx(w, h, 0.14, frame, { x, y, z: z + 0.2, parent: g });
+    bx(2.2, 0.12, 0.4, frame, { y: wy - 0.95, z: z + 0.3, parent: g });
+    bx(1.62, 1.56, 0.04, solid("#1d2a44", { roughness: 0.3 }), { y: wy, z: z + 0.15, parent: g }); // the dark room behind the glass
+    if (state === "thin") {
+      for (let k = 0; k < 3; k++) bx(0.16, 1.5, 0.03, solid("#f2f2ff", { roughness: 0.8 }), { x: -0.55 + k * 0.55, y: wy - 0.02, z: z + 0.2, parent: g });
+      bx(1.8, 0.05, 0.05, solid("#8a5a34"), { y: wy + 0.76, z: z + 0.22, parent: g });
+      fin(g, { h: 3.4, w: 3.0, d: 0.6, detailH: 2.0 });
+      return;
+    }
+    // bulging: fat curtain rolls pushing out of the window, more spilling down the wall into a pile
+    for (let k = 0; k < 9; k++) { const r = rbx(0.5 + (k % 3) * 0.12, 0.42, 0.5 + (k % 2) * 0.25, 0.18, fab(k), { x: -0.55 + (k % 3) * 0.55, y: wy + 0.5 - Math.floor(k / 3) * 0.5, z: z + 0.35 + (k % 2) * 0.12, parent: g }); r.rotation.z = ((k * 31) % 5 - 2) * 0.12; }
+    for (let k = 0; k < 4; k++) rbx(0.45, 0.6, 0.35, 0.16, fab(k + 4), { x: -0.6 + k * 0.4, y: wy - 1.15, z: z + 0.42, parent: g }).rotation.z = (k - 1.5) * 0.15;
+    pile(5, 0.2, z + 0.7, 0.85);
+    fin(g, { h: 3.4, w: 3.0, d: 1.2, detailH: 2.2 });
   },
   stove(g) {
     // a kitchen stove with a pot, or the fireplace with a fire (a hearth also stands for a chimney)
