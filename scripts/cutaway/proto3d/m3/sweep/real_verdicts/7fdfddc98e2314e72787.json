@@ -1,0 +1,8 @@
+{
+ "role": "problem3",
+ "ok": false,
+ "seen": "Rain falls in the first frame, then a blue car sits on the brown road surface above the stone layer. Only a faint small grey puff shows above the car in the last frame. The car barely moves between frames 2 and 3.",
+ "problem": "The dust cloud is barely visible and there are no kicked-up stones, so the car does not clearly kick up dust. Add a larger dust cloud and flying stones behind the car as it drives.",
+ "text": "But now cars kick up loose stones and dust.",
+ "at": "2026-11-10T17:48:36.217Z"
+}

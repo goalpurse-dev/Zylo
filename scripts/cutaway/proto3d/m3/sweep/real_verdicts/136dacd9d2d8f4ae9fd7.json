@@ -1,0 +1,8 @@
+{
+ "role": "problem",
+ "ok": false,
+ "seen": "Rain falls and the red car is stopped on the dirt track. Only a few tiny blue droplets appear near the wheels. There are no brown mud splashes and no visible puddles spreading around the car.",
+ "problem": "Mud splashes and puddles are missing or unreadable; add larger brown mud splashes and puddles that spread around the stuck car.",
+ "text": "But rain turns the dirt to mud, and the car gets stuck.",
+ "at": "2026-11-10T17:48:36.217Z"
+}

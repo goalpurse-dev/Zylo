@@ -1,0 +1,8 @@
+{
+ "role": "fact",
+ "ok": false,
+ "seen": "A white wind arrow points toward the shelter, and a black sign reading 20 and a green bar gauge stand beside it. The first frame shows the shelter outline with the arrows, and the shelter is cut off at the right edge. The counter shows no visible rise from before to after, because it already reads 20 in the second frame.",
+ "problem": "The shelter is cropped by the right frame edge and the wind arrows do not clearly push on the roof. The counter shows 20 already in frame two, so no tick-up is visible. Pull the camera back to show the whole shelter, put the arrows on the roof, and start the counter low so it visibly rises to 20.",
+ "text": "A 90 mile per hour wind gust pushes about 20 pounds on every square foot.",
+ "at": "2026-11-07T12:37:37.972Z"
+}

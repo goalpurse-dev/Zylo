@@ -1,0 +1,8 @@
+{
+ "role": "hook",
+ "ok": false,
+ "seen": "A pit is cut into the ground in all three frames. A short white pipe stub with blue dots sits at the pit's left wall in frames 2 and 3. The pit does not change between frames, and the pipe does not grow into it.",
+ "problem": "The toilet pipe only pokes out of the wall and never grows into the pit across the frames. Extend the pipe visibly into the pit, and show the pit being dug.",
+ "text": "If you dig a pit for your toilet pipe, you have a septic tank.",
+ "at": "2026-11-07T12:46:09.246Z"
+}

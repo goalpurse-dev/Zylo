@@ -1,0 +1,8 @@
+{
+ "role": "problem",
+ "ok": false,
+ "seen": "The washer drum shows a yellow and a red or blue clothing item across the three frames. They shift slightly, but no dark dirt spots are visible on any clothes. Only the 'STILL DIRTY' text suggests dirt.",
+ "problem": "No dark dirt spots can be seen on the clothes. Add clear dark stain spots to the clothes that stay on them while the drum spins, and make the washer larger.",
+ "text": "But dark dirt spots stay on the clothes, even while they are spinning.",
+ "at": "2026-11-10T17:48:10.249Z"
+}

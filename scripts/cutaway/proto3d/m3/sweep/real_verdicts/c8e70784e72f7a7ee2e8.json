@@ -1,0 +1,8 @@
+{
+ "role": "fix2",
+ "ok": false,
+ "seen": "Rain falls on a stone layer. A blue water slab shows under the stone in the first frame, then it is gone. No holed pipe is visible in any frame, only a few blue-tinted stones at the bottom edge.",
+ "problem": "No holed drain pipe appears under the stone and no water visibly drains through it; grow a visible perforated pipe under the stone with water flowing out.",
+ "text": "So you lay a pipe with holes under it to carry water away.",
+ "at": "2026-11-07T12:44:53.472Z"
+}

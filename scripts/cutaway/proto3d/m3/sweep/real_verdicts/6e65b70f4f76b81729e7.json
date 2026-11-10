@@ -1,0 +1,8 @@
+{
+ "role": "how",
+ "ok": true,
+ "seen": "The controller door is open and the lamp goes from green to red or orange across the frames.",
+ "problem": "",
+ "text": "Inside, a timer switches the lamps from green to red on a fixed clock.",
+ "at": "2026-11-10T17:54:23.181Z"
+}

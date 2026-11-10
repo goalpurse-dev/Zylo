@@ -1,0 +1,8 @@
+{
+ "role": "congrats",
+ "ok": false,
+ "seen": "The plane gets smaller across frames while a dark blue panel slides in from the lower right and covers part of the scene.",
+ "problem": "Keep the whole plane large and fully in view with nothing covering it; remove or delay the blue panel.",
+ "text": "Congratulations, you have built an airplane.",
+ "at": "2026-11-10T17:39:20.989Z"
+}

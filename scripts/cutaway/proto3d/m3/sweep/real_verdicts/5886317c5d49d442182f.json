@@ -1,0 +1,8 @@
+{
+ "role": "hook",
+ "ok": false,
+ "seen": "An open box (shelf unit) with food on the shelf and a translucent ice block in the top compartment. The first frame shows the box empty, with no food and no ice.",
+ "problem": "The food and ice only appear after the first frame, and the ice sits in a separate top compartment instead of in the box with the food; this is weak but plausible. Put the ice block clearly beside the food on the same shelf.",
+ "text": "If you put food in a box with ice, you have a fridge.",
+ "at": "2026-11-07T12:36:57.933Z"
+}

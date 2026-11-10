@@ -1,0 +1,8 @@
+{
+ "role": "fix2",
+ "ok": true,
+ "seen": "A blue thermocouple wire and a red probe appear, the gas balls stop, and the valve gas bead disappears in the last frame, showing the valve shut.",
+ "problem": "",
+ "text": "So you add a thermocouple that makes about 25 millivolts, and the valve shuts.",
+ "at": "2026-11-10T17:47:52.170Z"
+}

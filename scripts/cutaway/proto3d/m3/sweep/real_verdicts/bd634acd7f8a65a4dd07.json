@@ -1,0 +1,8 @@
+{
+ "role": "factProof",
+ "ok": false,
+ "seen": "The light turns green and two cars sit at the line in the first frame. In the later frames one car is cropped at the right edge, crossing the line.",
+ "problem": "The cars do not clearly drive off one by one, and the camera crops the departing car. Frame the road so the cars are seen leaving in sequence.",
+ "text": "Each green lets one car cross the line about every 2 seconds.",
+ "at": "2026-11-10T17:54:23.182Z"
+}

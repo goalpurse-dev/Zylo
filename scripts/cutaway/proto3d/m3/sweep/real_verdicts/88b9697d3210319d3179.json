@@ -1,0 +1,8 @@
+{
+ "role": "fix3",
+ "ok": false,
+ "seen": "The beams spin in later frames, but no shiny silver mercury bath is visible under the lens. The beams look like flat white discs.",
+ "problem": "There is no visible mercury bath. Add a shiny silver pool under the lens, and make the beams look less like discs.",
+ "text": "So you float it on liquid mercury, and it spins easily.",
+ "at": "2026-11-10T17:45:55.192Z"
+}

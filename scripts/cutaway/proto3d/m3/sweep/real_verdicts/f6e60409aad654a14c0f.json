@@ -1,0 +1,8 @@
+{
+ "role": "hook",
+ "ok": false,
+ "seen": "A truck seen from behind on a straight road, nearly identical across all three frames; the wheels all point straight.",
+ "problem": "No front-wheel steering or wide turn is visible; show the front wheels turning while the rear wheels stay straight.",
+ "text": "If you only steer the front wheels of a long truck, you have a wide turn.",
+ "at": "2026-11-10T17:43:48.415Z"
+}

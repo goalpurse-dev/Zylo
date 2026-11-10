@@ -1,0 +1,8 @@
+{
+ "role": "hook",
+ "ok": false,
+ "seen": "Generator box, two poles and the house. The wire is missing in the first frame and strung from the generator over both poles to the house in the later two frames. The house is cut off by the right frame edge.",
+ "problem": "The house is cropped at the right edge and the poles sit low, so the wire runs only partly to the house; reframe to show the whole house and the full wire run.",
+ "text": "If you run a wire from a power plant to your house, you have electricity.",
+ "at": "2026-11-10T17:42:22.853Z"
+}

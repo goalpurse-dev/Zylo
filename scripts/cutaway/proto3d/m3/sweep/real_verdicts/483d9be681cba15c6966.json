@@ -1,0 +1,8 @@
+{
+ "role": "fix2",
+ "ok": true,
+ "seen": "The truck starts rotated and cut off at the edge, then lines up straight on the road by the last frames.",
+ "problem": "",
+ "text": "So above about 37 miles per hour, the rear wheels turn the same way as the front, and the truck tracks straight.",
+ "at": "2026-11-10T17:43:48.418Z"
+}

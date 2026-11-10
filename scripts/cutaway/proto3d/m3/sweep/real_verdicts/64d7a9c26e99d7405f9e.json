@@ -1,0 +1,8 @@
+{
+ "role": "name2",
+ "ok": false,
+ "seen": "The strip shows a flat dark slab on the grass at the right edge. A small stack of grey discs appears only in the last frame, partly cut off by the frame edge. It is tiny and hard to read. The camera has also pulled back and shifted.",
+ "problem": "The wafer stack is tiny and cut off at the right frame edge, so it is barely readable. Move the wafers into the centre of the frame, enlarge them, and show a clear stack of thin discs popping in.",
+ "text": "Slice the crystal into thin discs, and each disc is a wafer.",
+ "at": "2026-11-07T12:41:08.844Z"
+}

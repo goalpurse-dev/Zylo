@@ -1,0 +1,8 @@
+{
+ "role": "hook",
+ "ok": false,
+ "seen": "Lawn and cut soil face only, with no hole, no water and no goldfish. It is an intact ground before digging. A square hole in the lawn filled with translucent blue water, small orange-pink goldfish visible inside, and the soil layers cut below it. The same water-filled pond with several goldfish at slightly different positions, which shows they swim. The pond sits in the lawn and the soil section is visible beneath.",
+ "problem": "No hole is being dug yet; show the hole opening in the ground so the dig step is visible.",
+ "text": "If you dig a hole, fill it with water and add goldfish, you have a fish pond.",
+ "at": "2026-11-07T12:35:23.875Z"
+}

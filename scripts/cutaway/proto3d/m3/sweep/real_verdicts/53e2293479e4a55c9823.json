@@ -1,0 +1,8 @@
+{
+ "role": "fact",
+ "ok": false,
+ "seen": "A height sign beside the volcano counts up from 472 to a value that reads 377€. The last digit is cut off or garbled, so the number never reads 3,776.",
+ "problem": "The counter's final value is clipped or garbled and reads '377€'. Widen the sign or shrink the text so it shows 3,776 in full.",
+ "text": "Mount Fuji is a stratovolcano 3,776 meters tall.",
+ "at": "2026-11-10T17:55:15.106Z"
+}

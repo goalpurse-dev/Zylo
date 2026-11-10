@@ -1,0 +1,8 @@
+{
+ "role": "how",
+ "ok": false,
+ "seen": "Blue water blobs move through the creek channel from left to right across the three frames. The water stays murky olive with floating foam, and the outlet pipe at the left shows no clear water running through it.",
+ "problem": "The creek never turns clean and the outlet pipe shows no clear water flowing. Show clear water running down the outlet pipe and fade the creek from murky to clean.",
+ "text": "Bacteria eat the rest, and clear water flows to the river.",
+ "at": "2026-11-07T12:47:05.167Z"
+}

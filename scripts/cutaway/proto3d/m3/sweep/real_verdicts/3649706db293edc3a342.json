@@ -1,0 +1,8 @@
+{
+ "role": "problem",
+ "ok": false,
+ "seen": "The tube floats on the water surface with a CANT DIVE label, but only one frame is shown and there is no visible bobbing.",
+ "problem": "Show several frames where the tube moves up and down on the surface so the bobbing is visible.",
+ "text": "But it floats and bobs on the surface.",
+ "at": "2026-11-10T17:50:31.608Z"
+}

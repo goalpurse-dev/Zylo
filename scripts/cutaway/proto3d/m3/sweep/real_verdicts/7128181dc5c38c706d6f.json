@@ -1,0 +1,8 @@
+{
+ "role": "fix2",
+ "ok": false,
+ "seen": "A concrete anchor block with back cables appears on the near bank and the tower stands straight, but the camera is cropped so the far bank's anchor and the full tower tops are not visible.",
+ "problem": "Only one anchor is visible and the tower is cut off by the frame edge. Pull the camera back so both anchors and both tower tops are in view.",
+ "text": "So you tie the cables back to concrete anchors of about 60,000 tons each.",
+ "at": "2026-11-10T17:51:16.417Z"
+}

@@ -1,0 +1,8 @@
+{
+ "role": "hook",
+ "ok": true,
+ "seen": "Gas pipe feeds a small stove; the first frame has no flame, then a yellow flame lights above the pipe in the next two frames, with gas beads near the pipe.",
+ "problem": "",
+ "text": "If you let gas out of a pipe and light it, you have a stove.",
+ "at": "2026-11-10T17:47:52.167Z"
+}

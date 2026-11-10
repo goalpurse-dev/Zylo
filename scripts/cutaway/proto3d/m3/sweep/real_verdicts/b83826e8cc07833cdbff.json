@@ -1,0 +1,8 @@
+{
+ "role": "fix1",
+ "ok": true,
+ "seen": "The hull turns from dark to water-filled blue, glass tanks appear under it, and the sub sits lower in the water across the frames.",
+ "problem": "",
+ "text": "So you add tanks that flood with sea water, and it sinks.",
+ "at": "2026-11-10T17:50:31.611Z"
+}

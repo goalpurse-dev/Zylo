@@ -1,0 +1,8 @@
+{
+ "role": "hook",
+ "ok": false,
+ "seen": "A glass tank on a black base fills with blue water across the three frames, but no flame is visible under it; only small white dots sit on the base plate.",
+ "problem": "No flame lights under the tank; add a clearly visible flame under the tank in the last frames.",
+ "text": "If you heat a tank of water over a flame, you have a water heater.",
+ "at": "2026-11-07T12:52:27.176Z"
+}

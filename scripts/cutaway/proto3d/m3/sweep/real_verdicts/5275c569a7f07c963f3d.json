@@ -1,0 +1,8 @@
+{
+ "role": "problem2",
+ "ok": false,
+ "seen": "A single red car waits on a dark road with an EMPTY RED label. The lamp shows green or orange rather than red.",
+ "problem": "The light is not red while the car waits. Show the lamp clearly red over the lone car.",
+ "text": "But the box runs on a clock, so at midnight one car waits at an empty red.",
+ "at": "2026-11-10T17:54:23.182Z"
+}

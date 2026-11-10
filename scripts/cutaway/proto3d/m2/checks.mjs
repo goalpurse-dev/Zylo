@@ -157,7 +157,15 @@ export function previewTimes(tl, layout = null) {
     // the middle frame in the hold: just after the sentence's last motion has peaked, before anything takes it back (a
     // panel that "swings out and slams back" was judged before the swing and after the slam; round 3, 2026-10-28)
     const peaks = framedRamps.filter((r) => mine(r) && r.amp > 0 && r.e !== "step" && r.t1 - r.t0 >= 0.25 && r.t1 > start + 0.2 && r.t1 < end - 0.15).map((r) => r.t1);
-    const mid = peaks.length ? +(Math.max(...peaks) + 0.05).toFixed(2) : +((start + end) / 2).toFixed(2);
+    let mid = peaks.length ? +(Math.max(...peaks) + 0.05).toFixed(2) : +((start + end) / 2).toFixed(2);
+    // (but when that peak is just before the end frame, the middle and the end showed the same finished state and no frame
+    // the motion under way: the brake block "slides down onto the tyre" was seen up, then on, and failed, 2026-11-10; the
+    // middle frame then goes halfway through that motion)
+    if (peaks.length && end - mid < 0.35) {
+      const last = framedRamps.filter((r) => mine(r) && r.amp > 0 && r.e !== "step" && r.t1 - r.t0 >= 0.25 && r.t1 === Math.max(...peaks)).sort((a, b) => a.t0 - b.t0)[0];
+      const half = last ? +((last.t0 + last.t1) / 2).toFixed(2) : mid;
+      if (half > start + 0.15 && half < end - 0.2) mid = half;
+    }
     const ts = end - start >= 0.6 ? [start, mid, end] : [end];
     // the state label up at each moment (it is a caption, not in the canvas: previewStrips draws it on the frame)
     const labels = (tl.audio?.cards ?? []).filter((c) => c.kind === "state");

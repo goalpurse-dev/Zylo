@@ -1,0 +1,8 @@
+{
+ "role": "name",
+ "ok": false,
+ "seen": "The gray box stands by the pole and its door swings open, but no glowing outline is visible around it.",
+ "problem": "There is no glowing outline tracing the box. Add a visible glow outline around the controller.",
+ "text": "This is a signal controller.",
+ "at": "2026-11-10T17:54:23.181Z"
+}

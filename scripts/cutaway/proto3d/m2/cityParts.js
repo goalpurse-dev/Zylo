@@ -161,7 +161,7 @@ function signalHead(ctx, parent, x, y, z) {
   add(g, rb(1.25, 3.0, 0.08, 0.05), border, 0, 0, -0.18);
   add(g, rb(1.08, 2.84, 0.1, 0.05), housing, 0, 0, -0.13);
   add(g, rb(0.86, 2.6, 0.5, 0.08), housing, 0, 0, 0.12);
-  return ["#e0352b", "#f2b01e", "#2fbf5a"].map((col, i) => {
+  return ["#d8100a", "#f2b01e", "#2fbf5a"].map((col, i) => {
     const cy = 0.85 - i * 0.85;
     const lens = add(g, new THREE.CylinderGeometry(0.3, 0.3, 0.06, 28), glow(col, 0), 0, cy, 0.39, false); lens.rotation.x = Math.PI / 2;
     // the visor: a half tube over the lens's top
@@ -203,8 +203,8 @@ export function trafficLight(ctx, p, api) {
       if (api.ch("flash", t) > 0.5) ks = [(t % 1) < 0.5 ? 1 : 0, 0, 0];
       // an unlit lens is dark (its colour at a tenth), a lit one bright and glowing: "all red" reads as one red lamp (at a fifth
       // and 1.8 the green read "pale" in a wide queue shot and the dark red as lit; the re-judge of 2026-10-28)
-      lamps.forEach((m, i) => { m.userData.base = m.userData.base ?? m.material.color.clone(); m.material.color.copy(m.userData.base).multiplyScalar(0.1 + 0.9 * ks[i]); m.material.emissiveIntensity = 0.02 + ks[i] * 2.8; });
-      light.intensity = Math.max(...ks) * 1.4; light.color.set(ks[2] > 0.5 ? 0x2fbf5a : ks[1] > 0.5 ? 0xf2b01e : 0xe0352b);
+      lamps.forEach((m, i) => { m.userData.base = m.userData.base ?? m.material.color.clone(); m.material.color.copy(m.userData.base).multiplyScalar(0.1 + 0.9 * ks[i]); m.material.emissiveIntensity = 0.02 + ks[i] * (i === 0 ? 1.7 : 2.8); });
+      light.intensity = Math.max(...ks) * 1.4; light.color.set(ks[2] > 0.5 ? 0x2fbf5a : ks[1] > 0.5 ? 0xf2b01e : 0xd8100a);
       const lp = api.ch("loop", t); loopG.visible = lp > 0.002; loopG.scale.set(pop(lp), 1, pop(lp)); wire.emissiveIntensity = 0.2 + lp * 0.5;
       const pu = api.ch("pulse", t);
       rings.forEach((r, i) => { const u = (t * 0.9 + i / 3) % 1; r.visible = pu > 0.02 && lp > 0.5; r.scale.setScalar(0.5 + u * Math.max(lw, ld) * 0.8); r.position.y = 0.15 + u * 0.9; r.material.opacity = 0.6 * (1 - u) * Math.min(1, pu); });

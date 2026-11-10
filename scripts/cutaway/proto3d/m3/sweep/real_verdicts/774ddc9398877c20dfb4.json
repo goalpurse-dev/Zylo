@@ -1,0 +1,8 @@
+{
+ "role": "how",
+ "ok": false,
+ "seen": "The truck is shown from the side. Its outline glow fades after the first frame. The wheels and body look nearly identical in all three frames, and the truck is slightly turned in the last two. It does not pivot in a tight circle, and the rear wheels are not visibly turning against the front ones.",
+ "problem": "No visible pivot or counter-steering of the rear wheels against the front. Show the truck rotating in place across the frames with the rear wheels angled opposite the front wheels.",
+ "text": "At a crawl, the motor turns the rear wheels against the front ones, so the truck pivots in a tight circle like a compact.",
+ "at": "2026-11-07T12:36:32.287Z"
+}

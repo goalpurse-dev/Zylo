@@ -1,0 +1,8 @@
+{
+ "role": "fix2",
+ "ok": true,
+ "seen": "A dark mesh door covers the front and no rays leak out; the rays remain only inside on the food.",
+ "problem": "",
+ "text": "So you add a door with a metal mesh whose holes are far smaller than the waves.",
+ "at": "2026-11-10T17:46:13.813Z"
+}

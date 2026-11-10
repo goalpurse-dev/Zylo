@@ -1,0 +1,8 @@
+{
+ "role": "finish",
+ "ok": false,
+ "seen": "The reactor is replaced by a cream dome that stands on the floor inside the hall. The dome looks like a blob and the reactor is no longer visible inside it. The dome sits inside the house instead of over it.",
+ "problem": "The dome should be a concrete dome that covers the reactor and is clearly visible as one. Resize it so it fits over the reactor, make it look like concrete, and place it so it stands on the floor.",
+ "text": "Add a concrete dome over the reactor.",
+ "at": "2026-11-10T17:46:37.213Z"
+}

@@ -1,0 +1,8 @@
+{
+ "role": "problem3",
+ "ok": false,
+ "seen": "Plane stays tipped in the air while the speed sign goes 62 to 100; the gauge is mostly hidden at the right edge and no red turn is visible.",
+ "problem": "Show the speed gauge fully in view, climbing to 100 and turning red.",
+ "text": "And to land, the plane must slow down, but at 100 kilometers per hour it is far too fast.",
+ "at": "2026-11-10T17:39:20.988Z"
+}

@@ -1,0 +1,8 @@
+{
+ "role": "how",
+ "ok": false,
+ "seen": "Three small frames of the clutch on the engine. Yellow arrows appear in frames 2 and 3, and a hex outline in frame 1. The shoes look about the same size and position in every frame, and the chain shows no visible movement. The clutch is tiny in frame.",
+ "problem": "The shoes are not visibly flung out against the drum and the chain shows no motion; arrows alone do not count. Zoom in, move the shoes outward to touch the drum, and show the chain moving.",
+ "text": "At idle the spring wins, but as the engine revs, the shoes fling out, grab the drum and the chain runs.",
+ "at": "2026-11-07T12:33:03.302Z"
+}

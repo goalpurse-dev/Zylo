@@ -1,0 +1,8 @@
+{
+ "role": "name2",
+ "ok": false,
+ "seen": "Wide view of the truck with the bag, valve block, pump and tank in a row. The first frame has no outline. The second and third frames show a thin pale rectangle around the whole set, but it also includes the truck cab and body, and it is faint and cuts through the cab roof.",
+ "problem": "The outline is faint and encloses the truck body and cab instead of just the bag, pump, tank and valve. Draw a clearer outline around only those four parts, and add it from the first frame.",
+ "text": "And the bag, pump, tank and valve together are called air suspension.",
+ "at": "2026-11-07T12:31:13.600Z"
+}

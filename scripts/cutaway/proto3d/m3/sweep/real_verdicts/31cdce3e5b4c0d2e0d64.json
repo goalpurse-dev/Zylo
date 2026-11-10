@@ -1,0 +1,8 @@
+{
+ "role": "fix2",
+ "ok": false,
+ "seen": "A small tank outline appears underground with a thin sand-colored layer at the bottom, and the pipe runs to it.",
+ "problem": "The tank fill, sludge, scum and clearing water are too small to read; zoom in and show a distinct sludge layer, a floating scum layer and clearer water.",
+ "text": "So you add a settling tank where sludge sinks, scum floats, and clearer water goes back.",
+ "at": "2026-11-10T17:43:21.805Z"
+}

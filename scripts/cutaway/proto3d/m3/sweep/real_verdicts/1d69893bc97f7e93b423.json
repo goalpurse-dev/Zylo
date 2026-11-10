@@ -1,0 +1,8 @@
+{
+ "role": "name",
+ "ok": true,
+ "seen": "A glowing yellow outline traces the first tank. The second tank with bubbles sits right beside it, next to the blower box. The outline reads clearly at phone size.",
+ "problem": "The outline is only around the first tank and does not trace the second one. Extend the glow to surround both tanks.",
+ "text": "This is a sewage treatment plant.",
+ "at": "2026-11-07T12:47:05.166Z"
+}

@@ -1,0 +1,8 @@
+{
+ "role": "how",
+ "ok": false,
+ "seen": "Steel columns and floors rise from the mat across the frames, but no weight arrows run down the piles. The piles are cut off at the bottom of the frame and the rock is not visible.",
+ "problem": "Show arrows carrying weight down the piles to the rock, and frame the piles down to the rock.",
+ "text": "Steel columns rise floor by floor, and the piles pass the weight down to the rock.",
+ "at": "2026-11-10T17:53:03.754Z"
+}

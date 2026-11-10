@@ -1,0 +1,8 @@
+{
+ "role": "fix3",
+ "ok": true,
+ "seen": "A tank with a holed pipe leaving it. A gravel bed appears at the pipe end in frames 2 and 3. Blue dots run along the pipe, and arrows point down into the soil beneath the gravel. This shows water spreading and soaking down.",
+ "problem": "",
+ "text": "So holed pipes in gravel spread it, and the soil soaks it up.",
+ "at": "2026-11-07T12:46:09.247Z"
+}

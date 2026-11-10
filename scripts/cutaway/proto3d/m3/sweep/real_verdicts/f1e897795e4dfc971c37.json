@@ -1,0 +1,8 @@
+{
+ "role": "fix3",
+ "ok": true,
+ "seen": "The car on the road in frame 1 is replaced by a black asphalt layer lying on top of the stone layer in frames 2 and 3. It is clearly visible, sits where the road was, and nothing floats or is cut off.",
+ "problem": "",
+ "text": "So you seal the top with asphalt, which locks the stone in.",
+ "at": "2026-11-10T17:48:36.218Z"
+}

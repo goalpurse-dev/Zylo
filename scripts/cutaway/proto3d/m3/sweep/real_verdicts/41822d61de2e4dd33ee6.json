@@ -1,0 +1,8 @@
+{
+ "role": "fact",
+ "ok": true,
+ "seen": "The heat gauge fills with orange-red and the sign goes from 100 to 500.",
+ "problem": "",
+ "text": "Repeated hard stops can heat a disc past 500 degrees Celsius.",
+ "at": "2026-11-10T17:41:16.118Z"
+}

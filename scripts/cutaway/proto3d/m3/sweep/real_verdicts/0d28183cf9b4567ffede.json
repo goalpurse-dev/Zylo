@@ -1,0 +1,8 @@
+{
+ "role": "fix1",
+ "ok": false,
+ "seen": "Traffic light with a dim orange top lamp and a countdown sign showing 5. No gray box is visible and the lamp is not green. A gray cabinet box now stands at the base of the pole by the sidewalk. The bottom lamp is lit bright green and the red lamp is dark. The gray box is still beside the pole and the bottom lamp is clearly green, with the others dark.",
+ "problem": "The gray box has not appeared and the lamp is not green yet; show the start state without the box, then add it.",
+ "text": "So you add a green lamp and a gray box that switches them.",
+ "at": "2026-11-07T12:51:22.205Z"
+}

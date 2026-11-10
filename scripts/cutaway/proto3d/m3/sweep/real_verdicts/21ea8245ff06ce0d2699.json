@@ -1,0 +1,8 @@
+{
+ "role": "problem",
+ "ok": false,
+ "seen": "A dark tunnel under the river with a thin blue bead stream dropping from the river onto a flat blue slab, plus a CAVED IN label.",
+ "problem": "The cave-in is not visible: no mud falls from the roof and the hole is not flooded with water. Show mud collapsing from the roof and water filling the tunnel instead of a thin bead stream and a flat blue slab.",
+ "text": "But the soft mud caves in, and river water floods the hole.",
+ "at": "2026-11-10T17:54:49.833Z"
+}

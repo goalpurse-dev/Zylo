@@ -1,0 +1,8 @@
+{
+ "role": "how",
+ "ok": false,
+ "seen": "The lighthouse is small in the frame. The beam is a pale grey horizontal bar through the lantern, and it changes angle slightly across the three frames. It reads as a stick, not a light beam. The lens is tiny. No sea is visible, only grass.",
+ "problem": "The beam looks like a solid bar and the lens is tiny. Zoom in on the lantern, make the beams read as light, and show a clear sweep. Show the sea so the 20-mile reach makes sense.",
+ "text": "The lens turns, and its beam is seen about 20 miles out to sea.",
+ "at": "2026-11-07T12:39:33.279Z"
+}

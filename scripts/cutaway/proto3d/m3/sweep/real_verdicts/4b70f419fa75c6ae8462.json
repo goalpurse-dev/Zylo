@@ -1,0 +1,8 @@
+{
+ "role": "fact",
+ "ok": false,
+ "seen": "A counter card beside the alarm reads 0, 0, then 6. It covers most of the alarm, and the count has not reached 10.",
+ "problem": "The counter hides the alarm and does not count up to 10. Move it clear of the alarm and let it count up to 10.",
+ "text": "Fire safety experts say to replace it every 10 years.",
+ "at": "2026-11-10T17:50:06.118Z"
+}

@@ -1,0 +1,8 @@
+{
+ "role": "stakes",
+ "ok": false,
+ "seen": "Close-up shows a 2,450 counter and a full orange bar next to the plane with yellow arrows, but only a single frame so no tick-up or fill is visible.",
+ "problem": "Show the counter ticking up and the bar filling red across frames; the bar is already full and orange, not red.",
+ "text": "An older Cessna 172 weighs about 2,450 pounds, and gravity pins every pound of it down.",
+ "at": "2026-11-10T17:39:20.984Z"
+}

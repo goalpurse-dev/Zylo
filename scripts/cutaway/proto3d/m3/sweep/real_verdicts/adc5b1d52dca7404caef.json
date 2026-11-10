@@ -1,0 +1,8 @@
+{
+ "role": "fact",
+ "ok": false,
+ "seen": "The washer is cut off at the left edge of the frame. A black counter reading 1,200 and an orange bar stand beside it. The counter is already at 1,200 in the second and third frames and is partly hidden by the machine.",
+ "problem": "The washer is cropped by the frame edge and the counter is partly covered, and no climb to 1200 is visible. Pull the camera back so the whole drum and counter are in view, and show the number rising from low to 1200.",
+ "text": "In the final spin, the drum whirls at roughly 900 to 1200 rpm, and the meter climbs to 1200.",
+ "at": "2026-11-07T12:43:48.901Z"
+}

@@ -1,0 +1,8 @@
+{
+ "role": "how",
+ "ok": false,
+ "seen": "The porch lamp goes from dim-yellow to bright across the strip. The wire is only partly in view and no power dots can be seen moving along it into the house. Small brown cubes float in the air near the house.",
+ "problem": "No power dots are visible on the wire going into the house, and loose cubes float in the air. Show glowing dots travelling along the wire and remove the floating cubes.",
+ "text": "Power flows down the wire, and the porch light comes on.",
+ "at": "2026-11-07T12:34:17.842Z"
+}

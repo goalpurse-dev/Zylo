@@ -1,0 +1,8 @@
+{
+ "role": "fact",
+ "ok": true,
+ "seen": "A sign behind the sea reads 0 in the first frame and 800 in the next two, with the sub underwater below it. The counter climbs to 800.",
+ "problem": "",
+ "text": "Navy attack submarines dive deeper than 800 feet, and the exact depth is secret.",
+ "at": "2026-11-07T12:47:54.452Z"
+}

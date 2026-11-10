@@ -45,7 +45,10 @@ export function fx(ctx, p, api) {
       const rw = big ? Math.min(1, u / 0.6) : 0; ring.visible = big && rw < 1; ring.scale.setScalar(0.3 + rw * 4 * s); ring.material.opacity = 0.8 * (1 - rw);
       // (a blast's debris clears 1.2 s after it lands: the cubes lay on the ground to the end of the video, the owner's
       // list of 2026-11-07; a crash's or a collapse's chunks are the damage, and damage stays)
-      const cue = api.cue("go"), fade = big && cue ? clamp01(1 - (t - cue.t1 - 1.2) / 0.6) : 1;
+      // (and so do the chunks of a crash placed in the air: they settle at the effect's own height, so they floated beside
+      // the house to the end, the electricity stand-in of 2026-11-10; on the ground they are the damage and stay)
+      const airborne = !big && type === "crash" && Array.isArray(p.at) && Number(p.at[1]) > 0.6;
+      const cue = api.cue("go"), fade = (big || airborne) && cue ? clamp01(1 - (t - cue.t1 - 1.2) / 0.6) : 1;
       for (const c of deb) {
         const k = type === "collapse" ? 0.3 : 1, x = c.d[0] * u * 2.2 * s * k, z = c.d[2] * u * 1.6 * s * k, y = type === "collapse" ? 1.2 * s * (1 - u) - 0.2 : Math.max(-0.1, c.d[1] * u * 2.8 * s - 4.5 * s * u * u);
         c.m.position.set(x, y, z); c.m.rotation.set(c.r[0] * u, c.r[1] * u, 0);
@@ -91,6 +94,9 @@ export function fx(ctx, p, api) {
     });
     update = (t) => {
       const on = clamp01(api.ch("on", t)); root.visible = on > 0.01; if (!root.visible) return;
+      // (a fire, sparks, a splash or drips shrink as they stop: they stayed full size until "on" was all but 0, so a stop on
+      // a line's last word still showed the fire in its end frame, the lighthouse stand-in of 2026-11-10)
+      if (["fire", "spark", "splash", "drip"].includes(type)) root.scale.setScalar(Math.max(0.05, on));
       P.forEach((q, i) => {
         const f = (t * (type === "smoke" ? 0.35 : type === "motes" ? 0.12 : type === "drip" ? 0.9 : 1.4) + q.ph) % 1, m = q.m;
         m.visible = true;

@@ -1,0 +1,8 @@
+{
+ "role": "problem2",
+ "ok": false,
+ "seen": "Single frame shows the car low on its tires with a hose and the pump mostly cut off at the right edge, and a 'TOO SLOW' caption.",
+ "problem": "The pump is cropped by the frame edge and not readable as running; reframe so the whole pump is in view and show the car sinking.",
+ "text": "But the little pump is slow, so after every bump the car sinks and stays low.",
+ "at": "2026-11-10T17:40:09.867Z"
+}

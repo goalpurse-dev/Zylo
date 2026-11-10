@@ -1,0 +1,8 @@
+{
+ "role": "problem",
+ "ok": false,
+ "seen": "The stack starts upright, then tilts and leans to the right. Its base looks like it sits on top of the pavement, not sunk into it.",
+ "problem": "The stack does not visibly sink into the soft ground. Show the base going below the surface, ideally with the ground cut face visible, as it leans.",
+ "text": "But all that weight sinks into the soft ground and the stack leans.",
+ "at": "2026-11-10T17:53:03.752Z"
+}

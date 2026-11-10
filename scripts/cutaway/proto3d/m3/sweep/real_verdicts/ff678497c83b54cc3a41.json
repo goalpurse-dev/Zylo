@@ -1,0 +1,8 @@
+{
+ "role": "how",
+ "ok": false,
+ "seen": "The plant is shown from far away, with power lines appearing on the right. The turbine is tiny and no bright pulses are visible running along the lines.",
+ "problem": "The turbine spin and the bright pulses on the power lines are not readable at this distance. Move the camera closer and make the pulses brighter and larger.",
+ "text": "Steam spins the turbine, and power runs along the lines.",
+ "at": "2026-11-10T17:46:37.211Z"
+}

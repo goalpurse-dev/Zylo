@@ -1,0 +1,8 @@
+{
+ "role": "how",
+ "ok": false,
+ "seen": "The first frame shows the car beside the tower. The later frames have the camera panned away to the grass and a tower edge, with no car, no cables and no yellow arrows.",
+ "problem": "The camera drifts off the bridge, so the car crossing and the yellow load arrows on the hangers and cables are not visible. Keep the bridge in frame and show the arrows.",
+ "text": "The car's weight hangs on the cables, and they carry it to the towers.",
+ "at": "2026-11-10T17:51:16.414Z"
+}

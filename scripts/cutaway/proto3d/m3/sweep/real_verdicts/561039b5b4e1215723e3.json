@@ -1,0 +1,8 @@
+{
+ "role": "finish",
+ "ok": false,
+ "seen": "The alarm sits at the bottom edge of the frame and is cut off in the first two frames. Vent rings appear and a battery shows only in the last frame. A test button is not clearly visible.",
+ "problem": "The detector is cropped by the frame edge. Center the camera on the whole alarm and show the battery, test button and vents clearly in place.",
+ "text": "Add a battery, a test button and vents.",
+ "at": "2026-11-10T17:50:06.119Z"
+}

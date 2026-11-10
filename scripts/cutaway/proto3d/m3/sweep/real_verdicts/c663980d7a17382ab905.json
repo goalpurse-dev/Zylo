@@ -1,0 +1,8 @@
+{
+ "role": "congrats",
+ "ok": false,
+ "seen": "The finished plant is shown but is being cut off at the right edge by the frame. The cooling tower is also cut off at the edge, and the camera pulls away across the frames.",
+ "problem": "The whole build is not fully in view because the cooling tower is cut off at the right edge. Frame the camera so the plant and the tower are fully visible.",
+ "text": "Congratulations, you have built a nuclear power plant.",
+ "at": "2026-11-10T17:46:37.213Z"
+}

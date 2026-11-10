@@ -1,0 +1,8 @@
+{
+ "role": "problem",
+ "ok": false,
+ "seen": "The gauge shows 0 in the first frame, then the readout is hidden by a TOO HEAVY label while the gauge bar looks red. The car stays in place.",
+ "problem": "The gauge never visibly climbs into the red across the frames; show the number rising and the bar filling to red, and keep the gauge uncovered.",
+ "text": "But a full car weighs about a thousand kilograms, and the motor alone has to lift all of it.",
+ "at": "2026-11-10T17:56:10.149Z"
+}

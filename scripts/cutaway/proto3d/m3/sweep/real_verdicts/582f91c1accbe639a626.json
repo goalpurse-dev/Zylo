@@ -1,0 +1,8 @@
+{
+ "role": "name",
+ "ok": false,
+ "seen": "The plane sits on a brown runway strip next to a tree, with no yellow outline around it. A yellow glowing outline traces the whole plane: tail, fuselage, wing, nose and propeller. The plane is on the runway and fully in frame. The yellow outline still traces the whole plane (tail fin, fuselage, wing, blue nose). The plane is clearly readable on the runway.",
+ "problem": "There is no yellow outline tracing the plane; add the glowing yellow outline.",
+ "text": "This is an airplane.",
+ "at": "2026-11-07T12:30:15.364Z"
+}

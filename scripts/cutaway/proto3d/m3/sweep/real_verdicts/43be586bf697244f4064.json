@@ -1,0 +1,8 @@
+{
+ "role": "problem",
+ "ok": false,
+ "seen": "The orange chamber and red crack look nearly the same in all three frames. A pressure gauge showing 14 only appears in the last frame. No gas bubbles are visible in the chamber and the gauge does not visibly fill red.",
+ "problem": "Add visible gas bubbles rising in the chamber and show the pressure gauge filling red across the frames.",
+ "text": "But gas bubbles in the magma expand and build up pressure.",
+ "at": "2026-11-07T12:52:05.717Z"
+}

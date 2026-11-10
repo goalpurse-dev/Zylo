@@ -232,12 +232,12 @@
           "shape": "box",
           "size": [
            0.3,
-           3.2,
+           4.4,
            0.3
           ],
           "at": [
            0,
-           1.6,
+           2.2,
            -1.05
           ],
           "look": "metal",
@@ -252,7 +252,7 @@
           ],
           "at": [
            0,
-           3.12,
+           4.32,
            -0.85
           ],
           "look": "metal",
@@ -520,7 +520,7 @@
         "parent": "stand",
         "at": [
          0,
-         2.66,
+         3.7,
          -0.75
         ],
         "shapes": [
@@ -561,7 +561,7 @@
           "type": "slide",
           "to": [
            0,
-           -0.36,
+           -1.38,
            0
           ]
          }
@@ -1074,31 +1074,6 @@
      }
     },
     {
-     "id": "down",
-     "kind": "arrows",
-     "params": {
-      "list": [
-       {
-        "at": [
-         0.6,
-         3.6,
-         -2.4
-        ],
-        "dir": [
-         0,
-         -1
-        ],
-        "travel": 0.5,
-        "phase": 0
-       }
-      ],
-      "opts": {
-       "scale": 0.8,
-       "color": "#ffd23d"
-      }
-     }
-    },
-    {
      "id": "air",
      "kind": "arrows",
      "params": {
@@ -1167,7 +1142,7 @@
      "s": "hook",
      "shows": {
       "p": "brake",
-      "does": "a wooden block slides down and presses on the spinning tyre"
+      "does": "a wooden block slides a long way down from the top of the stand and presses on the spinning tyre"
      },
      "do": [
       {
@@ -1189,20 +1164,11 @@
        "ch": ""
       },
       {
-       "p": "down",
-       "v": "show",
-       "w": "press",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
        "p": "brake",
        "v": "press",
        "w": "press",
        "o": 0,
-       "d": 0,
+       "d": 1,
        "amp": 1,
        "ch": ""
       }
@@ -1233,15 +1199,6 @@
       "w": "smoke"
      },
      "do": [
-      {
-       "p": "down",
-       "v": "hide",
-       "w": "But",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
       {
        "p": "rub",
        "v": "start",

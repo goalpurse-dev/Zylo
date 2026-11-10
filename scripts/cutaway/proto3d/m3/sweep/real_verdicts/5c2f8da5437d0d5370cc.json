@@ -1,0 +1,8 @@
+{
+ "role": "fact",
+ "ok": false,
+ "seen": "A black square counter board covers most of the frame and the alarm is almost hidden behind it. The digit goes 0, 0, 6, so it is heading toward 10 but stops at 6. A green bin sits in front of the board.",
+ "problem": "The counter never reaches 10 and it hides the alarm, so it is not beside the alarm. Shrink the board and move it next to the alarm, then let the count run up to 10 by the last frame.",
+ "text": "Fire safety experts say to replace it every 10 years.",
+ "at": "2026-11-07T12:47:26.916Z"
+}

@@ -1,0 +1,8 @@
+{
+ "role": "how",
+ "ok": false,
+ "seen": "The lower coil changes from absent to orange in the later frames, and a dark duct runs down. Small pale blue balls sit near the upper coil. No orange dots run up the duct to the window, and the duct is dark and ends at the floor.",
+ "problem": "No orange dots travel up the duct to the window. The duct does not connect to the window. Show orange heat dots moving along the duct from the hot coil out through the window.",
+ "text": "The heat goes to a hot coil and out the window.",
+ "at": "2026-11-07T12:30:41.975Z"
+}

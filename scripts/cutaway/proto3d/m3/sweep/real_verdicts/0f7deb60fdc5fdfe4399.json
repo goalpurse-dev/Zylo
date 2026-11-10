@@ -1,0 +1,8 @@
+{
+ "role": "fact",
+ "ok": false,
+ "seen": "A timer shows 0 in yellow and the lamp is orange. Only a sliver of a car edge appears at the right, with no visible queue.",
+ "problem": "The timer does not count down from 90, and no cars are clearly queuing. Show the timer counting down from 90 and a visible car queue at the red.",
+ "text": "One full cycle at a busy corner lasts about 60 to 120 seconds.",
+ "at": "2026-11-10T17:54:23.181Z"
+}

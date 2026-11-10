@@ -1,0 +1,8 @@
+{
+ "role": "fact",
+ "ok": false,
+ "seen": "A sign counter reads 0, then 3, next to a green bar that fills. The tank is visible, but its sludge layer looks the same height in all three frames.",
+ "problem": "The sludge in the tank does not visibly pile higher as the counter ticks up. Raise the yellow sludge layer as the years go up.",
+ "text": "Sludge still builds, so it is pumped every 3 to 5 years.",
+ "at": "2026-11-07T12:46:09.249Z"
+}

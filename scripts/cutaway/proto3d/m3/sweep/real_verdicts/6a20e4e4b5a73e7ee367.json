@@ -1,0 +1,8 @@
+{
+ "role": "stakes",
+ "ok": true,
+ "seen": "A wait timer sign counts 0, 2, 5 and a bar fills from green to orange, beside the pole.",
+ "problem": "",
+ "text": "Drivers wait one minute, then two, then five, and nobody moves.",
+ "at": "2026-11-10T17:54:23.180Z"
+}

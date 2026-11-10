@@ -1,0 +1,8 @@
+{
+ "role": "name",
+ "ok": false,
+ "seen": "The whole unit is in view with a glowing yellow-orange outline tracing its edges. It shows internal parts: coil, fan, blue tray, black tank and a duct.",
+ "problem": "The outline is present, but the black cylinder and duct look cluttered. The unit also appears to float slightly against the wall, and the arrow behind it is faint. Clean up the internals and make sure the unit sits grounded.",
+ "text": "This is an air conditioner.",
+ "at": "2026-11-07T12:30:41.974Z"
+}

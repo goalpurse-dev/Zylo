@@ -1,0 +1,8 @@
+{
+ "role": "fix3",
+ "ok": false,
+ "seen": "A crystal puller with a cylinder hanging above an orange disc. The cylinder does not move between frames, and no crystal is pulled out of the melt. The first frame is mostly empty grass.",
+ "problem": "Show the crucible melt glowing and a crystal rod being pulled up out of it while turning; the hanging cylinder never touches the melt.",
+ "text": "So you melt the pure silicon and pull one single crystal out of it.",
+ "at": "2026-11-10T17:47:10.583Z"
+}

@@ -1,0 +1,8 @@
+{
+ "role": "problem",
+ "ok": false,
+ "seen": "The light shows orange. A maroon car and then a yellow car appear at the bottom right, partly cropped, with a STUCK label.",
+ "problem": "The light is not clearly red, and the cars are cropped at the frame edge and do not queue visibly nose to tail. Show a red lamp and a full queue of cars lined up.",
+ "text": "But it never changes, so cars pile up nose to tail at the red.",
+ "at": "2026-11-10T17:54:23.179Z"
+}

@@ -1,0 +1,8 @@
+{
+ "role": "problem3",
+ "ok": false,
+ "seen": "A blue car sits on the dirt strip above the stone in the last two frames, with a faint puff of smoke on its roof in the last. The first frame has rain and no car.",
+ "problem": "The car is not visibly driving over the loose stone and the dust is only a tiny faint puff; show the car moving across the stone with a clear dust cloud.",
+ "text": "But now cars kick up loose stones and dust.",
+ "at": "2026-11-07T12:44:53.473Z"
+}

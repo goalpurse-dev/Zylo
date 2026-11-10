@@ -1,0 +1,8 @@
+{
+ "role": "fix5",
+ "ok": false,
+ "seen": "The plane is tipped in the air, then small red flaps appear on the wing, and in the last frame it lies on the runway with the wing still tilted up steeply.",
+ "problem": "Show flaps tilting down, the plane clearly leveling out with wings flat, and then settling onto the runway.",
+ "text": "So you add flaps on the wings that level the plane and slow it until it settles onto the runway.",
+ "at": "2026-11-10T17:39:20.988Z"
+}

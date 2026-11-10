@@ -1,0 +1,8 @@
+{
+ "role": "fact",
+ "ok": false,
+ "seen": "The strip starts with the outlined roof, then a counter reading 0, then 257 with a green bar rising. Rain falls and blue droplets run down the downspout. The counter only reaches 257 and never gets near 600. In the last frame the roof is cut off by the right frame edge.",
+ "problem": "The counter stops at 257 instead of reaching about 600, and the roof is cropped at the right edge in the later frames. Run the counter up to 600 and recenter the roof so it is fully in frame.",
+ "text": "One inch of rain on a 1,000 square foot roof is over 600 gallons.",
+ "at": "2026-11-07T12:45:24.312Z"
+}

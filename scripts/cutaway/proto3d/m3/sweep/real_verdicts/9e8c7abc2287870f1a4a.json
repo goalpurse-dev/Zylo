@@ -1,0 +1,8 @@
+{
+ "role": "congrats",
+ "ok": false,
+ "seen": "The first frame shows the finished alarm close up and fully in view. The camera then pulls back to a wall, and the alarm becomes tiny in the last frame, partly behind a table and other objects.",
+ "problem": "The alarm is tiny and hard to read at the end, and the pull-back adds clutter. Keep the finished build large and fully in view with nothing covering it.",
+ "text": "Congratulations, you have built a smoke detector.",
+ "at": "2026-11-10T17:50:06.119Z"
+}

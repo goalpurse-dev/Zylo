@@ -1,6 +1,6 @@
 {
  "hash": "*",
- "by": "stand-in planner",
+ "by": "stand-in planner (replan 2026-11-10, fix6)",
  "searches": 0,
  "data": {
   "why": "A yard with a small generator on the left, two power poles and a house on the right: the wire is strung from the generator to the house, a step-up transformer and a pole transformer are added, a storm drops a branch on the line, and the cable is finally buried in a trench seen in section. The camera opens close on the wire leaving the generator, holds mid shots of the poles and the counter, and ends wide on the lit house.",
@@ -168,9 +168,9 @@
      1.4
     ],
     "house": [
-     9,
+     -2.7,
      0,
-     -8
+     -11
     ],
     "porch": false,
     "trees": [
@@ -285,9 +285,9 @@
            0.3
           ],
           "at": [
-           2.5,
+           0.5,
            3.5,
-           0
+           -2
           ],
           "look": "wood",
           "color": "#7a5a3a"
@@ -300,27 +300,17 @@
            0.16
           ],
           "at": [
-           2.5,
+           0.5,
            6.8,
-           0
+           -2
           ],
           "look": "wood",
-          "color": "#7a5a3a"
-         },
-         {
-          "shape": "box",
-          "size": [
-           5.8,
-           0.08,
-           0.08
-          ],
-          "at": [
-           -0.25,
-           0.04,
-           0.5
-          ],
-          "look": "concrete",
-          "color": "#9a9a9a"
+          "color": "#7a5a3a",
+          "rot": [
+           0,
+           30,
+           0
+          ]
          }
         ]
        },
@@ -347,14 +337,14 @@
             0
            ],
            [
-            2.5,
+            0.5,
             6.85,
-            0
+            -2
            ],
            [
-            5,
-            4,
-            -2.2
+            2.5,
+            5.9,
+            -5.2
            ]
           ],
           "r": 0.07,
@@ -371,33 +361,6 @@
           "name": "hot",
           "type": "heat",
           "color": "#ff4a1f"
-         },
-         {
-          "name": "power",
-          "type": "flow",
-          "path": [
-           [
-            -6,
-            2,
-            -0.5
-           ],
-           [
-            -3,
-            6.85,
-            0
-           ],
-           [
-            2.5,
-            6.85,
-            0
-           ],
-           [
-            5,
-            4,
-            -2.2
-           ]
-          ],
-          "color": "#ffe14a"
          }
         ]
        },
@@ -465,9 +428,9 @@
         "id": "can",
         "parent": "poles",
         "at": [
-         2.5,
+         0.5,
          5.4,
-         0.4
+         -1.6
         ],
         "shapes": [
          {
@@ -480,8 +443,8 @@
            0,
            0
           ],
-          "look": "metal",
-          "color": "#8c969f"
+          "look": "paint",
+          "color": "#a3a7ab"
          },
          {
           "shape": "cylinder",
@@ -508,9 +471,9 @@
         "id": "branch",
         "parent": "poles",
         "at": [
-         -0.2,
+         -1.25,
          8.3,
-         0
+         -1
         ],
         "shapes": [
          {
@@ -527,8 +490,8 @@
           ],
           "rot": [
            0,
-           0,
-           -12
+           30,
+           -6
           ],
           "look": "wood",
           "color": "#5a3e26"
@@ -547,7 +510,7 @@
           ],
           "rot": [
            0,
-           0,
+           30,
            35
           ],
           "look": "wood",
@@ -574,6 +537,38 @@
      }
     },
     {
+     "id": "current",
+     "kind": "wires",
+     "params": {
+      "points": [
+       [
+        -6,
+        2,
+        -3
+       ],
+       [
+        -3,
+        6.85,
+        -2.5
+       ],
+       [
+        0.5,
+        6.85,
+        -4.5
+       ],
+       [
+        2.5,
+        5.9,
+        -7.7
+       ]
+      ],
+      "sag": 0,
+      "count": 1,
+      "color": "#202020",
+      "glow": "#ffe14a"
+     }
+    },
+    {
      "id": "porch",
      "kind": "rig",
      "params": {
@@ -585,9 +580,9 @@
        "outlet"
       ],
       "pos": [
-       5.6,
+       2.5,
        1.6,
-       -4.72
+       -7.72
       ],
       "mount": "wall",
       "nodes": [
@@ -636,7 +631,7 @@
         "id": "meter",
         "parent": "plate",
         "at": [
-         1,
+         0.6,
          0,
          0
         ],
@@ -695,9 +690,9 @@
        0.25
       ],
       "pos": [
-       -0.3,
+       -1.6,
        1.1,
-       -4.2
+       -3.4
       ],
       "mat": "metal"
      }
@@ -707,9 +702,9 @@
      "kind": "counter",
      "params": {
       "pos": [
-       -0.3,
+       -1.6,
        2.6,
-       -4.2
+       -3.4
       ],
       "size": 1.2,
       "from": 10,
@@ -722,9 +717,9 @@
      "kind": "counter",
      "params": {
       "pos": [
-       -0.3,
+       -1.6,
        2.6,
-       -4.2
+       -3.4
       ],
       "size": 1.2,
       "from": 7200,
@@ -733,16 +728,29 @@
      }
     },
     {
+     "id": "zap",
+     "kind": "fx",
+     "params": {
+      "type": "blast",
+      "at": [
+       2.5,
+       5.9,
+       -7.55
+      ],
+      "size": 0.6
+     }
+    },
+    {
      "id": "spark1",
      "kind": "fx",
      "params": {
       "type": "spark",
       "at": [
-       5,
-       4,
-       -4.6
+       2.5,
+       5.9,
+       -7.6000000000000005
       ],
-      "size": 0.8
+      "size": 1.4
      }
     },
     {
@@ -751,9 +759,9 @@
      "params": {
       "type": "spark",
       "at": [
-       0.5,
+       -1.25,
        6.9,
-       -2.4
+       -3.5
       ],
       "size": 0.9
      }
@@ -779,10 +787,10 @@
      "params": {
       "clumps": 120,
       "mound": {
-       "x": -1,
-       "z": -6.5,
-       "rx": 1.6,
-       "rz": 1,
+       "x": 3.5,
+       "z": -4.2,
+       "rx": 1.4,
+       "rz": 0.9,
        "h": 0.8
       },
       "haul": true
@@ -889,18 +897,27 @@
        "ch": ""
       },
       {
+       "p": "current",
+       "v": "show",
+       "w": "run",
+       "o": 0,
+       "d": 1.6,
+       "amp": 1,
+       "ch": ""
+      },
+      {
        "p": "grid",
        "v": "wire",
-       "w": "wire",
+       "w": "house",
        "o": 0,
        "d": 0,
        "amp": 1,
        "ch": ""
       },
       {
-       "p": "grid",
-       "v": "power",
-       "w": "house",
+       "p": "current",
+       "v": "live",
+       "w": "electricity",
        "o": 0,
        "d": 0,
        "amp": 1,
@@ -915,7 +932,7 @@
        ],
        "view": "home",
        "width": 0,
-       "type": "mid",
+       "type": "wide",
        "hero": false,
        "word": "",
        "box": []
@@ -933,6 +950,15 @@
       "does": "the long wire glows red hot"
      },
      "do": [
+      {
+       "p": "current",
+       "v": "off",
+       "w": "But",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
       {
        "p": "grid",
        "v": "hot",
@@ -1037,6 +1063,15 @@
      },
      "do": [
       {
+       "p": "zap",
+       "v": "go",
+       "w": "bursts",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
        "p": "spark1",
        "v": "start",
        "w": "sparks",
@@ -1048,16 +1083,20 @@
      ],
      "shots": [
       {
-       "focus": [
-        "porch",
-        "grid.wire"
-       ],
-       "view": "home",
-       "width": 0,
-       "type": "mid",
-       "hero": false,
-       "word": "",
-       "box": []
+       "box": {
+        "min": [
+         -0.6,
+         1,
+         -8
+        ],
+        "max": [
+         5.4,
+         8,
+         -3.8
+        ]
+       },
+       "width": 0.85,
+       "zone": "center"
       }
      ]
     },
@@ -1065,7 +1104,7 @@
      "s": "fix2",
      "shows": {
       "p": "grid",
-      "does": "a grey transformer can appears on the pole and the sparks stop"
+      "does": "a grey transformer can appears on the second pole, between the wire and the house, and the sparks at the house stop"
      },
      "do": [
       {
@@ -1098,15 +1137,20 @@
      ],
      "shots": [
       {
-       "focus": [
-        "grid.can"
-       ],
-       "view": "home",
-       "width": 0,
-       "type": "close",
-       "hero": false,
-       "word": "",
-       "box": []
+       "box": {
+        "min": [
+         -0.6,
+         1.5,
+         -8
+        ],
+        "max": [
+         4.2,
+         8.2,
+         -3.8
+        ]
+       },
+       "width": 0.85,
+       "zone": "center"
       }
      ]
     },
@@ -1144,8 +1188,8 @@
     {
      "s": "how",
      "shows": {
-      "p": "porch",
-      "does": "power dots run along the wire into the house and the porch light comes on"
+      "p": "current",
+      "does": "bright current pulses run along the wire from the pole into the house and the porch light comes on"
      },
      "do": [
       {
@@ -1161,6 +1205,15 @@
        "p": "porch",
        "v": "show",
        "w": "",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "current",
+       "v": "live",
+       "w": "flows",
        "o": 0,
        "d": 0,
        "amp": 1,
@@ -1250,6 +1303,15 @@
       {
        "p": "porch",
        "v": "litBack",
+       "w": "out",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "current",
+       "v": "off",
        "w": "out",
        "o": 0,
        "d": 0,
@@ -1375,9 +1437,9 @@
       {
        "p": "volts2",
        "v": "count",
-       "w": "240",
-       "o": -0.8,
-       "d": 1.2,
+       "w": "turns",
+       "o": 0,
+       "d": 1.4,
        "amp": 1,
        "ch": ""
       }

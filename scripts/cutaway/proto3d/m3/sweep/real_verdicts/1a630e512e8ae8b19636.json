@@ -1,0 +1,8 @@
+{
+ "role": "fix1",
+ "ok": false,
+ "seen": "A pipe with brown dots appears under the pond edge, but the pipe is not clearly connected to the pond and no pump is clearly visible.",
+ "problem": "Show the pipe growing out of the pond with a clear pump, and dirty water visibly moving into it.",
+ "text": "So you add a pump and a pipe to pull the dirty water out of the pond.",
+ "at": "2026-11-10T17:43:21.804Z"
+}

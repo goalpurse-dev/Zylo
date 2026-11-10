@@ -1,0 +1,8 @@
+{
+ "role": "problem",
+ "ok": false,
+ "seen": "A brown sewage block rises to the rim of the pit across the frames and a brown blob appears on the lawn at the right edge. The OVERFLOW label is visible.",
+ "problem": "The spill onto the lawn is barely visible and cut off at the frame edge, with no clear brown puddles. Show sewage flowing over the rim into visible puddles on the lawn.",
+ "text": "But it fills with raw sewage that spills onto the lawn.",
+ "at": "2026-11-10T17:49:19.841Z"
+}

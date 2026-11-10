@@ -1,0 +1,8 @@
+{
+ "role": "fix4",
+ "ok": false,
+ "seen": "Bubbles rise from an air pipe in the pond across the frames, but no oxygen gauge is visible.",
+ "problem": "Show the oxygen gauge rising as the bubbles flow.",
+ "text": "So you add an air pump that blows bubbles up through the water, and the oxygen climbs back.",
+ "at": "2026-11-10T17:43:21.807Z"
+}

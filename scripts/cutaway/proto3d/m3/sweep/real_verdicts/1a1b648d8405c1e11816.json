@@ -1,0 +1,8 @@
+{
+ "role": "how",
+ "ok": false,
+ "seen": "The camera has panned to the left bank, showing only the left tower edge. The car is on the grass at the left in the first frame and gone in the next two. The cables and deck are mostly out of frame. A small yellow arrow sits at the tower's edge in frames 2 and 3. No car is crossing the deck, and no arrows run down the hangers and up the cables.",
+ "problem": "The camera is framed too far left, so the cables, hangers and deck are cut off. The car never drives onto the bridge, and the yellow arrows are not visible on the hangers and cables. Reframe on the whole bridge, show the car crossing the deck, and show the arrows down the hangers and up the cables to the towers.",
+ "text": "The car's weight hangs on the cables, and they carry it to the towers.",
+ "at": "2026-11-07T12:48:34.894Z"
+}

@@ -1,0 +1,8 @@
+{
+ "role": "finish",
+ "ok": false,
+ "seen": "The truck is small and unchanged across frames; no headlights or side mirrors are visible.",
+ "problem": "Headlights and mirrors are missing or unreadable; zoom in and show them attached to the truck.",
+ "text": "Add headlights and side mirrors, and the truck is ready for tight streets.",
+ "at": "2026-11-10T17:43:48.421Z"
+}

@@ -245,9 +245,42 @@
       "rotY": 1.5708,
       "nodes": [
        {
+        "id": "arc",
+        "at": [
+         -2.1,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           2.3,
+           0.12,
+           0.3
+          ],
+          "at": [
+           1.05,
+           0.55,
+           0
+          ],
+          "look": "metal",
+          "color": "#2b3038"
+         }
+        ],
+        "moves": [
+         {
+          "name": "wide",
+          "type": "swing",
+          "axis": "y",
+          "angle": 22
+         }
+        ]
+       },
+       {
         "id": "turn",
         "at": [
-         0,
+         2.1,
          0,
          0
         ],
@@ -281,7 +314,8 @@
           "axis": "y",
           "angle": -16
          }
-        ]
+        ],
+        "parent": "arc"
        },
        {
         "id": "body",
@@ -499,7 +533,7 @@
           "name": "steer",
           "type": "swing",
           "axis": "y",
-          "angle": 32
+          "angle": 40
          }
         ]
        },
@@ -559,7 +593,7 @@
           "name": "steer",
           "type": "swing",
           "axis": "y",
-          "angle": 32
+          "angle": 40
          }
         ]
        },
@@ -1084,7 +1118,7 @@
      "s": "hook",
      "shows": {
       "p": "giant",
-      "does": "the front wheels of the long truck steer while the rear wheels stay straight"
+      "does": "the front wheels of the long truck steer hard while the rear wheels stay straight, and the truck swings into a wide turn"
      },
      "do": [
       {
@@ -1101,7 +1135,16 @@
        "v": "steer",
        "w": "steer",
        "o": 0,
-       "d": 0,
+       "d": 0.8,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "giant",
+       "v": "wide",
+       "w": "long",
+       "o": 0,
+       "d": 1.4,
        "amp": 1,
        "ch": ""
       }
@@ -1230,6 +1273,15 @@
       {
        "p": "giant",
        "v": "swingsBack",
+       "w": "So",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "giant",
+       "v": "wideBack",
        "w": "So",
        "o": 0,
        "d": 0,

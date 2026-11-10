@@ -1,0 +1,8 @@
+{
+ "role": "how",
+ "ok": false,
+ "seen": "The car rises from the floor in the first frame to high up in the second, while the counterweight drops from the top to near the floor. The wheel is visible. In the second and third frames the car seems to hang in the air with no visible rope, and the counterweight looks detached. The wheel's rotation is hard to read.",
+ "problem": "The car is shown hanging with no visible rope to the wheel in the later frames, so it looks like it floats. Draw the ropes over the wheel to both car and counterweight, and make the wheel's spokes visibly turn.",
+ "text": "The motor turns a grooved wheel, the ropes grip it, and the car rises as the counterweight sinks.",
+ "at": "2026-11-07T12:52:53.848Z"
+}

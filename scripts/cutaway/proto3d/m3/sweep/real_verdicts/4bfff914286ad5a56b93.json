@@ -1,0 +1,8 @@
+{
+ "role": "name",
+ "ok": false,
+ "seen": "Close-up of the blue air bag under the red truck body. The first frame has no outline. The second and third frames show a glowing outline around the bag, but the outline also wraps part of the red truck body above it.",
+ "problem": "The first frame has no glowing outline, and in the other two the outline covers part of the red truck body. Make the glow appear from the start and fit it tightly to the blue bag only.",
+ "text": "This bag is called an air spring.",
+ "at": "2026-11-07T12:31:13.599Z"
+}

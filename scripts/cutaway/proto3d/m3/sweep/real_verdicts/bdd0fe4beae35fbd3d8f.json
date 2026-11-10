@@ -1,0 +1,8 @@
+{
+ "role": "hook",
+ "ok": false,
+ "seen": "Spinning black tyre with an orange block and a big yellow arrow above it. The block sits just above the tyre in all three frames and never visibly slides down onto it.",
+ "problem": "The block never visibly slides down and presses on the tyre; show it descending and touching the rubber, and don't let the arrow stand in for the action.",
+ "text": "If you press a block onto a spinning tire, you have a brake.",
+ "at": "2026-11-10T17:41:16.115Z"
+}

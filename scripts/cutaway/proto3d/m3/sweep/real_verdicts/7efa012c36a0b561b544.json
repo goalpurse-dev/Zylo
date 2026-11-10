@@ -1,0 +1,8 @@
+{
+ "role": "problem",
+ "ok": false,
+ "seen": "Close-up of the cutaway engine across three frames. The camera pushes in and the right cylinder is cut off by the frame edge. The left piston stays in the same place, so the pistons are still, but only one is fully visible.",
+ "problem": "The right cylinder and piston are cropped by the frame edge, so both still pistons are not visible. Pull the camera back or re-center so both cylinders fit in frame.",
+ "text": "But fire on its own just makes heat; it can't turn a wheel.",
+ "at": "2026-11-07T12:39:08.414Z"
+}

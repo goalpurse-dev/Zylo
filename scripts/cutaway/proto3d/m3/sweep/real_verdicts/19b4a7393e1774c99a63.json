@@ -1,0 +1,8 @@
+{
+ "role": "hook",
+ "ok": false,
+ "seen": "A traffic light housing hangs from an arm over the road. It shows red, amber and green lamps, and the lit lamp turns orange in the last frame.",
+ "problem": "It is a full three-lamp traffic light, not a single red lamp. Show only one red lamp hanging over the road.",
+ "text": "If you hang one red lamp over the road, you have a traffic light.",
+ "at": "2026-11-10T17:54:23.179Z"
+}

@@ -1,0 +1,8 @@
+{
+ "role": "how",
+ "ok": false,
+ "seen": "The escalator sits on the slope with small yellow steps, a gear at the top and yellow arrows. The step positions barely change across the three frames, and the gear is small and dark against the soil. The arrows are the only sign of motion.",
+ "problem": "Steps visibly shift up the slope only by a tiny amount and the gear's rotation can't be seen. Enlarge the gear, make it turn with visible teeth or a marker, and move the steps clearly further up the slope between frames.",
+ "text": "A motor at the top turns a gear that pulls the steps up.",
+ "at": "2026-11-07T12:34:43.785Z"
+}

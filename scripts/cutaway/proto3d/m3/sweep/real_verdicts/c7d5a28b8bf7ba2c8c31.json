@@ -1,0 +1,8 @@
+{
+ "role": "problem2",
+ "ok": false,
+ "seen": "The stone layer sits in the trench with rain falling. Only a faint bluish tint appears at the bottom of the stone in the last frame, so no water visibly rises in the stone.",
+ "problem": "Water does not visibly rise in the stone layer; show a clear blue water level climbing inside the stone.",
+ "text": "But now rain soaks into the stone and sits there.",
+ "at": "2026-11-07T12:44:53.471Z"
+}

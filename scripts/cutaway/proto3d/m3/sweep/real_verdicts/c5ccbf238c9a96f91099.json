@@ -1,0 +1,8 @@
+{
+ "role": "fix2",
+ "ok": false,
+ "seen": "The pit is shown first, then a tan slab covers the pit opening. The piles are not visible and the pour is not clearly shown over their tops.",
+ "problem": "The piles are hidden and the mat looks like a lid over the pit; use a camera angle where the mat is seen spreading over the pile tops.",
+ "text": "But the piles stand apart, so you pour a thick concrete mat across their tops that spreads the load over of them.",
+ "at": "2026-11-10T17:53:03.753Z"
+}

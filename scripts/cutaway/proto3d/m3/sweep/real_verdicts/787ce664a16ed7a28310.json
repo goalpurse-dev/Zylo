@@ -1,0 +1,8 @@
+{
+ "role": "flood",
+ "ok": false,
+ "seen": "A flat brown box sits in the shaft in the last two frames, with the shaft empty in the first. It looks like a solid block, not mud, and the water below is not visible.",
+ "problem": "Make mud visibly flow in and rise to bury the water, with a textured wet surface, and show the water under it.",
+ "text": "Wet mud fills the shaft and buries the water deep below.",
+ "at": "2026-11-10T17:53:42.647Z"
+}

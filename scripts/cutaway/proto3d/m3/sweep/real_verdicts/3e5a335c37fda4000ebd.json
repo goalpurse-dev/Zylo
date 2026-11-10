@@ -1,0 +1,8 @@
+{
+ "role": "fix5",
+ "ok": false,
+ "seen": "The RPM gauge falls from 13,000 with an orange bar to 2,700 with a small green bar, so the rpm drop to idle shows. The gauge and readout panel cover the engine and shoes. The shoes pulling back and the glow going out can't be seen, and the trigger squeeze and release is not visible.",
+ "problem": "The gauge and readout cover the engine, so the trigger, the shoes pulling in and the glow fading can't be seen. Move the gauges aside and show the trigger being released and the shoes retracting.",
+ "text": "So you add a spring-loaded trigger that drops the engine to idle when you let go, and the shoes pull in and cool.",
+ "at": "2026-11-10T17:41:38.560Z"
+}

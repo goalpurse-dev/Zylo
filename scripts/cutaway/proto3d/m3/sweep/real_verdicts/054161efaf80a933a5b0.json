@@ -1,0 +1,8 @@
+{
+ "role": "fix4",
+ "ok": false,
+ "seen": "Yellow rudder and elevator on the tail look nearly identical across all three frames, with a white arrow added; no clear swing or tilt.",
+ "problem": "Make the rudder visibly swing sideways and the elevator tilt up between frames, and show the tail attached to the fuselage.",
+ "text": "Then you hinge the back of the tail, so the rudder swings the nose sideways and the elevator tilts it up.",
+ "at": "2026-11-10T17:39:20.986Z"
+}

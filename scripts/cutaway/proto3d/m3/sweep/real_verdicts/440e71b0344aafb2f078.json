@@ -1,0 +1,8 @@
+{
+ "role": "problem2",
+ "ok": false,
+ "seen": "The truck is nearly unchanged across the frames; the speed gauge is cut off at the edge and the tail does not whip sideways.",
+ "problem": "The gauge is off-frame and no tail whip is shown; keep the gauge in view and swing the tail out sideways.",
+ "text": "But now at highway speed, rear wheels turned against the front make the tail whip around.",
+ "at": "2026-11-10T17:43:48.418Z"
+}

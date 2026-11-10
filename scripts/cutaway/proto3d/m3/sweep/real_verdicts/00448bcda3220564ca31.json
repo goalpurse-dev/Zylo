@@ -1,0 +1,8 @@
+{
+ "role": "how",
+ "ok": false,
+ "seen": "Plane on the runway with the speed counter going 54 to 100, but the plane barely moves and stays on the ground in the last frame.",
+ "problem": "Show the plane rolling down the runway and visibly climbing off it as the speed reaches 100.",
+ "text": "At about 100 kilometers per hour, the air over the wings lifts the plane off the runway.",
+ "at": "2026-11-10T17:39:20.987Z"
+}

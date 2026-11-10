@@ -1,0 +1,8 @@
+{
+ "role": "fix2",
+ "ok": true,
+ "seen": "A thermostat box with a red lamp appears on the tank, and the flame goes out by the last frame.",
+ "problem": "",
+ "text": "So you add a thermostat that shuts the flame off at 120 degrees Fahrenheit.",
+ "at": "2026-11-10T17:55:39.133Z"
+}

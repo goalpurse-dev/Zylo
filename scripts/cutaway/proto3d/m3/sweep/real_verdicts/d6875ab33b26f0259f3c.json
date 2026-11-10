@@ -1,0 +1,8 @@
+{
+ "role": "hook",
+ "ok": false,
+ "seen": "A short brown bead pipe stub sits at the river's edge, and a white pipe grows in from the left. Nothing is clearly pouring into the river, and the pipe ends are barely visible.",
+ "problem": "Brown sewage does not visibly pour out of the pipe into the river; show a clear brown stream flowing from the pipe mouth into the water.",
+ "text": "If you pipe a town's toilets into a river, you have a sewer.",
+ "at": "2026-11-10T17:49:45.529Z"
+}

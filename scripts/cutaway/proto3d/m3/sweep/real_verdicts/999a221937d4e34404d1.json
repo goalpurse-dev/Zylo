@@ -1,0 +1,8 @@
+{
+ "role": "fix3",
+ "ok": false,
+ "seen": "A yellow and red fin and stabilizer appear on the tail with big yellow arrows, but the tail is cut off by the frame edge and the tube is cropped, so the pieces look detached from the plane.",
+ "problem": "Frame the whole tail and fuselage so the fin and stabilizer clearly sit on the tail end; the arrow should point at them, not overlap the stabilizer.",
+ "text": "But now the nose wanders, so you add a tail with a fin and a stabilizer that hold the nose pointing straight.",
+ "at": "2026-11-10T17:39:20.985Z"
+}

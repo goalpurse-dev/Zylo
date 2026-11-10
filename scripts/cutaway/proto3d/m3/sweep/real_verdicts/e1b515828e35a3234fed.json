@@ -1,0 +1,8 @@
+{
+ "role": "fix3",
+ "ok": false,
+ "seen": "A tiny black block appears near the top of the tower in frames 2 and 3. It is too small to read as a giant steel weight and shows no swinging.",
+ "problem": "Make the weight much larger and show it clearly swinging against the sway.",
+ "text": "So you hang a giant steel weight near the top that swings against the sway and calms it.",
+ "at": "2026-11-10T17:53:03.755Z"
+}
