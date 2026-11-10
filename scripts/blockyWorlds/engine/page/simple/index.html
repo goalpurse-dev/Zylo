@@ -1,0 +1,15 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<title>Blocky Worlds simple-style test</title>
+<link rel="icon" href="data:,">
+<style>html,body{margin:0;background:#000} canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script>
+</head><body>
+<script type="module">
+// SIMPLE-STYLE TEST (2026-11-10): a separate test scene, not the production engine. ?code=/job/simple.js loads the
+// scene code a RunPod job sent inline (runpod/simpleRole.mjs), so the look can be iterated without an image rebuild.
+const q = new URLSearchParams(location.search);
+const src = q.get("code") && /^\/job\/[\w.-]+\.js$/.test(q.get("code")) ? q.get("code") : "/page/simple/simple.js";
+import(src).catch((e) => { window.engineError = `simple page: ${e?.message ?? e}`; });
+</script>
+</body></html>

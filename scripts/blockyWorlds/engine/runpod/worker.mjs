@@ -42,6 +42,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { useGpu, useSoftware } from "./gpu.mjs";
 import { concat, renderParallel } from "../render.mjs";
 import { stillsJob, objectStillsJob } from "./stillsRole.mjs";
+import { simpleStillsJob } from "./simpleRole.mjs"; // 2026-11-10 simple-style TEST page (page/simple/), stills only
 
 const ENGINE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const FF = process.env.FFMPEG ?? "ffmpeg";
@@ -539,7 +540,7 @@ export async function runJob(job, opts = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), `bw-${job.role}-`));
   let result;
   try {
-    const fn = { prepare, chunk, finish, stills: stillsRole, objectStills: objectStillsRole }[job.role];
+    const fn = { prepare, chunk, finish, stills: stillsRole, objectStills: objectStillsRole, simpleStills: (j, d, _p, o = {}) => simpleStillsJob(j, d, { gpuCheck: o.gpuCheck ?? renderer, put }) }[job.role];
     if (!fn) throw coded("BAD_JOB", `unknown role ${job.role}`);
     const r = await fn(job, dir, post, opts);
     result = { ok: true, ...r, host: process.env.RUNPOD_POD_ID ? `runpod ${process.env.RUNPOD_POD_ID}` : os.hostname(), totalS: +((Date.now() - t0) / 1000).toFixed(2) };
