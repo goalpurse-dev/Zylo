@@ -15,6 +15,7 @@
 //   bibleSummary(bible) -> string               the bible in a few lines (the vision judge's reference)
 //   bibleLine(bible, shots) -> string           what one line's shots must look like (place + people)
 //   saveWorldBible(dir, tl)                     world-bible.json next to timeline.json (Node only)
+import { moodFor } from "./colourGrade.js";
 import { hashSeed, rng } from "./rng.js";
 import { petsOf } from "./pets.js";
 import { outfitFor, outfitLook, outfitText, eraOf, OUTFITS, hairFor } from "../page/kit/outfitsData.js"; // CHARACTERS-V2: cast outfits
@@ -685,6 +686,7 @@ export function themeShots(tl, bible) {
     }
     if (theme) s.theme = theme; else delete s.theme;
     s.rig = rigFor({ theme, light: s.light, text: s.text });
+    s.mood = moodFor({ rig: s.rig, light: s.light }); // GRADE: the shot's colour-grade mood (lib/colourGrade.js, page/post.js LUT)
   }
 }
 

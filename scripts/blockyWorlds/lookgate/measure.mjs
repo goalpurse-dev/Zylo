@@ -77,7 +77,7 @@ export function classifyShot(s, cast, hidden, idx) {
   const readable = !!lead && lead.facing === "camera" && !WIDE.has(cam) && !hidden.has(idx);
   return {
     type, humans, crowd, readable, bigFace: type === "face" && readable,
-    place: `${s.set}|${s.worldSpot || ""}`, light: s.light || "", camera: cam, focus: f,
+    place: `${s.set}|${s.worldSpot || ""}`, light: s.light || "", camera: cam, focus: f, rig: s.rig || "", mood: s.mood || "",
   };
 }
 

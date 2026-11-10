@@ -12,6 +12,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { moodFor } from "../engine/lib/colourGrade.js";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 
@@ -82,22 +83,51 @@ export function pick(frames, types, n = 3) {
   return out;
 }
 
+// GRADE 2026-11-10: palette swatches. Each frame's 6-colour palette (colourFit.py palettes); every one of our tiles
+// shows its palette next to the palette of the MATCHED reference frame (same colour mood, nearest palette), and a
+// "colour per mood" section sets the mood's reference palette (lib/data/refColour.json) against ours.
+const REF_LIGHT_MOOD = { "day": "day", "warm interior": "interior", "torch gold": "interior", "cool neon day": "day", "dark cyan neon": "neon", "sunset": "sunset", "red alarm neon": "alarm" };
+export const refMood = (f) => REF_LIGHT_MOOD[f.light] ?? (/night/.test(f.light ?? "") ? "night" : "day");
+export const oursMood = (f) => moodFor({ mood: f.mood, rig: f.rig, light: f.light });
+const rgbOf = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+/** palette distance: share-weighted nearest-colour RGB distance, both ways (0 = same colours) */
+export function paletteDist(a, b) {
+  const one = (x, y) => x.reduce((t, c) => t + c.share * Math.min(...y.map((d) => Math.hypot(...rgbOf(c.hex).map((v, i) => v - rgbOf(d.hex)[i])))), 0);
+  return (one(a, b) + one(b, a)) / 2;
+}
+/** the reference frame matched to one of ours: same mood when the reference has one, nearest palette */
+export function matchRef(f, pal, refFrames, refPal) {
+  const mood = oursMood(f), same = refFrames.filter((r) => refMood(r) === mood && refPal[r.file]);
+  const pool = same.length ? same : refFrames.filter((r) => refPal[r.file]);
+  let best = null;
+  for (const r of pool) { const d = paletteDist(pal, refPal[r.file]); if (!best || d < best.d) best = { r, d }; }
+  return best;
+}
+export const swatch = (pal, label) => `<div class="sw" title="${esc(label)}"><span class="swl">${esc(label)}</span>${(pal ?? []).map((c) => `<i style="background:${c.hex};flex:${Math.max(0.04, c.share)}"></i>`).join("")}</div>`;
+
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 
-function tile(f, img, isRef) {
+function tile(f, img, isRef, extra2 = "") {
   const t = f.t != null ? `${Math.round(f.t * 10) / 10}s` : "";
   const who = f.humans ? `${f.humans} ${f.humans === 1 ? "person" : "people"}` : "no people";
   const face = f.bigFace ? "big face" : f.readable ? "face readable" : f.humans ? "face small/hidden" : "";
   const extra = isRef ? [f.head ? `head ${f.head}%` : "", f.insert, f.outfit].filter(Boolean).join(" · ")
     : [f.camera, f.focus, f.hiddenFace ? "listed hidden" : ""].filter(Boolean).join(" · ");
   const line = !isRef && f.text ? `<div class="line">"${esc(f.text.slice(0, 70))}${f.text.length > 70 ? "…" : ""}"</div>` : "";
-  return `<figure><img src="img/${img}" alt="${esc(f.type)} frame" loading="lazy"><figcaption><b>${esc(f.type)}</b> ${t}<br>${esc(who)}${face ? " · " + face : ""}<br>${esc(f.placeDetail || f.place)} · ${esc(f.light)}<br><span class="dim">${esc(extra)}</span>${line}</figcaption></figure>`;
+  return `<figure><img src="img/${img}" alt="${esc(f.type)} frame" loading="lazy"><figcaption><b>${esc(f.type)}</b> ${t}<br>${esc(who)}${face ? " · " + face : ""}<br>${esc(f.placeDetail || f.place)} · ${esc(f.light)}<br><span class="dim">${esc(extra)}</span>${line}${extra2}</figcaption></figure>`;
 }
 
-export function buildPage({ ref, ours, table, ratings, outDir, thumbW = 270 }) {
+export function buildPage({ ref, ours, table, ratings, outDir, thumbW = 270, palettes = null, refColour = null }) {
   const imgDir = path.join(outDir, "img");
   fs.mkdirSync(imgDir, { recursive: true });
   const jobs = [];
+  const PAL = palettes ?? framePalettes([...ref.frames, ...ours.flatMap((o) => o.frames)].map((f) => f.file), outDir);
+  const palHtml = (f) => {
+    const p = PAL[f.file];
+    if (!p) return "";
+    const m = matchRef(f, p, ref.frames, PAL);
+    return `<div class="sws">${swatch(p, "ours · " + oursMood(f))}${m ? swatch(PAL[m.r.file], `ref ${Math.round((m.r.t ?? 0) * 10) / 10}s · ${refMood(m.r)} · d${Math.round(m.d)}`) : ""}</div>`;
+  };
   const name = (setName, f, i) => `${setName}_${i}_${path.basename(f.file).replace(/[^\w.-]/g, "_")}`;
   const sections = GROUPS.map((g) => {
     const rp = pick(ref.frames, g.types);
@@ -106,7 +136,7 @@ export function buildPage({ ref, ours, table, ratings, outDir, thumbW = 270 }) {
       const op = pick(o.frames, g.types);
       op.forEach((f, i) => jobs.push([f.file, name(o.name, f, i)]));
       const r = ratings?.[o.name]?.[g.key] || {};
-      const cells = op.length ? op.map((f, i) => tile(f, name(o.name, f, i), false)).join("")
+      const cells = op.length ? op.map((f, i) => tile(f, name(o.name, f, i), false, palHtml(f))).join("")
         : `<div class="none">No ${esc(g.label.toLowerCase())} shot in ${esc(o.name)}.</div>`;
       const count = o.frames.filter((f) => g.types.includes(f.type)).length;
       return `<div class="row"><div class="rowhead"><b>${esc(o.name)}</b><span class="dim">${count} of ${o.frames.length} shots</span>
@@ -117,7 +147,7 @@ export function buildPage({ ref, ours, table, ratings, outDir, thumbW = 270 }) {
     const refCount = ref.frames.filter((f) => g.types.includes(f.type)).length;
     return `<section><h2>${esc(g.label)}</h2>
       <div class="row ref"><div class="rowhead"><b>reference</b><span class="dim">${refCount} of ${ref.frames.length} frames</span></div>
-      <div class="strip">${rp.map((f, i) => tile(f, name("ref", f, i), true)).join("")}</div></div>${rows}</section>`;
+      <div class="strip">${rp.map((f, i) => tile(f, name("ref", f, i), true, PAL[f.file] ? `<div class="sws">${swatch(PAL[f.file], "ref · " + refMood(f))}</div>` : "")).join("")}</div></div>${rows}</section>`;
   }).join("\n");
 
   const list = path.join(outDir, "thumbs.list.txt");
@@ -148,6 +178,19 @@ export function buildPage({ ref, ours, table, ratings, outDir, thumbW = 270 }) {
     return `<td>${r?.score != null ? `<b>${esc(r.score)}/10</b> ` : '<span class="dim">–/10</span> '}${r?.notes ? esc(r.notes) : ""}</td>`;
   }).join("")}</tr>`).join("");
 
+  const moodRows = (refColour ? Object.keys(refColour.moods) : []).map((m) => {
+    const r = refColour.moods[m];
+    const cols = ours.map((o) => {
+      const fr = o.frames.filter((f) => oursMood(f) === m && PAL[f.file]);
+      if (!fr.length) return `<td class="dim">no ${esc(m)} shots</td>`;
+      const top = fr.flatMap((f) => PAL[f.file].map((c) => ({ ...c, share: c.share / fr.length }))).sort((x, y) => y.share - x.share).slice(0, 8);
+      const tot = top.reduce((t, c) => t + c.share, 0) || 1;
+      return `<td>${swatch(top.map((c) => ({ ...c, share: c.share / tot })), `${o.name} · ${fr.length} shots`)}</td>`;
+    }).join("");
+    return `<tr><td><b>${esc(m)}</b><br><span class="dim">${r.frames} ref frames · sat ${r.look.sat.toFixed(2)} · bright ${r.look.bright.toFixed(2)} · contrast ${r.look.contrast.toFixed(2)}</span></td><td>${swatch(r.palette, "reference · " + m)}</td>${cols}</tr>`;
+  }).join("");
+  const moodSection = moodRows ? `<h2>Colour per mood</h2><div class="tablewrap"><table><tr><th>mood</th><th>reference palette (39 videos)</th>${ours.map((o) => `<th>${esc(o.name)}</th>`).join("")}</tr>${moodRows}</table></div><p class="dim">Palettes: k-means in OKLab, bar width = share. Ours = the most common colours over that run's shots of the mood. Each of our tiles below also shows its own palette against the matched reference frame's (same mood, nearest palette; d = palette distance in RGB units).</p>` : "";
+
   const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Blocky Look Gate</title>
 <style>
@@ -167,12 +210,16 @@ td.num{text-align:right;font-variant-numeric:tabular-nums}td.ok{color:var(--ok);
 .notes{font-size:12px}.strip{display:flex;gap:10px;flex-wrap:wrap;flex:1;min-width:0}
 figure{margin:0;width:180px}figure img{width:180px;height:320px;object-fit:cover;border-radius:6px;display:block;background:#000}
 figcaption{font-size:11.5px;margin-top:4px}.line{font-style:italic;color:var(--dim);margin-top:2px}
+.sws{margin-top:4px;display:flex;flex-direction:column;gap:2px}.sw{display:flex;height:14px;border-radius:3px;overflow:hidden;position:relative}.sw i{display:block;height:100%}
+.swl{position:absolute;left:3px;top:0;font-size:9.5px;line-height:14px;color:#fff;text-shadow:0 0 2px #000,0 0 2px #000;white-space:nowrap}
+td .sw{width:260px;height:22px}td .sw .swl{line-height:22px}
 .none{padding:30px 14px;border:1px dashed var(--line);border-radius:6px;color:var(--off);width:100%}
 @media (max-width:640px){.row{flex-direction:column}.rowhead{flex-basis:auto}figure{width:calc(50% - 5px)}figure img{width:100%;height:auto;aspect-ratio:9/16}}
 </style></head><body><main>
 <h1>Blocky Worlds look gate</h1>
 <p class="sub">Reference: 2 s grid of one study video (internal patterns only, never its story or characters). Ours: step-3 stills, typed from the planner timeline. Green = within tolerance of the reference (±8 points, ±30% counts, ±15% values), red = off. Ratings come from ratings.json (filled by the gate agent).</p>
 ${ours.some((o) => o.summary.blankFlatCount != null) ? `<h2>The acceptance gate</h2><div class="tablewrap"><table><tr><th>measure</th><th>target</th><th>reference</th>${ours.map((o) => `<th>${esc(o.name)}</th>`).join("")}</tr>${TARGETS.map(([k, label, ok, tgt]) => `<tr><td>${esc(label)}</td><td>${esc(tgt)}</td><td class="num">${ref.summary[k] ?? ""}</td>${ours.map((o) => { const v = o.summary[k]; const p = v == null ? null : ok(v, ref.summary[k]); return `<td class="num ${p == null ? "" : p ? "ok" : "off"}">${v ?? ""}${p == null ? "" : p ? " ✓" : " ✗"}</td>`; }).join("")}</tr>`).join("")}</table></div><p class="dim">Readable face = my look at every still (the face big enough to read eyes and mouth, toward the lens, not covered), not only the planner estimate. Blank / flat = the pixel measure (sky / wall > 45%, one colour > 60%) + the still gate's hard failures left after its re-plans + frames I judged unreadable.</p>` : ""}
+${moodSection}
 <h2>Ratings: looks like the reference (1-10)</h2><div class="tablewrap"><table>${ratingHead}${ratingBody}</table></div>
 <h2>Metrics vs reference</h2><div class="tablewrap"><table>${head}${body}</table></div>
 <div class="tablewrap"><table>${mixHead}${mixBody}</table></div>
@@ -181,6 +228,18 @@ ${sections}
 </main></body></html>`;
   fs.writeFileSync(path.join(outDir, "index.html"), html);
   return path.join(outDir, "index.html");
+}
+
+/** 6-colour palettes of the given images (python colourFit.py palettes), keyed by file */
+export function framePalettes(files, outDir) {
+  const uniq = [...new Set(files)].filter((f) => fs.existsSync(f));
+  if (!uniq.length) return {};
+  const list = path.join(outDir, "palettes.list.txt"), out = path.join(outDir, "palettes.json");
+  fs.writeFileSync(list, uniq.join("\n"));
+  const r = spawnSync("python", [path.join(HERE, "colourFit.py"), "palettes", out, "@" + list], { stdio: "inherit" });
+  fs.rmSync(list, { force: true });
+  if (r.status !== 0) { console.warn("colourFit.py palettes failed: no swatches"); return {}; }
+  return JSON.parse(fs.readFileSync(out, "utf8"));
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
@@ -194,5 +253,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const ours = String(a.ours).split(",").map(load);
   const table = a.table ? String(a.table).split(",").map(load) : null;
   const ratings = a.ratings && fs.existsSync(a.ratings) ? load(a.ratings) : null;
-  console.log(buildPage({ ref, ours, table, ratings, outDir: a.out }));
+  const rc = path.join(HERE, "..", "engine", "lib", "data", "refColour.json");
+  const refColour = a["no-colour"] ? null : fs.existsSync(rc) ? load(rc) : null;
+  console.log(buildPage({ ref, ours, table, ratings, outDir: a.out, refColour, palettes: a["no-colour"] ? {} : null }));
 }

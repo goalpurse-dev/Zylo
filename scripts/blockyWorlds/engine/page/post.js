@@ -10,6 +10,14 @@ import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { N8AOPass } from "n8ao";
 import { RIGS, gradeFor, frameStats, onTarget } from "/lib/setThemes.js"; // SETS-V2: rigs + the per-shot auto grade
 import { makeRigLayer } from "/page/lighting.js";
+import { LUTPass } from "three/addons/postprocessing/LUTPass.js";
+import { moodFor, lutRGBA, loadGrade } from "/lib/colourGrade.js";
+
+// GRADE 2026-11-10 (owner: "per-mood colour grade / 3D LUT that maps our render's colour distribution onto the
+// reference's ... apply it to every shot automatically"): the mood LUTs (lib/colourGrade.js, fitted offline by
+// lookgate/colourFit.py) load once with the module; the LUT pass is the chain's last pass, so it sees exactly what
+// the fit's stills showed. ?nolut=1 turns it off (render the stills for a re-fit with --query nolut=1).
+const GRADE_DATA = await loadGrade();
 
 // per light: AO intensity, bloom (strength, radius, threshold), grade (sat, con, warm). day/night = look/scene.js L/Ln.
 export const POST = {
@@ -52,6 +60,27 @@ export function makePost({ renderer, scene, camera, W, H, query = new URLSearchP
   composer.addPass(new OutputPass());
   const grade = new ShaderPass(GRADE);
   composer.addPass(grade);
+  // the mood LUT (one Data3DTexture per mood, built on first use); off until a shot is set
+  const useLut = !query.has("nolut") && !!GRADE_DATA;
+  const lutPass = new LUTPass({ intensity: 1 });
+  lutPass.enabled = false;
+  composer.addPass(lutPass);
+  const LUTS = new Map();
+  const lutTex = (mood) => {
+    if (!LUTS.has(mood)) {
+      const l = lutRGBA(GRADE_DATA, mood) ?? lutRGBA(GRADE_DATA, "day");
+      let tex = null;
+      if (l) {
+        tex = new THREE.Data3DTexture(l.data, l.size, l.size, l.size);
+        tex.format = THREE.RGBAFormat; tex.type = THREE.UnsignedByteType;
+        tex.minFilter = tex.magFilter = THREE.LinearFilter;
+        tex.wrapS = tex.wrapT = tex.wrapR = THREE.ClampToEdgeWrapping;
+        tex.unpackAlignment = 1; tex.needsUpdate = true;
+      }
+      LUTS.set(mood, tex);
+    }
+    return LUTS.get(mood);
+  };
   const plain = query.has("nopost");
   const setLight = (name) => {
     const p = POST[name];
@@ -76,6 +105,10 @@ export function makePost({ renderer, scene, camera, W, H, query = new URLSearchP
   const pctx = probe.getContext("2d", { willReadFrequently: true });
   const setShot = (si, shot, S, t = 0) => {
     cur = { si, shot, t };
+    // the shot's mood LUT (a flashback keeps its own look); the auto grade below is measured BEFORE the LUT
+    const tex = useLut && shot?.grade !== "flashback" ? lutTex(moodFor(shot)) : null;
+    if (tex) lutPass.lut = tex;
+    lutPass.enabled = !!tex;
     rigLayer ??= makeRigLayer(THREE, scene);
     rigLayer.sync({ shot, S, t });
   };
@@ -101,14 +134,18 @@ export function makePost({ renderer, scene, camera, W, H, query = new URLSearchP
     rigLayer?.frame(camera);
     let g = GRADES.get(cur.si);
     if (!g && auto) {
-      // calibrate: the rig's look without a grade, measured; one refine pass when the first guess is still off
+      // calibrate: the rig's look without a grade, measured; one refine pass when the first guess is still off.
+      // Measured without the mood LUT (the LUT is fitted on auto-graded stills, it comes after)
+      const lutOn = lutPass.enabled; lutPass.enabled = false;
       shoot(N); const st = measure();
       g = gradeFor(st, cur.shot.rig);
       shoot(g); const st2 = measure();
       if (!onTarget(st2, cur.shot.rig)) g = gradeFor(st2, cur.shot.rig, g);
       GRADES.set(cur.si, { ...g, before: st, after1: st2 });
+      lutPass.enabled = lutOn;
     }
     shoot(g ?? N);
   };
-  return { composer, setLight, bloom, render, setShot, needsGrade, grades: GRADES, rigInfo: () => rigLayer?.info() ?? null };
+  return { composer, setLight, bloom, render, setShot, needsGrade, grades: GRADES, rigInfo: () => rigLayer?.info() ?? null,
+    moodInfo: () => (cur ? { mood: moodFor(cur.shot), lut: lutPass.enabled } : null) };
 }
