@@ -65,6 +65,12 @@ const KIT_PHRASES = ["dry well", "rain barrel", "rain garden", "storm drain", "r
 export const CATEGORIES = Object.freeze([
   { key: "appliances", label: "home appliances", kit: "home appliances and what is inside them (stoves, fridges, washing machines, air conditioners, water heaters, microwaves)",
     words: "fridge fridges refrigerator refrigerators freezer freezers stove stoves oven ovens cuisiniere microwave microwaves dishwasher dishwashers toaster toasters blender kettle", phrases: ["washing machine", "clothes dryer", "air conditioner", "air conditioning"] },
+  // (utilities: power plants, the grid, dams and treatment works; opened by the owner on 2026-11-10 after the 3/3 real
+  // re-check; no single "power" or "turbine": a power washer is a tool, a jet turbine a plane; water and sewage works stay
+  // in the kit's own world, buildable even if this category is closed again)
+  { key: "utilities", label: "power plants and utilities", kit: "utilities: power plants (nuclear, coal, gas, hydro), power lines and the grid, dams, wind turbines",
+    words: "electricity grid pylon pylons substation substations reactor reactors dam dams hydroelectric hydropower",
+    phrases: ["power plant", "power plants", "power station", "power stations", "power line", "power lines", "power grid", "electric grid", "wind turbine", "wind turbines", "wind farm", "solar farm", "cooling tower"] },
   // (machines before cars: the first match names the category, and a chainsaw clutch is a machine)
   { key: "machines", label: "machines and tools", kit: "machines and tools (chainsaws, lawnmowers, drills, elevators, escalators)",
     words: "chainsaw chainsaws lawnmower mower mowers drill drills tractor tractors elevator elevators escalator escalators robot robots" },

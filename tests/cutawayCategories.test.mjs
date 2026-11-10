@@ -39,7 +39,12 @@ test("categories: the kit's own world is 'home' and needs no switch; unknown top
 test("categories: only an explicit 'open' opens one (fails closed)", () => {
   assert.deepEqual(openCategories(null), []);
   assert.deepEqual(openCategories({ appliances: "open", cars: "beta", machines: "refused", nope: "open" }), ["appliances"]);
-  assert.equal(CATEGORIES.length, 9);
+  assert.equal(CATEGORIES.length, 10);
+  // (utilities, 2026-11-10: power and grid topics; water and sewage works stay in the kit's own world when it is closed)
+  assert.equal(kitCheck("How a nuclear power plant works", { open: [] }).verdict, "no");
+  assert.equal(kitCheck("How a nuclear power plant works", { open: ["utilities"] }).category, "utilities");
+  assert.equal(kitCheck("How a sewage treatment plant works", { open: [] }).verdict, "yes");
+  assert.equal(kitCheck("How a power washer works", { open: ["utilities"] }).verdict, "unsure");
 });
 
 test("categories: Haiku hears which categories are open, and only those", () => {
