@@ -27,6 +27,21 @@ import * as THREE from "three";
 export const PLASTIC_LOOK = true;
 export const PLASTIC = Object.freeze({ roughness: 0.42, minRough: 0.3, maxRough: 0.55, clearcoat: 0.3, clearcoatRoughness: 0.22, envMapIntensity: 1 });
 
+// ------------------------------------------------------------------------------------------------ radiance cap
+// GATE-V3 2026-11-10 (first RunPod stills of the plastic look: street frames 83% black, the same shot without AO one big
+// white blob): a glossy surface's sun glint (three's GGX at roughness ~0.05 x the stronger plastic sun) went past the
+// half-float range of the render targets -> Inf. Bloom spread the Inf into a white blob; N8AO's blur turned it into NaN,
+// and bloom spread the NaN into black blocks. Every built-in lit material now writes at most RADIANCE_MAX (HDR headroom
+// for bloom and neon, never Inf / NaN). Patched once into three's opaque_fragment chunk before any shader compiles.
+export const RADIANCE_MAX = 24;
+const CAP_MARK = "/* bw radiance cap */";
+/** the opaque_fragment chunk with the outgoing light clamped to [0, max] (pure, tested; idempotent) */
+export function capRadianceChunk(src, max = RADIANCE_MAX) {
+  if (typeof src !== "string" || src.includes(CAP_MARK) || !src.includes("vec4( outgoingLight,")) return src;
+  return src.replace("vec4( outgoingLight,", `vec4( ${CAP_MARK} clamp( outgoingLight, 0.0, ${Number(max).toFixed(1)} ),`);
+}
+if (PLASTIC_LOOK && THREE.ShaderChunk?.opaque_fragment) THREE.ShaderChunk.opaque_fragment = capRadianceChunk(THREE.ShaderChunk.opaque_fragment);
+
 // ------------------------------------------------------------------------------------------------ colour (pure)
 function hexOf(c) {
   if (typeof c === "string" && /^#[0-9a-f]{6}$/i.test(c)) return c.toLowerCase();
@@ -95,8 +110,8 @@ export function plastic(color, o = {}) {
 // ------------------------------------------------------------------------------------------------ photo textures -> flat
 // the flat toy colour of every Poly Haven surface the sets used (the old tint is honoured when it is a real colour)
 export const TEX_FLAT = Object.freeze({
-  leafy_grass: "#52c43c", forest_ground_04: "#52c43c", grass_path_2: "#d6dce6", brown_mud_dry: "#d6dce6", coast_sand_01: "#ffd64f",
-  asphalt_02: "#4a5466", concrete_pavement: "#d9dfe8", dark_rock: "#8e9aae",
+  leafy_grass: "#52c43c", forest_ground_04: "#52c43c", grass_path_2: "#aeb8c8", brown_mud_dry: "#aeb8c8", coast_sand_01: "#ffd64f",
+  asphalt_02: "#4a5466", concrete_pavement: "#bcc6d4", dark_rock: "#8e9aae",
   painted_plaster_wall: "#f4f6fa", beige_wall_001: "#ffcf4a", brick_wall_02: "#d9503f",
   roof_09: "#e04a3a", grey_roof_01: "#3d64b0", laminate_floor_02: "#e3852f", interior_tiles: "#e9eef6",
 });
@@ -106,7 +121,7 @@ const PATHY = /mud|path|dirt|gravel|cobble/;
 export const TILE_KIND = Object.freeze({ concrete_pavement: "tiles", interior_tiles: "tiles", grass_path_2: "tiles", brown_mud_dry: "tiles", brick_wall_02: "bricks", laminate_floor_02: "planks" });
 /** a Poly Haven texture name + its old tint -> the flat toy colour */
 export function flatFor(name, tint = "#ffffff") {
-  const base = TEX_FLAT[name] ?? "#d9dfe8";
+  const base = TEX_FLAT[name] ?? "#bcc6d4"; // GATE-V3: paving a light-mid grey (near-white clipped under the plastic sun)
   const t = hsvOf(tint ?? "#ffffff");
   if (GRASSY.test(name) && !PATHY.test(name)) {
     if (t.s < 0.15) return base;

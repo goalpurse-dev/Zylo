@@ -40,7 +40,7 @@ const A = "/assets/styletest";
 // ------------------------------------------------------------------------------------------------ PLASTIC-WORLD toy nature
 export const TOY_GREENS = Object.freeze(["#3cbf3a", "#58d03e", "#2fb24c", "#7ad43a", "#45c95a"]);
 export const TOY_FLOWERS = Object.freeze(["#ff4a5a", "#ffd23a", "#ff7ad0", "#ffffff", "#9a6aff", "#ff8a2a"]);
-export const TOY_GROUND = Object.freeze({ grass: "#56c63e", grass2: "#4cba3c", hills: "#46b04a", path: "#d6dce6" });
+export const TOY_GROUND = Object.freeze({ grass: "#56c63e", grass2: "#4cba3c", hills: "#46b04a", path: "#aeb8c8" }); // GATE-V3: a light-mid cool grey (the near-white lane clipped under the plastic sun)
 const TOY_MATS = new Map();
 const toyMat = (THREE, key, colour, o = {}) => { let m = TOY_MATS.get(key); if (!m) { m = makePlastic(THREE, colour, { keepColour: true, ...o }); m.name = key; TOY_MATS.set(key, m); } return m; };
 const TOY_GEO = new Map();

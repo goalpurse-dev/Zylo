@@ -100,7 +100,7 @@ const CLEAN = {
   dirt(x, w, h, R, col) { x.fillStyle = col; x.fillRect(0, 0, w, h); },
 };
 // the toy colour of a town surface: paths / cobbles / dirt that were beige-brown become clean light stone
-const TOY_SURF = { cobbles: "#d0d8e4", cobblesRich: "#d0d8e4", dirt: "#d6dce6" };
+const TOY_SURF = { cobbles: "#b4bfcf", cobblesRich: "#b4bfcf", dirt: "#aeb8c8" }; // GATE-V3: light-mid greys (near-white clipped)
 export function townTexColour(kind, color) {
   if (!PLASTIC_LOOK) return color;
   const { s, h } = hsvOf(color);

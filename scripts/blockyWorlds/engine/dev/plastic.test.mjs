@@ -6,7 +6,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import * as THREE from "three";
-import { PLASTIC, PLASTIC_LOOK, plasticParams, makePlastic, plastic, toyColour, isBeige, hsvOf, flatFor, TEX_FLAT, plasticRough, plasticizeMaterial, isPhotoMap } from "../page/kit/plastic.js";
+import { PLASTIC, PLASTIC_LOOK, plasticParams, makePlastic, plastic, toyColour, isBeige, hsvOf, flatFor, TEX_FLAT, plasticRough, plasticizeMaterial, isPhotoMap, capRadianceChunk, RADIANCE_MAX } from "../page/kit/plastic.js";
 import { THEMES, THEME_IDS, RIGS, RIG_IDS } from "../lib/setThemes.js";
 import { fogPolicy, FOG_MIN_NEAR, modeOf, LIGHT_MODES } from "../page/lighting.js";
 import { toyParts, toyModelFor, TOY_GREENS, TOY_FLOWERS, TOY_GROUND } from "../page/kit/nature.js";
@@ -135,4 +135,18 @@ test("winter keeps clean white plastic snow + light blue shadows; animals / gian
   assert.match(W, /vec3\(0\.90, 0\.94, 1\.0\)/); assert.match(W, /#a8c8ff/);
   assert.match(src("../page/kit/animals/textures.js"), /PATTERN_KINDS\.includes\(kind\)/);
   assert.match(src("../page/kit/giants.js"), /PLASTIC_LOOK \? solid\(toyColour\(c\)/);
+});
+
+test("GATE-V3 radiance cap: three's opaque_fragment writes the outgoing light clamped (no Inf glint -> no black / white bloom blocks)", () => {
+  const src = "gl_FragColor = vec4( outgoingLight, diffuseColor.a );";
+  const out = capRadianceChunk(src, 24);
+  assert.match(out, /clamp\( outgoingLight, 0\.0, 24\.0 \)/);
+  assert.equal(capRadianceChunk(out, 24), out, "idempotent");
+  assert.equal(capRadianceChunk("no light here"), "no light here");
+  assert.ok(RADIANCE_MAX >= 8 && RADIANCE_MAX < 1000);
+  assert.match(THREE.ShaderChunk.opaque_fragment, /clamp\( outgoingLight, 0\.0, /, "patched at import, before any shader compiles");
+});
+
+test("GATE-V3: no default ground / path / paving near white (it clipped under the plastic sun)", () => {
+  for (const c of [TEX_FLAT.concrete_pavement, TEX_FLAT.grass_path_2, TEX_FLAT.brown_mud_dry, TOY_GROUND.path, flatFor("unknown_surface")]) assert.ok(hsvOf(c).v <= 0.86, c);
 });
