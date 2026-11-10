@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { ArrowRight, Clapperboard, FileText, Images, Lightbulb, Mic, PlayCircle, X } from "lucide-react";
 import { fetchShowcase, LONG_FORM_PREVIEW, showcaseThumb, trackLaunch } from "./launch";
+import { tutorialFor, tutorialThumb } from "../../lib/tutorials";
 
 function useReducedMotion() {
   const [reduced, setReduced] = useState(() => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
@@ -91,12 +92,12 @@ export function ShowcaseRow({ placement, title, subtitle, id, className = "" }) 
   );
 }
 
-// "Watch the tutorial" — the first active tutorial; hidden until one exists.
-export function TutorialCard({ className = "" }) {
-  const [video, setVideo] = useState(null);
-  useEffect(() => { let live = true; fetchShowcase("long_form", "tutorial").then((v) => live && setVideo(v[0] ?? null)); return () => { live = false; }; }, []);
-  if (!video) return null;
-  const thumb = showcaseThumb(video);
+// "New here? Watch the tutorial": the tool's newest tutorial from the one list (src/lib/tutorials.js); hidden
+// until the tool has one.
+export function TutorialCard({ tool = "long_form", className = "" }) {
+  const t = tutorialFor(tool);
+  if (!t) return null;
+  const video = { id: t.url, title: t.title, youtube_url: t.url }, thumb = tutorialThumb(t);
   return (
     // A distinct "New here?" row: small heading, the thumbnail with a play icon, the title,
     // and "Watch the tutorial" (YouTube, new tab).
@@ -106,7 +107,7 @@ export function TutorialCard({ className = "" }) {
         href={video.youtube_url}
         target="_blank"
         rel="noopener noreferrer"
-        onClick={() => trackLaunch("tutorial_click", { placement: "long_form", target: video.youtube_url, videoId: video.id })}
+        onClick={() => trackLaunch("tutorial_click", { placement: tool, target: video.youtube_url })}
         className="group flex items-center gap-3 rounded-[14px] p-2 transition hover:bg-white/[0.04]"
         data-testid="tutorial-card"
       >

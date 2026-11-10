@@ -93,7 +93,7 @@ export default function ToolShell({ onClose }) {
     isActive("/workspace/behind-the-scenes")
   ));
   const workspaceActive = workspaceOpen || (!anyPanelOpen && (
-    isActive("/workspace/image-generator") || isActive("/workspace/video-generator")
+    isActive("/workspace/image-generator") || isActive("/workspace/video-generator") || isActive("/workspace/earnings")
   ));
 
   const closePanels = () => {
