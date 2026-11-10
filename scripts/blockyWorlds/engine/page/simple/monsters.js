@@ -52,7 +52,7 @@ export function makeMonster(spec = {}) {
   const makeEye = (x, y, r) => {
     const e = new THREE.Group(); e.position.set(x, y, 0.66); head.add(e);
     // a soft halo round the eye (additive, low: it lights the night sky round the eye, never blooms)
-    mesh(new THREE.PlaneGeometry(r * 4.4, r * 4.4), haloMat(glow), -0.02, e);
+    const halo = mesh(new THREE.PlaneGeometry(r * 4.4, r * 4.4), haloMat(glow), -0.02, e);
     mesh(disc(r * 1.2), rimM, 0.0, e); // the soft rim glow
     mesh(disc(r * 1.1), socketM, 0.02, e);
     const ball = mesh(disc(r), sclera, 0.05, e);
@@ -67,7 +67,7 @@ export function makeMonster(spec = {}) {
     const lash = new THREE.Group(); lash.position.set(0, -r * 0.05, 0.27); e.add(lash);
     box(lash, [r * 2.0, r * 0.09, 0.03], [0, 0, 0], lashM, { cast: false });
     for (const k of [-2, -1, 0, 1, 2]) box(lash, [r * 0.06, r * 0.22, 0.03], [k * r * 0.4, -r * 0.14, 0], lashM, { cast: false, rot: [0, 0, k * 0.18] });
-    eyes.push({ e, ball, ir, top, bot, lash, r });
+    eyes.push({ e, ball, ir, top, bot, lash, r, halo });
   };
   if (one) makeEye(0, 0.72, 0.58); else { makeEye(-0.36, 0.78, 0.26); makeEye(0.36, 0.78, 0.26); }
   // two little horns of block
@@ -107,6 +107,10 @@ function lids(u, k) { for (const e of u.eyes) { const s = Math.max(0.001, k); e.
  */
 export function animateMonster(m, state = "lurk", t = 0, opts = {}) {
   const u = m.userData, { torso, head, arms, legs, body } = u;
+  // peering in at a room's window (opts.crisp): no halo, no eye light, no pane of its own (the room's window frames it):
+  // the iris, pupil and highlight read crisp, nothing blooms
+  for (const e of u.eyes) e.halo.visible = !opts.crisp;
+  u.eyeLight.intensity = opts.crisp ? 0 : 1.0;
   for (const o of [torso, head, ...arms, ...legs, body]) o.rotation.set(0, 0, 0);
   body.position.set(0, 0, 0); head.position.z = 0.05; head.scale.set(1, 1, 1);
   const sway = Math.sin(t * 1.3);
@@ -147,7 +151,7 @@ export function animateMonster(m, state = "lurk", t = 0, opts = {}) {
       const k = ease((t - at + 0.2) / 0.5);
       torso.rotation.x = 0.22 + 0.35 * k; head.rotation.x = -0.35 * k; head.position.z = 0.05 + 0.25 * k;
       head.scale.set(1 + 0.12 * k, 1 + 0.12 * k, 1 - 0.18 * k); // squashed against the glass
-      u.pane.visible = true; u.pane.position.z = 1.05 - 0.2 * k;
+      u.pane.visible = !opts.crisp; u.pane.position.z = 1.05 - 0.2 * k;
       for (const e of u.eyes) e.ir.position.z = 0.08 + 0.02 * k;
       break;
     }

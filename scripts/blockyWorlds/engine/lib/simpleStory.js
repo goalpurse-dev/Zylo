@@ -79,3 +79,19 @@ export function eyePass(tl) {
   }
   return rep;
 }
+
+/** A THING FLIES, NOT THE PEOPLE: a shot whose object is flying ("the blanket flew away") never lifts a bystander into
+ *  the air ("fly" was read off the line's verb): who is not the line's subject looks up at it (checks-guarded) */
+export function flyPass(tl, { check = null } = {}) {
+  let base = check ? check(tl) : null, n = 0;
+  for (const s of tl.shots ?? []) {
+    if (!(s.objects ?? []).some((o) => o.state === "flying")) continue;
+    for (const a of s.actors ?? []) {
+      if (a.pose !== "fly" || a.id === s.subject) continue;
+      a.pose = "look_up";
+      if (check) { const now = check(tl); if (Object.keys(now).some((k) => now[k] > (base?.[k] ?? 0))) { a.pose = "fly"; continue; } base = now; }
+      n++;
+    }
+  }
+  return n;
+}

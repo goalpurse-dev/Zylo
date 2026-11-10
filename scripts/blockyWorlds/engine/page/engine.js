@@ -639,7 +639,7 @@ async function main() {
       }
       monster.userData.peering = !!peering;
       for (const a of monster.userData?.arms ?? []) a.visible = !peering; // its long arms would reach in through the walls
-      animateMonster(monster, ms.state, lt, { eye: ms.eye ?? null, eyeAt: ms.eyeAt ?? 0 }); // SIMPLE LOOK: the eye's own state (page/simple/monsters.js)
+      animateMonster(monster, ms.state, lt, { eye: ms.eye ?? null, eyeAt: ms.eyeAt ?? 0, crisp: !!peering }); // SIMPLE LOOK: the eye's own state (page/simple/monsters.js)
       if (peering && monster.userData.eyes?.[0]) { // after the pose: the eye just outside the glass, at the window's height
         monster.rotation.set(0, Math.atan2(-S.depth.x, -S.depth.z), 0); monster.updateMatrixWorld(true);
         const ew = monster.userData.eyes[0].e.getWorldPosition(new THREE.Vector3()), want = S.windowAt.clone().addScaledVector(S.depth, 0.55);
@@ -647,6 +647,7 @@ async function main() {
       }
     }
     if (epic) epic.place(shot, lt, S); // EPIC: this shot's giants + crowds (placed, animated)
+    if (epic && SIMPLE_LOOK && S.indoor) scene.traverse((o) => { if (/^crowd:/.test(o.name ?? "")) o.visible = false; }); // SIMPLE LOOK: no crowd inside a room (a crowd member filled the lens)
 
     // insert: in front of the center spot, toward the camera side, facing it
     let ins = null;

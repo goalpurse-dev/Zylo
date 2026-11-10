@@ -55,7 +55,7 @@ export function buildBedroom({ tl = null } = {}) {
   const ns = new THREE.Group(); ns.position.set(-1.05, 0, -2.6); root.add(ns);
   box(ns, [0.6, 0.6, 0.5], [0, 0.3, 0], mat("#ffffff", { rough: 0.7 }));
   cyl(ns, 0.08, 0.12, 0.35, [0, 0.78, 0], mat("#3a3f4a", { rough: 0.5 }));
-  const shade = new THREE.MeshStandardMaterial({ color: "#ffe9b0", roughness: 0.6 }); shade.userData.night = { emissive: "#ffcf73", ei: 2.2 }; K.glow.push(shade);
+  const shade = new THREE.MeshStandardMaterial({ color: "#ffe9b0", roughness: 0.6 }); shade.userData.night = { emissive: "#ffcf73", ei: 1.1 }; // under the night bloom threshold: no flare over the window K.glow.push(shade);
   cyl(ns, 0.16, 0.26, 0.3, [0, 1.08, 0], shade);
   K.lamps.push(V(-1.05, 1.2, -2.55));
   // desk + chair (right), shelf with books, rug, closet, door
@@ -68,7 +68,7 @@ export function buildBedroom({ tl = null } = {}) {
   box(root, [0.04, 2.1, 0.02], [X1 - 0.35, 1.15, 1.91], mat("#d8d8d8"));
   box(root, [0.06, 2.2, 1.0], [X0 + 0.12, 1.1, 2.6], mat("#c47a3d", { rough: 0.7 }));
   // the ceiling light
-  const bulb = new THREE.MeshStandardMaterial({ color: "#fff4c8", roughness: 0.5 }); bulb.userData.night = { emissive: "#fff0c0", ei: 1.4 }; K.glow.push(bulb);
+  const bulb = new THREE.MeshStandardMaterial({ color: "#fff4c8", roughness: 0.5 }); bulb.userData.night = { emissive: "#fff0c0", ei: 1.0 }; K.glow.push(bulb);
   cyl(root, 0.35, 0.35, 0.08, [0, HT - 0.05, 0.8], bulb, { seg: 20 });
   const S = {
     root, indoor: true, name: "bedroom", simple: true, sky, kit: K, windowY: 1.55, windowAt: V(-0.3, 1.55, ZB),

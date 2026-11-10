@@ -50,7 +50,7 @@ export function applyLight(name, ctx) {
   }
   const prev = { fog: scene.fog, background: scene.background, environment: scene.environment, exposure: renderer.toneMappingExposure };
   scene.fog = null; scene.environment = null; scene.background = new THREE.Color(T.skyHor);
-  const hemi = add(new THREE.HemisphereLight(T.hemi[0], T.hemi[1], T.hemi[2] * (set?.indoor ? 1.15 : 1)));
+  const hemi = add(new THREE.HemisphereLight(T.hemi[0], set?.indoor ? "#cbbfa8" : T.hemi[1], T.hemi[2] * (set?.indoor ? 1.15 : 1))); // indoors a neutral bounce: never a green ceiling
   const sun = add(new THREE.DirectionalLight(T.sun[0], T.sun[1] * (set?.indoor ? 0.75 : 1)));
   sun.castShadow = true; sun.shadow.mapSize.set(4096, 4096);
   sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.03;

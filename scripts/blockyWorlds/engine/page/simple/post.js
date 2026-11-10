@@ -65,8 +65,10 @@ export function makePost({ renderer, scene, camera, W, H, query = new URLSearchP
     bloom.threshold = 1.4; bloom.strength = 0.6; bloom.radius = 0.4;
   };
   setLight("day");
-  const setShot = (si, shot) => {
+  const setShot = (si, shot, S = null) => {
     cur = { si, shot };
+    // no bloom in rooms: the practicals glow on their own, and a flare over the window would wash out what is outside
+    bloom.enabled = SIMPLE.bloomNight && (!!tuneOf(light).night || light === "dusk") && !S?.indoor;
     bokeh.enabled = SIMPLE.dofCloseups && shot?.camera === "closeup" && !(shot?.renderFlags ?? []).includes("no_dof");
     if (lutOn) { const tex = lutTex(lutMod?.moodFor?.(shot) ?? light); lutPass.enabled = !!tex; if (tex) lutPass.lut = tex; }
   };
