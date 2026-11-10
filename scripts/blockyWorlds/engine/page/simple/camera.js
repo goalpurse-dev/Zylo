@@ -100,6 +100,7 @@ function frameEye(type, ctx) {
   const loom = set?.loom && Math.hypot(hd.center.x - set.loom.x, hd.center.z - set.loom.z) < 4;
   const aimY = loom ? eyeY - span * 0.3 : eyeY + span * 0.09; // the eye a touch below the centre: the head top + a strip of sky above
   const p = hd.center.clone().addScaledVector(side, loom ? dist * 1.9 : dist); p.y = loom ? eyeY - 3.5 : eyeY - (type === "low" ? 0.6 : 0.1);
+  if (loom) p.set(hd.center.x + ((seed | 0) % 2 ? 1.2 : -1.2), eyeY - 3.5, (set.spots?.center?.z ?? 0) + 4.2); // on the road: never back across into the houses opposite
   if (set?.bounds?.length && !set.bounds.some((b) => b.containsPoint(p))) { let best = null, bd = Infinity; for (const b of set.bounds) { const q = b.clampPoint(p, new THREE.Vector3()); const d = q.distanceTo(p); if (d < bd) { bd = d; best = q; } } if (best) p.copy(best); }
   camera.position.copy(p); camera.fov = fov; camera.near = 0.1; camera.far = Math.max(camera.far, 3000); camera.updateProjectionMatrix();
   camera.up.set(0, 1, 0); camera.lookAt(hd.center.x, aimY, hd.center.z); camera.updateMatrixWorld();
