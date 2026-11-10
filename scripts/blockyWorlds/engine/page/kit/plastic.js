@@ -34,6 +34,10 @@ export const PLASTIC = Object.freeze({ roughness: 0.42, minRough: 0.3, maxRough:
 // and bloom spread the NaN into black blocks. Every built-in lit material now writes at most RADIANCE_MAX (HDR headroom
 // for bloom and neon, never Inf / NaN). Patched once into three's opaque_fragment chunk before any shader compiles.
 export const RADIANCE_MAX = 24;
+// GATE-V3: big surfaces (ground, floors, paving, walls) are SATIN toy plastic: no clearcoat, a weak specular and a dim
+// sky reflection. Glossy floors mirrored the bright HDR sky at grazing angles (Fresnel -> ~1): every outdoor still's
+// lower half clipped white by day and turned a lilac sheen at night. Props / characters keep the glossy plastic.
+export const SURFACE_MATTE = Object.freeze({ matte: true, roughness: 0.8, clearcoat: 0, specularIntensity: 0.3, envMapIntensity: 0.45 });
 const CAP_MARK = "/* bw radiance cap */";
 /** the opaque_fragment chunk with the outgoing light clamped to [0, max] (pure, tested; idempotent) */
 export function capRadianceChunk(src, max = RADIANCE_MAX) {

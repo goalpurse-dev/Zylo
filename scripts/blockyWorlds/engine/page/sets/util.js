@@ -4,7 +4,7 @@
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { PLASTIC_LOOK, makePlastic, flatFor, TILE_KIND, cleanPattern, plasticize } from "../kit/plastic.js"; // PLASTIC-WORLD 2026-11-10
+import { PLASTIC_LOOK, makePlastic, flatFor, TILE_KIND, cleanPattern, plasticize, SURFACE_MATTE } from "../kit/plastic.js"; // PLASTIC-WORLD 2026-11-10
 import { toyModelFor } from "../kit/nature.js"; // PLASTIC-WORLD: stylised trees / shrubs instead of the Poly Haven foliage
 
 /** Loaders for when the caller's ctx has none (the dev preview passes its own, the engine passes its own). */
@@ -54,7 +54,7 @@ export function makeKit(ctx, root) {
     if (PLASTIC_LOOK) {
       const col = flatFor(name, tint), pat = cleanPattern(THREE, TILE_KIND[name], col);
       if (pat) pat.repeat.set(...repeat);
-      const m = makePlastic(THREE, pat ? "#ffffff" : col, pat ? { map: pat, keepColour: true, roughness: 0.5 } : { roughness: /grass/.test(name) ? 0.55 : 0.45, keepColour: true });
+      const m = makePlastic(THREE, pat ? "#ffffff" : col, { ...SURFACE_MATTE, ...(pat ? { map: pat } : {}), keepColour: true }); // GATE-V3: floors / walls satin-matte (a glossy floor mirrored the bright sky white at grazing angles)
       m.userData.fromPbr = name;
       MATS.set(k, m); return m;
     }

@@ -32,7 +32,7 @@
 //   toyModelFor(THREE, url) -> Group | null   a stylised stand-in for a Poly Haven foliage model (sets/util.js model())
 import { prng } from "../../lib/epic.js";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
-import { PLASTIC_LOOK, makePlastic } from "./plastic.js";
+import { PLASTIC_LOOK, makePlastic, SURFACE_MATTE } from "./plastic.js";
 
 export const NATURE_MODELS = Object.freeze(["island_tree_02", "fir_sapling", "fern_02", "rock_moss_set_01", "boulder_01", "dead_tree_trunk", "tree_stump_01"]);
 const A = "/assets/styletest";
@@ -378,7 +378,7 @@ async function makeToyNature(ctx, opts = {}) {
     col.set([c.r, c.g, c.b], i * 3);
   }
   g.setAttribute("color", new THREE.BufferAttribute(col, 3)); g.computeVertexNormals();
-  const groundMat = makePlastic(THREE, "#ffffff", { keepColour: true, vertexColors: true, roughness: 0.55, clearcoat: 0 });
+  const groundMat = makePlastic(THREE, "#ffffff", { ...SURFACE_MATTE, keepColour: true, vertexColors: true }); // GATE-V3: satin-matte ground
   const ground = new THREE.Mesh(g, groundMat); ground.receiveShadow = true; ground.name = "ground"; group.add(ground);
   if (opts.water) ground.visible = false;
 

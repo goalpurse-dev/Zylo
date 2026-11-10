@@ -6,7 +6,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import * as THREE from "three";
-import { PLASTIC, PLASTIC_LOOK, plasticParams, makePlastic, plastic, toyColour, isBeige, hsvOf, flatFor, TEX_FLAT, plasticRough, plasticizeMaterial, isPhotoMap, capRadianceChunk, RADIANCE_MAX } from "../page/kit/plastic.js";
+import { PLASTIC, PLASTIC_LOOK, plasticParams, makePlastic, plastic, toyColour, isBeige, hsvOf, flatFor, TEX_FLAT, plasticRough, plasticizeMaterial, isPhotoMap, capRadianceChunk, RADIANCE_MAX, SURFACE_MATTE } from "../page/kit/plastic.js";
 import { THEMES, THEME_IDS, RIGS, RIG_IDS } from "../lib/setThemes.js";
 import { fogPolicy, FOG_MIN_NEAR, modeOf, LIGHT_MODES } from "../page/lighting.js";
 import { toyParts, toyModelFor, TOY_GREENS, TOY_FLOWERS, TOY_GROUND } from "../page/kit/nature.js";
@@ -55,7 +55,7 @@ test("the sets' pbr() hands out plastic: no photo texture is loaded, no map in N
   for (const [n, t] of [["leafy_grass", "#9fe06a"], ["concrete_pavement", "#f2eee8"], ["brown_mud_dry", "#c9a477"], ["painted_plaster_wall", "#bfe0ff"], ["asphalt_02", "#b8b8bc"], ["dark_rock", "#c9c4bc"]]) {
     const m = K.pbr(n, { tint: t });
     assert.ok(noMaps(m), n);
-    assert.ok(m.roughness <= 0.55 && m.roughness >= 0.3, `${n}: ${m.roughness}`);
+    assert.ok(m.roughness === SURFACE_MATTE.roughness && m.clearcoat === 0, `${n}: ${m.roughness}`); // GATE-V3: set surfaces are satin-matte
     assert.ok(!isBeige(hexOfColor(m.color)), `${n}: ${hexOfColor(m.color)}`);
   }
   assert.equal(loads, 0, "a photo texture was requested");
@@ -149,4 +149,13 @@ test("GATE-V3 radiance cap: three's opaque_fragment writes the outgoing light cl
 
 test("GATE-V3: no default ground / path / paving near white (it clipped under the plastic sun)", () => {
   for (const c of [TEX_FLAT.concrete_pavement, TEX_FLAT.grass_path_2, TEX_FLAT.brown_mud_dry, TOY_GROUND.path, flatFor("unknown_surface")]) assert.ok(hsvOf(c).v <= 0.86, c);
+});
+
+test("GATE-V3: big surfaces are satin-matte (no clearcoat, weak specular: no sky mirrored white on the floor)", () => {
+  const p = plasticParams("#bcc6d4", { ...SURFACE_MATTE, keepColour: true });
+  assert.equal(p.clearcoat, 0);
+  assert.ok(p.roughness >= 0.75, `roughness ${p.roughness}`);
+  assert.ok(p.specularIntensity <= 0.4 && p.envMapIntensity <= 0.6);
+  const src = fs.readFileSync(new URL("../page/sets/util.js", import.meta.url), "utf8") + fs.readFileSync(new URL("../page/kit/nature.js", import.meta.url), "utf8");
+  assert.equal((src.match(/\.\.\.SURFACE_MATTE/g) ?? []).length, 2, "the set surfaces and the nature ground use it");
 });
