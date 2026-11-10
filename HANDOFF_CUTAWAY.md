@@ -94,6 +94,21 @@ The goal from the owner: take the 40-topic scoreboard to 40/40, mostly for free.
 - Results are in `<old scratchpad>/realcheck2/`. To score: copy that folder to `<dir>/realcheck`, then run readyScore on `<dir>`.
 - **The hook at half the width (0.5) backfired:** it broke the fridge, water heater, fish and septic hooks and fixed none. It is reverted to 0.36 (`director.js` LOOK.hookMin). The old frames' verdicts are cached, so expect those four back to ready for free. The blocked hooks need content fixes (frost, steering, block contact, lumps, tunnel reach, lighthouse night), not framing.
 - **Budget left:** about $4.64.
+- **Re-check 2026-11-10 (after phase 1 + 2, the re-plans with the new generators, the picture fixes and the in-scene still-moment motion):** 384 changed lines, $0.76. **33/40 customer-ready, 9/40 perfect.**
+
+  | Category | Customer-ready | Perfect |
+  |---|---|---|
+  | Yard | 9/10 | 2 |
+  | Utilities | 1/3 | 0 |
+  | Appliances | 6/6 | 5 |
+  | Vehicles | 4/6 | 1 |
+  | Machines | 3/3 | 0 |
+  | Buildings | 6/7 | 1 |
+  | Electronics | 2/2 | 0 |
+  | Body | 2/3 (heart stent refused) | 0 |
+
+  Results: `<scratchpad acfcf97e>/real3/` (score dir `score3/`). Blocked by the hook: traffic light (shows all 3 lamps, wants one red; its name line has no glow), sewage plant (no brown stream from the pipe), electricity to outlet (house cropped, wire partial), four-wheel steering (wheels never turn), car brakes (block never touches the tyre), lighthouse (sea and cliff not framed, fire small). Heavy salvage (more than a third of the lines cut): airplane 8/15, escalator 6/11, skyscraper 5/10.
+  Spent in this session: $0.76 of $11.64; about $10.88 left.
 - Every report to the owner starts with the scoreboard, in plain words, and ends with "In plain terms".
 
 ## Tools (all in m3/, run from scripts/cutaway/proto3d)
