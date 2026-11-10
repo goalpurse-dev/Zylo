@@ -52,10 +52,14 @@ The goal from the owner: take the 40-topic scoreboard to 40/40, mostly for free.
 - **Render folder (PROTO)**, passed as `--proto` to every tool. It holds node_modules and assets.
   - Path: `C:/Users/Huhta/AppData/Local/Temp/claude/c--Users-Public-Zylo/9fd93e59-a925-49a7-beab-dadbb576d507/scratchpad/proto`
   - Every render copies `m2/` and `kit/` into it (syncProto). **Never edit kit or m2 while a render or measurement is running**: it contaminates the run.
-- **Live production worker:** RunPod endpoint `f66astc0vrus92`.
-  - Image `7c4d61f2` = commit `ccfaf425`: look steps A and B, the 30/60 s length fixes, crash-proofing.
+- **Live production worker (since 2026-11-10 ~22:45 Finnish):** RunPod endpoint `f66astc0vrus92`, template `mr9nk3t357`.
+  - Image `af43baaf` = commit `52040d39`: phase 1 + 2 (handbook, 1d facts flow, generators), the in-scene still-moment life, the six hook fixes, the dishwasher-run fixes. Premade proven unchanged (4 live premades built with the live and the new code: identical parts, tracks, camera; 320 frames every 0.5 s all above 60 dB).
   - The record is in `m3/production.json`.
-  - Rollback: `node m3/runpodSetup.mjs --prod --env-keys --image registry.fly.io/zyvo-cutaway-render-staging@sha256:e6dd02e4daa5ebdffdb39afd32aa54e8615a2cf15f6e6a7e4cb42ef1cf17436f`
+  - Rollback to the previous worker (commit ccfaf425): `node m3/runpodSetup.mjs --prod --env-keys --image registry.fly.io/zyvo-cutaway-render-staging@sha256:7c4d61f2144a3cf5ed7b2909cc507d7d94bd6212f1d0c39a197e5cf92bb19f7d`
+  - Build context needs `git archive <commit> scripts/cutaway render-worker supabase/functions/_shared`.
+- **Categories (cutaway_settings.categories):** `{"appliances": "open"}` since 2026-11-10 (owner's go after the dishwasher run). Electronics stays closed (owner). Close again: set it to `{}`.
+- **Real run 2026-11-10, "How a dishwasher works" 30 s (new topic, local m2/run.mjs):** $0.92, gate passed with 0 failing lines. Three flaws seen by eye, fixed for every topic (52040d39) and checked on a free replay: splash/frost on a machine's lid -> in its middle; a piece shown twice drew at 2x (grime outside the glass) -> second show dropped; frost ring tighter; "closer on the build" no longer dives into the opening (the hook ended on the lid). Output: `<scratchpad acfcf97e>/dishwasher/`.
+- **Six blocked hooks re-planned 2026-11-10 (free stand-ins, d40024e2):** car brakes, four-wheel steering, traffic light, electricity, sewage, lighthouse. NOT real-checked (owner: no other paid runs). General fixes from them: name line exempt from the 40% widening (not templates), middle checker frame halfway through a motion that peaks at the end, airborne crash debris clears, effects shrink as they stop, signal red purer. Open bugs the helpers found (not fixed): framing.js measureKey counts terrain/sea beyond z -6 as lawn; hookB skips flow kinds; solver drops a rig over water to the seabed; flow look is a bead chain; no top-down view; plan.js turns a custom view into "home"; layoutRules re-adds the main part to shots unless a dotted piece id; night fire washes out pale.
   - To build a new image: `git archive <commit>` into a scratch folder, then `node m3/buildContext.mjs <ctx> --proto PROTO`, then `fly deploy --build-only --push` inside `<ctx>`.
 - **Commits since live (not in the worker yet):**
   - `001f0cc9`: the "This is a…" outline glows the part's real silhouette (OutlinePass), and the hook object fills half the frame.
