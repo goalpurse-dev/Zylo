@@ -689,7 +689,11 @@ export async function writeHybridLines({ apiKey = "", plan, topic, examples = []
   const { system, user } = hybridLinesRequest({ plan, topic, examples, lengthSec, previous, failed, note });
   const reply = await callJson({ apiKey, model, system, user, schema: hybridLinesSchema(), effort, maxTokens, timeoutMs, meter, cache, ttl });
   // the beat sheet (2026-11-10): each line's part follows from its beat; the beat map is the skeleton the checks read
-  return { script: normalizeScript(withParts(reply.data)), skeleton: reply.data?.map ?? reply.data?.skeleton ?? {}, costUsd: reply.costUsd, usage: reply.usage ?? null };
+  // LENGTH-V2: the writer states each line's word count as it writes; what it said vs what it wrote is logged (a paid
+  // run shows whether counting holds the length)
+  const raw = Array.isArray(reply.data?.lines) ? reply.data.lines : [];
+  const selfCount = raw.some((l) => Number.isFinite(l?.words)) ? { stated: raw.reduce((a, l) => a + (Number(l?.words) || 0), 0), real: raw.reduce((a, l) => a + String(l?.text ?? "").trim().split(/\s+/).filter(Boolean).length, 0) } : null;
+  return { script: normalizeScript(withParts(reply.data)), skeleton: reply.data?.map ?? reply.data?.skeleton ?? {}, selfCount, costUsd: reply.costUsd, usage: reply.usage ?? null };
 }
 
 /** What a failed call was, for the caller (the app maps a balance failure to "paused", a cap to "busy"). */
@@ -747,6 +751,9 @@ export async function writeHybrid({ apiKey = "", topic, recipe = null, examples 
     const w = await s.writeHybridLines({ apiKey, plan: out.plan, topic, examples, lengthSec, meter, ttl });
     log("lines", HYBRID.lines.model, w);
     out.script = w.script; out.skeleton = w.skeleton;
+    // LENGTH-V2: the writer's own draft length (before any trim or fix) and its self-count
+    out.draftWords = w.script.lines.reduce((a, l) => a + l.text.split(/\s+/).filter(Boolean).length, 0);
+    out.selfCount = w.selfCount ?? null;
     out.checks = check();
     trimmed();
     if (out.checks.hard.length) {

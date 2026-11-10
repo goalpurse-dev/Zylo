@@ -7,7 +7,7 @@ import { namesIn, copyProblems } from "../supabase/functions/_shared/blockyWorld
 import { skeletonProblems, isException } from "../supabase/functions/_shared/blockyWorlds/skeleton.js";
 import { topicProblems, mentions, topicElements } from "../supabase/functions/_shared/blockyWorlds/topic.js";
 import { hybridChecks, hybridPlanSchema, hybridLinesSchema, planCard, planText, premiseLost, hybridLinesPrompt, hybridPlanPrompt, HYBRID_LINES_SYSTEM, HYBRID_PLAN_SYSTEM, lengthNumbers, SHORT_GRACE, withParts, isBeatPlan } from "../supabase/functions/_shared/blockyWorlds/hybrid.js";
-import { BEATS, BEAT_IDS, BEAT_PART, BEAT_SHEET_TEXT, RULE_VISUAL_TEXT, beatBudgets, beatSheetProblems, beatTiming, ruleVisualOf, plantedShare } from "../supabase/functions/_shared/blockyWorlds/beatSheet.js";
+import { BEATS, BEAT_IDS, BEAT_PART, BEAT_SHEET_TEXT, RULE_VISUAL_TEXT, beatBudgets, beatSheetProblems, beatTiming, ruleVisualOf, plantedShare, threatProblem, aimWords, beatPlanNotes } from "../supabase/functions/_shared/blockyWorlds/beatSheet.js";
 import { normalizeScript } from "../supabase/functions/_shared/blockyWorlds/script.js";
 import { targetWords } from "../supabase/functions/_shared/blockyWorlds/config.js";
 import { writeHybrid, writeHybridPlan, rewriteHybrid, hybridPlanRequest, hybridLinesRequest, requestBody, systemBlocks, costOf, worstCaseUsd, draftCheck, HYBRID } from "../supabase/functions/_shared/blockyWorlds/llm.js";
@@ -79,7 +79,7 @@ const SCRIPT = {
       "Mrs. Quibble's house floats just above the fence.", "She tiptoes to look richer."),
     ...B("me", "Then there's me.", "Tilly. The lowest house in town.", "Our doormat is technically in the ground."),
     ...B("ally", "My best friend Nub just shrugged at our muddy step.", "He said, \"Low houses hear everything first.\"", "I thought he meant the gossip."),
-    ...B("trigger", "Until one day the ground started to shake.", "The whole hill was sliding toward the river.", "Every floating house was tied to it."),
+    ...B("trigger", "Until one day every floating house started to shake.", "The whole hill was sliding toward the river.", "Every floating house was tied to it."),
     ...B("adults", "Mr. Pell tried to pay the hill to stop.", "He threw coins at it. The hill ate them.",
       "Captain Huxworth tied his house to a cloud.", "The cloud floated away. So did his boots.",
       "Mrs. Quibble yelled at the river.", "The river splashed her back.", "The mayor called a meeting.",
@@ -297,7 +297,7 @@ test("beat sheet run fixes (2026-11-10): the free trim keeps named lines and \"T
   const p = beatSheetProblems(s, { ...MAP, worst: "" }, card());
   assert.ok(!p.some((x) => /never visibly fail|WORST/.test(x)), JSON.stringify(p));
   // the planner gets fewer, fuller lines (~8.5 words) and the trigger is told not to copy "Until one night the"
-  assert.equal(lengthNumbers(90).lines, 38);
+  assert.equal(lengthNumbers(90).lines, 35);
   assert.match(BEAT_SHEET_TEXT, /never "Until one night the\.\.\."/);
 });
 
@@ -307,6 +307,40 @@ test("beat sheet (round 2): a \"me\" line that shows the hero's rule-visual valu
   s.lines = s.lines.map((l) => (l.beat === "me" ? { ...l, text: l.text === "Then there's me." ? l.text : "My sign says 94 and it flashes." } : l));
   assert.ok(!beatSheetProblems(s, { ...MAP, worst: "" }, c).some((x) => /WORST/.test(x)));
   assert.ok(beatSheetProblems(s, { ...MAP, worst: "" }, card()).some((x) => /WORST/.test(x)));
+});
+
+test("length v2: budgets sized to the aim (middle of the band), 9-word lines, the origin at least 18 words; the writer counts each line", async () => {
+  for (const len of [30, 60, 90, 120, 180]) {
+    const b = beatBudgets(len), n = lengthNumbers(len);
+    assert.equal(b.reduce((a, x) => a + x.words, 0) <= aimWords(len), true, `${len}`);
+    assert.ok(n.aim > n.lo && n.aim < n.hi, `${len}`);
+  }
+  assert.equal(aimWords(90), 302);
+  assert.ok(beatBudgets(90).find((x) => x.id === "origin").words >= 18);
+  assert.equal(beatBudgets(90).find((x) => x.id === "neighbours").lines, 6);
+  assert.deepEqual(hybridLinesSchema().properties.lines.items.required, ["beat", "text", "words"]);
+  assert.match(HYBRID_PLAN_SYSTEM, /THE THREAT COMES FROM THE RULE'S OWN WORLD/);
+  assert.ok(hybridPlanSchema().required.includes("trigger_root"));
+  // the writer's self-count and its draft length are logged (the words field is dropped from the saved lines)
+  const { result: r } = await (async () => {
+    const real = globalThis.fetch;
+    const lines = SCRIPT.lines.map(({ beat, text }) => ({ beat, text, words: text.split(/\s+/).length + 1 }));
+    globalThis.fetch = async (_u, init) => { const b = JSON.parse(init.body); const data = b.model === "claude-opus-5-5" ? PLAN : /verdicts/.test(JSON.stringify(b.output_config)) ? { verdicts: [{ scores: Object.fromEntries(RUBRIC.map((c) => [c.id, 4])), safe: true, better: "x" }] } : { title: "t", lines, post: SCRIPT.post, map: MAP }; return { ok: true, json: async () => ({ model: b.model, usage: { input_tokens: 10, output_tokens: 10 }, stop_reason: "end_turn", content: [{ type: "text", text: JSON.stringify(data) }] }) }; };
+    try { return { result: await writeHybrid({ apiKey: "x", topic: TOPIC, lengthSec: 90, judge: false }) }; } finally { globalThis.fetch = real; }
+  })();
+  assert.equal(r.draftWords, 306);
+  assert.deepEqual(r.selfCount, { stated: 306 + SCRIPT.lines.length, real: 306 });
+  assert.ok(r.script.lines.every((l) => !("words" in l)));
+});
+
+test("the threat comes from the rule's own world (owner, on topic 5): a trigger made of things never shown before is flagged", () => {
+  assert.equal(threatProblem(SCRIPT), null); // "every floating house started to shake": the houses of the rule
+  const s = clone(SCRIPT);
+  s.lines = s.lines.map((l) => (l.beat === "trigger" && /floating house started/.test(l.text) ? { ...l, text: "Then a giant flower bloomed on the hill." } : l.beat === "trigger" && /whole hill/.test(l.text) ? { ...l, text: "It puffed out a pollen bubble big as a house." } : l));
+  assert.match(threatProblem(s), /from nowhere \(flower/);
+  assert.ok(beatSheetProblems(s, MAP, card()).some((x) => /^Beat sheet: the threat seems to come from nowhere/.test(x)));
+  assert.ok(beatPlanNotes({ ...PLAN, trigger_root: "" }).some((x) => /grows from/.test(x)));
+  assert.ok(!beatPlanNotes({ ...PLAN, trigger_root: "the floating houses' ropes" }).some((x) => /grows from/.test(x)));
 });
 
 test("rule visual: the plan's parameter with each neighbour's value and the hero's, or null without one", () => {
@@ -480,12 +514,14 @@ test("prompts: a firm length at both ends; the plan gets exact line intents per 
   for (const len of [30, 90, 180]) {
     const n = lengthNumbers(len);
     const plan = hybridPlanPrompt({ topic: TOPIC, lengthSec: len });
-    assert.ok(plan.includes(`${n.lo} to ${n.hi} spoken words = ${n.lines} lines`), `${len}`);
+    assert.ok(plan.includes(`${n.lo} to ${n.hi} spoken words, aim ${n.aim} = ${n.lines} lines`), `${len}`);
+    assert.match(plan, /WORD BUDGET PER BEAT/);
     for (const b of n.beats) assert.ok(plan.split("\n").includes(`- ${b.id}: ${b.lines}`), `${len} ${b.id}`);
     assert.match(plan, /count the line intents/);
     const lines = hybridLinesPrompt({ plan: PLAN, topic: TOPIC, lengthSec: len });
-    assert.ok(lines.includes(`AT LEAST ${n.lo} and AT MOST ${n.hi} words in total, in ${n.lines} lines`), `${len}`);
-    assert.match(lines, /BEFORE YOU ANSWER: count the words of every line/);
+    assert.ok(lines.includes(`AIM FOR ${n.aim} words in ${n.lines} lines`) && lines.includes(`under ${n.lo} is too short, over ${n.hi} is too long`), `${len}`);
+    assert.match(lines, /COUNT AS YOU WRITE/);
+    assert.match(lines, /NEVER more than 10/);
     assert.equal(n.beats.reduce((a, b) => a + b.lines, 0), n.lines);
   }
   assert.match(HYBRID_LINES_SYSTEM, /HARD RULE AT BOTH ENDS/);

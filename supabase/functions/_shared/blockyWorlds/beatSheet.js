@@ -26,7 +26,7 @@ export const BEATS = Object.freeze([
   Object.freeze({ id: "neighbours", part: "tour", span: [7, 22], target: "6-20 s", job: "three NAMED neighbours living the rule, one quick joke each, each one SHOWN by the rule visual (their height, their house, their cloud)" }),
   Object.freeze({ id: "me", part: "me", span: [22, 30], target: "~22%", job: '"Then there\'s me." The hero is the WORST at the rule (the lowest, the smallest, the quietest), seen in the rule visual; their flaw is plain' }),
   Object.freeze({ id: "ally", part: "me", span: [30, 38], target: "~30%", job: "an ally (a friend, a grandparent, a sibling) says ONE line, quoted, that sounds like a throwaway joke or odd advice; the hero needs it later" }),
-  Object.freeze({ id: "trigger", part: "until", span: [38, 45], target: "~38%", job: "the trouble arrives: the rule breaks or the threat comes, visible to everyone. Open it in your own words, never \"Until one night the...\" (the references open their trouble that way; a copied phrase is thrown away)" }),
+  Object.freeze({ id: "trigger", part: "until", span: [38, 45], target: "~38%", job: "the trouble arrives: the rule breaks or the threat comes, visible to everyone. The threat comes from the rule's own world (the rule, its rule visual or something already shown), never from nowhere. Open it in your own words, never \"Until one night the...\" (the references open their trouble that way; a copied phrase is thrown away)" }),
   Object.freeze({ id: "adults", part: "until", span: [45, 68], target: "45-65%", job: "the ADULTS TRY AND FAIL: two or three named grown-ups (neighbours from the tour count) each try their fix, each failing in a funny, visible way; it gets worse each time" }),
   Object.freeze({ id: "save", part: "climax", span: [68, 94], target: "70-90%", job: "the hero remembers the ally's line, and the very flaw that made them the worst at the rule is what saves everyone; the planted line is said again here" }),
   Object.freeze({ id: "callback", part: "closer", span: [94, 100], target: "last line", job: "the world after, then a last line that is a callback JOKE to something from the first half (a neighbour's joke, the ally's line, the rule)" }),
@@ -40,20 +40,35 @@ export const BEAT_PREFIX = "Beat sheet";
  * script came back 10-20% long and the free trim cut story lines, a neighbour's name with them): the plan asks for
  * fewer, fuller lines.
  */
-export const BEAT_WORDS_PER_LINE = 8.5;
+// LENGTH-V2 (owner, 2026-11-10: "no fix call and no trimming in normal runs"). The 7 stored drafts of rounds 1-2 ran
+// 318-465 words for a 286-318 band. They kept the planned line COUNT (0 extra lines in 5 of 7) but not the line SIZE
+// (8.0-10.6 words a line; 3-22 lines over 10 words), and every one overran the origin beat (22-57 words for a 13-word
+// budget: it carries the price and the first rule visual). So: lines sized at 9 words, the origin at least 18 words, all
+// budgets sized to the AIM (the middle of the band, so a small overshoot still fits), a hard 10-word line limit in the
+// prompt, and the writer states each line's word count as it writes (schema field "words").
+export const BEAT_WORDS_PER_LINE = 9;
+/** The writer's word aim: the middle of the band (286-318 at 90 s -> 302). */
+export const AIM_SHARE = 0.95;
+export const aimWords = (lengthSec) => Math.round(targetWords(lengthSec) * AIM_SHARE);
+/** The most words a line may have in the beat-sheet writer's prompt (the opener excepted). */
+export const LINE_MAX_WORDS = 10;
+const MIN_BEAT_WORDS = Object.freeze({ origin: 18 });
 
 /**
  * Per-beat word budgets and line counts for a length: the rule is the opener (at least RULE_MIN_WORDS, one line), the
- * other beats share the rest by their spans; the budgets add up to the target, never over it.
+ * other beats share the rest by their spans (the origin at least 18 words); the budgets add up to the AIM (aimWords),
+ * never over it.
  */
 export function beatBudgets(lengthSec) {
-  const total = targetWords(lengthSec);
+  const total = aimWords(lengthSec);
   const span = (b) => b.span[1] - b.span[0];
   const rule = Math.max(RULE_MIN_WORDS, Math.round((total * span(BEATS[0])) / 100));
   const restSpan = 100 - span(BEATS[0]), rest = total - rule;
-  const out = BEATS.map((b) => ({ id: b.id, words: b.id === "rule" ? rule : Math.max(6, Math.round((rest * span(b)) / restSpan)) }));
+  const out = BEATS.map((b) => ({ id: b.id, words: b.id === "rule" ? rule : Math.max(MIN_BEAT_WORDS[b.id] ?? 6, Math.round((rest * span(b)) / restSpan)) }));
   for (let over = out.reduce((a, b) => a + b.words, 0) - total; over > 0; over--) out.reduce((m, b) => (b.id !== "rule" && b.words > m.words ? b : m), out[1]).words--;
-  return out.map((b) => ({ ...b, lines: b.id === "rule" ? 1 : Math.max(1, Math.round(b.words / BEAT_WORDS_PER_LINE)) }));
+  // three neighbours want a line each at least, two each when the words allow (a name line + its joke)
+  const minLines = (b) => (b.id === "neighbours" ? (b.words >= 40 ? 6 : 3) : 1);
+  return out.map((b) => ({ ...b, lines: b.id === "rule" ? 1 : Math.max(minLines(b), Math.round(b.words / BEAT_WORDS_PER_LINE)) }));
 }
 
 /** The beat sheet as prompt text (both system prompts quote it; the same bytes every call, so it caches). */
@@ -186,11 +201,33 @@ export function beatSheetProblems(script, map = {}, card = null, lengthSec = 90)
   const earlier = new Set(norm(lines.slice(0, saveIdx[0] ?? Math.round(n * 0.68)).map((l) => l.text).join(" ")));
   const fresh = [...new Set(norm(saveText).filter((w) => MAGIC.includes(w) && !earlier.has(w)))];
   if (fresh.length) bad(`the save brings new magic (${fresh.join(", ")}) that was never set up. Win with the flaw and the planted line.`);
+  // the threat comes from the rule's own world
+  const threat = threatProblem(script);
+  if (threat) bad(threat);
   // 6. the last line is a callback to the first half
   const lastWords = contentWords(lines[n - 1].text);
   const firstHalf = new Set(contentWords(lines.slice(0, trigger0).map((l) => l.text).join(" ")));
   if (!lastWords.some((w) => firstHalf.has(w))) bad("the last line should be a callback joke to the first half (a neighbour's joke, the ally's line, the rule).");
   return out;
+}
+
+/** Words too common to tie a threat to the world (anything can "come to town one day"). */
+const THREAT_GENERIC = new Set("town everyone everybody day night morning evening noon one then until whole giant big huge little tiny people came come started start suddenly time first last all every house houses home street sky ground over into out off just like".split(" ").flatMap((w) => contentWords(w)));
+/**
+ * The threat comes from the rule's own world (owner, 2026-11-10, on topic 5: "the threat must come from the rule's own
+ * world"; its pollen bubble came from nowhere). The first two trigger lines must name something the story already
+ * showed (a word of an earlier line, not a generic one: "the Sneeze Meter", "every curtain", "the machine"). Advisory;
+ * null when it does, or when the script has no trigger beat to read.
+ */
+export function threatProblem(script) {
+  const lines = script?.lines ?? [];
+  const t0 = lines.findIndex((l) => l.beat === "trigger");
+  if (t0 < 1) return null;
+  const opening = lines.slice(t0, t0 + 2).filter((l) => l.beat === "trigger");
+  const earlier = new Set(contentWords(lines.slice(0, t0).map((l) => l.text).join(" ")).filter((w) => !THREAT_GENERIC.has(w)));
+  const own = [...new Set(opening.flatMap((l) => contentWords(l.text)).filter((w) => !THREAT_GENERIC.has(w)))];
+  if (!own.length || own.some((w) => earlier.has(w))) return null;
+  return `the threat seems to come from nowhere (${own.slice(0, 4).join(", ")} never appeared before the trouble): it should grow out of the rule's own world (the rule, its rule visual, something already shown).`;
 }
 
 /** What a beat-sheet plan is missing (free; notes, never a block). */
@@ -202,6 +239,7 @@ export function beatPlanNotes(plan) {
   if ((rv.neighbours ?? []).length < 3) out.push(`the rule visual shows ${(rv.neighbours ?? []).length} neighbours, not three`);
   if (!String(rv.hero ?? "").trim()) out.push("the rule visual has no value for the hero");
   if (!String(p.ally?.line ?? "").trim()) out.push("the plan has no planted ally line");
+  if ("trigger_root" in p && !String(p.trigger_root ?? "").trim()) out.push("the plan does not say which part of the rule's world the trouble grows from");
   if ((p.adults ?? []).length < 2) out.push(`the plan has ${(p.adults ?? []).length} adult attempts, not two or three`);
   const beats = (p.beats ?? []).map((b) => b.beat);
   const missing = BEAT_IDS.filter((id) => !beats.includes(id));

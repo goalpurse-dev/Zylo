@@ -17,10 +17,10 @@
 //      and the safety words. The beat-sheet checks and everything else are advisory notes shown with the script.
 //   4. At most ONE cheap fix call, only when a hard check fails (never for an advisory note).
 //   5. The judge: a score and notes as feedback only. It never blocks and never triggers a rewrite.
-import { BAND, checkScript, SCRIPT_SYSTEM, scriptSchema, WORDS_PER_LINE_PLAN } from "./script.js";
+import { BAND, checkScript, SCRIPT_SYSTEM, scriptSchema, wordCount } from "./script.js";
 import { FORMULAS, MOODS, SETTINGS, TWISTS } from "./formulas.js";
 import { normalizeIdea } from "./ideas.js";
-import { BEAT_IDS, BEAT_MAP_TEXT, BEAT_PART, BEAT_SHEET_TEXT, BEATS, beatBudgets, beatMapSchema, beatPlanNotes, beatSheetProblems, RULE_VISUAL_TEXT, ruleVisualOf } from "./beatSheet.js";
+import { aimWords, BEAT_IDS, BEAT_MAP_TEXT, BEAT_PART, BEAT_SHEET_TEXT, BEAT_WORDS_PER_LINE, BEATS, beatBudgets, LINE_MAX_WORDS, beatMapSchema, beatPlanNotes, beatSheetProblems, RULE_VISUAL_TEXT, ruleVisualOf } from "./beatSheet.js";
 import { copyProblems, copyReasons } from "./antiCopy.js";
 import { callbackProblem, propProblems } from "./protocol.js";
 import { skeletonProblems } from "./skeleton.js";
@@ -43,28 +43,36 @@ export const TRAP_WORDS = blockedWordsRule();
 export function lengthNumbers(lengthSec) {
   const total = targetWords(lengthSec), lo = Math.round(total * BAND.written[0]), hi = Math.round(total * BAND.written[1]);
   const beats = beatBudgets(lengthSec), lines = beats.reduce((a, b) => a + b.lines, 0);
-  return { total, lo, hi, lines, beats, parts: beats };
+  return { total, lo, hi, aim: aimWords(lengthSec), lines, beats, parts: beats };
 }
 
-/** The plan's LENGTH block: exactly how many line intents per beat (the writer writes one line per intent). */
+/**
+ * The plan's LENGTH block: exactly how many line intents per beat AND each beat's word budget (LENGTH-V2: the plan's
+ * intents are sized so the writer's lines can keep to it).
+ */
 export function planLengthBlock(lengthSec) {
   const n = lengthNumbers(lengthSec);
   return [
-    `LENGTH: ${lengthSec} seconds = ${n.lo} to ${n.hi} spoken words = ${n.lines} lines of about ${WORDS_PER_LINE_PLAN} words. The writer writes ONE line per line intent, so your line intents set the length.`,
+    `LENGTH: ${lengthSec} seconds = ${n.lo} to ${n.hi} spoken words, aim ${n.aim} = ${n.lines} lines of about ${BEAT_WORDS_PER_LINE} words. The writer writes ONE line per line intent, so your line intents set the length: each intent is ONE short beat of action or one joke, never two.`,
     `GIVE EXACTLY THIS MANY LINE INTENTS PER BEAT (${n.lines} in total):\n${n.beats.map((b) => `- ${b.id}: ${b.lines}`).join("\n")}`,
+    `WORD BUDGET PER BEAT (the writer keeps to it; plan no more content than fits):\n${n.beats.map((b) => `- ${b.id}: about ${b.words} words`).join("\n")}`,
     `BEFORE YOU ANSWER: count the line intents of every beat. Fewer than ${n.lines} makes a script that is too short, and a short script is thrown away like a long one.`,
   ].join("\n");
 }
 
-/** The line writer's LENGTH block: a firm band at BOTH ends, the line count, and a count before answering. */
+/**
+ * The line writer's LENGTH block: the aim and the band at BOTH ends, the per-beat lines and words, the per-line limit,
+ * and counting AS IT WRITES (each line's "words" field; LENGTH-V2).
+ */
 export function linesLengthBlock(lengthSec) {
   const n = lengthNumbers(lengthSec);
   return [
-    `LENGTH: ${lengthSec} seconds = AT LEAST ${n.lo} and AT MOST ${n.hi} words in total, in ${n.lines} lines (one per planned line intent, 6 to 10 words each). Both ends are checked in code: under ${n.lo} is too short, over ${n.hi} is too long.`,
-    // 2026-11-10 run: 38 lines came back at 404 words (10.6 a line); long lines are what makes a script run long
-    `LINE SIZE: ${n.hi} words over ${n.lines} lines is about ${(n.hi / n.lines).toFixed(1)} words a line on average. Write ONE short sentence per line; when a line runs past 10 words, split the joke or cut a clause, never add lines beyond the plan.`,
-    `PER BEAT (lines, words):\n${n.beats.map((b) => `- ${b.id}: ${b.lines} line${b.lines > 1 ? "s" : ""}, about ${b.words} words`).join("\n")}`,
-    `BEFORE YOU ANSWER: count the words of every line, beat by beat, and add them up. Under ${n.lo}: add a real line (a neighbour joke, a failed adult attempt, a save moment), never filler words. Over ${n.hi}: cut whole lines from the beats over their plan (never the first line, the planted line, the save or the last line). Answer only when the total is ${n.lo} to ${n.hi}.`,
+    `LENGTH: ${lengthSec} seconds. AIM FOR ${n.aim} words in ${n.lines} lines (one per planned line intent). Checked in code: under ${n.lo} is too short, over ${n.hi} is too long, both are thrown away.`,
+    // stored drafts of 2026-11-10: the line count was kept, the line SIZE was not (up to 10.6 words a line, 22 lines over 10)
+    `LINE SIZE: about ${BEAT_WORDS_PER_LINE} words a line, NEVER more than ${LINE_MAX_WORDS} (the first line excepted). One short sentence per line; a joke that needs more is split over two of its beat's lines or cut, never a longer line, never an extra line.`,
+    `PER BEAT (lines, word budget):\n${n.beats.map((b) => `- ${b.id}: ${b.lines} line${b.lines > 1 ? "s" : ""}, ${b.words} words`).join("\n")}`,
+    `COUNT AS YOU WRITE: give every line its "words" (the number of words in its text, counted one by one). When a beat is done, add up its lines: over its budget, shorten its lines before you write the next beat. Running total after the adults beat: about ${n.beats.slice(0, BEAT_IDS.indexOf("adults") + 1).reduce((a, b) => a + b.words, 0)} words; much more means the save and callback must be shorter.`,
+    `BEFORE YOU ANSWER: add up the "words" of all lines. Over ${n.hi}: shorten lines (never the first line, the planted line or the last line). Under ${n.lo}: add a real beat moment, never filler. Answer only when the total is ${n.lo} to ${n.hi}.`,
   ].join("\n");
 }
 
@@ -83,7 +91,7 @@ WHAT EACH PIECE OF THE PLAN MUST DO
 - neighbours: three NAMED neighbours (new names, never from the references), each living the rule with one quick joke, and what the rule visual shows for them. Three clearly different values.
 - hero: the narrator's name, who they are, how they are the WORST at the rule, and their FLAW (the very thing that makes them worst, which later saves everyone).
 - ally: a friend, grandparent or sibling who says ONE line (quoted, 4 to 12 words) that sounds like a joke or odd advice. It must be the key to the save. Plan it so the viewer laughs at it first and remembers it at the save.
-- trigger: what goes wrong, visible to everyone.
+- trigger: what goes wrong, visible to everyone. THE THREAT COMES FROM THE RULE'S OWN WORLD: it grows out of the rule, its rule visual or something the viewer already saw (the machine that runs the rule, a neighbour's habit, the meter, the creature, the festival), never from nowhere. A giant flower that simply blooms on a hill in a sneezing contest town is from nowhere; the Sneeze Meter overloading after one sneeze too many is from the rule's world. trigger_root: the earlier detail it grows from, and where the viewer saw it.
 - adults: two or three grown-ups (neighbours from the tour are best) each try their fix and FAIL in a funny, VISIBLE way (a camera can show it), each worse than the last.
 - save: how the hero's flaw, together with the ally's line, saves everyone. No outside help, no new magic, no new power: only the flaw, the line and the world's own rule.
 - callback: the last line, a callback joke to something from the first half (a neighbour's joke, the ally's line, the rule), and what it calls back.
@@ -107,7 +115,7 @@ export function hybridPlanSchema() {
     neighbours: { type: "array", items: obj({ name: s, joke: s, shows: s }) },
     hero: obj({ name: s, who: s, worst: s, flaw: s }),
     ally: obj({ name: s, who: s, line: s, why: s }),
-    trigger: s,
+    trigger: s, trigger_root: s,
     adults: { type: "array", items: obj({ who: s, attempt: s, fail: s }) },
     save: obj({ how: s, uses_line: s }),
     callback: obj({ line: s, calls_back: s }),
@@ -202,7 +210,7 @@ export function planText(plan) {
     `THE THREE NAMED NEIGHBOURS (one quick joke each, each line names its neighbour):\n${(p.neighbours ?? []).map((n, i) => `${i + 1}. ${n.name}: ${n.joke} (shows: ${n.shows})`).join("\n")}`,
     `THE HERO ("Then there's me."): ${p.hero?.name}, ${p.hero?.who}. The worst at the rule: ${p.hero?.worst}. The flaw: ${p.hero?.flaw}`,
     `THE ALLY'S PLANTED LINE (said by ${p.ally?.name}, ${p.ally?.who}, word for word, in quotes): "${p.ally?.line}". Why it matters later: ${p.ally?.why}`,
-    `THE TRIGGER: ${p.trigger}`,
+    `THE TRIGGER (it grows out of the rule's own world, never from nowhere): ${p.trigger}${p.trigger_root ? ` It grows from: ${p.trigger_root}` : ""}`,
     `THE ADULTS TRY AND FAIL (each a funny, visible failure, worse each time):\n${(p.adults ?? []).map((a, i) => `${i + 1}. ${a.who}: ${a.attempt} -> ${a.fail}`).join("\n")}`,
     `THE SAVE (the hero's flaw + the planted line; say the planted line again here): ${p.save?.how} The line pays off: ${p.save?.uses_line}`,
     `THE CALLBACK (the last line): ${p.callback?.line} (calls back: ${p.callback?.calls_back})`,
@@ -252,7 +260,7 @@ Return only the JSON object: the title, the lines (each with its beat), the post
 /** The line writer's schema: the lines carry a beat (the part follows from it), plus the beat map. */
 export function hybridLinesSchema() {
   const base = scriptSchema(), s = { type: "string" };
-  const lines = { type: "array", items: { type: "object", additionalProperties: false, required: ["beat", "text"], properties: { beat: { type: "string", enum: [...BEAT_IDS] }, text: s } } };
+  const lines = { type: "array", items: { type: "object", additionalProperties: false, required: ["beat", "text", "words"], properties: { beat: { type: "string", enum: [...BEAT_IDS] }, text: s, words: { type: "integer" } } } };
   return { ...base, required: [...base.required, "map"], properties: { ...base.properties, lines, map: beatMapSchema() } };
 }
 
