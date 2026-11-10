@@ -486,7 +486,7 @@ async function main() {
     let anyBig = false;
     for (const o of shot.objects ?? []) {
       // SIMPLE LOOK: a house front never stands inside a room (the room's own window is the window it stands for)
-      if (SIMPLE_LOOK && S.indoor && o.name === "house_front") continue;
+      if (SIMPLE_LOOK && o.name === "house_front" && (S.indoor || S.simple)) continue; // the simple street has real houses (their windows glow at night)
       const k = objKey(o), n = used.get(k) ?? 0; used.set(k, n + 1);
       const obj = OBJ.get(k)[n], u = obj.userData, spot = o.spot ?? "center", base = spots[spot] ?? spots.center;
       const here = free.filter((a) => a.spot === spot);
@@ -628,6 +628,9 @@ async function main() {
       if ((ms.spot ?? "far") === "far" && ms.state === "lurk") { const d = hz(monster.position).sub(hz(spots.center)), L = d.length(), cap = Math.max(7, Math.min(9, monsterH * 2.4)); if (L > cap) monster.position.copy(spots.center).addScaledVector(d.normalize(), cap).setY(monster.position.y); }
       // SIMPLE LOOK: a giant monster never stands inside a room: indoors it peers in at the window (just outside it, its
       // eye at the window's height, the rest of it below the lawn), so the room's own window frames the eye
+      // SIMPLE LOOK: a giant never stands on the sidewalk among the people: "behind" (back / centre / sides / door) is
+      // behind the houses across the yards, looming with its eye over the roofs ("far" stays down the street)
+      if (SIMPLE_LOOK && !S.indoor && monsterH > 6 && (ms.spot ?? "far") !== "far") monster.position.copy(S.loom ?? spots.center.clone().addScaledVector(S.depth, 15.5).setY(0.02));
       const peering = SIMPLE_LOOK && S.indoor && S.windowAt && monster.userData?.eyeY;
       if (peering) {
         const out = S.windowAt.clone().addScaledVector(S.depth, 1.3 + (monster.userData.headDepth ?? 1.2));
@@ -677,6 +680,9 @@ async function main() {
       focus = monster.position.clone(); focusHeight = monsterH; other = o?.pos; otherH = o ? PEOPLE[o.id]?.h : undefined;
     }
     else if (shot.focus === "insert") { focus = ins.obj.position.clone().setY(ins.obj.position.y + ins.minY); focusHeight = ins.h; }
+    else if (shot.focus === "object" && !shotObjs.length) { // SIMPLE LOOK: the house front it stood for is the street's own house
+      focus = spots.center.clone(); focusHeight = 4.2; camType = "wide";
+    }
     else if (shot.focus === "object") {
       // wide / insert: fit the whole object (and anybody standing around it) with the "insert" framing (a straight,
       // centred view, vertical span 2.4 H); medium / closeup / over_shoulder: its key detail (userData.detail) like a

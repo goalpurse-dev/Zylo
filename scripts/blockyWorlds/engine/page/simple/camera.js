@@ -38,7 +38,7 @@ export function frameShot(type, ctx) {
   }
   if (ctx.group?.length >= 2 && (type === "medium" || type === "wide")) return frameGroup(type, ctx);
   if (ctx.monsterEye && ["low", "medium", "closeup"].includes(type)) return frameEye(type, ctx);
-  if (ctx.monsterEye && type === "wide" && !set?.indoor) return frameTower(ctx);
+  if (ctx.monsterEye && (type === "wide" || type === "over_shoulder") && !set?.indoor) return frameTower(ctx); // a giant: the towering view (over the shoulder = from the people's side)
   const k = SPAN_K[type];
   if (k && ctx.focus && Number(ctx.focusHeight) > 0) {
     const H = Number(ctx.focusHeight), H2 = H * k;
@@ -66,6 +66,7 @@ function frameTower(ctx) {
   const A = angleOf(seed), side = (set?.camDir ?? new THREE.Vector3(0, 0, 1)).clone().setY(0).normalize().applyAxisAngle(new THREE.Vector3(0, 1, 0), ((Math.max(-30, Math.min(30, A.yaw ?? 0))) * Math.PI) / 180);
   const k = ease(Math.min(1, Math.max(0, t / Math.max(dur, 1e-3))));
   const p = focus.clone().addScaledVector(side, H * 0.62 * (1 - 0.05 * k)); p.y = (focus.y ?? 0) + 1.5;
+  if (set?.loom && Math.hypot(focus.x - set.loom.x, focus.z - set.loom.z) < 3) { p.set(focus.x + ((seed | 0) % 2 ? 1.6 : -1.6), 1.5, (set.spots?.center?.z ?? 0) + 3.4 - 0.4 * k); } // looming behind the houses: from the road, up past the roofs
   if (set?.bounds?.length && !set.bounds.some((b) => b.containsPoint(p))) { let best = null, bd = Infinity; for (const b of set.bounds) { const q = b.clampPoint(p, new THREE.Vector3()); const d = q.distanceTo(p); if (d < bd) { bd = d; best = q; } } if (best) p.copy(best); }
   camera.position.copy(p); camera.fov = 70; camera.near = 0.1; camera.far = Math.max(camera.far, 3000); camera.updateProjectionMatrix();
   camera.up.set(0, 1, 0); camera.lookAt(focus.x, (focus.y ?? 0) + (eyeY - (focus.y ?? 0)) * 0.6, focus.z); camera.updateMatrixWorld();

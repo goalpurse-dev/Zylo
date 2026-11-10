@@ -293,7 +293,7 @@ export function buildStreet({ tl = null } = {}) {
   // cloud trees: in the gaps between the houses (both rows), a park belt behind each row; a few cube bushes stay
   for (const x of [-40, -28, -16, -4, 8, 20, 46]) cloudTree(town, x, FRONT - 1.2, 1.25 + R() * 0.2, seed + x);
   // bigger, closer puffy trees (owner 2026-11-10): one in each front yard corner, near the fence, beside the people
-  for (const x of [-34, -22, -10, 2, 14, 26, 38]) for (const s of [-1, 1]) if (R() < 0.75) cloudTree(town, x + s * (3.9 + R() * 0.6), FRONT + 1.7 + R() * 0.6, 1.3 + R() * 0.25, seed * 7 + x * 3 + s);
+  for (const x of [-34, -22, -10, 2, 14, 26, 38]) for (const s of [-1, 1]) if (R() < 0.75) (K.yardTrees ??= []).push(cloudTree(town, x + s * (3.9 + R() * 0.6), FRONT + 1.7 + R() * 0.6, 1.3 + R() * 0.25, seed * 7 + x * 3 + s));
   for (const x of [-36, -24, -12, 0, 12, 24, 36]) cloudTree(town, x, -(FRONT - 1.2), 1, seed + x * 3);
   for (let i = 0; i < 60; i++) { const a = i * 2.39996, r = 38 + (i % 9) * 6; cloudTree(town, Math.cos(a) * r * 1.4, -24 - Math.abs(Math.sin(a)) * 40 - (i % 5) * 3, 1.15, seed + i); cloudTree(town, Math.cos(a + 1) * r * 1.4, 24 + Math.abs(Math.sin(a)) * 40 + (i % 4) * 3, 1.15, seed + i + 99); }
   for (const x of [-28, -16, -4, 8, 20, 32]) cubeBush(town, x, FRONT + 1.6, 0.9);
@@ -325,6 +325,12 @@ export function buildStreet({ tl = null } = {}) {
     if (town.position.x !== x) { town.position.x = x; town.updateMatrixWorld(true); K.lamps.forEach((v, i) => v.copy(lampLocal[i]).add(town.position)); }
     // no lamp post in front of the people: a north lamp within 3.5 m of the stand point steps aside (hidden) for this line
     for (const g of K.lampGroups ?? []) g.visible = !(g.position.z < 0 && Math.abs(g.position.x + x) < 3.5);
+    // where a giant looms "behind" the people: the gap between two houses nearest the stand point, across the yards
+    const spans = [[-34, 3.5], [-22, 3.5], [-10, 3.5], [2, 4], [14, 3.5], [26, 7], [38, 3.5]];
+    let best = null;
+    for (let i = 0; i + 1 < spans.length; i++) { const l = spans[i][0] + spans[i][1], r = spans[i + 1][0] - spans[i + 1][1]; if (r - l < 3) continue; const gx = (l + r) / 2 + x; if (!best || Math.abs(gx - 1.5) < Math.abs(best - 1.5)) best = gx; }
+    S.loom = new THREE.Vector3(best ?? 6, 0.02, FRONT - 2.2);
+    for (const g of [...(K.yardTrees ?? [])]) g.visible = Math.abs(g.position.x + x - S.loom.x) > 2.8; // the giant stands where a yard tree would hide it
   };
   return finishPlace(S, K);
 }
