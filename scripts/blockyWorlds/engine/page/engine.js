@@ -486,11 +486,11 @@ async function main() {
     for (const a of free) (bySpot[a.spot] ??= []).push(a);
     for (const [spot, list] of Object.entries(bySpot)) {
       const base = spots[spot] ?? spots.center, rule = spotRule[spot];
-      if (!rule) { list.forEach((a, i) => placed.push({ id: a.id, a, pos: base.clone().addScaledVector(S.lateral, (i - (list.length - 1) / 2) * 0.95).setY(base.y) })); continue; }
+      if (!rule) { list.forEach((a, i) => placed.push({ id: a.id, a, pos: base.clone().addScaledVector(S.lateral, (i - (list.length - 1) / 2) * 1.1).setY(base.y) })); continue; }
       const { obj, u, mode } = rule, fwd = new THREE.Vector3(Math.sin(obj.rotation.y), 0, Math.cos(obj.rotation.y));
       const side = []; // actors that stand beside the object
       list.forEach((a, i) => {
-        if (mode === "behind") placed.push({ id: a.id, a, pos: base.clone().addScaledVector(S.lateral, (i - (list.length - 1) / 2) * 0.95).addScaledVector(S.depth, u.actorsBack ?? 1.2).setY(base.y) });
+        if (mode === "behind") placed.push({ id: a.id, a, pos: base.clone().addScaledVector(S.lateral, (i - (list.length - 1) / 2) * 1.1).addScaledVector(S.depth, u.actorsBack ?? 1.2).setY(base.y) });
         else if (mode === "bed" && cast[a.id]?.role === "baby" && !placed.some((p) => p.inBed === obj)) {
           const p = obj.localToWorld(u.bed.clone()); p.y = base.y + u.bedH;
           placed.push({ id: a.id, a, pos: p, fixed: true, inBed: obj });
@@ -559,7 +559,7 @@ async function main() {
       }
     }
     for (let it = 0; it < 6; it++) for (let i = 0; i < placed.length; i++) for (let j = i + 1; j < placed.length; j++) {
-      const A = placed[i].pos, B = placed[j].pos, d = hz(B).sub(hz(A)), L = d.length(), min = 0.85;
+      const A = placed[i].pos, B = placed[j].pos, d = hz(B).sub(hz(A)), L = d.length(), min = 1.05;
       if (L >= min || (placed[i].fixed && placed[j].fixed)) continue;
       const dir = L > 1e-3 ? d.divideScalar(L) : S.lateral.clone();
       const ka = placed[i].fixed ? 0 : placed[j].fixed ? 2 : 1, kb = 2 - ka;
@@ -846,7 +846,7 @@ async function main() {
         if (!shotObjs[0].u.big && Math.max(s.x, s.y, s.z) <= 3.5) subjBox = b;
       }
       else if (shot.focus === "insert" && ins?.obj) subjBox = new THREE.Box3().setFromObject(ins.obj);
-      else if (where[shot.focus] && PEOPLE[shot.focus] && (shot.camera === "medium" || shot.camera === "closeup")) { const p = toScene(where[shot.focus].clone()); subjBox = new THREE.Box3(p.clone().add(new THREE.Vector3(-0.4, PEOPLE[shot.focus].h * 0.62, -0.4)), p.clone().add(new THREE.Vector3(0.4, PEOPLE[shot.focus].h, 0.4))); } // GATE 2026-11-09: the HEAD (characters v2: ~1/3 of the body): a white face is measured as a white face, not averaged with dark clothes
+      else if (where[shot.focus] && PEOPLE[shot.focus] && (shot.camera === "medium" || shot.camera === "closeup")) { const p = toScene(where[shot.focus].clone()); subjBox = new THREE.Box3(p.clone().add(new THREE.Vector3(-0.4, PEOPLE[shot.focus].h * 0.78, -0.4)), p.clone().add(new THREE.Vector3(0.4, PEOPLE[shot.focus].h, 0.4))); } // GATE 2026-11-09: the HEAD (characters v2: ~1/3 of the body): a white face is measured as a white face, not averaged with dark clothes
     }
     winter?.update(t, camera); // LOOK-FIX: falling snow, deterministic in t
     const subjLit = subjLight.aim(camera, subjBox, shot.light);
