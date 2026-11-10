@@ -1,0 +1,8 @@
+{
+ "role": "how",
+ "ok": false,
+ "seen": "The truck sits at nearly the same angle in all three frames, with dust at the rear wheel.",
+ "problem": "The truck does not visibly pivot in a circle and the wheels are not clearly counter-steered; show the rear wheels turning against the front and the body rotating.",
+ "text": "At a crawl, the motor turns the rear wheels against the front ones, and the truck pivots in a tight circle.",
+ "at": "2026-11-10T21:05:03.506Z"
+}

@@ -1,0 +1,8 @@
+{
+ "role": "fix2",
+ "ok": true,
+ "seen": "A grey transformer can appears on the second pole between the wire and the house, and the sparks stop. The 400 counter fades.",
+ "problem": "",
+ "text": "So a transformer on the pole steps it down.",
+ "at": "2026-11-10T21:03:46.485Z"
+}

@@ -1,0 +1,8 @@
+{
+ "role": "problem3",
+ "ok": false,
+ "seen": "Rain falls and a branch sits on the roof and then on the line. The BLACKOUT text shows, but the porch light stays lit in all three frames and no clear sparks are visible.",
+ "problem": "The porch light stays on, so turn it off after the branch lands; add visible sparks at the branch.",
+ "text": "But now a storm drops a branch on the line, and the lights go out.",
+ "at": "2026-11-10T21:03:46.486Z"
+}

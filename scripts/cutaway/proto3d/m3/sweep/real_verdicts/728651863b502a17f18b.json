@@ -1,0 +1,8 @@
+{
+ "role": "problem2",
+ "ok": false,
+ "seen": "The truck stays in nearly the same pose across frames with a little dust; the speed gauge is barely visible at the left edge in the first frame and gone after.",
+ "problem": "No speed gauge climbing and no visible tail whip sideways; show the gauge rising and the tail swinging out.",
+ "text": "But now at highway speed, rear wheels turned against the front make the tail whip around.",
+ "at": "2026-11-10T21:05:03.506Z"
+}

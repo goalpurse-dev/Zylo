@@ -1,0 +1,8 @@
+{
+ "role": "fix3",
+ "ok": false,
+ "seen": "Slots open in the disc and the disc glows orange-red, then fades to a lighter pink. No white air arrows are visible.",
+ "problem": "There are no white air arrows blowing through the vents; add them. The glow should also visibly fade toward grey.",
+ "text": "So you cut vents, and air cools the disc.",
+ "at": "2026-11-10T21:02:58.842Z"
+}

@@ -1,0 +1,8 @@
+{
+ "role": "problem3",
+ "ok": false,
+ "seen": "STUCK label appears and the rear wheels look stuck, but the rod is intact and the truck does not veer.",
+ "problem": "The yellow rod is not shown snapping in two and the truck does not veer off its line; show a visible break and the truck drifting.",
+ "text": "But now if the motor fails, the rod snaps, the rear wheels stick, and the truck veers.",
+ "at": "2026-11-10T21:05:03.507Z"
+}

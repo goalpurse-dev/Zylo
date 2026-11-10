@@ -1,0 +1,8 @@
+{
+ "role": "name2",
+ "ok": false,
+ "seen": "An orange loop is only partly visible at the right edge, cut off by the frame.",
+ "problem": "The loop is cropped by the frame edge and no outline traces it; pan the camera so the whole loop is in view.",
+ "text": "This is an inductive loop detector.",
+ "at": "2026-11-10T21:06:28.538Z"
+}

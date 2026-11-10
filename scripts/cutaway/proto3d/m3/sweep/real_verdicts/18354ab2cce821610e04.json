@@ -1,0 +1,8 @@
+{
+ "role": "fix1",
+ "ok": false,
+ "seen": "Close-up shows a dark transformer box appearing beside the generator and the counter climbing from 10 to 400. The wire is barely visible and a sign covers the door.",
+ "problem": "The wire is mostly out of frame, so the cooling is hard to read; pull the camera back to show the wire going from orange to black and the counter reaching a higher number.",
+ "text": "So a transformer raises it to 100,000 to 800,000 volts, and the wire cools.",
+ "at": "2026-11-10T21:03:46.484Z"
+}

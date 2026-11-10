@@ -1,0 +1,8 @@
+{
+ "role": "hook",
+ "ok": false,
+ "seen": "A red truck with a long orange bed on a road, seen from behind; the rear wheels look slightly angled and the truck hardly changes between frames.",
+ "problem": "No clear hard front-wheel steer and no visible wide turn across the frames; show the front wheels turned hard and the truck swinging into a wide arc.",
+ "text": "If you only steer the front wheels of a long truck, you have a wide turn.",
+ "at": "2026-11-10T21:05:03.504Z"
+}

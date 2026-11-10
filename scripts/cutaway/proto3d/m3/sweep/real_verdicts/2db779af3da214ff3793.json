@@ -1,0 +1,8 @@
+{
+ "role": "hook",
+ "ok": false,
+ "seen": "A red lamp on a short arm mounted against a blue building wall, beside the road. The lamp glows red but is on the building wall, not hanging over the road.",
+ "problem": "The lamp sits against the wall at the road edge instead of hanging over the road; extend the arm so the lamp hangs above the lane.",
+ "text": "If you hang one red lamp over the road, you have a traffic light.",
+ "at": "2026-11-10T21:06:28.536Z"
+}

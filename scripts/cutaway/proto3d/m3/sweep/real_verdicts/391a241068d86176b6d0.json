@@ -1,0 +1,8 @@
+{
+ "role": "problem",
+ "ok": false,
+ "seen": "Truck with a TAIL SWINGS label; an orange post appears only in the last frame, right next to the rear bumper.",
+ "problem": "The tail does not visibly swing out sideways toward the post, and the post is missing from the first two frames; show the post ahead and the tail arcing out toward it.",
+ "text": "But the long body cannot pivot, so its tail swings out wide toward a post.",
+ "at": "2026-11-10T21:05:03.504Z"
+}

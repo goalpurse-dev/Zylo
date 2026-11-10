@@ -1,0 +1,8 @@
+{
+ "role": "problem",
+ "ok": false,
+ "seen": "A red lamp at the top left. The cars shown are one maroon car, then two cars (maroon and a yellow-green jeep) with a STUCK label. Only two cars are visible, not four.",
+ "problem": "Only two cars queue at the red, not four; show four cars nose to tail at the stop line.",
+ "text": "But it never changes, so cars pile up nose to tail at the red.",
+ "at": "2026-11-10T21:06:28.536Z"
+}

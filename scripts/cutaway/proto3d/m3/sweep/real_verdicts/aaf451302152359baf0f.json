@@ -1,0 +1,8 @@
+{
+ "role": "fix1",
+ "ok": false,
+ "seen": "The first frame is empty ground; the tank then appears already full, with solids settled on the floor and a dark layer on top that is flat and slab-like.",
+ "problem": "The tank does not visibly fill, and the scum layer reads as a dark slab on top rather than floating scum; show the tank filling and a thinner scum layer floating on the water.",
+ "text": "So you dig a tank, where solids sink and scum floats.",
+ "at": "2026-11-10T21:05:51.179Z"
+}

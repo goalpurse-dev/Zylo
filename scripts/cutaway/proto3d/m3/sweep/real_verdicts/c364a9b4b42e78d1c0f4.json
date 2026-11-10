@@ -1,0 +1,8 @@
+{
+ "role": "how",
+ "ok": true,
+ "seen": "The signal shows green in the first two frames, then red lit in the last, with the controller door open.",
+ "problem": "",
+ "text": "Inside, a timer switches the lamps from green to red on a fixed clock.",
+ "at": "2026-11-10T21:06:28.537Z"
+}

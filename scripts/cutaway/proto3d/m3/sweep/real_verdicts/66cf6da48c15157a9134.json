@@ -1,0 +1,8 @@
+{
+ "role": "fact",
+ "ok": true,
+ "seen": "The gauge climbs and the sign goes 100, 300, 500, with the bar turning red.",
+ "problem": "",
+ "text": "Repeated hard stops can heat a disc past 500 degrees Celsius.",
+ "at": "2026-11-10T21:02:58.842Z"
+}

@@ -1,0 +1,8 @@
+{
+ "role": "problem3",
+ "ok": false,
+ "seen": "The lantern sits on top with a STUCK label in frames 2 and 3, and only a few tiny yellow flecks show at its base. No shudder is visible and the sparks are barely readable.",
+ "problem": "Make the lens visibly shudder and add larger, clearly visible sparks at its base so the grinding reads.",
+ "text": "But now the heavy lens grinds as it turns.",
+ "at": "2026-11-10T21:05:24.144Z"
+}

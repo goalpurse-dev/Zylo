@@ -1,0 +1,8 @@
+{
+ "role": "fact",
+ "ok": false,
+ "seen": "A big timer reads 120, 114, 60 beside the controller box. No cars or road are visible.",
+ "problem": "No cars queue at a red light in view; frame the road with the queue as well as the timer.",
+ "text": "One full cycle at a busy corner lasts about 60 to 120 seconds.",
+ "at": "2026-11-10T21:06:28.537Z"
+}

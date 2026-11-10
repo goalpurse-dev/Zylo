@@ -1,0 +1,8 @@
+{
+ "role": "hook",
+ "ok": false,
+ "seen": "A spinning tyre on a stand with an orange block that sits near the top in frame 1 and drops slightly toward the tyre by frame 3, where it rests on top of the tyre.",
+ "problem": "The block only moves a short distance and the press on the tyre is barely visible; start it higher and slide it a long way down so it clearly presses on the tyre.",
+ "text": "If you press a block onto a spinning tire, you have a brake.",
+ "at": "2026-11-10T21:02:58.839Z"
+}

@@ -1,0 +1,8 @@
+{
+ "role": "fix3",
+ "ok": true,
+ "seen": "Sludge blobs move up a pipe out of the first tank to a round digester with a flame burning on top.",
+ "problem": "",
+ "text": "So you pump it to a digester, and its gas burns.",
+ "at": "2026-11-10T21:05:51.180Z"
+}

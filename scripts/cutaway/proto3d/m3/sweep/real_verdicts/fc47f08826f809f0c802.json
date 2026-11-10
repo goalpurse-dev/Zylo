@@ -1,0 +1,8 @@
+{
+ "role": "fix4",
+ "ok": false,
+ "seen": "The signal shows yellow in the first two frames, then all lamps dark in the last frame. The scene darkens to night. No red lamp is visible or blinking.",
+ "problem": "The red lamp never blinks on; make it flash red during the night.",
+ "text": "And late at night, quiet corners just flash red, so you stop and go.",
+ "at": "2026-11-10T21:06:28.539Z"
+}

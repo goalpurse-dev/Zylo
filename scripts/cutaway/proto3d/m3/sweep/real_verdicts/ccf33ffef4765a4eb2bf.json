@@ -1,0 +1,8 @@
+{
+ "role": "fix2",
+ "ok": false,
+ "seen": "A faint orange loop appears at the edge of the road in the lower right, partly cut off by the frame. The light goes from red to green. The car is blurred and leaves.",
+ "problem": "The loop is cut off at the frame edge and no field rings are visible under a car; center the camera on the loop with a car over it.",
+ "text": "So you cut a loop of wire into the road that feels a car's metal.",
+ "at": "2026-11-10T21:06:28.538Z"
+}
