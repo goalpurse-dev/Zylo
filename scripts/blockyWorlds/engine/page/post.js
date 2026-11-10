@@ -20,13 +20,18 @@ import { moodFor, lutRGBA, loadGrade } from "/lib/colourGrade.js";
 const GRADE_DATA = await loadGrade();
 
 // per light: AO intensity, bloom (strength, radius, threshold), grade (sat, con, warm). day/night = look/scene.js L/Ln.
+// GATE-V3 2026-11-10: the bloom thresholds of the plastic look. The old ones (day 1.6, night 0.85, warm 1.3, dusk 1.0,
+// dawn 1.2) were set for the dark photo-textured world; the bright plastic ground under the stronger sun sits above them
+// over whole floors and UnrealBloom added the floor back as a white glare over the lower half of every outdoor still
+// (RunPod stills: 50-70% of the frame over 240, the same with the LUT and the auto grade off). Now only emissives,
+// practical bulbs and small glints bloom (owner: "soft bloom on emissives"); the neon rig keeps its own low threshold.
 export const POST = {
-  day: { ao: 2.0, bloom: [0.22, 0.45, 1.6], sat: 1.58, con: 1.24, warm: 0.035 },
-  night: { ao: 1.2, bloom: [0.5, 0.45, 0.85], sat: 1.15, con: 1.08, warm: -0.02 },
-  warm: { ao: 1.8, bloom: [0.3, 0.45, 1.3], sat: 1.5, con: 1.2, warm: 0.07 },
+  day: { ao: 2.0, bloom: [0.22, 0.45, 4.0], sat: 1.58, con: 1.24, warm: 0.035 },
+  night: { ao: 1.2, bloom: [0.5, 0.45, 2.2], sat: 1.15, con: 1.08, warm: -0.02 },
+  warm: { ao: 1.8, bloom: [0.3, 0.45, 3.5], sat: 1.5, con: 1.2, warm: 0.07 },
   // WORLD-LOOK 2026-11-06: dusk / dawn (page/lighting.js)
-  dusk: { ao: 1.5, bloom: [0.4, 0.45, 1.0], sat: 1.3, con: 1.14, warm: 0.03 },
-  dawn: { ao: 1.6, bloom: [0.3, 0.45, 1.2], sat: 1.3, con: 1.12, warm: 0.01 },
+  dusk: { ao: 1.5, bloom: [0.4, 0.45, 2.6], sat: 1.3, con: 1.14, warm: 0.03 },
+  dawn: { ao: 1.6, bloom: [0.3, 0.45, 3.0], sat: 1.3, con: 1.12, warm: 0.01 },
 };
 
 const GRADE = {
@@ -55,7 +60,7 @@ export function makePost({ renderer, scene, camera, W, H, query = new URLSearchP
     ao.configuration.aoRadius = 1.2; ao.configuration.distanceFalloff = 1; ao.configuration.halfRes = false;
     composer.addPass(ao);
   }
-  const bloom = new UnrealBloomPass(new THREE.Vector2(W, H), 0.22, 0.45, 1.6);
+  const bloom = new UnrealBloomPass(new THREE.Vector2(W, H), ...POST.day.bloom);
   composer.addPass(bloom);
   composer.addPass(new OutputPass());
   const grade = new ShaderPass(GRADE);
