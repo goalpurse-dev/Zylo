@@ -699,6 +699,22 @@ export const THING_BUILD = {
     fin(g, { h: H, w: W + 0.2, d: 0.9, detailH: 1.8 });
   },
   // SIMPLE LOOK 2026-11-10 (#2 The Kid Who Never Blinks): the story's quilt and curtains from the kit
+  boat_painting(g, state) {
+    // a framed painting of a boat on an easel; "boarded": planks nailed perfectly across it (the wrong thing boarded up)
+    const wood = solid("#8a5a34", { roughness: 0.8 });
+    for (const [x, rz] of [[-0.45, 0.12], [0.45, -0.12]]) { const l = rbx(0.07, 1.9, 0.07, 0.01, wood, { x, y: 0.95, z: -0.2, parent: g }); l.rotation.z = rz; }
+    const back = rbx(0.07, 1.8, 0.07, 0.01, wood, { y: 0.9, z: -0.65, parent: g }); back.rotation.x = 0.35;
+    const cv = document.createElement("canvas"); cv.width = 256; cv.height = 192; const c = cv.getContext("2d");
+    c.fillStyle = "#8fd3ff"; c.fillRect(0, 0, 256, 110); c.fillStyle = "#2e86de"; c.fillRect(0, 110, 256, 82);
+    c.fillStyle = "#ffd23a"; c.beginPath(); c.arc(205, 40, 18, 0, 7); c.fill();
+    c.fillStyle = "#c0392b"; c.beginPath(); c.moveTo(70, 120); c.lineTo(190, 120); c.lineTo(170, 145); c.lineTo(90, 145); c.closePath(); c.fill();
+    c.fillStyle = "#ffffff"; c.beginPath(); c.moveTo(128, 40); c.lineTo(128, 118); c.lineTo(175, 118); c.closePath(); c.fill(); c.fillRect(126, 38, 4, 82);
+    const t2 = new THREE.CanvasTexture(cv); t2.colorSpace = THREE.SRGBColorSpace;
+    rbx(1.3, 1.0, 0.08, 0.02, solid("#c8a24a", { roughness: 0.5 }), { y: 1.4, z: -0.12, parent: g });
+    const pic = new THREE.Mesh(new THREE.PlaneGeometry(1.14, 0.86), new THREE.MeshStandardMaterial({ map: t2, roughness: 0.8 })); pic.position.set(0, 1.4, -0.075); g.add(pic);
+    if (state === "boarded") for (const [y, rz] of [[1.62, 0.08], [1.38, -0.05], [1.16, 0.1]]) { const p = rbx(1.5, 0.16, 0.05, 0.01, solid("#b0753f", { roughness: 0.8 }), { y, z: -0.02, parent: g }); p.rotation.z = rz; for (const s2 of [-1, 1]) bx(0.035, 0.035, 0.03, solid("#3a3f4a"), { x: s2 * 0.62, y, z: 0.01, parent: g }); }
+    fin(g, { h: 1.95, w: 1.4, d: 0.8, detailH: 1.1 });
+  },
   patchwork_blanket(g, state) {
     // a quilt of colourful squares: draped as a canopy over the people in front ("under one blanket"), flying away
     // (tilted, high, rippling), or spread on a low bed
@@ -730,6 +746,13 @@ export const THING_BUILD = {
     const fab = (i) => solid(FAB[i % FAB.length], { roughness: 0.75 });
     const pile = (n, x0, z0, s = 1) => { for (let k = 0; k < n; k++) rbx(0.9 * s, 0.22 * s, 0.6 * s, 0.09 * s, fab(k * 3 + 1), { x: x0 + ((k * 37) % 5 - 2) * 0.06, y: 0.11 * s + k * 0.2 * s, z: z0 + ((k * 13) % 3 - 1) * 0.05, parent: g }).rotation.y = ((k * 53) % 7 - 3) * 0.09; };
     if (state === "pile") { pile(7, -0.35, -0.3); pile(5, 0.45, -0.1, 0.9); fin(g, { h: 1.5, w: 1.9, d: 1.0 }); return; }
+    if (state === "flying") { // curtains torn off, flying away over the roofs like kites (wavy strips, tumbling)
+      const fly = new THREE.Group(); g.add(fly);
+      for (let k = 0; k < 9; k++) { const c = new THREE.Group(); c.position.set(((k * 37) % 9 - 4) * 1.1, 4.5 + (k % 4) * 1.4, -((k * 53) % 5) * 1.2); fly.add(c); for (let j = 0; j < 3; j++) { const p = rbx(0.7, 0.05, 0.45, 0.02, fab(k + j), { y: Math.sin(j * 1.3) * 0.15, z: j * 0.42, parent: c }); p.rotation.x = Math.sin(j + k) * 0.5; } c.rotation.set(k * 0.7, k * 1.3, k * 0.4); }
+      anims(g).push((t2) => { fly.position.y = 0.8 * t2; fly.position.x = -1.2 * t2; fly.children.forEach((c, i) => { c.rotation.z += 0.0; c.rotation.x = i * 0.7 + t2 * (1 + (i % 3)); }); });
+      fin(g, { h: 9, w: 9, d: 5, fitY: 6, big: true });
+      return;
+    }
     const wall = solid("#ffd36b", { roughness: 0.9 }), frame = solid("#ffffff", { roughness: 0.7 });
     const z = -0.6, wy = 1.75;
     rbx(3.0, 3.4, 0.3, 0.03, wall, { y: 1.7, z, parent: g });

@@ -675,7 +675,8 @@ export function onScreen(r, s, tl = {}) {
     case "effect": case "event":
       // FRAMING-FIX 2026-11-08: "closes his shutters at sunset" is the sunset light (the world bible lights that line
       // dusk), not black night: a sunset / dusk / evening nightfall is shown by the dusk or warm light as well
-      if (r.kitName === "light:night") return s.light === "night" || (name.some((w) => /^(sunset|sunsets|sundown|dusk|evening|twilight)$/.test(w)) && ["dusk", "warm"].includes(s.light));
+      // SCENES 2026-11-11: the scene list may set the falling night at dusk (#2 opens on the town at dusk): dusk shows it too
+      if (r.kitName === "light:night") return s.light === "night" || (s.scene && s.light === "dusk") || (name.some((w) => /^(sunset|sunsets|sundown|dusk|evening|twilight)$/.test(w)) && ["dusk", "warm"].includes(s.light));
       if (r.kitName === "marker:ring") return markersOf(s).some((m) => m.kind === "ring");
       if (r.kitName && objs.some((o) => o.name === r.kitName)) return true;
       return badge || (r.kind === "event" && /shake|quake/.test(r.name) && (!!s.beat || !!s.shake));

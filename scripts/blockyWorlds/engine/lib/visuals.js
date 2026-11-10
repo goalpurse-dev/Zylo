@@ -578,6 +578,8 @@ export function covers(key, s, cast = {}) {
   if (sh.poses && actors.some((a) => sh.poses.includes(a.pose))) return true;
   // a THING flying shows the line's flying ("the blanket flew away": the kit's flying blanket), no person has to fly
   if (sh.poses?.includes("fly") && (s.objects ?? []).some((o) => o.state === "flying")) return true;
+  // "the town finally slept": a town is asleep when its windows are dark and nobody is out (no person has to lie down)
+  if (sh.poses?.includes("sleep") && s.setState?.windows === "dark" && !(s.actors ?? []).length && !(s.crowds ?? []).length) return true;
   // an animal doing the action (PETS 2026-11-07: "Biscuit was sitting" is the dog sitting, not a neighbour)
   if (sh.poses && (s.objects ?? []).some((o) => OBJECT_CATALOG[objName(o)]?.animal && sh.poses.includes(ANIMAL_POSE[o.state]))) return true;
   // an EPIC giant / crowd doing the action (a crowd marching is walking, a giant roaring yells)

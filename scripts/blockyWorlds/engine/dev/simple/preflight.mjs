@@ -19,11 +19,27 @@ const take = JSON.parse(String(await st.get("take.json")));
 // the take's spoken words -> the trimmed timings the voice step makes (voice/eleven.mjs keepRanges + remap)
 const { keepRanges, remap } = await import("../../voice/eleven.mjs");
 const ranges = keepRanges(take.spoken, take.spoken.at(-1).e + 0.3);
-const words = take.spoken.map((w) => ({ word: w.w ?? w.word, start: +remap(w.s, ranges).toFixed(3), end: +remap(w.e, ranges).toFixed(3) }));
+const takeWords = take.spoken.map((w) => ({ word: w.w ?? w.word, start: +remap(w.s, ranges).toFixed(3), end: +remap(w.e, ranges).toFixed(3) }));
+// a script changed after the take (lines added / cut): the take's own timings for every unchanged line, the new lines at
+// the take's average pace (until they are voiced), laid one after the other with the take's gaps
+const words = retime(takeWords, String(take.text ?? "").split(/\n/), script.lines.map((l) => l.text));
+function retime(tw, takeLines, lines) {
+  const tok = (t) => String(t).split(/\s+/).filter(Boolean);
+  let k = 0; const byLine = takeLines.map((t) => { const n = tok(t).length, w = tw.slice(k, k + n); k += n; return { t: t.trim(), w }; });
+  const avg = tw.reduce((a, w) => a + (w.end - w.start), 0) / tw.length, gap = 0.09;
+  const out = []; let t = 0;
+  for (const line of lines) {
+    const src = byLine.find((b) => b.t === String(line).trim());
+    if (src && src.w.length) { const o = src.w[0].start; for (const w of src.w) out.push({ word: w.word, start: +(t + w.start - o).toFixed(3), end: +(t + w.end - o).toFixed(3) }); t = out.at(-1).end + gap; }
+    else for (const word of tok(line)) { out.push({ word, start: +t.toFixed(3), end: +(t + avg).toFixed(3) }); t += avg + 0.02; }
+  }
+  return out;
+}
 const provider = { model: stored.model ?? null, direct: async () => ({ data: stored.production, costUsd: 0, model: stored.model ?? null }) };
 const direction = await directStory({ script, idea, provider });
 let tl, rejected = null;
-try { tl = planVideo({ script, words, idea, lengthSec: 90, direction, criticalMode: "reject", library: () => null, built: {} }); }
+const scenes = arg("scenes") ? JSON.parse(fs.readFileSync(arg("scenes"), "utf8")) : null;
+try { tl = planVideo({ script, words, idea, lengthSec: 90, direction, criticalMode: "reject", library: () => null, built: {}, scenes }); }
 catch (e) { rejected = e; }
 const crit = rejected?.critical ?? tl?.critical ?? null;
 const items = (crit?.items ?? []).map((i) => `${i.name} [${(i.why ?? []).join("+")}] -> ${i.source ?? "UNRESOLVED (builder)"}${i.kitName ? ` (${i.kitName})` : ""}`);

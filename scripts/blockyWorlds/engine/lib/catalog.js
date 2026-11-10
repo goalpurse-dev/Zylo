@@ -92,8 +92,9 @@ export const THINGS = Object.freeze({
   couch: { aliases: A("couch,couches,sofa,sofas,living room"), place: "floor", states: ["on"], state: "on", sets: ["bedroom"], icon: "🛋️" },
   table: { aliases: A("table,tables,desk,desks,counter,counters,kitchen counter,dinner table,workbench,cubby,cubbies"), place: "floor", states: ["on"], state: "on", icon: "🍽️" },
   // SIMPLE LOOK 2026-11-10 (#2 The Kid Who Never Blinks: the story's critical blanket + curtains from the kit, never the builder)
+  boat_painting: { aliases: A("painting of a boat,boat painting,painting,paintings,picture of a boat,boat"), place: "floor", states: ["plain", "boarded"], state: "plain", icon: "🖼️" },
   patchwork_blanket: { aliases: A("patchwork blanket,patchwork quilt,patchwork,quilt,quilts,blanket,blankets,big blanket,big patchwork blanket,comforter,duvet,bedspread"), place: "floor", states: ["draped", "flying", "bed"], state: "draped", icon: "🛏️" },
-  curtain_pile: { aliases: A("curtain,curtains,drape,drapes,curtain pile,pile of curtains,bulging curtains,curtain bulge,forty curtains,forty curtains bulge,bulge,thin curtains,three thin curtains,net curtain,net curtains"), place: "floor", states: ["window", "pile", "thin"], state: "window", icon: "🪟" },
+  curtain_pile: { aliases: A("curtain,curtains,drape,drapes,curtain pile,pile of curtains,bulging curtains,curtain bulge,forty curtains,forty curtains bulge,bulge,thin curtains,three thin curtains,net curtain,net curtains"), place: "floor", states: ["window", "pile", "thin", "flying"], state: "window", icon: "🪟" },
   fridge: { aliases: A("fridge,fridges,refrigerator,refrigerators,freezer,freezers,icebox,pantry"), place: "floor", states: ["closed", "open"], state: "closed", sets: ["bedroom"], icon: "🧊" },
   stove: { aliases: A("stove,stoves,oven,ovens,cooker,fireplace,hearth,furnace"), place: "floor", states: ["on"], state: "on", sets: ["bedroom"], icon: "🔥" },
   drawer: { aliases: A("drawer,drawers,sock drawer,dresser,dressers,cabinet,cabinets,cupboard,cupboards,shelf,shelves,bookshelf,wardrobe,closet,closets"), place: "floor", states: ["closed", "open"], state: "open", sets: ["bedroom"], icon: "🗄️" },
@@ -120,7 +121,7 @@ export const HELD = Object.freeze({
   coin: A("coin,coins,gold coin,gold coins,penny,pennies,token,tokens"), hand_mirror: A("mirror,mirrors,hand mirror,looking glass"), feather_duster: A("feather duster,feather dusters,duster,dusters"),
   pebble: A("acorn,acorns,nut,nuts,seed,seeds,marble,marbles,bean,beans,pea,peas"), toaster: A("toaster,toasters,radio,radios"),
   horn: A("horn,horns,bugle,trumpet,megaphone"), kite: A("kite,kites"), teddy: A("teddy,toy,toys,doll,dolls,teddy bear,stuffed animal,plush"),
-  rubber_duck: A("rubber duck,rubber ducks"), feather: A("feather,feathers,quill"), shovel: A("shovel,shovels,spade,rake"),
+  rubber_duck: A("rubber duck,rubber ducks"), feather: A("feather,feathers,quill"), shovel: A("shovel,shovels,spade,rake"), hammer: A("hammer,hammers,mallet"), planks: A("board,boards,plank,planks,wooden boards"),
   mop: A("mop,mops,vacuum"), broom: A("broom,brooms,broomstick,sweeping brush"), // VISUAL-FIX 2026-11-08: a broom is a broom, never a mop
   drum: A("drum,drums"), lightbulb: A("lightbulb,lightbulbs"), magnet: A("magnet,magnets"),
   pillow: A("pillow,pillows,pillowcase"), blanket: A("blanket,blankets,quilt,towel"), net: A("net,nets,fishing net"),

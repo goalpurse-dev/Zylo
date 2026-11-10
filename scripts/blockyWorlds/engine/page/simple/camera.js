@@ -36,6 +36,7 @@ export function frameShot(type, ctx) {
     camera.up.set(0, 1, 0); camera.lookAt(E.look); camera.updateMatrixWorld();
     return camera;
   }
+  if (type === "two_shot") return ctx.twoShot ? frameTwoShot(ctx) : baseFrame("medium", ctx);
   if (ctx.group?.length >= 2 && (type === "medium" || type === "wide")) return frameGroup(type, ctx);
   if (ctx.monsterEye && ["low", "medium", "closeup"].includes(type)) return frameEye(type, ctx);
   if (ctx.monsterEye && (type === "wide" || type === "over_shoulder") && !set?.indoor) return frameTower(ctx); // a giant: the towering view (over the shoulder = from the people's side)
@@ -56,6 +57,27 @@ export function frameShot(type, ctx) {
     return camera;
   }
   return baseFrame(type, ctx);
+}
+
+/** SCENES face-off: the hero in the foreground (three-quarter, near one edge) and the giant facing them, both in one
+ *  frame: a low lens beside and a little behind the hero, looking up past them to the giant's eye */
+function frameTwoShot(ctx) {
+  const { THREE, camera, set, t = 0, dur = 1, seed = 1 } = ctx, { a, ah, b, eyeY } = ctx.twoShot;
+  const ab = new THREE.Vector3(b.x - a.x, 0, b.z - a.z), L = Math.max(1, ab.length()); ab.normalize();
+  const camSide = (set?.camDir ?? new THREE.Vector3(0, 0, 1)).clone().setY(0).normalize();
+  let perp = new THREE.Vector3(-ab.z, 0, ab.x); if (perp.dot(camSide) < 0) perp.negate();
+  const k = ease(Math.min(1, Math.max(0, t / Math.max(dur, 1e-3))));
+  const p = a.clone().addScaledVector(ab, -3.4).addScaledVector(perp, 2.3 + 0.3 * k); p.y = (a.y ?? 0) + 1.3;
+  if (set?.bounds?.length && !set.bounds.some((bb) => bb.containsPoint(p))) { let best = null, bd = Infinity; for (const bb of set.bounds) { const q = bb.clampPoint(p, new THREE.Vector3()); const d = q.distanceTo(p); if (d < bd) { bd = d; best = q; } } if (best) p.copy(best); }
+  // aim between the hero's feet and the giant's eye (both inside the 74 deg lens), toward the middle of the two
+  const toward = new THREE.Vector3((a.x + b.x) / 2 - p.x, 0, (a.z + b.z) / 2 - p.z).normalize();
+  const elev = (q, y) => Math.atan2(y - p.y, Math.max(0.5, Math.hypot(q.x - p.x, q.z - p.z)));
+  const e = (elev(a, a.y ?? 0) + elev(b, eyeY + 0.6)) / 2;
+  const look = p.clone().addScaledVector(toward, 10); look.y = p.y + Math.tan(e) * 10;
+  camera.position.copy(p); camera.fov = 74; camera.near = 0.1; camera.far = Math.max(camera.far, 3000); camera.updateProjectionMatrix();
+  camera.up.set(0, 1, 0); camera.lookAt(look); camera.updateMatrixWorld();
+  void ah; void seed;
+  return camera;
 }
 
 /** TOWERING (owner 2026-11-10: "it towers over the houses"): a wide of the monster from the ground in front of it,
@@ -92,7 +114,8 @@ function frameEye(type, ctx) {
   const hw = Math.max(hd.size.x, hd.size.z);
   // vertical span: the head 40-55 % of the frame height, and its width inside 85 % of the frame width
   const span = Math.max(hd.size.y / (type === "closeup" ? 0.5 : type === "medium" ? 0.42 : 0.34), hw / (0.85 * aspect));
-  const A = angleOf(seed), side = (set?.camDir ?? new THREE.Vector3(0, 0, 1)).clone().setY(0).normalize().applyAxisAngle(new THREE.Vector3(0, 1, 0), ((Math.max(-25, Math.min(25, A.yaw ?? 0))) * Math.PI) / 180);
+  const A = angleOf(seed); let side = (set?.camDir ?? new THREE.Vector3(0, 0, 1)).clone().setY(0).normalize().applyAxisAngle(new THREE.Vector3(0, 1, 0), ((Math.max(-25, Math.min(25, A.yaw ?? 0))) * Math.PI) / 180);
+  if (ctx.faceTo) { const f = new THREE.Vector3(ctx.faceTo.x - hd.center.x, 0, ctx.faceTo.z - hd.center.z); if (f.lengthSq() > 0.01) side = f.normalize(); } // face-off: the eye seen from the hero's side (the reverse shot)
   const k = ease(Math.min(1, Math.max(0, t / Math.max(dur, 1e-3))));
   const dist = (span / 2 / tanV + hd.size.z / 2) * (1 - 0.06 * k); // a slow push into the eye
   const eyeY = ctx.monsterEye?.y ?? hd.center.y;

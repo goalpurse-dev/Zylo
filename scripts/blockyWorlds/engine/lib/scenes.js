@@ -37,6 +37,7 @@ export const SET_PIECES = Object.freeze({
   reveal: { shots: ["wide: the thing revealed", "close: the reaction"], needs: ["thing", "reaction"] },
   chase: { shots: ["wide: the chaser and the chased", "medium: the chased running toward the lens"], needs: ["chaser", "chased"] },
   gather: { shots: ["wide: everybody gathered in one place", "medium: the leader"], needs: ["group"] },
+  opening_town: { shots: ["wide: the town at the scene's time, the world's rule visible (curtains shutting, the eye in one window)", "medium: the hero where the scene puts them"], needs: ["town wide"] },
 });
 export const TIMES = Object.freeze(["day", "dusk", "night", "dawn"]);
 export const SCENES_MODEL = "claude-sonnet-5-5";
@@ -188,4 +189,28 @@ export function formatScenes(scenes, script) {
     ...(s.setPieces.length ? s.setPieces.map((p) => `  SET PIECE ${p.kind} (lines ${p.lines.join(",")}${p.who.length ? `; ${p.who.join(", ")}` : ""}): ${p.what}`) : []),
     ...L.slice(s.from, s.to + 1).map((l, k) => `    ${s.from + k}: ${l.text}`),
   ].join("\n")).join("\n\n");
+}
+
+// ---------------------------------------------------------------------------------------------------------------- per house
+/** each house's own state (owner 2026-11-11: "world state per HOUSE and per CHARACTER, not global"): what is on its
+ *  windows, bricks in front, a boarded painting on the wall, how its windows shine. "*" = every other house */
+export const HOUSE_KEYS = Object.freeze({
+  cover: ["default", "curtained", "bulging", "thin", "sock", "bare", "smeared"],
+  bricks: [false, true],
+  painting: ["none", "boarded"],
+  light: ["default", "lit", "dark", "glow_white", "eye"],
+});
+export const HOUSE_DEFAULT = Object.freeze({ cover: "default", bricks: false, painting: "none", light: "default" });
+const fixHouse = (h) => { const o = { ...HOUSE_DEFAULT }; for (const [k, vals] of Object.entries(HOUSE_KEYS)) if (h && vals.includes(h[k])) o[k] = h[k]; return o; };
+/** the houses' states for a line: the starting map, then every houseEvent up to that line in order */
+export function housesAt(list, line) {
+  const out = {};
+  for (const [owner, h] of Object.entries(list?.houses ?? {})) out[owner] = fixHouse(h);
+  out["*"] ??= { ...HOUSE_DEFAULT };
+  for (const ev of [...(list?.houseEvents ?? [])].sort((a, b) => a.line - b.line)) {
+    if (ev.line > line) break;
+    const targets = (ev.owners ?? []).includes("*") ? Object.keys(out).filter((o) => !(ev.except ?? []).includes(o)) : ev.owners ?? [];
+    for (const o of targets) out[o] = fixHouse({ ...(out[o] ?? out["*"]), ...ev.set });
+  }
+  return out;
 }

@@ -70,8 +70,11 @@ export function buildBedroom({ tl = null } = {}) {
   // the ceiling light
   const bulb = new THREE.MeshStandardMaterial({ color: "#fff4c8", roughness: 0.5 }); bulb.userData.night = { emissive: "#fff0c0", ei: 1.0 }; K.glow.push(bulb);
   cyl(root, 0.35, 0.35, 0.08, [0, HT - 0.05, 0.8], bulb, { seg: 20 });
+  // the hero's taped sock in this window (SCENES: shown while the hero's house state says so)
+  const sockTex = (() => { const cv = document.createElement("canvas"); cv.width = 64; cv.height = 128; const c = cv.getContext("2d"); for (let i = 0; i < 7; i++) { c.fillStyle = i % 2 ? "#ffffff" : "#e8323f"; c.fillRect(8, i * 15, 34, 15); } c.fillStyle = "#e8323f"; c.fillRect(8, 100, 50, 22); c.fillStyle = "#c8c8c8"; c.fillRect(2, 2, 46, 8); const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; return t; })();
+  const sockMesh = new THREE.Mesh(new THREE.PlaneGeometry(0.42, 0.84), new THREE.MeshStandardMaterial({ map: sockTex, transparent: true, roughness: 0.7, side: THREE.DoubleSide })); sockMesh.position.set((WX0 + WX1) / 2 - 0.55, (WY0 + WY1) / 2 + 0.05, ZB + 0.12); root.add(sockMesh); sockMesh.visible = false;
   const S = {
-    root, indoor: true, name: "bedroom", simple: true, sky, kit: K, windowY: 1.55, windowAt: V(-0.3, 1.55, ZB),
+    root, indoor: true, name: "bedroom", applyHouses: (h) => { sockMesh.visible = (h?.me ?? h?.["*"])?.cover === "sock"; }, simple: true, sky, kit: K, windowY: 1.55, windowAt: V(-0.3, 1.55, ZB),
     spots: { center: V(0.1, 0, 0.4), left: V(-0.95, 0, 0.6), right: V(1.15, 0, 0.6), back: V(0.4, 0, -1.4), far: V(-0.3, 0, ZB - 4.5), door: V(X0 + 0.6, 0, 2.6), bed: V(-2.2, 0.66, -1.4), closet: V(X1 - 0.9, 0, 1.6) },
     depthDir: V(0, 0, -1), camDir: V(0, 0, 1),
     bounds: [new THREE.Box3(V(X0 + 0.3, 0.3, ZB + 0.5), V(X1 - 0.3, HT - 0.2, ZF - 0.2))],

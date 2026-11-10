@@ -33,7 +33,7 @@ const SPOTS = ["center", "left", "right", "back", "far", "door"];
 // extra spots some sets add (sets/*.js): a timeline may use them; a set without one uses "far" (monsters) or "center"
 const EXTRA_SPOTS = ["tower", "closet", "bed", "classroom"];
 const LIGHTS = ["day", "night", "warm", "dusk", "dawn"]; // dusk / dawn: WORLD-LOOK 2026-11-06 (page/lighting.js)
-const CAMERAS = ["wide", "medium", "closeup", "low", "over_shoulder", "insert"];
+const CAMERAS = ["wide", "medium", "closeup", "low", "over_shoulder", "insert", "two_shot"]; // two_shot: SCENES face-off (page/simple/camera.js)
 const FACINGS = ["camera", "left", "right", "away", "monster"];
 const MONSTER_STATES = ["lurk", "reach", "reveal", "flee"];
 const INSERT_KINDS = ["sign", "note", "card"];
@@ -292,8 +292,8 @@ async function main() {
   // the planner's gender (visualWorld.gender: Mrs. / Ms. / Grandma / she = f) shapes the look (run 7b4c0d8b: a bearded Mrs. Oddy)
   for (const [id, spec] of Object.entries(tl.cast ?? {})) addPerson(id, { ...spec, gender: spec.gender ?? tl.visualWorld?.gender?.[id] ?? null });
   const EXTRAS = [];
-  if (tl.shots.some((s) => s.focus === "group")) {
-    for (let i = 0; i < 4; i++) { const id = `extra${i}`; addPerson(id, { role: i % 3 === 2 ? "kid" : "adult", name: `Townsfolk ${i + 1}`, seed: 101 + i * 17 }); EXTRAS.push(id); }
+  if (tl.shots.some((s) => s.focus === "group" || (SIMPLE_LOOK && s.crowds?.length))) {
+    for (let i = 0; i < (SIMPLE_LOOK ? 10 : 4); i++) { const id = `extra${i}`; addPerson(id, { role: i % 3 === 2 ? "kid" : "adult", name: `Townsfolk ${i + 1}`, seed: 101 + i * 17 }); EXTRAS.push(id); }
   }
   let monster = null, monsterH = 0, monsterR = 0;
   if (tl.monster) {
@@ -457,7 +457,9 @@ async function main() {
       if (winter && post.bloom) { const B = post.bloom; [B.strength, B.radius, B.threshold] = snowBloom([B.strength, B.radius, B.threshold], shot.light); } // LOOK-LEFTOVERS: no glare blobs on snow
       lightKey = key;
     }
-    S.setPlace?.(shot.place ?? shot.worldSpot ?? null, shot); // WORLD-LOOK: a street-level place in the creature's town (deck, stairs, rooftop, school, room, classroom)
+    S.setPlace?.(shot.place ?? shot.worldSpot ?? null, shot);
+    S.applyHouses?.(shot.houses ?? null, shot.light === "night" || shot.light === "dusk"); // SCENES: each house in its own state for this line
+    // (WORLD-LOOK: a street-level place in the creature's town (deck, stairs, rooftop, school, room, classroom)
     post.setShot?.(si, shot, S, t); // SETS-V2: the shot's lighting rig (page/lighting.js makeRigLayer) + its auto grade
     S.update?.(t, lt);   // lt: the time inside the shot (a walking giant starts every shot in frame)
     // ATTACH 2026-11-07 (owner: "FLOATING PEOPLE"): on a creature the people, scene objects, monster and insert ride the
@@ -486,7 +488,8 @@ async function main() {
     let anyBig = false;
     for (const o of shot.objects ?? []) {
       // SIMPLE LOOK: a house front never stands inside a room (the room's own window is the window it stands for)
-      if (SIMPLE_LOOK && o.name === "house_front" && (S.indoor || S.simple)) continue; // the simple street has real houses (their windows glow at night)
+      if (SIMPLE_LOOK && o.name === "house_front" && (S.indoor || S.simple)) continue;
+      if (SIMPLE_LOOK && S.simple && !S.indoor && shot.houses && o.name === "curtain_pile" && ["window", "thin"].includes(o.state ?? "window")) continue; // SCENES: the house shows its own curtains // the simple street has real houses (their windows glow at night)
       const k = objKey(o), n = used.get(k) ?? 0; used.set(k, n + 1);
       const obj = OBJ.get(k)[n], u = obj.userData, spot = o.spot ?? "center", base = spots[spot] ?? spots.center;
       const here = free.filter((a) => a.spot === spot);
@@ -507,7 +510,7 @@ async function main() {
       if (mode !== "front" && !spotRule[spot]) spotRule[spot] = { obj, u, mode };
     }
     S.setClutter?.(!anyBig && !shot.setState?.windows);
-    S.standInHouse?.(SIMPLE_LOOK && (shot.objects ?? []).some((o) => o.name === "house_front")); // SIMPLE LOOK: the real house is the house front // the bus shelter etc. step aside for big objects and window shots
+    S.standInHouse?.(SIMPLE_LOOK && (shot.objects ?? []).some((o) => o.name === "house_front" || (shot.houses && o.name === "curtain_pile" && ["window", "thin"].includes(o.state ?? "window")))); // SIMPLE LOOK: the real house is the house front // the bus shelter etc. step aside for big objects and window shots
 
     // people: grouped by spot, spread sideways, then pushed apart so nobody overlaps (people in / on an object stay put)
     const placed = []; // { id, a (timeline actor or null for extras), pos, fixed, opts }
@@ -543,8 +546,28 @@ async function main() {
         placed.push({ id: EXTRAS[i], a: { id: EXTRAS[i], pose, expr: pose === "scared" ? "scared" : r.pick(["neutral", "happy", "smirk"]), facing: "camera", phase: r.range(0, 2) }, pos });
       }
     }
+    // SIMPLE LOOK: a crowd is drawn as the simple-style townsfolk (the old instanced crowd never shows): up to 6 at its
+    // spot, posed by the scene's crowd state (under the blanket, hiding their faces, looking up)
+    if (SIMPLE_LOOK && (shot.crowds ?? []).length && !establishShot && !S.indoor && shot.camera !== "two_shot") { // (a face-off two-shot is the two of them only)
+      const taken = new Set(placed.map((p) => p.id)), pool = EXTRAS.filter((id) => !taken.has(id));
+      const want = Math.min(pool.length, 6, shot.crowds.reduce((n, c) => n + Math.max(1, Math.min(4, c.count ?? 3)), 0));
+      const pose = { under_cover: "stand", hiding_faces: "cover_mouth", look_up: "look_up" }[shot.crowdState] ?? ({ cheer: "cheer", wave: "wave", flee: "run", run: "run", march: "walk", fight: "fight" }[shot.crowds[0].action] ?? "stand");
+      const base = (shot.crowdState === "under_cover" ? spots.center : spots[shot.crowds[0].spot]) ?? spots.back;
+      for (let i = 0; i < want; i++) {
+        const pos = base.clone().addScaledVector(S.lateral, (i - (want - 1) / 2) * 1.0).addScaledVector(S.depth, 0.5 + (i % 2) * 0.6).setY(base.y);
+        placed.push({ id: pool[i], a: { id: pool[i], pose, expr: pose === "cover_mouth" ? "scared" : "worried", face: pose === "cover_mouth" ? "scared" : "worried", facing: shot.faceoff ? "monster" : "camera", phase: i * 0.37 }, pos });
+      }
+    }
     // SIMPLE LOOK (owner 2026-11-10: "group shots: characters fill the frame"): a group stands in a staggered formation
     if (SIMPLE_LOOK && shot.focus === "group") simpleFormation(placed, spots, S, shot);
+    // SCENES face-off two-shot: the hero and the giant own the frame; anyone else watches from the porches, far back
+    // between the two (small, behind the gap), never between the lens and the hero
+    if (SIMPLE_LOOK && shot.camera === "two_shot" && !S.indoor) {
+      const me = placed.find((p) => p.id === "me"), rest = placed.filter((p) => p.id !== "me" && !p.fixed);
+      const cd = (S.camDir ?? new THREE.Vector3(0, 0, 1)).clone().setY(0).normalize();
+      const mon = spots.center.clone().addScaledVector(S.lateral, 6.0).addScaledVector(cd, 2.8); // where the face-off puts the giant
+      if (me) rest.forEach((p, i) => p.pos.copy(me.pos).lerp(mon, 0.42 + 0.1 * i).addScaledVector(cd, -(1.6 + (i % 2) * 0.9)).setY(me.pos.y));
+    }
     // 2026-11-05 (GAPS): actions that place people relative to someone / something
     //   hug: two people both posed "hug" stand face to face, close (their arms round each other), side-on to the lens
     //   ride: the rider sits on the shot's mount (the object at their spot, else an animal / vehicle / built thing in the
@@ -632,6 +655,8 @@ async function main() {
       // SIMPLE LOOK: a giant never stands on the sidewalk among the people: "behind" (back / centre / sides / door) is
       // behind the houses across the yards, looming with its eye over the roofs ("far" stays down the street)
       if (SIMPLE_LOOK && !S.indoor && monsterH > 6 && (ms.spot ?? "far") !== "far") monster.position.copy(S.loom ?? spots.center.clone().addScaledVector(S.depth, 15.5).setY(0.02));
+      // SCENES face-off: the giant stands on the road a few metres from the hero, the two face each other
+      if (SIMPLE_LOOK && shot.faceoff && !S.indoor) monster.position.copy(spots.center).addScaledVector(S.lateral, 6.0).addScaledVector((S.camDir ?? new THREE.Vector3(0, 0, 1)).clone().setY(0).normalize(), 2.8).setY(0.02);
       const peering = SIMPLE_LOOK && S.indoor && S.windowAt && monster.userData?.eyeY;
       if (peering) {
         const out = S.windowAt.clone().addScaledVector(S.depth, 1.3 + (monster.userData.headDepth ?? 1.2));
@@ -647,7 +672,7 @@ async function main() {
       }
     }
     if (epic) epic.place(shot, lt, S); // EPIC: this shot's giants + crowds (placed, animated)
-    if (epic && SIMPLE_LOOK && S.indoor) scene.traverse((o) => { if (/^crowd:/.test(o.name ?? "")) o.visible = false; }); // SIMPLE LOOK: no crowd inside a room (a crowd member filled the lens)
+    if (epic && SIMPLE_LOOK) scene.traverse((o) => { if (/^crowd:/.test(o.name ?? "")) o.visible = false; }); // SIMPLE LOOK: no crowd inside a room (a crowd member filled the lens)
 
     // insert: in front of the center spot, toward the camera side, facing it
     let ins = null;
@@ -761,6 +786,9 @@ async function main() {
       // SIMPLE LOOK: a group's people (the lens fits the formation), a place shot with nobody in it (the establishing view)
       ...(SIMPLE_LOOK && shot.focus === "group" && placed.length >= 2 ? { group: placed.filter((p) => PEOPLE[p.id]).map((p) => ({ pos: p.pos.clone(), h: PEOPLE[p.id].h })) } : {}),
       ...(establishShot ? { establish: true } : {}),
+      // SCENES: the face-off two-shot (the hero and the giant both in frame), and the eye shots from the hero's side
+      ...(SIMPLE_LOOK && camType === "two_shot" && where.me && monster?.visible ? { twoShot: { a: where.me.clone(), ah: PEOPLE.me?.h ?? 1.4, b: monster.position.clone(), eyeY: monster.position.y + (monster.userData?.eyeY ?? monsterH * 0.85) } } : {}),
+      ...(SIMPLE_LOOK && shot.faceoff && where.me ? { faceTo: where.me.clone() } : {}),
       // SIMPLE LOOK: a close look at the monster frames its eye (page/simple/monsters.js userData.eyes)
       ...(SIMPLE_LOOK && shot.focus === "monster" && monster?.userData?.eyes?.length ? (() => { monster.updateMatrixWorld(true); const w = monster.userData.eyes[0].e.getWorldPosition(new THREE.Vector3()); const mp = monster.getWorldPosition(new THREE.Vector3()); w.x = mp.x; w.z = mp.z; const hb = new THREE.Box3().setFromObject(monster.userData.head); return { monsterEye: w, monsterHead: { center: hb.getCenter(new THREE.Vector3()), size: hb.getSize(new THREE.Vector3()) } }; })() /* the monster turns to the lens after the framing: its centre line, at the eye's height */ : {}) };
     const nudge = guardNudge(si, shot, camType, fctx, placed, where, carried);
@@ -795,7 +823,7 @@ async function main() {
     camera.updateMatrixWorld();
     camera.getWorldPosition(camPos);
     camRight.setFromMatrixColumn(camera.matrixWorld, 0).setY(0).normalize();
-    if (monster?.visible && !monster.userData.peering) monster.rotation.y = yawTo(monster.position, camPos) + (ms.state === "flee" ? Math.PI : 0); // a monster peering in at a window keeps facing into the room
+    if (monster?.visible && !monster.userData.peering) monster.rotation.y = shot.faceoff && where.me ? yawTo(monster.position, where.me) : yawTo(monster.position, camPos) + (ms.state === "flee" ? Math.PI : 0); // a monster peering in at a window keeps facing into the room
 
     // people: facing, pose, face, markers
     for (const p of placed) {
@@ -887,7 +915,7 @@ async function main() {
         h.visible = true; k++;
       }
     }
-    for (const mk of markersOf(shot)) {
+    for (const mk of SIMPLE_LOOK ? [] : markersOf(shot)) { // SIMPLE LOOK: no floating markers (rings) at all
       for (const id of markerTargets(mk, shot)) {
         const m = MARKERS.get(`${id}|${mk.kind}|${mk.text ?? ""}`);
         if (!m) continue;

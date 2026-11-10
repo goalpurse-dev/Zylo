@@ -22,6 +22,8 @@ import { hashSeed } from "./lib/rng.js";
 import { norm, tokens, estimateWords, alignTokens, badgeWord } from "./lib/planText.js";
 import { pacePass } from "./lib/wordTiming.js";
 import { heroSignature, propPass, eyePass, flyPass } from "./lib/simpleStory.js";
+import { scenePass, sceneProblems, varyCameras } from "./lib/scenePass.js";
+import { validateScenes } from "./lib/scenes.js";
 import { MUSIC_WORDS, notInHand, FAR_CAMERAS, OBJECT_CATALOG, HOLDABLE, extractKeys, covers, describeShot, cardFor, anchorsOf, ruleById, cleanTokens, heldKind, objectForNoun, ABSTRACT, ICONS, PLACE_SCENERY } from "./lib/visuals.js";
 import { subjectOf, genderOf, subjectLabel } from "./lib/subjects.js";
 import { creatureFor, CREATURES } from "./lib/catalog.js";
@@ -54,7 +56,7 @@ export { estimateWords, subjectOf };
 export const checkProduction = (tl, prod) => checkProductionStrict(tl, prod ?? tl?.production);
 
 export const SETS = ["street", "bedroom", "school", "woods"];
-export const CAMERAS = ["wide", "medium", "closeup", "low", "over_shoulder", "insert"];
+export const CAMERAS = ["wide", "medium", "closeup", "low", "over_shoulder", "insert", "two_shot"]; // two_shot: two characters face to face, both in frame (scene set pieces)
 export const LIGHTS = ["day", "night", "warm", "dusk", "dawn"]; // dusk / dawn: WORLD-LOOK 2026-11-06 (page/lighting.js)
 export const POSES = ["stand", "walk", "run", "point", "scared", "sit", "carry", "wave", "look_up", "talk", "sleep", "cheer", "yell", "sneeze", "blow",
   // 2026-11-05 (GAPS): the actions (page/kit/people.js); hold-poses keep the thing held (eat, throw, dig, hug)
@@ -551,7 +553,7 @@ function pickCamera(prefs, hist, seg, focus, actorsN, monster) {
 }
 
 // ---------------------------------------------------------------- 6. the plan
-export function planVideo({ script, words, idea = {}, lengthSec = null, direction = null, exists = null, recipe = null, criticalMode = null, library = null, built = null, pace = true } = {}) {
+export function planVideo({ script, words, idea = {}, lengthSec = null, direction = null, exists = null, recipe = null, criticalMode = null, library = null, built = null, pace = true, scenes = null } = {}) {
   if (!script?.lines?.length) throw new Error("planVideo: script.lines is empty");
   idea ??= {};
   const W = Array.isArray(words) && words.length ? words : estimateWords(script);
@@ -1022,9 +1024,13 @@ export function planVideo({ script, words, idea = {}, lengthSec = null, directio
   // (lib/wordTiming.js; every change kept only when the four pre-render checks are no worse)
   if (tl.look === "simple" && pace !== false) {
     // the hero stands out (a signature in the bible), no hand prop the line does not call for (lib/simpleStory.js)
-    try { tl.hero = heroSignature(tl); tl.props = propPass(tl, { check: check4 }); tl.props.flyFixed = flyPass(tl, { check: check4 }); } catch (e) { tl.props = { error: String(e?.message ?? e) }; }
+    try { tl.hero = heroSignature(tl); tl.props = propPass(tl, { check: check4 }); tl.props.flyFixed = flyPass(tl, { check: check4 }); }
+    catch (e) { tl.props = { error: String(e?.message ?? e) }; }
+    // SCENES + WORLD STATE (lib/scenes.js, lib/scenePass.js): every shot inside its scene, the state on screen, the set pieces
+    if (scenes?.scenes?.length) { const v = validateScenes(scenes, { lines: script.lines }); tl.sceneReport = scenePass(tl, { ...scenes, scenes: v.scenes }, { check: check4, problems: (t) => ({ timeline: checkTimeline(t), visuals: checkVisuals(t, script), subjects: checkSubjects(t), production: checkProduction(t) }) }); tl.sceneReport.repaired = v.problems; tl.sceneReport.flyFixed = flyPass(tl, { check: check4 }); }
     try { tl.pacing = pacePass(tl, { check: check4, minPiece: PACE.minShot }); } catch (e) { tl.pacing = { error: String(e?.message ?? e) }; }
     try { tl.eyes = eyePass(tl); } catch (e) { tl.eyes = { error: String(e?.message ?? e) }; } // the monster's eye states on their words
+    try { tl.camerasVaried = varyCameras(tl, { check: check4 }); } catch (e) { tl.camerasVaried = { error: String(e?.message ?? e) }; }
     // the advisory reports describe the final cut
     tl.style = styleReport(tl);
     try { tl.story = storyReport(tl); } catch (e) { tl.story = { error: String(e?.message ?? e) }; }
@@ -1450,6 +1456,7 @@ function showsWorld(s, wo) {
   if (!s || !wo) return false;
   if (wo.kind === "creature") return /^creature:/.test(s.set ?? "") || (s.giants ?? []).some((g) => g.id === "world" || g.id === wo.id);
   const nm = String(wo.name).toLowerCase();
+  if (wo.scenery && s.establish && s.set === "street" && /window/i.test(String(wo.name))) return true; // SCENES: the town wide shows its windows
   if ((s.objects ?? []).some((o) => o.item === wo.id || o.needId === wo.id || o.propId === wo.id || (wo.kit && o.name === wo.kit) || (wo.scenery && (o.name === "house_front" || (o.name === "curtain_pile" && o.state !== "pile" && /window/i.test(String(wo.name))))))) return true; // SIMPLE LOOK: the curtains-in-a-window object is a window
   // the builder put the world object in (lib/builder/apply.js: a library / built asset or a kit object named for it,
   // its need marker removed): step-3 2026-11-09, the stilt houses / bell tower / clock tower were reverted for this
@@ -1862,6 +1869,7 @@ function thingState(name, low) {
   switch (name) {
     case "cloud": return /\b(snow\w*|blizzard|flurr\w*)\b/.test(low) ? pick("snow") : /\b(storm\w*|thunder\w*|lightning)\b/.test(low) ? pick("storm") : /\b(rain\w*|drizzl\w*|wet|damp|pour\w*|soak\w*)\b/.test(low) ? pick("rain") : /\bcloud/.test(low) && !/\brain/.test(low) ? pick("plain") : null;
     case "fridge": return /\b(open\w*)\b/.test(low) ? pick("open") : null;
+    case "boat_painting": return /\b(nail\w*|board\w*|plank\w*)\b/.test(low) ? pick("boarded") : pick("plain");
     case "curtain_pile": return /\bthin\b/.test(low) ? pick("thin") : /\b(pile\w*|heap\w*|stack\w*)\b/.test(low) ? pick("pile") : pick("window");
     case "patchwork_blanket": return /\b(fl(?:ew|y|ies|ying)|blew|blown|away)\b/.test(low) ? pick("flying") : /\bbed\b/.test(low) ? pick("bed") : pick("draped");
     case "drawer": return /\b(shut|closed|close)\b/.test(low) ? pick("closed") : null;
@@ -2408,6 +2416,8 @@ export function checkTimeline(tl) {
     if (i && c.start < caps[i - 1].start - eps) out.push(`caption ${i} out of order`);
   });
   if (!tl.audio?.voice) out.push("no audio.voice");
+  // SCENES (owner 2026-11-11): continuity, persistence and set pieces on screen: hard, like every check above
+  if (tl.scenes) out.push(...sceneProblems(tl));
   return out;
 }
 
