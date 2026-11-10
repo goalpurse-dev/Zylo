@@ -151,19 +151,18 @@ function Idle({ recent, onOpen, onRetry, onWatch, isDesktop }) {
             <Intro size={width >= 860 ? "lg" : "md"} features />
             {/* new here: the tutorial, beside the hero and well away from the form */}
             <TutorialCard tool="cutaway" />
-            <Recents items={recent} onOpen={onOpen} compact />
+            {/* no "Examples" grid here (owner, 2026-11-10): the hero's "Watch an example" opens one */}
           </div>
-          {/* the hero stays in view while the side scrolls; its height fits the panel */}
+          {/* the hero stays in view while the side scrolls; a little smaller than the panel allows (owner, 2026-11-10) */}
           <div className="sticky top-0 flex shrink-0 items-start justify-center self-start pl-8 pr-1">
-            <CutawayHero variant="tall" onWatch={onWatch} className="aspect-[9/16]" style={{ height: `${Math.max(320, Math.min(580, (height || 640) - 48))}px` }} />
+            <CutawayHero variant="tall" onWatch={onWatch} className="aspect-[9/16]" style={{ height: `${Math.max(300, Math.min(470, (height || 640) - 120))}px` }} />
           </div>
         </div>
       ) : (
         <>
-          {isDesktop && <CutawayHero variant="tall" onWatch={onWatch} className="mx-auto aspect-[9/16] w-full max-w-[300px] shrink-0" />}
+          {isDesktop && <CutawayHero variant="tall" onWatch={onWatch} className="mx-auto aspect-[9/16] w-full max-w-[240px] shrink-0" />}
           <Intro size="sm" />
           <TutorialCard tool="cutaway" />
-          <Recents items={recent} onOpen={onOpen} flow />
         </>
       )}
     </div>
