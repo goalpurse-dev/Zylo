@@ -25,6 +25,8 @@ For EVERY shot in the list you get (same ids, same order) write:
 6. "start" and "end": the world state as the shot starts / ends, with EXACTLY these keys: curtains (on | ripping | gone), nell_sock (on | off), windows (warm | white | dark | day), batter (none | on | licked), blanket (none | over | flying), monster (absent | street_end | at_window | in_street | backing_away), street (empty | hero_only | people). Within a scene the next shot's "start" must equal this shot's "end".
 7. "outside": ids of the people standing OUTSIDE (on the street / pavement / garden) in this shot; [] if none. People behind glass are inside.
 
+HOW, NOT JUST WHAT (every story): every video action says which hand or body part, the speed (slowly / quickly / in 0.3 s), the distance or direction, and what REACTS and how (the thing touched moves, drips, shakes, flies). Example: "scoops batter with the right hand, slaps it flat on the pane, the batter drips down slowly".
+
 Hard rules: the world bible's rule constraints hold in every shot (after dark the streets are empty and people stay behind their windows; only the listed exceptions may be outside). Keep each shot's facts (place, people, actions, camera type) exactly as given; you only write them as prompts. Output ONLY a compact JSON array (no whitespace between tokens, omit "faces" when nobody's face changes), no prose.`;
 
 /** the planned shots as facts for the writer */
@@ -54,32 +56,104 @@ export function promptRequest(tl, board) {
 
 /** the calls: the shots in parts (the whole request cached once, each later part reads it), max_tokens from the money
  *  cap; -> { data (all parts), costUsd, usage[], stop[] } */
-export async function writePrompts({ apiKey, tl, board, capUsd = 0.15, parts = 2, fetchFn = fetch }) {
+export const MODEL_PRICE = { "claude-sonnet-5-5": { in: 2, out: 10, write: 2.5, read: 0.2 }, "claude-haiku-5-5": { in: 0.1, out: 0.5, write: 0.125, read: 0.01 } };
+export async function writePrompts({ apiKey, tl, board, capUsd = 0.15, parts = 2, ids = null, perShot = 0, model = PROMPT_MODEL, note = "", fetchFn = fetch, log = () => {} }) {
   const { system, user } = promptRequest(tl, board);
-  const estIn = Math.ceil((system.length + user.length) / 3.4);
-  const inWorst = (estIn * 2.5 + (parts - 1) * estIn * 0.2 + parts * 60 * 2) / 1e6;
-  const maxOut = Math.floor((capUsd - inWorst) / parts / (10 / 1e6));
-  if (maxOut < 3000) throw new Error(`cap $${capUsd} leaves only ${maxOut} output tokens a part`);
-  const n = tl.shots.length, per = Math.ceil(n / parts), data = [], usage = [], stop = [], raw = [];
+  const P = MODEL_PRICE[model] ?? MODEL_PRICE[PROMPT_MODEL];
+  const estIn = Math.ceil((system.length + user.length) / 2.0); // ~2 chars a token (JSON-heavy: the #2 request was 23.7k chars = 11.4k tokens)
+  const inWorst = (estIn * P.write + (parts - 1) * estIn * P.read + parts * 120 * P.in) / 1e6;
+  // perShot: the output room a part gets per shot (a full-detail shot is ~440 tokens); else the cap split evenly
+  const nIds = ids?.length ?? tl.shots.length;
+  const maxOut = perShot ? perShot * Math.ceil(nIds / parts) : Math.floor((capUsd - inWorst) / parts / (P.out / 1e6));
+  if (maxOut < 2000) throw new Error(`cap $${capUsd} leaves only ${maxOut} output tokens a part`);
+  const all = ids ?? tl.shots.map((_, i) => i), per = Math.ceil(all.length / parts), data = [], usage = [], stop = [], raw = [];
   let costUsd = 0;
   for (let k = 0; k < parts; k++) {
-    const a = k * per, b = Math.min(n, a + per) - 1; if (a > b) break;
+    const part = all.slice(k * per, (k + 1) * per); if (!part.length) break;
+    const partWorst = ((k ? estIn * P.read : estIn * P.write) + maxOut * P.out) / 1e6;
+    if (costUsd + partWorst > capUsd) { log(`stop: part ${k + 1} could take the spend $${costUsd.toFixed(4)} over the cap $${capUsd}`); break; }
+    log(`part ${k + 1}/${parts}: ids ${part.join(",")} (max ${maxOut} tokens)`);
     const res = await fetchFn("https://api.anthropic.com/v1/messages", {
       method: "POST", headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-      body: JSON.stringify({ model: PROMPT_MODEL, max_tokens: maxOut, system: [{ type: "text", text: system }], messages: [{ role: "user", content: [{ type: "text", text: user, cache_control: { type: "ephemeral" } }, { type: "text", text: `Write the prompt pairs for shot ids ${a}-${b} only.` }] }], output_config: { effort: "low" } }),
+      body: JSON.stringify({ model, max_tokens: maxOut, system: [{ type: "text", text: system }], messages: [{ role: "user", content: [{ type: "text", text: user, cache_control: { type: "ephemeral" } }, { type: "text", text: `Write the prompt pairs for shot ids ${part.join(", ")} only.${note ? ` ${note}` : ""}` }] }], ...(model.includes("sonnet") ? { output_config: { effort: "low" } } : { thinking: { type: "disabled" } }) }), // Haiku: no thinking (2026-11-11: with its default thinking a $0.017 draft spent every token thinking and wrote nothing)
       signal: AbortSignal.timeout(600000),
     });
     const body = await res.json().catch(() => null);
-    costUsd += costOf(body?.model ?? PROMPT_MODEL, body?.usage);
+    costUsd += costOf(body?.model ?? model, body?.usage);
     if (!res.ok) throw Object.assign(new Error(`anthropic ${res.status} ${JSON.stringify(body?.error ?? body).slice(0, 300)}`), { costUsd });
     const text = (body.content ?? []).filter((x) => x.type === "text").map((x) => x.text).join("").trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
     usage.push(body.usage); stop.push(body.stop_reason); raw.push(text);
-    try { data.push(...JSON.parse(text)); } catch { return { data: null, raw: raw.join("\n----\n"), costUsd, usage, stop, maxOut }; }
+    const got = completeObjects(text); data.push(...got); log(`  -> ${got.length} shots, stop ${body.stop_reason}, $${costUsd.toFixed(4)} so far`);
+    // out of room in a part: its complete shots are kept (never a paid retry of the same shots); the next part is other shots
   }
   return { data, raw: raw.join("\n----\n"), costUsd: +costUsd.toFixed(6), usage, stop, maxOut };
 }
 
+/** SONNET REPAIR of a draft: only the shots that fail the free checks, as small patches (the failing fields only), a
+ *  compact request (the failing shots' facts + draft fields + the failures); -> { prompts (patched), costUsd, patched } */
+export async function repairPrompts({ apiKey, tl, board, prompts, checks, capUsd = 0.01, model = PROMPT_MODEL, kinds = ["rule", "chain", "verbs", "how"], fetchFn = fetch, log = () => {} }) {
+  const fails = new Map();
+  const add = (id, m) => { if (id == null || !prompts.some((p) => p.id === id)) return; if (!fails.has(id)) fails.set(id, []); fails.get(id).push(m); };
+  for (const k of kinds) for (const m of checks[k] ?? []) {
+    if (k === "verbs") { const n = Number(m.match(/^line (\d+)/)?.[1]); const s = tl.shots.findIndex((x) => x.line === n && x.board?.acts.length) ; add(s >= 0 ? s : tl.shots.findIndex((x) => x.line === n), m); continue; }
+    const ids = [...m.matchAll(/shot (\d+)/g)].map((x) => Number(x[1])); add(ids.at(-1), m);
+  }
+  const sk = shotSkeletons(tl, board);
+  // only what each fix needs: the state fields for the rule / the chain, the actions + words for a verb / HOW miss
+  const items = [...fails.entries()].map(([id, ms]) => { const p = prompts.find((x) => x.id === id), act = ms.some((m) => /not a timed action|wants 2 of/.test(m)); return { id, line: tl.lines[tl.shots[id].line].text, facts: { place: sk[id].place, people: sk[id].people, ...(act ? { monster: sk[id].monster, actions: sk[id].actions, words: sk[id].words } : {}) }, draft: act ? { video: p.video } : { start: p.start, end: p.end, outside: p.outside }, ...(act ? {} : { prevEnd: prompts.find((x) => x.id === id - 1)?.end ?? null }), failures: ms }; });
+  if (!items.length) return { prompts, costUsd: 0, patched: [] };
+  const P = MODEL_PRICE[model];
+  const system = `You repair shot prompt drafts of a vertical cartoon video. For each item, return a PATCH with ONLY the fields that fix its failures: "video" (the full corrected timed action list; every action says which hand / body part or direction, the speed or manner, and what reacts), "start" / "end" (all 7 state keys: curtains, nell_sock, windows, batter, blanket, monster, street), "outside" (ids standing outside; people behind glass or in a room are inside). A shot's "start" must equal the previous shot's end (prevEnd) within a scene; after dark nobody but the rule's exceptions is outside. Output ONLY a compact JSON array [{"id":..,...}].`;
+  const user = JSON.stringify({ rule: board.bible.rule, items });
+  // the exact input size (the free token-count endpoint), so the cap sets the output room right
+  const ct = await fetchFn("https://api.anthropic.com/v1/messages/count_tokens", { method: "POST", headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" }, body: JSON.stringify({ model, system, messages: [{ role: "user", content: user }] }) }).then((r) => r.json()).catch(() => null);
+  const estIn = ct?.input_tokens ?? Math.ceil((system.length + user.length) / 2.0);
+  const maxOut = Math.floor((capUsd - estIn * P.in / 1e6) / (P.out / 1e6));
+  if (maxOut < 300) { log(`repair: cap $${capUsd} leaves ${maxOut} tokens for ${items.length} shots: not sent`); return { prompts, costUsd: 0, patched: [], skipped: items.map((x) => x.id) }; }
+  log(`repair: ${items.length} shots (${items.map((x) => x.id).join(",")}), ~${estIn} in, max ${maxOut} out`);
+  const res = await fetchFn("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" }, body: JSON.stringify({ model, max_tokens: maxOut, system, messages: [{ role: "user", content: user }], ...(model.includes("sonnet") ? { output_config: { effort: "low" } } : { thinking: { type: "disabled" } }) }) });
+  const body = await res.json().catch(() => null);
+  const costUsd = costOf(body?.model ?? model, body?.usage);
+  if (!res.ok) throw Object.assign(new Error(`anthropic ${res.status} ${JSON.stringify(body?.error ?? body).slice(0, 300)}`), { costUsd });
+  const text = (body.content ?? []).filter((x) => x.type === "text").map((x) => x.text).join("").trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+  const patches = completeObjects(text), out = prompts.map((p) => ({ ...p }));
+  for (const q of patches) { const p = out.find((x) => x.id === q.id); if (!p) continue; for (const k of ["video", "start", "end", "outside"]) if (q[k] != null) p[k] = q[k]; p.repaired = true; }
+  log(`repair: $${costUsd} stop ${body.stop_reason}; ${patches.length} patches`);
+  return { prompts: out, costUsd, patched: patches.map((q) => q.id), stop: body.stop_reason, usage: body.usage, unpatched: items.map((x) => x.id).filter((id) => !patches.some((q) => q.id === id)) };
+}
+
+/** the complete top-level objects of a JSON array text (a reply cut off at max_tokens keeps its finished shots) */
+export function completeObjects(text) {
+  const s = String(text ?? "").trim();
+  try { const j = JSON.parse(s); return Array.isArray(j) ? j : []; } catch { /* cut off: salvage */ }
+  let depth = 0, inStr = false, esc = false, lastEnd = -1;
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (inStr) { if (esc) esc = false; else if (c === "\\") esc = true; else if (c === '"') inStr = false; continue; }
+    if (c === '"') inStr = true; else if (c === "{" || c === "[") depth++; else if (c === "}" || c === "]") { depth--; if (depth === 1 && c === "}") lastEnd = i; }
+  }
+  try { return lastEnd > 0 ? JSON.parse(s.slice(0, lastEnd + 1) + "]") : []; } catch { return []; }
+}
+
 // ------------------------------------------------------------------------------------------------ the free checks
+// HOW, NOT JUST WHAT: an action beat says the body part / hand or a distance, AND a speed or what reacts
+const HOW_PART = /\b(left|right|both|hand|hands|arm|arms|head|eye|eyes|eyelid|lid|lids|tongue|foot|feet|leg|legs|knee|knees|finger|fingers|shoulder|shoulders|body|chin|nose|mouth|palm|palms|fist|elbow|hip|hips|torso|wrist|back|face|neck|toward|towards|away|forward|backward|up|down|across|into|onto|off|behind|over)\b|\d+(\.\d+)?\s?(m|cm|metres?|meters?|steps?)\b/i;
+const HOW_SPEED = /\b(slow|slowly|quick|quickly|fast|sudden|suddenly|gently|hard|softly|sharply|smoothly|steadily|briskly|lazily|jerkily|instantly|gradually|wildly|rapidly)\b|\bin \d|\d+(\.\d+)?\s?s\b/i;
+const HOW_REACT = /(drip|shak|sway|flap|\bfl(y|ies|ew|ying)\b|\bfall|wobbl|rattl|bounc|swing|rippl|slid|spin|tumbl|scatter|flutter|glow|squeak|smear|slump|jolt|shiver|trembl|creak|bang|thud|jerk|puff|billow|stream|splatter|crack|ring|echo|sag|droop|rock|smudg|streak|vanish|disappear|clatter|tilt|lurch|ripple|whip|snap|pop)/i;
+const HOW_MANNER = /\b\w{3,}ly\b|\b(tight|hard|soft|rigid|wide|deep|deeper|still|once|twice|again)\b/i; // a manner: an adverb ("slowly", "carefully") or a firm adjective
+/** a beat passes with 2 of the 3: WHERE (hand / body part / direction / distance), HOW (speed / manner), WHAT REACTS;
+ *  a THING's own beat (the curtains, the wind, the lights) passes with its manner or its reaction */
+export function howMisses(prompts, cast = null) {
+  const out = [];
+  for (const p of prompts ?? []) for (const a of p.video ?? []) {
+    const d = String(a.do ?? ""), who = String(a.who ?? "");
+    const part = HOW_PART.test(d), how = HOW_SPEED.test(d) || HOW_MANNER.test(d), react = HOW_REACT.test(d);
+    const thing = cast ? !(who in cast) && who !== "monster" : false;
+    if ((part + how + react) >= 2 || (thing && (how || react))) continue;
+    out.push(`shot ${p.id}: "${d.slice(0, 80)}" (has ${[part && "where", how && "speed/manner", react && "reaction"].filter(Boolean).join(" + ") || "nothing"}; wants 2 of where / speed / reaction)`);
+  }
+  return out;
+}
 const STEM = { sleeps: "sleep|slept|asleep|awake|stare", bulging: "bulg|puff|spill", flew: "fl(y|ies|ew|ying)|kite", slept: "sleep|slept|asleep", said: "say|says|said|talk|speak", says: "say|says|said|talk|speak", caught: "catch|caught|spot|step", lost: "poke|lost|hid", finds: "find|hunt|search|look|stare|scan", filled: "fill|press", look: "look|peek", went: "dark|off|go", staring: "star", peeked: "peek|finger", looked: "look|tilt|gaze|stare", backed: "back|retreat|step" };
 function verbRe(v) {
   const w = v.verb.toLowerCase().split(/\s+/)[0];
@@ -89,7 +163,7 @@ function verbRe(v) {
 }
 export function checkPrompts(prompts, tl, board) {
   const byId = new Map((Array.isArray(prompts) ? prompts : []).map((p) => [p.id, p]));
-  const out = { missing: [], verbs: [], rule: [], chain: [], keys: [] };
+  const out = { missing: [], verbs: [], rule: [], chain: [], keys: [], how: howMisses([...byId.values()].filter((p) => p.id < tl.shots.length), tl.cast ?? {}) };
   tl.shots.forEach((s, i) => { if (!byId.has(i)) out.missing.push(`shot ${i}: no prompt`); });
   // verbs: per line, each action verb as a timed action in one of its shots
   for (const [n, l] of (tl.lines ?? []).entries()) {
@@ -119,7 +193,7 @@ export function checkPrompts(prompts, tl, board) {
 const esc = (x) => String(x ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 export function promptsHtml({ tl, prompts, checks, cost, model }) {
   const byId = new Map((prompts ?? []).map((p) => [p.id, p]));
-  const issues = (i) => [...checks.missing, ...checks.rule, ...checks.chain, ...checks.keys].filter((m) => new RegExp(`shot ${i}\\b|-> ${i} `).test(m));
+  const issues = (i) => [...checks.missing, ...checks.rule, ...checks.chain, ...checks.keys, ...(checks.how ?? [])].filter((m) => new RegExp(`shot ${i}\\b|-> ${i} `).test(m));
   const lineIssues = (n) => checks.verbs.filter((m) => m.startsWith(`line ${n}:`));
   const st = (o) => (o ? Object.entries(o).map(([k, v]) => `<span class="st">${esc(k)}: <b>${esc(v)}</b></span>`).join(" ") : "");
   let html = "";
@@ -135,7 +209,7 @@ export function promptsHtml({ tl, prompts, checks, cost, model }) {
 ${(p.faces ?? []).length ? `<p class="faces">Faces: ${(p.faces ?? []).map((f) => `${esc(f.who)} → ${esc(f.face)} on “${esc(f.word)}” (${esc(f.t)} s)`).join("; ")}</p>` : ""}
 <p class="cam">Camera: ${esc(p.camera)} · Effects: ${esc(p.effects)}</p>
 <p class="state">Start: ${st(p.start)}</p><p class="state">End: ${st(p.end)}</p>
-<p class="checks">${iss.length || li.length ? [...iss, ...li].map((m) => `<span class="miss">✗ ${esc(m)}</span>`).join("<br>") : '<span class="pass">✓ verbs, rule, state chain</span>'}</p></article>`;
+<p class="checks">${iss.length || li.length ? [...iss, ...li].map((m) => `<span class="miss">✗ ${esc(m)}</span>`).join("<br>") : '<span class="pass">✓ verbs, rule, state chain, HOW</span>'}</p></article>`;
     });
     html += "</section>";
   }
@@ -150,6 +224,6 @@ header{font-size:13px;color:var(--mut)}.id{font-weight:700;color:var(--ink)}.kee
 .line{font-size:17px;font-style:italic;margin:6px 0}table{border-collapse:collapse;width:100%}td{border-top:1px solid var(--line);padding:3px 6px;vertical-align:top}td:first-child{white-space:nowrap;color:var(--mut);width:60px}td:nth-child(2){width:90px;font-weight:600}
 .st{display:inline-block;font-size:12px;border:1px solid var(--line);border-radius:4px;padding:0 5px;margin:2px}.miss{color:var(--bad)}.pass{color:var(--ok)}.cam,.faces{font-size:13px}</style></head>
 <body><main><h1>“${esc(tl.title)}” — shot prompts</h1>
-<p>${tl.shots.length} shots in ${(tl.scenes ?? []).length} scenes. Written by ${esc(model)} for $${Number(cost).toFixed(4)}. Free checks: verbs ${n("verbs")} miss(es), rule ${n("rule")}, state chain ${n("chain")}, state keys ${n("keys")}, missing shots ${n("missing")}.</p>
+<p>${tl.shots.length} shots in ${(tl.scenes ?? []).length} scenes. Written by ${esc(model)} for $${Number(cost).toFixed(4)}. Free checks: verbs ${n("verbs")} miss(es), rule ${n("rule")}, state chain ${n("chain")}, HOW ${n("how")}, state keys ${n("keys")}, missing shots ${n("missing")}.</p>
 ${html}</main></body></html>`;
 }

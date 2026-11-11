@@ -43,6 +43,8 @@ export const BOARD_ACTIONS = Object.freeze({
   "walk": "a person walks",
   "stare": "two faces lock eyes",
   "twitch:eye": "the giant eyelid twitches",
+  "arrive:monster": "the Peeker strides up the street and kneels at a window",
+  "hide:curtains": "people lean to the glass, almost look, then duck back and yank the curtain shut",
 });
 
 // [regex on the narration, the keys that show it]: physical action verbs only (states like "has" and thoughts like

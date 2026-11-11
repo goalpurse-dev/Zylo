@@ -13,6 +13,8 @@ export const KID_NEVER_BLINKS = {
   id: "kid_never_blinks",
   title: "The Kid Who Never Blinks",
   bible: {
+    // Pell is Dottie's surname: ONE person, Dottie Pell (the planner's extra kid "Pell" is dropped from the cast)
+    drop: ["pell"],
     homes: { town1: 0, town2: 1, dottie: 2, hollis: 3, fenwick: 4, town3: 5, me: 6 },
     // the houses' windows (the scene list's format, lib/scenes.js): "*" = every other house; events change them from a
     // line on (during that line the change happens on screen: the wind's rip, the sock pulled off, the batter licked)
@@ -43,12 +45,12 @@ export const KID_NEVER_BLINKS = {
       { loc: "street", light: "dusk", cam: "town_wide", acts: [{ k: "lights_on:windows" }] },
       { at: "Never", loc: "house:town1", light: "dusk", cam: "window:town1:0", people: [{ id: "town1", where: "window:town1:0", face: "worried" }], acts: [{ k: "peek:curtains", who: "town1" }] }] },
     { line: 1, place: "street", shots: [
-      { loc: "street", light: "night", cam: "street_end", people: [{ id: "town1", where: "window:town1:0", face: "scared" }, { id: "town2", where: "window:town2:0", face: "scared" }, { id: "town3", where: "window:town3:2", face: "scared" }], monster: { where: "end", state: "lurk" }, acts: [{ k: "lurk:monster" }] }] },
+      { loc: "street", light: "night", cam: "street_end", people: [{ id: "town1", where: "window:town1:0", face: "scared" }, { id: "town2", where: "window:town2:0", face: "scared" }, { id: "town3", where: "window:town3:2", face: "scared" }], monster: { where: "end", state: "lurk" }, acts: [{ k: "lurk:monster" }, { k: "hide:curtains" }] }] }, // the townsfolk ALMOST look, then hide behind the curtain (looking = being taken)
     { line: 2, place: "home:town1", shots: [
       { loc: "house:town1", light: "night", cam: "window:town1:1", monster: { where: "window:town1:1", eye: "press" }, acts: [{ k: "press:eye" }, { k: "glow:windows", at: "glows", only: "town1:1" }] },
       { at: "and", loc: "room:town1", light: "night", cam: "bed_top", people: [{ id: "town1", where: "room:bed", face: "scared", awake: true }], acts: [{ k: "stare:ceiling", who: "town1" }, { k: "glow:windows", only: "room" }] }] },
     { line: 3, place: "home:dottie", shots: [
-      { loc: "house:dottie", light: "night", cam: "house:dottie", people: [{ id: "dottie", where: "window:dottie:2", face: "happy" }, { id: "pell", where: "window:dottie:3", face: "grin" }], acts: [{ k: "bulge:curtains" }] }] },
+      { loc: "house:dottie", light: "night", cam: "house:dottie", people: [{ id: "dottie", where: "window:dottie:2", face: "happy" }], acts: [{ k: "bulge:curtains" }] }] },
     { line: 4, place: "home:dottie", shots: [
       { loc: "house:dottie", light: "night", cam: "cat:dottie", people: [{ id: "dottie", where: "window:dottie:0", face: "sad" }], acts: [{ k: "poke_out:cat" }] }] },
     { line: 5, place: "home:hollis", shots: [
@@ -56,7 +58,7 @@ export const KID_NEVER_BLINKS = {
     { line: 6, place: "home:fenwick", shots: [
       { loc: "house:fenwick", light: "night", cam: "window:fenwick:0", people: [{ id: "fenwick", where: "window:fenwick:0", face: "worried" }], acts: [{ k: "tremble:curtains" }] }] },
     { line: 7, place: "home:me", shots: [
-      { loc: "room:me", light: "night", cam: "room_wide", people: [{ id: "me", where: "room:window", pose: "wave", face: "happy" }], acts: [{ k: "wave", who: "me" }] }] },
+      { loc: "room:me", light: "night", cam: "room_me", people: [{ id: "me", where: "room:window", pose: "wave", face: "happy" }], acts: [{ k: "wave", who: "me" }] }] },
     { line: 8, place: "home:me", shots: [
       { loc: "room:me", light: "night", cam: "peek:me", people: [{ id: "me", where: "room:window", face: "smirk", peek: true }], acts: [{ k: "peek:sock", who: "me" }] }] },
     { line: 9, place: "home:me", shots: [
@@ -77,13 +79,15 @@ export const KID_NEVER_BLINKS = {
     { line: 16, place: "home:hollis", shots: [
       { loc: "room:hollis", light: "night", cam: "behind_window", people: [{ id: "hollis", where: "room:painting", face: "happy" }], monster: { where: "roomwindow:hollis", eye: "press" }, acts: [{ k: "nail:boards", who: "hollis" }, { k: "press:eye" }, { k: "glow:windows", only: "room" }] }] },
     { line: 17, place: "home:dottie", shots: [
-      { loc: "room:dottie", light: "night", cam: "room_side", people: [{ id: "dottie", where: "room:window", face: "angry" }, { id: "pell", where: "room:center", face: "surprised" }], acts: [{ k: "smear:batter", who: "dottie" }] }] },
+      { loc: "room:dottie", light: "night", cam: "room_side", people: [{ id: "dottie", where: "room:window", face: "angry" }], acts: [{ k: "smear:batter", who: "dottie" }] },
+      { at: "every", loc: "house:dottie", light: "night", cam: "arrive:dottie", monster: { where: "window:dottie:0", eye: "stare" }, acts: [{ k: "arrive:monster" }] }] }, // the Peeker ARRIVES before the lick (the state chain: absent -> at the window)
     { line: 18, place: "home:dottie", shots: [
       { loc: "house:dottie", light: "night", cam: "window:dottie:0", monster: { where: "window:dottie:0", eye: "stare" }, acts: [{ k: "lick:glass" }] }] },
     { line: 19, place: "home:fenwick", shots: [
-      { loc: "room:fenwick", light: "night", cam: "room_wide", people: [{ id: "fenwick", where: "room:door", pose: "wave", face: "angry" }, { id: "town1", where: "room:huddle0", shut: true }, { id: "dottie", where: "room:huddle1", shut: true }, { id: "hollis", where: "room:huddle2", shut: true }, { id: "wim", where: "room:huddle3", shut: true }], acts: [{ k: "huddle:blanket" }, { k: "herd", who: "fenwick" }] }] },
+      { loc: "house:fenwick", light: "night", cam: "arrive:fenwick", people: [{ id: "fenwick", where: "window:fenwick:0", face: "scared" }], monster: { where: "window:fenwick:1", eye: "stare" }, acts: [{ k: "arrive:monster" }, { k: "hide:curtains", who: "fenwick" }] },
+      { at: "herded", loc: "room:fenwick", light: "night", cam: "room_wide", people: [{ id: "fenwick", where: "room:door", pose: "wave", face: "angry" }, { id: "town1", where: "room:huddle0", shut: true }, { id: "dottie", where: "room:huddle1", shut: true }, { id: "hollis", where: "room:huddle2", shut: true }, { id: "wim", where: "room:huddle3", shut: true }], acts: [{ k: "huddle:blanket" }, { k: "herd", who: "fenwick" }] }] },
     { line: 20, place: "home:fenwick", shots: [
-      { loc: "room:fenwick", light: "night", cam: "room_wide", people: [{ id: "fenwick", where: "room:door", pose: "sneeze", face: "surprised" }, { id: "town1", where: "room:huddle0", shut: true }, { id: "dottie", where: "room:huddle1", shut: true }, { id: "hollis", where: "room:huddle2", shut: true }, { id: "wim", where: "room:huddle3", shut: true }], acts: [{ k: "sneeze", who: "fenwick" }, { k: "blow_off:blanket", at: "blanket" }] }] },
+      { loc: "room:fenwick", light: "night", cam: "room_door", people: [{ id: "fenwick", where: "room:door", pose: "sneeze", face: "surprised" }, { id: "town1", where: "room:huddle0", shut: true }, { id: "dottie", where: "room:huddle1", shut: true }, { id: "hollis", where: "room:huddle2", shut: true }, { id: "wim", where: "room:huddle3", shut: true }], acts: [{ k: "sneeze", who: "fenwick" }, { k: "blow_off:blanket", at: "blanket" }] }] },
     { line: 21, place: "home:fenwick", shots: [
       { loc: "room:fenwick", light: "night", cam: "huddle_up", monster: { where: "roomwindow:fenwick", eye: "stare" }, people: [{ id: "town1", where: "room:huddle0", pose: "look_up", face: "shocked" }, { id: "dottie", where: "room:huddle1", pose: "look_up", face: "scared" }, { id: "hollis", where: "room:huddle2", pose: "look_up", face: "shocked" }, { id: "wim", where: "room:huddle3", pose: "look_up", face: "scared" }, { id: "fenwick", where: "room:door", pose: "look_up", face: "scared" }], acts: [{ k: "look_up" }, { k: "glow:windows", only: "room" }] }] },
     { line: 22, place: "street", shots: [
@@ -95,9 +99,9 @@ export const KID_NEVER_BLINKS = {
       { at: "Rude", loc: "room:me", light: "night", cam: "face:me", people: [{ id: "me", where: "room:center", face: "angry" }], monster: { where: "roomwindow:me", eye: "stare" }, acts: [] }] },
     { line: 25, place: "home:me", shots: [
       { loc: "room:me", light: "night", cam: "room_window", people: [{ id: "me", where: "room:window", face: "angry" }], monster: { where: "roomwindow:me", eye: "stare" }, acts: [{ k: "pull:sock", who: "me" }] }] },
-    { line: 26, keep: true },
+    { line: 26, keep: true, faces: { me: "determined" } },
     { line: 27, keep: true, drop: ["crowds"], replace: { 2: { loc: "street", light: "night", cam: "houses:dottie:hollis:fenwick", people: [{ id: "dottie", where: "window:dottie:0", pose: "cover_mouth", face: "scared" }, { id: "hollis", where: "window:hollis:0", pose: "cover_mouth", face: "scared" }, { id: "fenwick", where: "window:fenwick:0", pose: "cover_mouth", face: "scared" }], acts: [{ k: "cover:eyes" }] } } },
-    { line: 28, keep: true },
+    { line: 28, keep: true, faces: { me: "determined" } },
     { line: 29, keep: true },
     { line: 30, keep: true },
     { line: 31, place: "street", shots: [

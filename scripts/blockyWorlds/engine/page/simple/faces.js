@@ -24,6 +24,7 @@ const EXPR = {
   thinking:  { eyes: "side", brows: [0.3, -0.1, -0.06], mouth: "side" },
   sleepy:    { eyes: "sleepy", brows: [0.1, 0.1, 0.08], mouth: "smallO", zzz: true },
   worried:   { eyes: "open", brows: [0.4, 0.4, -0.05], mouth: "wavy", small: true, sweat: true },
+  determined: { eyes: "half", brows: [-0.45, -0.45, 0.14], mouth: "flat" }, // owner 2026-11-11: Nell in the staring contest (firm brows, narrowed eyes, a tight mouth)
 };
 export const SIMPLE_FACES = Object.freeze(Object.keys(EXPR));
 
@@ -31,7 +32,7 @@ export const SIMPLE_FACES = Object.freeze(Object.keys(EXPR));
 export const FACE_MAP = Object.freeze({
   neutral: "neutral", happy: "happy", sad: "sad", scared: "scared", surprised: "surprised", angry: "angry", sleepy: "sleepy",
   smirk: "smirk", cry: "crying", crying: "crying", excited: "grin", shush: "neutral", yell: "shocked", sneeze: "laugh", mime: "neutral",
-  calm: "happy", laugh: "laugh", proud: "smirk", worried: "worried", determined: "smirk", embarrassed: "worried", confused: "thinking",
+  calm: "happy", laugh: "laugh", proud: "smirk", worried: "worried", determined: "determined", embarrassed: "worried", confused: "thinking",
   disgusted: "angry", love: "grin", nervous: "worried", curious: "thinking", relieved: "happy", grumpy: "angry", awe: "surprised",
   silly: "wink", shocked: "shocked", bored: "sleepy", hopeful: "happy", grin: "grin", wink: "wink", thinking: "thinking",
 });
