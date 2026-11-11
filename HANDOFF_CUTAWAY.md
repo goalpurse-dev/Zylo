@@ -1,5 +1,25 @@
 # Cutaway handoff (written 2026-11-07, for a fresh session)
 
+**UPDATE 2026-11-11: the competitor round** (owner's 25 rules from 5 top competitor videos; commits 3f06de76, ab5cc3a1,
+e68e8746 on cutaway-work; nothing deployed; production worker is still af43baaf). Page: https://claude.ai/artifact/76B12rsq5DV1PrNeHEFr6q
+- Story rules 1-11: `m2/storyRules.js` (+ STORY_RULES / WRITING_RULES in planner.mjs, roles problem4-12 / fix6-12 / name3,
+  60 s = 20-28 beats, 30 s = 12-16). Problems in plan round 1, warnings after the repair. Score: `node m3/storyScore.mjs`
+  (0/40 -> 32/40; the 8 left have no stand-in). Benchmark list moved to `m3/bench.js`.
+- Camera 12-14: `m2/cameraRules.js`, variety.js, director.js. Look 15-22: `m2/look2.js` (light, grade, DOF, motion blur),
+  `m2/materials.js` SURFACES + soil in kit/digCut.js, `kit/water.js` one water look, suburb in kit/backdrops.js, kinds
+  token / person / hand (kit/token.js, kit/people.js), kit/life.js. All gated on approved !== true.
+- Rule 25: m2/run.mjs REPAIR_CAP $0.25 per video, one picture repair round.
+- 33 stand-ins re-planned (answers_v1 = old replies); new cases storm_drain, swimming_pool, washing_machine.
+- Checked: tests 256/258 (2 known), crash sweep 0/193, 4 live premades identical to af43baaf's code (parts, tracks,
+  camera, 320 frames >= 60 dB; tools in the session scratchpad premadeCmp.mjs / pmdense.sh, live tree = git archive 52040d39).
+- Worker image needs `node fetchPolyModels.mjs <proto>/assets/polyhaven` beside fetchKenney before any deploy.
+- Waiting on the owner: real re-check of all 598 lines (~$1.23, cap $1.50; old verdicts don't apply, the look changed every
+  custom frame) and one real 60 s new topic (proposed "How a water tower works", ~$1.00-1.40, cap $2).
+- Open bugs: camera overrides planner shots (moving rigs get small; submarine dive under water); dirty water too clear;
+  some end frames far (roof, escalator, engine); per-line "night" barely darkens (old); river rise in a riverbed draws a
+  black slab; building roof floats before "build"; person "stop" keeps waving; storyFx reads event words from ideas;
+  people are code-built mannequins, not CC0 rigged characters.
+
 **UPDATE 2026-11-08: the direction changed.** Read `scripts/cutaway/proto3d/SCENE_LANGUAGE_V2.md` first.
 - The new direction: one master handbook generated from the kit, one strict scene language, world GENERATORS (terrain, water, buildings, roads, models by keyword, light), self-repair with a cap, and save and reuse.
 - The 8 missing worlds are test cases, not hand-built scenes. Target: 35+/40.
