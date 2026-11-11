@@ -23,7 +23,7 @@ import { atm, cabinet, car, carWash, CITY_CHANNELS, counter, hydrant, traffic, t
 import { canopy, CLARITY_CHANNELS, creek, flow, grate, prop, settle } from "./clarityParts.js";
 import { rig } from "./rig.js";
 import { rainSoak, surfaces } from "./materials.js";
-import { buildWater, flowTint, pipeWater, waterClock, waterMaterial, waterNew, waterSpec, WATER_TINTS } from "../kit/water.js";
+import { buildWater, DIRT, flowTint, pipeWater, waterClock, waterMaterial, waterNew, waterSpec, WATER_TINTS } from "../kit/water.js";
 import { buildBuilding } from "../kit/buildings.js";
 import { buildRoad } from "../kit/roads.js";
 import { buildWires } from "../kit/wires.js";
@@ -436,7 +436,10 @@ export const KINDS = {
     // top, the section darker with depth and a bright waterline, dirt spreading as a plume, drop ripples in the rain)
     if (waterNew(ctx) && (p.mat ?? "water") === "water" && p.box) {
       const b = p.box, H = Math.max(0.05, (b.y1 ?? 0) - (b.y0 ?? 0)), clock = waterClock(ctx);
-      const wm = waterMaterial(ctx, { color: "#1f94ab", opacity: 0.72, section: true, depthScale: Math.max(0.6, H * 1.2), dirtyColor: typeof p.dirtyColor === "string" ? p.dirtyColor : "#4e7d2c", scale: 0.8 });
+      // (dirty: the whole fill turns, bright green algae by default, or the plan's dirtyColor; murky brown sewage or cloudy
+      // mud by its words; the owner, 2026-11-11: dirty water must clearly read as dirty, then visibly clear)
+      const dirtWord = /sewage|sludge|waste|toilet|septic/i.test(`${api.id ?? ""} ${p.mat ?? ""}`) ? DIRT.sewage : /mud|silt|clay/i.test(`${api.id ?? ""}`) ? DIRT.mud : DIRT.algae;
+      const wm = waterMaterial(ctx, { color: "#1f94ab", opacity: 0.72, section: true, depthScale: Math.max(0.6, H * 1.2), dirtyColor: typeof p.dirtyColor === "string" ? p.dirtyColor : dirtWord, scale: 0.8 });
       const w = fillBlock(ctx, { ...b, mat: wm, r: p.r ?? 0.02, castShadow: false });
       w.mesh.renderOrder = 2;
       const src = Math.abs(b.x0) < Math.abs(b.x1) ? b.x0 : b.x1, reach = Math.abs(b.x1 - b.x0) * 1.3 + 1;
@@ -449,7 +452,7 @@ export const KINDS = {
           w.set(clamp01(api.ch("flood", t)) * (1 - 0.5 * gravK));
           rainy ??= (api.all?.() ?? []).find((e) => e.kind === "rain")?.id ?? "";
           const d = clamp01(api.ch("dirty", t) - api.ch("clean", t));
-          wm.userData.water.set({ top: w.top(), plume: [src, ((b.z0 ?? -1) + (b.z1 ?? 0)) / 2, Math.max(0.01, d * reach), d], ripple: rainy ? 0.6 * clamp01(api.other(rainy, "on", t)) : 0 });
+          wm.userData.water.set({ top: w.top(), plume: [src, ((b.z0 ?? -1) + (b.z1 ?? 0)) / 2, Math.max(0.01, d * reach), d], murk: d, ripple: rainy ? 0.6 * clamp01(api.other(rainy, "on", t)) : 0 });
           const gone = api.cue("gone"); if (gone && t >= gone.t0) w.mesh.visible = false;
         },
       };

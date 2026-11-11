@@ -208,6 +208,17 @@ export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
   // a designed part (rig) that no beat ever shows is in the world from the first frame (a re-planned washing machine whose
   // plan never said "show" rendered an empty laundry room, 2026-11-11; plant early, rule 6). Custom plans only
   if (layout.approved !== true) for (const p of layout.parts) if (p.kind === "rig" && !tracks[`${p.id}.pop`]?.ramps?.length && !(p.base && "pop" in p.base)) tracks[`${p.id}.pop`] = { base: 1, ramps: [] };
+  // a state change said on its line's last word ("…turns it to mud", "…turns green": rule 10, action on the word) is
+  // complete by that line's end, so the line's own frames show it; its 1 s ramp ran on into the next line and the pool's
+  // mud and algae never showed in their own line (the owner, 2026-11-11: dirty water must clearly read as dirty, then
+  // visibly clear). Custom plans only; at least 0.3 s, never moved earlier than its word
+  if (layout.approved !== true) for (const [key, tr] of Object.entries(tracks)) {
+    if (!/\.(dirty|clean|clear|flood|fill|freeze|murk)$/.test(key)) continue;
+    for (const r of tr.ramps ?? []) {
+      const sen = r.s ? sentences.find((x) => x.role === r.s) : null;
+      if (sen && r.t1 > sen.t1 && r.t0 < sen.t1 - 0.05) r.t1 = +Math.max(r.t0 + 0.3, sen.t1).toFixed(4);
+    }
+  }
   // a switch is on or off (a lamp, a signal's cycle): in time order, an "on" while on or an "off" while off does nothing
   // (the steps add up: two "red"s made red 2, and the next "green" left it lit)
   // (in a planned layout a water level is kept between empty and full the same way: a trickle then a full drain left it

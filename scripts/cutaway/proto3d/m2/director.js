@@ -640,7 +640,36 @@ export function directCamera(layout, shots, marks) {
     : [...base, [+(marks.signPop + 0.1).toFixed(4), back.pos, back.tgt], [marks.lengthEnd, toward.pos, toward.tgt]];
   const nb = keys.slice(); if (marks.lengthNoEnd - nb.at(-1)[0] < 0.05) nb.pop();
   const far = scaleView(home, 1.25);
-  const noend = [...nb, [marks.lengthNoEnd, far.pos, far.tgt]];
+  const noend = [...nb, [marks.lengthNoEnd, rules ? homeAll.pos : far.pos, rules ? homeAll.tgt : far.tgt]];
+  // the opening and the closing frames (the owner's rule of 2026-11-11: "the main build fills at least 40% of the frame,
+  // never a far shot"): custom plans only, the last word on every key of the hook and of the close. The hook's own object
+  // in the opening; the finished build on the closing line and on the end card (the card view keeps the build at 40% or
+  // more; if holding the whole card cannot, the build wins and the card is said in a note)
+  if (rules) soft("opening and closing fill", () => {
+    const MIN_FILL = 0.4, AIM = 0.5;
+    const share = (pos, tgt, b) => { const r = projectBox(pos, tgt, b); return r.behind ? 0 : Math.max(0, Math.min(1, r.x1) - Math.max(0, r.x0)); };
+    const hookId = String((layout.beats ?? [])[0]?.shows?.p ?? "");
+    const hookBox = (() => { try { return hookId ? focusOfId(parts, hookId, cut) : null; } catch { return null; } })() ?? build;
+    const tHookEnd = shots.find((s) => s.at?.s && s.at.s !== "hook")?.t ?? 0;
+    // (the close starts at the finish line, which frames the finished build too; a plan with neither shot: 4 s before the card)
+    const tClose = Math.min(shots.find((s) => s.at?.s === "finish")?.t ?? Infinity, shots.find((s) => s.at?.s === "congrats")?.t ?? Infinity, marks.signPop - 4);
+    const sb = signPart ? focusOf(signPart, cut) : null;
+    const refit = (k, b) => { const f = frameBox(b, { view: sub(k[1], k[2]), width: AIM, zone: "center", minField: 0 }); return [k[0], f.pos, f.tgt]; };
+    for (const list of [end, noend]) list.forEach((k, i) => {
+      if (k[0] <= tHookEnd + 1e-3 && hookBox && share(k[1], k[2], hookBox) < MIN_FILL) { list[i] = refit(k, hookBox); notes.push(`opening at ${k[0].toFixed(2)} s: framed closer, the hook's object fills ${Math.round(AIM * 100)}% (it was under ${MIN_FILL * 100}%)`); return; }
+      // (the main build itself, not the union with what the finish adds: a rain barrel framed with its new bushes was 5% wide)
+      const B = subjEnd ?? build;
+      if (k[0] >= tClose - 1e-3 && share(k[1], k[2], B) < MIN_FILL) {
+        // the end card: frame the build and the card together at the widest that keeps the build at 40%
+        if (sb && list === end && k[0] > marks.signPop) {
+          const whole = (f) => { const r = projectBox(f.pos, f.tgt, sb); return !r.behind && r.x0 >= 0.05 && r.x1 <= 0.95 && r.y0 >= 0.05 && r.y1 <= 0.95; };
+          for (const w of [0.88, 0.82, 0.76]) { const f = frameBox(union([sb, B]), { view: sub(k[1], k[2]), width: w, zone: "center", minField: 0 }); if (share(f.pos, f.tgt, B) >= MIN_FILL && whole(f)) { list[i] = [k[0], f.pos, f.tgt]; return; } }
+          notes.push("the end card could not be held whole with the build at 40%: the build wins");
+        }
+        list[i] = refit(k, B); notes.push(`closing at ${k[0].toFixed(2)} s: framed closer, the build fills ${Math.round(AIM * 100)}% (it was under ${MIN_FILL * 100}%)`);
+      }
+    });
+  }, null);
   return { end, noend, notes, frames };
 }
 

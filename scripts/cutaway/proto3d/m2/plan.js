@@ -116,7 +116,13 @@ export function layoutFromScene(scene, { key, title, roles }) {
   // (indoors a planned layout's card is the small board (0.6): at full size it was 5.6 m wide beside a 2 m microwave, and
   // the end view that held it left the machine small, 2026-11-11)
   const indoor = ["room", "kitchen", "workshop", "garage"].includes(ruled.world?.backdrop?.type);
-  const small = ruled.codeShots && indoor ? { ...ruled, parts: ruled.parts.map((p) => (p.kind === "sign" && (p.params?.scale ?? 1.5) > 0.7 ? { ...p, params: { ...p.params, scale: 0.6 } } : p)) } : ruled;
+  // (outdoors too, a little larger, 0.75: the end card view keeps the finished build at 40% of the frame or more, the
+  // owner's rule of 2026-11-11, and a 5.6 m card beside a 3 m build could not)
+  // (sized to the build: about 0.8 of its width, the full card being 5.6 m at scale 1, so the build at 40% and the whole
+  // card fit one end view; a 3.4 m card beside a 2 m microwave pushed the card out of the frame, 2026-11-11)
+  const sb0 = soft("the build's box", () => subjectBox(ruled), null), bw = sb0 ? Math.max(0.5, sb0.max[0] - sb0.min[0]) : 4;
+  const cardScale = Math.max(0.3, Math.min(indoor ? 0.6 : 0.75, (0.8 * bw) / 5.6));
+  const small = ruled.codeShots ? { ...ruled, parts: ruled.parts.map((p) => (p.kind === "sign" && (p.params?.scale ?? 1.5) > cardScale ? { ...p, params: { ...p.params, scale: cardScale } } : p)) } : ruled;
   const signed = soft("the end sign", () => placeSign(small, endView(small), projectBox), { layout: small });
   return { layout: signed.layout, problems, moved: placed.moved, rewrites };
 }

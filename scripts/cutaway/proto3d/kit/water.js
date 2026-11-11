@@ -40,6 +40,8 @@ export const waterNew = (ctx) => !!ctx && ctx.premade === false && !(typeof loca
 
 // the tints of the new look (the competitor's water is blue-green and clear, deeper parts darker)
 export const WATER_TINTS = Object.freeze({ clean: "#2c93a8", pool: "#3db3c4", sea: "#1f7f9a", river: "#2a8a98", lake: "#2a86a0", deep: "#0f4f63", murky: "#6b5a3a", foam: "#eef4f2" });
+// the dirt a body of water turns (the owner, 2026-11-11): murky brown sewage, bright green algae, cloudy mud
+export const DIRT = Object.freeze({ sewage: "#5a3d1e", algae: "#3fa52e", mud: "#8a6a44", soap: "#b9b08a" });
 
 /** the clock every water shader reads: one uniform per page, set from the timeline's t by each water part's update (the
  *  same t for all parts in a frame, so a still at t is the same every time) */
@@ -75,13 +77,18 @@ export function waterMaterial(ctx, o = {}) {
     uFoam: { value: o.foam ?? 0 }, uPlume: { value: new THREE.Vector4(0, 0, 0, 0) }, uDirtyC: { value: C3(THREE, o.dirtyColor, WATER_TINTS.murky) },
     uSection: { value: o.section ? 1 : 0 }, uTopY: { value: o.top ?? 0 }, uDeepC: { value: C3(THREE, o.deep, WATER_TINTS.deep) }, uDepth: { value: o.depthScale ?? 2.5 },
     uFresnel: { value: o.fresnel ?? 0.75 }, uScale: { value: o.scale ?? 1 },
+    // murk: the whole body dirty (0..1), in uMurkC with drifting cloudiness: opaque and matte, no caustics, no bright
+    // waterline, no sky reflection. (The owner, 2026-11-11: "dirty water must clearly read as dirty: murky brown sewage,
+    // bright green algae, cloudy mud, then visibly clearing"; a plume alone under the reflections read as clear water)
+    uMurk: { value: 0 }, uMurkC: { value: C3(THREE, o.dirtyColor, WATER_TINTS.murky) },
   };
+  const env0 = o.env ?? 1.0;
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, U);
     VERT_WP(sh);
     sh.fragmentShader = sh.fragmentShader.replace("#include <common>", `#include <common>
 varying vec3 vWp;
-uniform float uWT, uWaves, uRipple, uFoam, uSection, uTopY, uDepth, uFresnel, uScale; uniform vec2 uFlow; uniform vec4 uPlume; uniform vec3 uDirtyC, uDeepC;
+uniform float uWT, uWaves, uRipple, uFoam, uSection, uTopY, uDepth, uFresnel, uScale, uMurk; uniform vec2 uFlow; uniform vec4 uPlume; uniform vec3 uDirtyC, uDeepC, uMurkC;
 ${GLSL_NOISE}`).replace("#include <normal_fragment_maps>", `#include <normal_fragment_maps>
 {
   vec3 wN = inverseTransformDirection(normal, viewMatrix);
@@ -112,9 +119,18 @@ ${GLSL_NOISE}`).replace("#include <normal_fragment_maps>", `#include <normal_fra
     float dep = clamp((uTopY - vWp.y) / uDepth, 0.0, 1.0);
     diffuseColor.rgb = mix(diffuseColor.rgb, uDeepC, dep * 0.65 * side);
     float ca = wFbm(vWp.xy * 1.3 + vec2(0.0, uWT * 0.25)); ca = pow(ca, 3.0) * 1.6;
-    diffuseColor.rgb += vec3(0.55, 0.75, 0.8) * ca * 0.12 * side * (1.0 - dep);
-    float line = (1.0 - smoothstep(0.0, 0.07, abs(uTopY - vWp.y))) * side;
+    diffuseColor.rgb += vec3(0.55, 0.75, 0.8) * ca * 0.12 * side * (1.0 - dep) * (1.0 - uMurk);
+    float line = (1.0 - smoothstep(0.0, 0.07, abs(uTopY - vWp.y))) * side * (1.0 - 0.8 * uMurk);
     diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.86, 0.96, 1.0), line * 0.65); diffuseColor.a = max(diffuseColor.a, line * 0.9);
+  }
+  if (uMurk > 0.001) {
+    // suspended dirt: cloudy blotches drifting slowly, darker lower down in a section
+    float cl = wFbm(vWp.xy * 1.6 + vWp.zx * 0.7 + vec2(uWT * 0.05, -uWT * 0.08));
+    vec3 mc = uMurkC * (0.78 + 0.42 * cl);
+    if (uSection > 0.5) mc *= 1.0 - 0.3 * clamp((uTopY - vWp.y) / uDepth, 0.0, 1.0) * side;
+    diffuseColor.rgb = mix(diffuseColor.rgb, mc, uMurk);
+    diffuseColor.a = mix(diffuseColor.a, 0.97, uMurk);
+    roughnessFactor = mix(roughnessFactor, 0.6, uMurk);
   }
   // dirt: a plume spreading from its source with a ragged, drifting edge
   if (uPlume.w > 0.001) {
@@ -134,8 +150,11 @@ ${GLSL_NOISE}`).replace("#include <normal_fragment_maps>", `#include <normal_fra
   m.customProgramCacheKey = () => "water2";
   m.userData.water = {
     U, clock,
-    set({ top, plume, foam, ripple } = {}) {
+    set({ top, plume, foam, ripple, murk, murkColor } = {}) {
       if (Number.isFinite(top)) U.uTopY.value = top;
+      // (murky water reflects little: the sky's reflection was what made dirty water read clean)
+      if (Number.isFinite(murk)) { U.uMurk.value = Math.min(1, Math.max(0, murk)); m.envMapIntensity = env0 * (1 - 0.75 * U.uMurk.value); }
+      if (murkColor != null) { try { U.uMurkC.value.set(murkColor); } catch { /* a bad colour keeps the last one */ } }
       if (Array.isArray(plume)) U.uPlume.value.set(...[0, 1, 2, 3].map((i) => (Number.isFinite(plume[i]) ? plume[i] : 0)));
       if (Number.isFinite(foam)) U.uFoam.value = foam;
       if (Number.isFinite(ripple)) U.uRipple.value = ripple;
@@ -374,7 +393,10 @@ export function buildWater(ctx, p = {}) {
         const d = Math.min(1, Math.max(0, ch.dirty ?? 0)), plume = [src, -1, Math.max(0.01, d * reach), d];
         for (const m of [surf.material, face.material]) {
           m.color.copy(base).lerp(iceC, fr);
-          m.userData.water.set({ top: lv, plume });
+          // (a pool or a lake goes dirty as a whole; a river or the sea gets the spreading plume and a lighter cloudiness,
+          // the competitor sewer's brown plume in the river; 2026-11-11)
+          const still = s.body === "pool" || s.body === "lake";
+          m.userData.water.set({ top: lv, plume: still ? [src, -1, 0.01, 0] : plume, murk: still ? d : 0.45 * d, murkColor: typeof p.dirtyColor === "string" ? p.dirtyColor : s.murky || !still ? DIRT.sewage : DIRT.algae });
           m.userData.water.U.uWaves.value = 1 - fr; m.userData.water.U.uFlow.value.x = (s.body === "river" ? 0.7 : 0.15) + 1.2 * (ch.flow ?? 0);
         }
         surf.material.opacity = Math.min(1, (s.murky ? 0.9 : 0.7) + 0.25 * fr); surf.material.roughness = 0.04 + 0.5 * fr;

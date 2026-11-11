@@ -8,7 +8,7 @@
 //   prop     a finishing-touch prop that belongs in its setting (setting lists in catalog.js SETTING_PROPS): kiosk,
 //            vacuum, towelRack, trashCan, planter, bench, bikeRack, mailbox, pottedPlant, toolbox. channel: pop
 //   canopy   a roof that always stands on its posts (never floats). channels: posts (they grow up), roof (it pops on)
-import { foamPatch, ribbonGeometry, streamMaterial, waterClock, waterMaterial, waterNew, WATER_TINTS } from "../kit/water.js";
+import { DIRT, foamPatch, ribbonGeometry, streamMaterial, waterClock, waterMaterial, waterNew, WATER_TINTS } from "../kit/water.js";
 import { guessSurface, surfaces } from "./materials.js";
 
 const pop = (k) => Math.max(0.001, k);
@@ -75,7 +75,9 @@ export function settle(ctx, p, api) {
       const w0 = b.y0 + (bed > 0.005 ? bed + 0.006 : 0.004), w1 = layer > 0.005 ? top - layer - 0.008 : top, wh = Math.max(0.001, w1 - w0);
       water.visible = fill > 0.01 && w1 > w0; water.scale.y = wh; water.position.y = w0 + wh / 2;
       const cl = clamp(api.ch("clear", tt)); waterM.color.copy(murky).lerp(clear, cl); waterM.opacity = 0.82 - 0.27 * cl;
-      if (nu) { clock.set(tt); waterM.userData.water.set({ top: w1 }); waterM.userData.water.U.uDeepC.value.copy(deepMurk).lerp(deepClear, cl); }
+      // (murky brown sewage, matte and cloudy, that visibly clears to blue: the owner, 2026-11-11; the tint alone under the
+      // reflections read as clear water from the start)
+      if (nu) { clock.set(tt); waterM.userData.water.set({ top: w1, murk: 1 - cl, murkColor: typeof p.murky === "string" ? p.murky : DIRT.sewage }); waterM.userData.water.U.uDeepC.value.copy(deepMurk).lerp(deepClear, cl); }
       for (const g of grains) {
         const k = clamp((sd - g.d * 0.5) / 0.5); // each grain sinks over half the cue, staggered
         // (the grains show from the sand's own moment: before it, a tank full of drifting grains read as clutter)
@@ -114,7 +116,7 @@ export function creek(ctx, p, api) {
       const sh = clamp(api.ch("show", tt)); root.visible = sh > 0.002; root.scale.set(1, Math.max(0.001, sh), 1);
       const dk = clamp(api.ch("dirty", tt) - api.ch("clean", tt));
       if (nu) {
-        clock.set(tt); wM.userData.water.set({ top: y + 0.04, plume: [dir > 0 ? x0 : x1, z, Math.max(0.01, dk * L * 1.3), dk], foam: dk * 0.5 });
+        clock.set(tt); wM.userData.water.set({ top: y + 0.04, plume: [dir > 0 ? x0 : x1, z, Math.max(0.01, dk * L * 1.3), dk], foam: dk * 0.5, murk: 0.55 * dk, murkColor: typeof p.dirtyColor === "string" ? p.dirtyColor : DIRT.sewage });
         for (const q of ripples) q.r.visible = false;
         for (const q of foam) q.f.visible = false;
         return;
@@ -152,7 +154,7 @@ function stream(ctx, p, api) {
       const sh = clamp(api.ch("show", tt)); root.visible = sh > 0.002; root.scale.set(1, Math.max(0.001, sh), 1);
       const dk = clamp(api.ch("dirty", tt) - api.ch("clean", tt));
       if (nu) {
-        clock.set(tt); wM.userData.water.set({ top: y + 0.04, plume: [x, -0.4, Math.max(0.01, dk * Math.min(L, 12)), dk], foam: dk * 0.5 });
+        clock.set(tt); wM.userData.water.set({ top: y + 0.04, plume: [x, -0.4, Math.max(0.01, dk * Math.min(L, 12)), dk], foam: dk * 0.5, murk: 0.55 * dk, murkColor: typeof p.dirtyColor === "string" ? p.dirtyColor : DIRT.sewage });
         for (const q of ripples) q.r.visible = false;
         for (const q of foam) q.f.visible = false;
         return;
