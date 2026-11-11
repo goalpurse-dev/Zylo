@@ -748,7 +748,7 @@ export const THING_BUILD = {
     if (state === "pile") { pile(7, -0.35, -0.3); pile(5, 0.45, -0.1, 0.9); fin(g, { h: 1.5, w: 1.9, d: 1.0 }); return; }
     if (state === "flying") { // curtains torn off, flying away over the roofs like kites (wavy strips, tumbling)
       const fly = new THREE.Group(); g.add(fly);
-      for (let k = 0; k < 9; k++) { const c = new THREE.Group(); c.position.set(((k * 37) % 9 - 4) * 1.1, 4.5 + (k % 4) * 1.4, -((k * 53) % 5) * 1.2); fly.add(c); for (let j = 0; j < 3; j++) { const p = rbx(0.7, 0.05, 0.45, 0.02, fab(k + j), { y: Math.sin(j * 1.3) * 0.15, z: j * 0.42, parent: c }); p.rotation.x = Math.sin(j + k) * 0.5; } c.rotation.set(k * 0.7, k * 1.3, k * 0.4); }
+      for (let k = 0; k < 9; k++) { const c = new THREE.Group(); c.position.set(((k * 37) % 9 - 4) * 1.1, 2.8 + (k % 4) * 1.0, -((k * 53) % 5) * 1.2); fly.add(c); for (let j = 0; j < 3; j++) { const p = rbx(1.0, 0.05, 0.6, 0.02, fab(k + j), { y: Math.sin(j * 1.3) * 0.15, z: j * 0.42, parent: c }); p.rotation.x = Math.sin(j + k) * 0.5; } c.rotation.set(k * 0.7, k * 1.3, k * 0.4); }
       anims(g).push((t2) => { fly.position.y = 0.8 * t2; fly.position.x = -1.2 * t2; fly.children.forEach((c, i) => { c.rotation.z += 0.0; c.rotation.x = i * 0.7 + t2 * (1 + (i % 3)); }); });
       fin(g, { h: 9, w: 9, d: 5, fitY: 6, big: true });
       return;

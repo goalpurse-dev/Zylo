@@ -10,6 +10,7 @@
 //     continuity (a shot's place / time is its scene's), persistence (each shot's state is the scene list's state for its
 //     line), set pieces on screen (each set piece has a shot showing its required elements)
 import { sceneOf, stateAt, housesAt, SET_PIECES } from "./scenes.js";
+import { HELD } from "./catalog.js";
 
 export const LOCATION_SET = Object.freeze({ main_street: "street", square: "street", park: "street", lane: "street", market: "street", home: "bedroom", kitchen: "bedroom", school: "school", woods: "woods" });
 const TIME_LIGHT = Object.freeze({ day: "day", dusk: "dusk", night: "night", dawn: "dawn" });
@@ -36,7 +37,7 @@ export function scenePass(tl, list, { check = null, problems = null } = {}) {
     fn();
     if (!check) return true;
     const now = check(tl);
-    if (sumWorse(base, now)) { tl.shots = JSON.parse(snap); rep.reverted.push(label); return false; }
+    if (sumWorse(base, now)) { if (process.env.SCENE_DEBUG && problems) { const keep = tl.shots; const after = problems(tl); tl.shots = JSON.parse(snap); const bef = new Set(Object.values(problems(tl)).flat().map((x) => JSON.stringify(x))); console.error("REVERT", label, Object.values(after).flat().filter((x) => !bef.has(JSON.stringify(x))).map((x) => JSON.stringify(x).slice(0, 200)).join(" || ")); tl.shots = keep; } tl.shots = JSON.parse(snap); rep.reverted.push(label); return false; }
     base = now; return true;
   };
   // 1. every shot in its scene: place, time, state, houses, the house it stands at, faces to the lens
@@ -53,12 +54,15 @@ export function scenePass(tl, list, { check = null, problems = null } = {}) {
     // its shots keep the planner's place / time, marked as a deliberate aside (the continuity check accepts only these)
     if (!check || !problems || !sumWorse(base, check(tl))) return;
     const was = JSON.parse(snapBefore), now = problems(tl), old = new Set(Object.values(listBefore).flat().map((x) => JSON.stringify(x)));
-    const lines = new Set(Object.values(now).flat().filter((x) => !old.has(JSON.stringify(x))).map((x) => typeof x === "string" ? Number(/line (d+)/.exec(x)?.[1]) : x?.line).filter((n) => Number.isFinite(n)));
+    const lines = new Set(Object.values(now).flat().filter((x) => !old.has(JSON.stringify(x))).map((x) => typeof x === "string" ? Number(/line (\d+)/.exec(x)?.[1]) : x?.line).filter((n) => Number.isFinite(n)));
     for (const [i, x] of tl.shots.entries()) if (lines.has(x.line) && was[i]) { const sc = sceneOf(scenes, x.line); x.set = was[i].set; x.worldSpot = was[i].worldSpot; x.light = was[i].light; x.sceneAside = `line ${x.line} names another place / time than scene ${sc?.id}`; rep.asides = (rep.asides ?? 0) + 1; }
   });
   for (const s of tl.shots) {
     const sc = sceneOf(scenes, s.line); if (!sc) continue;
     s.scene = sc.id; s.state = stateAt(scenes, s.line); s.houses = housesAt(list, s.line);
+    // a house with the eye in its window (on the street): the real giant kneels at it (page/engine.js), never a decal
+    const eyeAt = s.set === "street" ? Object.entries(s.houses).find(([o, h]) => o !== "*" && h.light === "eye")?.[0] : null;
+    if (eyeAt) s.eyeWindow = eyeAt; else delete s.eyeWindow;
     const ids = [s.subject, s.focus, ...(s.actors ?? []).map((a) => a.id)].filter(Boolean);
     s.house = ids.find((id) => tl.houseOwners[id] != null) ?? (sc.cast ?? []).map((c) => c.id).find((id) => tl.houseOwners[id] != null) ?? null;
     for (const a of s.actors ?? []) if (a.id === s.focus && ["closeup", "medium"].includes(s.camera) && !["walk", "run", "hug", "climb", "swim", "fly"].includes(a.pose)) a.facing = "camera";
@@ -75,7 +79,8 @@ export function scenePass(tl, list, { check = null, problems = null } = {}) {
   if (tl.shots[0] && tl.shots[0].camera !== "wide") guarded("opening wide", () => { const l0 = tl.shots.filter((x) => x.line === tl.shots[0].line); wideFirst(l0, { keepMonster: true }); varyCameras(tl); });
   // a face-off two-shot is the two of them: the line's other people move to the line's next shot (kept when no check grows)
   guarded("two-shots: the two alone", () => { for (const [i, x] of tl.shots.entries()) if (x.camera === "two_shot") { const next = tl.shots.slice(i + 1).find((y) => y.line === x.line); const others = (x.actors ?? []).filter((q) => q.id !== "me"); if (next) for (const q of others) if (!(next.actors ?? []).some((b) => b.id === q.id)) (next.actors ??= []).push(q); x.actors = (x.actors ?? []).filter((q) => q.id === "me"); } });
-  guarded("house framings", () => { for (const s of tl.shots) if (s.house && s.set === "street" && !s.setPiece && ["closeup", "medium"].includes(s.camera) && HOUSE_WORDS.test(s.text ?? "")) s.camera = "wide"; });
+  guarded("house framings", () => { for (const s of tl.shots) if (s.house && s.set === "street" && !s.setPiece && ["closeup", "medium"].includes(s.camera) && HOUSE_WORDS.test(s.text ?? "")) s.camera = "wide"; varyCameras(tl); });
+  guarded("props the scene names", () => { rep.heldFixed = heldFix(tl, scenes, HELD); });
   return rep;
 }
 
@@ -111,6 +116,101 @@ export function pieceEvents(scenes, events) {
   }
   return out;
 }
+/** THE STARING CONTEST (owner 2026-11-11, the general pattern): face to face, the opening line ONE two-shot (both in
+ *  frame); then the rest re-cut at word starts into ever shorter cuts (1.2 s -> 0.55 s), ever closer (shot.tight 0 -> 1),
+ *  alternating the hero's face to the lens (eyes watering, nose itching, determined: from the words) and the giant's
+ *  eye (its states on the words: lib/simpleStory.js eyePass, the twitch, the blink); a cut about the onlookers shows them
+ *  peeking through their fingers. Every cut is its line's own (never across two lines). */
+const FACE_OF = (t) => (/\b(water\w*|tears?|cr(y|ied|ying))\b/i.test(t) ? ["cry", "crying"] : /\b(itch\w*|nose|sneez\w*|tickl\w*)\b/i.test(t) ? ["sneeze", "worried"] : ["angry", "angry"]);
+const CROWD_WORDS = /\b(street|everyone|everybody|neighbou?rs?|fingers|peek\w*|crowd|grown-?ups)\b/i;
+const MON_WORDS = /\b(it|its|eye|eyes|eyelid|lids?)\b/i;
+const ME_WORDS = /\b(I|my|me|mine)\b/i;
+export function contestCuts(tl, p) {
+  const me = "me", cap = tl.captions ?? [];
+  const lines = [...new Set(tl.shots.filter((s) => p.lines.includes(s.line)).map((s) => s.line))].sort((a, b) => a - b);
+  if (!lines.length) return;
+  const ensure = (s) => {
+    s.faceoff = true; s.markers = []; delete s.marker;
+    if (!(s.actors ?? []).some((a) => a.id === me)) s.actors = [{ id: me, spot: "center", pose: "stand", expr: "angry", face: "angry", facing: "monster", hold: null }, ...(s.actors ?? [])];
+    s.monsterState = { spot: "far", state: "lurk", ...(s.monsterState ?? {}) }; s.crowdState = "hiding_faces";
+  };
+  // 1. the opening line: one two-shot over the whole line
+  const s0 = tl.shots.filter((s) => s.line === lines[0]), two = s0[0];
+  two.end = s0.at(-1).end; two.text = s0.map((s) => s.text).join(" "); ensure(two); two.camera = "two_shot"; two.focus = two.subject === "monster" ? "monster" : me; two._noSplit = true;
+  for (const s of s0.slice(1)) for (const a of s.actors ?? []) if (!two.actors.some((b) => b.id === a.id)) two.actors.push(a);
+  tl.shots.splice(tl.shots.indexOf(two) + 1, s0.length - 1);
+  // 2. the rest: faster and closer, face / eye
+  const rest = lines.slice(1); if (!rest.length) return;
+  const T0 = tl.shots.find((s) => s.line === rest[0]).start, T1 = [...tl.shots].reverse().find((s) => s.line === rest.at(-1)).end, span = Math.max(0.1, T1 - T0);
+  let prev = "face", prev2 = null;
+  for (const L of rest) {
+    const old = tl.shots.filter((s) => s.line === L), at = tl.shots.indexOf(old[0]), ls = old[0].start, le = old.at(-1).end;
+    const lineText = old.map((s) => s.text).join(" ");
+    const cast = [...new Map(old.flatMap((s) => s.actors ?? []).map((a) => [a.id, a])).values()];
+    // cut points: at word starts, after a comma / full stop when one comes near the wanted length, every piece >= 0.5 s
+    const ws = cap.filter((x) => x.start >= ls - 1e-6 && x.start < le - 1e-6);
+    const wordsOf = (a, b) => ws.filter((w) => w.start >= a - 1e-6 && w.start < b - 1e-6).map((w) => w.word).join(" ");
+    const cuts = [ls];
+    for (let k = 1; k < ws.length; k++) {
+      const w = ws[k], t = cuts.at(-1), want = 1.2 - 0.65 * ((t - T0) / span), d = w.start - t;
+      if (le - w.start < 0.5 || d < 0.5) continue;
+      if ((/[,.;:!?]$/.test(ws[k - 1].word) && d >= want * 0.6) || d >= want * 1.5) cuts.push(w.start);
+    }
+    // what each piece is about (its words), then always the other one (shot / reverse): a piece about the same one as
+    // the last splits in two when it can (the other's reaction first), else a neutral piece flips
+    const textKind = (txt) => (CROWD_WORDS.test(txt) && cast.some((a) => a.id !== me) ? "crowd" : ME_WORDS.test(txt) ? "face" : MON_WORDS.test(txt) ? "eye" : null);
+    const segs = [];
+    cuts.forEach((t, k) => {
+      const end = cuts[k + 1] ?? le, tk = textKind(wordsOf(t, end)), other = (x) => (x === "face" ? "eye" : "face");
+      if (tk && tk !== "crowd" && tk === prev) {
+        const mid = ws.find((w) => w.start - t >= 0.5 && end - w.start >= 0.5);
+        if (mid) { segs.push({ t, end: mid.start, kind: other(tk) }, { t: mid.start, end, kind: tk }); prev2 = other(tk); prev = tk; return; }
+      }
+      // the words win (her watering eyes, then her itching nose), but never the same one three times running
+      const kind = tk && !(tk === prev && tk === prev2) ? tk : prev === "crowd" ? "face" : other(prev);
+      segs.push({ t, end, kind }); prev2 = prev; prev = kind;
+    });
+    const out = segs.map(({ t, end, kind }) => {
+      const tpl = old.find((s) => s.start <= t + 1e-6 && s.end > t + 1e-6) ?? old[0];
+      const s = JSON.parse(JSON.stringify(tpl)); s.start = t; s.end = end; s._noSplit = true;
+      s.text = wordsOf(t, end) || tpl.text;
+      ensure(s);
+      const tight = +Math.min(1, Math.max(0, (t - T0) / span)).toFixed(2);
+      if (kind === "face") {
+        const [ex, fc] = FACE_OF(s.text);
+        s.camera = "closeup"; s.focus = me; s.subject = tpl.subject === me ? me : null; s.tight = tight;
+        s.actors = s.actors.filter((a) => a.id === me).map((a) => ({ ...a, pose: "stand", facing: "camera", expr: ex, face: fc }));
+      } else if (kind === "eye") {
+        s.camera = "low"; s.focus = "monster"; s.subject = tpl.subject === "monster" ? "monster" : null; s.tight = tight;
+        s.actors = s.actors.filter((a) => a.id === me);
+      } else {
+        s.camera = "medium"; s.focus = "group"; s.subject = null; s.tight = 0;
+        s.actors = cast.filter((a) => a.id !== me).map((a) => ({ ...a, pose: "scared", facing: "camera", expr: "scared", face: "scared" }));
+      }
+      return s;
+    });
+    tl.shots.splice(at, old.length, ...out);
+  }
+}
+/** a held prop the scene never names (the planner's "soup" in a story about boards and a hammer): the thing the line /
+ *  the scene does name for hands, else empty hands */
+const hasWord = (text, w) => new RegExp(`\\b${String(w).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i").test(text);
+export function heldFix(tl, scenes, HELD) {
+  let n = 0;
+  for (const s of tl.shots) {
+    const sc = sceneOf(scenes, s.line); if (!sc) continue;
+    const text = (tl.lines ?? []).slice(Math.max(0, Math.min(sc.from, s.line - 2)), Math.max(sc.to, s.line + 2) + 1).map((l) => l.text).join(" ");
+    for (const a of s.actors ?? []) {
+      if (!a.hold || tl.cast?.[a.hold] || !HELD[a.hold]) continue;
+      if (HELD[a.hold].some((w) => hasWord(text, w))) continue;
+      const firstIn = (t) => Object.entries(HELD).map(([id, ws]) => [id, Math.min(...ws.map((w) => { const m = new RegExp(`\\b${w}\\b`, "i").exec(t); return m ? m.index : Infinity; }))]).filter(([, i]) => i < Infinity).sort((x, y) => x[1] - y[1])[0]?.[0];
+      const alt = firstIn(tl.lines?.[s.line]?.text ?? "") ?? firstIn(text);
+      if (alt) a.hold = alt; else { a.hold = null; if (a.pose === "carry") a.pose = "stand"; }
+      n++;
+    }
+  }
+  return n;
+}
 export function applyPiece(tl, p, shots) {
   const me = "me";
   switch (p.kind) {
@@ -125,7 +225,9 @@ export function applyPiece(tl, p, shots) {
     }
     case "wind_strips": {
       // the curtains flying away like kites over the street, on every shot of the wind's lines; the first a wide
-      for (const s of shots) s.objects = [...(s.objects ?? []).filter((o) => !(o.name === "curtain_pile" && o.state === "flying")), { name: "curtain_pile", spot: "far", state: "flying", facing: "camera" }];
+      // (the flying curtains ARE the wind: the simple look draws no wind-gust scribble lines over them, page/engine.js)
+      // (the street wide: the houses stripped bare and the curtains flying over the roofs; no close bit of wall in front)
+      for (const s of shots) { s.objects = [...(s.objects ?? []).filter((o) => !(o.name === "curtain_pile" && o.state === "flying")), { name: "curtain_pile", spot: "back", state: "flying", facing: "camera" }]; if (s.focus === "object") s.focus = "group"; }
       wideFirst(shots);
       break;
     }
@@ -134,11 +236,22 @@ export function applyPiece(tl, p, shots) {
       // nobody out: the people leave the street (the line's props stay), the windows dark, the first shot the town wide
       for (const s of shots) { s.setState = { windows: "dark" }; s.monsterState = null; }
       wideFirst(shots);
-      for (const s of shots.slice(1)) { s.crowds = []; s.actors = (s.actors ?? []).filter(() => false); if (s.focus !== "object") s.focus = (s.objects ?? []).length ? "object" : "group"; }
+      for (const s of shots.slice(1)) { if ((s.crowds ?? []).length) s.crowdState = "asleep"; s.actors = (s.actors ?? []).filter(() => false); if (s.focus !== "object") s.focus = (s.objects ?? []).length ? "object" : "group"; }
       break;
     }
     case "group_under_cover": {
-      for (const s of shots) { s.objects = [...(s.objects ?? []).filter((o) => o.name !== "patchwork_blanket"), { name: "patchwork_blanket", spot: "center", state: "draped", facing: "camera" }]; for (const a of s.actors ?? []) if (a.pose === "fly") a.pose = "stand"; s.crowdState = "under_cover"; }
+      // (owner 2026-11-11: "the grown-ups UNDER it"): every shot of the huddle shows all of them beneath it (the engine packs
+      // them under the canopy), eyes shut when the line says so
+      const all = new Map(shots.flatMap((s) => s.actors ?? []).map((a) => [a.id, a]));
+      const sceneCast = (sceneOf(tl.scenes ?? [], shots[0].line)?.cast ?? []).map((c) => c.id);
+      for (const w of [...(p.who ?? []), ...sceneCast]) if (w !== "monster" && w !== "crowd" && w !== "me" && !all.has(w) && tl.cast?.[w]) all.set(w, { id: w, spot: "center", pose: "stand", expr: "scared", facing: "camera", hold: null });
+      for (const s of shots) {
+        s.objects = [...(s.objects ?? []).filter((o) => o.name !== "patchwork_blanket"), { name: "patchwork_blanket", spot: "center", state: "draped", facing: "camera" }];
+        const shut = /\beyes (shut|closed)\b/i.test(s.text ?? "");
+        s.actors = [...all.values()].map((a) => ({ ...a, spot: "center", pose: a.pose === "fly" ? "stand" : a.pose, ...(shut ? { expr: "sleepy", face: "sleepy" } : {}) }));
+        if (s.focus === "object" || s.focus == null) s.focus = "group";
+        s.crowdState = "under_cover";
+      }
       shots[0].camera = "wide";
       break;
     }
@@ -146,27 +259,19 @@ export function applyPiece(tl, p, shots) {
       for (const s of shots) { s.objects = [...(s.objects ?? []).filter((o) => o.name !== "patchwork_blanket"), { name: "patchwork_blanket", spot: "right", state: "flying", facing: "camera" }]; for (const a of s.actors ?? []) if (a.pose === "fly") a.pose = "look_up"; s.crowdState = "look_up"; }
       break;
     }
-    case "staring_contest": {
-      // face to face on the street: the contest opens on a two-shot with both in frame; then each line's shots are on its
-      // own subject (the hero's face to the lens / the monster's eye): shot / reverse from line to line; the last line of
-      // the contest closes on a two-shot again; the onlookers peek through their fingers
-      const lines = [...new Set(shots.map((s) => s.line))].sort((a, b) => a - b);
-      shots.forEach((s, k) => {
-        s.faceoff = true;
-        if (!(s.actors ?? []).some((a) => a.id === me)) s.actors = [{ id: me, spot: "center", pose: "stand", expr: "angry", face: "angry", facing: "monster", hold: null }, ...(s.actors ?? [])];
-        s.monsterState = { spot: "far", state: "lurk", ...(s.monsterState ?? {}) };
-        const subj = s.subject === "monster" ? "monster" : me;
-        const first = k === 0 || (s.line === lines.at(-1) && shots.find((x) => x.line === s.line) === s);
-        if (first) { s.camera = "two_shot"; s.focus = subj; }
-        else if (subj === "monster") { s.camera = "low"; s.focus = "monster"; }
-        else { s.camera = "closeup"; s.focus = me; for (const a of s.actors) if (a.id === me) a.facing = "camera"; }
-        s.crowdState = "hiding_faces";
-        const prev = shots[k - 1];
-        if (prev && prev.camera === s.camera && s.camera !== "two_shot") s.camera = s.camera === "closeup" ? "medium" : "medium"; // never the same framing twice in a row
-      });
+    case "staring_contest": { contestCuts(tl, p); break; }
+    case "reveal": {
+      // indoors the reveal is the giant's real eye behind the room's window glass (page/engine.js: it kneels outside)
+      for (const s of shots) if (s.set !== "street") s.monsterState ??= { spot: "far", state: "lurk", eye: "stare" };
       break;
     }
-    case "board_up": case "smear_glass": case "reveal": case "monster_licks_glass": case "monster_retreats": case "chase": case "gather":
+    case "monster_retreats": {
+      // it blinks first: the closest cut of all on the eye, then it backs away
+      const s = shots[0];
+      if (/\bblink(s|ed)?\b/i.test(s.text ?? "") && s.monsterState) { s.camera = "low"; s.focus = "monster"; s.tight = 1; if ((s.actors ?? []).some((a) => a.id === me)) s.faceoff = true; }
+      break;
+    }
+    case "board_up": case "smear_glass": case "monster_licks_glass": case "chase": case "gather":
     default: break; // the house state (lib/scenes.js) + the line's own shots show these; the check asks for its people
   }
 }

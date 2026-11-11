@@ -343,6 +343,7 @@ export function buildStreet({ tl = null } = {}) {
   /** each house in its own state (lib/scenes.js housesAt: cover, bricks, painting, light): curtains, bulging curtains,
    *  thin curtains, a sock, batter smears, bricked windows, a boarded painting, glowing white, dark, the eye in a window */
   S.applyHouses = (houses, night) => applyHouses(K, S, houses, night);
+  S.houseWindow = (owner) => houseWindowOf(K, S, owner);
   const done = finishPlace(S, K), on = done.onLight;
   // a new light: the windows' own values again (applyHouses overrides them per shot)
   done.onLight = (n) => { for (const g of [...(K.northHouses ?? []), ...(K.southHouses ?? [])]) for (const w of g.userData.wins ?? []) w.glass.userData.ov = null; on(n); };
@@ -357,7 +358,7 @@ export function finishPlace(S, K) {
     const k = `${mode}|${win}`; if (k === key) return; key = k;
     const night = mode === "night" || mode === "dusk";
     for (const m of K.glow) {
-      const n = m.userData.night; if (!n) continue;
+      const n = m.userData.night; if (!n || m.userData.ov) continue; // (SCENES: a house in its own state keeps its windows, applyHouses)
       m.userData.day ??= { emissive: m.emissive.getHex(), ei: m.emissiveIntensity, map: m.emissiveMap, color: m.color.getHex() };
       let on = night;
       if (m.userData.window) on = win === "dark" ? false : win === "lit" || win === "open" ? true : night;
@@ -402,8 +403,9 @@ function dressOf(g) {
     const c = mat(CURTAIN[i % CURTAIN.length], { rough: 0.8 }), z = w.z + 0.07;
     for (const s of [-1, 1]) box(cur, [w.w * 0.34, w.h * 0.96, 0.05], [w.x + s * w.w * 0.33, w.y, z], c, { cast: false });
     box(cur, [w.w * 1.05, 0.14, 0.08], [w.x, w.y + w.h * 0.47, z + 0.02], c, { cast: false });
-    for (let k = 0; k < 3; k++) { const r = rbox(bul, [w.w * 0.42, w.h * 0.36, 0.55], [w.x + (k - 1) * w.w * 0.3, w.y + (k % 2 ? 0.25 : -0.2), z + 0.25], mat(CURTAIN[(i + k) % CURTAIN.length], { rough: 0.8 }), 0.14); r.rotation.z = (k - 1) * 0.2; }
-    rbox(bul, [w.w * 0.5, w.h * 0.7, 0.35], [w.x + 0.15, w.y - w.h * 0.75, z + 0.3], mat(CURTAIN[(i + 4) % CURTAIN.length], { rough: 0.8 }), 0.14);
+    for (let k = 0; k < 6; k++) { const r = rbox(bul, [w.w * 0.5, w.h * 0.42, 0.9], [w.x + ((k % 3) - 1) * w.w * 0.36, w.y + (k < 3 ? 0.3 : -0.25), z + 0.45 + (k % 2) * 0.15], mat(CURTAIN[(i * 2 + k) % CURTAIN.length], { rough: 0.8 }), 0.2); r.rotation.z = ((k % 3) - 1) * 0.25; }
+    for (let k = 0; k < 2; k++) rbox(bul, [w.w * 0.34, w.y - 0.2, 0.22], [w.x + (k ? 0.3 : -0.35) * w.w, (w.y - 0.2) / 2, z + 0.3 + k * 0.1], mat(CURTAIN[(i + k + 3) % CURTAIN.length], { rough: 0.8 }), 0.1);
+    for (let k = 0; k < 4; k++) rbox(bul, [w.w * 0.55, 0.28, 0.8], [w.x + ((k * 37) % 3 - 1) * 0.3, 0.14 + k * 0.26, z + 0.9], mat(CURTAIN[(i + k + 1) % CURTAIN.length], { rough: 0.8 }), 0.1);
     for (let k = 0; k < 3; k++) box(thin, [w.w * 0.1, w.h * 0.92, 0.03], [w.x + (k - 1) * w.w * 0.32, w.y, z], mat("#eef0ff", { rough: 0.8 }), { cast: false });
     for (let k = 0; k < 3; k++) ball(smear, w.w * (0.16 + 0.05 * (k % 2)), [w.x + (k - 1) * w.w * 0.28, w.y + ((k * 37) % 3 - 1) * 0.25, z + 0.04], mat("#e9c77a", { rough: 0.6 }), { sz: 0.25, cast: false });
     box(bricks, [w.w + 0.1, w.h + 0.1, 0.18], [w.x, w.y, z + 0.06], brickMat(), { cast: false });
@@ -430,15 +432,28 @@ function applyHouses(K, S, houses, night) {
     if (D[st.cover]) D[st.cover].visible = true;
     if (st.bricks) D.bricks.visible = true;
     if (st.painting === "boarded") D.painting.visible = true;
-    if (st.light === "eye") D.eye.visible = true;
     for (const w of g.userData.wins ?? []) {
       const m = w.glass;
       if (st.light !== "glow_white" && st.light !== "eye" && st.light !== "dark") { if (m.userData.ov) { m.color.copy(m.userData.ov.c); m.emissive.copy(m.userData.ov.e); m.emissiveIntensity = m.userData.ov.i; m.userData.ov = null; m.needsUpdate = true; } continue; }
       m.userData.ov ??= { c: m.color.clone(), e: m.emissive.clone(), i: m.emissiveIntensity };
-      if (st.light === "glow_white" || st.light === "eye") { m.color.set("#ffffff"); m.emissive.set("#eef4ff"); m.emissiveIntensity = night ? 1.25 : 0.6; }
+      if (st.light === "glow_white" || st.light === "eye") { m.color.set("#ffffff"); m.emissive.set("#ffffff"); m.emissiveIntensity = night ? 3.6 : 1.6; }
       else if (st.light === "dark") { m.color.set("#141a2c"); m.emissive.set("#000000"); m.emissiveIntensity = 0; }
       else continue; // default / lit: the place's own day / night windows (finishPlace)
       m.needsUpdate = true;
     }
   }
+}
+
+export function houseWindowOf(K, S, owner) {
+  const all = [...(K.northHouses ?? []), ...(K.southHouses ?? [])];
+  const lot = owner != null ? S.owners?.[owner] : null;
+  let g = lot != null ? all.find((h) => h.userData.lotX === lot) : null;
+  if (!g) { let bd = Infinity; for (const h of K.northHouses ?? []) { const p = h.getWorldPosition(new THREE.Vector3()); const d = Math.abs(p.x - 1.2); if (d < bd) { bd = d; g = h; } } }
+  if (!g || !(g.userData.wins ?? []).length) return null;
+  g.updateMatrixWorld(true);
+  const ws = g.userData.wins, top = Math.max(...ws.map((w) => w.y));
+  const w = ws.filter((x) => x.y > top - 0.3).sort((a, b) => Math.abs(a.x) - Math.abs(b.x))[0];
+  const pos = g.localToWorld(new THREE.Vector3(w.x, w.y, w.z + 0.05));
+  const n = new THREE.Vector3(Math.sin(g.rotation.y), 0, Math.cos(g.rotation.y));
+  return { pos, n, house: g, w: w.w, h: w.h };
 }

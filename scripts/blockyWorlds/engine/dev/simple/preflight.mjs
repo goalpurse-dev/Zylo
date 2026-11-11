@@ -14,7 +14,7 @@ const argv = process.argv.slice(2), arg = (k, d = null) => (argv.includes(`--${k
 const out = arg("out"); fs.mkdirSync(out, { recursive: true });
 const { script, idea } = loadScript(arg("script"), arg("pick"));
 const st = storage(loadEnv(), `blocky-worlds-test/video/${arg("run")}`);
-const stored = JSON.parse(String(await st.get("direction.json")));
+const stored = arg("direction") ? JSON.parse(fs.readFileSync(arg("direction"), "utf8")) : JSON.parse(String(await st.get("direction.json"))); // --direction: a stored list adapted to a changed script (no paid call)
 const take = JSON.parse(String(await st.get("take.json")));
 // the take's spoken words -> the trimmed timings the voice step makes (voice/eleven.mjs keepRanges + remap)
 const { keepRanges, remap } = await import("../../voice/eleven.mjs");

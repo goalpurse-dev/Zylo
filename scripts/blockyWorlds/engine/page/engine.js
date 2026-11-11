@@ -458,7 +458,7 @@ async function main() {
       lightKey = key;
     }
     S.setPlace?.(shot.place ?? shot.worldSpot ?? null, shot);
-    S.applyHouses?.(shot.houses ?? null, shot.light === "night" || shot.light === "dusk"); // SCENES: each house in its own state for this line
+    S.applyHouses?.(shot.houses ?? null, shot.light === "night" || shot.light === "dusk", shot.house ?? null); // SCENES: each house in its own state for this line
     // (WORLD-LOOK: a street-level place in the creature's town (deck, stairs, rooftop, school, room, classroom)
     post.setShot?.(si, shot, S, t); // SETS-V2: the shot's lighting rig (page/lighting.js makeRigLayer) + its auto grade
     S.update?.(t, lt);   // lt: the time inside the shot (a walking giant starts every shot in frame)
@@ -489,6 +489,9 @@ async function main() {
     for (const o of shot.objects ?? []) {
       // SIMPLE LOOK: a house front never stands inside a room (the room's own window is the window it stands for)
       if (SIMPLE_LOOK && o.name === "house_front" && (S.indoor || S.simple)) continue;
+      // SCENES (owner 2026-11-11: "no scribble"): where things fly in the wind, the flying things ARE the wind: no gust lines
+      if (SIMPLE_LOOK && o.name === "wind_gust" && (shot.objects ?? []).some((x) => x.state === "flying")) continue;
+      if (SIMPLE_LOOK && S.simple && !S.indoor && shot.houses && o.name === "wall") continue; // SCENES: the houses are the walls (their bricks, curtains): no loose wall piece filling the street
       if (SIMPLE_LOOK && S.simple && !S.indoor && shot.houses && o.name === "curtain_pile" && ["window", "thin"].includes(o.state ?? "window")) continue; // SCENES: the house shows its own curtains // the simple street has real houses (their windows glow at night)
       const k = objKey(o), n = used.get(k) ?? 0; used.set(k, n + 1);
       const obj = OBJ.get(k)[n], u = obj.userData, spot = o.spot ?? "center", base = spots[spot] ?? spots.center;
@@ -500,7 +503,7 @@ async function main() {
       const crowded = mode === "front" && free.some((a) => { const p = spots[a.spot] ?? spots.center; return Math.abs(hz(p).sub(hz(base)).dot(S.lateral)) < (u.width ?? 1) / 2 + 0.4 && Math.abs(hz(p).sub(hz(base)).dot(S.depth)) < (u.depth ?? 1) + 0.4; });
       if (mode === "front" && (u.big || here.length || crowded)) pos.addScaledVector(S.depth, (u.push ?? 0.8) + (crowded && !here.length && !u.big ? 0.4 : 0));
       if (obj.parent !== holder) holder.add(obj);
-      obj.position.copy(pos);
+      obj.position.copy(pos); if (u.baseScale) obj.scale.copy(u.baseScale); // (a huddle widened it on another shot)
       obj.rotation.set(0, faceYaw + ({ left: -0.6, right: 0.6, away: Math.PI }[o.facing] ?? 0), 0);
       obj.visible = true; obj.updateMatrixWorld(true);
       if (u.kind === "blueprint") blueprintM.animateBlueprint(obj, lt, o.state ?? null);
@@ -555,17 +558,40 @@ async function main() {
       const base = (shot.crowdState === "under_cover" ? spots.center : spots[shot.crowds[0].spot]) ?? spots.back;
       for (let i = 0; i < want; i++) {
         const pos = base.clone().addScaledVector(S.lateral, (i - (want - 1) / 2) * 1.0).addScaledVector(S.depth, 0.5 + (i % 2) * 0.6).setY(base.y);
-        placed.push({ id: pool[i], a: { id: pool[i], pose, expr: pose === "cover_mouth" ? "scared" : "worried", face: pose === "cover_mouth" ? "scared" : "worried", facing: shot.faceoff ? "monster" : "camera", phase: i * 0.37 }, pos });
+        placed.push({ id: pool[i], a: { id: pool[i], pose, expr: shot.crowdState === "asleep" ? "sleepy" : pose === "cover_mouth" ? "scared" : "worried", face: shot.crowdState === "asleep" ? "sleepy" : pose === "cover_mouth" ? "scared" : "worried", facing: shot.faceoff ? "monster" : "camera", phase: i * 0.37 }, pos });
       }
     }
     // SIMPLE LOOK (owner 2026-11-10: "group shots: characters fill the frame"): a group stands in a staggered formation
     if (SIMPLE_LOOK && shot.focus === "group") simpleFormation(placed, spots, S, shot);
+    // SCENES: under one blanket (owner 2026-11-11: "the grown-ups UNDER it"): everyone in the shot huddled tight in two
+    // rows beneath the draped quilt (its canopy just over the tallest head, widened to cover them all), faces to the lens
+    {
+      const quilt = SIMPLE_LOOK ? shotObjs.find((x) => x.o.name === "patchwork_blanket" && (x.o.state ?? "draped") === "draped") : null;
+      const ppl = quilt ? placed.filter((p) => !p.fixed && PEOPLE[p.id]).slice(0, 8) : [];
+      if (ppl.length) {
+        const ob = quilt.obj, base = ob.position.y;
+        ob.userData.baseScale ??= ob.scale.clone(); ob.scale.copy(ob.userData.baseScale);
+        ob.updateMatrixWorld(true);
+        const top = new THREE.Box3().setFromObject(ob).max.y - base, tallest = Math.max(...ppl.map((p) => PEOPLE[p.id].h ?? 1.5));
+        ob.scale.multiplyScalar((tallest + 0.35) / Math.max(0.5, top));
+        const perRow = Math.ceil(ppl.length / 2), need = perRow * 0.66 + 0.5, wNow = 2.8 * ob.scale.x;
+        if (need > wNow) ob.scale.x *= need / wNow;
+        ob.updateMatrixWorld(true);
+        ppl.forEach((p, i) => {
+          const row = i < perRow ? 0 : 1, k = row ? i - perRow : i, n = row ? ppl.length - perRow : perRow;
+          const lx = n > 1 ? (k / (n - 1) - 0.5) * 2.0 : 0, lz = row ? -0.55 : 0.2;
+          const w = ob.localToWorld(new THREE.Vector3(lx + (row ? 0.3 / ob.scale.x : 0), 0, lz / ob.scale.z));
+          p.pos.set(w.x, base, w.z); p.fixed = true; p.underQuilt = true;
+          if (p.a) p.a = { ...p.a, pose: p.a.pose === "fly" ? "stand" : p.a.pose, facing: "camera" };
+        });
+      }
+    }
     // SCENES face-off two-shot: the hero and the giant own the frame; anyone else watches from the porches, far back
     // between the two (small, behind the gap), never between the lens and the hero
     if (SIMPLE_LOOK && shot.camera === "two_shot" && !S.indoor) {
       const me = placed.find((p) => p.id === "me"), rest = placed.filter((p) => p.id !== "me" && !p.fixed);
       const cd = (S.camDir ?? new THREE.Vector3(0, 0, 1)).clone().setY(0).normalize();
-      const mon = spots.center.clone().addScaledVector(S.lateral, 6.0).addScaledVector(cd, 2.8); // where the face-off puts the giant
+      const mon = spots.center.clone().addScaledVector(S.lateral, 5.0); // where the face-off puts the giant
       if (me) rest.forEach((p, i) => p.pos.copy(me.pos).lerp(mon, 0.42 + 0.1 * i).addScaledVector(cd, -(1.6 + (i % 2) * 0.9)).setY(me.pos.y));
     }
     // 2026-11-05 (GAPS): actions that place people relative to someone / something
@@ -643,7 +669,7 @@ async function main() {
     const where = Object.fromEntries(placed.map((p) => [p.id, p.pos]));
 
     // monster
-    const ms = shot.monsterState ?? (shot.focus === "monster" ? { spot: "far", state: "lurk" } : null);
+    const ms = shot.monsterState ?? (shot.eyeWindow ? { spot: "far", state: "lurk", eye: "stare" } : shot.focus === "monster" ? { spot: "far", state: "lurk" } : null); // SCENES: a house with the eye at its window brings the real Peeker there
     if (monster) monster.visible = !!ms;
     if (monster && ms) {
       if (monster.parent !== holder) holder.add(monster);
@@ -656,18 +682,33 @@ async function main() {
       // behind the houses across the yards, looming with its eye over the roofs ("far" stays down the street)
       if (SIMPLE_LOOK && !S.indoor && monsterH > 6 && (ms.spot ?? "far") !== "far") monster.position.copy(S.loom ?? spots.center.clone().addScaledVector(S.depth, 15.5).setY(0.02));
       // SCENES face-off: the giant stands on the road a few metres from the hero, the two face each other
-      if (SIMPLE_LOOK && shot.faceoff && !S.indoor) monster.position.copy(spots.center).addScaledVector(S.lateral, 6.0).addScaledVector((S.camDir ?? new THREE.Vector3(0, 0, 1)).clone().setY(0).normalize(), 2.8).setY(0.02);
+      if (SIMPLE_LOOK && shot.faceoff && !S.indoor) monster.position.copy(spots.center).addScaledVector(S.lateral, 5.0).setY(0.02);
       const peering = SIMPLE_LOOK && S.indoor && S.windowAt && monster.userData?.eyeY;
       if (peering) {
         const out = S.windowAt.clone().addScaledVector(S.depth, 1.3 + (monster.userData.headDepth ?? 1.2));
         monster.position.set(out.x, (S.windowY ?? S.windowAt.y) - monster.userData.eyeY, out.z);
       }
       monster.userData.peering = !!peering;
-      for (const a of monster.userData?.arms ?? []) a.visible = !peering; // its long arms would reach in through the walls
-      animateMonster(monster, ms.state, lt, { eye: ms.eye ?? null, eyeAt: ms.eyeAt ?? 0, crisp: !!peering }); // SIMPLE LOOK: the eye's own state (page/simple/monsters.js)
+      for (const a of monster.userData?.arms ?? []) a.visible = true; // kneeling 3 m outside, its arms hang in the yard (seen through the window)
+      // SCENES (owner 2026-11-11: "the eye at a window is the Peeker's real eye at a real house window, its body visible
+      // outside: never a decal, never a floating frame"): on the street a pressing eye / a house with the eye in its window
+      // brings the giant KNEELING in that house's yard, its eye at the upper window; indoors it kneels outside the room's
+      // window, bent down to it
+      const winAt = SIMPLE_LOOK && !S.indoor && !shot.faceoff && S.houseWindow && (shot.eyeWindow || ms.eye === "press") ? S.houseWindow(shot.eyeWindow ?? shot.house ?? null) : null;
+      monster.userData.atWindow = winAt;
+      const kb = monstersM.mod?.kneelBend ?? null;
+      const kneel = kb && peering ? { bend: kb(S.windowY ?? S.windowAt.y) } : kb && winAt ? { bend: kb(winAt.pos.y) } : null;
+      animateMonster(monster, ms.state, lt, { eye: ms.eye ?? null, eyeAt: ms.eyeAt ?? 0, crisp: !!peering, kneel }); // SIMPLE LOOK: the eye's own state (page/simple/monsters.js)
+      if (winAt && monster.userData.eyes?.[0]) {
+        monster.rotation.set(0, Math.atan2(-winAt.n.x, -winAt.n.z), 0);
+        monster.position.set(winAt.pos.x + winAt.n.x * 3, 0.02, winAt.pos.z + winAt.n.z * 3); monster.updateMatrixWorld(true);
+        const ew = monster.userData.eyes[0].e.getWorldPosition(new THREE.Vector3()), want = winAt.pos.clone().addScaledVector(winAt.n, 0.5);
+        monster.position.add(new THREE.Vector3(want.x - ew.x, Math.max(-1.2, Math.min(1.2, want.y - ew.y)), want.z - ew.z)); monster.updateMatrixWorld(true);
+        winAt.eye = monster.userData.eyes[0].e.getWorldPosition(new THREE.Vector3());
+      }
       if (peering && monster.userData.eyes?.[0]) { // after the pose: the eye just outside the glass, at the window's height
         monster.rotation.set(0, Math.atan2(-S.depth.x, -S.depth.z), 0); monster.updateMatrixWorld(true);
-        const ew = monster.userData.eyes[0].e.getWorldPosition(new THREE.Vector3()), want = S.windowAt.clone().addScaledVector(S.depth, 0.55);
+        const ew = monster.userData.eyes[0].e.getWorldPosition(new THREE.Vector3()), want = S.windowAt.clone().addScaledVector(S.depth, 3.2); // (owner 2026-11-11: its head AND shoulders, arms in the window: a real body outside, kneeling)
         monster.position.add(new THREE.Vector3(want.x - ew.x, (S.windowY ?? S.windowAt.y) - ew.y, want.z - ew.z)); monster.updateMatrixWorld(true);
       }
     }
@@ -789,6 +830,8 @@ async function main() {
       // SCENES: the face-off two-shot (the hero and the giant both in frame), and the eye shots from the hero's side
       ...(SIMPLE_LOOK && camType === "two_shot" && where.me && monster?.visible ? { twoShot: { a: where.me.clone(), ah: PEOPLE.me?.h ?? 1.4, b: monster.position.clone(), eyeY: monster.position.y + (monster.userData?.eyeY ?? monsterH * 0.85) } } : {}),
       ...(SIMPLE_LOOK && shot.faceoff && where.me ? { faceTo: where.me.clone() } : {}),
+      ...(SIMPLE_LOOK && monster?.visible && monster.userData.atWindow?.eye && !establishShot && (shot.focus === "monster" || !(shot.actors ?? []).length) ? { windowView: monster.userData.atWindow } : {}),
+      ...(SIMPLE_LOOK && shot.tight ? { tight: shot.tight } : {}),
       // SIMPLE LOOK: a close look at the monster frames its eye (page/simple/monsters.js userData.eyes)
       ...(SIMPLE_LOOK && shot.focus === "monster" && monster?.userData?.eyes?.length ? (() => { monster.updateMatrixWorld(true); const w = monster.userData.eyes[0].e.getWorldPosition(new THREE.Vector3()); const mp = monster.getWorldPosition(new THREE.Vector3()); w.x = mp.x; w.z = mp.z; const hb = new THREE.Box3().setFromObject(monster.userData.head); return { monsterEye: w, monsterHead: { center: hb.getCenter(new THREE.Vector3()), size: hb.getSize(new THREE.Vector3()) } }; })() /* the monster turns to the lens after the framing: its centre line, at the eye's height */ : {}) };
     const nudge = guardNudge(si, shot, camType, fctx, placed, where, carried);
@@ -823,7 +866,7 @@ async function main() {
     camera.updateMatrixWorld();
     camera.getWorldPosition(camPos);
     camRight.setFromMatrixColumn(camera.matrixWorld, 0).setY(0).normalize();
-    if (monster?.visible && !monster.userData.peering) monster.rotation.y = shot.faceoff && where.me ? yawTo(monster.position, where.me) : yawTo(monster.position, camPos) + (ms.state === "flee" ? Math.PI : 0); // a monster peering in at a window keeps facing into the room
+    if (monster?.visible && !monster.userData.peering && !monster.userData.atWindow) monster.rotation.y = shot.faceoff && where.me ? yawTo(monster.position, where.me) : yawTo(monster.position, camPos) + (ms.state === "flee" ? Math.PI : 0); // a monster peering in at a window keeps facing into the room
 
     // people: facing, pose, face, markers
     for (const p of placed) {

@@ -70,8 +70,10 @@ export function eyePass(tl) {
     if (!s.monsterState && s.focus !== "monster") continue;
     const ws = (tl.captions ?? []).filter((w) => w.start >= s.start - 1e-6 && w.start < s.end - 1e-6);
     let eye = "stare", at = 0;
-    for (const [re, e] of EYE_WORDS) { if (e === "blink" && /\bblinks? first\b/.test(low(s.text))) continue; /* the mantra is not the blink */ const w = ws.find((x) => re.test(low(x.word))); if (w) { eye = e; at = +(w.start - s.start).toFixed(3); break; } }
-    if (eye === "stare" && EYE_WORDS.some(([re]) => re.test(low(s.text)))) eye = EYE_WORDS.find(([re]) => re.test(low(s.text)))[1];
+    // the mantra ("rude things blink first") and the hero's own "I did not blink" are not the giant's blink
+    const notIts = (e) => e === "blink" && /\b(blinks? first|not blink|n't blink|never blink|without blinking)\b/.test(low(s.text)) || (e === "blink" && /\bblinks? first\b/.test(low(tl.lines?.[s.line]?.text ?? "")) && !/\bblinked\b/.test(low(s.text)));
+    for (const [re, e] of EYE_WORDS) { if (notIts(e)) continue; const w = ws.find((x) => re.test(low(x.word))); if (w) { eye = e; at = +(w.start - s.start).toFixed(3); break; } }
+    if (eye === "stare") { const hit = EYE_WORDS.find(([re, e]) => !notIts(e) && re.test(low(s.text))); if (hit) eye = hit[1]; }
     s.monsterState = { ...(s.monsterState ?? { spot: "far", state: "lurk" }), eye, eyeAt: at };
     // the monster is framed by the simple camera (the whole creature / its eye), not the EPIC establish / aerial view
     if (s.focus === "monster" && ["establish", "aerial"].includes(s.camera) && !/^creature:/.test(s.set ?? "")) s.camera = "wide";

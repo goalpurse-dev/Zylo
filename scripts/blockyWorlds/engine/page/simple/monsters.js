@@ -97,6 +97,8 @@ function haloMat(color) {
   HALO.set(color, mm); return mm;
 }
 export const monsterHeight = (m) => m.userData.height;
+/** the torso bend that brings a kneeling Peeker's eye down to height y (page/engine.js: at a window) */
+export const kneelBend = (y) => Math.acos(Math.max(0.12, Math.min(1, (y - 0.6) / (TOR + 0.02 + 0.72 * HEADK))));
 
 const ease = (x) => { x = Math.min(1, Math.max(0, x)); return x * x * (3 - 2 * x); };
 /** lids: 0 = open, 1 = shut */
@@ -120,6 +122,16 @@ export function animateMonster(m, state = "lurk", t = 0, opts = {}) {
     case "reveal": { const k = ease(t / 0.8); torso.rotation.x = 0.22 - 0.3 * k; arms[0].rotation.z = -1.1 * k; arms[1].rotation.z = 1.1 * k; head.rotation.x = -0.12 + 0.15 * k; break; }
     case "flee": { const ph = t * 7; legs[0].rotation.x = 0.6 * Math.sin(ph); legs[1].rotation.x = -0.6 * Math.sin(ph); body.rotation.y = Math.PI; body.position.z = -1.6 * t; torso.rotation.x = 0.4; break; }
     default: torso.rotation.z = 0.05 * sway; head.rotation.z = -0.04 * sway; arms[0].rotation.x = 0.1 * sway; arms[1].rotation.x = -0.1 * sway;
+  }
+  // KNEELING at a house window (opts.kneel = { bend }, owner 2026-11-11: "the Peeker's real eye behind the glass of a
+  // real house window, its body visible outside"): the shins flat behind it on the ground, the hips low, the torso bent
+  // forward so the eye comes down to the window, the head level (the eye looks straight in), the arms hanging
+  if (opts.kneel) {
+    const b = Math.max(0, Math.min(1.45, Number(opts.kneel.bend) || 0));
+    body.position.set(0, -LEG + 0.55, 0);
+    for (const l of legs) l.rotation.x = Math.PI / 2;
+    torso.rotation.set(b, 0, 0.03 * sway); head.rotation.set(-b, 0, 0);
+    for (const [i, a] of arms.entries()) { a.rotation.set(-b + (b > 0.8 ? 0 : 0.15), 0, (i ? 1 : -1) * (b > 0.8 ? 0.5 : 0.12)); }
   }
   // the eye
   const eye = EYE_STATES.includes(opts.eye) ? opts.eye : "stare";
@@ -149,9 +161,9 @@ export function animateMonster(m, state = "lurk", t = 0, opts = {}) {
     }
     case "press": {
       const k = ease((t - at + 0.2) / 0.5);
-      torso.rotation.x = 0.22 + 0.35 * k; head.rotation.x = -0.35 * k; head.position.z = 0.05 + 0.25 * k;
+      if (!opts.kneel) { torso.rotation.x = 0.22 + 0.35 * k; head.rotation.x = -0.35 * k; } head.position.z = 0.05 + 0.25 * k;
       head.scale.set(1 + 0.12 * k, 1 + 0.12 * k, 1 - 0.18 * k); // squashed against the glass
-      u.pane.visible = !opts.crisp; u.pane.position.z = 1.05 - 0.2 * k;
+      u.pane.visible = !opts.crisp && !opts.kneel; u.pane.position.z = 1.05 - 0.2 * k; // at a real window: no pane of its own
       for (const e of u.eyes) e.ir.position.z = 0.08 + 0.02 * k;
       break;
     }
