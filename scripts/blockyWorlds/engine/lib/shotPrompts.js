@@ -122,6 +122,27 @@ export async function repairPrompts({ apiKey, tl, board, prompts, checks, capUsd
   return { prompts: out, costUsd, patched: patches.map((q) => q.id), stop: body.stop_reason, usage: body.usage, unpatched: items.map((x) => x.id).filter((id) => !patches.some((q) => q.id === id)) };
 }
 
+// the words of a video beat that time each animated action (the prompt's timed list -> the action's start)
+const KEY_WORDS = { "press:eye": /press|push|squash/i, "glow:windows": /glow|white|blaz/i, "rip:curtains": /rip|tear|yank/i, "fly:curtains": /fl(y|ies|ew)|soar|kite/i, "nail:boards": /nail|hammer|bang/i, "grab:boards": /grab|lift|pick/i, "smear:batter": /slap|smear|scoop/i, "lick:glass": /lick|tongue/i, "blow_off:blanket": /blanket.*(fl|blow|lift)|(fl|blow|lift).*blanket/i, "sneeze": /sneez/i, "turn:monster": /turn/i, "pull:sock": /pull|rip|tug/i, "blink:eye": /blink|lid/i, "back_away:monster": /back|retreat|step/i, "dark:windows": /dark|off/i, "peek:curtains": /peek|pull|curtain/i, "hide:curtains": /hide|duck|shut|yank/i, "arrive:monster": /stride|walk|step|arriv/i, "poke_out:cat": /poke|cat|head/i, "catch:peeking": /step|enter|appear/i, "look_up": /look|tilt/i, "stack:bricks": /brick|stack|set/i };
+/** THE ENGINE PARAMETERS FROM THE PROMPTS: each board shot takes its prompt's faces (pinned to words) and the start of
+ *  each animated action from the prompt's timed beats; -> a new timeline (+ what was taken, per shot) */
+export function paramsFromPrompts(tl0, prompts) {
+  const tl = JSON.parse(JSON.stringify(tl0)), byId = new Map((prompts ?? []).map((p) => [p.id, p])), log = [];
+  tl.shots.forEach((s, i) => {
+    const p = byId.get(i); if (!p || !s.board) return;
+    const dur = s.end - s.start, took = [];
+    for (const f of p.faces ?? []) { const person = s.board.people.find((x) => x.id === f.who); if (person && f.face) { (person.faces ??= []).push({ t: Math.max(0, Math.min(dur - 0.05, Number(f.t) || 0)), face: f.face }); took.push(`${f.who} ${f.face}@${f.t}`); } }
+    for (const a of s.board.acts) {
+      const re = KEY_WORDS[a.k]; if (!re) continue;
+      const beat = (p.video ?? []).find((v) => re.test(`${v.do}`) && (!a.who || v.who === a.who || !s.board.people.some((x) => x.id === v.who)));
+      if (beat && !(a.at > 0)) { a.at = Math.max(0, Math.min(dur - 0.2, Number(beat.t) || 0)); took.push(`${a.k}@${a.at}`); }
+    }
+    s.board.prompt = { image: p.image, camera: p.camera };
+    if (took.length) log.push(`shot ${i}: ${took.join(", ")}`);
+  });
+  return { tl, log };
+}
+
 /** the complete top-level objects of a JSON array text (a reply cut off at max_tokens keeps its finished shots) */
 export function completeObjects(text) {
   const s = String(text ?? "").trim();

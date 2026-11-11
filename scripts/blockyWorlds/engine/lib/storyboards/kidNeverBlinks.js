@@ -66,7 +66,7 @@ export const KID_NEVER_BLINKS = {
     { line: 10, place: "home:me", shots: [
       { loc: "room:me", light: "night", cam: "room_door", people: [{ id: "me", where: "room:window", face: "smirk", peek: true }, { id: "wim", where: "room:door", face: "happy" }], acts: [{ k: "catch:peeking", who: "wim" }, { k: "peek:sock", who: "me" }] }] },
     { line: 11, place: "home:me", shots: [
-      { loc: "room:me", light: "night", cam: "face:wim", people: [{ id: "wim", where: "room:door", pose: "talk", face: "smirk" }], acts: [{ k: "talk", who: "wim" }] }] },
+      { loc: "room:me", light: "night", cam: "face:wim", people: [{ id: "wim", where: "room:center", pose: "talk", face: "smirk" }], acts: [{ k: "talk", who: "wim" }] }] },
     { line: 12, place: "street", shots: [
       { loc: "street", light: "night", cam: "street_wide", acts: [{ k: "rip:curtains" }] }] },
     { line: 13, place: "street", shots: [
@@ -100,7 +100,7 @@ export const KID_NEVER_BLINKS = {
     { line: 25, place: "home:me", shots: [
       { loc: "room:me", light: "night", cam: "room_window", people: [{ id: "me", where: "room:window", face: "angry" }], monster: { where: "roomwindow:me", eye: "stare" }, acts: [{ k: "pull:sock", who: "me" }] }] },
     { line: 26, keep: true, faces: { me: "determined" } },
-    { line: 27, keep: true, drop: ["crowds"], replace: { 2: { loc: "street", light: "night", cam: "houses:dottie:hollis:fenwick", people: [{ id: "dottie", where: "window:dottie:0", pose: "cover_mouth", face: "scared" }, { id: "hollis", where: "window:hollis:0", pose: "cover_mouth", face: "scared" }, { id: "fenwick", where: "window:fenwick:0", pose: "cover_mouth", face: "scared" }], acts: [{ k: "cover:eyes" }] } } },
+    { line: 27, keep: true, drop: ["crowds"], replace: { 2: { loc: "street", light: "night", cam: "front:fenwick", people: [{ id: "fenwick", where: "window:fenwick:0", pose: "cover_mouth", face: "scared" }, { id: "dottie", where: "window:fenwick:1", pose: "cover_mouth", face: "scared" }, { id: "hollis", where: "window:fenwick:2", pose: "cover_mouth", face: "scared" }, { id: "wim", where: "window:fenwick:3", pose: "cover_mouth", face: "scared" }], acts: [{ k: "cover:eyes" }] } } },
     { line: 28, keep: true, faces: { me: "determined" } },
     { line: 29, keep: true },
     { line: 30, keep: true },

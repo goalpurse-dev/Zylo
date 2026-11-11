@@ -114,7 +114,7 @@ export function boardHas(s, what) {
 }
 
 // the camera type of a board camera preset (the planner's variety + framing checks read it)
-const CAM_TYPE = [[/^(face|eye_close|peek)/, "closeup"], [/^(cat)/, "low"], [/^(town_wide|street_wide|street_back|house:|arrive:)/, "wide"], [/^(street_end|sky_up|pov_window)/, "low"], [/^(room_window|behind_window)/, "over_shoulder"], [/^(room_wide)/, "wide"]];
+const CAM_TYPE = [[/^(face|eye_close|peek)/, "closeup"], [/^(cat)/, "low"], [/^(town_wide|street_wide|street_back|house:|arrive:|front:)/, "wide"], [/^(street_end|sky_up|pov_window)/, "low"], [/^(room_window|behind_window)/, "over_shoulder"], [/^(room_wide)/, "wide"]];
 const camTypeOf = (cam) => CAM_TYPE.find(([re]) => re.test(cam))?.[1] ?? "medium";
 // the words a board shot draws (windows everywhere outside and in every room; the actions' things)
 const ACT_SHOWS = { "fly:curtains": ["curtains", "kites", "kite"], "rip:curtains": ["curtains", "wind"], "smear:batter": ["batter", "pancake"], "lick:glass": ["batter", "tongue"], "bulge:curtains": ["curtains", "cloud"], "poke_out:cat": ["curtains"], "stack:bricks": ["bricks", "wall"], "nail:boards": ["boards", "painting", "boat"], "grab:boards": ["boards", "hammer"], "huddle:blanket": ["blanket"], "blow_off:blanket": ["blanket"], "peek:sock": ["sock", "hole"], "pull:sock": ["sock"] };
@@ -160,7 +160,7 @@ const ACT_OBJ = {
 const COVER_OBJ = { curtained: { name: "curtain_pile", state: "window" }, bulging: { name: "curtain_pile", state: "window" }, thin: { name: "curtain_pile", state: "thin" }, sock: { name: "item", state: "sock" } };
 /** the houses a camera shows (lib side of page/simple/board.js camFor): all on a street view, one at a house / room */
 export function housesInView(b) {
-  if (b.loc === "street") return /^houses:/.test(b.cam) ? b.cam.split(":").slice(1) : /^(eye_close|sky_up)$/.test(b.cam) ? [] : Object.keys(b.homes);
+  if (b.loc === "street") return /^(houses|front):/.test(b.cam) ? b.cam.split(":").slice(1) : /^(eye_close|sky_up)$/.test(b.cam) ? [] : Object.keys(b.homes);
   const h = b.loc.split(":")[1];
   return h ? [h] : [];
 }
