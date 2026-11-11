@@ -27,6 +27,10 @@ Everything else is built in code: the ground, the strata, the house of the yard 
 | concrete_pavement | texture | Charlotte Baglioni | the street's sidewalk, the city sidewalk | https://polyhaven.com/a/concrete_pavement |
 | brick_wall_02 | texture | Dimitrios Savva | the street's corner shop | https://polyhaven.com/a/brick_wall_02 |
 | laminate_floor_02 | texture | Dario Barresi, Charlotte Baglioni | the room's floor | https://polyhaven.com/a/laminate_floor_02 |
+| concrete_wall_008 | texture | Dario Barresi, Charlotte Baglioni | custom layouts (2026-11-11): cast concrete and stone surfaces of every part (m2/materials.js SURFACES) | https://polyhaven.com/a/concrete_wall_008 |
+| rough_wood | texture | Rob Tuytel | custom layouts (2026-11-11): wood surfaces (posts, beams, frames) | https://polyhaven.com/a/rough_wood |
+| white_stucco | texture | Amal Kumar | custom layouts (2026-11-11): plaster / stucco walls | https://polyhaven.com/a/white_stucco |
+| gravelly_sand | texture | Dario Barresi | custom layouts (2026-11-11): the sandy band of the layered soil cut | https://polyhaven.com/a/gravelly_sand |
 | kloofendal_48d_partly_cloudy_puresky | HDRI sky | Greg Zaal, Jarod Guest | All four: image-based light; R1: the visible sky | https://polyhaven.com/a/kloofendal_48d_partly_cloudy_puresky |
 | grass_path_2, beige_wall_001 | texture | Rob Tuytel; Dimitrios Savva, Rico Cilliers | the park path; the slabs' sides (in section) | — |
 | interior_tiles | texture | Charlotte Baglioni | Downloaded, not used (its beige diagonal tiles read murky when tinted; the bay tiles are drawn in code) | https://polyhaven.com/a/interior_tiles |
@@ -39,6 +43,16 @@ Everything else is built in code: the ground, the strata, the house of the yard 
 | City Kit (Commercial) 2.1 | building-a, c, e, j, k, l, m, building-skyscraper-a | the far city behind the street, garage, room and car wash settings (each tinted a facade colour) | https://kenney.nl/assets/city-kit-commercial |
 | City Kit (Suburban) 2.0 | tree-large, tree-small | the street trees along the city sidewalk | https://kenney.nl/assets/city-kit-suburban |
 | City Kit (Roads) | — | Downloaded, not used yet | https://kenney.nl/assets/city-kit-roads |
+
+## 3D models (Poly Haven, CC0), since 2026-11-11
+
+Downloaded as glTF with 1k textures by `scripts/cutaway/proto3d/fetchPolyModels.mjs` into `proto/assets/polyhaven/<id>/` (about 45 MB). The script refuses any model whose page does not say CC0 and writes `SOURCES.json` with each model's authors. Used by: the custom videos' keyword models (`m2/recipes.js`: a "model" part finds them first; premade videos keep finding only the Kenney ones), the token's duck (`kit/token.js`), the digging worker's spade (`kit/people.js`).
+
+| Models | Link pattern |
+|---|---|
+| rubber_duck_toy, rusted_spade_01, bleach_bottle, plastic_bottle_gallon, baseball_01, metal_trash_can, street_lamp_02, painted_wooden_bench, planter_box_01, potted_plant_04, cardboard_box_01, plastic_crate_01, garden_hose_wall_mounted_01, propane_tank, metal_jerrycan, pipe_wrench, adjustable_wrench, metal_toolbox, wooden_bucket_01, watering_can_metal_01 | https://polyhaven.com/a/<id> |
+
+The custom videos' suburb (houses, street trees, hedges, the cross street; `kit/buildings.js` houseShapes, `kit/backdrops.js` dressWorld), the people and hands (`kit/people.js`) and the token's ball, leaf, boat and bottle (`kit/token.js`) are built in code, using only the Poly Haven textures above (plaster, roof tiles, slate, concrete, asphalt, leafy grass). Poly Haven's tree models are millions of triangles, so the trees are built in code too.
 
 R3's painted textures and R4's flock and foam grain are generated in code, so no source is needed.
 

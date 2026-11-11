@@ -4,6 +4,7 @@
 //  shrubs: a row of round bushes that pop in staggered (finishing touches); puddle: a flat water patch that spreads;
 //  crack: a jagged dark line that grows across a wall; endSign: the Zyvo end card sign in the diorama.
 import { pop, span, eOut, eIn } from "./verbs.js";
+import { realOr } from "../m2/materials.js";
 
 function canvasTex(THREE, w, h, draw) { const c = document.createElement("canvas"); c.width = w; c.height = h; draw(c.getContext("2d"), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; }
 
@@ -32,7 +33,8 @@ export function paperProp(ctx, { w = 1.8, h = 2.4, bg = "#efe6cf", lines = [], b
 export function flagProp(ctx, { at, colors = ["#1f4fa8", "#ffffff", "#d7262e"], w = 1.8, h = 1.2, pole = 2.6 }) {
   const { THREE, scene } = ctx;
   const g = new THREE.Group(); g.position.set(...at); g.visible = false; scene.add(g);
-  const pm = new THREE.MeshStandardMaterial({ color: "#d9dde2", roughness: 0.35, metalness: 0.6 });
+  // (a custom layout's pole is brushed metal and the sign's posts are wood, m2/materials.js, 2026-11-11)
+  const pm = realOr(ctx, "brushed", "#d9dde2", new THREE.MeshStandardMaterial({ color: "#d9dde2", roughness: 0.35, metalness: 0.6 }));
   const p = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, pole, 12), pm); p.position.y = pole / 2; p.castShadow = true; g.add(p);
   const map = canvasTex(THREE, 300, 200, (c) => colors.forEach((col, i) => { c.fillStyle = col; c.fillRect(i * 100, 0, 100, 200); }));
   const cloth = new THREE.Mesh(new THREE.PlaneGeometry(w, h, 16, 4), new THREE.MeshStandardMaterial({ map, roughness: 0.7, side: THREE.DoubleSide }));
@@ -98,6 +100,6 @@ export function endSign(ctx, { at, rotY = 0.3, scale = 1.5, postsReceiveShadow =
   });
   const face = new THREE.MeshStandardMaterial({ map: t, roughness: 0.55 }), edge = new THREE.MeshStandardMaterial({ color: "#e9e4d8", roughness: 0.6 });
   const board = new THREE.Mesh(new THREE.BoxGeometry(5.6, 3.06, 0.18), [edge, edge, edge, edge, face, edge]); board.position.y = 3.2; board.castShadow = true; sign.add(board);
-  for (const x of [-2.1, 2.1]) { const p = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 2.0, 12), new THREE.MeshStandardMaterial({ color: "#7a5236", roughness: 0.8 })); p.position.set(x, 1.0, -0.05); p.castShadow = true; p.receiveShadow = postsReceiveShadow; sign.add(p); }
+  for (const x of [-2.1, 2.1]) { const p = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 2.0, 12), realOr(ctx, "wood", "#7a5236", new THREE.MeshStandardMaterial({ color: "#7a5236", roughness: 0.8 }))); p.position.set(x, 1.0, -0.05); p.castShadow = true; p.receiveShadow = postsReceiveShadow; sign.add(p); }
   return { update(t, a, on = true) { sign.visible = on; sign.scale.setScalar(scale * pop(t, a, 0.45)); } };
 }

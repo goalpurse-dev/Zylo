@@ -9,6 +9,9 @@ const TEX = { // id -> resolution
   coast_sand_01: "1k", grey_roof_01: "1k", roof_09: "1k", beige_wall_001: "1k", painted_plaster_wall: "1k", asphalt_02: "1k", brown_mud_rocks_01: "1k",
   // the settings (kit/backdrops.js): the car wash bay and garage floor, the bay wall tiles, the sidewalk, shop fronts, the room floor
   garage_floor: "1k", interior_tiles: "1k", concrete_pavement: "1k", brick_wall_02: "1k", laminate_floor_02: "1k",
+  // the surface library (m2/materials.js SURFACES, owner's rules 16 and 18, 2026-11-11): cast concrete, weathered wood,
+  // stucco; the soil cut's sandy band (kit/digCut.js soilBands)
+  concrete_wall_008: "1k", rough_wood: "1k", white_stucco: "1k", gravelly_sand: "1k",
 };
 const MAPS = { Diffuse: "diff", nor_gl: "nor", Rough: "rough", AO: "ao" };
 const ONLY = process.argv.includes("--only") ? process.argv[process.argv.indexOf("--only") + 1].split(",") : null;

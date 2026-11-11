@@ -8,6 +8,9 @@
 //   prop     a finishing-touch prop that belongs in its setting (setting lists in catalog.js SETTING_PROPS): kiosk,
 //            vacuum, towelRack, trashCan, planter, bench, bikeRack, mailbox, pottedPlant, toolbox. channel: pop
 //   canopy   a roof that always stands on its posts (never floats). channels: posts (they grow up), roof (it pops on)
+import { foamPatch, ribbonGeometry, streamMaterial, waterClock, waterMaterial, waterNew, WATER_TINTS } from "../kit/water.js";
+import { guessSurface, surfaces } from "./materials.js";
+
 const pop = (k) => Math.max(0.001, k);
 // a colour setting only when it is one (a planner wrote murky: true, which three.js turned into white)
 const col = (v, d) => (typeof v === "string" && /^#[0-9a-f]{3,8}$/i.test(v) ? v : d);
@@ -18,7 +21,13 @@ function tools(ctx) {
   const { THREE, std, C } = ctx;
   const add = (parent, geo, mat, x, y, z, shadow = true) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = shadow; m.receiveShadow = true; parent.add(m); return m; };
   const boxG = (x, y, z) => new THREE.BoxGeometry(x, y, z);
-  const mat = (col, o = {}) => std({ color: C(col), roughness: 0.6, ...o });
+  // (a custom layout's props are made of something, a fresh material each: a bench of wood, a pole of galvanised steel, a
+  // kerb of concrete; m2/materials.js guessSurface, owner's rule 16 of 2026-11-11; a premade layout keeps the plain ones)
+  const mat = (col, o = {}) => {
+    const kind = ctx.realLook === true ? guessSurface(col, { roughness: 0.6, ...o }) : null;
+    if (kind) { try { return surfaces(ctx).make(kind, col); } catch (e) { console.error(`[cutaway-bug] surface ${kind}: ${e?.message ?? e}`); } }
+    return std({ color: C(col), roughness: 0.6, ...o });
+  };
   return { THREE, add, boxG, mat, C };
 }
 
@@ -36,7 +45,10 @@ export function settle(ctx, p, api) {
   if (p.lid === true) add(walls, boxG(W + 2 * t, t, D), wall, cx, b.y1 + t / 2, cz); // lid (off by default)
   // the water: murky brown that clears to blue
   const murky = new THREE.Color(col(p.murky, "#6b5a3a")), clear = new THREE.Color(col(p.clearColor, "#3d8fd6"));
-  const waterM = ctx.std({ color: murky.clone(), roughness: 0.15, transparent: true, opacity: 0.82 });
+  // (custom layouts: the one water look, rule 17 of 2026-11-11: the same murky-to-clear tint, with a moving reflective top,
+  // depth in the section and a bright waterline)
+  const nu = waterNew(ctx), clock = nu ? waterClock(ctx) : null, deepMurk = new THREE.Color("#3a3420"), deepClear = new THREE.Color(WATER_TINTS.deep);
+  const waterM = nu ? waterMaterial(ctx, { color: murky.clone(), opacity: 0.82, roughness: 0.12, section: true, depthScale: Math.max(1, H * 1.2), deep: "#3a3420", scale: 0.7 }) : ctx.std({ color: murky.clone(), roughness: 0.15, transparent: true, opacity: 0.82 });
   // the layers never share a face (shared faces flickered as a sawtooth): each inset from the walls by its own amount, and
   // stacked with small gaps, sand bed, water, oil
   const water = add(root, boxG(W - 0.04, 1, D - 0.04), waterM, cx, b.y0, cz - 0.01, false);
@@ -63,6 +75,7 @@ export function settle(ctx, p, api) {
       const w0 = b.y0 + (bed > 0.005 ? bed + 0.006 : 0.004), w1 = layer > 0.005 ? top - layer - 0.008 : top, wh = Math.max(0.001, w1 - w0);
       water.visible = fill > 0.01 && w1 > w0; water.scale.y = wh; water.position.y = w0 + wh / 2;
       const cl = clamp(api.ch("clear", tt)); waterM.color.copy(murky).lerp(clear, cl); waterM.opacity = 0.82 - 0.27 * cl;
+      if (nu) { clock.set(tt); waterM.userData.water.set({ top: w1 }); waterM.userData.water.U.uDeepC.value.copy(deepMurk).lerp(deepClear, cl); }
       for (const g of grains) {
         const k = clamp((sd - g.d * 0.5) / 0.5); // each grain sinks over half the cue, staggered
         // (the grains show from the sand's own moment: before it, a tank full of drifting grains read as clutter)
@@ -86,18 +99,26 @@ export function creek(ctx, p, api) {
   add(root, boxG(L, 0.14, 0.4), bank, (x0 + x1) / 2, y + 0.03, z - w / 2 - 0.2);
   add(root, boxG(L, 0.16, w + 0.4), bank, (x0 + x1) / 2, y - depth - 0.04, z); // the bed under the water (the face shows the water in section)
   const clean = new THREE.Color(col(p.color, "#2f8fd8")), dirty = new THREE.Color(col(p.dirtyColor, "#8a7a3e"));
-  const wM = ctx.std({ color: clean.clone(), roughness: 0.08, metalness: 0.1, emissive: new THREE.Color("#0d3a66"), emissiveIntensity: 0.25, transparent: true, opacity: 0.92 });
+  // (custom layouts: the one water look, rule 17 of 2026-11-11: the surface moves downstream, the section is darker with
+  // depth, dirt spreads downstream from the upstream end as a plume with foam; the ripple sticks and foam balls are gone)
+  const dir = p.dir ?? 1, nu = waterNew(ctx), clock = nu ? waterClock(ctx) : null;
+  const wM = nu ? waterMaterial(ctx, { color: col(p.color, WATER_TINTS.river), opacity: 0.72, section: true, top: y + 0.04, depthScale: Math.max(0.5, depth * 1.3), flow: [0.8 * Math.sign(dir || 1), 0], dirtyColor: col(p.dirtyColor, "#8a7a3e"), scale: 0.7 }) : ctx.std({ color: clean.clone(), roughness: 0.08, metalness: 0.1, emissive: new THREE.Color("#0d3a66"), emissiveIntensity: 0.25, transparent: true, opacity: 0.92 });
   // its front just in front of the soil's face (behind it, the face hid the section and only a pale strip showed on top)
   const water = add(root, boxG(L, depth, w + 0.06), wM, (x0 + x1) / 2, y - depth / 2 + 0.04, z + 0.03, false);
   const rip = ctx.std({ color: new THREE.Color("#e8f6ff"), roughness: 0.3, transparent: true, opacity: 0.85 }), ripples = [];
   for (let i = 0; i < 40; i++) { const r = add(root, new THREE.BoxGeometry(0.45, 0.012, 0.06), rip, 0, y + 0.07, z - w / 2 + 0.15 + ((i * 7) % 11) / 11 * (w - 0.3), false); ripples.push({ r, ph: i / 40 }); }
   const foamM = ctx.std({ color: new THREE.Color("#f4efe2"), roughness: 0.9 }), foam = [];
   for (let i = 0; i < 18; i++) { const f = add(root, new THREE.SphereGeometry(0.12 + (i % 3) * 0.04, 8, 6), foamM, 0, y + 0.08, z - w / 2 + 0.2 + ((i * 5) % 9) / 9 * (w - 0.4), false); f.scale.y = 0.4; foam.push({ f, ph: (i * 0.137) % 1 }); }
-  const dir = p.dir ?? 1;
   return {
     update(tt) {
       const sh = clamp(api.ch("show", tt)); root.visible = sh > 0.002; root.scale.set(1, Math.max(0.001, sh), 1);
       const dk = clamp(api.ch("dirty", tt) - api.ch("clean", tt));
+      if (nu) {
+        clock.set(tt); wM.userData.water.set({ top: y + 0.04, plume: [dir > 0 ? x0 : x1, z, Math.max(0.01, dk * L * 1.3), dk], foam: dk * 0.5 });
+        for (const q of ripples) q.r.visible = false;
+        for (const q of foam) q.f.visible = false;
+        return;
+      }
       wM.color.copy(clean).lerp(dirty, dk);
       for (const q of ripples) { const u = (tt * 0.25 + q.ph) % 1; q.r.position.x = dir > 0 ? x0 + 0.3 + u * (L - 0.6) : x1 - 0.3 - u * (L - 0.6); q.r.visible = sh > 0.5; }
       for (const q of foam) { const u = (tt * 0.2 + q.ph) % 1; q.f.position.x = dir > 0 ? x0 + 0.3 + u * (L - 0.6) : x1 - 0.3 - u * (L - 0.6); q.f.visible = dk > 0.15; q.f.scale.setScalar(pop(dk)); q.f.scale.y = 0.4 * dk; }
@@ -117,7 +138,9 @@ function stream(ctx, p, api) {
   for (const s of [-1, 1]) { add(root, boxG(0.5, 0.22, L), grass, x + s * (w / 2 + 0.25), y + 0.08, z0 / 2 + 0.02); add(root, boxG(0.3, d + 0.1, L), bank, x + s * (w / 2 + 0.15), y - d / 2, z0 / 2 + 0.03); }
   for (let i = 0; i < 18; i++) { const s = add(root, new THREE.DodecahedronGeometry(0.16 + (i % 3) * 0.06, 0), stone, x + (i % 2 ? 1 : -1) * (w / 2 - 0.05 + ((i * 7) % 3) * 0.08), y + 0.06, -0.8 - ((i * 37) % 23) / 23 * (L - 2)); s.rotation.set(i, i * 2, 0); s.scale.y = 0.6; }
   const clean = new THREE.Color(col(p.color, "#2f8fd8")), dirty = new THREE.Color(col(p.dirtyColor, "#8a8a6e"));
-  const wM = ctx.std({ color: clean.clone(), roughness: 0.08, metalness: 0.1, emissive: new THREE.Color("#0d3a66"), emissiveIntensity: 0.25, transparent: true, opacity: 0.92 });
+  // (custom layouts: the one water look, rule 17 of 2026-11-11, moving toward the viewer; dirt as a plume from the outfall)
+  const nu = waterNew(ctx), clock = nu ? waterClock(ctx) : null;
+  const wM = nu ? waterMaterial(ctx, { color: col(p.color, WATER_TINTS.river), opacity: 0.72, section: true, top: y + 0.04, depthScale: Math.max(0.5, d * 1.3), flow: [0, 0.8], dirtyColor: col(p.dirtyColor, "#8a8a6e"), scale: 0.7 }) : ctx.std({ color: clean.clone(), roughness: 0.08, metalness: 0.1, emissive: new THREE.Color("#0d3a66"), emissiveIntensity: 0.25, transparent: true, opacity: 0.92 });
   // the water's front just in front of the soil face, so the section reads as water in a channel
   add(root, boxG(w, d, L + 0.03), wM, x, y - d / 2 + 0.04, z0 / 2 + 0.015, false);
   const rip = ctx.std({ color: new THREE.Color("#e8f6ff"), roughness: 0.3, transparent: true, opacity: 0.85 }), ripples = [];
@@ -128,10 +151,59 @@ function stream(ctx, p, api) {
     update(tt) {
       const sh = clamp(api.ch("show", tt)); root.visible = sh > 0.002; root.scale.set(1, Math.max(0.001, sh), 1);
       const dk = clamp(api.ch("dirty", tt) - api.ch("clean", tt));
+      if (nu) {
+        clock.set(tt); wM.userData.water.set({ top: y + 0.04, plume: [x, -0.4, Math.max(0.01, dk * Math.min(L, 12)), dk], foam: dk * 0.5 });
+        for (const q of ripples) q.r.visible = false;
+        for (const q of foam) q.f.visible = false;
+        return;
+      }
       wM.color.copy(clean).lerp(dirty, dk);
       // downstream is toward the camera; the dirt spreads from the pipe's outfall (near the face) with the current
       for (const q of ripples) { const u = (tt * 0.12 + q.ph) % 1; q.r.position.z = z0 + 0.4 + u * (L - 0.8); q.r.visible = sh > 0.5; }
       for (const q of foam) { const u = (tt * 0.1 + q.ph) % 1; q.f.position.z = -0.4 - u * Math.min(L - 1, 6); q.f.visible = dk > 0.15; q.f.scale.setScalar(pop(dk)); q.f.scale.y = 0.4 * dk; }
+    },
+  };
+}
+
+// The flow in the one water look (rule 17 of 2026-11-11, custom layouts only): a stream is a translucent ribbon along
+// the path with streaks running down it at the flow's speed and foam where it lands (water, soap, sludge); a spray is
+// small clear droplets stretched along their flight. Never a tube of blobs. The same params: path, look, size, speed,
+// count; channels on / off; it reaches only as far as the flow has got.
+function flowNew(ctx, p, api, { pts, curve, L, spray, look }) {
+  const { THREE } = ctx, clock = waterClock(ctx), kind = p.look ?? "water";
+  if (spray) {
+    const N = Math.max(Number(p.count) || 0, Math.round(L * 24), 8);
+    const mat = new THREE.MeshPhysicalMaterial({ color: new THREE.Color("#cfe9f0"), roughness: 0.05, transparent: true, opacity: 0.55, envMapIntensity: 1.5, depthWrite: false });
+    const im = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 8, 6), mat, N); im.frustumCulled = false; im.renderOrder = 6; ctx.scene.add(im);
+    const D = Array.from({ length: N }, (_, i) => { const a = i * 2.39996; return { ph: (i * 0.618034) % 1, off: new THREE.Vector3(Math.cos(a), Math.sin(a), Math.cos(a * 1.7)).multiplyScalar(0.45 * (((i * 13) % 7) / 6)), s: 0.018 + ((i * 7) % 5) * 0.005 }; });
+    const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), v = new THREE.Vector3(), sc = new THREE.Vector3(), Y = new THREE.Vector3(0, 1, 0);
+    return {
+      update(tt) {
+        clock.set(tt);
+        const on = clamp(api.ch("on", tt) - api.ch("off", tt));
+        D.forEach((d, i) => {
+          const u = (tt * (p.speed ?? 2.4) / L + d.ph) % 1;
+          if (!(on > 0.02 && u <= Math.min(1, on * 1.2))) { im.setMatrixAt(i, m4.makeScale(0, 0, 0)); return; }
+          v.copy(curve.getPointAt(u)).addScaledVector(d.off, u); q.setFromUnitVectors(Y, curve.getTangentAt(u).normalize());
+          const s = d.s * Math.min(1, on * 1.5); im.setMatrixAt(i, m4.compose(v, q, sc.set(s, s * 3.2, s)));
+        });
+        im.instanceMatrix.needsUpdate = true;
+      },
+    };
+  }
+  const R0 = Math.max(0.22, Number(p.size) || 0.22), width = R0 * 2;
+  const tint = { water: WATER_TINTS.clean, soap: "#dfe9ee", sludge: "#4a3620", oil: "#1d1712", mud: "#6b4a2a" }[kind] ?? look[0];
+  const streak = { water: "#eef7fa", soap: "#ffffff", sludge: "#7a6040", oil: "#4a423a", mud: "#8a6a48" }[kind] ?? "#eef7fa";
+  const { geo, length } = ribbonGeometry(THREE, pts, width);
+  const mat = streamMaterial(ctx, { color: tint, streakColor: streak, opacity: kind === "water" ? 0.74 : 0.92, speed: p.speed ?? 2.4, streak: kind === "oil" ? 0.25 : 0.55 });
+  const sheet = new THREE.Mesh(geo, mat); sheet.renderOrder = 5; sheet.visible = false; ctx.scene.add(sheet);
+  const end = pts.at(-1), foam = ["water", "soap", "sludge"].includes(kind) ? foamPatch(ctx, { at: [end.x, end.y, end.z], r: width * 0.8 }) : null;
+  return {
+    update(tt) {
+      clock.set(tt);
+      const on = clamp(api.ch("on", tt) - api.ch("off", tt));
+      sheet.visible = on > 0.02; mat.userData.stream.set({ on: Math.min(1, on * 1.5), reach: length * Math.min(1, on * 1.2) });
+      foam?.set(on > 0.8 ? (on - 0.8) / 0.2 : 0);
     },
   };
 }
@@ -144,6 +216,7 @@ export function flow(ctx, p, api) {
   // in front of a blue wall read as the hose itself)
   const spray = p.look === "spray" || ((p.look ?? "water") === "water" && pts[0].y > 0.5);
   const look = spray ? ["#e4f5ff", 0.1] : { water: ["#4aa3e8", 0.15], sludge: ["#3b2a1a", 0.35], soap: ["#f1f6fa", 0.4], oil: ["#1d1712", 0.1], mud: ["#6b4a2a", 0.6] }[p.look ?? "water"] ?? ["#4aa3e8", 0.15];
+  if (waterNew(ctx)) return flowNew(ctx, p, api, { pts, curve, L, spray, look });
   const m = ctx.std({ color: new THREE.Color(look[0]), roughness: look[1], ...(spray ? { emissive: new THREE.Color("#9fd8ff"), emissiveIntensity: 0.35 } : {}) });
   const ribbonM = ctx.std({ color: new THREE.Color(look[0]), roughness: 0.3, transparent: true, opacity: 0.5 });
   const ribbon = new THREE.Mesh(new THREE.TubeGeometry(curve, Math.max(16, pts.length * 12), Math.max(0.22, p.size ?? 0.22) * 0.6, 8, false), ribbonM); ctx.scene.add(ribbon);

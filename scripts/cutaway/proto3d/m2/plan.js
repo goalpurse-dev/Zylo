@@ -10,7 +10,10 @@ import { layoutRules } from "./layoutRules.js";
 import { soft } from "./bookkeeping.js";
 import { PROP_NAMES } from "./clarityParts.js";
 
-export const ROLES = ["hook", "problem", "flood", "stakes", "fix1", "fix2", "fix3", "fix4", "name", "name2", "how", "fact", "factProof", "problem2", "problem3", "fix5", "myth", "mythFact", "finish", "congrats"];
+// (problem4..problem12, fix6..fix12 and name3: the owner's competitor study of 2026-11-11, "many short loops": a 60 s video
+// has 10-12 But/So loops, one about every 5 s, and up to 3 "This is a…" lines; m2/storyRules.js)
+export const ROLES = ["hook", "problem", "flood", "stakes", "fix1", "fix2", "fix3", "fix4", "name", "name2", "how", "fact", "factProof", "problem2", "problem3", "fix5", "myth", "mythFact", "finish", "congrats",
+  "problem4", "problem5", "problem6", "problem7", "problem8", "problem9", "problem10", "problem11", "problem12", "fix6", "fix7", "fix8", "fix9", "fix10", "fix11", "fix12", "name3"];
 export const VIEWS = ["home", "high", "low", "front", "side", "close"];
 export const SHOT_TYPES = Object.keys(SHOTS);
 // the settings besides the yard (kit/backdrops.js)

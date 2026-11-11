@@ -10,6 +10,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { sentencesOf } from "./curves.js";
+import { orphanedProblems } from "./storyRules.js";
 
 export const ESSENTIAL = ["hook", "name", "congrats"];
 const REWORD_ONLY = ["hook", "name", "problem", "fix1", "congrats"];
@@ -43,6 +44,13 @@ export function salvagePlan(roles, failing) {
       if (!/^problem\d/.test(r) || drop.has(r)) return;
       if (!roles.slice(i + 1, nextKept(i)).some((x) => /^fix/.test(x) && !drop.has(x))) { drop.add(r); changed = true; }
     });
+    // rule 11 (the owner's competitor study, 2026-11-11: salvage never breaks the chain): a problem caused by a fix that
+    // was dropped ("But with the gate shut…" after the flap gate line went) goes too, with its own fixes, as a pair
+    for (const r of orphanedProblems(roles, drop)) {
+      if (r === "problem") continue;
+      const i = roles.indexOf(r); drop.add(r); changed = true;
+      for (let k = i + 1; k < nextProblem(i); k++) if (/^fix\d/.test(roles[k]) && num(roles[k]) >= 2) drop.add(roles[k]);
+    }
   }
   const keep = roles.filter((r) => !drop.has(r));
   return { reword: roles.filter((r) => reword.includes(r)), drop: roles.filter((r) => drop.has(r)), keep };

@@ -6,6 +6,8 @@
 // Units are metres; y is up; the camera looks at the face z = 0 from +z. The part's surface at (x, z) is terrainModel().h.
 // Pure functions first (Node: the camera's boxes, the checks, the tests), the three.js builder last (the page).
 
+import { realOr } from "../m2/materials.js";
+
 export const WORLD = Object.freeze({ X: 24, D: 18, BOTTOM: -26, FAR: 90 });
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const smooth = (e0, e1, x) => { const t = clamp((x - e0) / (e1 - e0 || 1e-6), 0, 1); return t * t * (3 - 2 * t); };
@@ -145,8 +147,9 @@ export function buildTerrain(ctx, params = {}) {
     const fl = new THREE.Mesh(new THREE.PlaneGeometry(p.x1 - p.x0, -p.z0), soilM); fl.rotation.x = -Math.PI / 2; fl.position.set((p.x0 + p.x1) / 2, floorY((p.x0 + p.x1) / 2, p.z0 / 2) + 0.01, p.z0 / 2); fl.receiveShadow = true; group.add(fl);
   }
   // ---- tunnels: a lined half-bore behind the face (concrete rings), its floor flat
-  const lining = ctx.std({ color: new THREE.Color("#8e897f"), roughness: 0.9, side: THREE.BackSide });
-  const ringM = ctx.std({ color: new THREE.Color("#7d786f"), roughness: 0.8 });
+  // (a custom layout's tunnel lining and rings are cast concrete, m2/materials.js, 2026-11-11)
+  const lining = realOr(ctx, "concrete", "#8e897f", ctx.std({ color: new THREE.Color("#8e897f"), roughness: 0.9, side: THREE.BackSide }), true); lining.side = THREE.BackSide;
+  const ringM = realOr(ctx, "concrete", "#7d786f", ctx.std({ color: new THREE.Color("#7d786f"), roughness: 0.8 }));
   for (const t of T.tunnels.filter((q) => !q.vent)) {
     const L = t.x1 - t.x0, cg = new THREE.CylinderGeometry(t.r, t.r, L, 32, 1, true, Math.PI, Math.PI); cg.rotateZ(Math.PI / 2); cg.rotateX(Math.PI / 2); // (the back half, z <= 0: the face cuts the front half away)
     const bore = new THREE.Mesh(cg, t.lining ? lining : soilM); bore.position.set((t.x0 + t.x1) / 2, t.y, 0); bore.receiveShadow = true; group.add(bore);

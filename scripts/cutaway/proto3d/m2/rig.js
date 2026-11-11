@@ -61,7 +61,7 @@ const num = (v, d = 0) => (Number.isFinite(Number(v)) ? Number(v) : d);
 const v3 = (a, d = [0, 0, 0]) => (Array.isArray(a) && a.length === 3 && a.every((x) => Number.isFinite(Number(x))) ? a.map(Number) : d);
 const AX = { x: 0, y: 1, z: 2 };
 const nodesOf = (p) => (Array.isArray(p?.nodes) ? p.nodes : []);
-const movesOf = (p) => nodesOf(p).flatMap((n) => (Array.isArray(n.moves) ? n.moves : []).map((m) => ({ ...m, node: n.id })));
+export const movesOf = (p) => nodesOf(p).flatMap((n) => (Array.isArray(n.moves) ? n.moves : []).map((m) => ({ ...m, node: n.id })));
 
 // ---------- the household things and the water look (the owner's look round of 2026-11-10) ----------
 // each household shape's own default size (a plate is not 0.1 m like a gear): the box and the builder agree on it
@@ -305,14 +305,23 @@ function rigProblemsRaw(part, { floor = 0, cut = null, supports = [], sunkOk = f
 
 import { model } from "../kit/models.js";
 import { soft } from "./bookkeeping.js";
+import { surfaceKind, surfaces } from "./materials.js";
 
 // ---------- the renderer (the page): the shapes in the house style, and the moves on their channels ----------
 export function rig(ctx, p, api) {
   const { THREE, std, C, RoundedBoxGeometry } = ctx;
   const root = new THREE.Group(); root.position.set(...v3(p.pos)); root.rotation.y = num(p.rotY, 0); root.scale.setScalar(num(p.scale, 1)); ctx.scene.add(root);
   const body = new THREE.Group(); root.add(body);
+  // (the node being built: its id and the part's name pick a shape's surface, "shingles", "chimney", "grate")
+  let nodeWords = "";
   const matOf = (s, extra = {}) => {
     const [col, rough, metal] = LOOKS[s.look] ?? LOOKS.paint;
+    // a custom layout's shapes are made of something (owner's rules 16 and 18, 2026-11-11): the surface library at real
+    // scale, a fresh material each (a heat or chill move tints its own); a premade layout keeps the flat house style
+    if (ctx.realLook === true && !Object.keys(extra).length) {
+      const kind = surfaceKind({ look: s.look ?? "paint", words: `${nodeWords} ${s.name ?? ""}`, surface: s.surface });
+      if (kind) { try { return surfaces(ctx).make(kind, s.color ?? col); } catch (e) { rigBug(`surface ${kind}`, e); } }
+    }
     const m = std({ color: C(s.color ?? col), roughness: rough, metalness: metal, ...extra });
     if (s.look === "glass") { m.transparent = true; m.opacity = 0.35; m.depthWrite = false; }
     return m;
@@ -654,6 +663,7 @@ export function rig(ctx, p, api) {
   const order = [...nodes].sort((a, b) => depth(a) - depth(b));
   function depth(n) { let d = 0, cur = n; const seen = new Set(); while (cur?.parent && !seen.has(cur.id)) { seen.add(cur.id); cur = nodes.find((x) => x.id === cur.parent); d++; } return d; }
   for (const n of order) {
+    nodeWords = String(n.id ?? "").replace(/([a-z])([A-Z])/g, "$1 $2");
     const g = new THREE.Group(), parent = (n.parent && groups.get(n.parent)?.g) || body;
     g.position.set(...v3(n.at)); parent.add(g);
     // (its own materials, as built: a heat or chill move tints them from there)

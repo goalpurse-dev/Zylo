@@ -9,6 +9,81 @@
 //     sx, sy, sz (the scale per axis; default rx, h, rz)}
 import { span, eOut, eInOut, eBack, clamp01 } from "./verbs.js";
 
+// ---------- the layered soil of a custom layout's cut face (owner's rules 16 and 18, 2026-11-11) ----------
+// The competitors' section face is real soil: a dark topsoil with roots, brown loam, a band of gravel, brown clay, a
+// darker deep layer, stones all through it, and soil that turns dark and glossy where it is wet (rain soaking down from
+// the top, a flood, the fringe above the groundwater). Ours was orange stripes with black blobs. These are the changes
+// m2/makePage.mjs makes to the page's soil (real.js soilMaterial) for a custom layout only (approved !== true); the cut
+// floor and plug here, kit/terrain.js's face and every pit wall share that one soil material, so they all get it.
+// Band colours: each texture divided by its own average and times the wanted colour (linear), so the texture only
+// adds grain: sod #3b2a1e, loam #5c4029, gravel #6e665c, clay #7a5236, deep #4e3a2a, wet sand #8a7a62 (under the
+// groundwater film); the bedrock stays. Band depths put the gravel at about 2.5 m, inside a typical 3-6 m cut.
+export const SOIL_BANDS_REAL = '{ sod: ["roots", [0.25, 0.203, 0.236]], top: ["brown_mud_dry", [0.605, 0.488, 0.493]], deep: ["brown_mud_rocks_01", [0.929, 0.711, 0.674]], clay: ["excavated_soil_wall", [1.272, 1.156, 1.844]], grav: ["brown_mud_rocks_01", [1.856, 2.178, 3.148]], water: ["gravelly_sand", [0.867, 1.224, 1.745]], rock: ["dark_rock", "#c9c9cf"] }';
+const OLD_BANDS = '{ sod: ["roots", "#ffffff"], top: ["brown_mud_dry", R === 1 ? "#ffd2a8" : "#ffffff"], deep: ["excavated_soil_wall", R === 1 ? "#ffc89a" : "#ffffff"], clay: ["excavated_soil_wall", "#b5b2bb"], grav: ["gravel", "#e6dccb"], water: ["brown_mud_rocks_01", "#7fb2ff"], rock: ["dark_rock", "#c9c9cf"] }';
+const OLD_CHAIN = [
+  "      vec3 c = s_rock;",
+  "      c = mix(c, s_water, smoothstep(-14.2, -13.9, y));",
+  "      c = mix(c, s_grav, smoothstep(-11.15, -10.85, y));",
+  "      c = mix(c, s_clay, smoothstep(-10.15, -9.85, y));",
+  "      c = mix(c, s_deep, smoothstep(-7.65, -7.35, y));",
+  "      c = mix(c, s_top, smoothstep(-3.7, -3.3, y));",
+  "      c = mix(c, s_sod, smoothstep(-0.95, -0.7, y));",
+].join("\n");
+const NEW_CHAIN = [
+  "      vec3 c = s_rock;",
+  "      c = mix(c, s_water, smoothstep(-14.2, -13.9, y));",
+  "      c = mix(c, s_deep, smoothstep(-11.15, -10.85, y));",
+  "      c = mix(c, s_clay, smoothstep(-5.7, -5.3, y));",
+  "      c = mix(c, s_grav, smoothstep(-3.0, -2.8, y));",
+  "      c = mix(c, s_top, smoothstep(-2.4, -2.2, y));",
+  "      c = mix(c, s_sod, smoothstep(-0.65, -0.45, y));",
+  // the deep layers a little darker the deeper they lie (the competitors' storm drain and well)
+  "      c *= mix(1.0, 0.82, smoothstep(-2.0, -10.0, y));",
+].join("\n");
+// stones of every size all through the face (many in the gravel band, none in the sod), then the wet soil: darker and
+// glossy where rain has soaked down from the top (deeper the longer it rains, m2/materials.js rainSoak) and in the fringe
+// above the groundwater
+const STONES_WET = [
+  "      vec2 pc = vec2(vW.x + vW.z, vW.y) / 0.3; vec2 pci = floor(pc); vec2 pcf = fract(pc);",
+  "      float ph = fract(sin(dot(pci, vec2(127.1, 311.7))) * 43758.5453), ph2 = fract(sin(dot(pci, vec2(269.5, 183.3))) * 43758.5453);",
+  "      float pgrav = smoothstep(-3.0, -2.8, y) * (1.0 - smoothstep(-2.35, -2.15, y));",
+  "      float pdens = mix(0.07, 0.8, pgrav) * (1.0 - smoothstep(-0.75, -0.45, y));",
+  "      vec2 pcen = vec2(0.3 + 0.4 * ph2, 0.3 + 0.4 * ph);",
+  "      float pd = length((pcf - pcen) * vec2(1.0, 1.35)) / (0.12 + 0.2 * ph2);",
+  "      float pin = step(ph, pdens) * (1.0 - smoothstep(0.8, 1.0, pd));",
+  "      vec3 pcol = mix(mix(vec3(0.12, 0.11, 0.1), vec3(0.26, 0.24, 0.21), ph2), c, 0.3) * (1.08 - 0.5 * pd * pd);",
+  "      c = mix(c, pcol, pin);",
+  "      float sw = max(uSoilWet, uWetLawn), front = 0.4 + 3.2 * sw;",
+  "      float soilWetK = sw * (1.0 - smoothstep(front - 0.8, front, -vW.y));",
+  "      soilWetK = max(soilWetK, 0.55 * smoothstep(-12.0, -10.9, y) * (1.0 - smoothstep(-10.7, -9.8, y)));",
+  "      c *= 1.0 - 0.42 * soilWetK;",
+].join("\n");
+const J = JSON.stringify;
+/**
+ * the [from, to] text changes of the page for the real soil (m2/makePage.mjs applies them for a custom layout, all or
+ * none). Each is gated in the page by M2_SURF (true unless ?look2=0 asks a custom page for the old look, side by side).
+ */
+export function soilReps() {
+  return [
+    ["const WET_LAWN = { value: 0 };", 'const WET_LAWN = { value: 0 }, M2_WET = { value: 0 }, M2_SURF = typeof M2_LOOK2 === "undefined" ? true : M2_LOOK2;'],
+    [`      : ${OLD_BANDS};`, `      : M2_SURF ? ${SOIL_BANDS_REAL} : ${OLD_BANDS};`],
+    ["u[`c_${k}`] = { value: C(tint) };", "u[`c_${k}`] = { value: Array.isArray(tint) ? new THREE.Color(...tint) : C(tint) };"],
+    ["uSoakOn: { value: 0 } };", "uSoakOn: { value: 0 }, uSoilWet: M2_WET, uWetLawn: WET_LAWN };"],
+    ["uniform float uSoakOn;\\n", "uniform float uSoakOn;\\nuniform float uSoilWet, uWetLawn;\\n"],
+    [OLD_CHAIN, "${M2_SURF ? " + J(NEW_CHAIN) + " : " + J(OLD_CHAIN) + "}"],
+    ["      diffuseColor.rgb = c;`);", "${M2_SURF ? " + J(STONES_WET) + ' : ""}\n      diffuseColor.rgb = c;`).replace("#include <roughnessmap_fragment>", M2_SURF ? "#include <roughnessmap_fragment>\\n      roughnessFactor = mix(roughnessFactor, 0.3, soilWetK);" : "#include <roughnessmap_fragment>");'],
+  ];
+}
+/** optional changes (the stones of the face are cut out of a thin-slab world): grey stones, not black blobs */
+export function soilRepsOptional() {
+  return [
+    ['const rockM = R === 1 ? PBR("dark_rock", 0.5, { color: C("#b9b2a6") })', 'const rockM = R === 1 ? (M2_SURF ? PBR("concrete_wall_008", 0.35, { color: C("#8f887c") }) : PBR("dark_rock", 0.5, { color: C("#b9b2a6") }))'],
+    // (the excavated wall's deep vertical grooves made the whole face read as a row of columns: a soil clod relief)
+    ['normalMap: R === 3 ? null : tex(R === 4 ? "coast_sand_01" : "excavated_soil_wall", "nor", 1, false)', 'normalMap: R === 3 ? null : tex(R === 4 ? "coast_sand_01" : M2_SURF ? "brown_mud_dry" : "excavated_soil_wall", "nor", 1, false)'],
+    ["if (m.normalMap) m.normalScale.set(R === 4 ? 0.4 : 1.2, R === 4 ? 0.4 : 1.2);", "if (m.normalMap) m.normalScale.set(R === 4 ? 0.4 : M2_SURF ? 0.8 : 1.2, R === 4 ? 0.4 : M2_SURF ? 0.8 : 1.2);"],
+  ];
+}
+
 export function digCut(ctx, { x0, x1, z0, z1 = 0, depth, mound, clumps = 150, dirtMat, margin = 0.2, endY = 0.6, arc = null, uvFlip = false }) {
   const { THREE, scene, grassM, soilM, rnd, mergeVertices } = ctx;
   const w = x1 - x0, d = z1 - z0, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;

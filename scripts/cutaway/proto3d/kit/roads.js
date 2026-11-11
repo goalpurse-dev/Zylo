@@ -5,6 +5,7 @@
 // road is laid along its length), build (the bridge goes up: towers, cables, deck), twist and sway (the deck twists and
 // sways: Tacoma Narrows). Pure functions first (Node), the builder last.
 import { terrainModel } from "./terrain.js";
+import { realOr } from "../m2/materials.js";
 
 const num = (v, d) => (Number.isFinite(Number(v)) ? Number(v) : d);
 const SURF = Object.freeze({ asphalt: "#3d4044", gravel: "#a39a8a", rail: "#7a6a58", path: "#c8b48e", track: "#8a6d4c" });
@@ -60,14 +61,17 @@ export function buildRoad(ctx, p = {}) {
     const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals();
     mat.side = THREE.DoubleSide; const m = new THREE.Mesh(g, mat); m.receiveShadow = true; inner.add(m); return m;
   };
-  const deck = ribbon(s.width / 2, 0, 0, s.surface === "asphalt" && ctx.PBR ? ctx.PBR("asphalt_02", 1, { color: C("#9a9a9a") }) : std(SURF[s.surface], 0.9));
+  // (a custom layout's road is real asphalt at its real size that shines in the rain, a path or track packed dirt, m2/materials.js,
+  // 2026-11-11; the ribbon has no UVs, so the approved asphalt texture showed as one flat colour)
+  const deckOld = () => (s.surface === "asphalt" && ctx.PBR ? ctx.PBR("asphalt_02", 1, { color: C("#9a9a9a") }) : std(SURF[s.surface], 0.9));
+  const deck = ribbon(s.width / 2, 0, 0, ctx.realLook === true ? realOr(ctx, s.surface === "asphalt" ? "asphalt" : s.surface === "gravel" ? "stone" : "dirt", SURF[s.surface], null, true) ?? deckOld() : deckOld());
   const extras = [];
   if (s.lines && s.surface === "asphalt") { extras.push(ribbon(0.08, 0, 0.01, std("#f2c230", 0.6), 3)); for (const e of [-1, 1]) extras.push(ribbon(0.07, e * (s.width / 2 - 0.25), 0.01, std("#f4f4f0", 0.6))); }
   if (s.surface === "rail") { const steel = std("#9aa2aa", 0.3, 0.8); for (const e of [-0.72, 0.72]) extras.push(ribbon(0.05, e, 0.16, steel)); const sl = std("#5a4632", 0.9); for (let i = 0; i < P.length; i += 2) { const [x, z] = P[i], o = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.1, 2.4), sl); o.position.set(x, deckAt(s, x, z, terrain) + 0.05, z); inner.add(o); extras.push(o); } }
   // the bridge
   const bridge = new THREE.Group(); inner.add(bridge); const towers = [], cables = [];
   if (s.bridge) {
-    const b = s.bridge, steel = std("#c0503a", 0.5, 0.4), conc = std("#b8b2a6", 0.85), z0 = P.reduce((a, q) => a + q[1], 0) / P.length, hw = s.width / 2;
+    const b = s.bridge, steel = realOr(ctx, "paint", "#c0503a", std("#c0503a", 0.5, 0.4), true), conc = realOr(ctx, "concrete", "#b8b2a6", std("#b8b2a6", 0.85), true), z0 = P.reduce((a, q) => a + q[1], 0) / P.length, hw = s.width / 2;
     // the deck's underside: a girder along the span
     const girder = new THREE.Mesh(new THREE.BoxGeometry(b.to - b.from - 4, 0.7, s.width), b.type === "suspension" ? steel : conc); girder.position.set((b.from + b.to) / 2, b.height - 0.35, z0); girder.castShadow = true; bridge.add(girder);
     const groundAt = (x) => (terrain ? terrainModel(terrain).h(x, z0) : s.y);

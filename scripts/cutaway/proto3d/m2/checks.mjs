@@ -6,7 +6,9 @@ import fs from "node:fs";
 import path from "node:path";
 import { execFileSync, spawnSync } from "node:child_process";
 import { channelValue } from "./curves.js";
-import { cameraAt, projectBox, MOVE } from "./director.js";
+import { cameraAt, projectBox, MOVE, LENS } from "./director.js";
+import { FIX, RULES, SKIP_ROLES, cameraRulesOn, fillMet, fillOf, lineSubject, macroBoxFor, sameView } from "./cameraRules.js";
+import { reportBug } from "./bookkeeping.js";
 import { focusOf } from "./focus.js";
 import { CAMERA_LIMITS, measureKey, turnBetween, signBlocked } from "./framing.js";
 import { callJSON } from "./llm.mjs";
@@ -55,7 +57,10 @@ export function timelineChecks(layout, tl) {
       let box; try { box = focusOf(p, layout.world?.cut); } catch { continue; }
       if (!box) continue;
       const k0 = cameraAt(tl.camera.end, pts[i - 1].t), k1 = cameraAt(tl.camera.end, pts[i].t), w0 = projectBox(k0.pos, k0.tgt, box), w1 = projectBox(k1.pos, k1.tgt, box);
-      if (!w0.behind && !w1.behind && w0.w <= 0.85 && w1.w < w0.w * 0.95) problems.push(`sentence ${pts[i].role}: the camera moves away from ${p.id} (${(w0.w * 100).toFixed(0)}% of the width before, ${(w1.w * 100).toFixed(0)}% at its moment)`);
+      // (under the camera rules of 2026-11-11 a part already big pulls back to 40-60% and a macro pulls back wide on the
+      // next line: that is the rhythm the owner asked for, not moving away; only ending under 40% is)
+      const pulled = cameraRulesOn(layout) && fillMet(w1, [0.05, 0.4]);
+      if (!pulled && !w0.behind && !w1.behind && w0.w <= 0.85 && w1.w < w0.w * 0.95) problems.push(`sentence ${pts[i].role}: the camera moves away from ${p.id} (${(w0.w * 100).toFixed(0)}% of the width before, ${(w1.w * 100).toFixed(0)}% at its moment)`);
     }
   }
   // the end card stands free (not under a canopy or in a wall), wholly in the frame, 5% clear of every edge, from just
@@ -104,8 +109,83 @@ export function timelineChecks(layout, tl) {
   }
   // beats at least 2.5 s long
   for (const s of tl.sentences) if (s.t1 - s.t0 < 1.0) warnings.push(`sentence ${s.role} lasts only ${(s.t1 - s.t0).toFixed(1)} s`);
-  return { problems, warnings, camera, stats: { fastMoves: fast, movesPer10s: +per10.toFixed(1), longestGap: +worst.gap.toFixed(2) } };
+  // the competitor look's camera rules (cameraRules.js; custom layouts only)
+  const cr = soft0(() => cameraRuleChecks(layout, tl), null);
+  if (cr) problems.push(...cr.problems);
+  return { problems, warnings, camera, stats: { fastMoves: fast, movesPer10s: +per10.toFixed(1), longestGap: +worst.gap.toFixed(2), ...(cr ? { cameraRules: cr.stats } : {}) } };
 }
+const soft0 = (f, d) => { try { return f(); } catch (e) { reportBug("camera rule checks", e); return d; } };
+
+/**
+ * The camera rules of 2026-11-11 measured on a compiled timeline (free, no render), for a custom layout (null for a premade
+ * one): { stats, problems }.
+ *   holdMax   the longest framing held (s) outside the opening, the name line and the end: a framing is new when the view
+ *             turns over 8 degrees, the distance changes by a quarter, or the aim moves a fifth of the distance (the hold's
+ *             slow creep and 4 degree orbit do not count; rule 13 wants a new view every 2-4 s)
+ *   macro     the share of fix lines whose mechanism (the line's part) fills at least 40% of the frame at some moment while
+ *             the camera sees at most half the width the end's wide view sees there (a real dive, rule 13)
+ *   fill      per line, the line's part at its preview moment (the larger of its width and height share; rule 14: 0.4-0.6);
+ *             fillIn the share of lines inside 0.35-0.7
+ *   capOn     the share of lines whose part sits under the caption at its moment (tl.captionY, else 0.52)
+ *   cuts      camera steps of a fifth of the view distance or more in one 1/30 s frame (rule 12: never a cut)
+ */
+export function cameraRuleChecks(layout, tl, words = null) {
+  if (!cameraRulesOn(layout) || !tl?.camera?.end?.length) return null;
+  const keys = tl.camera.end, M = tl.marks, S = tl.sentences, problems = [];
+  const view = (t) => { const k = cameraAt(keys, t), d = k.pos.map((v, i) => v - k.tgt[i]); return { ...k, d, L: Math.hypot(...d) }; };
+  const ang = (a, b) => (Math.acos(Math.max(-1, Math.min(1, a.d.reduce((s, v, i) => s + v * b.d[i], 0) / (a.L * b.L)))) * 180) / Math.PI;
+  const roleAt = (t) => S.find((s) => t >= s.t0 - 1e-6 && t < s.t1 + 0.25)?.role ?? null;
+  // longest held framing
+  let anchor = null, from = 0, holdMax = 0, holdAt = 0;
+  const tEnd = Math.min(M.signPop ?? Infinity, S.find((s) => s.role === "finish")?.t0 ?? Infinity, S.at(-1)?.t1 ?? 0);
+  for (let t = 0; t <= tEnd + 1e-6; t += 0.1) {
+    const r = roleAt(t), v = view(t);
+    if (!r || SKIP_ROLES.has(r)) { anchor = null; continue; }
+    // (while the camera travels the framing is new each moment: the hold starts where it lands, not halfway along a move)
+    const p = view(Math.max(0, t - 0.1)), moving = ang(p, v) > 0.6 || Math.abs(Math.log(v.L / p.L)) > 0.015 || Math.hypot(...v.tgt.map((x, i) => x - p.tgt[i])) > 0.015 * p.L;
+    if (!anchor || moving || !sameView(anchor, v)) { anchor = v; from = t; }
+    if (t - from > holdMax) { holdMax = t - from; holdAt = from; }
+  }
+  // cuts: a big step in one frame
+  let cuts = 0;
+  for (let t = 1 / 30; t <= (M.lengthEnd ?? 0); t += 1 / 30) { const a = view(t - 1 / 30), b = view(t), step = (Math.hypot(...a.pos.map((x, i) => x - b.pos[i])) + Math.hypot(...a.tgt.map((x, i) => x - b.tgt[i]))) / 2; if (step > 0.2 * a.L) cuts++; }
+  // fill and caption per line, at its preview moment
+  const fill = [], capHits = [];
+  const wide = view(Math.max(0, (M.signPop ?? M.lengthEnd ?? 0) + 0.1));
+  const fieldAt = (v, box) => { const c = box.min.map((x, i) => (x + box.max[i]) / 2), z = Math.max(0.1, c.reduce((s, x, i) => s + (x - v.pos[i]) * (-v.d[i] / v.L), 0)); return 2 * z * Math.tan((LENS_VFOV * Math.PI) / 360) * LENS_ASPECT; };
+  for (const pt of previewTimes(tl, layout)) {
+    // (not the opening, the name line or the end: the name line keeps its hero frame, a failing name line stops a video)
+    if (SKIP_ROLES.has(pt.role)) continue;
+    const sb = lineSubject(layout, pt.role); if (!sb) continue;
+    const k = cameraAt(keys, pt.t), r = projectBox(k.pos, k.tgt, sb.box), f = fillOf(r);
+    // (a fix line seen in its macro: a long part runs off the frame there, its macro region is what fills it)
+    const mb = FIX.test(pt.role) ? macroBoxFor(layout, S.map((x) => x.role), pt.role) : null;
+    fill.push({ role: pt.role, fill: +f.toFixed(2), ok: fillMet(r, [0.05, 0.1]) || (!!mb && fillMet(projectBox(k.pos, k.tgt, mb), [0.05, 0.1])) });
+    // the word said at that moment and its caption height (compile.mjs captionY, by word index); without the words, the
+    // default band (the one the camera must keep the part clear of)
+    const wi = words ? words.findIndex((w) => w.e > pt.t) : -1, cy = (wi >= 0 ? tl.captionY?.[wi] : null) ?? RULES.caption.y;
+    capHits.push(!r.behind && f > 0 && r.y0 < cy + RULES.caption.half && r.y1 > cy - RULES.caption.half && r.x0 < RULES.caption.x[1] && r.x1 > RULES.caption.x[0]);
+  }
+  // macro: each fix line's part, sampled every 0.1 s across the line
+  const fixes = S.filter((s) => FIX.test(s.role)), dived = [];
+  for (const s of fixes) {
+    // (its macro region: a 15 m pipe's near end, cameraRules.js macroRegion)
+    const mb = macroBoxFor(layout, S.map((x) => x.role), s.role); if (!mb) { dived.push(false); continue; }
+    const wf = fieldAt(wide, mb); let ok = false;
+    for (let t = s.t0; t <= s.t1 + 0.25 && !ok; t += 0.1) { const v = view(t); ok = fillMet(projectBox(v.pos, v.tgt, mb), [0, 0.4]) && fieldAt(v, mb) <= 0.5 * wf; }
+    dived.push(ok);
+  }
+  const fillIn = fill.length ? fill.filter((x) => x.ok).length / fill.length : 1;
+  const stats = { holdMax: +holdMax.toFixed(1), holdAt: +holdAt.toFixed(1), macro: fixes.length ? +(dived.filter(Boolean).length / fixes.length).toFixed(2) : null, fillMed: fill.length ? [...fill].sort((a, b) => a.fill - b.fill)[Math.floor(fill.length / 2)].fill : null, fillIn: +fillIn.toFixed(2), capOn: capHits.length ? +(capHits.filter(Boolean).length / capHits.length).toFixed(2) : 0, cuts, fill };
+  // (named problems for a new plan: reported, never blocking a video)
+  if (holdMax > RULES.holdMax + 0.05) problems.push(`camera rule 13: one framing held ${holdMax.toFixed(1)} s from ${holdAt.toFixed(1)} s (a new view every 2-4 s)`);
+  fixes.forEach((s, i) => { if (!dived[i]) problems.push(`camera rule 13: ${s.role} never dives into a macro of its part`); });
+  for (const x of fill) if (!x.ok) problems.push(`camera rule 14: ${x.role}'s part fills ${(x.fill * 100).toFixed(0)}% of the frame (40-60%)`);
+  if (stats.capOn > 0.2) problems.push(`camera rule 14: the caption sits on the line's part in ${(stats.capOn * 100).toFixed(0)}% of the lines`);
+  if (cuts) problems.push(`camera rule 12: ${cuts} hard cut${cuts > 1 ? "s" : ""} (a jump of a fifth of the view in one frame)`);
+  return { stats, problems };
+}
+const LENS_VFOV = LENS.vfov, LENS_ASPECT = LENS.aspect;
 
 /** 2a. one preview time per sentence: when its last action has finished (capped before the next sentence) */
 export function previewTimes(tl, layout = null) {

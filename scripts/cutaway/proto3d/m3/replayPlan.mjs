@@ -24,7 +24,7 @@ try {
   const r = await planTopic({ topic: c.topic, lengthSec: c.lengthSec, reuse, library: [] });
   out = { problems: r.problems, warnings: r.warnings ?? [], bugs: r.bugs ?? [], pending: null };
   const si = process.argv.indexOf("--save");
-  if (si > 0 && r.layout && r.script) fs.writeFileSync(path.resolve(process.argv[si + 1]), JSON.stringify({ topic: c.topic, layout: r.layout, sentences: r.script.sentences.map((x) => ({ role: x.role, text: x.text })) }));
+  if (si > 0 && r.layout && r.script) fs.writeFileSync(path.resolve(process.argv[si + 1]), JSON.stringify({ topic: c.topic, lengthSec: c.lengthSec, layout: r.layout, sentences: r.script.sentences.map((x) => ({ role: x.role, text: x.text })), ...(r.script.story ? { story: r.script.story } : {}), ...(r.warnings?.length ? { warnings: r.warnings } : {}) }));
 } catch (e) {
   out = { problems: [], bugs: [], pending: e.code === "REPLAY_PENDING" ? String(e.message).replace(/^REPLAY_PENDING /, "") : null, error: e.code === "REPLAY_PENDING" ? null : String(e.stack ?? e).slice(0, 800) };
 }

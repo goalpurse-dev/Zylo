@@ -33,9 +33,32 @@ test("variety: a detail cut on the piece that starts moving, a close-up on a lon
 
 test("variety: never a premade video, an outdoor world, a machine that is not a designed part, or a hand-made camera path", () => {
   assert.equal(varietyShots(layout({ approved: true, template: true }), tracks, sentences, shots).shots.length, 0);
-  assert.equal(varietyShots(layout({ world: { backdrop: { type: "street" } } }), tracks, sentences, shots).shots.length, 0);
-  assert.equal(varietyShots(layout({ parts: [{ ...rig, kind: "tank" }] }), tracks, sentences, shots).shots.length, 0);
+  // (the machine's own detail cuts stay for a machine indoors; since the owner's rule 13 of 2026-11-11 every custom layout
+  // also gets the close / wide rhythm shots, cameraRules.js, marked `rhythm`, so only the `variety` ones are counted here)
+  const machine = (L) => varietyShots(L, tracks, sentences, shots).shots.filter((s) => s.variety).length;
+  assert.equal(machine(layout({ world: { backdrop: { type: "street" } } })), 0);
+  assert.equal(machine(layout({ parts: [{ ...rig, kind: "tank" }] })), 0);
   assert.equal(varietyShots(layout({ camera: { keys: [{ at: 0 }] } }), tracks, sentences, shots).shots.length, 0);
   // every planned layout carries template: true (plan.js); that alone is no premade video
   assert.ok(varietyShots(layout({ template: true }), tracks, sentences, shots).shots.length > 0);
+});
+
+// the owner's camera rules 12-14 of 2026-11-11 (cameraRules.js): a macro on each fix line, a new view every 2-4 s, a long
+// part's macro is its near end, never on a premade video
+test("camera rules: a fix line dives into its mechanism, long holds are broken, never a premade video", async () => {
+  const { rhythmShots, macroRegion, sameView, cameraRulesOn } = await import("../scripts/cutaway/proto3d/m2/cameraRules.js");
+  const L = layout({ beats: [{ s: "problem", shows: { p: "dw.grime" }, do: [{ p: "dw", v: "dirty" }] }, { s: "fix1", shows: { p: "dw" }, do: [{ p: "dw", v: "spin" }] }] });
+  const own = shots.map((s) => ({ ...s })), r = rhythmShots(L, tracks, sentences, own);
+  // (a dive of its own, or, with no room for a travel and a dive, the line's own shot made the macro)
+  assert.ok([...r.shots, ...own].some((s) => s.at.s === "fix1" && s.rhythm === "macro"), "fix1 gets a macro");
+  assert.ok(r.shots.some((s) => s.at.s === "problem" && s.rhythm), "the 4.8 s problem line gets a new view");
+  assert.ok(!r.shots.some((s) => ["hook", "name", "congrats"].includes(s.at.s)));
+  assert.equal(cameraRulesOn({ ...L, approved: true }), false);
+  assert.equal(rhythmShots({ ...L, approved: true }, tracks, sentences, shots).shots.length, 0);
+  // a 15 m pipe: the macro is a 3 m stretch at the end the water comes from
+  const m = macroRegion({ min: [-5, -3, -0.5], max: [10, 0, 0.5] }, { min: [8, 0, -1], max: [12, 1, 1] }, 12);
+  assert.ok(m.max[0] - m.min[0] <= 3.01 && m.max[0] === 10);
+  // the hold's creep (10% in, 4 degrees) is the same framing; a 12 degree step is a new one
+  const a = { pos: [0, 5, 20], tgt: [0, 0, 0] }, rot = (deg, k = 1) => ({ pos: [20 * k * Math.sin(deg * Math.PI / 180), 5 * k, 20 * k * Math.cos(deg * Math.PI / 180)], tgt: [0, 0, 0] });
+  assert.equal(sameView(a, rot(4, 0.9)), true); assert.equal(sameView(a, rot(12)), false);
 });

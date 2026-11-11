@@ -82,6 +82,13 @@ export async function runTopic({ library = [], topic, out, proto, ff, lengthSec 
   const t0 = Date.now(), apiKey = loadKey(), cacheDir = path.join(out, "steps");
   const save = (f, d) => fs.writeFileSync(path.join(out, f), JSON.stringify(d, null, 1));
   const P = (o) => progress(o, onProgress);
+  // rule 25 (the owner's competitor study, 2026-11-11): a key frame that fails gets ONE targeted repair, at most $0.25 per
+  // video in all (the rewords, the new voice they need, the picture repair and the looks again), before anything is
+  // dropped. A step that could pass the cap is skipped (est: its usual worst case), never a stopped video.
+  const REPAIR_CAP = Number(process.env.CUTAWAY_REPAIR_CAP ?? 0.25);
+  let repairUsd = 0;
+  const canRepair = (est) => repairUsd + est <= REPAIR_CAP + 1e-9;
+  const REPAIR_EST = { words: 0.04, voice: 0.1, picture: 0.19 };
   P({ stage: "script", pct: 1 });
   // resume: the plan already made (and paid for) in this folder, as saved (its layout may have had free fixes since)
   const read0 = (f) => JSON.parse(fs.readFileSync(path.join(out, f), "utf8"));
@@ -120,18 +127,23 @@ export async function runTopic({ library = [], topic, out, proto, ff, lengthSec 
     const broken = (f) => /\bfloat|black|empty frame|blank|inside (the )?(house|geometry|wall)|cut off|clipped|camera (is )?(in|inside)|nothing (is )?(visible|on screen)/i.test(`${f.problem} ${f.seen}`);
     if (bad.length && process.env.CUTAWAY_SKIP_REPAIRS !== "1") {
       // the words first (free of any voice cost now), then one picture repair for broken or mechanism frames
-      const rw = await rewordBeats({ apiKey, topic, script: plan.script, layout: plan.layout, failing: bad.filter((f) => !broken(f)), log, cacheDir });
-      preUsd += rw.costUsd; pre.reworded = rw.changed;
-      if (rw.changed.length) { plan.script = rw.script; const miss = missingWords(plan.layout, plan.script.sentences); if (miss.length) plan.layout = dropWords(plan.layout, miss); }
-      const pic = bad.filter((f) => broken(f) || MECHANISM.includes(f.role));
-      if (pic.length && plan.costUsd + preUsd + 0.5 <= maxUsd) {
-        const rp = await repairLayout({ apiKey, topic, script: plan.script, layout: plan.layout, problems: pic.map((f) => `${f.role}: ${f.problem} (seen: ${f.seen})`), log, cacheDir, saved: false });
-        preUsd += rp.costUsd; if (!rp.problems.length) { plan.layout = rp.layout; pre.repaired = pic.map((f) => f.role); }
+      const byWords0 = bad.filter((f) => !broken(f));
+      if (byWords0.length && canRepair(REPAIR_EST.words)) {
+        const rw = await rewordBeats({ apiKey, topic, script: plan.script, layout: plan.layout, failing: byWords0, log, cacheDir });
+        preUsd += rw.costUsd; repairUsd += rw.costUsd; pre.reworded = rw.changed;
+        if (rw.changed.length) { plan.script = rw.script; const miss = missingWords(plan.layout, plan.script.sentences); if (miss.length) plan.layout = dropWords(plan.layout, miss); }
       }
+      // the one targeted picture repair: only the key frames (broken, the hook, the name, a mechanism line)
+      const pic = bad.filter((f) => broken(f) || MECHANISM.includes(f.role) || f.role === "hook");
+      if (pic.length && canRepair(REPAIR_EST.picture) && plan.costUsd + preUsd + 0.5 <= maxUsd) {
+        const rp = await repairLayout({ apiKey, topic, script: plan.script, layout: plan.layout, problems: pic.map((f) => `${f.role}: ${f.problem} (seen: ${f.seen})`), log, cacheDir, saved: false, maxTokens: 12000 });
+        preUsd += rp.costUsd; repairUsd += rp.costUsd; if (!rp.problems.length) { plan.layout = rp.layout; pre.repaired = pic.map((f) => f.role); }
+      }
+      pre.repairUsd = +repairUsd.toFixed(4);
       // a hook or name line that failed: looked at again; still failing, the video stops before its voice is paid for
       const key = bad.filter((f) => ["hook", "name"].includes(f.role)).map((f) => f.role);
       if (key.length) {
-        const again = await look(key, "vision check (before voice, again)", "prevoice2");
+        const u0 = preUsd, again = await look(key, "vision check (before voice, again)", "prevoice2"); repairUsd += preUsd - u0;
         pre.again = again; bad = again.filter((f) => !f.ok);
         if (bad.length) {
           save("vision_prevoice.json", pre);
@@ -215,16 +227,17 @@ export async function runTopic({ library = [], topic, out, proto, ff, lengthSec 
       // a spending cap: no repair round that could take the video past it (at the in-run limit's worst case, budget.mjs: a
       // repair $0.4 and its look $0.1; skipped, never a BUDGET stop of a video that is otherwise fine)
       if (plan.costUsd + vUsd + extraUsd + 0.5 > maxUsd) { visionReport[`skipped${round}`] = `over the $${maxUsd} cap`; return false; }
+      if (!canRepair(REPAIR_EST.picture)) { visionReport[`skipped${round}`] = `over the $${REPAIR_CAP} repair cap (rule 25; $${repairUsd.toFixed(3)} spent on repairs)`; return false; }
       P({ stage: "scene", step: round === 2 ? "repair" : "second repair", pct: 7 });
-      const rp = await repairLayout({ apiKey, topic, script: plan.script, layout, problems: beats.map((f) => `${f.role}: ${f.problem} (seen: ${f.seen})`), log, cacheDir, saved: !!reuse });
-      extraUsd += rp.costUsd;
+      const rp = await repairLayout({ apiKey, topic, script: plan.script, layout, problems: beats.map((f) => `${f.role}: ${f.problem} (seen: ${f.seen})`), log, cacheDir, saved: !!reuse, maxTokens: 12000 });
+      extraUsd += rp.costUsd; repairUsd += rp.costUsd;
       if (rp.problems.length) { visionReport[`repairProblems${round}`] = rp.problems; return false; }
       layout = rp.layout; save("layout.json", layout);
       ({ tl, checks } = checkAll());
       preparePage({ layout, tl, proto });
       const again = one(previewTimes(tl, layout)).filter((s) => beats.some((f) => f.role === s.role));
       const strips2 = await previewStrips({ proto, layout, shots: again, out: path.join(out, `preview${round}`), ff, wt });
-      const vc2 = await visionCached({ apiKey, frames: strips2, log, cacheDir, multi, label: "repair look" }); extraUsd += vc2.costUsd;
+      const vc2 = await visionCached({ apiKey, frames: strips2, log, cacheDir, multi, label: "repair look" }); extraUsd += vc2.costUsd; repairUsd += vc2.costUsd;
       visionReport[`round${round}`] = vc2.frames; visionReport.costUsd += vc2.costUsd;
       still = still.filter((f) => !beats.some((b) => b.role === f.role)).concat(vc2.frames.filter((f) => !f.ok));
       return true;
@@ -240,20 +253,21 @@ export async function runTopic({ library = [], topic, out, proto, ff, lengthSec 
     };
     const wordsRound = async (round, beats) => {
       if (plan.costUsd + vUsd + extraUsd + 0.25 > maxUsd) { visionReport[`skipped${round}`] = `over the $${maxUsd} cap`; return; }
+      if (!canRepair(REPAIR_EST.words + REPAIR_EST.voice)) { visionReport[`skipped${round}`] = `over the $${REPAIR_CAP} repair cap (rule 25)`; return; }
       P({ stage: "scene", step: "repair", pct: 7 });
       const rw = await rewordBeats({ apiKey, topic, script: plan.script, layout, failing: beats, log, cacheDir });
-      extraUsd += rw.costUsd; visionReport[`words${round}`] = { changed: rw.changed, problems: rw.problems };
+      extraUsd += rw.costUsd; repairUsd += rw.costUsd; visionReport[`words${round}`] = { changed: rw.changed, problems: rw.problems };
       if (!rw.changed.length) return;
       plan.script = rw.script;
       // a cue word the new sentence no longer says: its actions start with the sentence
       const miss = missingWords(layout, plan.script.sentences); if (miss.length) layout = dropWords(layout, miss);
       P({ stage: "scene", step: "voice", pct: 7 });
-      await revoice(round);
+      const v0 = vUsd; await revoice(round); repairUsd += vUsd - v0;
       ({ tl, checks } = checkAll());
       preparePage({ layout, tl, proto });
       const again = one(previewTimes(tl, layout)).filter((s) => rw.changed.includes(s.role));
       const strips2 = await previewStrips({ proto, layout, shots: again, out: path.join(out, `preview${round}`), ff, wt });
-      const vc2 = await visionCached({ apiKey, frames: strips2, log, cacheDir, multi, label: "repair look" }); extraUsd += vc2.costUsd;
+      const vc2 = await visionCached({ apiKey, frames: strips2, log, cacheDir, multi, label: "repair look" }); extraUsd += vc2.costUsd; repairUsd += vc2.costUsd;
       visionReport[`round${round}`] = vc2.frames; visionReport.costUsd += vc2.costUsd;
       still = still.filter((f) => !rw.changed.includes(f.role)).concat(vc2.frames.filter((f) => !f.ok));
     };
@@ -276,13 +290,12 @@ export async function runTopic({ library = [], topic, out, proto, ff, lengthSec 
       if (byWords.length) await wordsRound(2, byWords);
       // the picture for what would still block the gate, or a broken frame
       if (still.length && (still.length > VISION_FAILS_OK || still.some((f) => MECHANISM.includes(f.role) || broken(f)))) {
-        const ok = await repairRound(3, still);
-        // a mechanism beat still failing gets a second, small picture repair of just those beats
-        // (any beat still failing, not only a mechanism beat: the free aquarium and ice rink runs stopped with a failing
-        // beat whose second repair never ran; the owner's round of 2026-10-28)
-        if (ok && still.length) await repairRound(4, still);
+        // ONE targeted picture repair (rule 25, 2026-11-11; it was two: a second, small one after the first). The repair cap
+        // decides; the salvage below handles what still fails
+        await repairRound(3, still);
       }
     }
+    visionReport.repairUsd = +repairUsd.toFixed(4);
     // the salvage (the owner's rule of 2026-10-30, salvage.mjs): a paid video the gate would refuse is reworded and cut
     // down instead; only a hook or a "This is a…" line that still fails stops it
     const wouldBlock = () => still.length > VISION_FAILS_OK || still.some((f) => MECHANISM.includes(f.role));

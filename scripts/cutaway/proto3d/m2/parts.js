@@ -14,7 +14,7 @@ import { fillBlock, pebbles, pour, wipeBlock } from "../kit/fill.js";
 import { pipePath } from "../kit/pipe.js";
 import { arrows, outline } from "../kit/overlay.js";
 import { rain, stream } from "../kit/weather.js";
-import { fx } from "../kit/fx.js";
+import { fallSheet, fx } from "../kit/fx.js";
 import { wrapSheet } from "../kit/sheet.js";
 import { crack, endSign, flagProp, paperProp, puddle, shrubs } from "../kit/props.js";
 import { EASES, rampU } from "./curves.js";
@@ -22,10 +22,13 @@ import { miniMachines, VENDING_CHANNELS, vendingMachine } from "./vending.js";
 import { atm, cabinet, car, carWash, CITY_CHANNELS, counter, hydrant, traffic, trafficLight } from "./cityParts.js";
 import { canopy, CLARITY_CHANNELS, creek, flow, grate, prop, settle } from "./clarityParts.js";
 import { rig } from "./rig.js";
-import { buildWater, waterSpec } from "../kit/water.js";
+import { rainSoak, surfaces } from "./materials.js";
+import { buildWater, flowTint, pipeWater, waterClock, waterMaterial, waterNew, waterSpec, WATER_TINTS } from "../kit/water.js";
 import { buildBuilding } from "../kit/buildings.js";
 import { buildRoad } from "../kit/roads.js";
 import { buildWires } from "../kit/wires.js";
+import { buildToken } from "../kit/token.js";
+import { buildHand, buildPerson } from "../kit/people.js";
 
 const V3 = (THREE, a) => new THREE.Vector3(...a);
 // the pebble shape (the French drain gravel): made once, shared by every gravel and soak pit part
@@ -52,6 +55,13 @@ export const KINDS = {
   rig,
   // the city parts (cityParts.js): a car, a car wash's arch and brushes, a traffic light and its road loop, a hydrant, an ATM
   car, carWash, trafficLight, hydrant, atm, traffic, counter, cabinet,
+  // the story's recurring prop (kit/token.js; the owner's rule 8 of 2026-11-11): a tennis ball, a duck, a leaf, a toy boat,
+  // a bottle that sits, rides a path (floats, rolls) and stops. Channels: show, ride, stop
+  token(ctx, p, api) { return buildToken(ctx, p, api); },
+  // the life element (kit/people.js; the owner's rule 20 of 2026-11-11): a person (digs, presses, turns, walks, waves,
+  // points, drives) and a hand that reaches in to press a button or turn a tap. Channels: show, go, act / show, press, turn
+  person(ctx, p, api) { return buildPerson(ctx, p, api); },
+  hand(ctx, p, api) { return buildHand(ctx, p, api); },
   // ================= effects (kit/fx.js): a blast, a crack, fire, a splash... on the word that names it =================
   fx(ctx, p, api) { return fx(ctx, p, api); },
   // the generated ground (kit/terrain.js), built by the page before the parts (makePage.mjs): its chambers glow on erupt
@@ -69,7 +79,9 @@ export const KINDS = {
     const target = p.target ? api.part(p.target)?.obj : null, g = target?.group ?? target?.mesh ?? null, base = g ? g.position.clone() : null;
     const steam = p.mode === "steam" ? fx(ctx, { type: "smoke", at: p.at ?? [0, 1, 0], size: Math.min(1.2, Math.max(0.5, (p.size ?? 1) * 0.7)), color: "#eef1f4" }, api) : null;
     // (the crowns of the yard's and the terrain's trees, the bushes and young trees: each sways on its own phase)
-    const crowns = p.mode === "breeze" ? [...(ctx.leaves ?? []), ...api.all().filter((e) => ["shrubs", "youngTrees"].includes(e.kind)).flatMap((e) => e.added ?? [])] : [];
+    // (on a custom video the world's life sways the yard's crowns all the time and this breeze makes its wind stronger,
+    // kit/life.js; moving them here as well would fight it, 2026-11-11)
+    const crowns = p.mode === "breeze" ? [...(ctx.windOwned ? [] : ctx.leaves ?? []), ...api.all().filter((e) => ["shrubs", "youngTrees"].includes(e.kind)).flatMap((e) => e.added ?? [])] : [];
     const rest = crowns.map((o) => o.position.clone());
     return {
       update(t) {
@@ -231,6 +243,13 @@ export const KINDS = {
   /** liquid running along a pipeRun (only where it is built); channel: on */
   pipeRunFlow(ctx, p, api) {
     const { THREE, scene } = ctx;
+    // (custom layouts: the water in the pipe is a moving translucent band, never a chain of blue balls; rule 17 of
+    // 2026-11-11, kit/water.js pipeWater; a premade keeps its approved dots below)
+    if (waterNew(ctx)) {
+      const e = api.part(p.pipe), pipe = e.obj, pr = Number(e.params?.r) || 0.3, mat = api.mat(p.mat ?? "juice");
+      const band = pipeWater(ctx, { path: e.params?.path, r: pr, offset: [0, 0, Number(p.dz ?? 0.22)], color: flowTint(p.mat ?? "juice", mat?.color ? `#${mat.color.getHexString()}` : null), speed: p.speed ?? 3.2, width: Math.min(pr * 1.5, Math.max(pr * 0.9, (Number(p.size) || 0.13) * 2.6)) });
+      return { update(t) { band.update(t, api.ch("on", t), pipe.grown()); } };
+    }
     const pipe = api.part(p.pipe).obj, N = p.count ?? 14;
     const im = new THREE.InstancedMesh(new THREE.SphereGeometry(p.size ?? 0.13, 10, 8), api.mat(p.mat ?? "juice"), N); im.renderOrder = 4; scene.add(im);
     const m4 = new THREE.Matrix4(), q4 = new THREE.Quaternion(), s4 = new THREE.Vector3();
@@ -250,7 +269,9 @@ export const KINDS = {
     const g = new THREE.Group(); g.position.set(...p.pos); scene.add(g); g.scale.setScalar(0);
     cyl(mat, r, h, 0, h / 2, 0, g, "y", 48);
     const cap = new THREE.Mesh(new THREE.SphereGeometry(r + 0.02, 48, 16, 0, Math.PI * 2, 0, Math.PI / 2), mat); cap.scale.y = 0.3; cap.position.y = h; g.add(cap);
-    for (const yy of p.bands ?? [0.5, 2.0]) { const band = new THREE.Mesh(new THREE.TorusGeometry(r + 0.02, 0.05, 8, 48), P.chassis); band.rotation.x = Math.PI / 2; band.position.y = yy; g.add(band); }
+    // (a custom layout's tank straps are galvanised steel, 2026-11-11)
+    const bandM = ctx.realLook === true ? surfaces(ctx).get("galvanised", "#9aa3ab") : P.chassis;
+    for (const yy of p.bands ?? [0.5, 2.0]) { const band = new THREE.Mesh(new THREE.TorusGeometry(r + 0.02, 0.05, 8, 48), bandM); band.rotation.x = Math.PI / 2; band.position.y = yy; g.add(band); }
     return { update(t) { g.scale.setScalar(api.ch("pop", t)); } };
   },
 
@@ -411,6 +432,28 @@ export const KINDS = {
     // its own copy of the material only when this plan turns it green (so it never tints other water; the premade
     // videos' water keeps the shared material exactly as approved)
     const tints = Boolean(api.cue("dirty") || api.cue("clean")), shared = api.mat(p.mat ?? "water");
+    // (custom layouts: plain water is drawn with the one water look, rule 17 of 2026-11-11: blue-green, a moving reflective
+    // top, the section darker with depth and a bright waterline, dirt spreading as a plume, drop ripples in the rain)
+    if (waterNew(ctx) && (p.mat ?? "water") === "water" && p.box) {
+      const b = p.box, H = Math.max(0.05, (b.y1 ?? 0) - (b.y0 ?? 0)), clock = waterClock(ctx);
+      const wm = waterMaterial(ctx, { color: "#1f94ab", opacity: 0.72, section: true, depthScale: Math.max(0.6, H * 1.2), dirtyColor: typeof p.dirtyColor === "string" ? p.dirtyColor : "#4e7d2c", scale: 0.8 });
+      const w = fillBlock(ctx, { ...b, mat: wm, r: p.r ?? 0.02, castShadow: false });
+      w.mesh.renderOrder = 2;
+      const src = Math.abs(b.x0) < Math.abs(b.x1) ? b.x0 : b.x1, reach = Math.abs(b.x1 - b.x0) * 1.3 + 1;
+      let rainy = null;
+      return {
+        mesh: w.mesh, top: w.top,
+        update(t) {
+          clock.set(t);
+          const gravK = p.gravel ? api.other(p.gravel, "fill", t) : 0;
+          w.set(clamp01(api.ch("flood", t)) * (1 - 0.5 * gravK));
+          rainy ??= (api.all?.() ?? []).find((e) => e.kind === "rain")?.id ?? "";
+          const d = clamp01(api.ch("dirty", t) - api.ch("clean", t));
+          wm.userData.water.set({ top: w.top(), plume: [src, ((b.z0 ?? -1) + (b.z1 ?? 0)) / 2, Math.max(0.01, d * reach), d], ripple: rainy ? 0.6 * clamp01(api.other(rainy, "on", t)) : 0 });
+          const gone = api.cue("gone"); if (gone && t >= gone.t0) w.mesh.visible = false;
+        },
+      };
+    }
     const mat = tints ? shared.clone() : shared, base = mat.color.clone(), dirtyC = new ctx.THREE.Color(typeof p.dirtyColor === "string" ? p.dirtyColor : "#4e7d2c");
     const w = fillBlock(ctx, { ...p.box, mat, r: p.r ?? 0.02, castShadow: false });
     w.mesh.renderOrder = 2;
@@ -483,16 +526,28 @@ export const KINDS = {
 
   /** water dots running inside a kit pipe; channel: on */
   pipeFlow(ctx, p, api) {
+    // (custom layouts: a moving translucent band in the pipe, never blue balls; rule 17 of 2026-11-11. A blue colour
+    // means water and takes the one water tint; any other colour, sewage brown, stays)
+    if (waterNew(ctx)) {
+      const e = api.part(p.pipe), o = p.opts ?? {}, po = e.params?.opts ?? {}, k = e.obj.kit;
+      let color = null;
+      if (typeof o.color === "string") { const c = new ctx.THREE.Color(o.color); color = c.b > c.r && c.b > c.g * 0.9 ? null : o.color; }
+      const band = pipeWater(ctx, { path: e.params?.path, r: Number(po.r) || 0.24, offset: o.offset ?? [0, 0, 0.22], color, speed: p.speed ?? 3.4 });
+      return { update(t) { band.update(t, api.ch("on", t), k.grown()); } };
+    }
     const f = api.part(p.pipe).obj.kit.flow(p.opts ?? {});
     return { update(t) { f.update(t, api.ch("on", t), p.speed ?? 3.4); } };
   },
 
   /** flat water patches that spread and dry up (kit puddle); channels: rise, fall (staggered per puddle) */
   puddles(ctx, p, api) {
-    const list = p.list.map(([x, z, rx, rz]) => puddle(ctx, { x, z, rx, rz, mat: api.mat(p.mat ?? "puddle") }));
-    const rs = p.rise ?? [0.3, 0.2], fs = p.fall ?? [0.2, 0];
+    // (custom layouts: a puddle is the one water look, reflective with drop rings on it; rule 17 of 2026-11-11)
+    const nuMat = waterNew(ctx) && (p.mat ?? "puddle") === "puddle" ? waterMaterial(ctx, { color: "#4f8f9c", opacity: 0.6, ripple: 1, waves: 0.35, flow: [0, 0], fresnel: 0.6 }) : null;
+    const list = p.list.map(([x, z, rx, rz]) => puddle(ctx, { x, z, rx, rz, mat: nuMat ?? api.mat(p.mat ?? "puddle") }));
+    const rs = p.rise ?? [0.3, 0.2], fs = p.fall ?? [0.2, 0], clock = nuMat ? waterClock(ctx) : null;
     return {
       update(t) {
+        clock?.set(t);
         const r = api.cue("rise"), f = api.cue("fall");
         list.forEach((q, i) => q.set((r ? shifted(r, t, i * rs[0], i * rs[1]) : 0) * (1 - (f ? shifted(f, t, i * fs[0], i * fs[1]) : 0))));
       },
@@ -501,8 +556,12 @@ export const KINDS = {
 
   // ================= weather, light, soil =================
 
-  rain(ctx, p, api) { const r = rain(ctx, p); return { update(t) { r.update(t, api.ch("on", t)); } }; },
-  stream(ctx, p, api) { const r = stream(ctx, p); return { update(t) { r.update(t, api.ch("on", t)); } }; },
+  // (custom layouts: the rain soaks the soil and the paving over time, m2/materials.js rainSoak, 2026-11-11)
+  rain(ctx, p, api) { const r = rain(ctx, p), soak = rainSoak(ctx, (tt) => api.ch("on", tt)); return { update(t) { r.update(t, api.ch("on", t)); soak?.(t); } }; },
+  // (custom layouts: water running off an edge is a translucent falling sheet with foam where it lands, not a curtain of
+  // rain streaks; rule 17 of 2026-11-11, kit/fx.js fallSheet)
+  // (fallSheet reads the same fields as kit/weather.js stream: x0, x1, z, yTop, yBot, color)
+  stream(ctx, p, api) { const r = (waterNew(ctx) ? fallSheet : stream)(ctx, p); return { update(t) { r.update(t, api.ch("on", t)); } }; },
 
   /** the sun, sky and environment: a quick dip ("decades later"), an overcast storm, and night ("at 3 a.m.": the sun
    *  down, the sky dark, every lamp and lens glowing against it); channels: dip, storm, night */
@@ -583,10 +642,26 @@ export const KINDS = {
   /** murky dots seeping down the cut face and spreading in the groundwater; channel: on */
   seepFlow(ctx, p, api) {
     const { THREE, scene, rnd } = ctx;
-    const N = p.count ?? 70, im = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 10, 8), api.mat("seepDots"), N); im.renderOrder = 4; scene.add(im);
+    // (custom layouts: the seep is thin wet trickles, streaks stretched along the way they run, see-through; never round
+    // dots; rule 17 of 2026-11-11. The random numbers are drawn exactly as before, so later parts stay the same)
+    const nu = waterNew(ctx), seepM = nu ? api.mat("seepDots").clone() : api.mat("seepDots");
+    if (nu) { seepM.transparent = true; seepM.opacity = 0.7; seepM.roughness = 0.15; seepM.depthWrite = false; }
+    const N = p.count ?? 70, im = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 10, 8), seepM, N); im.renderOrder = 4; scene.add(im);
     const data = Array.from({ length: N }, () => ({ x: (rnd() - 0.5) * (p.width ?? 4.4), ph: rnd(), side: rnd() < 0.5 ? -1 : 1, spread: 2 + rnd() * 8, s: 0.08 + rnd() * 0.09 }));
     const m4 = new THREE.Matrix4(), q4 = new THREE.Quaternion(), v4 = new THREE.Vector3(), s4 = new THREE.Vector3();
     const y0 = p.y0 ?? -6.2, fall = p.fall ?? 6.2, floor = p.floor ?? -11.2;
+    if (nu) return {
+      update(t) {
+        const on = api.ch("on", t);
+        data.forEach((d, i) => {
+          const ph = (t * 0.55 + d.ph) % 1; let x = d.x * (1 - ph * 0.2), y = y0 - ph * fall, spreading = false;
+          if (y < floor) { const k = (floor - y) / 1.2; y = floor - k * 0.6; x = d.x + d.side * d.spread * k; spreading = true; }
+          const s = on > 0.01 ? d.s * (0.6 + 0.4 * Math.sin(ph * Math.PI)) * on : 0;
+          im.setMatrixAt(i, m4.compose(v4.set(x, y, 0.12), q4.identity(), spreading ? s4.set(s * 2.2, s * 0.35, s * 0.5) : s4.set(s * 0.4, s * 2.6, s * 0.4)));
+        });
+        im.instanceMatrix.needsUpdate = true;
+      },
+    };
     return {
       update(t) {
         const on = api.ch("on", t);
@@ -608,5 +683,5 @@ export const KIND_CHANNELS = {
   fence: ["pop", "rails"], youngTrees: ["pop"], sheet: ["up", "down", "pop"], book: ["up", "down"], flag: ["show", "cross", "gone"], shrubs: ["start"], sign: ["pop"], crack: ["grow"], drops: ["fall", "gone"],
   water: ["flood", "gone", "dirty", "clean"], gravel: ["fill", "lift", "squash", "drain", "pour"], soakPit: ["grow", "wetY", "wetOn"], wipe: ["grow"], wrap: ["start"], pipe: ["grow"], pipeFlow: ["on"], puddles: ["rise", "fall"],
   rain: ["on"], stream: ["on"], light: ["dip", "storm", "night"], lawnWet: ["amount"], soilLeak: ["y1", "a1", "y2", "a2", "murk", "murkA"], wetBand: ["amount"], soak: ["front", "on"],
-  arrows: ["on"], outline: ["on"], seepFlow: ["on"], fx: ["go", "on"], terrain: ["glow"], ambient: ["on"], building: ["build", "lights", "lift", "run"], road: ["pave", "build", "twist", "sway"], wires: ["show", "live", "snap"], waterBody: ["rise", "fall", "flood", "dirty", "clear", "freeze", "flow"],
+  arrows: ["on"], outline: ["on"], seepFlow: ["on"], fx: ["go", "on"], terrain: ["glow"], ambient: ["on"], token: ["show", "ride", "stop"], person: ["show", "go", "act"], hand: ["show", "press", "turn"], building: ["build", "lights", "lift", "run"], road: ["pave", "build", "twist", "sway"], wires: ["show", "live", "snap"], waterBody: ["rise", "fall", "flood", "dirty", "clear", "freeze", "flow"],
 };

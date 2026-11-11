@@ -110,13 +110,17 @@ test("the multi-frame check is for custom only: premade keeps the one-frame prom
   const run = fs.readFileSync(new URL("../scripts/cutaway/proto3d/m2/run.mjs", import.meta.url), "utf8"), checks = fs.readFileSync(new URL("../scripts/cutaway/proto3d/m2/checks.mjs", import.meta.url), "utf8");
   assert.match(run, /const multi = !reuse/); assert.match(checks, /system: multi \? VISION_SYSTEM : VISION_SYSTEM_ONE/);
   assert.match(checks, /const VISION_SYSTEM_ONE = `When a frame's line says/);
-  assert.match(run, /if \(ok && still\.length\) await repairRound\(4, still\)/, "the second picture repair runs for whatever still fails");
+  // (rule 25 of the owner's competitor study, 2026-11-11: ONE targeted picture repair, all repairs capped at $0.25 a video)
+  assert.match(run, /await repairRound\(3, still\);/, "one targeted picture repair");
+  assert.doesNotMatch(run, /repairRound\(4,/, "no second picture repair");
+  assert.match(run, /CUTAWAY_REPAIR_CAP \?\? 0\.25/, "the repair cap is $0.25 a video");
 });
 
 test("round 5: a narration a little over its limit is tolerated, then trimmed for free, before any rewrite is paid for", async () => {
   const { overWords, trimNarration, wordCount, LENGTH } = await import("../scripts/cutaway/proto3d/m2/planner.mjs");
   assert.equal(overWords(121, 30), false, "121 of 120 is inside the 5% tolerance"); assert.equal(overWords(127, 30), true);
-  assert.deepEqual(LENGTH[30].beats, [10, 12]); assert.deepEqual(LENGTH[60].beats, [14, 18]);
+  // (12-16 and 20-28 since the owner's competitor study of 2026-11-11: 5-6 and 10-12 short But/So loops)
+  assert.deepEqual(LENGTH[30].beats, [12, 16]); assert.deepEqual(LENGTH[60].beats, [20, 28]);
   const s = { sentences: [{ role: "fix2", text: "So you add a yellow lamp that just really warns drivers then." }, { role: "how", text: "Inside, the box also reads the loop and turns green." }] };
   const t = trimNarration(s, { max: 19, cues: { how: ["also"] } });
   assert.ok(t.script.sentences.reduce((k, x) => k + wordCount(x.text), 0) <= 19);
@@ -186,8 +190,10 @@ test("a target never fails a run: word and beat counts guide, far over drops the
   const d = dropBeats({ script, layout, lengthSec: 30, over: (sc) => words(sc) > 156 });
   assert.deepEqual(d.dropped, ["myth", "mythFact", "finish"]); assert.ok(words(d.script) <= 156);
   assert.deepEqual(d.script.chain.map((c) => c.problem), [1, 9], "the chain follows its sentences");
-  // over the beat cap alone (13 > 12): one pair out, never a refusal
-  assert.deepEqual(dropBeats({ layout, lengthSec: 30 }).dropped, ["myth", "mythFact"]);
+  // over the beat cap alone (17 > 16 since 2026-11-11): one pair out, never a refusal; 13 beats are under it
+  assert.deepEqual(dropBeats({ layout, lengthSec: 30 }).dropped, []);
+  const r17 = [...roles, "problem4", "fix4", "problem5", "fix5"], L17 = { roles: r17, beats: r17.map((s) => ({ s, do: [] })) };
+  assert.deepEqual(dropBeats({ layout: L17, lengthSec: 30 }).dropped, ["myth", "mythFact"]);
 });
 
 test("the cap is an emergency brake: the final steps (the voice, the first preview check, the post text) are never refused; repairs and their looks are", async () => {

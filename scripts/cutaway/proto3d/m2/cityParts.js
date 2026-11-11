@@ -12,6 +12,7 @@
 //                the pick and the belt. show, screen, card (goes in), safe (the safe walls), cassettes (pop), pick (a
 //                note travels from the cassette up the belt to the slot), cash (the notes come out)
 import { model, nodes } from "../kit/models.js";
+import { realOr } from "./materials.js";
 
 const pop = (k) => Math.max(0.001, k);
 const clamp = (v) => Math.min(1, Math.max(0, v));
@@ -157,7 +158,7 @@ export function carWash(ctx, p, api) {
 function signalHead(ctx, parent, x, y, z) {
   const { THREE, std, C, add, rb, glow } = parts(ctx);
   const g = new THREE.Group(); g.position.set(x, y, z); parent.add(g);
-  const housing = std({ color: C("#1f2427"), roughness: 0.55 }), border = std({ color: C("#f2c230"), roughness: 0.45 });
+  const housing = realOr(ctx, "paint", "#2a2f33", std({ color: C("#1f2427"), roughness: 0.55 })), border = std({ color: C("#f2c230"), roughness: 0.45 });
   add(g, rb(1.25, 3.0, 0.08, 0.05), border, 0, 0, -0.18);
   add(g, rb(1.08, 2.84, 0.1, 0.05), housing, 0, 0, -0.13);
   add(g, rb(0.86, 2.6, 0.5, 0.08), housing, 0, 0, 0.12);
@@ -173,7 +174,8 @@ function signalHead(ctx, parent, x, y, z) {
 export function trafficLight(ctx, p, api) {
   const { THREE, std, C, add, cylG, glow } = parts(ctx);
   const root = new THREE.Group(); const [x, y, z] = p.pos ?? [4, 0.1, -1]; root.position.set(x, y, z); ctx.scene.add(root);
-  const H = p.height ?? 5, pole = std({ color: C("#5f666b"), roughness: 0.45, metalness: 0.6 });
+  // (a custom layout's pole is galvanised steel, m2/materials.js, 2026-11-11)
+  const H = p.height ?? 5, pole = realOr(ctx, "galvanised", "#8a9095", std({ color: C("#5f666b"), roughness: 0.45, metalness: 0.6 }));
   const body = new THREE.Group(); root.add(body);
   add(body, cylG(0.14, H, 16), pole, 0, H / 2, 0);
   // arm: a mast arm over the road (its length, toward armDir: -1 left, 1 right), the head hanging from its end; without
@@ -216,7 +218,7 @@ export function hydrant(ctx, p, api) {
   const { THREE, std, C, add, cylG, steel } = parts(ctx);
   const [x, y, z] = p.pos ?? [0, 0.12, -0.5], depth = p.depth ?? 3.2;
   const root = new THREE.Group(); root.position.set(x, y, z); ctx.scene.add(root);
-  const red = ctx.phys({ color: C(p.color ?? "#d4352b"), roughness: 0.35, clearcoat: 0.5 }), cap = std({ color: C("#f2c230"), roughness: 0.4 });
+  const red = realOr(ctx, "paint", p.color ?? "#d4352b", ctx.phys({ color: C(p.color ?? "#d4352b"), roughness: 0.35, clearcoat: 0.5 })), cap = std({ color: C("#f2c230"), roughness: 0.4 });
   const body = new THREE.Group(); root.add(body);
   add(body, cylG(0.32, 1.1, 22), red, 0, 0.55, 0); add(body, cylG(0.42, 0.12, 22), red, 0, 0.06, 0);
   add(body, new THREE.SphereGeometry(0.34, 20, 12, 0, Math.PI * 2, 0, Math.PI / 2), cap, 0, 1.1, 0);
@@ -253,7 +255,7 @@ export function atm(ctx, p, api) {
   const { THREE, std, C, add, rb, glow } = parts(ctx);
   const root = new THREE.Group(); root.position.set(...(p.pos ?? [0, 0.12, -1])); ctx.scene.add(root);
   const W = 1.6, H = 2.6, D = 1.2;
-  const shell = ctx.phys({ color: C(p.color ?? "#3a4654"), roughness: 0.4, clearcoat: 0.4 }), cutEdge = std({ color: C("#f3e3c2"), roughness: 0.7 });
+  const shell = realOr(ctx, "paint", p.color ?? "#3a4654", ctx.phys({ color: C(p.color ?? "#3a4654"), roughness: 0.4, clearcoat: 0.4 })), cutEdge = std({ color: C("#f3e3c2"), roughness: 0.7 });
   const body = new THREE.Group(); root.add(body);
   add(body, rb(W, H, 0.08), shell, 0, H / 2, -D / 2 + 0.04);
   add(body, rb(0.08, H, D), shell, -W / 2 + 0.04, H / 2, 0);
@@ -404,8 +406,9 @@ export function cabinet(ctx, p, api) {
   const [w, h, d] = p.size ?? [0.9, 1.3, 0.6], [x, y, z] = p.pos ?? [0, h / 2 + 0.1, -1];
   const root = new THREE.Group(); root.position.set(x, y - h / 2, z); ctx.scene.add(root);
   const body = new THREE.Group(); root.add(body);
-  const metal = std({ color: C("#a9b0b5"), roughness: 0.38, metalness: 0.75 }), darkM = std({ color: C("#2a2f33"), roughness: 0.6 });
-  add(body, rb(w + 0.3, 0.14, d + 0.3, 0.03), std({ color: C("#b9b4aa"), roughness: 0.9 }), 0, 0.07, 0); // the pad
+  // (a custom layout's box is galvanised steel on a cast concrete pad, m2/materials.js, 2026-11-11)
+  const metal = realOr(ctx, "galvanised", "#a9b0b5", std({ color: C("#a9b0b5"), roughness: 0.38, metalness: 0.75 })), darkM = std({ color: C("#2a2f33"), roughness: 0.6 });
+  add(body, rb(w + 0.3, 0.14, d + 0.3, 0.03), realOr(ctx, "concrete", "#b9b4aa", std({ color: C("#b9b4aa"), roughness: 0.9 })), 0, 0.07, 0); // the pad
   add(body, rb(w, h, d, 0.04), metal, 0, 0.14 + h / 2, 0);
   add(body, rb(w + 0.1, 0.06, d + 0.14, 0.02), metal, 0, 0.14 + h + 0.03, 0.02); // the rain hood
   for (let i = 0; i < 4; i++) add(body, rb(w * 0.5, 0.03, 0.03, 0.01), darkM, 0, 0.3 + i * 0.07, d / 2 + 0.005); // louvres

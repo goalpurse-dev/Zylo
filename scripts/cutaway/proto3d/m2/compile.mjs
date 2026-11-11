@@ -38,7 +38,7 @@ export function nameCards(sentences, words, cards = []) {
   const out = [];
   for (const s of sentences) {
     // (a second name line may end "...is a skimmer": the card says which box it is, the owner's review of 2026-10-31)
-    const m = /\bthis is (?:an? |the |your )?([a-z][a-z' -]*?)(?=[,.!?;]|$| that | which | and | but )/i.exec(s.text ?? "") ?? (s.role === "name2" ? /\b(?:is|are) (?:an? |the )?([a-z][a-z' -]*?)[.!?]?$/i.exec(s.text ?? "") : null);
+    const m = /\bthis is (?:an? |the |your )?([a-z][a-z' -]*?)(?=[,.!?;]|$| that | which | and | but )/i.exec(s.text ?? "") ?? (/^name[23]$/.test(s.role ?? "") ? /\b(?:is|are) (?:an? |the )?([a-z][a-z' -]*?)[.!?]?$/i.exec(s.text ?? "") : null);
     if (!m) continue;
     const name = m[1].trim().replace(/\s+/g, " ");
     if (!name || name.length > 22 || name.split(" ").length > 3) continue;

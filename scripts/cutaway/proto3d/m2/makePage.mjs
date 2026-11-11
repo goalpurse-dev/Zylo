@@ -15,6 +15,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { MOODS, moodFor } from "./moods.js";
+import { moodFor2 } from "./look2.js";
+import { soilReps, soilRepsOptional } from "../kit/digCut.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 
@@ -31,10 +33,25 @@ export function makePage(layout) {
   // checker failed 13 of 40 benchmark topics on a flat rectangle beside, above or around the thing, 2026-11-06)
   rep("composer.addPass(ao);", 'composer.addPass(ao);\nconst OUTLINE = new OutlinePass(new THREE.Vector2(W, H), scene, camera);\nObject.assign(OUTLINE, { edgeStrength: 40, edgeGlow: 2.2, edgeThickness: 9, pulsePeriod: 0 });\nOUTLINE.visibleEdgeColor.set("#ffc400"); OUTLINE.hiddenEdgeColor.set("#ffb000");\ncomposer.addPass(OUTLINE);');
   rep('const R = Number(Q.get("r") ?? 1);', `const R = 1;\nconst M2_LAYOUT = await (await fetch("/m2run/${layout.key}.layout.json")).json();\nconst M2_TL = await (await fetch("/m2run/${layout.key}.timeline.json")).json();`);
+  // the competitor look (m2/look2.js, the owner's rules 15 and 22, 2026-11-11): custom videos only; an approved premade
+  // layout's page stays byte for byte what it was (?look2=0 on a custom page shows the old look, for side-by-sides)
+  const look2 = layout.approved !== true;
   // the video's light: a mood from its topic (m2/moods.js; step B of the batch-2 look study), over the yard's look
-  const mood = MOODS[moodFor(layout)] ?? MOODS.noon, { fog: moodFog, ...moodLook } = mood;
-  rep("renderer.toneMapping = LOOK.tone; renderer.toneMappingExposure = LOOK.exposure;", `Object.assign(LOOK, ${JSON.stringify(moodLook)});\nrenderer.toneMapping = LOOK.tone; renderer.toneMappingExposure = LOOK.exposure;`);
-  if (moodFog) rep('if (R === 3) scene.fog = new THREE.Fog(C("#ffd9a8"), 70, 300);', `if (R === 3) scene.fog = new THREE.Fog(C("#ffd9a8"), 70, 300);\nscene.fog = new THREE.Fog(C(${JSON.stringify(moodFog[0])}), ${moodFog[1]}, ${moodFog[2]});`);
+  const moodName = look2 ? moodFor2(layout, MOODS, moodFor) : moodFor(layout);
+  const mood = MOODS[moodName] ?? MOODS.noon, { fog: moodFog, ...moodLook } = mood;
+  if (look2) rep('import { VignetteShader } from "three/addons/shaders/VignetteShader.js";', 'import { VignetteShader } from "three/addons/shaders/VignetteShader.js";\nimport * as L2 from "./m2/look2.js";');
+  rep("renderer.toneMapping = LOOK.tone; renderer.toneMappingExposure = LOOK.exposure;", `Object.assign(LOOK, ${JSON.stringify(moodLook)});\n${look2 ? `const M2_LOOK2 = Q.get("look2") !== "0";\nif (M2_LOOK2) L2.lightFor(THREE, LOOK, ${JSON.stringify(moodName)});\n` : ""}renderer.toneMapping = LOOK.tone; renderer.toneMappingExposure = LOOK.exposure;`);
+  // (the new look has no scene fog: a fog washed out the whole build in a wide shot; its haze touches only far things)
+  if (moodFog) rep('if (R === 3) scene.fog = new THREE.Fog(C("#ffd9a8"), 70, 300);', `if (R === 3) scene.fog = new THREE.Fog(C("#ffd9a8"), 70, 300);\n${look2 ? "if (!M2_LOOK2) " : ""}scene.fog = new THREE.Fog(C(${JSON.stringify(moodFog[0])}), ${moodFog[1]}, ${moodFog[2]});`);
+  if (look2) {
+    rep("scene.add(new THREE.HemisphereLight(", "if (M2_LOOK2) scene.fog = null;\nscene.add(new THREE.HemisphereLight(");
+    rep("if (R === 4) sun.shadow.radius = 4; scene.add(sun);", "if (R === 4) sun.shadow.radius = 4; scene.add(sun);\nif (M2_LOOK2) L2.tuneSun(sun, LITE);");
+    // the depth passes (haze, focus, motion blur) in the linear stage, before the "This is a…" glow so it stays sharp
+    rep("composer.addPass(ao);", `composer.addPass(ao);\nconst LOOK2FX = M2_LOOK2 ? L2.addDepthPasses({ THREE, ShaderPass, UnrealBloomPass, composer, camera, depthTexture: ao.beautyRenderTarget?.depthTexture, W, H, mood: ${JSON.stringify(moodName)}, sun, bloom: LOOK.bloom }) : null;\nif (M2_LOOK2) LOOK.bloom = 0;`);
+    // the grade replaces the R1 page's saturation boost and its heavy vignette
+    rep("composer.addPass(new ShaderPass({ uniforms: { tDiffuse: { value: null }, sat:", "if (!M2_LOOK2) composer.addPass(new ShaderPass({ uniforms: { tDiffuse: { value: null }, sat:");
+    rep("{ const v = new ShaderPass(VignetteShader);", `const LOOK2G = M2_LOOK2 ? L2.addGrade({ THREE, ShaderPass, composer, mood: ${JSON.stringify(moodName)}, W, H }) : null;\nif (!M2_LOOK2) { const v = new ShaderPass(VignetteShader);`);
+  }
   // nothing dug in a thin-slab world: no pit in the ground (one of no size), its cut kept as M2_CUT for the road and the setting
   const closed = !!W.cut && !!W.shallow && !(layout.parts ?? []).some((p) => p.kind === "dig");
   const cutLit = W.cut && `{ x0: ${n(W.cut.x0)}, x1: ${n(W.cut.x1)}, z0: ${n(W.cut.z0)}, depth: ${n(W.shallow ? Math.min(W.cut.depth, 0.6) : W.cut.depth)} }`;
@@ -116,11 +133,22 @@ export function makePage(layout) {
   if (M2_LAYOUT.world?.backdrop) KB.backdrop(ctx, { ...M2_LAYOUT.world.backdrop, apron: !!M2_LAYOUT.world?.shallow, closed: M2_CLOSED });
   const look = Q.get("cam") ? Q.get("cam").split(",").map(Number) : null; // debug: ?cam=px,py,pz,tx,ty,tz
   const run = M2R.runLayout(ctx, M2_LAYOUT, M2_TL, { endCard: Q.get("endcard") !== "0", look });
-  window.renderAt = (t, camT) => { run.update(t, camera, camT ?? t); composer.render(); return true; };
+  window.renderAt = (t, camT) => { run.update(t, camera, camT ?? t); ${look2 ? "if (LOOK2FX) { const st = LOOK2FX.update(run, camT ?? t); window.look2State = st; if (LOOK2G) LOOK2G.uniforms.storm.value = st ? Math.min(1, st.storm * 1.2) : 0; } " : ""}composer.render(); return true; };
   // (the look meter: the main part's real width share on screen at time t, from its meshes; measuring only)
   window.mainWidthAt = (t) => { run.update(t, camera, t); camera.updateMatrixWorld(); const m = M2_LAYOUT.parts.find((p) => p.main), o = m && run.parts.get(m.id)?.obj?.group; if (!o) return null; const b = new THREE.Box3().setFromObject(o); if (b.isEmpty()) return null; let x0 = 1, x1 = 0; for (const x of [b.min.x, b.max.x]) for (const y of [b.min.y, b.max.y]) for (const z of [b.min.z, b.max.z]) { const v = new THREE.Vector3(x, y, z).project(camera); if (v.z > 1) continue; x0 = Math.min(x0, (v.x + 1) / 2); x1 = Math.max(x1, (v.x + 1) / 2); } return Math.max(0, Math.min(1, x1) - Math.max(0, x0)); };
 }
 manager.onLoad = () => { window.ready = true; };`);
+  // the SURFACES helper's part (owner's rules 16 and 18, 2026-11-11): a custom layout's layered, stony, wettable soil
+  // (kit/digCut.js soilReps) and its parts' real materials (m2/materials.js, ctx.realLook); all or nothing, so a text
+  // that moved leaves the old soil rather than a broken shader; a premade page is untouched
+  if (layout.approved !== true) {
+    const all = soilReps();
+    if (all.every(([a]) => s.includes(a))) {
+      for (const [a, b] of all) rep(a, b);
+      for (const [a, b] of soilRepsOptional()) if (s.includes(a)) rep(a, b);
+      rep("  const ctx = { THREE, scene, envBase: LOOK.env,", "  const ctx = { realLook: M2_SURF, wetU: M2_WET, THREE, scene, envBase: LOOK.env,");
+    } else console.error(`[cutaway-bug] the real soil was not applied (page text moved): ${all.filter(([a]) => !s.includes(a)).map(([a]) => a.slice(0, 50)).join(" | ")}`);
+  }
   return s;
 }
 

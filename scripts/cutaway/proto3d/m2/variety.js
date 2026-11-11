@@ -11,10 +11,22 @@ const INDOOR = new Set(["room", "kitchen", "workshop", "garage", "laundry", "bat
 const MOVING = new Set(["spin", "swing", "slide", "flow", "heat", "chill", "burn", "pump", "shake", "fill", "light", "blink", "extend", "crank", "track", "follow", "snap"]);
 const SKIP = new Set(["hook", "name", "finish", "congrats"]);
 import { focusOf, focusOfId } from "./focus.js";
+import { rhythmShots } from "./cameraRules.js";
 const GAP = 1.3; // seconds between two cuts at least (the director's MOVE.minGap is 1.2)
 
-/** shots to add (each {focus, width, zone, t, at, variety}) and notes */
+/**
+ * shots to add (each {focus, width, zone, t, at, variety | rhythm}) and notes: a machine indoors' detail cuts and close-ups,
+ * then, for every custom layout, the close / wide rhythm (cameraRules.js, the owner's rule 13 of 2026-11-11: what this
+ * did for machines indoors, for every planned video; same exclusions, never a premade one)
+ */
 export function varietyShots(layout, tracks, sentences, shots) {
+  const m = machineShots(layout, tracks, sentences, shots);
+  if (typeof process !== "undefined" && process.env?.CUTAWAY_VARIETY === "0") return m;
+  const r = rhythmShots(layout, tracks, sentences, [...shots, ...m.shots]);
+  return { shots: [...m.shots, ...r.shots], notes: [...m.notes, ...r.notes] };
+}
+
+function machineShots(layout, tracks, sentences, shots) {
   const out = [], notes = [];
   // (CUTAWAY_VARIETY=0 turns it off: for a before/after)
   if (typeof process !== "undefined" && process.env?.CUTAWAY_VARIETY === "0") return { shots: out, notes };

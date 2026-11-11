@@ -2,6 +2,7 @@
 // a path"), optionally perforated (rows of dark holes), with flow dots that travel inside it once it is built.
 // Segments running along the cut face sit half in the face (z ≈ -0.06), so the viewer sees them in section.
 import { clamp01 } from "./verbs.js";
+import { surfaces } from "../m2/materials.js";
 
 let holeTex = null;
 function holes(THREE, base = "#eef0f2") {
@@ -15,15 +16,19 @@ function holes(THREE, base = "#eef0f2") {
 
 export function pipePath(ctx, points, { r = 0.24, color = "#eef0f2", perforated = false, holeSpacing = 0.55, joints = true } = {}) {
   const { THREE, scene } = ctx;
+  // (a custom layout's solid pipe is white or grey PVC with a fine surface, the owner's rule 16 of 2026-11-11: "plain
+  // pipes"; a perforated one keeps its drawn holes; a premade layout keeps its approved pipe)
+  let real = null;
+  if (ctx.realLook === true && !perforated) { try { real = surfaces(ctx).get("pvc", color); } catch { real = null; } }
   const pts = points.map((p) => new THREE.Vector3(...p));
   const segs = []; let length = 0;
   for (let i = 0; i < pts.length - 1; i++) {
     const A = pts[i], B = pts[i + 1], len = A.distanceTo(B);
     const g = new THREE.CylinderGeometry(r, r, 1, 28, 1, false); g.translate(0, 0.5, 0);
-    const mat = new THREE.MeshPhysicalMaterial({ color: perforated ? "#ffffff" : color, roughness: 0.3, clearcoat: 0.5 });
+    const mat = real ?? new THREE.MeshPhysicalMaterial({ color: perforated ? "#ffffff" : color, roughness: 0.3, clearcoat: 0.5 });
     if (perforated) { mat.map = holes(THREE, color).clone(); mat.map.needsUpdate = true; mat.map.repeat.set(1, len / holeSpacing); }
     const m = new THREE.Mesh(g, mat); m.position.copy(A); m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), B.clone().sub(A).normalize()); m.castShadow = true; m.visible = false; scene.add(m);
-    const j = joints && i < pts.length - 2 ? new THREE.Mesh(new THREE.SphereGeometry(r * 1.12, 20, 12), new THREE.MeshPhysicalMaterial({ color, roughness: 0.3, clearcoat: 0.5 })) : null;
+    const j = joints && i < pts.length - 2 ? new THREE.Mesh(new THREE.SphereGeometry(r * 1.12, 20, 12), real ?? new THREE.MeshPhysicalMaterial({ color, roughness: 0.3, clearcoat: 0.5 })) : null;
     if (j) { j.position.copy(B); j.visible = false; scene.add(j); }
     segs.push({ m, j, from: length, len, A, B, mat }); length += len;
   }
@@ -36,7 +41,7 @@ export function pipePath(ctx, points, { r = 0.24, color = "#eef0f2", perforated 
       grown = Math.max(0, Math.min(length, len));
       for (const s of segs) {
         const f = clamp01((grown - s.from) / s.len); s.m.visible = f > 0; s.m.scale.set(1, Math.max(0.001, f) * s.len, 1);
-        if (s.mat.map) s.mat.map.repeat.set(1, Math.max(0.001, f) * s.len / holeSpacing);
+        if (perforated && s.mat.map) s.mat.map.repeat.set(1, Math.max(0.001, f) * s.len / holeSpacing);
         if (s.j) s.j.visible = f >= 1;
       }
     },

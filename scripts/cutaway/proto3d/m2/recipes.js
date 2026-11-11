@@ -44,18 +44,18 @@ export function recipeFor(keyword) {
   return null;
 }
 /** what a model part becomes: { recipe } or { file } (a CC0 model) or null */
-export function resolveModel(params = {}) {
+export function resolveModel(params = {}, { real = false } = {}) {
   const r = recipeFor(params.keyword);
   if (r) return { recipe: r };
-  const m = modelMatches(params.keyword ?? "", 1)[0];
+  const m = modelMatches(params.keyword ?? "", 1, undefined, { real })[0];
   return m ? { file: m.file } : null;
 }
 /** the move names a model part answers to (its recipe's), for the validator */
 export const modelMoves = (params = {}) => (recipeFor(params.keyword)?.nodes ?? []).flatMap((n) => (n.moves ?? []).map((m) => m.name));
 
 /** a model part as a rig part (a recipe, or one CC0 model shape); null when its keyword finds nothing */
-export function modelToRig(part) {
-  const p = part.params ?? {}, r = resolveModel(p);
+export function modelToRig(part, { real = false } = {}) {
+  const p = part.params ?? {}, r = resolveModel(p, { real });
   if (!r) return null;
   const common = { name: p.keyword, synonyms: [], pos: p.pos ?? [0, 0, -2], ...(p.rotY != null ? { rotY: p.rotY } : {}), ...(p.scale != null ? { scale: p.scale } : {}) };
   const out = { ...part, kind: "rig" };
@@ -65,7 +65,9 @@ export function modelToRig(part) {
 }
 /** every model part of a layout as a rig part; problems name the keywords that found nothing */
 export function expandModels(layout) {
+  // (a custom video may find a real Poly Haven prop by its keyword; a premade keeps the model it was approved with, 2026-11-11)
+  const real = layout?.approved !== true;
   const problems = [];
-  const parts = (layout.parts ?? []).map((p) => { if (p.kind !== "model") return p; const r = modelToRig(p); if (!r) problems.push(`part ${p.id}: no recipe or CC0 model for "${p.params?.keyword}": design it as a rig`); return r ?? p; });
+  const parts = (layout.parts ?? []).map((p) => { if (p.kind !== "model") return p; const r = modelToRig(p, { real }); if (!r) problems.push(`part ${p.id}: no recipe or CC0 model for "${p.params?.keyword}": design it as a rig`); return r ?? p; });
   return { layout: { ...layout, parts }, problems };
 }

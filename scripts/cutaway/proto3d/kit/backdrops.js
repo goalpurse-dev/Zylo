@@ -11,7 +11,8 @@
 //  workshop: a home workshop in section (a concrete floor, a pegboard tool wall over a workbench, a shelf with boxes,
 //    a rolling tool chest, a closed roll-up door, strip lights; the middle left open for a car or a machine).
 
-import { model } from "./models.js";
+import { model, nodes } from "./models.js";
+import { houseFootprint, houseShapes, houseSpec, seeded, shapeBuilder, treeBlobs } from "./buildings.js";
 import { signTexture } from "./signText.js";
 import { STREET_BACK, streetRoad } from "./street.js";
 
@@ -163,9 +164,18 @@ function city(ctx, zFront, { road: withRoad = true, x0 = -46, x1 = 46 } = {}) {
   for (let tx = x0 + 7, j = 0; tx < x1; tx += 9.5, j++) model(ctx, `suburban/${j % 3 ? "tree-large" : "tree-small"}.glb`, { pos: [tx, 0.06, zFront + 1.6], size: j % 3 ? 4.2 : 3.2, gloss: 0.9, haze: HAZE_NEAR });
 }
 
+/** runs fn and notes the scene objects it added under ctx.toy[name] (the toy city a custom video's suburb replaces;
+ * nothing changes for a premade video: the note is only read by dressWorld) */
+function toyTag(ctx, name, fn, extra = {}) {
+  const before = new Set(ctx.scene.children), out = fn();
+  ((ctx.toy ??= {})[name] ??= []).push({ objs: ctx.scene.children.filter((o) => !before.has(o)), ...extra });
+  return out;
+}
+
 /** a far row of taller buildings with lit windows (z: their front), so no empty field shows behind a setting */
 function farRow(ctx, zFront, opts = {}) {
-  if (ctx.gltf) return city(ctx, zFront, opts);
+  // (what the far city added is noted, so a custom video's suburb (dressWorld, below) can put it away; 2026-11-11)
+  if (ctx.gltf) return toyTag(ctx, "far", () => city(ctx, zFront, opts), { zFront });
   const { box, scene, std, C } = ctx;
     const far = [["#9fb7c9", 13], ["#d9a86c", 17], ["#8fa889", 11], ["#c27b6b", 15], ["#a99bc4", 19], ["#d8c39a", 12], ["#86a4b8", 16]];
     far.forEach(([col, h], i) => { const w = 11, x = -36 + i * 12, z = zFront; const wall = std({ color: C(col), roughness: 0.8 }); box(wall, w, h, 9, x, h / 2, z, scene, 0.05);
@@ -210,7 +220,7 @@ export function backdrop(ctx, opts) {
       ? [{ x: R.x0 - 0.8 - 5.2, w: 10.4, h: 8, color: "#7fa7c9" }, { x: R.x1 + 0.8 + 6, w: 12, h: 7.4, color: "#e9c46a", shop: true }, { x: R.x1 + 0.8 + 12 + 5.4, w: 10.5, h: 9, color: "#c0584a" }]
       : [{ x: -11, w: 9.6, h: 8, color: "#7fa7c9" }, { x: 0, w: 12, h: 7.4, color: "#e9c46a", shop: true }, { x: 11.5, w: 10.5, h: 9, color: "#c0584a" }]);
     for (const s of shops) {
-      const z = back - 0.4, g = new THREE.Group(); g.position.set(s.x, top, z); scene.add(g);
+      const z = back - 0.4, g = new THREE.Group(); g.position.set(s.x, top, z); scene.add(g); ((ctx.toy ??= {}).shops ??= []).push({ objs: [g] });
       const wall = ctx.gltf ? pbrSized(ctx, s.shop ? "brick_wall_02" : "painted_plaster_wall", s.w, s.h, s.shop ? 2 : 3, { color: C(s.shop ? "#f2e2d0" : s.color) }) : PBR("painted_plaster_wall", 0.25, { color: C(s.color) });
       box(wall, s.w, s.h, 0.8, 0, s.h / 2, 0, g, 0.04);
       // window sills under the upper windows
@@ -232,13 +242,13 @@ export function backdrop(ctx, opts) {
     }
     // behind the shops: the street and a far row of taller buildings, so no empty field shows from above
     const asphalt = PBR("asphalt_02", 6, { color: C("#9a9a9a") });
-    const road = new THREE.Mesh(new THREE.PlaneGeometry(90, 14), asphalt); road.rotation.x = -Math.PI / 2; road.position.set(0, 0.02, back - 8.5); road.receiveShadow = true; scene.add(road);
+    const road = new THREE.Mesh(new THREE.PlaneGeometry(90, 14), asphalt); road.rotation.x = -Math.PI / 2; road.position.set(0, 0.02, back - 8.5); road.receiveShadow = true; scene.add(road); ((ctx.toy ??= {}).crossRoad ??= []).push({ objs: [road] });
     farRow(ctx, back - 22, { road: false });
     // (never on the road: a lamp or a bench there moves to the sidewalk beyond the curb)
     const offRoad = (x, pad) => (R && x > R.x0 - pad && x < R.x1 + pad ? (x < R.cx ? R.x0 - pad : R.x1 + pad) : x);
     // (with a road: across it from the cut and back from the front edge, out of the camera's way down the road)
     if (R) lamp(R.side > 0 ? R.x1 + 0.8 : R.x0 - 1.6, -6); else lamp(opts.lampX ?? 6.5, -1.0);
-    if (ctx.gltf && opts.parked !== false) model(ctx, "car/taxi.glb", { pos: [opts.parkedX ?? -14, 0.02, back - 6], rotY: Math.PI / 2, size: 4.2 });
+    if (ctx.gltf && opts.parked !== false) ((ctx.toy ??= {}).taxi ??= []).push({ objs: [model(ctx, "car/taxi.glb", { pos: [opts.parkedX ?? -14, 0.02, back - 6], rotY: Math.PI / 2, size: 4.2 })], x: opts.parkedX ?? -14, z: back - 6 });
     if (opts.bench !== false) bench(offRoad(opts.benchX ?? -6.5, 1.6), back + 1.4);
   } else if (opts.type === "garage") {
     // a concrete driveway up to a garage with its door half open (the lit inside: shelves, a workbench), the side of
@@ -575,4 +585,156 @@ export function backdrop(ctx, opts) {
     lamp(opts.lampX ?? 4.2, -3.5);
     bench(opts.benchX ?? -4.2, -5, 0.15);
   }
+}
+
+// ================= the suburb of a custom video (the owner's rules 5, 6, 19 and 21 of 2026-11-11) =================
+// A custom video's world is a real suburb from the first frame (the competitor's storm drain: stucco houses with tiled
+// roofs and shutters, hedges, street trees, neighbours across the street, cars passing), never Kenney's cartoon city.
+// dressWorld(ctx, layout, { blockers }) runs from m2/runtime.js after the parts are built, only when the layout is not
+// an approved premade: it puts the toy city (and, on a street, the toy shop fronts and the taxi) away and builds the
+// houses (kit/buildings.js houseShapes: a handful of merged meshes for the whole street), trees and background cars on
+// free ground (never on a part, the cut, a road or the main house). Its own seeded random numbers: the parts' stones,
+// bags and leaves stay as they were. It returns { trees, cars } for the world's life (kit/life.js); null when it adds
+// nothing (a generated terrain, the plain lawn, tests without a model loader).
+
+/** the suburb's materials: real textures at their real size (UVs in tiles), the colour from the vertices */
+function suburbMats(ctx) {
+  const { THREE, tex } = ctx;
+  const t = (id, map, srgb) => { try { const c = tex(id, map, 1, srgb).clone(); c.wrapS = c.wrapT = THREE.RepeatWrapping; c.repeat.set(1, 1); c.needsUpdate = true; return c; } catch { return null; } };
+  const lift = (id) => Math.min(3, 1 / Math.pow(TEX_AVG[id] ?? 0.6, 2.2));
+  const pbr = (id, extra = {}, k = lift(id)) => { const m = new THREE.MeshStandardMaterial({ map: t(id, "diff", true), normalMap: t(id, "nor", false), roughnessMap: t(id, "rough", false), vertexColors: true, ...extra }); m.color.setScalar(k); return m; };
+  return {
+    wall: pbr("painted_plaster_wall", { roughness: 0.95 }),
+    tile: pbr("roof_09", { roughness: 0.9 }, 1.25), slate: pbr("grey_roof_01", { roughness: 0.85 }, 1.6),
+    trim: new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.5 }),
+    glass: new THREE.MeshPhysicalMaterial({ color: "#1c2833", roughness: 0.04, metalness: 0.35, clearcoat: 1, envMapIntensity: 1.6 }),
+    paint: new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.45 }),
+    base: pbr("concrete_pavement", { roughness: 0.9 }),
+    hedge: pbr("leafy_grass", { roughness: 0.95 }, 2.2),
+    leaf: Object.assign(new THREE.MeshStandardMaterial({ map: t("leafy_grass", "diff", true), normalMap: t("leafy_grass", "nor", false), vertexColors: true, roughness: 0.9 }), {}),
+    grass: pbr("leafy_grass", { roughness: 1 }, 1.0),
+    bark: ctx.P?.trunk ?? new THREE.MeshStandardMaterial({ color: "#5d4632", roughness: 0.95 }),
+    asphalt: pbr("asphalt_02", { roughness: 0.9 }, 1.4), curb: new THREE.MeshStandardMaterial({ color: "#c9c5bc", roughness: 0.8 }),
+  };
+}
+/** a stable number from the layout's key (the suburb is the same every render of a layout) */
+const keySeed = (k) => { let h = 2166136261; for (const ch of String(k ?? "suburb")) h = Math.imul(h ^ ch.charCodeAt(0), 16777619); return h >>> 0; };
+/** a rectangle {x0, x1, z0, z1} of a footprint turned rotY and moved to (x, z) */
+function placedRect(fp, x, z, rotY) {
+  const c = Math.cos(rotY), s = Math.sin(rotY), pts = [[fp.x0, fp.z0], [fp.x1, fp.z0], [fp.x0, fp.z1], [fp.x1, fp.z1]].map(([a, b]) => [a * c + b * s + x, -a * s + b * c + z]);
+  return { x0: Math.min(...pts.map((p) => p[0])), x1: Math.max(...pts.map((p) => p[0])), z0: Math.min(...pts.map((p) => p[1])), z1: Math.max(...pts.map((p) => p[1])) };
+}
+/** a street tree: a bark trunk and one merged crown of lumpy leaf blobs (its own mesh, pivoting at the trunk top, so the
+ * wind sways it: kit/life.js) */
+function suburbTree(ctx, M, seed, s, x, z) {
+  const { THREE, scene } = ctx, r = seeded(seed), g = new THREE.Group(); g.position.set(x, 0, z); scene.add(g);
+  const h = (2.6 + r() * 0.8) * s;
+  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.16 * s, 0.26 * s, h, 9), M.bark); trunk.position.y = h / 2; trunk.castShadow = trunk.receiveShadow = true; g.add(trunk);
+  const pos = [], nor = [], uv = [], col = [], GREENS = ["#5d7f38", "#6a8a40", "#52753a", "#748f48", "#4d6b33"].map((c) => new THREE.Color(c));
+  for (const b of treeBlobs(seed, s)) {
+    // (welded first, so the lumps shade smooth, not faceted; then one triangle list again)
+    let ico = new THREE.IcosahedronGeometry(b.r, 2); if (ctx.mergeVertices) { ico.deleteAttribute("uv"); ico = ctx.mergeVertices(ico); }
+    const p = ico.attributes.position, v = new THREE.Vector3(), k = r() * 10;
+    for (let i = 0; i < p.count; i++) { v.fromBufferAttribute(p, i); const d = 1 + 0.13 * Math.sin(v.x * 3.1 + k) * Math.sin(v.y * 2.7 + k) + 0.06 * Math.sin(v.z * 7 + k); p.setXYZ(i, v.x * d + b.at[0], v.y * d * 0.85 + b.at[1], v.z * d + b.at[2]); }
+    ico.computeVertexNormals(); if (ico.index) ico = ico.toNonIndexed();
+    const c = GREENS[Math.floor(r() * GREENS.length)], n = ico.attributes.normal, P2 = ico.attributes.position;
+    for (let i = 0; i < P2.count; i++) { const X = P2.getX(i), Y = P2.getY(i), Z = P2.getZ(i); pos.push(X, Y, Z); nor.push(n.getX(i), n.getY(i), n.getZ(i)); uv.push((X + Z) / 1.4, Y / 1.4); const shade = 0.82 + 0.3 * Math.max(0, n.getY(i)); col.push(c.r * shade, c.g * shade, c.b * shade); }
+    ico.dispose();
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute("normal", new THREE.Float32BufferAttribute(nor, 3)); geo.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2)); geo.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
+  const crown = new THREE.Mesh(geo, M.leaf); crown.position.y = h; crown.castShadow = crown.receiveShadow = true; g.add(crown);
+  return { group: g, crown, ph: r() * 6.28 };
+}
+const INDOOR_FAR = new Set(["room", "kitchen", "workshop", "carwash", "garage"]);
+export function dressWorld(ctx, layout, { blockers = [] } = {}) {
+  try { return suburb(ctx, layout, blockers); } catch (e) { console.error(`[cutaway-bug] the suburb was not built: ${e?.message ?? e}`); return null; }
+}
+function suburb(ctx, layout, blockers) {
+  const W = layout.world ?? {}, bd = W.backdrop ?? null, type = bd?.type ?? (W.house === false ? "plain" : "yard");
+  if (!ctx.gltf || (layout.parts ?? []).some((p) => p.kind === "terrain") || type === "plain") return null;
+  const { THREE, scene } = ctx, M = suburbMats(ctx), toy = ctx.toy ?? {}, seed0 = keySeed(layout.key);
+  M.leaf.color.setScalar(2.3); M.grass.color.setRGB(0.62, 1.05, 0.36); // (a summer lawn: the texture alone reads as dry straw)
+  const hide = (name) => (toy[name] ?? []).forEach((e) => e.objs.forEach((o) => { o.visible = false; }));
+  const B = { wall: shapeBuilder(), tile: shapeBuilder(), slate: shapeBuilder(), trim: shapeBuilder(), glass: shapeBuilder(), paint: shapeBuilder(), base: shapeBuilder(), hedge: shapeBuilder() };
+  const taken = [...blockers];
+  const cut = ctx.cut; if (cut) taken.push({ x0: cut.x0 - 1, x1: cut.x1 + 1, z0: cut.z0 - 1, z1: 2 });
+  const free = (r) => !taken.some((k) => r.x0 < k.x1 && r.x1 > k.x0 && r.z0 < k.z1 && r.z1 > k.z0);
+  let n = 0;
+  /** a house whose front garden's hedge line passes through (hx, hz), facing rotY (0: toward the camera, +z) */
+  const house = (hx, hz, rotY = 0, over = {}) => {
+    const h = houseSpec(seed0 % 9973 + n * 31 + 1, over), off = h.d / 2 + (h.hedge ? 3.7 : 0.8);
+    const x = hx - Math.sin(rotY) * off, z = hz - Math.cos(rotY) * off, rect = placedRect(houseFootprint(h), x, z, rotY);
+    n++;
+    if (!free(rect)) return false;
+    taken.push(rect);
+    const slate = /^#6b/.test(h.roofColor), roofTint = slate ? "#d6d6d6" : ["#f7b096", "#e8a088", "#ffbea4"][n % 3];
+    houseShapes({ ...B, roof: slate ? B.slate : B.tile }, { ...h, roofColor: roofTint }, { x, z, rotY });
+    return true;
+  };
+  const trees = [];
+  const tree = (x, z, s = 1) => { const r = { x0: x - 0.6, x1: x + 0.6, z0: z - 0.6, z1: z + 0.6 }; if (!free(r)) return; taken.push(r); trees.push(suburbTree(ctx, M, seed0 % 7919 + trees.length * 13 + 5, s, x, z)); };
+  const cars = [];
+  const plane = (mat, w, d, x, y, z, tile = 4) => { const g = new THREE.PlaneGeometry(w, d); const uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * w / tile, uv.getY(i) * d / tile); g.setAttribute("color", new THREE.Float32BufferAttribute(new Array(uv.count * 3).fill(1), 3)); const m = new THREE.Mesh(g, mat); m.rotation.x = -Math.PI / 2; m.position.set(x, y, z); m.receiveShadow = true; scene.add(m); return m; };
+  if (type === "street") {
+    const back = bd.back ?? (bd.road === false ? -8 : STREET_BACK), R = bd.road === false ? null : streetRoad({ cut, road: bd.road ?? {}, back });
+    // (a downtown street keeps its shop fronts: world.backdrop.city true)
+    if (!bd.city) hide("shops");
+    hide("far"); hide("crossRoad"); hide("taxi");
+    taken.push({ x0: -26.5, x1: 26.5, z0: back - 0.2, z1: 80 });
+    if (R) taken.push({ x0: R.x0 - 2.5, x1: R.x1 + 2.5, z0: back - 9, z1: 80 });
+    // the cross street at the end of the road: asphalt, a white dashed centre line, the far curb and sidewalk
+    const cz = back - 4.2;
+    plane(M.asphalt, 240, 8.2, 0, 0.02, cz, 5);
+    const curb = new THREE.Mesh(new THREE.BoxGeometry(240, 0.16, 0.25), M.curb); curb.position.set(0, 0.08, back - 8.4); curb.receiveShadow = true; scene.add(curb);
+    plane(M.base, 240, 2.3, 0, 0.1, back - 9.65, 2.4);
+    const dash = new THREE.MeshStandardMaterial({ color: "#eeeeea", roughness: 0.6 });
+    for (let x = -118; x < 118; x += 4) { if (R && x > R.x0 - 1 && x < R.x1 + 1) continue; const d = new THREE.Mesh(new THREE.BoxGeometry(2, 0.01, 0.14), dash); d.position.set(x, 0.035, cz); scene.add(d); }
+    taken.push({ x0: -300, x1: 300, z0: back - 10.9, z1: back + 0.2 });
+    // across the street: a row of houses facing the camera, a second row behind, street trees on the verge
+    for (let x = -72, i = 0; x <= 72; x += 15, i++) house(x + (i % 3) - 1, back - 11.1, 0);
+    for (let x = -64; x <= 64; x += 16) house(x, back - 31, 0);
+    for (let x = -63, i = 0; x <= 66; x += 11, i++) tree(x, back - 10.5 - 0.5, 0.95 + (i % 2) * 0.2);
+    for (let x = -60; x <= 60; x += 19) tree(x + 5, back - 28.5, 1.35);
+    // further back: a third row and a belt of tall trees, so a high camera sees a suburb to the horizon, never an empty
+    // striped field (the owner's look round, 2026-11-11); the far lawn is plain natural grass
+    for (let x = -72; x <= 72; x += 17) house(x + 8, back - 50, 0);
+    for (let x = -126, i = 0; x <= 126; x += 9, i++) tree(x + (i % 3), back - 66 - (i % 2) * 8, 2.1 + (i % 3) * 0.35);
+    plane(M.grass, 520, 280, 0, 0.02, back - 10.95 - 140, 3);
+    // beside the camera's view: neighbours beyond the sidewalk's ends, facing the street
+    for (const z of [back + 7, back + 21]) { house(-28, z, Math.PI / 2); house(28, z, -Math.PI / 2); }
+    tree(-28.5, back + 14, 1.15); tree(28.5, back + 14, 1.15);
+    // a real parked car where the taxi stood, and cars each way on the cross street (kit/life.js drives them)
+    model(ctx, "car/sedan.glb", { pos: [toy.taxi?.[0]?.x ?? -14, 0.02, back - 7.0], rotY: Math.PI / 2, size: 4.2, real: true, tint: "#8c8f93" });
+    const KINDS = ["sedan", "suv", "hatchback-sports", "sedan-sports", "suv-luxury"], PAINT = ["#2c3e5c", "#e8e8e4", "#7a2a26", "#b9bdc2"];
+    [[back - 2.1, 1], [back - 5.3, -1]].forEach(([lz, dir], li) => {
+      for (let k = 0; k < 2; k++) {
+        const c = { lane: lz, dir, off: (li * 0.37 + k * 0.5) % 1, wheels: [], g: null };
+        c.g = model(ctx, `car/${KINDS[(li * 2 + k) % KINDS.length]}.glb`, { pos: [0, 0.02, lz], rotY: dir > 0 ? Math.PI / 2 : -Math.PI / 2, size: 4.2, real: true, tint: PAINT[(li * 2 + k) % PAINT.length] }, (g, inner) => { for (const w of nodes(inner, /^wheel/)) c.wheels.push(w); });
+        cars.push(c);
+      }
+    });
+  } else if (type === "yard" || type === "park") {
+    // neighbours level with the house and a row behind (rule 5: one house, then its neighbours, then the street)
+    const hp = Array.isArray(W.house) ? W.house.map(Number) : [-8, 0, -30];
+    if (W.house !== false) taken.push({ x0: hp[0] - 7, x1: hp[0] + 7, z0: hp[2] - 4.5, z1: hp[2] + 6 });
+    if (W.road !== false) { const rp = Array.isArray(W.road) ? W.road.map(Number) : [0, 0.01, -53.5]; taken.push({ x0: rp[0] - 3.5, x1: rp[0] + 3.5, z0: rp[2] - 46, z1: rp[2] + 46 }); }
+    const big = [...(W.trees ?? [[-13, -11.5], [14, -3.4, 0.9]]), ...(W.moreTrees === false ? [] : [[-16, -27], [18, -31], [-3, -44], [-23, -15]])];
+    for (const [x, z] of big) taken.push({ x0: x - 2.5, x1: x + 2.5, z0: z - 2.5, z1: z + 2.5 });
+    const z0 = Math.min(hp[2], -24);
+    for (const dx of [-17, 17, -34, 34, -51, 51]) house(hp[0] + dx, z0 + 7, 0);
+    for (const dx of [-25, -8, 9, 26, -42, 43]) house(hp[0] + dx, z0 - 17, 0);
+    for (const dx of [-26, 26, -43, 43, -9, 8]) tree(hp[0] + dx, z0 + 8.5, 1.2);
+    for (let x = -126, i = 0; x <= 126; x += 9, i++) tree(x + (i % 3), z0 - 40 - (i % 2) * 8, 2.1 + (i % 3) * 0.35);
+    // (around the yard's road, which lies lower than this grass)
+    const rx = W.road === false ? null : (Array.isArray(W.road) ? Number(W.road[0]) : 0);
+    if (rx == null) plane(M.grass, 520, 280, 0, 0.02, z0 - 9 - 140, 3);
+    else { plane(M.grass, 260 + rx - 2.4, 280, (-260 + rx - 2.4) / 2, 0.02, z0 - 9 - 140, 3); plane(M.grass, 260 - rx - 2.4, 280, (260 + rx + 2.4) / 2, 0.02, z0 - 9 - 140, 3); }
+  } else if (INDOOR_FAR.has(type)) {
+    // the far city behind the room, the garage or the car wash becomes a row of houses with their gardens and trees
+    hide("far");
+    for (const e of toy.far ?? []) { for (let x = -66; x <= 66; x += 15) house(x, e.zFront + 2, 0); for (let x = -60; x <= 60; x += 13) tree(x + 4, e.zFront + 3.2, 1.1); }
+  }
+  for (const [k, b] of Object.entries(B)) { const g = b.geometry(THREE); if (!g) continue; const m = new THREE.Mesh(g, M[k]); m.castShadow = m.receiveShadow = true; scene.add(m); }
+  return { trees, cars, houses: n };
 }

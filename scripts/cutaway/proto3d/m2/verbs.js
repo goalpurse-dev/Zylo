@@ -71,6 +71,12 @@ export const VERBS = {
   road: { pave: [R("pave", 0, 1.4, 1, "inOut")], build: [R("build", 0, 1.8, 1, "out")], twist: [R("twist", 0, 0.6, 1, "out")], calm: [R("twist", 0, 1.0, -1, "inOut"), R("sway", 0, 1.0, -1, "inOut")], sway: [R("sway", 0, 0.6, 1, "out")] },
   building: { build: [R("build", 0, 1.6, 1, "out")], lights: [R("lights", 0, 0.4)], dark: [R("lights", 0, 0.4, -1)], up: [R("lift", 0, 2.0, 1, "inOut")], down: [R("lift", 0, 2.0, -1, "inOut")], run: [R("run", -0.1, 0.1, 1, "step")], stop: [R("run", 0, 0.1, -1, "step")] },
   ambient: { start: [R("on", 0, 0.4)], stop: [R("on", 0, 0.4, -1)] },
+  // (the recurring prop, 2026-11-11: ride's amp is the share of the path it covers; stop cuts a ride short where it is)
+  // (the life element, 2026-11-11: a person acts from the start unless told to start; walk goes along its path; a hand's
+  // press is one push and back, push holds it in, turn rolls the wrist a quarter turn)
+  person: { show: [R("show", -0.1, 0.35, 1, "back")], hide: [R("show", 0, 0.3, -1, "in2")], walk: [R("go", 0, 3.0, 1, "inOut")], start: [R("act", 0, 0.4)], stop: [R("act", 0, 0.4, -1)] },
+  hand: { show: [R("show", -0.1, 0.35, 1, "back")], hide: [R("show", 0, 0.3, -1, "in2")], press: [R("press", 0, 0.25, 1, "out"), R("press", 0.45, 0.8, -1, "inOut")], push: [R("press", 0, 0.3, 1, "out")], release: [R("press", 0, 0.3, -1, "inOut")], turn: [R("turn", 0, 0.8, 1, "inOut")], turnBack: [R("turn", 0, 0.8, -1, "inOut")] },
+  token: { sit: [R("show", -0.1, 0.3, 1, "back")], show: [R("show", -0.1, 0.3, 1, "back")], hide: [R("show", 0, 0.3, -1, "in2")], ride: [R("ride", 0, 2.4, 1, "inOut")], stop: [R("stop", 0, 0.05, 1, "step")] },
   terrain: { erupt: [R("glow", 0, 0.8, 1, "out")], calm: [R("glow", 0, 1.2, -1, "inOut")] },
   fx: { go: [R("go", 0, 1.6)], start: [R("on", -0.1, 0.3)], stop: [R("on", 0, 0.5, -1)] },
   arrows: ONOFF(), outline: { show: [R("on", -0.175, 0.075)], hide: [R("on", 0.025, 0.275, -1)] }, seepFlow: ONOFF(),

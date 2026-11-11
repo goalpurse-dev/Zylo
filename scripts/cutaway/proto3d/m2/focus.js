@@ -10,6 +10,8 @@ import { waterBox } from "../kit/water.js";
 import { buildingBox } from "../kit/buildings.js";
 import { roadBox } from "../kit/roads.js";
 import { wiresBox } from "../kit/wires.js";
+import { tokenBox } from "../kit/token.js";
+import { handBox, personBox } from "../kit/people.js";
 
 const fromPoints = (pts, pad = 0) => {
   const min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
@@ -69,6 +71,9 @@ function focusOfRaw(part, cut) {
     case "prop": { const [x, y, z] = p.pos ?? [0, 0, 0], s = p.scale ?? 1; return { min: [x - 0.8 * s, y, z - 0.5 * s], max: [x + 0.8 * s, y + 1.9 * s, z + 0.5 * s] }; }
     case "grate": { const [x, y, z] = p.pos ?? [0, 0.1, -1.5], w = p.width ?? 1.6, d = p.depth ?? 0.8; return { min: [x - w / 2, y, z - d / 2], max: [x + w / 2, y + 0.1, z + d / 2] }; }
     case "canopy": return { min: [p.x0 ?? -3, p.y ?? 0, p.z0 ?? -5], max: [p.x1 ?? 3, (p.y ?? 0) + (p.h ?? 4) + 0.3, p.z1 ?? -1] };
+    case "token": return tokenBox(p);
+    case "person": return personBox(p);
+    case "hand": return handBox(p);
     case "car": { const [x, y, z] = p.pos ?? [0, 0.1, -2], s = p.scale ?? 1; return p.axis === "z" ? { min: [x - 1 * s, y, z - 2.2 * s], max: [x + 1 * s, y + 1.9 * s, z + 2.2 * s] } : { min: [x - 2.2 * s, y, z - 1 * s], max: [x + 2.2 * s, y + 1.9 * s, z + 1 * s] }; }
     // a lane of queued cars: from the stop line back along the lane (cityParts.js traffic)
     case "traffic": { const [x, zs] = p.lane ?? [-6, 4], d = p.dir ?? 1, n = p.n ?? 4, g = p.gap ?? 5.6, y = p.y ?? 0.12, far = zs - d * (2.4 + (n - 1) * g + 2.2); return { min: [x - 1.1, y, Math.min(zs, far)], max: [x + 1.1, y + 1.9, Math.max(zs, far)] }; }

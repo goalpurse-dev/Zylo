@@ -80,13 +80,17 @@ export const FIELDS = Object.freeze({
   waterBody: { f: { body: "one:sea,river,lake,pool", x0: "num", x1: "num", level: "num", z0: "num", depth: "num", waves: "bool", color: "color", murky: "bool", rise: "num", flood: "num" }, need: ["x0", "x1", "level"] },
   // (one field list for every block type: each type reads its own, kit/terrain.js terrainModel)
   ambient: { f: { mode: "one:breeze,hum,steam", target: "str", at: "vec3", size: "num" } },
+  person: { f: { pos: "vec3", rotY: "num", action: "one:stand,walk,dig,press,turn,drive,wave,point", path: "path", height: "num", look: "one:worker,casual", car: "id", skin: "num" }, need: ["pos"] },
+  hand: { f: { pos: "vec3", from: "vec3", size: "num", action: "one:press,turn,point,grab", sleeve: "color" }, need: ["pos"] },
+  token: { f: { type: "one:tennisBall,duck,leaf,boat,bottle,ball", pos: "vec3", path: "path", size: "num", float: "bool" }, need: ["pos"] },
   terrain: { f: { blocks: { each: { type: "one:flat,hill,mountain,cliff,gorge,coast,riverbed,pit,tunnel", x0: "num", x1: "num", y: "num", z: "num", z0: "num", at: "num", height: "num", width: "num", top: "num", bottom: "num", high: "one:left,right", face: "one:rock,earth", depth: "num", wall: "num", walls: "one:rock,earth", sea: "one:left,right", beach: "num", r: "num", lining: "bool", crater: { obj: { r: "num", depth: "num" } }, chamber: { obj: { y: "num", rx: "num", ry: "num", dx: "num", color: "color", vent: "bool" } } } }, trees: "points" }, need: ["blocks"] },
   rig: { f: { name: "str", synonyms: "strs", pos: "vec3", rotY: "num", scale: "num", mount: "one:wall", nodes: "list" }, need: ["name", "pos", "nodes"] },
 });
 
 // a designed part's pieces (rig.js): node fields, each shape's fields, each move type's fields
 export const RIG_NODE = Object.freeze({ id: "str", parent: "str", at: "vec3", shapes: "list", moves: "list" });
-const SHAPE_COMMON = { shape: "str", at: "vec3", rot: "vec3", look: "one:metal,plastic,wood,glass,rubber,paint,concrete", color: "color", radius: "num" };
+// (surface: what a shape is made of, at real scale, in a custom video: m2/materials.js SURFACES, 2026-11-11)
+const SHAPE_COMMON = { shape: "str", at: "vec3", rot: "vec3", look: "one:metal,plastic,wood,glass,rubber,paint,concrete", color: "color", radius: "num", surface: "one:concrete,stone,brushed,galvanised,paint,plastic,pvc,rubber,brick,wood,shingles,asphalt,plaster,tiles,dirt" };
 export const RIG_SHAPE_FIELDS = Object.freeze({
   box: { size: "vec3" }, panel: { size: "vec2", thick: "num" }, cylinder: { r: "num", h: "num", axis: "one:x,y,z" },
   wheel: { r: "num", w: "num", axis: "one:x,y,z" }, gear: { r: "num", w: "num", teeth: "num", axis: "one:x,y,z" }, hinge: { r: "num", h: "num", axis: "one:x,y,z" },

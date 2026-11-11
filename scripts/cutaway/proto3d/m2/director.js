@@ -10,6 +10,7 @@ import { boxCenter, focusOf, focusOfId, union } from "./focus.js";
 import { reportBug, soft } from "./bookkeeping.js";
 import { rigBox } from "./rig.js";
 import { LENS, CAMERA_LIMITS, measureKey, settingBoxes, subjectBox, turnBetween } from "./framing.js";
+import { RULES, SKIP_ROLES, cameraRulesOn, fillMet, fillOf, flowPlaces, lineSubject, sameView } from "./cameraRules.js";
 
 export { LENS };
 // the shot vocabulary, measured on the hand-built paths (m2/shotStudy.mjs): the camera's distance as a share of the
@@ -229,6 +230,82 @@ export function directCamera(layout, shots, marks) {
   }
   const keys = [[0, home.pos, home.tgt]], notes = [], frames = [];
   let cur = home, lastMove = -Infinity;
+  // the competitor look's camera rules (cameraRules.js, the owner's rules 12-14 of 2026-11-11): custom layouts only
+  const rules = cameraRulesOn(layout);
+  let lastEnd = -Infinity, side = 1;
+  const DEG = Math.PI / 180, bv = norm(Array.isArray(baseView) ? baseView : VIEWS[baseView] ?? VIEWS.home), yaw0 = Math.atan2(bv[0], bv[2]);
+  const viewAt = (yaw, el) => [Math.sin(yaw) * Math.cos(el * DEG), Math.sin(el * DEG), Math.cos(yaw) * Math.cos(el * DEG)];
+  // a box framed so it fills `aim` of the frame width (rule 14), along `view`: tried at that size and up to 60%, in the free
+  // zone that clears the caption band and centred; the first with at most the allowed open lawn or sky (a part at half the
+  // width shows more round it than the old 85% build did: the free sweep's first try had 40-80% sky on 30 plans), else the
+  // least empty. A part too tall to be whole at that width is held whole (85% of the height). Never a camera inside the soil.
+  const frameFill = (box, view, aim) => {
+    let best = null;
+    for (const a of [aim, Math.min(RULES.fill[1], aim + 0.05), RULES.fill[1]]) for (const zone of ["auto", "center"]) {
+      let w = a, f = null;
+      for (let i = 0; i < 5; i++) {
+        f = frameBox(box, { view, width: w, zone, fit: "loose", minField: 0 });
+        const fl = fillOf(projectBox(f.pos, f.tgt, box));
+        if (!(fl > 0) || Math.abs(fl - a) < 0.03) break;
+        w = Math.min(1.2, Math.max(0.05, w * (a / fl)));
+      }
+      let k = { pos: f.pos, tgt: f.tgt };
+      const r = projectBox(k.pos, k.tgt, box);
+      if (!r.behind && r.h > 0.92) k = scaleView(k, r.h / 0.85);
+      for (let i = 0; i < 8 && k.pos[1] < 0 && k.pos[2] < 0.4; i++) k = scaleView(k, 1.2);
+      const m = measureKey(layout, k.pos, k.tgt), rk = projectBox(k.pos, k.tgt, box), cap = rk.y0 < 0.57 && rk.y1 > 0.47;
+      const score = Math.max(0, m.empty - (CAMERA_LIMITS.emptyMax - 0.02)) * 4 + (cap ? 0.12 : 0) + Math.abs(a - aim) * 0.5;
+      if (!best || score < best.score - 1e-9) best = { k, score };
+      if (score < 1e-9) return k;
+    }
+    return best.k;
+  };
+  // (rule 12 with the 20 degree turn limit between keys: a key that turns more than `max` from the last one is turned back
+  // toward it, round its own aim)
+  const clampTurn = (from, k, max) => {
+    if (turnBetween(from, k) <= max) return k;
+    const df = norm(sub(from.pos, from.tgt)), dk = norm(sub(k.pos, k.tgt)), L = Math.hypot(...sub(k.pos, k.tgt));
+    let lo = 0, hi = 1;
+    for (let i = 0; i < 14; i++) { const u = (lo + hi) / 2, d = norm(add(mul(dk, 1 - u), mul(df, u))); if (turnBetween({ pos: add(k.tgt, d), tgt: k.tgt }, from) > max) lo = u; else hi = u; }
+    const d = norm(add(mul(dk, 1 - hi), mul(df, hi)));
+    return { pos: add(k.tgt, mul(d, L)).map((v) => +v.toFixed(3)), tgt: k.tgt };
+  };
+  // a rhythm shot (rule 13): a macro of the mechanism or a close view low and from the side, or a pulled-back view higher
+  // from the other side; each is a new framing (the yaw step and the elevation keep it under the 20 degree turn limit)
+  const rhythmKey = (s) => {
+    side = -side;
+    const mid = s.rhythm === "mid", yaw = yaw0 + side * RULES.yaw * DEG;
+    let k = null;
+    for (const el of mid ? [RULES.midElev, RULES.midElev + 6] : [RULES.lowElev, RULES.lowElev + 6, RULES.lowElev + 12]) {
+      k = frameFill(s.box, viewAt(yaw, el), mid ? RULES.fill[0] + 0.03 : RULES.macroFill);
+      // (a low camera on a part above ground may see mostly sky: one step higher)
+      if (underground(s.box) || measureKey(layout, k.pos, k.tgt).empty <= CAMERA_LIMITS.emptyMax - 0.02) break;
+    }
+    return k;
+  };
+  // the line's part at 40-60% of the frame (rule 14): a key outside that is reframed along its own view direction
+  const fillFix = (k, s) => {
+    const role = s.at?.s, sb = role && !SKIP_ROLES.has(role) ? lineSubject(layout, role) : null;
+    if (!sb) return k;
+    const r0 = projectBox(k.pos, k.tgt, sb.box), fl = fillOf(r0);
+    if (fillMet(r0)) return k;
+    const q = frameFill(sb.box, sub(k.pos, k.tgt), RULES.fillAim);
+    notes.push(`shot at ${s.t.toFixed(2)} s: ${sb.id} reframed to fill ${(fillOf(projectBox(q.pos, q.tgt, sb.box)) * 100).toFixed(0)}% (was ${(fl * 100).toFixed(0)}%)`);
+    return q;
+  };
+  // the travel stops between two keys along layout.story.flow (rule 12: the camera follows what moves, roof -> gutter ->
+  // downspout -> drain), at most two, each a view of that place from between the two keys' directions
+  const places = rules ? flowPlaces(layout) : [];
+  const distTo = (p, b) => Math.hypot(...p.map((v, i) => Math.max(b.min[i] - v, 0, v - b.max[i])));
+  const nearest = (p) => places.reduce((best, q, i) => (distTo(p, q.box) < distTo(p, places[best].box) ? i : best), 0);
+  const stopsBetween = (a, b) => {
+    if (places.length < 3) return [];
+    const i = nearest(a.tgt), j = nearest(b.tgt); if (Math.abs(i - j) < 2) return [];
+    const mid = []; for (let x = i + Math.sign(j - i); x !== j; x += Math.sign(j - i)) mid.push(places[x]);
+    const pick = mid.length <= 2 ? mid : [mid[Math.floor(mid.length / 3)], mid[Math.floor((2 * mid.length) / 3)]];
+    const da = sub(a.pos, a.tgt), db = sub(b.pos, b.tgt), la = Math.hypot(...da), lb = Math.hypot(...db);
+    return pick.map((q, n) => { const u = (n + 1) / (pick.length + 1), dir = norm(add(mul(norm(da), 1 - u), mul(norm(db), u))), tgt = boxCenter(q.box); return { pos: add(tgt, mul(dir, (la * (1 - u) + lb * u) * 1.1)).map((v) => +v.toFixed(3)), tgt: tgt.map((v) => +v.toFixed(3)) }; });
+  };
   const homeD = Math.hypot(...sub(home.pos, home.tgt)), subj = subjectBox(layout), sc = boxCenter(subj);
   // a small build (a toilet, a mailbox): the shortest field shrinks with it, or its pieces could never fill a shot
   const minField = Math.min(MIN_FIELD, Math.max(1.2, 2.5 * Math.max(subj.max[0] - subj.min[0], subj.max[2] - subj.min[2])));
@@ -333,10 +410,18 @@ export function directCamera(layout, shots, marks) {
   // (one shot that crashes keeps the camera where it was: our bug, logged; the owner's rule of 2026-11-05)
   for (const s of shots) { try {
     const start = s.t - MOVE.lead;
-    if (start - lastMove < MOVE.minGap) { notes.push(`shot at ${s.t.toFixed(2)} s dropped: ${(start - lastMove).toFixed(1)} s after the last move`); continue; }
+    // (rules: a travel lands before the next sets off; a shot whose line starts under 0.55 s after the last landing is dropped)
+    if (rules ? s.t - lastEnd < 0.25 : start - lastMove < MOVE.minGap) { notes.push(`shot at ${s.t.toFixed(2)} s dropped: ${(rules ? s.t - lastEnd : start - lastMove).toFixed(1)} s after the last move`); continue; }
     let k;
+    // a rhythm shot (cameraRules.js): its own close or pulled-back frame, none of the passes below (they would pull a macro
+    // back to the whole build)
+    if (rules && s.rhythm && s.box) {
+      k = rhythmKey(s);
+      const r = projectBox(k.pos, k.tgt, s.box);
+      frames.push({ t: s.t, ids: [].concat(s.focus ?? "(box)"), hero: false, rect: r, zone: "rhythm", rhythm: s.rhythm, measure: measureKey(layout, k.pos, k.tgt), anchored: null, ok: true, why: [] });
+    }
     // (the "Add ..." line's home shot: the whole build, so the things it adds are seen arriving)
-    if (s.focus === "home") k = s.scale ? scaleView(home, s.scale) : s.at?.s === "finish" ? liftSoil(layout, homeAll, build) : home;
+    else if (s.focus === "home") k = s.scale ? scaleView(home, s.scale) : s.at?.s === "finish" ? liftSoil(layout, homeAll, build) : home;
     else {
       let ids = s.box ? ["(box)"] : [].concat(s.focus), boxes = s.box ? [s.box] : ids.map((id) => focusOfId(parts, id, cut));
       // (a part with no box of its own, a wet band or a flow, is left out of the shot; the shot keeps the rest: the whole
@@ -428,18 +513,61 @@ export function directCamera(layout, shots, marks) {
         if (n) notes.push(`shot at ${s.t.toFixed(2)} s: stepped back ${n} time${n > 1 ? "s" : ""} so no car looms`);
       }
       // the opening: a first shot on the hook is the first frame (the video opens close on the hook object)
-      if (keys.length === 1 && start < 0.4) { keys[0] = [0, k.pos, k.tgt]; cur = k; lastMove = 0; frames.at(-1).opening = true; continue; }
+      if (keys.length === 1 && start < 0.4) { keys[0] = [0, k.pos, k.tgt]; cur = k; lastMove = 0; lastEnd = 0; frames.at(-1).opening = true; continue; }
     }
     if (turnBetween(cur, k) > CAMERA_LIMITS.turnMax) notes.push(`shot at ${s.t.toFixed(2)} s turns ${turnBetween(cur, k).toFixed(0)} degrees (the hand-built paths turn at most ${CAMERA_LIMITS.turnMax})`);
+    // rules 12 and 14: the line's part at 40-60%, then a speed-limited travel there (through the flow's places on the way)
+    // that lands just after the line starts; never a jump (the hold before it creeps in as before)
+    if (rules) {
+      if (!s.rhythm && s.at?.s !== "name" && !s.hero) k = fillFix(k, s);
+      // a new line's shot that lands on the framing the camera already holds is no new view (two lines on the same pool):
+      // it steps to the side and in or out, its part still at 40-60% (rule 13)
+      // (never the opening, the name line or the end: a second hook shot stepped out to a 140 m view of the void under the soil)
+      if (!s.hero && !SKIP_ROLES.has(s.at?.s) && sameView(cur, k)) {
+        const sb = (s.rhythm && s.box ? { box: s.box } : lineSubject(layout, s.at?.s)) ?? (s.box ? { box: s.box } : null);
+        if (sb) {
+          side = -side;
+          const d = sub(k.pos, k.tgt), yaw = Math.atan2(d[0], d[2]) + side * 12 * DEG, el = Math.asin(Math.max(-1, Math.min(1, d[1] / Math.hypot(...d)))) / DEG;
+          const fl = fillOf(projectBox(k.pos, k.tgt, sb.box)), q = frameFill(sb.box, viewAt(yaw, Math.max(8, Math.min(40, el + (fl < 0.5 ? -5 : 5)))), fl < 0.5 ? RULES.fill[1] - 0.02 : RULES.fill[0] + 0.02);
+          if (!sameView(cur, q)) { k = q; notes.push(`shot at ${s.t.toFixed(2)} s: a new view (it would have held the same framing)`); }
+        }
+      }
+      let stops = stopsBetween(cur, k);
+      const L0 = Math.hypot(...sub(cur.pos, cur.tgt)), L1 = Math.hypot(...sub(k.pos, k.tgt)), zoom = Math.abs(Math.log2(Math.max(1e-3, L1) / Math.max(1e-3, L0)));
+      // (a big dive or pull-back, 58 m to 1 m, moved linearly in space rushed the last frames past the part like a cut (the
+      // free sweep's sump pump): it passes through views at evenly spaced distances on a log scale, at most two)
+      if (!stops.length && zoom > 2) {
+        const n = zoom > 4 ? 2 : 1, d0 = norm(sub(cur.pos, cur.tgt)), d1 = norm(sub(k.pos, k.tgt));
+        stops = Array.from({ length: n }, (_, i) => { const u = (i + 1) / (n + 1), tgt = add(mul(cur.tgt, 1 - u), mul(k.tgt, u)), dir = norm(add(mul(d0, 1 - u), mul(d1, u))); return { pos: add(tgt, mul(dir, L0 * (L1 / L0) ** u)).map((v) => +v.toFixed(3)), tgt: tgt.map((v) => +v.toFixed(3)) }; });
+      }
+      const path = [cur, ...stops, k];
+      let len = 0; for (let i = 1; i < path.length; i++) len += (Math.hypot(...sub(path[i].pos, path[i - 1].pos)) + Math.hypot(...sub(path[i].tgt, path[i - 1].tgt))) / 2;
+      const ref = Math.max(1, (L0 + L1) / 2), T = RULES.travel;
+      // speed-limited: at most T.speed view distances a second, and a doubling or halving of the distance in 0.35 s or more
+      const dur = Math.min(T.max + T.perStop * stops.length, Math.max(T.min + T.perStop * stops.length, len / ref / T.speed, 0.35 * zoom));
+      const st = Math.max(s.t - T.lead * dur, lastEnd + 0.1, keys.at(-1)[0] + 0.06);
+      if (st > keys.at(-1)[0] + 0.05) push(st, drift(cur, 1 - (1 - MOVE.drift) * Math.min(1, (st - keys.at(-1)[0]) / 4)));
+      const last = { pos: keys.at(-1)[1], tgt: keys.at(-1)[2] };
+      k = clampTurn(last, k, CAMERA_LIMITS.turnMax - 1);
+      stops.forEach((w, i) => push(st + (dur * (i + 1)) / (stops.length + 1), w));
+      if (stops.length) notes.push(`shot at ${s.t.toFixed(2)} s: travels through ${stops.length} ${zoom > 2 && !places.length ? "step" : "place"}${stops.length > 1 ? "s" : ""} ${zoom > 2 && !places.length ? `of a ${zoom.toFixed(1)}-doubling zoom` : "of the flow"}`);
+      push(st + dur, k);
+      cur = k; lastMove = st; lastEnd = st + dur;
+      continue;
+    }
     if (start > keys.at(-1)[0] + 0.05) push(start, drift(cur, 1 - (1 - MOVE.drift) * Math.min(1, (start - keys.at(-1)[0]) / 4)));
     push(s.t + MOVE.settle, k);
     cur = k; lastMove = start;
   } catch (e) { reportBug(`camera shot at ${Number(s?.t).toFixed?.(2)} s`, e); } }
   // the build fills the frame (step A of the batch-2 look study): every story key after the opening moves straight in
   // until the main build is about LOOK.mainFill of the width, never cutting it at the sides or past the top
+  // (under the camera rules only the "Add ..." line's keys: rule 14 frames each other line's own part at 40-60%, and an 85%
+  // build pulled every macro back out; the owner's rules of 2026-11-11. The finished build still fills the end)
+  const finT = rules ? (shots.find((x) => x.at?.s === "finish")?.t ?? Infinity) - RULES.travel.max : -Infinity;
   if (layout.codeShots && !layout.camera?.home) soft("closer on the build", () => {
     const mb = subjectBox(layout);
     for (let i = 1; i < keys.length; i++) {
+      if (keys[i][0] < finT) continue;
       if (keys[i][0] >= marks.signPop - 0.5) break;
       // (not the opening's own hold: its drift key keeps the opening's aim, high over the hook object to leave the card
       // band free, and moving it in to the build's 85% dropped the object out of the bottom of the frame: the real

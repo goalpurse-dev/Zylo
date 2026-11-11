@@ -22,6 +22,10 @@ export function buildCatalog(dir) {
     const k = path.join(dir, kit); if (!fs.statSync(k).isDirectory()) continue;
     for (const f of fs.readdirSync(k)) if (f.endsWith(".glb") && !SKIP.test(f)) out.push({ file: `${kit}/${f}`, kit, words: wordsOf(f) });
   }
+  // the Poly Haven models beside the Kenney kits (fetchPolyModels.mjs: proto/assets/polyhaven/<id>/<id>.gltf): real
+  // scanned props a custom video prefers (the owner's rule 19 of 2026-11-11); kit "polyhaven"
+  const ph = path.join(dir, "..", "polyhaven");
+  if (fs.existsSync(ph)) for (const id of fs.readdirSync(ph)) if (fs.existsSync(path.join(ph, id, `${id}.gltf`))) out.push({ file: `polyhaven/${id}/${id}.gltf`, kit: "polyhaven", words: wordsOf(id).filter((w) => !/^[0-9]+$/.test(w)) });
   return out;
 }
 
@@ -29,7 +33,9 @@ let cached = null;
 export const modelCatalog = () => (cached ??= fs.existsSync(CATALOG) ? JSON.parse(fs.readFileSync(CATALOG, "utf8")) : []);
 
 /** the models whose names share a word with the text (a topic, a script's part list), best first, at most n */
-export function modelMatches(text, n = 12, catalog = modelCatalog()) {
+export function modelMatches(text, n = 12, catalog = modelCatalog(), { real = false } = {}) {
+  // (a premade video only ever found Kenney models: the Poly Haven ones join for a custom video, first on a tie)
+  catalog = real ? [...catalog.filter((m) => m.kit === "polyhaven"), ...catalog.filter((m) => m.kit !== "polyhaven")] : catalog.filter((m) => m.kit !== "polyhaven");
   const want = new Set(wordsOf(String(text)).filter((w) => w.length >= 3).map(stem));
   const scored = catalog.map((m) => ({ m, s: m.words.filter((w) => want.has(stem(w))).length / Math.sqrt(m.words.length) })).filter((x) => x.s > 0);
   return scored.sort((a, b) => b.s - a.s).slice(0, n).map((x) => x.m);

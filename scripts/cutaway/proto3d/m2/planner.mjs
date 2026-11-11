@@ -13,6 +13,8 @@ import { handbookText } from "./handbook.js";
 import { FACTS_SCHEMA, layoutFromScene, ROLES, SCENE_REPLY_SCHEMA, SCRIPT_SCHEMA, sceneFromLayout } from "./plan.js";
 import { solveLayout as solveLayoutRaw } from "./solver.js";
 import { chainProblems, linkProblems, VISIBLE } from "./chain.js";
+import { actOnTheWord, storyRuleProblems } from "./storyRules.js";
+import { movesOf } from "./rig.js";
 import { guard, logBugs, soft, splitBugs } from "./bookkeeping.js";
 import { dropFrom } from "./salvage.mjs";
 import { homeView, projectBox } from "./director.js";
@@ -44,8 +46,11 @@ const roleScript = (L, words) => words; // (kept for symmetry; scripts carry the
 // how far under the word range a narration may come before it is a problem (a 30 s video of 85 words is about 26 s)
 // (30 s: 27-35 s, the owner's rule of 2026-11-05, after a 30 s washer of 151 words ran 41 s: 93-126 words at the same
 // rate; maxSpeech 32.8 s of voice plus the end card is 35 s)
+// (the owner's competitor study of 2026-11-11, "many short loops": 60 s gets 10-12 But/So loops of 8-15 word sentences,
+// 30 s 5-6, so a new plan has 20-28 beats (60 s) or 12-16 (30 s) inside the same word budget; the lower ends stay for the
+// approved premade scripts; m2/storyRules.js)
 const SHORT_SLACK = { 30: 2, 60: 15 };
-export const LENGTH = { 30: { words: [95, 120], sentences: [10, 13], beats: [10, 12], over: 126, maxSpeech: 32.8 }, 60: { words: [200, 235], sentences: [14, 18], beats: [14, 18], over: 235, maxSpeech: 62.8 } };
+export const LENGTH = { 30: { words: [95, 120], sentences: [10, 16], beats: [12, 16], over: 126, maxSpeech: 32.8 }, 60: { words: [200, 235], sentences: [14, 28], beats: [20, 28], over: 235, maxSpeech: 62.8 } };
 export const WORD_TOLERANCE = 0.05;
 // the beat plan's reply limit (Sonnet 5.5 allows 128,000): a 60 s plan thinks long
 export const BEATS_MAX_TOKENS = 120000, BEATS_TIMEOUT_MS = 1_200_000;
@@ -150,16 +155,17 @@ const WRITING_RULES = `THE ONE RULE: each sentence says what is on screen in its
 Cue words: every cue word of a beat appears in its sentence exactly as written (the same spelling and form: not a plural, not another tense), where it reads naturally.
 The account's formula (keep it):
 HOOK      "If you [one naive physical action], you have a [thing]." (16 words or fewer)
-CHAIN     "But [the visible consequence]." then "So you [add the part]." Every "But…" after the first names the part the fix before it added, or starts with "But now" (checked by code).
-NAME      "This is a [real term]."
+CHAIN     "But [the visible consequence]." then "So you [add the part]." Every "But…" after the first names the part the fix before it added or its effect ("So you add a flap gate. But with the gate shut, the rain has nowhere to go."; checked by code). Many short loops: 10-12 in a 60 s video, 5-6 in 30 s.
+NAME      "This is a [real term]." (at most 3; the last one the relatable one: "Those are the manholes you drive over every day.")
 MYTH-BUST "And [the thing everyone knows] is not [what they think]." then what it really is.
-FINISH    "Add [the finishing touches shown]." (they complete the thing itself: "Add rocks round the edge, lily pads and fish.") then "Congratulations, you have built a [thing]."
+FINISH    The hook's own object comes back, finished or working: "Bury the pipes, pave the road, and let it rain."; "Open the tap, and there's your water." "Congratulations, you have built a [thing]." only when it also brings that object back.
+Action on the word: the verb that says a state change is the moment it happens ("Water flowing out pushes it open; water pushing in forces it shut.").
 Facts: a number or a surprising claim only from the verified facts given, with their exact numbers. No other numbers.
 Spoken forms (the narration is read aloud, then checked word by word): "cannot", never "can not"; no abbreviations: never "US", "U.S." or "USA" (write "American" or "America"), units in full ("square feet", "pounds", "gallons"); numbers as digits with a comma for thousands ("1,500"), years as 4 digits ("1952"), times as "3 AM" (never "a.m.").
 Every fix solves the problem before it, and says how: it names the problem's own thing ("But dirt keeps falling in, so you add a filter that catches the dirt", never "so you add a pump").
 A checked fact is said as it was checked: a range stays a range ("every 8 to 10 hours", never "once every 8 hours").
 Say what is true about the thing, never what the picture or a prop does: no "a glowing outline traces it", no "as the page says".
-Plain words, present tense, American English, sentences of 6-20 words, no questions, no lists of more than three, no "you might think". Each sentence ends with a full stop.`;
+Plain words, present tense, American English, short sentences of 8-15 words (the hook up to 16; a name line may be shorter), no questions, no lists of more than three, no "you might think". Each sentence ends with a full stop.`;
 // mode "script": the scene for a written script (a given script, a repair); mode "beats": the beats FIRST (the owner's
 // rule of 2026-10-27, "visuals first, words second"): the planner decides what visibly happens in each moment, with cue
 // words instead of a script, and the writer then writes one sentence per beat about what is on screen
@@ -179,7 +185,7 @@ ${mode === "beats" ? `- A part appears ON ITS CUE WORD: an action's w is the one
 - EVERY SENTENCE SHOWS ITS OWN ACTION: the thing the sentence names is on screen and visibly does the sentence's verb. Each beat has shows: {p: the id of the part that does it, does: the visible action in a few words}. Use the part made for the verb: flow for runs / pours / flows (its path goes from where the stuff starts to where it ends, e.g. across the slab into the drain, through the pipe, down into the creek), settle for sinks / floats / separates (sand grains fall to the floor, a dark oil layer rises), creek for a creek, river or stream (it must exist as a part, not a blue box), fills for filling up, pipes growing for laying a pipe. Arrows alone never show an action: they only point at one. A creek or anything else seen in section must lie inside the cut's x range (the solid soil face hides the rest); otherwise it is seen on the surface.
 - A CHANGE MUST READ IN ONE STILL FRAME (the checker sees three stills of each sentence). When a sentence says something moves or changes, its beat uses the kit's motion or state for exactly that (drives off: traffic go or car leave; crashes / rear-ends: traffic bump; swings out, tips, slides, falls: a rig swing / slide / track; snaps or breaks in two: a rig snap move; rolls up the tracks: a rig track move on each section; fills or empties: a fill or a counter), never only a light or an arrow. Motions hold partway through their line by themselves, so start them on the line's first cue words, not its last one.
 - DAMAGE STAYS: a crash, a break, a crack, a flood or a jam stays in place until a fix removes it ("<move>Back", unbump, drain); never undo it inside its own beat.
-- STATE LABEL: every problem beat may carry state: {text, w}: a red label of one to three words in caps (TOO FAST, BROKEN, NO POWER, CRASH!, FLOODED, STUCK, TOO HEAVY) shown from its word w (a word of that sentence) to the line's end. Give one on each problem beat.
+- STATE LABEL: a problem beat may carry state: {text, w}: a red label of one to three words in caps (TOO FAST, BROKEN, NO POWER, CRASH!, FLOODED, STUCK, TOO HEAVY) shown from its word w (a word of that sentence) to the line's end. Labels and meters together: at most 2 in the whole video, only where nothing physical can show the problem (rule 7: show the water dripping, the puddle, the spill instead).
 - ARROWS BY COLOUR: arrows opts.color: water "#3ad6ff" (cyan), air or wind "#ffffff" (white), heat "#ff8a2a" (orange), force or weight "#ffd23d" (yellow). They point at an action, they never are it.
 - BEFORE AND AFTER: a state change (a level, a colour, a material: clear to murky, dry to flooded, white ice to blue water) happens in ONE shot with the camera still: give the beat one shot only, the same as the beat before it where the change is the point.
 - METERS: a value that changes (pressure, speed, weight, a count) is a counter (bar: true makes it a gauge whose bar fills and turns red past danger, 0.8 of the top by default: for a good value, a drain rate or a safe level, set danger above 1 so it stays green), its count on the words that say the change; it always reaches its final number. It stands right beside the thing it measures, and the beat's shot names both.
@@ -190,7 +196,7 @@ ${mode === "beats" ? `- SHOW ONLY WHAT THE KIT CAN SHOW: a beat whose idea the k
 - THE OPENING: the video opens close on its own hook object, never on the house. The hook beat's first shot (no word) frames the naive thing the hook line names, the thing a viewer already knows (the hole being dug, the machine's slot, the puddle at the wall, the car in the bay, the button), type close or mid. The home view comes later (the problem or how sentence) and at the end.
 - THE MAIN SUBJECT: every shot keeps it in view (the cut, or the part you mark main: true when the story is a machine above ground); no shot of open lawn or sky. Side-story props (a flag, a book, a newspaper) stand beside the cut, just behind its back edge and inside the home frame, never out on the lawn. world.worker true only when the topic has a worker (by default there is none).
 - Sound: library effects on events (digging, pouring, water rushing, dripping, flame, a pump hum), 3-5 of them; chimes on each number card, on the name sentence, and on "Congratulations"; cards on their number words. A rain bed (audio.rain: [from, to]) only when it rains.
-${mode === "beats" ? `- Reply with "why", "story" and "sceneJson". story: title, hero (the named part, as the "This is a…" beat names it: "a landfill liner"), parts (plain nouns), ideas (one per beat, in beat order: {role, idea: what this beat means in the story, in one plain line, as the narrator would put it, e.g. "the box runs on a clock, so at midnight a lone car waits at an empty red"}), chain (one per problem beat: {problem: its role, causedBy: the role of the fix before it that caused it, "hook" for the first; shows: what we see happening; stakes: who or what suffers; size: 1-10, bigger every time}), surprises (3-4: {claim: a concrete checkable claim, ideally with a number; role: the beat that says it; search: a web search query}). A number card's word (audio.cards at.w) is the number as the narrator will say it ("600").
+${mode === "beats" ? `- Reply with "why", "story" and "sceneJson". story: title, hero (the named part, as the "This is a…" beat names it: "a landfill liner"), parts (plain nouns), ideas (one per beat, in beat order: {role, idea: what this beat means in the story, in one plain line, as the narrator would put it, e.g. "the box runs on a clock, so at midnight a lone car waits at an empty red"}), chain (one per problem beat: {problem: its role, causedBy: the role of the fix before it that caused it, "hook" for the first; shows: what we see happening; stakes: who or what suffers; size: 1-10, bigger every time; at: the flow place where it happens; scale: part, thing, house, neighbours, street, town or river}), flow (the places along what moves, in order: rule 1), recurring ({p: the id of the recurring prop or person part, what: "a tennis ball"}: rule 8), surprises (3-4: {claim: a concrete checkable claim, ideally with a number; role: the beat that says it; search: a web search query}). A number card's word (audio.cards at.w) is the number as the narrator will say it ("600").
 - Reply also with "sentences": THE NARRATION, written with the scene (no separate writer): exactly one sentence per beat, in beat order, {role, text}. Each sentence says every cue word of its beat exactly as written in its do list. Its numbers and surprising claims come only from your surprises, word for word: they are fact-checked after the plan, and a changed number is changed in the sentence for you. Writing rules:
 ${WRITING_RULES}
 ` : ""}- Reply with "why" and "sceneJson": the scene as JSON text with exactly the worked example's shape: {world: {cut: [x0, x1, z0, depth], house, porch, trees, road, rocksAvoid, backdrop?, worker?, moreTrees?}, parts: [{id, kind, params, base?}], beats: [{s, do: [...], shows: {p, does}, shots: [...]}], audio: {cards, sfx, chimes, rain}, rewrites?: [{role, text}]}. A part's base (optional) sets a channel's starting value. Numbers in world units.
@@ -454,7 +460,7 @@ const TARGET = [/^\d+ words \(want/, /: \d+ words$/, /: \d+ words where the beat
 export const isTarget = (p) => TARGET.some((re) => re.test(p));
 // the beats a narration over its limit loses first, free: the myth pair, the second name, the fact's proof, the flood and
 // stakes lines, the finish, then the fact
-export const DROP_ORDER = [["myth", "mythFact"], ["name2"], ["factProof"], ["flood"], ["stakes"], ["finish"], ["fact"]];
+export const DROP_ORDER = [["myth", "mythFact"], ["name3"], ["name2"], ["factProof"], ["flood"], ["stakes"], ["finish"], ["fact"]];
 /** over the word limit, or over the beat cap: the least important beats out of the script and the layout */
 export function dropBeats({ script = null, layout, lengthSec, over = (sc) => false }) {
   const dropped = [];
@@ -480,7 +486,10 @@ export const KIT_CANNOT = [
   [/\b(glowing )?outline traces\b|\bglowing outline\b|\bas the (page|paper|newspaper|book|sign|label) says\b|\bthe (page|paper|newspaper) says\b|\bon screen\b|\bin this (frame|shot)\b/i, "say what is true about the thing, never what the picture or a prop does: a myth line says the belief plainly (\"And a strong chlorine smell does not mean a clean pool.\")"],
   [/\b(both|two|all|four|every|each|other)\s+(roads|streets|directions|ways)\b|\bcross[- ]?(road|street|traffic)\b|\bside street\b/i, "the street has ONE road going away from the camera: say what happens on that road (cars queue at the red, one car waits)"],
   [/\bturns?\s+(left|right)\b|\bu-turns?\b/i, "cars only drive straight along the road: no turning"],
-  [/\bpedestrians?\b|\bpeople (walk|cross)\b|\bchildren\b|\bkids\b/i, "the kit has no people: show the thing, not people using it"],
+  // (since 2026-11-11 the kit has a person and a hand part, rule 20 of the owner's competitor study: one or two people
+  // doing one action are fine; crowds, children and pedestrians crossing still are not)
+  // ("crowd" alone is not people: "too many fish crowd the tank", the fish 60 s replay)
+  [/\bpedestrians?\b|\bcrowds? of (people|shoppers|commuters|passengers)\b|\bchildren\b|\bkids\b/i, "the kit has one or two people (a person part: stand, walk, dig, press, turn, drive, wave, point) and a hand, never a crowd or children: show the thing, with at most one person using it"],
 ];
 const checkScript = (s, lengthSec, roles, { lengthIsTarget = false, bugs = BUGS } = {}) => {
   const P = [], L = LENGTH[lengthSec];
@@ -516,14 +525,24 @@ export function approvedScript(key) {
 }
 
 // the story rules the beat plan follows (the writer's formula, as beats)
-const STORY_RULES = `THE STORY (the account's formula; you plan it as beats, one sentence each later):
-- hook: "If you [one naive physical action], you have a [thing]." The video opens on that action.
-- the chain: problem ("But [a visible consequence]") then fix ("So you [add one real part]"), repeated. Every fix causes the next, bigger problem ("So you add X. But now X does Y"): a CHAIN, not a list. Each problem is a concrete consequence you SEE happen (cars piling up at the red, water flooding the basement, the wall cracking, the creek turning grey), with visible stakes, never a dry fact. The first problem is the second beat.
-- name: "This is a [real term]." (once; a second, name2, only in 60 s videos); how/fact beats show the mechanism working.
-- myth: "And [what everyone thinks] is not [what it is]." Show the wrong idea first, then take it away; mythFact shows the real one.
-- finish: "Add [two or three touches that complete the thing itself]." then congrats: "Congratulations, you have built a [thing]." The end is calm. THE FINISH completes the thing, as the account's videos do ("Add the grass back on top", "Add a grass cap, a fence and young trees", "Add stairs and electricity", "Add boards and glass so the puck stays in", "Add a drip tray and a cone", "Add stepping stones and warm lights"): a pond gets rocks round its edge, lily pads and fish; an ice rink painted lines, goal nets and flood lights; a traffic light crosswalk stripes, a stop line and a street sign; a basement stairs and a light; a garage door a car rolling inside. Never generic decor (a trash can, a bench, a planter, a potted plant, a toolbox, a bike rack, a mailbox) unless the topic is about that thing.
+// (the competitor rules 1-11 of the owner's study, 2026-11-11: each is checked for free in m2/storyRules.js and sent back
+// in the one repair round; the top storm drain, roof, tunnel, well and sewer videos all tell their story this way)
+const STORY_RULES = `THE STORY (the account's formula and the rules of the top videos in this niche; you plan it as beats, one sentence each later; every rule below is checked by code):
+- hook: "If you [one naive physical action], you have a [thing]." The video opens on that action, on its own object (the hole in the street, the plywood on the house, the tap).
+- 1 FOLLOW THE FLOW: the story's order is the path of what moves (rain down a roof into the gutter, the downspout, the yard, the street drain, the river; sewage from the toilet to the street sewer to the plant to the river; water from the ground up the well to the tower to the tap; cars through a tunnel). story.flow lists those places in order; each new problem happens where the flow goes next (chain[i].at is one of the flow places, in order; one step back at most).
+- 2 THE FIX CAUSES THE NEXT PROBLEM: every "But" after the first is caused by the "So" right before it and names that fix's part or its effect ("So you put a hinged flap on the outlet. But with the flap shut, the rain has nowhere to go."). "But now" alone is not enough.
+- 3 MANY SHORT LOOPS: a 60 s video has 10-12 But/So loops, one about every 5 s; a 30 s video 5-6. Each loop is a problem beat ("But [what goes wrong]") and a fix beat ("So you [add one real part]"); problem roles are problem, problem2 … problem12, fix roles fix1 … fix12. Sentences of 8-15 words (the hook up to 16). Keep the other beats few: the loops ARE the video.
+- 4 HOOK = ENDING: the hook's object returns at the end, finished or working: the last lines bring it back and the finish beat shows it ("Bury the pipes, pave the road, and let it rain."; "Open the tap, and there's your water."; "Let the rain pass the chimney, through the gutter, and out into the grass."). congrats is that closing line: "Congratulations, you have built a [thing]" is allowed only when the same line or the finish brings the hook's object back working. Never a generic finish ("add a bench and a trash can").
+- 5 SCALE GROWS where the topic allows: one house, then the neighbours, the street or the town, then the river (chain[i].scale: part, thing, house, neighbours, street, town, river).
+- 6 PLANT EARLY: everything a later beat needs as a place (the river, the neighbours' houses, the tank's site, the sea) is in the world from the first frame; never pop a place in later. Parts that a fix ADDS appear on their cue word as before.
+- 7 PHYSICAL DISASTERS: show every problem as a visible consequence in close-up: water dripping into the attic, a puddle by the wall, a gutter spilling over, the street turning into a pool, a brown plume in the river, a collapse, a car crash. Red state labels and meters: at most 2 in the whole video, only where nothing physical can show it.
+- 8 ONE RECURRING PROP or person (story.recurring {p: its part id, what}): a small thing (a tennis ball washed along by the water, a rubber duck, a leaf, a hand at the tap) that is in a beat by the first third and comes back in at least 3 beats, the last one near the end; never hidden.
+- 9 "THIS IS A…" at most 3 (name, name2, name3), only names viewers will repeat; the last reveal is the relatable one ("Those are the manholes you drive over every day.").
+- 10 ACTION ON THE WORD: a part reaches its state on the verb that says it ("Water flowing out pushes it OPEN; water pushing in forces it SHUT"): the open / shut / fill / spin action's cue word is that verb.
+- 11 A line dropped later never breaks the chain: keep each problem tied to the fix right before it, so a dropped loop drops as a pair.
+- myth: "And [what everyone thinks] is not [what it is]." (optional, only when a true one exists; it takes room from the loops). Show the wrong idea first, then take it away; mythFact shows the real one.
 - Surprises: three or four concrete, checkable claims, ideally with a number; they are fact-checked before the words are written.
-- Roles: hook first, congrats last, finish just before it; problem roles are problem, problem2, problem3 (flood and stakes may deepen a problem); fix roles are fix1..fix5. One beat per role.
+- Roles: hook first, congrats last, finish just before it (flood and stakes may deepen a problem). One beat per role.
 WHAT THE SETTINGS REALLY CONTAIN (plan only what is there):
 - street: ONE straight road going away from the camera, one crosswalk, one signal on its corner, a sidewalk with shop fronts. Cars drive one way along that road: they arrive, stop, queue nose to tail at the line, wait, drive off, and can bump the car ahead. No cross road or second road, no turning, no pedestrians.
 - yard: a house, a lawn, a fence, trees and the ground cut open in section below; rain, water and pipes.
@@ -533,7 +552,7 @@ WHAT THE SETTINGS REALLY CONTAIN (plan only what is there):
 - kitchen: a kitchen in section (counters, wall cabinets, a tiled wall, a window with daylight); the setting of every kitchen appliance (a dishwasher, a fridge, a stove or oven, a microwave, a kettle, a toaster, a coffee machine); the appliance the topic is about stands in the middle, cut open so its working parts show (burners and flames, a heating coil, a drum, a motor, a fan, coils and pipes).
 - laundry room: the kitchen built as a laundry / utility room (tiles, cabinets, open shelves with bottles and towels, a utility sink); the setting of a washing machine, a dryer, a water heater, a boiler, standing in the middle cut open.
 - workshop: a home workshop (a concrete floor, a pegboard tool wall, a workbench, shelves); a car or a machine stands in the middle, cut open so its working parts show (pistons and a crankshaft, gears, wheels and steering, brakes, air bags).
-No people doing things, no maps, no long text on screens, no outer space or the body.`;
+People: at most one life element where it fits (a person part: a worker digging, a driver, people walking out; or a hand part turning the tap, pressing the button); never a crowd. No maps, no long text on screens, no outer space or the body.`;
 
 const WORDS_SYSTEM = `You write the narration of a short vertical cutaway explainer video whose pictures are ALREADY planned and built: a 3D diorama where a thing is built step by step while one narrator talks. You get its beats in order. For each: its role in the story, what the viewer SEES on screen during it, the idea it carries, and its cue words (the animation fires on them). Write exactly one sentence per beat, in that order.
 ${WRITING_RULES}`;
@@ -641,10 +660,13 @@ async function planPremade({ step, topic, lengthSec, saved, key, trace }) {
 const BEATS_REPLY_SCHEMA = { type: "object", additionalProperties: false, required: ["why", "story", "sentences", "sceneJson"], properties: {
   why: { type: "string" }, sceneJson: { type: "string" },
   sentences: { type: "array", items: { type: "object", additionalProperties: false, required: ["role", "text"], properties: { role: { type: "string" }, text: { type: "string" } } } },
-  story: { type: "object", additionalProperties: false, required: ["title", "hero", "parts", "ideas", "chain", "surprises"], properties: {
+  // (flow, recurring, chain at / scale: the competitor story rules 1, 5 and 8, 2026-11-11, m2/storyRules.js)
+  story: { type: "object", additionalProperties: false, required: ["title", "hero", "parts", "ideas", "chain", "surprises", "flow", "recurring"], properties: {
     title: { type: "string" }, hero: { type: "string" }, parts: { type: "array", items: { type: "string" } },
+    flow: { type: "array", items: { type: "string" } },
+    recurring: { type: "object", additionalProperties: false, required: ["p", "what"], properties: { p: { type: "string" }, what: { type: "string" } } },
     ideas: { type: "array", items: { type: "object", additionalProperties: false, required: ["role", "idea"], properties: { role: { type: "string" }, idea: { type: "string" } } } },
-    chain: { type: "array", items: { type: "object", additionalProperties: false, required: ["problem", "causedBy", "shows", "stakes", "size"], properties: { problem: { type: "string" }, causedBy: { type: "string" }, shows: { type: "string" }, stakes: { type: "string" }, size: { type: "integer" } } } },
+    chain: { type: "array", items: { type: "object", additionalProperties: false, required: ["problem", "causedBy", "shows", "stakes", "size", "at", "scale"], properties: { problem: { type: "string" }, causedBy: { type: "string" }, shows: { type: "string" }, stakes: { type: "string" }, size: { type: "integer" }, at: { type: "string" }, scale: { type: "string" } } } },
     surprises: { type: "array", items: { type: "object", additionalProperties: false, required: ["claim", "role", "search"], properties: { claim: { type: "string" }, role: { type: "string" }, search: { type: "string" } } } },
   } } } };
 const CLAIMS_SCHEMA = { type: "object", additionalProperties: false, required: ["checks"], properties: { checks: { type: "array", items: { type: "object", additionalProperties: false, required: ["index", "verdict", "claim", "why", "sources"], properties: { index: { type: "integer" }, verdict: { type: "string", enum: ["keep", "reword", "drop"] }, claim: { type: "string" }, why: { type: "string" }, sources: { type: "array", items: { type: "object", additionalProperties: false, required: ["url", "title"], properties: { url: { type: "string" }, title: { type: "string" } } } } } } } } };
@@ -659,7 +681,7 @@ export const cardNumber = (n, claim = "") => {
   const commas = Number(n).toLocaleString("en-US");
   return new RegExp(`(?<![\\d,])${n}(?![\\d,])`).test(String(claim)) && !String(claim).includes(commas) ? String(n) : commas;
 };
-const ROLE_OPEN = (role) => (/^problem/.test(role) ? "But " : /^fix/.test(role) ? "So you " : role === "name" || role === "name2" ? "This is " : role === "hook" ? "If you " : "");
+const ROLE_OPEN = (role) => (/^problem/.test(role) ? "But " : /^fix/.test(role) ? "So you " : /^name[23]?$/.test(role) ? "This is " : role === "hook" ? "If you " : "");
 /**
  * A sentence says its checked fact as checked: one end of a range alone is drift ("about once every 8 hours" for a checked
  * "every 8 to 10 hours", the swimming pool of 2026-10-30). Returns the problems (free).
@@ -828,7 +850,9 @@ SAVED PARTS (designed for earlier videos and checked; reuse one as a rig part: c
 ${saved.map((e) => `- ${e.name} (${(e.synonyms ?? []).join(", ")}): ${JSON.stringify(e.recipe)}`).join("\n")}` : ""}${models.length ? `
 CC0 MODELS that may fit (use one as a model shape inside a rig when it is the thing, sized in metres; it cannot move by itself, so put moving pieces in their own nodes):
 ${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
-  const plan = (r) => {
+  // round 1: the story rules (m2/storyRules.js, the competitor study of 2026-11-11) are problems the repair round fixes;
+  // after the repair they are warnings: a paid plan is never refused for a story rule (the owner's rule of 2026-11-03)
+  const plan = (r, round = 1) => {
     const scene = parseScene(r.data), story = fixStory(r.data.story ?? {}, scene);
     const roles = (scene.beats ?? []).map((b) => b.s);
     const conv0 = layoutFromScene(scene, { key, title: story.title || topic, roles });
@@ -844,7 +868,13 @@ ${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
     const problems = splitBugs([...conv.problems, ...guard("beat plan check", () => beatPlanProblems(conv.layout, story, lengthSec), BUGS, []), ...solved.problems], BUGS);
     // (the narration written with the scene, scene language v2 step 1d; an older reply without it: the writer call later)
     const sentences = Array.isArray(r.data.sentences) && r.data.sentences.length ? r.data.sentences : null;
-    return { scene, story, conv, ideas, draft, sentences, problems, warnings: [...solved.warnings, ...openingProblems(conv.layout, lastOpening).map((p) => `${p} (fixed after the plan: the hook shot is moved)`)], why: r.data.why };
+    const own = conv.layout.beats.map((b) => sentences?.find((s) => s.role === b.s) ?? draft.find((s) => s.role === b.s) ?? { role: b.s, text: "" });
+    const SR = guard("story rules", () => storyRuleProblems(conv.layout, story, own, lengthSec), BUGS, { problems: [], warnings: [], stats: {} });
+    trace.push({ label: `story rules (round ${round}, free)`, stats: SR.stats, problems: SR.problems, warnings: SR.warnings });
+    // (a reply with no story.flow key at all was recorded before the rules (the schema requires it now): its story rules are
+    // warnings, so the free failure replays still replay)
+    const strict = round === 1 && "flow" in (r.data.story ?? {});
+    return { scene, story, conv, ideas, draft, sentences, problems: strict ? [...problems, ...SR.problems] : problems, warnings: [...solved.warnings, ...(strict ? [] : SR.problems.map((p) => `${p} (a story rule${round === 1 ? ", a reply made before the rule" : ", kept after the repair"})`)), ...SR.warnings, ...openingProblems(conv.layout, lastOpening).map((p) => `${p} (fixed after the plan: the hook shot is moved)`)], why: r.data.why };
   };
   // 1. the beat plan (120,000 tokens: the real 60 s swimming pool plan of 2026-10-29 used 45,000 of the old 64,000, and
   // a cut-off reply is a failed attempt; it costs only what is used)
@@ -853,7 +883,7 @@ ${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
   trace.push({ label: "beat plan checks", problems: B.problems, warnings: B.warnings, opening: openingOf(B.conv.layout) });
   if (B.problems.length) {
     r = await step("beats repair", { system: SYS, user: `${user}\n\nYour beat plan below has problems the free checks found. Fix every one and return the whole plan again (change only what the problems need).\nProblems:\n- ${B.problems.join("\n- ")}\n${B.warnings.length ? `Warnings (fix them if you can):\n- ${B.warnings.join("\n- ")}\n` : ""}\nYour story:\n${JSON.stringify(B.story)}${B.sentences ? `\nYour narration (sentences):\n${B.sentences.map((s) => `${s.role}: ${s.text}`).join("\n")}` : ""}\nYour layout (sceneJson):\n${r.data.sceneJson}`, schema: BEATS_REPLY_SCHEMA, effort: "medium", maxTokens: BEATS_MAX_TOKENS, timeoutMs: BEATS_TIMEOUT_MS }); // (medium: it fixes listed problems; at high it cost as much as the plan)
-    const B2 = plan(r);
+    const B2 = plan(r, 2);
     // a repeat opening after the repair is a warning: the video still goes on
     const opening = openingProblems(B2.conv.layout, lastOpening);
     B = { ...B2, problems: B2.problems.filter((p) => !opening.includes(p)), warnings: [...B2.warnings, ...opening] };
@@ -932,10 +962,11 @@ ${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
     // (by role; a writer that returned one sentence per beat under other role names is read in order: free)
     const byOrder = (data.sentences ?? []).length === roles.length;
     const sentences = roles.map((role, i) => ({ role, text: oneSentence(data.sentences?.find((x) => x.role === role)?.text ?? (byOrder ? data.sentences[i]?.text : "") ?? "") }));
-    const chain = (B.story.chain ?? []).map((c) => ({ problem: roles.indexOf(c.problem), causedBy: c.causedBy === "hook" ? -1 : roles.indexOf(c.causedBy), shows: c.shows, stakes: c.stakes, size: c.size })).filter((c) => c.problem >= 0);
+    const chain = (B.story.chain ?? []).map((c) => ({ problem: roles.indexOf(c.problem), causedBy: c.causedBy === "hook" ? -1 : roles.indexOf(c.causedBy), shows: c.shows, stakes: c.stakes, size: c.size, ...(c.at ? { at: c.at } : {}), ...(c.scale ? { scale: c.scale } : {}) })).filter((c) => c.problem >= 0);
     const linked = linkProblems({ sentences, chain }).script.sentences;
     const cards = (layout.audio.cards ?? []).map((c) => ({ text: c.text, sentence: roles.indexOf(c.at.s), word: String(c.at.w ?? "") }));
-    return { title: data.title || B.story.title || topic, hero: B.story.hero, sentences: linked.map((s) => ({ ...s, text: /[.!]$/.test(s.text.trim()) ? s.text : `${s.text.trim()}.` })), chain, cards, parts: B.story.parts ?? [], surprises: claims, facts: checks };
+    // (story: the flow, the recurring prop and the chain by role, kept with the plan so the story rules can be re-scored for free)
+    return { title: data.title || B.story.title || topic, hero: B.story.hero, sentences: linked.map((s) => ({ ...s, text: /[.!]$/.test(s.text.trim()) ? s.text : `${s.text.trim()}.` })), chain, cards, parts: B.story.parts ?? [], surprises: claims, facts: checks, story: { title: B.story.title, hero: B.story.hero, flow: B.story.flow ?? [], recurring: B.story.recurring ?? null, chain: B.story.chain ?? [], ideas: B.story.ideas ?? [] } };
   };
   // a problem line whose WORDING misses the visible-consequence list while its beat's picture shows a visible problem:
   // a warning (the picture is planned first and the preview check judges it; the real traffic light run of 2026-10-28 was
@@ -991,6 +1022,23 @@ ${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
     const d = dropBeats({ script, layout, lengthSec, over: farOver });
     if (d.dropped.length) { script = d.script; layout = d.layout; roles = layout.beats.map((b) => b.s); trace.push({ label: "words far over the target: beats dropped (free)", dropped: d.dropped }); }
   }
+  // rule 10, action on the word (free, said in the trace): a state change fires on the verb that says it ("pushes it OPEN")
+  const aw = guard("action on the word", () => actOnTheWord(layout, script.sentences, (p, v) => movesOf(p).find((m) => m.name === v)?.type ?? null), BUGS, { layout, notes: [] });
+  if (aw.notes.length) { layout = aw.layout; trace.push({ label: "action on the word (free)", notes: aw.notes }); }
+  // rule 12, the camera travels along the flow (m2/cameraRules.js flowPlaces reads layout.story.flow as part ids): each
+  // flow place, in order, as the part its first problem happens on (the problem beat's shows.p)
+  {
+    const chainAt = new Map((B.story.chain ?? []).map((c) => [c.problem, String(c.at ?? "").toLowerCase().trim()]));
+    const ids = [];
+    for (const place of (B.story.flow ?? []).map((x) => String(x).toLowerCase().trim())) {
+      const b = layout.beats.find((x) => /^problem/.test(x.s) && chainAt.get(x.s) && (chainAt.get(x.s) === place || chainAt.get(x.s).includes(place) || place.includes(chainAt.get(x.s))));
+      const id = b?.shows?.p; if (id && !ids.includes(id) && layout.parts.some((p) => p.id === id)) ids.push(id);
+    }
+    if (ids.length >= 2) layout = { ...layout, story: { flow: ids } };
+  }
+  // the story rules on the final words (a record in the trace; never a refusal)
+  const finalRules = guard("story rules", () => storyRuleProblems(layout, B.story, script.sentences, lengthSec), BUGS, { problems: [], warnings: [], stats: {} });
+  trace.push({ label: "story rules (final words, free)", stats: finalRules.stats, problems: finalRules.problems });
   // a cue word still missing: its actions fire at the start of its sentence (free; the picture still shows them)
   const miss = missingWords(layout, script.sentences), warnings = [...B.warnings];
   if (miss.length) { layout = dropWords(layout, miss); warnings.push(...miss.map((m) => `${m.s}: "${m.w}" is not in the sentence, so ${m.what} starts with it`)); }
@@ -1185,14 +1233,15 @@ export { SCRIPT_SYSTEM, SCENE_SYSTEM, FACTS_SYSTEM, checkScript, KIND_DOCS, role
  * planner, which returns the layout with only those beats (and the parts they use) changed. A saved layout keeps
  * its world and parts: only beats and shots may change.
  */
-export async function repairLayout({ apiKey, topic, script, layout, problems, log, cacheDir, model = MODEL.default, saved = false, example = exampleFor(topic) }) {
+export async function repairLayout({ apiKey, topic, script, layout, problems, log, cacheDir, model = MODEL.default, saved = false, example = exampleFor(topic), maxTokens = 64000 }) {
+  // (maxTokens: the targeted repair of rule 25 passes 12,000, so one repair stays under its $0.25 cap at $10 a million out)
   // (keyed by the problems' text and the layout: two rounds with the same count and length reused one answer, so the
   // second repair re-rendered the first; free aquarium run, 2026-10-28)
   const file = cacheDir && path.join(cacheDir, `repair_${crypto.createHash("sha1").update(problems.join("|")).update(JSON.stringify(layout.beats ?? [])).digest("hex").slice(0, 16)}.json`);
   let r;
   if (file && fs.existsSync(file)) r = JSON.parse(fs.readFileSync(file, "utf8"));
   else {
-    r = await callJSON({ apiKey, model, log, label: "preview repair", system: sceneSystem(example), schema: SCENE_REPLY_SCHEMA, effort: "medium", maxTokens: 64000,
+    r = await callJSON({ apiKey, model, log, label: "preview repair", system: sceneSystem(example), schema: SCENE_REPLY_SCHEMA, effort: "medium", maxTokens,
       user: `${sceneUser({ topic, title: script.title, sentences: script.sentences, hero: script.hero, parts: script.parts ?? [] })}\n\nThe layout below was rendered, and preview frames of these beats failed the check (what the checker saw, and what to change):\n- ${problems.join("\n- ")}\n\nFix only those beats${saved ? " (beats and shots only: the world and the parts must stay exactly as they are)" : layout.codeShots ? " (their parts' settings, their verbs, and which parts a shot is on (focus) and the word it starts on: the camera's box, view, width and type are set by code and ignored, so a frame that misses something needs that part in the shot's focus, or a part moved, sized or shown)" : " (their parts' settings, their verbs, their shots)"}. Keep everything else exactly as it is. Return ONLY what changes, as sceneJson = {\"beats\": [each beat you change, whole, with its s], \"parts\": [each part you change or add, whole, with its id], \"world\": {only the world keys you change}}; leave out everything that stays the same.\n\nThe layout (sceneJson):\n${JSON.stringify(sceneFromLayout(layout))}` });
     if (file) { fs.mkdirSync(cacheDir, { recursive: true }); fs.writeFileSync(file, JSON.stringify(r, null, 1)); }
   }
