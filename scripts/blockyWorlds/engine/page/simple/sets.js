@@ -8,9 +8,10 @@ import * as THREE from "three";
 import { tuneOf, mat } from "./common.js";
 import { buildStreet } from "./town.js";
 import { buildBedroom, buildSchool, buildWoods } from "./rooms.js";
+import { buildBoard } from "./board.js";
 
-export const SETS = ["street", "bedroom", "school", "woods"];
-const BUILD = { street: buildStreet, bedroom: buildBedroom, school: buildSchool, woods: buildWoods };
+export const SETS = ["street", "bedroom", "school", "woods", "board"]; // board: the storyboard's town (page/simple/board.js)
+const BUILD = { street: buildStreet, bedroom: buildBedroom, school: buildSchool, woods: buildWoods, board: buildBoard };
 
 export async function buildSet(name, ctx) {
   const b = BUILD[name];

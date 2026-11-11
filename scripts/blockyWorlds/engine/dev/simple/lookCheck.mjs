@@ -64,7 +64,7 @@ if (process.argv[1] && /lookCheck\.mjs$/.test(process.argv[1])) {
     const b = billed(stt);
     logSpend(out, `Blocky Worlds simple-look engine stills ${id} (${stt.status}, ${shots.length} stills)`, b);
     console.log(`status ${stt.status}; billed ${b.seconds} s = $${b.usd}`);
-    if (!(stt.status === "COMPLETED" && stt.output?.ok)) { console.log(JSON.stringify(stt.output ?? stt).slice(0, 3000)); process.exit(1); }
+    if (!(stt.status === "COMPLETED" && stt.output?.ok)) { console.log(JSON.stringify({ error: stt.error ?? null, output: stt.output ?? null }).slice(0, 3000)); process.exit(1); }
     const o = stt.output;
     console.log(`renderer ${String(o.renderer).slice(0, 80)}; load ${o.loadMs} ms; timing ${JSON.stringify(o.timing)}${o.errors?.length ? `; page errors ${o.errors.join(" | ").slice(0, 1500)}` : ""}`);
     for (const s of o.stills) {

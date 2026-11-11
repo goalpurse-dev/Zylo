@@ -462,6 +462,32 @@ async function main() {
     // (WORLD-LOOK: a street-level place in the creature's town (deck, stairs, rooftop, school, room, classroom)
     post.setShot?.(si, shot, S, t); // SETS-V2: the shot's lighting rig (page/lighting.js makeRigLayer) + its auto grade
     S.update?.(t, lt);   // lt: the time inside the shot (a walking giant starts every shot in frame)
+    // STORYBOARD (lib/storyboard.js, page/simple/board.js): the board set stages the whole shot (its people, the monster,
+    // the houses and rooms in this line's state, the animated actions, the camera); the engine renders it + the caption
+    if (S.boardShot && shot.board) {
+      for (const p of allPeople) { if (p.obj.userData.carriedBy) releasePerson?.(p.obj, scene); p.obj.visible = false; }
+      for (const m of MARKERS.values()) m.visible = false;
+      for (const i of INSERTS.values()) i.obj.visible = false;
+      for (const o of allObjects) o.visible = false;
+      for (const h of HATS.values()) h.visible = false;
+      if (monster) monster.visible = false;
+      const bs = S.boardShot({ shot, lt, dur, camera, people: PEOPLE, monster, animateMonster, posePerson, setFace });
+      camera.getWorldPosition(camPos);
+      S.afterCamera?.(camera, shot, {});
+      if (post.setFocus && shot.camera === "closeup") post.setFocus(bs?.focus ?? 2);
+      const R0 = performance.now();
+      post.render();
+      PROF.post += performance.now() - R0;
+      ctx2d.drawImage(renderer.domElement, 0, 0);
+      probeCtx.drawImage(out, 0, 0, 16, 16);
+      const px = probeCtx.getImageData(0, 0, 16, 16).data;
+      let sum = 0; for (let i = 0; i < px.length; i += 4) sum += px[i] + px[i + 1] + px[i + 2];
+      const flat = flatShare(px), detail = detailOf(px, 16);
+      ctx2d.save(); drawCaption(ctx2d, tl.captions ?? [], t); ctx2d.restore();
+      lastSet = S;
+      if (!opts?.calib) { PROF.total += performance.now() - P0; PROF.n++; }
+      return { shot: si, mean: +(sum / (3 * 256)).toFixed(1), flat, detail, safe: 0 };
+    }
     // ATTACH 2026-11-07 (owner: "FLOATING PEOPLE"): on a creature the people, scene objects, monster and insert ride the
     // set's actor mount (the creature's carrier / the swaying cavern): their spots are in its rest coordinates, so they
     // move with the town as it walks (sway, bob, pitch, roll). Every other set: the scene, as before.
