@@ -181,7 +181,7 @@ export function contestCuts(tl, p) {
         s.camera = "closeup"; s.focus = me; s.subject = tpl.subject === me ? me : null; s.tight = tight;
         s.actors = s.actors.filter((a) => a.id === me).map((a) => ({ ...a, pose: "stand", facing: "camera", expr: ex, face: fc }));
       } else if (kind === "eye") {
-        s.camera = "low"; s.focus = "monster"; s.subject = tpl.subject === "monster" ? "monster" : null; s.tight = tight;
+        s.camera = "low"; s.focus = "monster"; s.subject = tpl.subject === "monster" ? "monster" : null; s.tight = +(0.45 + 0.55 * tight).toFixed(2); // the eye fills the frame from the first cut (a small eye in a dark sky read blank to the still gate)
         s.actors = s.actors.filter((a) => a.id === me);
       } else {
         s.camera = "medium"; s.focus = "group"; s.subject = null; s.tight = 0;

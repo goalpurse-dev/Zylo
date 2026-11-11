@@ -39,6 +39,9 @@ export function frameShot(type, ctx) {
   if (type === "two_shot") return ctx.twoShot ? frameTwoShot(ctx) : baseFrame("medium", ctx);
   if (ctx.windowView && !set?.indoor && type !== "insert") return frameAtWindow(type, ctx);
   if (ctx.group?.length >= 2 && (type === "medium" || type === "wide")) return frameGroup(type, ctx);
+  // a giant peering in at a room's window: every framing of it is from inside the room toward the window (an over-the-shoulder
+  // aimed at the giant's body outside saw only the ceiling: the still gate's blank)
+  if (ctx.monsterEye && set?.indoor && set.windowAt && type !== "insert") return frameEye(type === "closeup" ? "closeup" : "medium", ctx);
   if (ctx.monsterEye && ["low", "medium", "closeup"].includes(type)) return frameEye(type, ctx);
   if (ctx.monsterEye && (type === "wide" || type === "over_shoulder") && !set?.indoor) return frameTower(ctx); // a giant: the towering view (over the shoulder = from the people's side)
   const k = SPAN_K[type];
