@@ -358,7 +358,7 @@ function boardShot(S, { shot, lt, dur, camera, people, monster, animateMonster, 
     const sh = Math.min(...ids.map((x) => x.P.headC)) - 0.2;
     const off = has("blow_off:blanket") ? ease((lt - atOf("blow_off:blanket")) / 0.5) : 0;
     S.blanket.visible = off < 0.05; S.blanket.position.set(c.x, sh - 0.68, c.z); S.blanket.scale.set(1.05, 1, 1.05);
-    if (off >= 0.05) { S.flyBlanket.visible = true; const e = lt - atOf("blow_off:blanket"); S.flyBlanket.position.set(c.x + 0.8 * e, sh + 0.4 + 1.6 * e, c.z + 1.4 * e); S.flyBlanket.rotation.set(-0.9 - 0.5 * e, 0.4 * e, 0.3 * Math.sin(e * 5)); flutter(S.flyBlanket, lt, 0.35, 10); }
+    if (off >= 0.05) { S.flyBlanket.visible = true; const e = lt - atOf("blow_off:blanket"); S.flyBlanket.position.set(c.x - 0.9 * e, sh + 0.4 + 1.5 * e, c.z - 0.9 * e); /* up and away from the lens (toward the camera it filled the frame: the still gate's wall) */ S.flyBlanket.rotation.set(-0.9 - 0.5 * e, 0.4 * e, 0.3 * Math.sin(e * 5)); flutter(S.flyBlanket, lt, 0.35, 10); }
   }
 
   // ---- the monster
@@ -420,7 +420,7 @@ function boardShot(S, { shot, lt, dur, camera, people, monster, animateMonster, 
     if (cam === "room_window") { pos = room.owner === "me" && b.monster ? R0(1.2, 1.55, -0.2) : R0(2.2, 1.6, 0.6); look = room.owner === "me" && b.monster ? R0(-0.1, 1.75, -3) : R0(-0.6, 1.4, -2.6); fov = 58; } // the eye behind the sock: the window big in frame
     else if (cam === "room_wide") { pos = room.owner === "hollis" ? R0(-0.6, 1.6, 2.6) : R0(0.5, 2.1, 3.4 - 0.4 * k); look = room.owner === "hollis" ? R0(0.9, 1.1, 0.0) : R0(-0.2, 1.1, -1.4); fov = room.owner === "hollis" ? 55 : 64; }
     else if (cam === "room_me") { pos = R0(-0.4, 1.5, 0.6); look = R0(-1.1, 1.2, -2.3); fov = 58; }
-    else if (cam === "room_door") { pos = room.owner === "me" ? R0(2.8, 1.5, 2.6) : R0(2.6, 1.6, 2.2); look = room.owner === "me" ? R0(0.6, 1.35, -0.6) : R0(-1.4, 1.3, 0.0); fov = room.owner === "me" ? 55 : 66; }
+    else if (cam === "room_door") { pos = room.owner === "me" ? R0(2.8, 1.5, 2.6) : R0(2.4, 1.45, 2.4); look = room.owner === "me" ? R0(0.6, 1.35, -0.6) : R0(-0.6, 1.1, -0.5); fov = room.owner === "me" ? 55 : 62; } // the huddle + the rug + the sneezer in frame (mostly wall + ceiling read as a "wall" at the still gate)
     else if (cam === "pov_eye") { pos = R0(0.15, 2.2, -2.75); look = R0(0.15, 1.15, -0.6); fov = 62; } // from the eye at the window: the faces tipped up at it
     else if (cam === "window_in") { pos = R0(0.5, 1.7, -0.6); look = R0(0, 1.85, -3); fov = 50; } // the window from inside: the eye fills it
     else if (cam === "room_side") { pos = R0(1.6, 1.6, -2.3); look = R0(-1.0, 1.5, -2.75); fov = 56; }
