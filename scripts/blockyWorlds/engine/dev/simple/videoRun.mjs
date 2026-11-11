@@ -31,13 +31,15 @@ const spent = () => Object.values(costs).reduce((a, b) => a + (Number(b) || 0), 
 // the RunPod prepare + chunks
 // the builder's cap must cover at least one design call's worst case (Sonnet object design ~/usr/bin/bash.065: a /usr/bin/bash.06 cap built
 // nothing and the run stopped CRITICAL_UNBUILT, 2026-11-10); --builder-usd sets it
-const B = { voiceWorst: +(chars * 0.5 * 0.0002).toFixed(4), director: 0.1, review: Number(arg("review-usd", 0.03)), builder: Number(arg("builder-usd", 0.15)), prepareRunpod: 0.06, chunks: 0.12 };
+const B = { voiceWorst: +(chars * 0.5 * 0.0002).toFixed(4), director: arg("direction") ? 0 : 0.1, review: Number(arg("review-usd", 0.03)), builder: Number(arg("builder-usd", 0.15)), prepareRunpod: 0.06, chunks: 0.12 };
 say(`plan: "${script.title}" ${script.lines.length} lines, ${chars} chars; worst case $${Object.values(B).reduce((a, b) => a + b, 0).toFixed(3)} (cap $${CAP})`);
 if (!argv.includes("--yes")) { say("dry run: nothing sent (add --yes)"); process.exit(0); }
 
 const env = loadEnv();
 const st = storage(env, `blocky-worlds-test/video/${path.basename(out)}`);
 const rp = rpClient();
+// a stored director list adapted to a changed script (--direction, no paid call): the prepare reuses it
+if (arg("direction") && !(await st.get("direction.json"))) await st.put("direction.json", fs.readFileSync(arg("direction")), "application/json");
 const minBuild = endpointInfo().build ?? null;
 const F = ["voice.mp3", "take.json", "timeline.json", "mix.m4a", "visual-check.json", "production.json", "direction.json", "shot-review.json"];
 
@@ -60,13 +62,13 @@ if (!fs.existsSync(path.join(out, "timeline.json"))) {
   const job = {
     role: "prepare", mode: "gpu", runId: `test-${path.basename(out)}`, jobId: `prepare-${path.basename(out)}`, attempt: 1, ...(minBuild ? { minBuild } : {}),
     prepare: {
-      script, idea, lengthSec: 90, music: "A",
+      script, idea, lengthSec: 90, music: "A", ...(arg("scenes") ? { scenes: JSON.parse(fs.readFileSync(arg("scenes"), "utf8")) } : {}),
       director: { provider: "anthropic", model: "claude-sonnet-5-5", ...(haveDirection ? { stored: await st.signGet("direction.json") } : {}) },
       builder: { provider: B.builder > 0 ? "anthropic" : "off", library, budget: { maxUsd: B.builder } }, // --builder-usd 0: the kit only, no design call
       review: { provider: "anthropic", model: "claude-haiku-5-5", budget: { maxUsd: B.review } },
       voice: haveTake ? { get: { mp3: await st.signGet("voice.mp3"), take: await st.signGet("take.json") } } : { put: { mp3: up["voice.mp3"], take: up["take.json"] } },
       out: { timeline: up["timeline.json"], mix: up["mix.m4a"], visualCheck: up["visual-check.json"], production: up["production.json"], direction: up["direction.json"], shotReview: up["shot-review.json"] },
-      limits: { prepareSec: 420 },
+      limits: { prepareSec: Number(arg("prepare-sec", 420)) },
     },
   };
   say(`prepare: library ${library.length} rows, take ${haveTake ? "reused (no new voice)" : "new (ElevenLabs)"}, director list ${haveDirection ? "reused" : "new"}, builder cap ${B.builder}; build ${minBuild}`);

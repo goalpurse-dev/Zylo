@@ -328,7 +328,7 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
   // the plan with the critical items' results; one still unresolved REJECTS it: CRITICAL_UNBUILT (no retry, refunded)
   let tl;
   try {
-    tl = await lap("plan", () => plan.planVideo({ script, words: v.words, idea: p.idea ?? {}, lengthSec: p.lengthSec ?? null, direction, exists, built: crit.built, library: libraryFind, criticalMode: criticalStrict(direction) ? "reject" : "report" }));
+    tl = await lap("plan", () => plan.planVideo({ script, words: v.words, idea: p.idea ?? {}, lengthSec: p.lengthSec ?? null, direction, exists, built: crit.built, library: libraryFind, criticalMode: criticalStrict(direction) ? "reject" : "report", scenes: p.scenes ?? null }));
   } catch (e) {
     if (e.critical) throw criticalUnbuilt(e.critical, crit);
     throw e;
