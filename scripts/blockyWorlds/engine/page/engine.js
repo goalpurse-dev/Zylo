@@ -832,6 +832,7 @@ async function main() {
       ...(SIMPLE_LOOK && shot.faceoff && where.me ? { faceTo: where.me.clone() } : {}),
       ...(SIMPLE_LOOK && monster?.visible && monster.userData.atWindow?.eye && !establishShot && (shot.focus === "monster" || !(shot.actors ?? []).length) ? { windowView: monster.userData.atWindow } : {}),
       ...(SIMPLE_LOOK && shot.tight ? { tight: shot.tight } : {}),
+      ...(SIMPLE_LOOK && shot.retreat && monster?.visible && !S.indoor ? { retreat: monster.position.clone() } : {}),
       // SIMPLE LOOK: a close look at the monster frames its eye (page/simple/monsters.js userData.eyes)
       ...(SIMPLE_LOOK && shot.focus === "monster" && monster?.userData?.eyes?.length ? (() => { monster.updateMatrixWorld(true); const w = monster.userData.eyes[0].e.getWorldPosition(new THREE.Vector3()); const mp = monster.getWorldPosition(new THREE.Vector3()); w.x = mp.x; w.z = mp.z; const hb = new THREE.Box3().setFromObject(monster.userData.head); return { monsterEye: w, monsterHead: { center: hb.getCenter(new THREE.Vector3()), size: hb.getSize(new THREE.Vector3()) } }; })() /* the monster turns to the lens after the framing: its centre line, at the eye's height */ : {}) };
     const nudge = guardNudge(si, shot, camType, fctx, placed, where, carried);

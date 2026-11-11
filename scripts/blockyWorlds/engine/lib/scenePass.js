@@ -236,7 +236,7 @@ export function applyPiece(tl, p, shots) {
       // nobody out: the people leave the street (the line's props stay), the windows dark, the first shot the town wide
       for (const s of shots) { s.setState = { windows: "dark" }; s.monsterState = null; }
       wideFirst(shots);
-      for (const s of shots.slice(1)) { if ((s.crowds ?? []).length) s.crowdState = "asleep"; s.actors = (s.actors ?? []).filter(() => false); if (s.focus !== "object") s.focus = (s.objects ?? []).length ? "object" : "group"; }
+      for (const s of shots.slice(1)) { if (s.camera === "establish") s.camera = "wide"; if ((s.crowds ?? []).length) s.crowdState = "asleep"; s.actors = (s.actors ?? []).filter(() => false); if (s.focus !== "object") s.focus = (s.objects ?? []).length ? "object" : "group"; }
       break;
     }
     case "group_under_cover": {
@@ -269,6 +269,8 @@ export function applyPiece(tl, p, shots) {
       // it blinks first: the closest cut of all on the eye, then it backs away
       const s = shots[0];
       if (/\bblink(s|ed)?\b/i.test(s.text ?? "") && s.monsterState) { s.camera = "low"; s.focus = "monster"; s.tight = 1; if ((s.actors ?? []).some((a) => a.id === me)) s.faceoff = true; }
+      // backing away into the dark: the lit street wide with the giant going (a dark giant on a dark sky read as a wall)
+      for (const x of shots.slice(1)) if (x.monsterState && x.focus === "monster") x.retreat = true; // (page/simple/camera.js: the street wide, the giant going)
       break;
     }
     case "board_up": case "smear_glass": case "monster_licks_glass": case "chase": case "gather":

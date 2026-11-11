@@ -46,7 +46,7 @@ if (process.argv[1] && /lookCheck\.mjs$/.test(process.argv[1])) {
   const files = [...new Set(["/page/engine.js", ...changedFiles(arg("since", "d1df4998"))])];
   const code = makeBundle({ timeline: tl, files });
   const est = 25 + 4 + picks.length * 2.5;
-  console.log(`plan: ${picks.length} stills, ${files.length} page modules in the bundle (${(code.length / 1024).toFixed(0)} KB); estimate ~${est.toFixed(0)} GPU-s = ~$${(est * RATE).toFixed(4)} (worst case 300 s = $${(300 * RATE).toFixed(3)})`);
+  console.log(`plan: ${picks.length} stills, ${files.length} page modules in the bundle (${(code.length / 1024).toFixed(0)} KB); estimate ~${est.toFixed(0)} GPU-s = ~$${(est * RATE).toFixed(4)} (worst case ${arg("max-sec", 420)} s = $${(Number(arg("max-sec", 420)) * RATE).toFixed(3)})`);
   fs.mkdirSync(out, { recursive: true });
   fs.writeFileSync(path.join(out, "bundle.js"), code);
   fs.writeFileSync(path.join(out, "picks.json"), JSON.stringify(picks, null, 1));
@@ -60,7 +60,7 @@ if (process.argv[1] && /lookCheck\.mjs$/.test(process.argv[1])) {
     const job = { role: "simpleStills", mode: "gpu", simple: { code, shots, out: { uploads } } };
     const id = await rp.submit({ job });
     console.log(`job ${id}`);
-    const stt = await rp.wait(id, { maxSec: 420, pollMs: 2000 });
+    const stt = await rp.wait(id, { maxSec: Number(arg("max-sec", 420)), pollMs: 2000 }); // --max-sec: the job is cancelled after this (bounds the spend)
     const b = billed(stt);
     logSpend(out, `Blocky Worlds simple-look engine stills ${id} (${stt.status}, ${shots.length} stills)`, b);
     console.log(`status ${stt.status}; billed ${b.seconds} s = $${b.usd}`);

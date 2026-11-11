@@ -36,6 +36,12 @@ export function frameShot(type, ctx) {
     camera.up.set(0, 1, 0); camera.lookAt(E.look); camera.updateMatrixWorld();
     return camera;
   }
+  if (ctx.retreat && set?.spots?.center) { // the giant backing away: from the street, the lit houses and lamps below it
+    const c = set.spots.center, cd = (set.camDir ?? new THREE.Vector3(0, 0, 1)).clone().setY(0).normalize(), k = ease(Math.min(1, Math.max(0, t / Math.max(dur, 1e-3))));
+    camera.position.copy(c).addScaledVector(cd, 9 - 0.8 * k).setY(1.7); camera.fov = 62; camera.near = 0.1; camera.far = Math.max(camera.far, 3000); camera.updateProjectionMatrix();
+    camera.up.set(0, 1, 0); camera.lookAt(ctx.retreat.x, 4.2, ctx.retreat.z); camera.updateMatrixWorld();
+    return camera;
+  }
   if (type === "two_shot") return ctx.twoShot ? frameTwoShot(ctx) : baseFrame("medium", ctx);
   if (ctx.windowView && !set?.indoor && type !== "insert") return frameAtWindow(type, ctx);
   if (ctx.group?.length >= 2 && (type === "medium" || type === "wide")) return frameGroup(type, ctx);
