@@ -140,7 +140,7 @@ const ADJ = new Set(("old new big little small tiny huge giant long longer short
   "proud polite rude brave shy grumpy cozy fresh rotten sour sweet salty spicy bald fancy plain heavier lighter louder quieter " +
   "wooden glowing floating flying sleeping hidden whole important official only extra enough instead third second fourth twelve " +
   "eleven twenty thirty forty hundred thousand million zero").split(" "));
-export const NEG_RE = /^(never|nobody|no|not|cant|dont|doesnt|didnt|wont|isnt|wasnt|arent|werent|couldnt|neither|nor|without|none)$/;
+export const NEG_RE = /^(never|nobody|no|not|cant|dont|doesnt|didnt|wont|isnt|wasnt|arent|werent|couldnt|neither|nor|without|none|zero)$/; // zero: "zero curtains" = none (storyboard #2 line 7)
 const VERBISH = /^(is|are|was|were|has|had|have|says|said|goes|went|gets|got|makes|made|takes|took|knows|knew|meant|means|needs|needed|owns|plays|hears|heard|sees|saw|keeps|kept|comes|came|turned|started|stopped|learned|remembered|creaked|unfolded|flicked|flew|shaped|looking|walks|walked)$/;
 
 // ------------------------------------------------------------------ the rules
@@ -543,7 +543,8 @@ export function covers(key, s, cast = {}) {
   // EPIC things on screen (lib/direction.js): a giant's / a crowd's names (shot.giants[].aliases, shot.crowds[].aliases)
   const built = [...(s.objects ?? []).flatMap((o) => (o?.asset ? [o.name, ...(o.aliases ?? [])] : [])), ...(s.worldAliases ?? []),
     ...(s.giants ?? []).flatMap((g) => g.aliases ?? []), ...(s.crowds ?? []).flatMap((c) => c.aliases ?? [])];
-  const textual = (w) => wordIn(w, insertText) || marks.some((m) => wordIn(w, m.text)) || built.some((b) => wordIn(w, b));
+  // a storyboard shot (lib/storyboard.js manifest): the things page/simple/board.js draws in it (windows, kites...)
+  const textual = (w) => wordIn(w, insertText) || marks.some((m) => wordIn(w, m.text)) || built.some((b) => wordIn(w, b)) || (s.board?.shows ?? []).some((b) => wordIn(w, b));
   // a person is on screen when the camera frames them: in an EPIC far shot (establish / aerial / track / behind the
   // army) everyone but the focus is a speck (run 7b4c0d8b review: a 2%-of-frame figure counted as the person)
   if (key.kind === "person") return (!(FAR_CAMERAS.has(s.camera) && s.focus !== key.id) && actors.some((a) => a.id === key.id || a.hold === key.id)) || textual(key.label);

@@ -2358,7 +2358,7 @@ export function checkTimeline(tl) {
     else if (s.end - s.start < 0.5) out.push(`${at}: shorter than 0.5 s`);
     const builtWorld = /^world:/.test(s.set ?? "") && tl.assets?.[s.set.slice(6)]?.kind === "world";
     const creatureWorld = isCreatureSet(s) && !!tl.worlds?.[s.set.slice(9)];
-    if (!SETS.includes(s.set) && !builtWorld && !creatureWorld) out.push(`${at}: unknown set ${s.set}`);
+    if (!SETS.includes(s.set) && !builtWorld && !creatureWorld && !(s.set === "board" && s.board)) out.push(`${at}: unknown set ${s.set}`); // board: a storyboard shot (lib/storyboard.js, page/simple/board.js)
     if (i === 0) out.push(...openingProblems(shots));
     if (SETS.includes(s.set) && livesInCreature(tl.worlds)) out.push(`${at}: plain set ${s.set} in a story that lives in a creature world (staysInTheWorld)`);
     if (!LIGHTS.includes(s.light)) out.push(`${at}: unknown light ${s.light}`);

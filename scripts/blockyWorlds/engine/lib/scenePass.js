@@ -285,7 +285,10 @@ export function sceneProblems(tl) {
   for (const [i, s] of (tl.shots ?? []).entries()) {
     const sc = sceneOf(scenes, s.line); if (!sc) { out.push(`scene: shot ${i} (line ${s.line}) is in no scene`); continue; }
     const set = LOCATION_SET[sc.location];
-    if (set && s.set !== set && !s.sceneAside && !/^(creature|world):/.test(s.set ?? "")) out.push(`continuity: shot ${i} (line ${s.line}) is in "${s.set}", its scene ${sc.id} is in ${sc.location}`);
+    // a storyboard shot (lib/storyboard.js, the "board" set): its place (street / a house outside / a room) is its scene's
+    // (street | home:<owner>; a scene on the planned main street takes the board's street or a house front)
+    if (s.board) { const loc = s.board.loc, h = /^(house|room):/.test(loc) ? loc.split(":")[1] : null, L = sc.location; const ok = /^home:/.test(L) ? h === L.slice(5) : (L === "street" || set === "street") ? loc === "street" || /^house:/.test(loc) : set === "bedroom" ? /^room:/.test(loc) : true; if (!ok) out.push(`continuity: shot ${i} (line ${s.line}) is at ${loc}, its scene ${sc.id} is at ${L}`); }
+    else if (set && s.set !== set && !s.sceneAside && !/^(creature|world):/.test(s.set ?? "")) out.push(`continuity: shot ${i} (line ${s.line}) is in "${s.set}", its scene ${sc.id} is in ${sc.location}`);
     if (TIME_LIGHT[sc.time] && s.light !== TIME_LIGHT[sc.time] && !s.sceneAside) out.push(`continuity: shot ${i} (line ${s.line}) is lit "${s.light}", its scene ${sc.id} is at ${sc.time}`);
     if (s.scene && s.scene !== sc.id) out.push(`continuity: shot ${i} carries scene ${s.scene}, its line is in ${sc.id}`);
     if (tl.sceneHouses && JSON.stringify(s.houses) !== JSON.stringify(housesAt({ ...tl.sceneHouses }, s.line))) out.push(`persistence: shot ${i} (line ${s.line}) shows houses in another state than the story's`);

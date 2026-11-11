@@ -25,6 +25,7 @@
 //   - mock only (it reads words, not meaning): a line led by a pronoun ("He was taller...", "It swam.") is about the
 //     previous line's subject
 import { matchProduction } from "./director/match.js";
+import { boardHas } from "./storyboard.js";
 import { GIANT_KINDS, CROWD_KINDS, EPIC_CAMERAS, BEATS } from "./epic.js";
 import { hashSeed } from "./rng.js";
 import { cardLabel } from "./planText.js";
@@ -629,6 +630,8 @@ const NW = (s) => toks(String(s ?? "").replace(/_/g, " ")).filter((w) => w.lengt
 const markersOf = (s) => [...(s.markers ?? []), ...(s.marker ? [s.marker] : [])];
 
 /** is this required item on screen in shot s? (strict: a missing id never matches a missing id) */
+// storyboard shots (lib/storyboard.js): "act:a|b" = one of these actions animated; "board:x" = boardHas
+const boardActs = (s, keys) => keys.split("|").some((k) => (s.board?.acts ?? []).some((a) => a.k === k));
 export function onScreen(r, s, tl = {}) {
   if (waivedHas(s, r.name)) return true; // the opening rule (lib/opening.js) dropped its card / badge: owner-excused
   const name = NW(r.name);
@@ -648,7 +651,7 @@ export function onScreen(r, s, tl = {}) {
   switch (r.kind) {
     case "world":
       if (r.route === "epic") return isCreatureSet(s) && tl.worlds?.[s.set.slice(9)]?.creature === r.species;
-      if (r.route === "builder") return s.world === r.needId || /^world:/.test(s.set ?? "") || s.set === r.set || ["street", "woods", "bedroom", "school"].includes(s.set) || isCreatureSet(s);
+      if (r.route === "builder") return s.world === r.needId || /^world:/.test(s.set ?? "") || s.set === r.set || ["street", "woods", "bedroom", "school"].includes(s.set) || isCreatureSet(s) || s.set === "board"; // board: the storyboard's hand-built town (page/simple/board.js)
       return true; // a hand-built set: the place words themselves are checkVisuals' business
     case "cast":
       if (r.route === "kit" && r.kitName === "person") return actors.some((a) => a.id === r.id || a.hold === r.id);
@@ -667,6 +670,8 @@ export function onScreen(r, s, tl = {}) {
       // insert, read above); a crowd EPIC can't stage there (an army inside the creature) is still named on screen
       return badge;
     case "prop": case "vehicle":
+      if (String(r.kitName ?? "").startsWith("act:")) return boardActs(s, r.kitName.slice(4));
+      if (String(r.kitName ?? "").startsWith("board:")) return boardHas(s, r.kitName.slice(6)); // the storyboard's houses / rooms (lib/storyboard.js)
       // the army's gear is shown by the army wearing it (boots, helmets, torches: crowd aliases)
       if ((s.crowds ?? []).some((c) => (c.aliases ?? []).some((a) => name.includes(a)))) return true;
       if (String(r.kitName ?? "").startsWith("held:")) { const h = r.kitName.slice(5); return actors.some((a) => a.hold === h || NW(a.hold).some((w) => name.includes(w))) || objs.some((o) => o.name === "item" && o.state === h) || objHit || badge; }
@@ -678,6 +683,7 @@ export function onScreen(r, s, tl = {}) {
       // SCENES 2026-11-11: the scene list may set the falling night at dusk (#2 opens on the town at dusk): dusk shows it too
       if (r.kitName === "light:night") return s.light === "night" || (s.scene && s.light === "dusk") || (name.some((w) => /^(sunset|sunsets|sundown|dusk|evening|twilight)$/.test(w)) && ["dusk", "warm"].includes(s.light));
       if (r.kitName === "marker:ring") return markersOf(s).some((m) => m.kind === "ring");
+      if (String(r.kitName ?? "").startsWith("act:")) return boardActs(s, r.kitName.slice(4)); // a storyboard action that animates it (lib/storyboard.js kit)
       if (r.kitName && objs.some((o) => o.name === r.kitName)) return true;
       return badge || (r.kind === "event" && /shake|quake/.test(r.name) && (!!s.beat || !!s.shake));
     default:
