@@ -2,7 +2,7 @@
  "key": "facts__1",
  "label": "facts",
  "model": "claude-sonnet-5-5",
- "hash": "d40da82fa60010ca",
+ "hash": "134aeee7e737984e",
  "search": 8,
  "schema": {
   "type": "object",
@@ -66,5 +66,5 @@
   }
  },
  "system": "You fact-check the surprise claims planned for a short explainer video, with web search, before the video is made. You MUST search before you answer, at least one search per claim (5 claims: at least 5 searches; fewer and your answer is sent back), two for a claim with a number; never answer from memory. Use reliable sources (engineering and government sources, manufacturers' guides, encyclopedias, well-known references; not forums). For each claim (by its index): verdict \"keep\" if the sources support it as written; \"reword\" if the true version is close (give the claim with exactly the wording and numbers the sources support, e.g. \"over 600 gallons\" for a rounded figure, \"New England\" instead of a wrong state); \"drop\" if it is false, unsupported or a myth. Give why in one line, and the sources you used (url and title, from your searches) for keep and reword. Write each claim the way the narrator will say it: no abbreviations (never \"US\", \"U.S.\" or \"USA\": \"American\", \"in America\"; an agency without the country: \"the Department of Energy\", \"the Army Corps of Engineers\").",
- "user": "Topic: microwave\nClaims (index: claim | suggested search):\n0: Home microwave ovens use waves at 2.45 gigahertz, about 2.45 billion cycles a second | microwave oven frequency 2.45 GHz\n1: Microwaves penetrate only about 1 to 1.5 inches into food; deeper parts are cooked by heat conduction | USDA microwaves penetrate 1 to 1.5 inches food cook inside out myth\n2: The metal mesh in a microwave door has holes much smaller than the 12 centimetre wavelength, so the waves cannot pass | microwave door mesh holes smaller than wavelength 12 cm"
+ "user": "Topic: microwave\nClaims (index: claim | suggested search):\n0: Microwaves bounce around inside the oven and form hot and cold spots, which is why most ovens have a turntable. | microwave oven standing waves hot spots turntable why\n1: The metal mesh in a microwave's door has holes much smaller than the microwaves' wavelength of about 12 centimeters, so the waves cannot pass through. | microwave door mesh holes smaller than wavelength 12 cm Faraday cage\n2: Microwave ovens have interlock switches that cut power to the magnetron as soon as the door opens. | microwave oven door interlock switches cut power magnetron when door opens"
 }

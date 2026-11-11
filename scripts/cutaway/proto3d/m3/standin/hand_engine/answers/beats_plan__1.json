@@ -1,24 +1,34 @@
 {
  "hash": "*",
- "by": "stand-in planner (replan 2026-11-09)",
+ "by": "stand-in planner (agent), 2026-11-11",
  "searches": 0,
  "data": {
-  "why": "A big cut-open engine on the floor of a home workshop: one glass cylinder is built up step by step (fire, cap and piston, rod and crankshaft, a water pump), then three more cylinders and a flywheel finish it. Every shot frames the cylinder or the whole engine close, never the room.",
+  "why": "A big cut-open engine on the floor of a home workshop with a car wheel on a stand beside it: one glass cylinder is built up step by step (cap and piston, rod and crankshaft, valves, a water pump) along the path of the fuel, until a shaft links it to the wheel, which spins at the end. Every shot frames the cylinder or the engine and the wheel close, never the room.",
   "story": {
    "title": "How a Car Engine Works",
    "hero": "a car engine",
    "parts": [
-    "metal tube",
-    "fire",
-    "cap",
+    "tube",
     "piston",
     "rod",
     "crankshaft",
-    "spark plug",
+    "valves",
     "water pump",
-    "cylinders",
-    "flywheel"
+    "drive shaft",
+    "wheel"
    ],
+   "flow": [
+    "fuel line",
+    "cylinder",
+    "piston",
+    "crankshaft",
+    "exhaust",
+    "wheel"
+   ],
+   "recurring": {
+    "p": "wheel",
+    "what": "the car wheel the engine has to turn, standing still until the end"
+   },
    "ideas": [
     {
      "role": "hook",
@@ -26,11 +36,11 @@
     },
     {
      "role": "problem",
-     "idea": "an open tube lets the blast escape, so nothing moves"
+     "idea": "an open tube lets the blast out and nothing turns"
     },
     {
      "role": "fix1",
-     "idea": "a cap and a piston trap the blast"
+     "idea": "a cap closes the tube and a piston fits inside"
     },
     {
      "role": "problem2",
@@ -38,31 +48,43 @@
     },
     {
      "role": "fix2",
-     "idea": "a rod and a crankshaft turn the push into a spin and bring the piston back up"
+     "idea": "a rod and a crankshaft turn the push into a spin that brings the piston back"
     },
     {
      "role": "problem3",
-     "idea": "blast after blast heats the tube until it glows"
+     "idea": "the burnt gas stays in the tube and smothers the next fire"
     },
     {
      "role": "fix3",
-     "idea": "a pump runs cool water round the tube"
+     "idea": "an intake valve lets fresh fuel in, an exhaust valve lets the smoke out"
     },
     {
      "role": "name",
-     "idea": "this is a car engine"
+     "idea": "this is a four-stroke engine: in, squeeze, bang, out"
     },
     {
-     "role": "how",
-     "idea": "a spark fires the fuel, the piston goes down, the rod spins the crankshaft"
+     "role": "problem4",
+     "idea": "blast after blast heats the tube until it glows"
+    },
+    {
+     "role": "fix4",
+     "idea": "a pump runs cool water round the tube"
+    },
+    {
+     "role": "problem5",
+     "idea": "the engine runs on its own, but nothing carries its spin to the wheel"
+    },
+    {
+     "role": "fix5",
+     "idea": "a shaft links the crankshaft to the wheel"
     },
     {
      "role": "finish",
-     "idea": "more cylinders in a row and a flywheel complete it"
+     "idea": "the engine fires and the wheel finally turns"
     },
     {
      "role": "congrats",
-     "idea": "the finished engine running"
+     "idea": "the finished engine turning the wheel"
     }
    ],
    "chain": [
@@ -70,1692 +92,129 @@
      "problem": "problem",
      "causedBy": "hook",
      "shows": "the blast bursts out of the open top in smoke",
-     "stakes": "the energy is wasted",
-     "size": 3
+     "stakes": "the energy is wasted, the wheel stays still",
+     "size": 2,
+     "at": "cylinder",
+     "scale": "part"
     },
     {
      "problem": "problem2",
      "causedBy": "fix1",
      "shows": "the piston slams to the bottom and stays",
-     "stakes": "the engine makes one push and stops",
-     "size": 5
+     "stakes": "one push, then the engine stops",
+     "size": 4,
+     "at": "piston",
+     "scale": "part"
     },
     {
      "problem": "problem3",
      "causedBy": "fix2",
+     "shows": "smoke fills the tube and the fire goes out",
+     "stakes": "the engine stalls",
+     "size": 5,
+     "at": "exhaust",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem4",
+     "causedBy": "fix3",
      "shows": "the tube glows red hot",
      "stakes": "the engine would melt",
-     "size": 7
+     "size": 7,
+     "at": "cylinder",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem5",
+     "causedBy": "fix4",
+     "shows": "the engine runs but the wheel stands still",
+     "stakes": "the car goes nowhere",
+     "size": 8,
+     "at": "wheel",
+     "scale": "thing"
     }
    ],
    "surprises": [
     {
-     "claim": "A spark sets off a tiny blast of fuel and air on top of a piston.",
-     "role": "how",
-     "search": "spark plug ignites fuel air mixture above piston"
+     "claim": "In a car engine, burning fuel and air pushes a piston down inside a cylinder.",
+     "role": "problem2",
+     "search": "how car engine works combustion pushes piston down cylinder"
     },
     {
-     "claim": "The blast shoves the piston down, and the rod spins the crankshaft.",
+     "claim": "A connecting rod and crankshaft turn the piston's up-and-down motion into rotation.",
      "role": "fix2",
-     "search": "piston connecting rod crankshaft how car engine works"
+     "search": "connecting rod crankshaft converts reciprocating motion to rotation"
+    },
+    {
+     "claim": "Intake valves let the fuel and air in and exhaust valves let the burnt gases out.",
+     "role": "fix3",
+     "search": "intake valve exhaust valve four stroke engine burnt gases"
+    },
+    {
+     "claim": "A water pump circulates coolant around the cylinders to keep the engine from overheating.",
+     "role": "fix4",
+     "search": "engine water pump circulates coolant around cylinders overheating"
     }
    ]
   },
   "sentences": [
    {
     "role": "hook",
-    "text": "If you burn fuel inside a tube, you have an engine."
+    "text": "If you burn fuel in a tube, you have an engine."
    },
    {
     "role": "problem",
-    "text": "But the blast just bangs out the top, and nothing turns."
+    "text": "But the blast bangs out, and nothing turns."
    },
    {
     "role": "fix1",
-    "text": "So you cap the tube and fit a piston inside."
+    "text": "So you cap the tube and fit a piston."
    },
    {
     "role": "problem2",
-    "text": "But now the blast slams the piston down, and it sticks."
+    "text": "But the blast slams the piston down, and it sticks."
    },
    {
     "role": "fix2",
-    "text": "So you add a rod and a crankshaft that spins and lifts it."
+    "text": "So you add a rod and a spinning crankshaft."
    },
    {
     "role": "problem3",
-    "text": "But now the blasts heat the tube until it glows red."
+    "text": "But as the crankshaft turns, smoke chokes the fire."
    },
    {
     "role": "fix3",
-    "text": "So you add a pump that runs cool water around the tube."
+    "text": "So you add valves: fuel in, smoke out."
    },
    {
     "role": "name",
-    "text": "This is a car engine."
+    "text": "This is a four stroke engine."
    },
    {
-    "role": "how",
-    "text": "A spark fires the fuel, the blast shoves the piston down, and the rod spins the crankshaft."
+    "role": "problem4",
+    "text": "But each blast burns fuel, and the tube glows red."
+   },
+   {
+    "role": "fix4",
+    "text": "So you pump cool water around the tube."
+   },
+   {
+    "role": "problem5",
+    "text": "But the cool engine spins alone; the wheel sits still."
+   },
+   {
+    "role": "fix5",
+    "text": "So you link the crankshaft to the wheel."
    },
    {
     "role": "finish",
-    "text": "Add three more cylinders in a row and a flywheel."
+    "text": "Burn fuel, the engine fires, and the wheel spins."
    },
    {
     "role": "congrats",
-    "text": "Congratulations, you have built a car engine."
+    "text": "Congratulations, you built a car engine."
    }
   ],
-  "sceneJson": {
-   "world": {
-    "cut": [
-     9,
-     12,
-     -5,
-     0.6
-    ],
-    "house": false,
-    "worker": false,
-    "moreTrees": false,
-    "road": false,
-    "porch": false,
-    "backdrop": {
-     "type": "workshop",
-     "x0": -10,
-     "x1": 10,
-     "back": -8,
-     "h": 5
-    }
-   },
-   "parts": [
-    {
-     "id": "light",
-     "kind": "light",
-     "params": {}
-    },
-    {
-     "id": "engine",
-     "kind": "rig",
-     "main": true,
-     "params": {
-      "name": "car engine",
-      "synonyms": [
-       "engine",
-       "motor",
-       "cylinder"
-      ],
-      "pos": [
-       0,
-       0.08,
-       -1.2
-      ],
-      "nodes": [
-       {
-        "id": "base",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           1.3,
-           0.1,
-           0.9
-          ],
-          "at": [
-           0,
-           0.05,
-           0
-          ],
-          "look": "metal",
-          "color": "#3f454c"
-         },
-         {
-          "shape": "box",
-          "size": [
-           1.3,
-           1,
-           0.06
-          ],
-          "at": [
-           0,
-           0.55,
-           -0.42
-          ],
-          "look": "metal",
-          "color": "#7d838a"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.06,
-           1,
-           0.9
-          ],
-          "at": [
-           -0.62,
-           0.55,
-           0
-          ],
-          "look": "metal",
-          "color": "#7d838a"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.06,
-           1,
-           0.9
-          ],
-          "at": [
-           0.62,
-           0.55,
-           0
-          ],
-          "look": "metal",
-          "color": "#7d838a"
-         }
-        ]
-       },
-       {
-        "id": "tube",
-        "parent": "base",
-        "at": [
-         0,
-         1.05,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "cylinder",
-          "r": 0.34,
-          "h": 1.2,
-          "axis": "y",
-          "at": [
-           0,
-           0.6,
-           0
-          ],
-          "look": "glass"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.8,
-           0.06,
-           0.8
-          ],
-          "at": [
-           0,
-           0,
-           0
-          ],
-          "look": "metal",
-          "color": "#7d838a"
-         }
-        ],
-        "moves": [
-         {
-          "name": "glows",
-          "type": "heat",
-          "color": "#ff3b1f"
-         }
-        ]
-       },
-       {
-        "id": "flame",
-        "parent": "tube",
-        "at": [
-         0,
-         0.95,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "flame",
-          "r": 0.22,
-          "h": 0.3,
-          "color": "#ffb020"
-         }
-        ],
-        "moves": [
-         {
-          "name": "fire",
-          "type": "burn"
-         }
-        ]
-       },
-       {
-        "id": "head",
-        "parent": "tube",
-        "at": [
-         0,
-         1.2,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           0.84,
-           0.18,
-           0.84
-          ],
-          "at": [
-           0,
-           0.09,
-           0
-          ],
-          "look": "metal",
-          "color": "#3f454c"
-         }
-        ],
-        "moves": [
-         {
-          "name": "cap",
-          "type": "appear"
-         }
-        ]
-       },
-       {
-        "id": "plug",
-        "parent": "head",
-        "at": [
-         0,
-         0.18,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "cylinder",
-          "r": 0.06,
-          "h": 0.26,
-          "axis": "y",
-          "at": [
-           0,
-           0.13,
-           0
-          ],
-          "look": "plastic",
-          "color": "#f2f2f2"
-         },
-         {
-          "shape": "light",
-          "r": 0.08,
-          "at": [
-           0,
-           -0.24,
-           0
-          ],
-          "color": "#ffd23d"
-         }
-        ],
-        "moves": [
-         {
-          "name": "spark",
-          "type": "blink",
-          "rate": 2.4
-         }
-        ]
-       },
-       {
-        "id": "carrier",
-        "parent": "tube",
-        "at": [
-         0,
-         0.7,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           0.06,
-           0.06,
-           0.06
-          ],
-          "at": [
-           0,
-           0,
-           0
-          ],
-          "look": "metal",
-          "color": "#8d949c"
-         }
-        ],
-        "moves": [
-         {
-          "name": "slams",
-          "type": "slide",
-          "to": [
-           0,
-           -0.5,
-           0
-          ]
-         }
-        ]
-       },
-       {
-        "id": "piston",
-        "parent": "carrier",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "cylinder",
-          "r": 0.31,
-          "h": 0.3,
-          "axis": "y",
-          "at": [
-           0,
-           0,
-           0
-          ],
-          "look": "metal",
-          "color": "#8d949c"
-         }
-        ],
-        "moves": [
-         {
-          "name": "piston",
-          "type": "appear"
-         },
-         {
-          "name": "stroke",
-          "type": "crank",
-          "of": "crank",
-          "axis": "y",
-          "throw": 0.28,
-          "phase": 90
-         }
-        ]
-       },
-       {
-        "id": "rod",
-        "parent": "piston",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           0.1,
-           0.95,
-           0.1
-          ],
-          "at": [
-           0,
-           -0.55,
-           0.05
-          ],
-          "look": "metal",
-          "color": "#c9a227"
-         }
-        ],
-        "moves": [
-         {
-          "name": "rod",
-          "type": "appear"
-         }
-        ]
-       },
-       {
-        "id": "crank",
-        "parent": "base",
-        "at": [
-         0,
-         0.5,
-         0.08
-        ],
-        "shapes": [
-         {
-          "shape": "cylinder",
-          "r": 0.07,
-          "h": 1.2,
-          "axis": "x",
-          "at": [
-           0,
-           0,
-           0
-          ],
-          "look": "metal",
-          "color": "#8d949c"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.14,
-           0.36,
-           0.1
-          ],
-          "at": [
-           0,
-           0.1,
-           0.06
-          ],
-          "look": "metal",
-          "color": "#c9a227"
-         },
-         {
-          "shape": "gear",
-          "r": 0.2,
-          "w": 0.06,
-          "teeth": 16,
-          "axis": "x",
-          "at": [
-           0.5,
-           0,
-           0
-          ],
-          "look": "metal",
-          "color": "#3f454c"
-         }
-        ],
-        "moves": [
-         {
-          "name": "crankshaft",
-          "type": "appear"
-         },
-         {
-          "name": "spins",
-          "type": "spin",
-          "axis": "x",
-          "turns": 1.1
-         }
-        ]
-       },
-       {
-        "id": "pump",
-        "parent": "base",
-        "at": [
-         0.85,
-         0,
-         0.1
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           0.4,
-           0.5,
-           0.4
-          ],
-          "at": [
-           0,
-           0.25,
-           0
-          ],
-          "look": "metal",
-          "color": "#2f6fb0"
-         },
-         {
-          "shape": "tube",
-          "path": [
-           [
-            0,
-            0.5,
-            0
-           ],
-           [
-            0,
-            1.9,
-            0
-           ],
-           [
-            -0.5,
-            1.9,
-            0.3
-           ],
-           [
-            -0.85,
-            1.6,
-            0.36
-           ],
-           [
-            -1.2,
-            1.9,
-            0.3
-           ]
-          ],
-          "r": 0.06,
-          "look": "rubber",
-          "color": "#1f3f66"
-         }
-        ],
-        "moves": [
-         {
-          "name": "pump",
-          "type": "appear"
-         },
-         {
-          "name": "water",
-          "type": "flow",
-          "path": [
-           [
-            0,
-            0.5,
-            0.08
-           ],
-           [
-            0,
-            1.9,
-            0.08
-           ],
-           [
-            -0.5,
-            1.9,
-            0.38
-           ],
-           [
-            -0.85,
-            1.6,
-            0.44
-           ],
-           [
-            -1.2,
-            1.9,
-            0.38
-           ]
-          ],
-          "color": "#3ad6ff",
-          "speed": 1.2
-         }
-        ]
-       }
-      ]
-     }
-    },
-    {
-     "id": "more",
-     "kind": "rig",
-     "params": {
-      "name": "engine block",
-      "synonyms": [
-       "cylinders",
-       "flywheel"
-      ],
-      "pos": [
-       0,
-       0.08,
-       -1.2
-      ],
-      "nodes": [
-       {
-        "id": "case",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           2.4,
-           0.1,
-           0.9
-          ],
-          "at": [
-           -1.86,
-           0.05,
-           0
-          ],
-          "look": "metal",
-          "color": "#3f454c"
-         },
-         {
-          "shape": "box",
-          "size": [
-           2.4,
-           1,
-           0.06
-          ],
-          "at": [
-           -1.86,
-           0.55,
-           -0.42
-          ],
-          "look": "metal",
-          "color": "#7d838a"
-         },
-         {
-          "shape": "cylinder",
-          "r": 0.07,
-          "h": 2.4,
-          "axis": "x",
-          "at": [
-           -1.86,
-           0.5,
-           0.08
-          ],
-          "look": "metal",
-          "color": "#8d949c"
-         }
-        ]
-       },
-       {
-        "id": "cyl0",
-        "parent": "case",
-        "at": [
-         -0.85,
-         1.05,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "cylinder",
-          "r": 0.34,
-          "h": 1.2,
-          "axis": "y",
-          "at": [
-           0,
-           0.6,
-           0
-          ],
-          "look": "glass"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.8,
-           0.06,
-           0.8
-          ],
-          "at": [
-           0,
-           0,
-           0
-          ],
-          "look": "metal",
-          "color": "#7d838a"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.84,
-           0.18,
-           0.84
-          ],
-          "at": [
-           0,
-           1.29,
-           0
-          ],
-          "look": "metal",
-          "color": "#3f454c"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.1,
-           1,
-           0.1
-          ],
-          "at": [
-           0,
-           0.1,
-           0.05
-          ],
-          "look": "metal",
-          "color": "#c9a227"
-         }
-        ]
-       },
-       {
-        "id": "cyl1",
-        "parent": "case",
-        "at": [
-         -1.7,
-         1.05,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "cylinder",
-          "r": 0.34,
-          "h": 1.2,
-          "axis": "y",
-          "at": [
-           0,
-           0.6,
-           0
-          ],
-          "look": "glass"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.8,
-           0.06,
-           0.8
-          ],
-          "at": [
-           0,
-           0,
-           0
-          ],
-          "look": "metal",
-          "color": "#7d838a"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.84,
-           0.18,
-           0.84
-          ],
-          "at": [
-           0,
-           1.29,
-           0
-          ],
-          "look": "metal",
-          "color": "#3f454c"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.1,
-           1,
-           0.1
-          ],
-          "at": [
-           0,
-           0.1,
-           0.05
-          ],
-          "look": "metal",
-          "color": "#c9a227"
-         }
-        ]
-       },
-       {
-        "id": "cyl2",
-        "parent": "case",
-        "at": [
-         -2.55,
-         1.05,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "cylinder",
-          "r": 0.34,
-          "h": 1.2,
-          "axis": "y",
-          "at": [
-           0,
-           0.6,
-           0
-          ],
-          "look": "glass"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.8,
-           0.06,
-           0.8
-          ],
-          "at": [
-           0,
-           0,
-           0
-          ],
-          "look": "metal",
-          "color": "#7d838a"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.84,
-           0.18,
-           0.84
-          ],
-          "at": [
-           0,
-           1.29,
-           0
-          ],
-          "look": "metal",
-          "color": "#3f454c"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.1,
-           1,
-           0.1
-          ],
-          "at": [
-           0,
-           0.1,
-           0.05
-          ],
-          "look": "metal",
-          "color": "#c9a227"
-         }
-        ]
-       },
-       {
-        "id": "pis0",
-        "parent": "cyl0",
-        "at": [
-         0,
-         0.7,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "cylinder",
-          "r": 0.31,
-          "h": 0.3,
-          "axis": "y",
-          "at": [
-           0,
-           0,
-           0
-          ],
-          "look": "metal",
-          "color": "#8d949c"
-         }
-        ],
-        "moves": [
-         {
-          "name": "row",
-          "type": "pump",
-          "axis": "y",
-          "stroke": 0.28,
-          "rate": 1.1
-         }
-        ]
-       },
-       {
-        "id": "pis1",
-        "parent": "cyl1",
-        "at": [
-         0,
-         0.7,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "cylinder",
-          "r": 0.31,
-          "h": 0.3,
-          "axis": "y",
-          "at": [
-           0,
-           0,
-           0
-          ],
-          "look": "metal",
-          "color": "#8d949c"
-         }
-        ],
-        "moves": [
-         {
-          "name": "row",
-          "type": "pump",
-          "axis": "y",
-          "stroke": 0.28,
-          "rate": 1.11
-         }
-        ]
-       },
-       {
-        "id": "pis2",
-        "parent": "cyl2",
-        "at": [
-         0,
-         0.7,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "cylinder",
-          "r": 0.31,
-          "h": 0.3,
-          "axis": "y",
-          "at": [
-           0,
-           0,
-           0
-          ],
-          "look": "metal",
-          "color": "#8d949c"
-         }
-        ],
-        "moves": [
-         {
-          "name": "row",
-          "type": "pump",
-          "axis": "y",
-          "stroke": 0.28,
-          "rate": 1.12
-         }
-        ]
-       },
-       {
-        "id": "flywheel",
-        "parent": "case",
-        "at": [
-         -3.14,
-         0.5,
-         0.08
-        ],
-        "shapes": [
-         {
-          "shape": "wheel",
-          "r": 0.45,
-          "w": 0.12,
-          "axis": "x",
-          "at": [
-           0,
-           0,
-           0
-          ],
-          "look": "metal",
-          "color": "#5b6470"
-         }
-        ],
-        "moves": [
-         {
-          "name": "flywheel",
-          "type": "spin",
-          "axis": "x",
-          "turns": 1.1
-         }
-        ]
-       }
-      ]
-     }
-    },
-    {
-     "id": "bang",
-     "kind": "fx",
-     "params": {
-      "type": "blast",
-      "at": [
-       0,
-       2.45,
-       -1.2
-      ],
-      "size": 0.5
-     }
-    },
-    {
-     "id": "smoke",
-     "kind": "fx",
-     "params": {
-      "type": "smoke",
-      "at": [
-       0,
-       2.35,
-       -1.2
-      ],
-      "size": 0.6,
-      "color": "#333333"
-     }
-    },
-    {
-     "id": "shove",
-     "kind": "arrows",
-     "params": {
-      "list": [
-       {
-        "at": [
-         -0.7,
-         2,
-         -0.6
-        ],
-        "dir": [
-         0,
-         -1
-        ],
-        "travel": 0.6,
-        "phase": 0
-       }
-      ],
-      "opts": {
-       "scale": 0.8,
-       "color": "#ffd23d"
-      }
-     }
-    },
-    {
-     "id": "engineOutline",
-     "kind": "outline",
-     "params": {
-      "of": "engine",
-      "opts": {
-       "r": 0.06,
-       "closed": true,
-       "over": true
-      }
-     }
-    },
-    {
-     "id": "sign",
-     "kind": "sign",
-     "params": {
-      "at": [
-       3.8,
-       0.08,
-       -5
-      ],
-      "rotY": -0.2,
-      "scale": 1.2
-     }
-    }
-   ],
-   "beats": [
-    {
-     "s": "hook",
-     "shows": {
-      "p": "engine",
-      "does": "fuel burns in a glass tube on the engine's base"
-     },
-     "do": [
-      {
-       "p": "engine",
-       "v": "show",
-       "w": "",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "engine",
-       "v": "fire",
-       "w": "burn",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "view": "home",
-       "width": 0.8,
-       "type": "",
-       "hero": false,
-       "word": "",
-       "box": [],
-       "focus": [
-        "engine"
-       ]
-      }
-     ]
-    },
-    {
-     "s": "problem",
-     "shows": {
-      "p": "bang",
-      "does": "the blast bursts out of the open top and smoke rises; nothing moves"
-     },
-     "state": {
-      "text": "NOTHING TURNS",
-      "w": "nothing"
-     },
-     "do": [
-      {
-       "p": "bang",
-       "v": "go",
-       "w": "blast",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "smoke",
-       "v": "start",
-       "w": "bangs",
-       "o": 0.2,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "view": "home",
-       "width": 0,
-       "type": "mid",
-       "hero": false,
-       "word": "",
-       "box": [],
-       "focus": [
-        "engine.tube",
-        "bang"
-       ]
-      }
-     ]
-    },
-    {
-     "s": "fix1",
-     "shows": {
-      "p": "engine",
-      "does": "a cap closes the top and a piston appears inside the tube"
-     },
-     "do": [
-      {
-       "p": "smoke",
-       "v": "stop",
-       "w": "So",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "engine",
-       "v": "fireBack",
-       "w": "So",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "engine",
-       "v": "cap",
-       "w": "cap",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "engine",
-       "v": "piston",
-       "w": "piston",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "view": "home",
-       "width": 0,
-       "type": "mid",
-       "hero": false,
-       "word": "",
-       "box": [],
-       "focus": [
-        "engine.tube"
-       ]
-      }
-     ]
-    },
-    {
-     "s": "problem2",
-     "shows": {
-      "p": "engine",
-      "does": "the fire flares and the piston slams to the bottom of the tube and stays there"
-     },
-     "state": {
-      "text": "STUCK",
-      "w": "sticks"
-     },
-     "do": [
-      {
-       "p": "engine",
-       "v": "fire",
-       "w": "blast",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "engine",
-       "v": "slams",
-       "w": "slams",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "shove",
-       "v": "show",
-       "w": "slams",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "view": "home",
-       "width": 0,
-       "type": "mid",
-       "hero": false,
-       "word": "",
-       "box": [],
-       "focus": [
-        "engine.tube"
-       ]
-      }
-     ]
-    },
-    {
-     "s": "fix2",
-     "shows": {
-      "p": "engine",
-      "does": "a rod and a crankshaft appear, the crank spins and pushes the piston back up"
-     },
-     "do": [
-      {
-       "p": "shove",
-       "v": "hide",
-       "w": "So",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "engine",
-       "v": "fireBack",
-       "w": "So",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "engine",
-       "v": "rod",
-       "w": "rod",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "engine",
-       "v": "crankshaft",
-       "w": "crankshaft",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "engine",
-       "v": "slamsBack",
-       "w": "spins",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "engine",
-       "v": "spins",
-       "w": "spins",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "view": "home",
-       "width": 0,
-       "type": "mid",
-       "hero": false,
-       "word": "",
-       "box": [],
-       "focus": [
-        "engine"
-       ]
-      }
-     ]
-    },
-    {
-     "s": "problem3",
-     "shows": {
-      "p": "engine",
-      "does": "the plug sparks, the fire flares and the tube glows red hot"
-     },
-     "state": {
-      "text": "OVERHEATING",
-      "w": "glows"
-     },
-     "do": [
-      {
-       "p": "engine",
-       "v": "spark",
-       "w": "blasts",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "engine",
-       "v": "fire",
-       "w": "blasts",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "engine",
-       "v": "glows",
-       "w": "glows",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "view": "home",
-       "width": 0,
-       "type": "mid",
-       "hero": false,
-       "word": "",
-       "box": [],
-       "focus": [
-        "engine"
-       ]
-      }
-     ]
-    },
-    {
-     "s": "fix3",
-     "shows": {
-      "p": "engine",
-      "does": "a blue pump appears and cool water runs up the hose round the tube; the glow fades"
-     },
-     "do": [
-      {
-       "p": "engine",
-       "v": "pump",
-       "w": "pump",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "engine",
-       "v": "water",
-       "w": "water",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "engine",
-       "v": "glowsBack",
-       "w": "cool",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "view": "home",
-       "width": 0,
-       "type": "mid",
-       "hero": false,
-       "word": "",
-       "box": [],
-       "focus": [
-        "engine"
-       ]
-      }
-     ]
-    },
-    {
-     "s": "name",
-     "shows": {
-      "p": "engineOutline",
-      "does": "a glowing outline traces the whole engine"
-     },
-     "do": [
-      {
-       "p": "engineOutline",
-       "v": "show",
-       "w": "",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "view": "home",
-       "width": 0.7,
-       "type": "",
-       "hero": true,
-       "word": "",
-       "box": [],
-       "focus": [
-        "engine"
-       ]
-      }
-     ]
-    },
-    {
-     "s": "how",
-     "shows": {
-      "p": "engine",
-      "does": "the plug sparks, the fire flashes, the piston goes down and the crankshaft spins"
-     },
-     "do": [
-      {
-       "p": "engineOutline",
-       "v": "hide",
-       "w": "",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "engine",
-       "v": "spark",
-       "w": "spark",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "shove",
-       "v": "show",
-       "w": "shoves",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "engine",
-       "v": "spins",
-       "w": "spins",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "view": "home",
-       "width": 0,
-       "type": "mid",
-       "hero": false,
-       "word": "",
-       "box": [],
-       "focus": [
-        "engine.tube",
-        "engine.crank"
-       ]
-      }
-     ]
-    },
-    {
-     "s": "finish",
-     "shows": {
-      "p": "more",
-      "does": "three more cylinders stand in a row beside it with their pistons pumping, and a flywheel spins"
-     },
-     "do": [
-      {
-       "p": "shove",
-       "v": "hide",
-       "w": "Add",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "more",
-       "v": "show",
-       "w": "cylinders",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "more",
-       "v": "row",
-       "w": "row",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "more",
-       "v": "flywheel",
-       "w": "flywheel",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "view": "home",
-       "width": 0.85,
-       "type": "",
-       "hero": false,
-       "word": "",
-       "box": [],
-       "focus": [
-        "engine",
-        "more"
-       ]
-      }
-     ]
-    },
-    {
-     "s": "congrats",
-     "do": [],
-     "shots": [
-      {
-       "view": "home",
-       "width": 0,
-       "type": "mid",
-       "hero": false,
-       "word": "",
-       "box": [],
-       "focus": [
-        "engine",
-        "more"
-       ]
-      }
-     ]
-    }
-   ],
-   "audio": {
-    "cards": [],
-    "sfx": [
-     {
-      "lib": "flame",
-      "at": {
-       "s": "hook",
-       "w": "burn",
-       "o": 0
-      },
-      "d": 1.2
-     },
-     {
-      "lib": "flame",
-      "at": {
-       "s": "problem",
-       "w": "bangs",
-       "o": 0
-      },
-      "d": 1
-     },
-     {
-      "lib": "motor_hum",
-      "at": {
-       "s": "fix2",
-       "w": "spins",
-       "o": 0
-      },
-      "d": 2
-     },
-     {
-      "lib": "water_rush",
-      "at": {
-       "s": "fix3",
-       "w": "water",
-       "o": 0
-      },
-      "d": 1.3
-     }
-    ],
-    "chimes": [
-     {
-      "s": "name",
-      "w": "",
-      "o": 0
-     },
-     {
-      "s": "congrats",
-      "w": "",
-      "o": 0
-     }
-    ],
-    "rain": []
-   }
-  }
+  "sceneJson": "{\"why\":\"A big cut-open engine on the floor of a home workshop with a car wheel on a stand beside it: one glass cylinder is built up step by step (cap and piston, rod and crankshaft, valves, a water pump) along the path of the fuel, until a shaft links it to the wheel, which spins at the end. Every shot frames the cylinder or the engine and the wheel close, never the room.\",\"world\":{\"cut\":[9,12,-5,0.6],\"house\":false,\"worker\":false,\"moreTrees\":false,\"road\":false,\"porch\":false,\"backdrop\":{\"type\":\"workshop\",\"x0\":-10,\"x1\":10,\"back\":-8,\"h\":5}},\"parts\":[{\"id\":\"light\",\"kind\":\"light\",\"params\":{}},{\"id\":\"engine\",\"kind\":\"rig\",\"main\":true,\"params\":{\"name\":\"car engine\",\"synonyms\":[\"engine\",\"motor\",\"cylinder\"],\"pos\":[0,0.08,-1.2],\"nodes\":[{\"id\":\"base\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[1.3,0.1,0.9],\"at\":[0,0.05,0],\"look\":\"metal\",\"color\":\"#3f454c\"},{\"shape\":\"box\",\"size\":[1.3,1,0.06],\"at\":[0,0.55,-0.42],\"look\":\"metal\",\"color\":\"#7d838a\"},{\"shape\":\"box\",\"size\":[0.06,1,0.9],\"at\":[-0.62,0.55,0],\"look\":\"metal\",\"color\":\"#7d838a\"},{\"shape\":\"box\",\"size\":[0.06,1,0.9],\"at\":[0.62,0.55,0],\"look\":\"metal\",\"color\":\"#7d838a\"}]},{\"id\":\"tube\",\"parent\":\"base\",\"at\":[0,1.05,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.34,\"h\":1.2,\"axis\":\"y\",\"at\":[0,0.6,0],\"look\":\"glass\"},{\"shape\":\"box\",\"size\":[0.8,0.06,0.8],\"at\":[0,0,0],\"look\":\"metal\",\"color\":\"#7d838a\"}],\"moves\":[{\"name\":\"glows\",\"type\":\"heat\",\"color\":\"#ff3b1f\"}]},{\"id\":\"flame\",\"parent\":\"tube\",\"at\":[0,0.95,0],\"shapes\":[{\"shape\":\"flame\",\"r\":0.22,\"h\":0.3,\"color\":\"#ffb020\"}],\"moves\":[{\"name\":\"fire\",\"type\":\"burn\"}]},{\"id\":\"head\",\"parent\":\"tube\",\"at\":[0,1.2,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.84,0.18,0.84],\"at\":[0,0.09,0],\"look\":\"metal\",\"color\":\"#3f454c\"}],\"moves\":[{\"name\":\"cap\",\"type\":\"appear\"}]},{\"id\":\"plug\",\"parent\":\"head\",\"at\":[0,0.18,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.06,\"h\":0.26,\"axis\":\"y\",\"at\":[0,0.13,0],\"look\":\"plastic\",\"color\":\"#f2f2f2\"},{\"shape\":\"light\",\"r\":0.08,\"at\":[0,-0.24,0],\"color\":\"#ffd23d\"}],\"moves\":[{\"name\":\"spark\",\"type\":\"blink\",\"rate\":2.4}]},{\"id\":\"carrier\",\"parent\":\"tube\",\"at\":[0,0.7,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.06,0.06,0.06],\"at\":[0,0,0],\"look\":\"metal\",\"color\":\"#8d949c\"}],\"moves\":[{\"name\":\"slams\",\"type\":\"slide\",\"to\":[0,-0.5,0]}]},{\"id\":\"piston\",\"parent\":\"carrier\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.31,\"h\":0.3,\"axis\":\"y\",\"at\":[0,0,0],\"look\":\"metal\",\"color\":\"#8d949c\"}],\"moves\":[{\"name\":\"piston\",\"type\":\"appear\"},{\"name\":\"stroke\",\"type\":\"crank\",\"of\":\"crank\",\"axis\":\"y\",\"throw\":0.28,\"phase\":90}]},{\"id\":\"rod\",\"parent\":\"piston\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.1,0.95,0.1],\"at\":[0,-0.55,0.05],\"look\":\"metal\",\"color\":\"#c9a227\"}],\"moves\":[{\"name\":\"rod\",\"type\":\"appear\"}]},{\"id\":\"crank\",\"parent\":\"base\",\"at\":[0,0.5,0.08],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.07,\"h\":1.2,\"axis\":\"x\",\"at\":[0,0,0],\"look\":\"metal\",\"color\":\"#8d949c\"},{\"shape\":\"box\",\"size\":[0.14,0.36,0.1],\"at\":[0,0.1,0.06],\"look\":\"metal\",\"color\":\"#c9a227\"},{\"shape\":\"gear\",\"r\":0.2,\"w\":0.06,\"teeth\":16,\"axis\":\"x\",\"at\":[0.5,0,0],\"look\":\"metal\",\"color\":\"#3f454c\"}],\"moves\":[{\"name\":\"crankshaft\",\"type\":\"appear\"},{\"name\":\"spins\",\"type\":\"spin\",\"axis\":\"x\",\"turns\":1.1}]},{\"id\":\"pump\",\"parent\":\"base\",\"at\":[0.85,0,0.1],\"shapes\":[{\"shape\":\"box\",\"size\":[0.4,0.5,0.4],\"at\":[0,0.25,0],\"look\":\"metal\",\"color\":\"#2f6fb0\"},{\"shape\":\"tube\",\"path\":[[0,0.5,0],[0,1.9,0],[-0.5,1.9,0.3],[-0.85,1.6,0.36],[-1.2,1.9,0.3]],\"r\":0.06,\"look\":\"rubber\",\"color\":\"#1f3f66\"}],\"moves\":[{\"name\":\"pump\",\"type\":\"appear\"},{\"name\":\"water\",\"type\":\"flow\",\"path\":[[0,0.5,0.08],[0,1.9,0.08],[-0.5,1.9,0.38],[-0.85,1.6,0.44],[-1.2,1.9,0.38]],\"color\":\"#3ad6ff\",\"speed\":1.2}]},{\"id\":\"intake\",\"parent\":\"head\",\"at\":[-0.25,0.18,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.05,\"h\":0.3,\"axis\":\"y\",\"at\":[0,0.15,0],\"look\":\"metal\",\"color\":\"#b8bec6\"},{\"shape\":\"tube\",\"path\":[[0,0.3,0],[-0.7,0.3,0]],\"r\":0.07,\"look\":\"metal\",\"color\":\"#8d949c\"}],\"moves\":[{\"name\":\"valves\",\"type\":\"appear\"},{\"name\":\"fuel\",\"type\":\"flow\",\"path\":[[-0.7,0.3,0.1],[0,0.3,0.1],[0,-0.35,0.1]],\"color\":\"#ffb020\",\"look\":\"dots\",\"size\":0.07}]},{\"id\":\"exhaust\",\"parent\":\"head\",\"at\":[0.25,0.18,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.05,\"h\":0.3,\"axis\":\"y\",\"at\":[0,0.15,0],\"look\":\"metal\",\"color\":\"#b8bec6\"},{\"shape\":\"tube\",\"path\":[[0,0.3,0],[0.45,0.3,0],[0.45,0.8,0]],\"r\":0.07,\"look\":\"metal\",\"color\":\"#5b6470\"}],\"moves\":[{\"name\":\"valves\",\"type\":\"appear\"},{\"name\":\"smoke\",\"type\":\"flow\",\"path\":[[0,-0.35,0.1],[0,0.3,0.1],[0.45,0.3,0.1],[0.45,1,0.1]],\"color\":\"#555555\",\"look\":\"dots\",\"size\":0.07}]}]}},{\"id\":\"wheel\",\"kind\":\"rig\",\"params\":{\"name\":\"car wheel\",\"synonyms\":[\"wheel\",\"tire\",\"drive shaft\"],\"pos\":[2.15,0.08,-1.12],\"nodes\":[{\"id\":\"stand\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.14,0.56,0.4],\"at\":[0.27,0.28,0],\"look\":\"metal\",\"color\":\"#5b6470\"},{\"shape\":\"box\",\"size\":[0.5,0.06,0.6],\"at\":[0.2,0.03,0],\"look\":\"metal\",\"color\":\"#3f454c\"},{\"shape\":\"cylinder\",\"r\":0.05,\"h\":0.3,\"axis\":\"x\",\"at\":[0.15,0.5,0],\"look\":\"metal\",\"color\":\"#9aa0a6\"}]},{\"id\":\"tire\",\"parent\":\"stand\",\"at\":[0,0.5,0],\"shapes\":[{\"shape\":\"wheel\",\"r\":0.46,\"w\":0.26,\"axis\":\"x\",\"at\":[0,0,0],\"look\":\"rubber\",\"color\":\"#222222\"},{\"shape\":\"box\",\"size\":[0.28,0.1,0.1],\"at\":[0,0.38,0],\"look\":\"paint\",\"color\":\"#f2f2f2\"}],\"moves\":[{\"name\":\"spins\",\"type\":\"spin\",\"axis\":\"x\",\"turns\":0.8}]},{\"id\":\"shaft\",\"parent\":\"stand\",\"at\":[-0.13,0.5,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.06,\"h\":1.42,\"axis\":\"x\",\"at\":[-0.71,0,0],\"look\":\"metal\",\"color\":\"#c9a227\"}],\"moves\":[{\"name\":\"link\",\"type\":\"appear\"}]}]}},{\"id\":\"bang\",\"kind\":\"fx\",\"params\":{\"type\":\"blast\",\"at\":[0,2.45,-1.2],\"size\":0.5}},{\"id\":\"smoke\",\"kind\":\"fx\",\"params\":{\"type\":\"smoke\",\"at\":[0,2.6,-1.2],\"size\":0.6,\"color\":\"#333333\"}},{\"id\":\"fumes\",\"kind\":\"fx\",\"params\":{\"type\":\"smoke\",\"at\":[0,1.75,-0.85],\"size\":0.35,\"color\":\"#444444\"}},{\"id\":\"shove\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[-0.7,2,-0.6],\"dir\":[0,-1],\"travel\":0.6,\"phase\":0}],\"opts\":{\"scale\":0.8,\"color\":\"#ffd23d\"}}},{\"id\":\"engineOutline\",\"kind\":\"outline\",\"params\":{\"of\":\"engine\",\"opts\":{\"r\":0.06,\"closed\":true,\"over\":true}}},{\"id\":\"gap\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[1.25,0.95,-0.9],\"dir\":[1,0],\"travel\":0.5,\"phase\":0}],\"opts\":{\"scale\":0.7,\"color\":\"#ffd23d\"}}},{\"id\":\"sign\",\"kind\":\"sign\",\"params\":{\"at\":[3.8,0.08,-5],\"rotY\":-0.2,\"scale\":1.2}}],\"beats\":[{\"s\":\"hook\",\"shows\":{\"p\":\"engine\",\"does\":\"fuel burns in a glass tube on the engine's base\"},\"do\":[{\"p\":\"engine\",\"v\":\"show\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"engine\",\"v\":\"fire\",\"w\":\"burn\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"engine.tube\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem\",\"shows\":{\"p\":\"bang\",\"does\":\"the blast bursts out of the open top in smoke while the wheel beside it stands still\"},\"do\":[{\"p\":\"bang\",\"v\":\"go\",\"w\":\"blast\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"smoke\",\"v\":\"start\",\"w\":\"bangs\",\"o\":0.2,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"engine\",\"wheel\"],\"view\":\"home\",\"width\":0.85,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix1\",\"shows\":{\"p\":\"engine\",\"does\":\"a cap closes the tube and a piston appears inside it\"},\"do\":[{\"p\":\"smoke\",\"v\":\"stop\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"engine\",\"v\":\"fireBack\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"engine\",\"v\":\"cap\",\"w\":\"cap\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"engine\",\"v\":\"piston\",\"w\":\"piston\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"engine.tube\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem2\",\"shows\":{\"p\":\"engine\",\"does\":\"the fire flares and the piston slams to the bottom of the tube and stays there\"},\"do\":[{\"p\":\"engine\",\"v\":\"fire\",\"w\":\"blast\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"engine\",\"v\":\"slams\",\"w\":\"slams\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"shove\",\"v\":\"show\",\"w\":\"slams\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"engine.tube\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix2\",\"shows\":{\"p\":\"engine\",\"does\":\"a rod and a crankshaft appear, the crankshaft spins and brings the piston back up\"},\"do\":[{\"p\":\"shove\",\"v\":\"hide\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"engine\",\"v\":\"fireBack\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"engine\",\"v\":\"rod\",\"w\":\"rod\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"engine\",\"v\":\"crankshaft\",\"w\":\"crankshaft\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"engine\",\"v\":\"slamsBack\",\"w\":\"spinning\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"engine\",\"v\":\"spins\",\"w\":\"spinning\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"engine\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem3\",\"shows\":{\"p\":\"fumes\",\"does\":\"as the crankshaft turns, grey smoke fills the glass tube and the fire goes out\"},\"do\":[{\"p\":\"engine\",\"v\":\"fire\",\"w\":\"turns\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"fumes\",\"v\":\"start\",\"w\":\"smoke\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"engine\",\"v\":\"fireBack\",\"w\":\"chokes\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"engine\",\"v\":\"spinsBack\",\"w\":\"chokes\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"engine.tube\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix3\",\"shows\":{\"p\":\"engine\",\"does\":\"two valves appear on the cap: amber fuel dots run in, grey smoke dots run out the exhaust pipe, the crankshaft spins again\"},\"do\":[{\"p\":\"fumes\",\"v\":\"stop\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"engine\",\"v\":\"valves\",\"w\":\"valves\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"engine\",\"v\":\"fuel\",\"w\":\"fuel\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"engine\",\"v\":\"fire\",\"w\":\"fuel\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"engine\",\"v\":\"spins\",\"w\":\"fuel\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"engine\",\"v\":\"smoke\",\"w\":\"smoke\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"engine.head\",\"engine.tube\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"name\",\"shows\":{\"p\":\"engineOutline\",\"does\":\"a glowing outline traces the whole engine while it runs\"},\"do\":[{\"p\":\"engineOutline\",\"v\":\"show\",\"w\":\"four\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"engine\"],\"view\":\"home\",\"width\":0.7,\"type\":\"\",\"hero\":true,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem4\",\"shows\":{\"p\":\"engine\",\"does\":\"the fuel keeps burning and the glass tube glows red hot\"},\"do\":[{\"p\":\"engineOutline\",\"v\":\"hide\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"engine\",\"v\":\"spark\",\"w\":\"burns\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"engine\",\"v\":\"glows\",\"w\":\"glows\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"engine.tube\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix4\",\"shows\":{\"p\":\"engine\",\"does\":\"a blue pump appears and cool water runs up the hose round the tube; the glow fades\"},\"do\":[{\"p\":\"engine\",\"v\":\"pump\",\"w\":\"pump\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"engine\",\"v\":\"water\",\"w\":\"water\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"engine\",\"v\":\"glowsBack\",\"w\":\"cool\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"engine\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem5\",\"shows\":{\"p\":\"gap\",\"does\":\"the engine runs, but the wheel beside it stands still; a yellow arrow points at the gap between them\"},\"do\":[{\"p\":\"gap\",\"v\":\"show\",\"w\":\"wheel\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"engine\",\"wheel\"],\"view\":\"home\",\"width\":0.85,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix5\",\"shows\":{\"p\":\"wheel\",\"does\":\"a shaft appears from the crankshaft to the wheel\"},\"do\":[{\"p\":\"gap\",\"v\":\"hide\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"wheel\",\"v\":\"link\",\"w\":\"link\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"engine.crank\",\"wheel\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"finish\",\"shows\":{\"p\":\"engine\",\"does\":\"the engine fires, the crankshaft spins and the wheel turns with it\"},\"do\":[{\"p\":\"engine\",\"v\":\"spark\",\"w\":\"Burn\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"wheel\",\"v\":\"spins\",\"w\":\"spins\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"engine\",\"wheel\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"congrats\",\"do\":[],\"shots\":[{\"focus\":[\"engine\",\"wheel\"],\"view\":\"home\",\"width\":0.85,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]}],\"audio\":{\"cards\":[],\"sfx\":[{\"lib\":\"flame\",\"at\":{\"s\":\"hook\",\"w\":\"burn\",\"o\":0},\"d\":1.2},{\"lib\":\"flame\",\"at\":{\"s\":\"problem\",\"w\":\"bangs\",\"o\":0},\"d\":1},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"fix2\",\"w\":\"spinning\",\"o\":0},\"d\":2},{\"lib\":\"water_rush\",\"at\":{\"s\":\"fix4\",\"w\":\"water\",\"o\":0},\"d\":1.3},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"finish\",\"w\":\"spins\",\"o\":0},\"d\":2}],\"chimes\":[{\"s\":\"congrats\",\"w\":\"\",\"o\":0}],\"rain\":[]}}"
  }
 }

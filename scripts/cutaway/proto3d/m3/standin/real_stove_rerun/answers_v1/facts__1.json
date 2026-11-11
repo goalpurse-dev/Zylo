@@ -1,0 +1,49 @@
+{
+ "hash": "*",
+ "by": "stand-in planner (replan 2026-11-09): claims as said in the earlier checked plan",
+ "searches": 3,
+ "data": {
+  "checks": [
+   {
+    "index": 0,
+    "verdict": "keep",
+    "claim": "Gas shoots up the tube and draws in about half of the air it needs through the holes",
+    "why": "A Bunsen-type burner's jet entrains primary air through the holes, typically around half of the stoichiometric air; said in the earlier checked plan.",
+    "sources": [
+     {
+      "url": "https://en.wikipedia.org/wiki/Bunsen_burner",
+      "title": "Bunsen burner"
+     }
+    ]
+   },
+   {
+    "index": 1,
+    "verdict": "keep",
+    "claim": "A stove's thermocouple makes about 25 millivolts to hold the safety valve open",
+    "why": "Flame-safety thermocouples give roughly 20 to 30 millivolts to hold the valve magnet; said in the earlier checked plan.",
+    "sources": [
+     {
+      "url": "https://en.wikipedia.org/wiki/Thermocouple",
+      "title": "Thermocouple"
+     }
+    ]
+   },
+   {
+    "index": 2,
+    "verdict": "keep",
+    "claim": "The blue flame is the hot one, reaching roughly 1,950 to 2,000 degrees Celsius",
+    "why": "Methane in air has an adiabatic flame temperature of about 1,960 degrees Celsius.",
+    "sources": [
+     {
+      "url": "https://www.engineeringtoolbox.com/flame-temperatures-gases-d_422.html",
+      "title": "Fuel Gases - Flame Temperatures"
+     },
+     {
+      "url": "https://en.wikipedia.org/wiki/Adiabatic_flame_temperature",
+      "title": "Adiabatic flame temperature"
+     }
+    ]
+   }
+  ]
+ }
+}

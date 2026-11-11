@@ -1,42 +1,66 @@
 {
  "hash": "*",
- "by": "converted (convert1d) from fact_check__1.json and the research's 3 searches",
- "searches": 3,
+ "by": "stand-in planner (agent), 2026-11-11",
+ "searches": 4,
  "data": {
   "checks": [
    {
     "index": 0,
     "verdict": "keep",
-    "claim": "A submarine dives by letting sea water into its ballast tanks and surfaces by blowing it out with compressed air",
-    "why": "Wikipedia's ballast tank article describes both steps.",
+    "claim": "A submarine dives by flooding its ballast tanks with seawater and surfaces by blowing them out with compressed air.",
+    "why": "HowStuffWorks: vents open and water floods the main ballast tanks to dive; compressed air from flasks blows the water out to surface.",
     "sources": [
      {
-      "url": "https://en.wikipedia.org/wiki/Ballast_tank",
-      "title": "Ballast tank - Wikipedia"
+      "url": "https://science.howstuffworks.com/transport/engines-equipment/submarine1.htm",
+      "title": "How Submarines Work - HowStuffWorks"
+     },
+     {
+      "url": "https://www.scienceabc.com/innovation/how-does-a-submarine-dive-resurface-and-navigate-underwater",
+      "title": "How does a submarine dive, resurface and navigate underwater - ScienceABC"
      }
     ]
    },
    {
     "index": 1,
-    "verdict": "reword",
-    "claim": "Navy attack submarines dive deeper than 800 feet; the exact depth is secret",
-    "why": "The published Navy figure is greater than 800 feet; the limit is classified.",
+    "verdict": "keep",
+    "claim": "A submarine's thick pressure hull keeps the deep water pressure from crushing it.",
+    "why": "Wikipedia: the pressure hull of thick high-strength steel with ring stiffeners withstands the outside pressure.",
     "sources": [
      {
-      "url": "https://www.worldatlas.com/oceans/how-deep-submarines-can-actually-go.html",
-      "title": "How Deep Submarines Can Actually Go - WorldAtlas"
+      "url": "https://en.wikipedia.org/wiki/Submarine_hull",
+      "title": "Submarine hull - Wikipedia"
      }
     ]
    },
    {
     "index": 2,
     "verdict": "keep",
-    "claim": "Water pressure rises by about one atmosphere for every 10 meters, or 33 feet, of depth",
-    "why": "NOAA Ocean Service states it.",
+    "claim": "A propeller at the stern pushes a submarine through the water.",
+    "why": "Patent background: submarines are propelled by a propeller-based system at the stern.",
     "sources": [
      {
-      "url": "https://oceanservice.noaa.gov/facts/pressure.html",
-      "title": "NOAA Ocean Service: pressure"
+      "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/6427618",
+      "title": "US patent 6427618: jet-propelling a submarine (background on stern propellers)"
+     },
+     {
+      "url": "https://www.slashgear.com/2208743/why-navy-submarine-propeller-designs-are-kept-secret/",
+      "title": "Why Navies Keep Submarine Propeller Designs So Secretive - SlashGear"
+     }
+    ]
+   },
+   {
+    "index": 3,
+    "verdict": "keep",
+    "claim": "A periscope lets a submarine crew see above the surface while the submarine stays under water.",
+    "why": "A periscope lets a submarine at shallow (periscope) depth search the surface and air while the hull stays submerged.",
+    "sources": [
+     {
+      "url": "https://wikipedia.com/wiki/Periscope",
+      "title": "Periscope - Wikipedia"
+     },
+     {
+      "url": "https://www.hensoldt.net/products/sero-420-430-submarine-periscope-system",
+      "title": "SERO 420 / 430 submarine periscope - Hensoldt"
      }
     ]
    }

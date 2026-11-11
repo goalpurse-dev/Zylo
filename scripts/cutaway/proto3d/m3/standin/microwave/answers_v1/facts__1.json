@@ -1,0 +1,49 @@
+{
+ "hash": "*",
+ "by": "converted (convert1d) from fact_check__1.json and the research's 3 searches",
+ "searches": 3,
+ "data": {
+  "checks": [
+   {
+    "index": 0,
+    "verdict": "keep",
+    "claim": "Home microwave ovens use waves at 2.45 gigahertz, about 2.45 billion cycles a second",
+    "why": "EMF Portal and IEEE both give 2.45 GHz for home ovens.",
+    "sources": [
+     {
+      "url": "https://www.emf-portal.org/en/cms/page/home/technology/radio-frequency/microwave-oven",
+      "title": "Microwave oven (EMF Portal)"
+     },
+     {
+      "url": "https://technav.ieee.org/topic/microwave-ovens/",
+      "title": "Microwave ovens (IEEE TechNav)"
+     }
+    ]
+   },
+   {
+    "index": 1,
+    "verdict": "keep",
+    "claim": "Microwaves penetrate only about 1 to 1.5 inches into food; deeper parts are cooked by heat conduction",
+    "why": "The USDA FSIS fact sheet says exactly this.",
+    "sources": [
+     {
+      "url": "https://webarchive.library.unt.edu/web/20120915114427/http:/www.fsis.usda.gov/PDF/Microwave_Ovens_and_Food_Safety.pdf",
+      "title": "Microwave Ovens and Food Safety (USDA FSIS)"
+     }
+    ]
+   },
+   {
+    "index": 2,
+    "verdict": "keep",
+    "claim": "The metal mesh in a microwave door has holes much smaller than the 12 centimetre wavelength, so the waves cannot pass",
+    "why": "The Straight Dope gives a 12 cm wavelength and 1 to 2 mm holes.",
+    "sources": [
+     {
+      "url": "https://www.straightdope.com/21343269/what-keeps-microwave-radiation-from-leaking-out-the-oven-door",
+      "title": "What keeps microwave radiation from leaking out the oven door?"
+     }
+    ]
+   }
+  ]
+ }
+}

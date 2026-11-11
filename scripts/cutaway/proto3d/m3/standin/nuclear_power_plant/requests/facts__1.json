@@ -2,8 +2,8 @@
  "key": "facts__1",
  "label": "facts",
  "model": "claude-sonnet-5-5",
- "hash": "874881117266337e",
- "search": 8,
+ "hash": "5a29551e46fa70c1",
+ "search": 10,
  "schema": {
   "type": "object",
   "additionalProperties": false,
@@ -66,5 +66,5 @@
   }
  },
  "system": "You fact-check the surprise claims planned for a short explainer video, with web search, before the video is made. You MUST search before you answer, at least one search per claim (5 claims: at least 5 searches; fewer and your answer is sent back), two for a claim with a number; never answer from memory. Use reliable sources (engineering and government sources, manufacturers' guides, encyclopedias, well-known references; not forums). For each claim (by its index): verdict \"keep\" if the sources support it as written; \"reword\" if the true version is close (give the claim with exactly the wording and numbers the sources support, e.g. \"over 600 gallons\" for a rounded figure, \"New England\" instead of a wrong state); \"drop\" if it is false, unsupported or a myth. Give why in one line, and the sources you used (url and title, from your searches) for keep and reword. Write each claim the way the narrator will say it: no abbreviations (never \"US\", \"U.S.\" or \"USA\": \"American\", \"in America\"; an agency without the country: \"the Department of Energy\", \"the Army Corps of Engineers\").",
- "user": "Topic: nuclear power plant\nClaims (index: claim | suggested search):\n0: Control rods are made of materials like boron or cadmium that soak up neutrons and slow the chain reaction | control rods boron cadmium absorb neutrons\n1: The white cloud over a cooling tower is water vapor, not smoke | cooling tower plume water vapor not smoke NRC\n2: One uranium fuel pellet, about the size of a fingertip, makes about as much energy as one ton of coal | uranium fuel pellet equivalent one ton of coal"
+ "user": "Topic: nuclear power plant\nClaims (index: claim | suggested search):\n0: Control rods absorb neutrons and slow down the chain reaction in a nuclear reactor. | control rods absorb neutrons slow chain reaction reactor\n1: A nuclear plant's heat boils water into steam that spins a turbine connected to a generator. | nuclear power plant steam turbine generator how it works\n2: Cooling towers release heat as water vapor, and their white plume is not smoke. | cooling tower plume water vapor not smoke nuclear\n3: A thick concrete containment structure surrounds the reactor to keep radiation in. | nuclear reactor containment building concrete steel radiation"
 }

@@ -1,0 +1,53 @@
+{
+ "hash": "*",
+ "by": "stand-in planner (replan 2026-11-09): verified claims kept word for word",
+ "searches": 3,
+ "data": {
+  "checks": [
+   {
+    "index": 0,
+    "verdict": "keep",
+    "claim": "Mount Fuji is a stratovolcano 3,776 meters tall",
+    "why": "NASA and UNESCO both give 3,776 m and call it a stratovolcano.",
+    "sources": [
+     {
+      "url": "https://earthobservatory.nasa.gov/images/39099/mount-fuji-japan",
+      "title": "Mount Fuji, Japan - NASA Earth Observatory"
+     },
+     {
+      "url": "https://whc.unesco.org/en/documents/172852",
+      "title": "UNESCO World Heritage document"
+     }
+    ]
+   },
+   {
+    "index": 1,
+    "verdict": "keep",
+    "claim": "Stratovolcanoes are built of alternating layers of lava flows and ash",
+    "why": "USGS CVO describes them exactly so.",
+    "sources": [
+     {
+      "url": "https://webarchive.library.unt.edu/eot2008/20090509054955/http://vulcan.wr.usgs.gov/Glossary/StratoVolcano/description_composite_volcano.html",
+      "title": "USGS CVO composite volcano description"
+     }
+    ]
+   },
+   {
+    "index": 2,
+    "verdict": "keep",
+    "claim": "Gas dissolved in magma expands as it rises and drives explosive eruptions",
+    "why": "USGS: gas comes out of solution as pressure drops and the expanding gas powers explosive eruptions.",
+    "sources": [
+     {
+      "url": "https://pubs.usgs.gov/gip/19/downloads/Chapter_1/Activities/SodaBottle_volcano.pdf",
+      "title": "USGS Soda Bottle Volcano activity"
+     },
+     {
+      "url": "https://pubs.usgs.gov/publication/70168947",
+      "title": "Volcanic gases create air pollution on the Island of Hawai'i - USGS"
+     }
+    ]
+   }
+  ]
+ }
+}

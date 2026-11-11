@@ -1,0 +1,53 @@
+{
+ "hash": "*",
+ "by": "stand-in planner (replan 2026-11-09): verified claims kept word for word",
+ "searches": 4,
+ "data": {
+  "checks": [
+   {
+    "index": 0,
+    "verdict": "keep",
+    "claim": "A family septic tank often holds around 1,000 gallons, the usual minimum for a three-bedroom home.",
+    "why": "The encyclopedia gives an average of 1,000 gallons and sizing guides call 1,000 gallons the common minimum for 3 bedrooms; codes vary and some say 1,250, so 'often around' fits.",
+    "sources": [
+     {
+      "url": "https://www.encyclopedia.com/reference/encyclopedias-almanacs-transcripts-and-maps/septic-tank",
+      "title": "Septic Tank - Encyclopedia.com"
+     },
+     {
+      "url": "https://hakaru.io/guides/septic-tank-size-calculator-guide",
+      "title": "Septic Tank Size Calculator Guide"
+     }
+    ]
+   },
+   {
+    "index": 1,
+    "verdict": "keep",
+    "claim": "In a septic tank solids settle to the bottom as sludge while fats, oil and grease float to the top as scum",
+    "why": "EPA and LA County Public Health describe exactly these three layers.",
+    "sources": [
+     {
+      "url": "https://www.epa.gov/septic/how-your-septic-system-works",
+      "title": "How Your Septic System Works - US EPA"
+     },
+     {
+      "url": "https://admin.publichealth.lacounty.gov/eh/docs/business/how-septic-system-works.pdf",
+      "title": "How a Septic System Works - LA County Public Health"
+     }
+    ]
+   },
+   {
+    "index": 2,
+    "verdict": "keep",
+    "claim": "A household septic tank is typically pumped every 3 to 5 years",
+    "why": "Cornell's copy of the EPA homeowner guide says sludge and scum should generally be pumped every three to five years.",
+    "sources": [
+     {
+      "url": "https://www.css.cornell.edu/cwmi/waterquality/septic/CCEWQ-YourSepticSystem-Print.pdf",
+      "title": "Your Septic System - Cornell Cooperative Extension"
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,30 @@
+{
+ "hash": "*",
+ "by": "stand-in planner (replan 2026-11-10, fix6): claims kept word for word from the old saved plan's verified sentences",
+ "searches": 3,
+ "data": {
+  "checks": [
+   {
+    "index": 0,
+    "verdict": "keep",
+    "claim": "One full cycle at a busy corner lasts about 60 to 120 seconds.",
+    "why": "said in the old saved plan (m3/sweep/plans/traffic_light.json); stand-in only: no source was fetched for it (a real run searches)",
+    "sources": []
+   },
+   {
+    "index": 1,
+    "verdict": "keep",
+    "claim": "Each green lets one car cross the line about every 2 seconds.",
+    "why": "said in the old saved plan (m3/sweep/plans/traffic_light.json); stand-in only: no source was fetched for it (a real run searches)",
+    "sources": []
+   },
+   {
+    "index": 2,
+    "verdict": "keep",
+    "claim": "A yellow lamp gives drivers about 3 to 6 seconds to stop.",
+    "why": "said in the old saved plan (m3/sweep/plans/traffic_light.json); stand-in only: no source was fetched for it (a real run searches)",
+    "sources": []
+   }
+  ]
+ }
+}

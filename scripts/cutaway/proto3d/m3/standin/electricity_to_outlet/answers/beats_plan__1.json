@@ -1,1643 +1,223 @@
 {
  "hash": "*",
- "by": "stand-in planner (replan 2026-11-10, fix6)",
+ "by": "stand-in planner (agent), 2026-11-11",
  "searches": 0,
  "data": {
-  "why": "A yard with a small generator on the left, two power poles and a house on the right: the wire is strung from the generator to the house, a step-up transformer and a pole transformer are added, a storm drops a branch on the line, and the cable is finally buried in a trench seen in section. The camera opens close on the wire leaving the generator, holds mid shots of the poles and the counter, and ends wide on the lit house.",
+  "why": "A house with your lamp by its wall, wired to a power plant across the lawn by a pylon and a utility pole; the story follows the power from the plant along the line to the pole, the house, the wall and the outlet. Each problem is seen on the thing itself (heat shimmer on the line, a flash at the lamp, a snapped wire in the storm, smoke out of the wall), each fix lands where the problem was, and it ends close on the lamp lighting up when it is plugged in.",
   "story": {
    "title": "How electricity gets to your outlet",
    "hero": "the power grid",
    "parts": [
-    "generator",
-    "wire",
-    "power poles",
+    "power plant",
+    "long wire",
     "step-up transformer",
+    "pylon",
     "pole transformer",
-    "porch light",
-    "branch",
-    "buried cable",
-    "meter"
+    "underground cable",
+    "sealed pipe",
+    "breaker",
+    "outlet",
+    "lamp"
+   ],
+   "flow": [
+    "power plant",
+    "power line",
+    "pole",
+    "street",
+    "house",
+    "wall",
+    "outlet"
+   ],
+   "chain": [
+    {
+     "problem": "problem",
+     "causedBy": "hook",
+     "shows": "the long wire shimmers with heat and the lamp stays dark",
+     "stakes": "power wasted on the way",
+     "size": 3,
+     "at": "power line",
+     "scale": "town"
+    },
+    {
+     "problem": "problem2",
+     "causedBy": "fix1",
+     "shows": "high voltage bursts at the lamp",
+     "stakes": "your lamp and your house",
+     "size": 5,
+     "at": "street",
+     "scale": "street"
+    },
+    {
+     "problem": "problem3",
+     "causedBy": "fix2",
+     "shows": "a storm snaps the wire off the pole",
+     "stakes": "the whole street goes dark",
+     "size": 6,
+     "at": "pole",
+     "scale": "street"
+    },
+    {
+     "problem": "problem4",
+     "causedBy": "fix3",
+     "shows": "water seeps onto the buried cable and it sparks",
+     "stakes": "the street loses power again",
+     "size": 6,
+     "at": "street",
+     "scale": "neighbours"
+    },
+    {
+     "problem": "problem5",
+     "causedBy": "fix4",
+     "shows": "smoke curls out of the wall by the outlet",
+     "stakes": "a fire in your house",
+     "size": 8,
+     "at": "wall",
+     "scale": "house"
+    }
+   ],
+   "recurring": {
+    "p": "lamp",
+    "what": "your lamp by the house wall"
+   },
+   "surprises": [
+    {
+     "claim": "Raising the voltage on a transmission line lowers the power lost as heat in the wire.",
+     "role": "fix1",
+     "search": "high voltage transmission reduces resistive losses heat I squared R"
+    },
+    {
+     "claim": "A pole transformer steps the street's voltage down to the 120 and 240 volts used in homes.",
+     "role": "fix2",
+     "search": "pole mounted distribution transformer steps down to 120/240 volts homes"
+    },
+    {
+     "claim": "Underground power lines are far less exposed to storm damage than overhead lines.",
+     "role": "fix3",
+     "search": "underground power lines less vulnerable storm damage than overhead"
+    },
+    {
+     "claim": "A circuit breaker trips to cut the power when a circuit is overloaded.",
+     "role": "fix5",
+     "search": "circuit breaker trips overload overheating wire protection"
+    }
    ],
    "ideas": [
     {
      "role": "hook",
-     "idea": "run a wire from a power plant to your house and you have electricity"
+     "idea": "if you wire a power plant to your lamp, you have electricity"
     },
     {
      "role": "problem",
-     "idea": "a long wire wastes power as heat and glows hot"
+     "idea": "but the long wire turns power into heat"
     },
     {
      "role": "fix1",
-     "idea": "a transformer raises the voltage so the same power flows as a small current and the wire stays cool"
+     "idea": "so a transformer raises the voltage to keep it cool"
     },
     {
      "role": "problem2",
-     "idea": "that high voltage at your house would blow everything up in sparks"
+     "idea": "but that voltage would fry your lamp"
     },
     {
      "role": "fix2",
-     "idea": "a transformer on the pole steps it down for the house"
+     "idea": "so a transformer by the pole steps it down"
     },
     {
      "role": "name",
      "idea": "this is the power grid"
     },
     {
-     "role": "how",
-     "idea": "power flows through the wire and the transformer and the porch light comes on"
-    },
-    {
      "role": "problem3",
-     "idea": "a storm drops a branch on the line and the light goes out"
+     "idea": "but a storm snaps the wire off the pole"
     },
     {
      "role": "fix3",
-     "idea": "bury the cable underground away from storms"
+     "idea": "so you dig and bury the cable"
     },
     {
-     "role": "fact",
-     "idea": "a pole transformer turns about 7,200 volts into 240"
+     "role": "problem4",
+     "idea": "but water seeps into the buried cable, and it sparks"
+    },
+    {
+     "role": "fix4",
+     "idea": "so you run the cable inside a sealed pipe"
+    },
+    {
+     "role": "problem5",
+     "idea": "but inside the wall, overloaded wires heat up"
+    },
+    {
+     "role": "fix5",
+     "idea": "so a breaker trips before the wire burns"
     },
     {
      "role": "finish",
-     "idea": "add a meter on the wall and the porch light back on"
+     "idea": "plug in the lamp, and it lights up"
     },
     {
      "role": "congrats",
-     "idea": "you have built the power grid"
-    }
-   ],
-   "chain": [
-    {
-     "problem": "problem",
-     "causedBy": "hook",
-     "shows": "the wire glows red hot",
-     "stakes": "the power is lost as heat",
-     "size": 4
-    },
-    {
-     "problem": "problem2",
-     "causedBy": "fix1",
-     "shows": "sparks burst at the house wall",
-     "stakes": "the house wiring burns",
-     "size": 7
-    },
-    {
-     "problem": "problem3",
-     "causedBy": "fix2",
-     "shows": "a branch falls on the line in a storm, sparks fly, the light goes out",
-     "stakes": "the whole street goes dark",
-     "size": 8
-    }
-   ],
-   "surprises": [
-    {
-     "claim": "Long-distance power lines run at hundreds of thousands of volts, because higher voltage loses less power as heat",
-     "role": "fix1",
-     "search": "why transmission lines high voltage less loss EIA"
-    },
-    {
-     "claim": "A pole transformer turns about 7,200 volts into the 240 and 120 volts a house uses",
-     "role": "fact",
-     "search": "pole mounted distribution transformer 7200 volts to 240 120"
-    },
-    {
-     "claim": "About 5 percent of the electricity is lost in transmission and distribution in America",
-     "role": "problem",
-     "search": "EIA how much electricity is lost in transmission and distribution percent"
+     "idea": "congratulations, you have built the power grid"
     }
    ]
   },
   "sentences": [
    {
     "role": "hook",
-    "text": "If you run a wire from a power plant to your house, you have electricity."
+    "text": "If you wire a power plant to your lamp, you have electricity."
    },
    {
     "role": "problem",
-    "text": "But the long wire wastes power as heat and glows."
+    "text": "But the long wire turns power into heat."
    },
    {
     "role": "fix1",
-    "text": "So a transformer raises it to 100,000 to 800,000 volts, and the wire cools."
+    "text": "So a transformer raises the voltage to keep it cool."
    },
    {
     "role": "problem2",
-    "text": "But now that voltage at your house bursts into sparks."
+    "text": "But that voltage would fry your lamp."
    },
    {
     "role": "fix2",
-    "text": "So a transformer on the pole steps it down."
+    "text": "So a transformer by the pole steps it down."
    },
    {
     "role": "name",
     "text": "This is the power grid."
    },
    {
-    "role": "how",
-    "text": "Power flows down the wire, and the porch light comes on."
-   },
-   {
     "role": "problem3",
-    "text": "But a storm drops a branch on the line, and the lights go out."
+    "text": "But a storm snaps the wire off the pole."
    },
    {
     "role": "fix3",
-    "text": "So you bury the cable underground."
+    "text": "So you dig and bury the cable."
    },
    {
-    "role": "fact",
-    "text": "A common pole transformer turns 7,200 volts into 240."
+    "role": "problem4",
+    "text": "But water seeps into the buried cable, and it sparks."
+   },
+   {
+    "role": "fix4",
+    "text": "So you run the cable inside a sealed pipe."
+   },
+   {
+    "role": "problem5",
+    "text": "But inside the wall, overloaded wires heat up."
+   },
+   {
+    "role": "fix5",
+    "text": "So a breaker trips before the wire burns."
    },
    {
     "role": "finish",
-    "text": "Add a meter on the wall beside the light."
+    "text": "Plug in the lamp, and it lights up."
    },
    {
     "role": "congrats",
     "text": "Congratulations, you have built the power grid."
    }
   ],
-  "sceneJson": {
-   "world": {
-    "cut": [
-     -6.5,
-     5,
-     -1.2,
-     1.4
-    ],
-    "house": [
-     -2.7,
-     0,
-     -11
-    ],
-    "porch": false,
-    "trees": [
-     [
-      -14,
-      -10
-     ],
-     [
-      15,
-      -14,
-      0.9
-     ]
-    ],
-    "road": false,
-    "worker": false,
-    "moreTrees": false,
-    "rocksAvoid": [
-     [
-      -7,
-      5.5,
-      -1.6,
-      0.2
-     ]
-    ],
-    "roots": {
-     "pad": 0.6,
-     "to": 6
-    }
-   },
-   "parts": [
-    {
-     "id": "light",
-     "kind": "light",
-     "params": {
-      "storm": true
-     }
-    },
-    {
-     "id": "plant",
-     "kind": "machine",
-     "params": {
-      "pos": [
-       -6,
-       0,
-       -3
-      ],
-      "rotY": 0
-     }
-    },
-    {
-     "id": "grid",
-     "kind": "rig",
-     "main": true,
-     "params": {
-      "name": "power line",
-      "synonyms": [
-       "power grid",
-       "grid",
-       "wire",
-       "line",
-       "poles"
-      ],
-      "pos": [
-       0,
-       0,
-       -2.5
-      ],
-      "nodes": [
-       {
-        "id": "poles",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           0.3,
-           7,
-           0.3
-          ],
-          "at": [
-           -3,
-           3.5,
-           0
-          ],
-          "look": "wood",
-          "color": "#7a5a3a"
-         },
-         {
-          "shape": "box",
-          "size": [
-           1.8,
-           0.16,
-           0.16
-          ],
-          "at": [
-           -3,
-           6.8,
-           0
-          ],
-          "look": "wood",
-          "color": "#7a5a3a"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.3,
-           7,
-           0.3
-          ],
-          "at": [
-           0.5,
-           3.5,
-           -2
-          ],
-          "look": "wood",
-          "color": "#7a5a3a"
-         },
-         {
-          "shape": "box",
-          "size": [
-           1.8,
-           0.16,
-           0.16
-          ],
-          "at": [
-           0.5,
-           6.8,
-           -2
-          ],
-          "look": "wood",
-          "color": "#7a5a3a",
-          "rot": [
-           0,
-           30,
-           0
-          ]
-         }
-        ]
-       },
-       {
-        "id": "wire",
-        "parent": "poles",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "cable",
-          "path": [
-           [
-            -6,
-            2,
-            -0.5
-           ],
-           [
-            -3,
-            6.85,
-            0
-           ],
-           [
-            0.5,
-            6.85,
-            -2
-           ],
-           [
-            2.5,
-            5.9,
-            -5.2
-           ]
-          ],
-          "r": 0.07,
-          "look": "rubber",
-          "color": "#202020"
-         }
-        ],
-        "moves": [
-         {
-          "name": "wire",
-          "type": "appear"
-         },
-         {
-          "name": "hot",
-          "type": "heat",
-          "color": "#ff4a1f"
-         }
-        ]
-       },
-       {
-        "id": "stepUp",
-        "parent": "poles",
-        "at": [
-         -3.6,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           0.9,
-           1.3,
-           0.9
-          ],
-          "at": [
-           0,
-           0.65,
-           0
-          ],
-          "look": "metal",
-          "color": "#7d8a96"
-         },
-         {
-          "shape": "box",
-          "size": [
-           1,
-           0.12,
-           1
-          ],
-          "at": [
-           0,
-           1.36,
-           0
-          ],
-          "look": "metal",
-          "color": "#5b6470"
-         },
-         {
-          "shape": "cylinder",
-          "r": 0.08,
-          "h": 0.4,
-          "axis": "y",
-          "at": [
-           0,
-           1.6,
-           0
-          ],
-          "look": "plastic",
-          "color": "#c0782a"
-         }
-        ],
-        "moves": [
-         {
-          "name": "stepUp",
-          "type": "appear"
-         }
-        ]
-       },
-       {
-        "id": "can",
-        "parent": "poles",
-        "at": [
-         0.5,
-         5.4,
-         -1.6
-        ],
-        "shapes": [
-         {
-          "shape": "cylinder",
-          "r": 0.38,
-          "h": 0.95,
-          "axis": "y",
-          "at": [
-           0,
-           0,
-           0
-          ],
-          "look": "paint",
-          "color": "#a3a7ab"
-         },
-         {
-          "shape": "cylinder",
-          "r": 0.07,
-          "h": 0.3,
-          "axis": "y",
-          "at": [
-           0,
-           0.6,
-           0
-          ],
-          "look": "plastic",
-          "color": "#c0782a"
-         }
-        ],
-        "moves": [
-         {
-          "name": "can",
-          "type": "appear"
-         }
-        ]
-       },
-       {
-        "id": "branch",
-        "parent": "poles",
-        "at": [
-         -1.25,
-         8.3,
-         -1
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           3.2,
-           0.28,
-           0.28
-          ],
-          "at": [
-           0,
-           0,
-           0
-          ],
-          "rot": [
-           0,
-           30,
-           -6
-          ],
-          "look": "wood",
-          "color": "#5a3e26"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.9,
-           0.18,
-           0.18
-          ],
-          "at": [
-           0.8,
-           0.35,
-           0
-          ],
-          "rot": [
-           0,
-           30,
-           35
-          ],
-          "look": "wood",
-          "color": "#5a3e26"
-         }
-        ],
-        "moves": [
-         {
-          "name": "branch",
-          "type": "appear"
-         },
-         {
-          "name": "fall",
-          "type": "slide",
-          "to": [
-           0,
-           -1.35,
-           0
-          ]
-         }
-        ]
-       }
-      ]
-     }
-    },
-    {
-     "id": "current",
-     "kind": "wires",
-     "params": {
-      "points": [
-       [
-        -6,
-        2,
-        -3
-       ],
-       [
-        -3,
-        6.85,
-        -2.5
-       ],
-       [
-        0.5,
-        6.85,
-        -4.5
-       ],
-       [
-        2.5,
-        5.9,
-        -7.7
-       ]
-      ],
-      "sag": 0,
-      "count": 1,
-      "color": "#202020",
-      "glow": "#ffe14a"
-     }
-    },
-    {
-     "id": "porch",
-     "kind": "rig",
-     "params": {
-      "name": "porch light and meter",
-      "synonyms": [
-       "porch light",
-       "light",
-       "meter",
-       "outlet"
-      ],
-      "pos": [
-       2.5,
-       1.6,
-       -7.72
-      ],
-      "mount": "wall",
-      "nodes": [
-       {
-        "id": "plate",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           0.5,
-           0.5,
-           0.12
-          ],
-          "at": [
-           0,
-           0.6,
-           0.06
-          ],
-          "look": "metal",
-          "color": "#2e2e2e"
-         },
-         {
-          "shape": "light",
-          "r": 0.28,
-          "at": [
-           0,
-           0.6,
-           0.35
-          ],
-          "color": "#ffd23d"
-         }
-        ],
-        "moves": [
-         {
-          "name": "lit",
-          "type": "light"
-         }
-        ]
-       },
-       {
-        "id": "meter",
-        "parent": "plate",
-        "at": [
-         0.6,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           0.7,
-           0.9,
-           0.3
-          ],
-          "at": [
-           0,
-           0.3,
-           0.15
-          ],
-          "look": "metal",
-          "color": "#9aa0a6"
-         },
-         {
-          "shape": "screen",
-          "size": [
-           0.45,
-           0.25
-          ],
-          "at": [
-           0,
-           0.45,
-           0.32
-          ]
-         }
-        ],
-        "moves": [
-         {
-          "name": "meter",
-          "type": "appear"
-         },
-         {
-          "name": "tick",
-          "type": "count",
-          "from": 0,
-          "to": 30
-         }
-        ]
-       }
-      ]
-     }
-    },
-    {
-     "id": "standV",
-     "kind": "boxPop",
-     "params": {
-      "size": [
-       0.25,
-       2.2,
-       0.25
-      ],
-      "pos": [
-       -1.6,
-       1.1,
-       -3.4
-      ],
-      "mat": "metal"
-     }
-    },
-    {
-     "id": "volts",
-     "kind": "counter",
-     "params": {
-      "pos": [
-       -1.6,
-       2.6,
-       -3.4
-      ],
-      "size": 1.2,
-      "from": 10,
-      "to": 400,
-      "color": "#ffd23d"
-     }
-    },
-    {
-     "id": "volts2",
-     "kind": "counter",
-     "params": {
-      "pos": [
-       -1.6,
-       2.6,
-       -3.4
-      ],
-      "size": 1.2,
-      "from": 7200,
-      "to": 240,
-      "color": "#3ad6ff"
-     }
-    },
-    {
-     "id": "zap",
-     "kind": "fx",
-     "params": {
-      "type": "blast",
-      "at": [
-       2.5,
-       5.9,
-       -7.55
-      ],
-      "size": 0.6
-     }
-    },
-    {
-     "id": "spark1",
-     "kind": "fx",
-     "params": {
-      "type": "spark",
-      "at": [
-       2.5,
-       5.9,
-       -7.6000000000000005
-      ],
-      "size": 1.4
-     }
-    },
-    {
-     "id": "spark2",
-     "kind": "fx",
-     "params": {
-      "type": "spark",
-      "at": [
-       -1.25,
-       6.9,
-       -3.5
-      ],
-      "size": 0.9
-     }
-    },
-    {
-     "id": "rain",
-     "kind": "rain",
-     "params": {
-      "x0": -14,
-      "x1": 14,
-      "z0": -14,
-      "z1": -0.1,
-      "yTop": 16,
-      "yBot": -0.2,
-      "count": 1100,
-      "width": 0.02,
-      "opacity": 0.36
-     }
-    },
-    {
-     "id": "dig",
-     "kind": "dig",
-     "params": {
-      "clumps": 120,
-      "mound": {
-       "x": 3.5,
-       "z": -4.2,
-       "rx": 1.4,
-       "rz": 0.9,
-       "h": 0.8
-      },
-      "haul": true
-     }
-    },
-    {
-     "id": "cable",
-     "kind": "pipeRun",
-     "params": {
-      "path": [
-       [
-        -6,
-        -0.9,
-        -0.06
-       ],
-       [
-        4.6,
-        -0.9,
-        -0.06
-       ]
-      ],
-      "r": 0.14,
-      "mat": "metal"
-     }
-    },
-    {
-     "id": "cableFlow",
-     "kind": "pipeRunFlow",
-     "params": {
-      "pipe": "cable",
-      "count": 14,
-      "size": 0.12,
-      "speed": 3,
-      "mat": "juice",
-      "dz": 0.2
-     }
-    },
-    {
-     "id": "capSoil",
-     "kind": "wipe",
-     "params": {
-      "box": {
-       "x0": -6.48,
-       "x1": 4.98,
-       "y0": -0.6,
-       "y1": -0.05,
-       "z0": -1.18,
-       "z1": 0
-      },
-      "mat": "soilCover",
-      "axis": "x",
-      "r": 0.04
-     }
-    },
-    {
-     "id": "gridOutline",
-     "kind": "outline",
-     "params": {
-      "of": "grid",
-      "opts": {
-       "r": 0.11,
-       "closed": true
-      }
-     }
-    },
-    {
-     "id": "sign",
-     "kind": "sign",
-     "params": {
-      "at": [
-       -9,
-       0,
-       -6
-      ],
-      "rotY": 0.25,
-      "scale": 1.3
-     }
-    }
-   ],
-   "beats": [
-    {
-     "s": "hook",
-     "shows": {
-      "p": "grid",
-      "does": "a wire is strung from the generator over two poles to the house"
-     },
-     "do": [
-      {
-       "p": "plant",
-       "v": "show",
-       "w": "",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "grid",
-       "v": "show",
-       "w": "",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "current",
-       "v": "show",
-       "w": "run",
-       "o": 0,
-       "d": 1.6,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "grid",
-       "v": "wire",
-       "w": "house",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "current",
-       "v": "live",
-       "w": "electricity",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "plant",
-        "grid"
-       ],
-       "view": "home",
-       "width": 0,
-       "type": "wide",
-       "hero": false,
-       "word": "",
-       "box": []
-      }
-     ]
-    },
-    {
-     "s": "problem",
-     "state": {
-      "text": "POWER LOST",
-      "w": "glows"
-     },
-     "shows": {
-      "p": "grid",
-      "does": "the long wire glows red hot"
-     },
-     "do": [
-      {
-       "p": "current",
-       "v": "off",
-       "w": "But",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "grid",
-       "v": "hot",
-       "w": "glows",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "grid.wire"
-       ],
-       "view": "home",
-       "width": 0,
-       "type": "mid",
-       "hero": false,
-       "word": "",
-       "box": []
-      }
-     ]
-    },
-    {
-     "s": "fix1",
-     "shows": {
-      "p": "grid",
-      "does": "a transformer box appears by the generator, the volts counter climbs and the wire cools"
-     },
-     "do": [
-      {
-       "p": "grid",
-       "v": "stepUp",
-       "w": "transformer",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "standV",
-       "v": "show",
-       "w": "transformer",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "volts",
-       "v": "show",
-       "w": "transformer",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "volts",
-       "v": "count",
-       "w": "volts",
-       "o": -0.8,
-       "d": 1.2,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "grid",
-       "v": "hotBack",
-       "w": "volts",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "grid.stepUp",
-        "volts"
-       ],
-       "view": "home",
-       "width": 0,
-       "type": "mid",
-       "hero": false,
-       "word": "",
-       "box": []
-      }
-     ]
-    },
-    {
-     "s": "problem2",
-     "state": {
-      "text": "TOO HIGH",
-      "w": "sparks"
-     },
-     "shows": {
-      "p": "spark1",
-      "does": "sparks burst where the wire meets the house"
-     },
-     "do": [
-      {
-       "p": "zap",
-       "v": "go",
-       "w": "bursts",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "spark1",
-       "v": "start",
-       "w": "sparks",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "box": {
-        "min": [
-         -0.6,
-         1,
-         -8
-        ],
-        "max": [
-         5.4,
-         8,
-         -3.8
-        ]
-       },
-       "width": 0.85,
-       "zone": "center"
-      }
-     ]
-    },
-    {
-     "s": "fix2",
-     "shows": {
-      "p": "grid",
-      "does": "a grey transformer can appears on the second pole, between the wire and the house, and the sparks at the house stop"
-     },
-     "do": [
-      {
-       "p": "spark1",
-       "v": "stop",
-       "w": "So",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "grid",
-       "v": "can",
-       "w": "pole",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "volts",
-       "v": "hide",
-       "w": "pole",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "box": {
-        "min": [
-         -0.6,
-         1.5,
-         -8
-        ],
-        "max": [
-         4.2,
-         8.2,
-         -3.8
-        ]
-       },
-       "width": 0.85,
-       "zone": "center"
-      }
-     ]
-    },
-    {
-     "s": "name",
-     "shows": {
-      "p": "gridOutline",
-      "does": "a glowing outline traces the poles and the wire"
-     },
-     "do": [
-      {
-       "p": "gridOutline",
-       "v": "show",
-       "w": "grid",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "grid"
-       ],
-       "view": "home",
-       "width": 0.85,
-       "type": "",
-       "hero": true,
-       "word": "",
-       "box": []
-      }
-     ]
-    },
-    {
-     "s": "how",
-     "shows": {
-      "p": "current",
-      "does": "bright current pulses run along the wire from the pole into the house and the porch light comes on"
-     },
-     "do": [
-      {
-       "p": "gridOutline",
-       "v": "hide",
-       "w": "",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "porch",
-       "v": "show",
-       "w": "",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "current",
-       "v": "live",
-       "w": "flows",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "porch",
-       "v": "lit",
-       "w": "light",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "grid.can",
-        "porch"
-       ],
-       "view": "home",
-       "width": 0,
-       "type": "mid",
-       "hero": false,
-       "word": "",
-       "box": []
-      }
-     ]
-    },
-    {
-     "s": "problem3",
-     "state": {
-      "text": "BLACKOUT",
-      "w": "branch"
-     },
-     "shows": {
-      "p": "grid",
-      "does": "in a storm a branch falls onto the line, sparks fly and the porch light goes out"
-     },
-     "do": [
-      {
-       "p": "light",
-       "v": "storm",
-       "w": "But",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "rain",
-       "v": "start",
-       "w": "But",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "grid",
-       "v": "branch",
-       "w": "But",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "grid",
-       "v": "fall",
-       "w": "branch",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "spark2",
-       "v": "start",
-       "w": "branch",
-       "o": 0.3,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "porch",
-       "v": "litBack",
-       "w": "out",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "current",
-       "v": "off",
-       "w": "out",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "grid"
-       ],
-       "view": "home",
-       "width": 0,
-       "type": "mid",
-       "hero": false,
-       "word": "",
-       "box": []
-      }
-     ]
-    },
-    {
-     "s": "fix3",
-     "shows": {
-      "p": "cable",
-      "does": "a trench is dug and a cable is laid in it underground"
-     },
-     "do": [
-      {
-       "p": "spark2",
-       "v": "stop",
-       "w": "So",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "rain",
-       "v": "stop",
-       "w": "So",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "light",
-       "v": "clear",
-       "w": "So",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "dig",
-       "v": "dig",
-       "w": "bury",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "cable",
-       "v": "grow",
-       "w": "cable",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "cableFlow",
-       "v": "show",
-       "w": "underground",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "porch",
-       "v": "lit",
-       "w": "underground",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "cable"
-       ],
-       "view": "low",
-       "width": 0.9,
-       "type": "",
-       "hero": false,
-       "word": "",
-       "box": []
-      }
-     ]
-    },
-    {
-     "s": "fact",
-     "shows": {
-      "p": "volts2",
-      "does": "a counter beside the pole falls from 7,200 to 240"
-     },
-     "do": [
-      {
-       "p": "volts2",
-       "v": "show",
-       "w": "",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "volts2",
-       "v": "count",
-       "w": "turns",
-       "o": 0,
-       "d": 1.4,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "grid.can",
-        "volts2"
-       ],
-       "view": "home",
-       "width": 0,
-       "type": "mid",
-       "hero": false,
-       "word": "",
-       "box": []
-      }
-     ]
-    },
-    {
-     "s": "finish",
-     "shows": {
-      "p": "porch",
-      "does": "a meter appears on the house wall and its number ticks up, the soil goes back over the cable"
-     },
-     "do": [
-      {
-       "p": "volts2",
-       "v": "hide",
-       "w": "Add",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "cableFlow",
-       "v": "hide",
-       "w": "Add",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "dig",
-       "v": "refill",
-       "w": "Add",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "capSoil",
-       "v": "grow",
-       "w": "Add",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "porch",
-       "v": "meter",
-       "w": "meter",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "porch",
-       "v": "tick",
-       "w": "meter",
-       "o": 0.3,
-       "d": 1.5,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "home"
-       ],
-       "view": "home",
-       "width": 0,
-       "type": "",
-       "hero": false,
-       "word": "",
-       "box": []
-      }
-     ]
-    },
-    {
-     "s": "congrats",
-     "do": [],
-     "shots": [
-      {
-       "focus": [
-        "home"
-       ],
-       "view": "home",
-       "width": 0,
-       "type": "",
-       "hero": false,
-       "word": "",
-       "box": []
-      }
-     ]
-    }
-   ],
-   "audio": {
-    "cards": [
-     {
-      "text": "400,000 VOLTS",
-      "at": {
-       "s": "fix1",
-       "w": "volts",
-       "o": 0
-      },
-      "d": 1.6
-     },
-     {
-      "text": "240 VOLTS",
-      "at": {
-       "s": "fact",
-       "w": "240",
-       "o": 0
-      },
-      "d": 1.5
-     }
-    ],
-    "sfx": [
-     {
-      "lib": "motor_hum",
-      "at": {
-       "s": "hook",
-       "w": "",
-       "o": 0.1
-      },
-      "d": 1.8
-     },
-     {
-      "lib": "flame",
-      "at": {
-       "s": "problem",
-       "w": "glows",
-       "o": 0
-      },
-      "d": 1.2
-     },
-     {
-      "lib": "dirt",
-      "at": {
-       "s": "fix3",
-       "w": "bury",
-       "o": 0
-      },
-      "d": 1.2
-     }
-    ],
-    "chimes": [
-     {
-      "s": "fix1",
-      "w": "volts",
-      "o": 0
-     },
-     {
-      "s": "name",
-      "w": "",
-      "o": 0
-     },
-     {
-      "s": "fact",
-      "w": "240",
-      "o": 0
-     },
-     {
-      "s": "congrats",
-      "w": "",
-      "o": 0
-     }
-    ],
-    "rain": [
-     {
-      "s": "problem3",
-      "w": "But",
-      "o": 0
-     },
-     {
-      "s": "fix3",
-      "w": "So",
-      "o": 0
-     }
-    ]
-   }
-  }
+  "sceneJson": "{\"world\":{\"cut\":[-6.5,5,-1.2,1.4],\"house\":[-2.7,0,-11],\"porch\":false,\"trees\":[[-14,-2],[15,-14,0.9]],\"road\":false,\"worker\":false,\"moreTrees\":false,\"rocksAvoid\":[[-7,5.5,-1.6,0.2]],\"roots\":{\"pad\":0.6,\"to\":6}},\"parts\":[{\"id\":\"light\",\"kind\":\"light\",\"params\":{\"storm\":true}},{\"id\":\"plant\",\"kind\":\"building\",\"params\":{\"pos\":[-15,0,-9],\"width\":7,\"depth\":5,\"use\":\"plant\",\"floors\":[{\"h\":5}],\"roof\":\"flat\",\"cutaway\":\"none\",\"shafts\":[{\"type\":\"chimney\",\"x\":2,\"w\":1,\"from\":0,\"to\":0}]}},{\"id\":\"tower\",\"kind\":\"model\",\"params\":{\"keyword\":\"cooling tower\",\"pos\":[-17,0,-17]}},{\"id\":\"pylon\",\"kind\":\"model\",\"params\":{\"keyword\":\"pylon\",\"pos\":[-9,0,-4]}},{\"id\":\"pole\",\"kind\":\"model\",\"params\":{\"keyword\":\"utility pole\",\"pos\":[6,0,-6]}},{\"id\":\"lamp\",\"kind\":\"rig\",\"params\":{\"name\":\"floor lamp\",\"synonyms\":[\"lamp\",\"your lamp\",\"outlet\",\"plug\"],\"pos\":[1.9,0,-7.2],\"nodes\":[{\"id\":\"stand\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.22,\"h\":0.05,\"axis\":\"y\",\"at\":[0,0.025,0],\"look\":\"metal\",\"color\":\"#2b2b2b\"},{\"shape\":\"cylinder\",\"r\":0.03,\"h\":1.5,\"axis\":\"y\",\"at\":[0,0.78,0],\"look\":\"metal\",\"color\":\"#2b2b2b\"},{\"shape\":\"cone\",\"r\":0.32,\"r2\":0.18,\"h\":0.34,\"axis\":\"y\",\"at\":[0,1.62,0],\"look\":\"plastic\",\"color\":\"#f1e6c8\"}]},{\"id\":\"bulb\",\"parent\":\"stand\",\"at\":[0,1.5,0],\"shapes\":[{\"shape\":\"light\",\"r\":0.14,\"at\":[0,0,0],\"color\":\"#ffd98a\"}],\"moves\":[{\"name\":\"glow\",\"type\":\"light\"}]},{\"id\":\"outlet\",\"parent\":\"stand\",\"at\":[-0.5,0.4,-0.45],\"shapes\":[{\"shape\":\"box\",\"size\":[0.14,0.22,0.03],\"at\":[0,0,0],\"look\":\"plastic\",\"color\":\"#f4f3ee\"},{\"shape\":\"tube\",\"path\":[[0.5,-0.38,0.4],[0.2,-0.38,0.2],[0,-0.1,0.05]],\"r\":0.012,\"look\":\"rubber\",\"color\":\"#222222\"}]},{\"id\":\"plug\",\"parent\":\"outlet\",\"at\":[0,0,0.04],\"shapes\":[{\"shape\":\"box\",\"size\":[0.08,0.1,0.06],\"at\":[0,0,0.03],\"look\":\"plastic\",\"color\":\"#222222\"}],\"moves\":[{\"name\":\"plug\",\"type\":\"appear\"}]}]}},{\"id\":\"line\",\"kind\":\"wires\",\"params\":{\"points\":[[-10.5,1.8,-8],[-7.1,12.55,-4],[5.1,8.5,-6]],\"sag\":1,\"count\":2,\"spacing\":0.6,\"glow\":\"#ffe14a\"}},{\"id\":\"drop\",\"kind\":\"wires\",\"params\":{\"points\":[[6.9,8.5,-6],[2.6,5.5,-7.7]],\"sag\":0.5,\"count\":1,\"glow\":\"#ffe14a\"}},{\"id\":\"stepUp\",\"kind\":\"boxPop\",\"params\":{\"size\":[1.6,1.8,1.4],\"pos\":[-10.5,0.9,-8],\"r\":0.05,\"mat\":\"machineBody\"}},{\"id\":\"can\",\"kind\":\"model\",\"params\":{\"keyword\":\"pole transformer\",\"pos\":[6.9,0,-5.2]}},{\"id\":\"heat\",\"kind\":\"fx\",\"params\":{\"type\":\"smoke\",\"at\":[-1,10.4,-5],\"size\":1.2,\"color\":\"#cfcfcf\"}},{\"id\":\"zap\",\"kind\":\"fx\",\"params\":{\"type\":\"blast\",\"at\":[1.9,1.5,-7],\"size\":0.6}},{\"id\":\"rain\",\"kind\":\"rain\",\"params\":{\"x0\":-14,\"x1\":14,\"z0\":-14,\"z1\":-0.1,\"yTop\":16,\"yBot\":-0.2,\"count\":1100,\"width\":0.02,\"opacity\":0.36}},{\"id\":\"dig\",\"kind\":\"dig\",\"params\":{\"clumps\":120,\"mound\":{\"x\":3.5,\"z\":-2.6,\"rx\":1.4,\"rz\":0.9,\"h\":0.8},\"haul\":true}},{\"id\":\"cable\",\"kind\":\"pipeRun\",\"params\":{\"path\":[[4.6,-0.9,-0.06],[-2,-0.9,-0.06]],\"r\":0.14,\"mat\":\"metal\"}},{\"id\":\"cableFlow\",\"kind\":\"pipeRunFlow\",\"params\":{\"pipe\":\"cable\",\"count\":14,\"size\":0.12,\"speed\":3,\"mat\":\"juice\",\"dz\":0.2}},{\"id\":\"capSoil\",\"kind\":\"wipe\",\"params\":{\"box\":{\"x0\":-6.48,\"x1\":4.98,\"y0\":-0.6,\"y1\":-0.05,\"z0\":-1.18,\"z1\":0},\"mat\":\"soilCover\",\"axis\":\"x\",\"r\":0.04}},{\"id\":\"conduit\",\"kind\":\"pipeRun\",\"params\":{\"path\":[[4.6,-0.9,-0.12],[-2,-0.9,-0.12]],\"r\":0.26,\"mat\":\"pipeWhite\"}},{\"id\":\"spark\",\"kind\":\"fx\",\"params\":{\"type\":\"spark\",\"at\":[1.2,-0.9,0.12],\"size\":0.8}},{\"id\":\"seep\",\"kind\":\"fx\",\"params\":{\"type\":\"drip\",\"at\":[1.2,-0.3,0.1],\"size\":0.8,\"color\":\"#7fb6d6\"}},{\"id\":\"breaker\",\"kind\":\"rig\",\"params\":{\"name\":\"breaker box\",\"synonyms\":[\"breaker\",\"circuit breaker\"],\"pos\":[0.5,0.9,-7.73],\"mount\":\"wall\",\"nodes\":[{\"id\":\"box\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.5,0.7,0.14],\"at\":[0,0,0.07],\"look\":\"metal\",\"color\":\"#7d858c\"}]},{\"id\":\"switch\",\"parent\":\"box\",\"at\":[0,0,0.15],\"shapes\":[{\"shape\":\"box\",\"size\":[0.08,0.2,0.06],\"at\":[0,0.1,0.03],\"look\":\"plastic\",\"color\":\"#d23b2b\"}],\"moves\":[{\"name\":\"trip\",\"type\":\"swing\",\"axis\":\"x\",\"angle\":70}]}]}},{\"id\":\"hot\",\"kind\":\"fx\",\"params\":{\"type\":\"smoke\",\"at\":[1.4,0.5,-7.6],\"size\":0.5,\"color\":\"#555555\"}},{\"id\":\"gridOutline\",\"kind\":\"outline\",\"params\":{\"of\":\"pole\",\"opts\":{\"r\":0.11,\"closed\":true}}},{\"id\":\"sign\",\"kind\":\"sign\",\"params\":{\"at\":[-9,0,-1.5],\"rotY\":0.25,\"scale\":1.3}}],\"beats\":[{\"s\":\"hook\",\"shows\":{\"p\":\"lamp\",\"does\":\"a lamp stands by the house wall, a wire runs from it over a pylon back to the power plant\"},\"do\":[{\"p\":\"lamp\",\"v\":\"show\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"line\",\"v\":\"show\",\"w\":\"wire\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"drop\",\"v\":\"show\",\"w\":\"lamp\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"line\",\"v\":\"live\",\"w\":\"electricity\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"drop\",\"v\":\"live\",\"w\":\"electricity\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"lamp\"],\"type\":\"close\"}]},{\"s\":\"problem\",\"shows\":{\"p\":\"heat\",\"does\":\"the long wire between the pylon and the pole shimmers with heat while the lamp stays dark\"},\"do\":[{\"p\":\"heat\",\"v\":\"start\",\"w\":\"heat\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"line\",\"lamp\"],\"width\":0.9}]},{\"s\":\"fix1\",\"shows\":{\"p\":\"stepUp\",\"does\":\"a big transformer appears by the power plant and the heat on the wire stops\"},\"do\":[{\"p\":\"stepUp\",\"v\":\"show\",\"w\":\"transformer\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"heat\",\"v\":\"stop\",\"w\":\"cool\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"stepUp\",\"pylon\"],\"type\":\"mid\"}]},{\"s\":\"problem2\",\"shows\":{\"p\":\"zap\",\"does\":\"a flash bursts at the lamp\"},\"do\":[{\"p\":\"zap\",\"v\":\"go\",\"w\":\"fry\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"lamp\"],\"type\":\"close\"}]},{\"s\":\"fix2\",\"shows\":{\"p\":\"can\",\"does\":\"a gray transformer can appears at the pole and its light comes on\"},\"do\":[{\"p\":\"can\",\"v\":\"show\",\"w\":\"transformer\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"can\",\"v\":\"on\",\"w\":\"down\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"can\",\"pole\"],\"type\":\"mid\"}]},{\"s\":\"name\",\"shows\":{\"p\":\"gridOutline\",\"does\":\"a glowing outline traces the pole\"},\"do\":[{\"p\":\"gridOutline\",\"v\":\"show\",\"w\":\"grid\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"pole\",\"line\"],\"hero\":true,\"width\":0.8}]},{\"s\":\"problem3\",\"shows\":{\"p\":\"drop\",\"does\":\"rain pours and the wire from the pole to the house snaps and falls\"},\"do\":[{\"p\":\"gridOutline\",\"v\":\"hide\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"light\",\"v\":\"storm\",\"w\":\"storm\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"rain\",\"v\":\"start\",\"w\":\"storm\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"drop\",\"v\":\"snap\",\"w\":\"snaps\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"drop\",\"pole\"],\"type\":\"mid\"}]},{\"s\":\"fix3\",\"shows\":{\"p\":\"cable\",\"does\":\"a trench is dug, a cable runs underground from the pole to the house and is covered\"},\"do\":[{\"p\":\"rain\",\"v\":\"stop\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"light\",\"v\":\"clear\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"dig\",\"v\":\"dig\",\"w\":\"dig\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"cable\",\"v\":\"grow\",\"w\":\"cable\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"capSoil\",\"v\":\"grow\",\"w\":\"bury\",\"o\":1,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"cable\"],\"type\":\"mid\"}]},{\"s\":\"problem4\",\"shows\":{\"p\":\"spark\",\"does\":\"water drips onto the buried cable in the ground and it sparks\"},\"do\":[{\"p\":\"cableFlow\",\"v\":\"show\",\"w\":\"water\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"seep\",\"v\":\"start\",\"w\":\"seeps\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"spark\",\"v\":\"start\",\"w\":\"sparks\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"cable\"],\"type\":\"mid\"}]},{\"s\":\"fix4\",\"shows\":{\"p\":\"conduit\",\"does\":\"a sealed white pipe grows around the cable and the sparks stop\"},\"do\":[{\"p\":\"conduit\",\"v\":\"grow\",\"w\":\"pipe\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"spark\",\"v\":\"stop\",\"w\":\"sealed\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"seep\",\"v\":\"stop\",\"w\":\"sealed\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"conduit\"],\"type\":\"mid\"}]},{\"s\":\"problem5\",\"shows\":{\"p\":\"hot\",\"does\":\"smoke curls out of the wall by the outlet\"},\"do\":[{\"p\":\"hot\",\"v\":\"start\",\"w\":\"heat\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"lamp\",\"breaker\"],\"type\":\"close\"}]},{\"s\":\"fix5\",\"shows\":{\"p\":\"breaker\",\"does\":\"a breaker box appears, its switch flips down and the smoke stops\"},\"do\":[{\"p\":\"breaker\",\"v\":\"show\",\"w\":\"breaker\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"breaker\",\"v\":\"trip\",\"w\":\"trips\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"hot\",\"v\":\"stop\",\"w\":\"burns\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"breaker\"],\"type\":\"close\"}]},{\"s\":\"finish\",\"shows\":{\"p\":\"lamp\",\"does\":\"the plug goes into the outlet and the lamp glows warm\"},\"do\":[{\"p\":\"cableFlow\",\"v\":\"hide\",\"w\":\"Plug\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"breaker\",\"v\":\"tripBack\",\"w\":\"Plug\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lamp\",\"v\":\"plug\",\"w\":\"Plug\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lamp\",\"v\":\"glow\",\"w\":\"lights\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"lamp\",\"breaker\"],\"type\":\"close\"}]},{\"s\":\"congrats\",\"shows\":{\"p\":\"lamp\",\"does\":\"the lamp glows while current pulses along the wires\"},\"do\":[],\"shots\":[{\"focus\":[\"lamp\",\"pole\"],\"width\":0.8}]}],\"audio\":{\"cards\":[],\"sfx\":[{\"lib\":\"motor_hum\",\"at\":{\"s\":\"fix1\",\"w\":\"transformer\",\"o\":0},\"d\":1.2},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"fix2\",\"w\":\"transformer\",\"o\":0},\"d\":1},{\"lib\":\"dirt\",\"at\":{\"s\":\"fix3\",\"w\":\"dig\",\"o\":0},\"d\":1.3}],\"chimes\":[{\"s\":\"name\",\"w\":\"\",\"o\":0},{\"s\":\"congrats\",\"w\":\"\",\"o\":0}],\"rain\":[{\"s\":\"problem3\",\"w\":\"storm\",\"o\":0},{\"s\":\"fix3\",\"w\":\"So\",\"o\":0}]}}"
  }
 }

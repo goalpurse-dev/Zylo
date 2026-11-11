@@ -1,53 +1,5 @@
-{
- "hash": "*",
- "by": "converted (convert1d) from fact_check__1.json and the research's 3 searches",
- "searches": 3,
- "data": {
-  "checks": [
-   {
-    "index": 0,
-    "verdict": "reword",
-    "claim": "By weight, asphalt is about 95 percent stone, sand and gravel, glued by about 5 percent asphalt binder.",
-    "why": "National Academies and GlobalSpec give 95% aggregate and 5% binder by weight; FHWA gives 5 to 6 percent binder; by volume it differs, so say by weight.",
-    "sources": [
-     {
-      "url": "https://nap.nationalacademies.org/read/14524/chapter/3",
-      "title": "National Academies Press: OpenBook"
-     },
-     {
-      "url": "https://www.globalspec.com/learnmore/building_construction/building_materials/asphalt_road_surfacing_materials",
-      "title": "Asphalt Road Surfacing Materials Information - GlobalSpec"
-     }
-    ]
-   },
-   {
-    "index": 1,
-    "verdict": "reword",
-    "claim": "Poor drainage is one of the most common causes of road failure.",
-    "why": "A Missouri DOT study calls inadequate drainage the most common cited cause; FHWA guidance designs drains to remove free water from the base. 'Main enemy' is stronger than the sources.",
-    "sources": [
-     {
-      "url": "https://rosap.ntl.bts.gov/view/dot/41188/dot_41188_DS1.pdf",
-      "title": "Missouri DOT pavement base study"
-     },
-     {
-      "url": "https://www.fhwa.dot.gov/pavement/pubs/013241.pdf",
-      "title": "FHWA pavement subsurface drainage"
-     }
-    ]
-   },
-   {
-    "index": 2,
-    "verdict": "keep",
-    "claim": "A road is built in layers: compacted subgrade, a crushed stone base, then an asphalt surface",
-    "why": "Pavement Interactive and Caltrans describe surface course, aggregate base and subgrade.",
-    "sources": [
-     {
-      "url": "https://pavementinteractive.org/reference-desk/pavement-types-and-history/pavement-types/hma-pavement/",
-      "title": "HMA Pavement - Pavement Interactive"
-     }
-    ]
-   }
-  ]
- }
-}
+{"hash":"*","by":"stand-in planner (agent), 2026-11-11","searches":4,"data":{"checks":[
+{"index":0,"verdict":"keep","claim":"A road's crushed stone base spreads the load of the cars and lets water drain.","why":"Engineering guides: angular crushed stone interlocks to spread traffic loads, and its open structure drains.","sources":[{"url":"https://ltap.engr.wisc.edu/wp-content/uploads/sites/3/2019/12/Bltn_019_GoodRoad.pdf","title":"What makes a good road (Wisconsin LTAP)"},{"url":"https://www.equipmentworld.com/roadbuilding/article/14958165/road-science-tutorial","title":"Road Science Tutorial (Equipment World)"}]},
+{"index":1,"verdict":"keep","claim":"Water trapped in a road's base weakens it.","why":"Water in the base lowers its load-bearing strength and leads to cracking and potholes.","sources":[{"url":"https://pavementinteractive.org/let-it-drain-protecting-roads-from-moisture-damage/","title":"Let It Drain: Protecting Roads from Moisture Damage (Pavement Interactive)"},{"url":"https://practical.engineering/blog/2020/8/31/how-do-potholes-work","title":"How do potholes work? (Practical Engineering)"}]},
+{"index":2,"verdict":"keep","claim":"Asphalt binds the stone together and seals the road surface.","why":"The asphalt binder glues the aggregate together and provides a waterproof seal.","sources":[{"url":"https://www.txdot.gov/manuals/mnt/scm/general_principles/functions_of_surface_treatments_and_seal_coats-i10.html","title":"Functions of Surface Treatments and Seal Coats (TxDOT)"},{"url":"https://sealmaster.net/blog-what-is-asphalt-sealcoating/","title":"What Is Asphalt Sealcoating? (SealMaster)"}]},
+{"index":3,"verdict":"keep","claim":"Painted road lines contain glass beads that reflect headlights at night.","why":"Glass beads embedded in the paint retroreflect headlight light back to the driver.","sources":[{"url":"https://blog.doublehelix.csiro.au/reflective-roads","title":"Reflective roads (CSIRO Double Helix)"},{"url":"https://www.txdot.gov/manuals/trf/pmh/visibility_and_retroreflectivity/general_retroreflectivity_concepts-i999813.html","title":"General Retroreflectivity Concepts (TxDOT)"}]}]}}

@@ -1,0 +1,73 @@
+{
+ "hash": "*",
+ "by": "stand-in planner (replan 2026-11-09): the run 3b814122 checks, kept",
+ "searches": 4,
+ "data": {
+  "checks": [
+   {
+    "index": 0,
+    "verdict": "keep",
+    "claim": "Chip-grade silicon must be at least about nine nines (99.9999999 percent) pure, roughly one foreign atom per billion, with top grades even purer.",
+    "why": "9N is the commonly quoted figure and the arithmetic holds, but sources differ on the exact requirement (some say 99.99999 percent or higher, others eleven nines), so hedged wording is safer.",
+    "sources": [
+     {
+      "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/7727502",
+      "title": "Process for the production of medium and high purity silicon from metallurgical grade silicon"
+     },
+     {
+      "url": "https://www.waferworld.com/post/9-things-you-might-not-have-known-about-silicon-wafers",
+      "title": "Silicon Wafers Unveiled: 9 Lesser-Known Facts"
+     },
+     {
+      "url": "https://www.rapidus.inc/en/tech/te0015/",
+      "title": "What Are the Raw Materials of Semiconductors? The Secrets of Their Purity and Diversity"
+     },
+     {
+      "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/9238211",
+      "title": "Segmented silicon carbide liner"
+     }
+    ]
+   },
+   {
+    "index": 1,
+    "verdict": "keep",
+    "claim": "Silicon is made by heating quartz with carbon in an electric arc furnace at up to about 2,000 °C (industry ranges run from roughly 1,500 or 1,300 °C up to 2,000 °C).",
+    "why": "The process is right, but the 1,900 to 2,000 °C figure comes from a small recycling furnace study, not a general industrial figure. Industrial sources give 1,500 to 2,000 °C or 1,300 to 2,000 °C. This step also yields only metallurgical-grade silicon, which needs much more purification.",
+    "sources": [
+     {
+      "url": "https://magazine.elkem.com/material-science-insights/from-quartz-to-silicon-to-silicones/",
+      "title": "From quartz to silicon to silicones"
+     },
+     {
+      "url": "https://www.scielo.org.za/scielo.php?script=sci_arttext&pid=S2225-62532018000200011",
+      "title": "Production of metallurgical-grade silicon from Egyptian quartz"
+     },
+     {
+      "url": "https://www.saimm.co.za/Journal/v118n02p143.pdf",
+      "title": "Production of metallurgical-grade silicon from Egyptian ..."
+     }
+    ]
+   },
+   {
+    "index": 2,
+    "verdict": "keep",
+    "claim": "A single modern chip can hold over 20 billion transistors.",
+    "why": "Holds with the Apple M3 (25 billion) or M3 Pro (37 billion). Do not use the A17 Pro (19 billion) or A18 Pro (20 billion) as the example.",
+    "sources": [
+     {
+      "url": "https://en.wikipedia.org/wiki/Apple_M3",
+      "title": "Apple M3"
+     },
+     {
+      "url": "https://en.wikipedia.org/wiki/Apple_A17",
+      "title": "Apple A17"
+     },
+     {
+      "url": "https://en.wikipedia.org/wiki/Apple_A18",
+      "title": "Apple A18"
+     }
+    ]
+   }
+  ]
+ }
+}

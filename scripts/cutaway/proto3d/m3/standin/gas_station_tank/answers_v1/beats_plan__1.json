@@ -1,0 +1,1282 @@
+{
+ "hash": "*",
+ "by": "stand-in planner",
+ "searches": 0,
+ "data": {
+  "why": "A gas station's underground tank on a street corner, seen in section under the sidewalk: a steel tank is buried and filled, it rusts and leaks into the soil and the groundwater, so a second fiberglass wall wraps it, a hidden leak in the gap gets a sensor with a flashing alarm, fuel spilling at the fill pipe gets a spill bucket. The camera opens close on the dig, stays mid on the tank in section, goes hero on the name and ends on the home view with a concrete cover, a pump and a car pulling in.",
+  "story": {
+   "title": "Gas Station Tank",
+   "hero": "an underground storage tank",
+   "parts": [
+    "steel tank",
+    "gasoline",
+    "fiberglass wall",
+    "leak sensor",
+    "alarm light",
+    "fill pipe",
+    "spill bucket",
+    "concrete cover",
+    "fuel pump"
+   ],
+   "ideas": [
+    {
+     "role": "hook",
+     "idea": "dig a pit, bury a steel tank and fill it with gasoline"
+    },
+    {
+     "role": "problem",
+     "idea": "the steel rusts through and gasoline leaks into the soil"
+    },
+    {
+     "role": "stakes",
+     "idea": "one gallon can ruin a million gallons of groundwater"
+    },
+    {
+     "role": "fix1",
+     "idea": "a second wall of fiberglass wraps the tank"
+    },
+    {
+     "role": "problem2",
+     "idea": "a leak into the gap between the walls stays hidden"
+    },
+    {
+     "role": "fix2",
+     "idea": "a sensor in the gap flashes an alarm"
+    },
+    {
+     "role": "problem3",
+     "idea": "fuel spills at the fill pipe every time a delivery comes"
+    },
+    {
+     "role": "fix3",
+     "idea": "a spill bucket round the fill pipe catches it"
+    },
+    {
+     "role": "name",
+     "idea": "this is an underground storage tank"
+    },
+    {
+     "role": "finish",
+     "idea": "a concrete cover and a fuel pump on top"
+    },
+    {
+     "role": "congrats",
+     "idea": "you have built a gas station tank"
+    }
+   ],
+   "chain": [
+    {
+     "problem": "problem",
+     "causedBy": "hook",
+     "shows": "drips fall from the tank bottom and dark dots seep down the soil",
+     "stakes": "the soil under the street is soaked with fuel",
+     "size": 5
+    },
+    {
+     "problem": "stakes",
+     "causedBy": "hook",
+     "shows": "the groundwater turns murky",
+     "stakes": "drinking water for a whole town",
+     "size": 7
+    },
+    {
+     "problem": "problem2",
+     "causedBy": "fix1",
+     "shows": "amber fuel collects in the gap between the walls",
+     "stakes": "nobody knows the tank is failing",
+     "size": 6
+    },
+    {
+     "problem": "problem3",
+     "causedBy": "fix2",
+     "shows": "fuel runs down beside the fill pipe from the sidewalk",
+     "stakes": "every delivery soaks the ground again",
+     "size": 8
+    }
+   ],
+   "surprises": [
+    {
+     "claim": "EPA has said one gallon of gasoline can make about a million gallons of groundwater unusable",
+     "role": "stakes",
+     "search": "EPA one gallon of gasoline contaminate million gallons groundwater"
+    },
+    {
+     "claim": "Leaking underground storage tanks have been a leading source of groundwater contamination in the US",
+     "role": "problem",
+     "search": "EPA leaking underground storage tanks source of groundwater contamination"
+    },
+    {
+     "claim": "New or replaced US underground tanks must have secondary containment (double walls) with interstitial monitoring",
+     "role": "fix2",
+     "search": "EPA 2015 UST rule secondary containment interstitial monitoring"
+    },
+    {
+     "claim": "US underground storage tanks must have spill prevention equipment such as a spill bucket at the fill pipe",
+     "role": "fix3",
+     "search": "EPA UST spill bucket requirement fill pipe"
+    }
+   ]
+  },
+  "sentences": [
+   {
+    "role": "hook",
+    "text": "If you dig a pit for a tank of gasoline, you have a gas station tank."
+   },
+   {
+    "role": "problem",
+    "text": "But the steel rusts through, and fuel leaks into the soil."
+   },
+   {
+    "role": "stakes",
+    "text": "One gallon can make about a million gallons of groundwater unusable."
+   },
+   {
+    "role": "fix1",
+    "text": "So you wrap it in a second wall of fiberglass."
+   },
+   {
+    "role": "problem2",
+    "text": "But now a leak between the walls stays hidden."
+   },
+   {
+    "role": "fix2",
+    "text": "So you put a sensor in the gap that flashes an alarm light."
+   },
+   {
+    "role": "problem3",
+    "text": "But now fuel spills at the fill pipe on every delivery."
+   },
+   {
+    "role": "fix3",
+    "text": "So you add a spill bucket around the pipe to catch it."
+   },
+   {
+    "role": "name",
+    "text": "This is an underground storage tank."
+   },
+   {
+    "role": "finish",
+    "text": "Add a concrete cover and a fuel pump on top."
+   },
+   {
+    "role": "congrats",
+    "text": "Congratulations, you have built a gas station tank."
+   }
+  ],
+  "sceneJson": {
+   "world": {
+    "cut": [
+     -5,
+     3,
+     -3.4,
+     4.2
+    ],
+    "house": false,
+    "porch": false,
+    "trees": [],
+    "road": false,
+    "worker": false,
+    "moreTrees": false,
+    "rocksAvoid": [
+     [
+      -5.5,
+      3.5,
+      -4.6,
+      0.3
+     ]
+    ],
+    "backdrop": {
+     "type": "street",
+     "sign": "GAS",
+     "lampX": -8,
+     "benchX": 7,
+     "road": {
+      "side": 1
+     }
+    }
+   },
+   "parts": [
+    {
+     "id": "light",
+     "kind": "light",
+     "params": {
+      "storm": false
+     }
+    },
+    {
+     "id": "dig",
+     "kind": "dig",
+     "params": {
+      "clumps": 140,
+      "mound": {
+       "x": -8,
+       "z": -9,
+       "rx": 1.6,
+       "rz": 1.2,
+       "h": 0.9
+      }
+     }
+    },
+    {
+     "id": "tank",
+     "kind": "rig",
+     "main": true,
+     "params": {
+      "name": "underground fuel tank",
+      "synonyms": [
+       "storage tank",
+       "gas tank",
+       "fuel tank"
+      ],
+      "pos": [
+       -1,
+       -3.8,
+       0
+      ],
+      "nodes": [
+       {
+        "id": "shell",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           5.8,
+           2.4,
+           0.08
+          ],
+          "at": [
+           0,
+           1.2,
+           -2.4
+          ],
+          "look": "metal",
+          "color": "#7d858d"
+         },
+         {
+          "shape": "box",
+          "size": [
+           5.8,
+           0.08,
+           2.4
+          ],
+          "at": [
+           0,
+           0,
+           -1.2
+          ],
+          "look": "metal",
+          "color": "#7d858d"
+         },
+         {
+          "shape": "box",
+          "size": [
+           5.8,
+           0.08,
+           2.4
+          ],
+          "at": [
+           0,
+           2.4,
+           -1.2
+          ],
+          "look": "metal",
+          "color": "#7d858d"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.08,
+           2.4,
+           2.4
+          ],
+          "at": [
+           -2.9,
+           1.2,
+           -1.2
+          ],
+          "look": "metal",
+          "color": "#6f777f"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.08,
+           2.4,
+           2.4
+          ],
+          "at": [
+           2.9,
+           1.2,
+           -1.2
+          ],
+          "look": "metal",
+          "color": "#6f777f"
+         }
+        ]
+       },
+       {
+        "id": "fuel",
+        "parent": "shell",
+        "at": [
+         0,
+         0.05,
+         -1.2
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           5.6,
+           0.02,
+           2.2
+          ],
+          "at": [
+           0,
+           0,
+           0
+          ],
+          "look": "metal",
+          "color": "#7d858d"
+         }
+        ],
+        "moves": [
+         {
+          "name": "fuel",
+          "type": "fill",
+          "box": {
+           "size": [
+            5.7,
+            2.25,
+            2.3
+           ],
+           "at": [
+            0,
+            1.12,
+            0
+           ],
+           "color": "#e3a428"
+          }
+         }
+        ]
+       },
+       {
+        "id": "fillPipe",
+        "parent": "shell",
+        "at": [
+         -2.2,
+         2.4,
+         -0.6
+        ],
+        "shapes": [
+         {
+          "shape": "cylinder",
+          "r": 0.13,
+          "h": 1.6,
+          "axis": "y",
+          "at": [
+           0,
+           0.8,
+           0
+          ],
+          "look": "metal",
+          "color": "#5c6369"
+         }
+        ]
+       },
+       {
+        "id": "bucket",
+        "parent": "fillPipe",
+        "at": [
+         0,
+         1.4,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "cylinder",
+          "r": 0.42,
+          "h": 0.32,
+          "axis": "y",
+          "at": [
+           0,
+           0.16,
+           0
+          ],
+          "look": "plastic",
+          "color": "#232629"
+         }
+        ],
+        "moves": [
+         {
+          "name": "bucket",
+          "type": "appear"
+         }
+        ]
+       },
+       {
+        "id": "outer",
+        "parent": "shell",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           6.4,
+           3,
+           0.1
+          ],
+          "at": [
+           0,
+           1.2,
+           -2.75
+          ],
+          "look": "plastic",
+          "color": "#3d7a4a"
+         },
+         {
+          "shape": "box",
+          "size": [
+           6.4,
+           0.1,
+           2.8
+          ],
+          "at": [
+           0,
+           -0.3,
+           -1.35
+          ],
+          "look": "plastic",
+          "color": "#3d7a4a"
+         },
+         {
+          "shape": "box",
+          "size": [
+           6.4,
+           0.1,
+           2.8
+          ],
+          "at": [
+           0,
+           2.7,
+           -1.35
+          ],
+          "look": "plastic",
+          "color": "#3d7a4a"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.1,
+           3,
+           2.8
+          ],
+          "at": [
+           -3.2,
+           1.2,
+           -1.35
+          ],
+          "look": "plastic",
+          "color": "#36703f"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.1,
+           3,
+           2.8
+          ],
+          "at": [
+           3.2,
+           1.2,
+           -1.35
+          ],
+          "look": "plastic",
+          "color": "#36703f"
+         }
+        ],
+        "moves": [
+         {
+          "name": "wrap",
+          "type": "appear"
+         }
+        ]
+       },
+       {
+        "id": "gap",
+        "parent": "outer",
+        "at": [
+         0,
+         -0.25,
+         -1.3
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           6.2,
+           0.02,
+           2.5
+          ],
+          "at": [
+           0,
+           0,
+           0
+          ],
+          "look": "plastic",
+          "color": "#3d7a4a"
+         }
+        ],
+        "moves": [
+         {
+          "name": "seep",
+          "type": "fill",
+          "box": {
+           "size": [
+            6.2,
+            0.24,
+            2.5
+           ],
+           "at": [
+            0,
+            0.12,
+            0
+           ],
+           "color": "#ff9a1a"
+          }
+         }
+        ]
+       },
+       {
+        "id": "sensor",
+        "parent": "outer",
+        "at": [
+         2.5,
+         -0.25,
+         -0.4
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           0.7,
+           0.18,
+           0.4
+          ],
+          "at": [
+           0,
+           0.09,
+           0
+          ],
+          "look": "plastic",
+          "color": "#1d2024"
+         },
+         {
+          "shape": "light",
+          "r": 0.28,
+          "at": [
+           0,
+           0.3,
+           0.2
+          ],
+          "color": "#ff3030"
+         }
+        ],
+        "moves": [
+         {
+          "name": "sensor",
+          "type": "appear"
+         },
+         {
+          "name": "alarm",
+          "type": "blink",
+          "rate": 3
+         }
+        ]
+       },
+       {
+        "id": "beacon",
+        "parent": "fillPipe",
+        "at": [
+         0.3,
+         1.55,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           0.12,
+           1.3,
+           0.12
+          ],
+          "at": [
+           0,
+           0.65,
+           0
+          ],
+          "look": "metal",
+          "color": "#5c6369"
+         },
+         {
+          "shape": "light",
+          "r": 0.28,
+          "at": [
+           0,
+           1.45,
+           0
+          ],
+          "color": "#ff3030"
+         }
+        ],
+        "moves": [
+         {
+          "name": "sensor",
+          "type": "appear"
+         },
+         {
+          "name": "alarm",
+          "type": "blink",
+          "rate": 3
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "id": "drip",
+     "kind": "fx",
+     "params": {
+      "type": "drip",
+      "at": [
+       -1,
+       -4,
+       0.1
+      ],
+      "size": 1
+     }
+    },
+    {
+     "id": "seepFlow",
+     "kind": "seepFlow",
+     "params": {
+      "count": 45,
+      "width": 6,
+      "y0": -4.2,
+      "fall": 7,
+      "floor": -12
+     }
+    },
+    {
+     "id": "soilLeak",
+     "kind": "soilLeak",
+     "params": {
+      "x1": -2.6,
+      "x2": 0.8,
+      "murkX": -1
+     },
+     "base": {
+      "y1": -4.2,
+      "y2": -4.2
+     }
+    },
+    {
+     "id": "spill",
+     "kind": "flow",
+     "params": {
+      "path": [
+       [
+        -3.2,
+        0.2,
+        -0.4
+       ],
+       [
+        -3.35,
+        -0.6,
+        -0.1
+       ],
+       [
+        -3.4,
+        -1.5,
+        -0.05
+       ]
+      ],
+      "look": "oil",
+      "size": 0.15,
+      "speed": 1.4,
+      "count": 20
+     }
+    },
+    {
+     "id": "tankOutline",
+     "kind": "outline",
+     "params": {
+      "of": "tank.outer"
+     }
+    },
+    {
+     "id": "cover",
+     "kind": "wipe",
+     "params": {
+      "box": {
+       "x0": -4.98,
+       "x1": 2.98,
+       "y0": -0.3,
+       "y1": 0.12,
+       "z0": -3.38,
+       "z1": 0
+      },
+      "mat": "concrete",
+      "axis": "x",
+      "r": 0.03
+     }
+    },
+    {
+     "id": "pump",
+     "kind": "rig",
+     "params": {
+      "name": "fuel pump",
+      "synonyms": [
+       "gas pump",
+       "dispenser"
+      ],
+      "pos": [
+       -0.6,
+       0.12,
+       -2.4
+      ],
+      "nodes": [
+       {
+        "id": "body",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           1,
+           0.2,
+           0.7
+          ],
+          "at": [
+           0,
+           0.1,
+           0
+          ],
+          "look": "concrete",
+          "color": "#b9b4aa"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.8,
+           1.7,
+           0.5
+          ],
+          "at": [
+           0,
+           1.05,
+           0
+          ],
+          "look": "paint",
+          "color": "#d23b2e"
+         },
+         {
+          "shape": "screen",
+          "size": [
+           0.5,
+           0.3
+          ],
+          "at": [
+           0,
+           1.5,
+           0.26
+          ]
+         },
+         {
+          "shape": "cable",
+          "path": [
+           [
+            0.4,
+            1.2,
+            0.1
+           ],
+           [
+            0.65,
+            0.8,
+            0.25
+           ],
+           [
+            0.5,
+            0.5,
+            0.3
+           ]
+          ],
+          "r": 0.04
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "id": "car",
+     "kind": "car",
+     "params": {
+      "pos": [
+       4.5,
+       0,
+       -6
+      ],
+      "from": -30,
+      "to": 20,
+      "color": "#2e62c9",
+      "model": "sedan"
+     }
+    },
+    {
+     "id": "sign",
+     "kind": "sign",
+     "params": {
+      "at": [
+       -6.5,
+       0.12,
+       -6
+      ],
+      "rotY": 0.2,
+      "scale": 1.3
+     }
+    }
+   ],
+   "beats": [
+    {
+     "s": "hook",
+     "shows": {
+      "p": "tank",
+      "does": "the pit is dug, a steel tank appears and fills with amber gasoline"
+     },
+     "do": [
+      {
+       "p": "dig",
+       "v": "dig",
+       "w": "dig"
+      },
+      {
+       "p": "tank",
+       "v": "show",
+       "w": "tank"
+      },
+      {
+       "p": "tank",
+       "v": "fuel",
+       "w": "gasoline",
+       "d": 1.2
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "dig"
+       ],
+       "type": "close"
+      },
+      {
+       "focus": [
+        "tank"
+       ],
+       "type": "mid",
+       "word": "tank"
+      }
+     ]
+    },
+    {
+     "s": "problem",
+     "shows": {
+      "p": "seepFlow",
+      "does": "drips fall from the tank and dark dots seep down through the soil"
+     },
+     "state": {
+      "text": "LEAKING",
+      "w": "leaks"
+     },
+     "do": [
+      {
+       "p": "drip",
+       "v": "start",
+       "w": "rusts"
+      },
+      {
+       "p": "seepFlow",
+       "v": "show",
+       "w": "leaks"
+      },
+      {
+       "p": "soilLeak",
+       "v": "seep1",
+       "w": "leaks"
+      },
+      {
+       "p": "soilLeak",
+       "v": "seep2",
+       "w": "soil"
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "tank",
+        "seepFlow"
+       ],
+       "type": "mid"
+      }
+     ]
+    },
+    {
+     "s": "stakes",
+     "shows": {
+      "p": "soilLeak",
+      "does": "the groundwater below turns murky"
+     },
+     "state": {
+      "text": "POISONED",
+      "w": "groundwater"
+     },
+     "do": [
+      {
+       "p": "soilLeak",
+       "v": "murk",
+       "w": "groundwater"
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "tank",
+        "seepFlow"
+       ],
+       "type": "wide"
+      }
+     ]
+    },
+    {
+     "s": "fix1",
+     "shows": {
+      "p": "tank",
+      "does": "a green fiberglass second wall appears round the tank and the leak stops"
+     },
+     "do": [
+      {
+       "p": "drip",
+       "v": "stop",
+       "w": "So"
+      },
+      {
+       "p": "seepFlow",
+       "v": "hide",
+       "w": "So"
+      },
+      {
+       "p": "soilLeak",
+       "v": "clear1",
+       "w": "wall"
+      },
+      {
+       "p": "soilLeak",
+       "v": "clear2",
+       "w": "wall"
+      },
+      {
+       "p": "tank",
+       "v": "wrap",
+       "w": "wall"
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "tank"
+       ],
+       "type": "mid"
+      }
+     ]
+    },
+    {
+     "s": "problem2",
+     "shows": {
+      "p": "tank",
+      "does": "amber fuel collects in the gap between the two walls"
+     },
+     "state": {
+      "text": "HIDDEN",
+      "w": "hidden"
+     },
+     "do": [
+      {
+       "p": "tank",
+       "v": "seep",
+       "w": "leak",
+       "d": 1.4
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "tank.gap"
+       ],
+       "type": "close"
+      }
+     ]
+    },
+    {
+     "s": "fix2",
+     "shows": {
+      "p": "tank",
+      "does": "a sensor appears in the gap and its red light flashes"
+     },
+     "do": [
+      {
+       "p": "tank",
+       "v": "sensor",
+       "w": "sensor"
+      },
+      {
+       "p": "tank",
+       "v": "alarm",
+       "w": "alarm"
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "tank"
+       ],
+       "type": "mid"
+      }
+     ]
+    },
+    {
+     "s": "problem3",
+     "shows": {
+      "p": "spill",
+      "does": "dark fuel runs from the sidewalk down beside the fill pipe"
+     },
+     "state": {
+      "text": "SPILL",
+      "w": "spills"
+     },
+     "do": [
+      {
+       "p": "tank",
+       "v": "alarmBack",
+       "w": "But"
+      },
+      {
+       "p": "tank",
+       "v": "seepBack",
+       "w": "But"
+      },
+      {
+       "p": "spill",
+       "v": "start",
+       "w": "spills"
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "tank.fillPipe",
+        "spill"
+       ],
+       "type": "mid"
+      }
+     ]
+    },
+    {
+     "s": "fix3",
+     "shows": {
+      "p": "tank",
+      "does": "a black spill bucket appears round the top of the fill pipe and the spill stops"
+     },
+     "do": [
+      {
+       "p": "tank",
+       "v": "bucket",
+       "w": "bucket"
+      },
+      {
+       "p": "spill",
+       "v": "stop",
+       "w": "bucket",
+       "o": 0.3
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "tank.fillPipe"
+       ],
+       "type": "close"
+      }
+     ]
+    },
+    {
+     "s": "name",
+     "shows": {
+      "p": "tankOutline",
+      "does": "an outline traces the tank"
+     },
+     "do": [
+      {
+       "p": "tankOutline",
+       "v": "show",
+       "w": "underground"
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "tank"
+       ],
+       "hero": true,
+       "width": 0.75
+      }
+     ]
+    },
+    {
+     "s": "finish",
+     "shows": {
+      "p": "cover",
+      "does": "a concrete cover slides over the pit and a fuel pump appears on it"
+     },
+     "do": [
+      {
+       "p": "tankOutline",
+       "v": "hide",
+       "w": "Add"
+      },
+      {
+       "p": "cover",
+       "v": "grow",
+       "w": "cover"
+      },
+      {
+       "p": "pump",
+       "v": "show",
+       "w": "pump"
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "home"
+       ]
+      }
+     ]
+    },
+    {
+     "s": "congrats",
+     "shows": {
+      "p": "pump",
+      "does": "a car pulls in beside the pump over the finished tank"
+     },
+     "do": [
+      {
+       "p": "car",
+       "v": "arrive",
+       "w": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "home"
+       ]
+      }
+     ]
+    }
+   ],
+   "audio": {
+    "cards": [
+     {
+      "text": "1,000,000 GALLONS",
+      "at": {
+       "s": "stakes",
+       "w": "million"
+      },
+      "d": 1.8
+     }
+    ],
+    "sfx": [
+     {
+      "lib": "dirt",
+      "at": {
+       "s": "hook",
+       "w": "dig",
+       "o": 0.05
+      },
+      "d": 1.2
+     },
+     {
+      "lib": "water_rush",
+      "at": {
+       "s": "hook",
+       "w": "gasoline"
+      },
+      "d": 1.2
+     },
+     {
+      "lib": "drip",
+      "at": {
+       "s": "problem",
+       "w": "leaks"
+      },
+      "d": 1.3
+     },
+     {
+      "lib": "drip",
+      "at": {
+       "s": "problem2",
+       "w": "leak"
+      },
+      "d": 1.2
+     },
+     {
+      "lib": "water_rush",
+      "at": {
+       "s": "problem3",
+       "w": "spills"
+      },
+      "d": 1.2
+     }
+    ],
+    "chimes": [
+     {
+      "s": "stakes",
+      "w": "million"
+     },
+     {
+      "s": "name",
+      "w": ""
+     },
+     {
+      "s": "congrats",
+      "w": ""
+     }
+    ],
+    "rain": []
+   }
+  }
+ }
+}

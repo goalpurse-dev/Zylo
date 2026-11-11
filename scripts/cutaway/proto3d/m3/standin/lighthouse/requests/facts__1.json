@@ -2,8 +2,8 @@
  "key": "facts__1",
  "label": "facts",
  "model": "claude-sonnet-5-5",
- "hash": "c2127f6a66558f07",
- "search": 8,
+ "hash": "7ca56b9403d00fea",
+ "search": 10,
  "schema": {
   "type": "object",
   "additionalProperties": false,
@@ -66,5 +66,5 @@
   }
  },
  "system": "You fact-check the surprise claims planned for a short explainer video, with web search, before the video is made. You MUST search before you answer, at least one search per claim (5 claims: at least 5 searches; fewer and your answer is sent back), two for a claim with a number; never answer from memory. Use reliable sources (engineering and government sources, manufacturers' guides, encyclopedias, well-known references; not forums). For each claim (by its index): verdict \"keep\" if the sources support it as written; \"reword\" if the true version is close (give the claim with exactly the wording and numbers the sources support, e.g. \"over 600 gallons\" for a rounded figure, \"New England\" instead of a wrong state); \"drop\" if it is false, unsupported or a myth. Give why in one line, and the sources you used (url and title, from your searches) for keep and reword. Write each claim the way the narrator will say it: no abbreviations (never \"US\", \"U.S.\" or \"USA\": \"American\", \"in America\"; an agency without the country: \"the Department of Energy\", \"the Army Corps of Engineers\").",
- "user": "Topic: lighthouse\nClaims (index: claim | suggested search):\n0: Augustin Fresnel invented his lighthouse lens in 1822. | Augustin Fresnel lens lighthouse 1822\n1: The beam of a large (first-order) Fresnel lens could be seen about 20 miles out to sea. | first order Fresnel lens visible 20 miles\n2: Big rotating lighthouse lenses floated on a bath of liquid mercury so they turned with very little friction. | lighthouse lens mercury bath float rotate friction"
+ "user": "Topic: lighthouse\nClaims (index: claim | suggested search):\n0: A Fresnel lens bends a lamp's light into a narrow beam that can be seen far out at sea. | Fresnel lens lighthouse bends light into beam seen far\n1: Lighthouse lenses rotate so the beam sweeps around and flashes in a pattern. | lighthouse lens rotates beam flash pattern characteristic\n2: Large rotating lighthouse lenses were floated on a bath of liquid mercury to turn smoothly. | lighthouse lens mercury bath float rotate\n3: Foghorns warn ships with sound when fog hides a lighthouse's light. | lighthouse foghorn fog signal warns ships when light not visible"
 }

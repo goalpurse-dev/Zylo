@@ -1,1690 +1,222 @@
 {
  "hash": "*",
- "by": "stand-in planner (replan 2026-11-09)",
+ "by": "stand-in planner (agent), 2026-11-11",
  "searches": 0,
  "data": {
-  "why": "A river valley in section: terrain with a riverbed and a waterBody river, a shaft dug on the left bank (the world cut) and a bore that runs from its foot to under the river. Mud caves in and river water floods it, a yellow shield pushes through, concrete rings line it, its wheel cuts and a belt carries the mud up the shaft, smoke is cleared by roof fans, and a road and ceiling lights finish it. The camera opens on the shaft being dug, then holds the tunnel's section under the river.",
+  "why": "A river with a boat in a riverbed, and the tunnel seen in section under it from a shaft on the bank; the story follows the tunnel as it is driven (the hole, the shield, the rings behind it, the sealed tube, its air and its low point). Each problem is physical (mud falling and water flooding in, walls crumbling, a joint dripping, smoke, a pool at the bottom), and it ends with the road and lights under the river while the boat sails over.",
   "story": {
-   "title": "Tunnel under a river",
+   "title": "How a tunnel under a river is built",
    "hero": "a tunnel boring machine",
    "parts": [
-    "river",
     "shaft",
-    "hole",
-    "mud",
-    "shield",
+    "steel shield",
+    "cutter wheel",
     "concrete rings",
-    "cutting wheel",
-    "belt",
+    "rubber seals",
     "fans",
+    "pump",
     "road",
     "lights"
+   ],
+   "flow": [
+    "shaft",
+    "under the river",
+    "shield",
+    "rings",
+    "tunnel air",
+    "low point",
+    "river"
+   ],
+   "chain": [
+    {
+     "problem": "problem",
+     "causedBy": "hook",
+     "shows": "mud caves in and the river floods the hole",
+     "stakes": "the hole and the diggers",
+     "size": 4,
+     "at": "under the river",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem2",
+     "causedBy": "fix1",
+     "shows": "the bare walls crumble behind the shield",
+     "stakes": "the tunnel behind the machine",
+     "size": 5,
+     "at": "shield",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem3",
+     "causedBy": "fix2",
+     "shows": "water squeezes through the ring joints",
+     "stakes": "the tunnel floods slowly",
+     "size": 6,
+     "at": "rings",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem4",
+     "causedBy": "fix3",
+     "shows": "smoky air is trapped in the sealed tunnel",
+     "stakes": "every driver inside",
+     "size": 7,
+     "at": "tunnel air",
+     "scale": "street"
+    },
+    {
+     "problem": "problem5",
+     "causedBy": "fix4",
+     "shows": "rain pools at the tunnel's low point",
+     "stakes": "the road under the river",
+     "size": 8,
+     "at": "low point",
+     "scale": "river"
+    }
+   ],
+   "recurring": {
+    "p": "boat",
+    "what": "a boat on the river above the tunnel"
+   },
+   "surprises": [
+    {
+     "claim": "A tunnel boring machine's shield holds back the ground while its rotating cutter head digs.",
+     "role": "fix1",
+     "search": "tunnel boring machine shield cutter head supports ground"
+    },
+    {
+     "claim": "Behind the boring machine, the tunnel is lined with rings of precast concrete segments.",
+     "role": "fix2",
+     "search": "TBM precast concrete segment rings tunnel lining"
+    },
+    {
+     "claim": "Rubber gaskets between tunnel segments are squeezed shut to keep water out.",
+     "role": "fix3",
+     "search": "tunnel segment gasket rubber seal compressed watertight"
+    },
+    {
+     "claim": "Road tunnels use large fans to replace exhaust-filled air with fresh air.",
+     "role": "fix4",
+     "search": "road tunnel ventilation jet fans exhaust fresh air"
+    }
    ],
    "ideas": [
     {
      "role": "hook",
-     "idea": "dig a shaft by the river and a hole sideways under it"
+     "idea": "if you dig a hole under a river, you have a tunnel"
     },
     {
      "role": "problem",
-     "idea": "the soft mud caves in and the river floods the hole"
+     "idea": "but soft mud caves in, and the river floods in"
     },
     {
      "role": "fix1",
-     "idea": "a steel shield pushed forward holds the mud back"
-    },
-    {
-     "role": "fix2",
-     "idea": "behind it, concrete rings line the walls"
+     "idea": "so a spinning steel shield pushes forward"
     },
     {
      "role": "name",
      "idea": "this is a tunnel boring machine"
     },
     {
-     "role": "how",
-     "idea": "its wheel cuts and a belt carries the mud out"
+     "role": "problem2",
+     "idea": "but behind the shield, the bare walls crumble"
     },
     {
-     "role": "problem2",
-     "idea": "the long closed tunnel fills with smoky air"
+     "role": "fix2",
+     "idea": "so you line the walls with concrete rings"
+    },
+    {
+     "role": "problem3",
+     "idea": "but water squeezes through the joints between rings"
     },
     {
      "role": "fix3",
-     "idea": "big fans push in fresh air"
+     "idea": "so rubber seals squeeze each joint shut"
     },
     {
-     "role": "fact",
-     "idea": "the Holland Tunnel's 84 fans change all its air every 90 seconds"
+     "role": "problem4",
+     "idea": "but with the seals tight, smoky air gets trapped"
+    },
+    {
+     "role": "fix4",
+     "idea": "so big fans swap the smoke for fresh air"
+    },
+    {
+     "role": "problem5",
+     "idea": "but past the fans, rain pools at the lowest point"
+    },
+    {
+     "role": "fix5",
+     "idea": "so pumps lift it back up to the river"
     },
     {
      "role": "finish",
-     "idea": "a road and ceiling lights"
+     "idea": "pave the road, light it, and drive under the river"
     },
     {
      "role": "congrats",
-     "idea": "you have built a tunnel under a river"
-    }
-   ],
-   "chain": [
-    {
-     "problem": "problem",
-     "causedBy": "hook",
-     "shows": "mud falls from the roof and river water pours into the hole",
-     "stakes": "the hole fills and the diggers drown",
-     "size": 6
-    },
-    {
-     "problem": "problem2",
-     "causedBy": "fix2",
-     "shows": "smoke fills the closed tunnel",
-     "stakes": "drivers cannot breathe",
-     "size": 7
-    }
-   ],
-   "surprises": [
-    {
-     "claim": "The Holland Tunnel under the Hudson River has 84 ventilation fans that change all its air every 90 seconds.",
-     "role": "fact",
-     "search": "Holland Tunnel 84 fans air changed every 90 seconds"
-    },
-    {
-     "claim": "Marc Brunel's tunnelling shield made the Thames Tunnel (opened 1843) the first tunnel under a navigable river.",
-     "role": "fix1",
-     "search": "Thames Tunnel 1843 first tunnel under navigable river Brunel shield"
-    },
-    {
-     "claim": "Behind its shield, a tunnel boring machine lines the tunnel with rings of precast concrete segments as it goes.",
-     "role": "fix2",
-     "search": "tunnel boring machine segment lining rings"
+     "idea": "congratulations, you have built a tunnel"
     }
    ]
   },
   "sentences": [
    {
     "role": "hook",
-    "text": "If you dig a shaft and a hole under a river, you have a tunnel."
+    "text": "If you dig a hole under a river, you have a tunnel."
    },
    {
     "role": "problem",
-    "text": "But the soft mud caves in, and river water floods the hole."
+    "text": "But soft mud caves in, and the river floods in."
    },
    {
     "role": "fix1",
-    "text": "So you push a steel shield forward that holds the mud back."
-   },
-   {
-    "role": "fix2",
-    "text": "Behind it, you line the walls with rings of concrete segments."
+    "text": "So a spinning steel shield pushes forward."
    },
    {
     "role": "name",
     "text": "This is a tunnel boring machine."
    },
    {
-    "role": "how",
-    "text": "Its wheel spins and cuts, and a belt carries the mud out."
+    "role": "problem2",
+    "text": "But behind the shield, the bare walls crumble."
    },
    {
-    "role": "problem2",
-    "text": "But now the long, closed tunnel fills with smoky air."
+    "role": "fix2",
+    "text": "So you line the walls with concrete rings."
+   },
+   {
+    "role": "problem3",
+    "text": "But water squeezes through the joints between rings."
    },
    {
     "role": "fix3",
-    "text": "So you add big fans that push in fresh air."
+    "text": "So rubber seals squeeze each joint shut."
    },
    {
-    "role": "fact",
-    "text": "In the Holland Tunnel, 84 fans change all its air every 90 seconds."
+    "role": "problem4",
+    "text": "But with the seals tight, smoky air gets trapped."
+   },
+   {
+    "role": "fix4",
+    "text": "So big fans swap the smoke for fresh air."
+   },
+   {
+    "role": "problem5",
+    "text": "But past the fans, rain pools at the lowest point."
+   },
+   {
+    "role": "fix5",
+    "text": "So pumps lift it back up to the river."
    },
    {
     "role": "finish",
-    "text": "Add a road and lights along the ceiling."
+    "text": "Pave the road, light it, and drive under the river."
    },
    {
     "role": "congrats",
-    "text": "Congratulations, you have built a tunnel under a river."
+    "text": "Congratulations, you have built a tunnel."
    }
   ],
-  "sceneJson": {
-   "world": {
-    "cut": [
-     -9.2,
-     -7.2,
-     -2.5,
-     10
-    ],
-    "house": false,
-    "porch": false,
-    "worker": false,
-    "road": false,
-    "moreTrees": false,
-    "trees": [
-     [
-      -17,
-      -9
-     ],
-     [
-      14,
-      -10,
-      1.1
-     ]
-    ]
-   },
-   "parts": [
-    {
-     "id": "light",
-     "kind": "light",
-     "params": {
-      "storm": false
-     }
-    },
-    {
-     "id": "land",
-     "kind": "terrain",
-     "params": {
-      "blocks": [
-       {
-        "type": "flat",
-        "x0": -24,
-        "x1": 24,
-        "y": 0
-       },
-       {
-        "type": "riverbed",
-        "x0": -6,
-        "x1": 6,
-        "depth": 3
-       }
-      ],
-      "trees": [
-       [
-        -17,
-        -9,
-        1
-       ],
-       [
-        14,
-        -10,
-        1.1
-       ],
-       [
-        19,
-        -6,
-        0.9
-       ]
-      ]
-     }
-    },
-    {
-     "id": "river",
-     "kind": "waterBody",
-     "params": {
-      "body": "river",
-      "x0": -6,
-      "x1": 6,
-      "level": -0.5
-     }
-    },
-    {
-     "id": "dig",
-     "kind": "dig",
-     "params": {
-      "mound": {
-       "x": -12.5,
-       "z": -5,
-       "rx": 1.6,
-       "rz": 1.3,
-       "h": 1.1
-      },
-      "clumps": 120,
-      "dark": true
-     }
-    },
-    {
-     "id": "tunnel",
-     "kind": "rig",
-     "main": true,
-     "params": {
-      "name": "bored tunnel",
-      "synonyms": [
-       "tunnel",
-       "tunnel boring machine",
-       "shield",
-       "rings"
-      ],
-      "pos": [
-       -7.3500000000000005,
-       -10,
-       0
-      ],
-      "nodes": [
-       {
-        "id": "hole",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           2,
-           3.2,
-           0.12
-          ],
-          "at": [
-           1,
-           1.6,
-           0.02
-          ],
-          "look": "paint",
-          "color": "#2b2018"
-         }
-        ],
-        "moves": [
-         {
-          "name": "hole",
-          "type": "appear"
-         }
-        ]
-       },
-       {
-        "id": "bore",
-        "parent": "hole",
-        "at": [
-         2,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           2,
-           3.2,
-           0.12
-          ],
-          "at": [
-           1,
-           1.6,
-           0.02
-          ],
-          "look": "paint",
-          "color": "#2b2018"
-         }
-        ],
-        "moves": [
-         {
-          "name": "bore",
-          "type": "extend",
-          "axis": "x",
-          "k": 6
-         }
-        ]
-       },
-       {
-        "id": "lining",
-        "parent": "hole",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           14,
-           0.32,
-           0.26
-          ],
-          "at": [
-           7,
-           3.04,
-           0.08
-          ],
-          "look": "concrete",
-          "color": "#bdb8ae"
-         },
-         {
-          "shape": "box",
-          "size": [
-           14,
-           0.32,
-           0.26
-          ],
-          "at": [
-           7,
-           0.16,
-           0.08
-          ],
-          "look": "concrete",
-          "color": "#bdb8ae"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.16,
-           2.6,
-           0.2
-          ],
-          "at": [
-           0.8,
-           1.6,
-           0.08
-          ],
-          "look": "concrete",
-          "color": "#8f8a80"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.16,
-           2.6,
-           0.2
-          ],
-          "at": [
-           2.3,
-           1.6,
-           0.08
-          ],
-          "look": "concrete",
-          "color": "#8f8a80"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.16,
-           2.6,
-           0.2
-          ],
-          "at": [
-           3.8,
-           1.6,
-           0.08
-          ],
-          "look": "concrete",
-          "color": "#8f8a80"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.16,
-           2.6,
-           0.2
-          ],
-          "at": [
-           5.3,
-           1.6,
-           0.08
-          ],
-          "look": "concrete",
-          "color": "#8f8a80"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.16,
-           2.6,
-           0.2
-          ],
-          "at": [
-           6.8,
-           1.6,
-           0.08
-          ],
-          "look": "concrete",
-          "color": "#8f8a80"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.16,
-           2.6,
-           0.2
-          ],
-          "at": [
-           8.3,
-           1.6,
-           0.08
-          ],
-          "look": "concrete",
-          "color": "#8f8a80"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.16,
-           2.6,
-           0.2
-          ],
-          "at": [
-           9.8,
-           1.6,
-           0.08
-          ],
-          "look": "concrete",
-          "color": "#8f8a80"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.16,
-           2.6,
-           0.2
-          ],
-          "at": [
-           11.3,
-           1.6,
-           0.08
-          ],
-          "look": "concrete",
-          "color": "#8f8a80"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.16,
-           2.6,
-           0.2
-          ],
-          "at": [
-           12.8,
-           1.6,
-           0.08
-          ],
-          "look": "concrete",
-          "color": "#8f8a80"
-         }
-        ],
-        "moves": [
-         {
-          "name": "rings",
-          "type": "appear"
-         }
-        ]
-       },
-       {
-        "id": "road",
-        "parent": "lining",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           13.6,
-           0.36,
-           0.5
-          ],
-          "at": [
-           7,
-           0.5,
-           0.2
-          ],
-          "look": "paint",
-          "color": "#34373c"
-         },
-         {
-          "shape": "box",
-          "size": [
-           13.2,
-           0.04,
-           0.52
-          ],
-          "at": [
-           7,
-           0.7,
-           0.2
-          ],
-          "look": "paint",
-          "color": "#f2d23a"
-         }
-        ],
-        "moves": [
-         {
-          "name": "road",
-          "type": "appear"
-         }
-        ]
-       },
-       {
-        "id": "lamps",
-        "parent": "lining",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "light",
-          "r": 0.3,
-          "at": [
-           1.2,
-           2.6,
-           0.3
-          ],
-          "color": "#ffcf4a"
-         },
-         {
-          "shape": "light",
-          "r": 0.3,
-          "at": [
-           3.5,
-           2.6,
-           0.3
-          ],
-          "color": "#ffcf4a"
-         },
-         {
-          "shape": "light",
-          "r": 0.3,
-          "at": [
-           5.8,
-           2.6,
-           0.3
-          ],
-          "color": "#ffcf4a"
-         },
-         {
-          "shape": "light",
-          "r": 0.3,
-          "at": [
-           8.1,
-           2.6,
-           0.3
-          ],
-          "color": "#ffcf4a"
-         },
-         {
-          "shape": "light",
-          "r": 0.3,
-          "at": [
-           10.4,
-           2.6,
-           0.3
-          ],
-          "color": "#ffcf4a"
-         },
-         {
-          "shape": "light",
-          "r": 0.3,
-          "at": [
-           12.7,
-           2.6,
-           0.3
-          ],
-          "color": "#ffcf4a"
-         }
-        ],
-        "moves": [
-         {
-          "name": "lights",
-          "type": "light"
-         }
-        ]
-       },
-       {
-        "id": "tbm",
-        "at": [
-         2.4,
-         1.6,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "cylinder",
-          "r": 1.45,
-          "h": 3,
-          "axis": "x",
-          "at": [
-           0,
-           0,
-           0
-          ],
-          "look": "paint",
-          "color": "#e3a21a"
-         }
-        ],
-        "moves": [
-         {
-          "name": "shield",
-          "type": "appear"
-         },
-         {
-          "name": "push",
-          "type": "slide",
-          "to": [
-           8.6,
-           0,
-           0
-          ]
-         }
-        ]
-       },
-       {
-        "id": "cutter",
-        "parent": "tbm",
-        "at": [
-         1.6,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "fan",
-          "r": 1.3,
-          "blades": 6,
-          "w": 0.25,
-          "axis": "z",
-          "at": [
-           0,
-           0,
-           1.55
-          ],
-          "look": "metal",
-          "color": "#59616b"
-         }
-        ],
-        "moves": [
-         {
-          "name": "spins",
-          "type": "spin",
-          "axis": "z",
-          "turns": 1
-         }
-        ]
-       },
-       {
-        "id": "belt",
-        "parent": "lining",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "belt",
-          "path": [
-           [
-            12.4,
-            0.75,
-            0.3
-           ],
-           [
-            1,
-            0.75,
-            0.3
-           ]
-          ],
-          "w": 0.3,
-          "look": "rubber",
-          "color": "#2a2a2a"
-         }
-        ],
-        "moves": [
-         {
-          "name": "carries",
-          "type": "flow",
-          "path": [
-           [
-            12,
-            0.95,
-            0.6
-           ],
-           [
-            1,
-            0.95,
-            0.6
-           ],
-           [
-            -0.6,
-            2.6,
-            0.6
-           ],
-           [
-            -1,
-            10,
-            0.6
-           ]
-          ],
-          "color": "#6b4a2a"
-         }
-        ]
-       },
-       {
-        "id": "fan0",
-        "parent": "lining",
-        "at": [
-         3,
-         2.05,
-         0.3
-        ],
-        "shapes": [
-         {
-          "shape": "fan",
-          "r": 0.8,
-          "blades": 5,
-          "w": 0.15,
-          "axis": "z",
-          "at": [
-           0,
-           0,
-           0
-          ],
-          "look": "metal",
-          "color": "#cfd6de"
-         }
-        ],
-        "moves": [
-         {
-          "name": "fansOn",
-          "type": "appear"
-         },
-         {
-          "name": "fans",
-          "type": "spin",
-          "axis": "z",
-          "turns": 1.5
-         }
-        ]
-       },
-       {
-        "id": "fan1",
-        "parent": "lining",
-        "at": [
-         7,
-         2.05,
-         0.3
-        ],
-        "shapes": [
-         {
-          "shape": "fan",
-          "r": 0.8,
-          "blades": 5,
-          "w": 0.15,
-          "axis": "z",
-          "at": [
-           0,
-           0,
-           0
-          ],
-          "look": "metal",
-          "color": "#cfd6de"
-         }
-        ],
-        "moves": [
-         {
-          "name": "fansOn",
-          "type": "appear"
-         },
-         {
-          "name": "fans",
-          "type": "spin",
-          "axis": "z",
-          "turns": 1.5
-         }
-        ]
-       },
-       {
-        "id": "fan2",
-        "parent": "lining",
-        "at": [
-         11,
-         2.05,
-         0.3
-        ],
-        "shapes": [
-         {
-          "shape": "fan",
-          "r": 0.8,
-          "blades": 5,
-          "w": 0.15,
-          "axis": "z",
-          "at": [
-           0,
-           0,
-           0
-          ],
-          "look": "metal",
-          "color": "#cfd6de"
-         }
-        ],
-        "moves": [
-         {
-          "name": "fansOn",
-          "type": "appear"
-         },
-         {
-          "name": "fans",
-          "type": "spin",
-          "axis": "z",
-          "turns": 1.5
-         }
-        ]
-       }
-      ]
-     }
-    },
-    {
-     "id": "mud",
-     "kind": "drops",
-     "params": {
-      "x0": -2,
-      "x1": 2,
-      "count": 26,
-      "fromY": -6.6,
-      "landY": -9.6,
-      "z": 0.2,
-      "mat": "mud"
-     }
-    },
-    {
-     "id": "leak",
-     "kind": "water",
-     "params": {
-      "box": {
-       "x0": -3.5,
-       "x1": 3.5,
-       "y0": -10,
-       "y1": -8.6,
-       "z0": -0.05,
-       "z1": 0.3
-      },
-      "mat": "water"
-     }
-    },
-    {
-     "id": "seep",
-     "kind": "flow",
-     "params": {
-      "path": [
-       [
-        0.2,
-        -2.6,
-        0.35
-       ],
-       [
-        0,
-        -5,
-        0.35
-       ],
-       [
-        -0.2,
-        -8.6,
-        0.35
-       ]
-      ],
-      "look": "water",
-      "size": 0.16,
-      "speed": 3,
-      "count": 8
-     }
-    },
-    {
-     "id": "smoke",
-     "kind": "fx",
-     "params": {
-      "type": "smoke",
-      "at": [
-       -2,
-       -9.3,
-       0.4
-      ],
-      "size": 1.1
-     }
-    },
-    {
-     "id": "air",
-     "kind": "arrows",
-     "params": {
-      "list": [
-       {
-        "at": [
-         -6.8,
-         -7.7,
-         0.6
-        ],
-        "dir": [
-         1,
-         0
-        ],
-        "travel": 2.2,
-        "phase": 0
-       },
-       {
-        "at": [
-         -4.4,
-         -7.7,
-         0.6
-        ],
-        "dir": [
-         1,
-         0
-        ],
-        "travel": 2.2,
-        "phase": 0.25
-       },
-       {
-        "at": [
-         -2,
-         -7.7,
-         0.6
-        ],
-        "dir": [
-         1,
-         0
-        ],
-        "travel": 2.2,
-        "phase": 0.5
-       },
-       {
-        "at": [
-         0.2,
-         -7.7,
-         0.6
-        ],
-        "dir": [
-         1,
-         0
-        ],
-        "travel": 2.2,
-        "phase": 0.75
-       }
-      ],
-      "opts": {
-       "scale": 1.3,
-       "color": "#ffffff"
-      }
-     }
-    },
-    {
-     "id": "tbmOutline",
-     "kind": "outline",
-     "params": {
-      "of": "tbmRing",
-      "points": [
-       [
-        1.6,
-        -5.9,
-        1.7
-       ],
-       [
-        5.5,
-        -5.9,
-        1.7
-       ],
-       [
-        5.5,
-        -9.5,
-        1.7
-       ],
-       [
-        1.6,
-        -9.5,
-        1.7
-       ]
-      ],
-      "opts": {
-       "r": 0.1,
-       "closed": true
-      }
-     }
-    },
-    {
-     "id": "sign",
-     "kind": "sign",
-     "params": {
-      "at": [
-       12,
-       0,
-       -8
-      ],
-      "rotY": -0.2,
-      "scale": 1.3
-     }
-    }
-   ],
-   "beats": [
-    {
-     "s": "hook",
-     "shows": {
-      "p": "tunnel",
-      "does": "a shaft is dug down and a dark hole runs sideways from it to under the river"
-     },
-     "do": [
-      {
-       "p": "dig",
-       "v": "dig",
-       "w": "dig",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "tunnel",
-       "v": "show",
-       "w": "hole",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "tunnel",
-       "v": "hole",
-       "w": "hole",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "tunnel",
-       "v": "bore",
-       "w": "hole",
-       "o": 0.3,
-       "d": 1.6,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "dig"
-       ],
-       "view": "home",
-       "width": 0,
-       "type": "close",
-       "hero": false,
-       "word": "",
-       "box": []
-      },
-      {
-       "focus": [],
-       "view": "home",
-       "width": 0,
-       "type": "",
-       "hero": false,
-       "word": "hole",
-       "box": [
-        -10.5,
-        -11,
-        -1,
-        8,
-        0.5,
-        1.8
-       ]
-      }
-     ]
-    },
-    {
-     "s": "problem",
-     "shows": {
-      "p": "leak",
-      "does": "mud caves in from the roof and river water floods the hole"
-     },
-     "state": {
-      "text": "CAVED IN",
-      "w": "caves"
-     },
-     "do": [
-      {
-       "p": "mud",
-       "v": "fall",
-       "w": "caves",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "seep",
-       "v": "start",
-       "w": "floods",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "leak",
-       "v": "flood",
-       "w": "floods",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [],
-       "view": "home",
-       "width": 0,
-       "type": "",
-       "hero": false,
-       "word": "",
-       "box": [
-        -6,
-        -11,
-        -1,
-        6,
-        0.5,
-        1.8
-       ]
-      }
-     ]
-    },
-    {
-     "s": "fix1",
-     "shows": {
-      "p": "tunnel",
-      "does": "a yellow steel shield appears and pushes forward under the river"
-     },
-     "do": [
-      {
-       "p": "mud",
-       "v": "hide",
-       "w": "So",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "seep",
-       "v": "stop",
-       "w": "So",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "leak",
-       "v": "drain",
-       "w": "So",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "tunnel",
-       "v": "shield",
-       "w": "shield",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "tunnel",
-       "v": "push",
-       "w": "forward",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [],
-       "view": "home",
-       "width": 0,
-       "type": "",
-       "hero": false,
-       "word": "",
-       "box": [
-        -10.5,
-        -11,
-        -1,
-        8,
-        0.5,
-        1.8
-       ]
-      }
-     ]
-    },
-    {
-     "s": "fix2",
-     "shows": {
-      "p": "tunnel",
-      "does": "concrete rings line the tunnel walls behind the shield"
-     },
-     "do": [
-      {
-       "p": "tunnel",
-       "v": "rings",
-       "w": "rings",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [],
-       "view": "home",
-       "width": 0,
-       "type": "",
-       "hero": false,
-       "word": "",
-       "box": [
-        -10.5,
-        -11,
-        -1,
-        8,
-        0.5,
-        1.8
-       ]
-      }
-     ]
-    },
-    {
-     "s": "name",
-     "shows": {
-      "p": "tbmOutline",
-      "does": "an outline glows round the boring machine"
-     },
-     "do": [
-      {
-       "p": "tbmOutline",
-       "v": "show",
-       "w": "boring",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [],
-       "view": "home",
-       "width": 0,
-       "type": "",
-       "hero": true,
-       "word": "",
-       "box": [
-        0.5,
-        -11,
-        -1,
-        7.5,
-        -5.5,
-        3.2
-       ]
-      }
-     ]
-    },
-    {
-     "s": "how",
-     "shows": {
-      "p": "tunnel",
-      "does": "the cutting wheel spins and mud rides the belt back to the shaft and up"
-     },
-     "do": [
-      {
-       "p": "tbmOutline",
-       "v": "hide",
-       "w": "",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "tunnel",
-       "v": "spins",
-       "w": "spins",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "tunnel",
-       "v": "carries",
-       "w": "carries",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [],
-       "view": "home",
-       "width": 0,
-       "type": "",
-       "hero": false,
-       "word": "",
-       "box": [
-        -10.5,
-        -11,
-        -1,
-        8,
-        0.5,
-        1.8
-       ]
-      }
-     ]
-    },
-    {
-     "s": "problem2",
-     "shows": {
-      "p": "smoke",
-      "does": "grey smoke fills the tunnel"
-     },
-     "state": {
-      "text": "NO FRESH AIR",
-      "w": "smoky"
-     },
-     "do": [
-      {
-       "p": "tunnel",
-       "v": "spinsBack",
-       "w": "But",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "tunnel",
-       "v": "carriesBack",
-       "w": "But",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "smoke",
-       "v": "start",
-       "w": "smoky",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [],
-       "view": "home",
-       "width": 0,
-       "type": "",
-       "hero": false,
-       "word": "",
-       "box": [
-        -10.5,
-        -11,
-        -1,
-        8,
-        0.5,
-        1.8
-       ]
-      }
-     ]
-    },
-    {
-     "s": "fix3",
-     "shows": {
-      "p": "tunnel",
-      "does": "fans appear in the roof and spin, and the smoke clears"
-     },
-     "do": [
-      {
-       "p": "tunnel",
-       "v": "fansOn",
-       "w": "fans",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "tunnel",
-       "v": "fans",
-       "w": "fans",
-       "o": 0.2,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "smoke",
-       "v": "stop",
-       "w": "fresh",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [],
-       "view": "home",
-       "width": 0,
-       "type": "",
-       "hero": false,
-       "word": "",
-       "box": [
-        -10.5,
-        -11,
-        -1,
-        8,
-        0.5,
-        1.8
-       ]
-      }
-     ]
-    },
-    {
-     "s": "fact",
-     "shows": {
-      "p": "air",
-      "does": "white arrows of fresh air run the whole length of the tunnel"
-     },
-     "do": [
-      {
-       "p": "air",
-       "v": "show",
-       "w": "Holland",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [],
-       "view": "home",
-       "width": 0,
-       "type": "",
-       "hero": false,
-       "word": "",
-       "box": [
-        -10.5,
-        -11,
-        -1,
-        8,
-        0.5,
-        1.8
-       ]
-      }
-     ]
-    },
-    {
-     "s": "finish",
-     "shows": {
-      "p": "tunnel",
-      "does": "a road with a yellow line and bright ceiling lights appear along the tunnel"
-     },
-     "do": [
-      {
-       "p": "air",
-       "v": "hide",
-       "w": "Add",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "tunnel",
-       "v": "road",
-       "w": "road",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "tunnel",
-       "v": "lights",
-       "w": "lights",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [],
-       "view": "home",
-       "width": 0,
-       "type": "",
-       "hero": false,
-       "word": "",
-       "box": [
-        -10.5,
-        -11,
-        -1,
-        8,
-        0.5,
-        1.8
-       ]
-      }
-     ]
-    },
-    {
-     "s": "congrats",
-     "shows": {
-      "p": "tunnel",
-      "does": "the lit, finished tunnel under the river"
-     },
-     "do": [],
-     "shots": [
-      {
-       "focus": [
-        "home"
-       ],
-       "view": "home",
-       "width": 0,
-       "type": "",
-       "hero": false,
-       "word": "",
-       "box": []
-      }
-     ]
-    }
-   ],
-   "audio": {
-    "cards": [
-     {
-      "text": "84 FANS",
-      "at": {
-       "s": "fact",
-       "w": "84",
-       "o": 0
-      },
-      "d": 1.4
-     },
-     {
-      "text": "90 SECONDS",
-      "at": {
-       "s": "fact",
-       "w": "90",
-       "o": 0
-      },
-      "d": 1.4
-     }
-    ],
-    "sfx": [
-     {
-      "lib": "dirt",
-      "at": {
-       "s": "hook",
-       "w": "dig",
-       "o": 0.05
-      },
-      "d": 1.2
-     },
-     {
-      "lib": "water_rush",
-      "at": {
-       "s": "problem",
-       "w": "floods",
-       "o": 0
-      },
-      "d": 1.4
-     },
-     {
-      "lib": "motor_hum",
-      "at": {
-       "s": "how",
-       "w": "spins",
-       "o": 0
-      },
-      "d": 1.6
-     },
-     {
-      "lib": "motor_hum",
-      "at": {
-       "s": "fix3",
-       "w": "fans",
-       "o": 0
-      },
-      "d": 1.4
-     }
-    ],
-    "chimes": [
-     {
-      "s": "name",
-      "w": "",
-      "o": 0
-     },
-     {
-      "s": "fact",
-      "w": "84",
-      "o": 0
-     },
-     {
-      "s": "congrats",
-      "w": "",
-      "o": 0
-     }
-    ],
-    "rain": []
-   }
-  }
+  "sceneJson": "{\"world\":{\"cut\":[-9.2,-7.2,-2.5,10],\"house\":false,\"porch\":false,\"worker\":false,\"road\":false,\"moreTrees\":false,\"trees\":[[-17,-9],[14,-10,1.1]]},\"parts\":[{\"id\":\"light\",\"kind\":\"light\",\"params\":{\"storm\":false}},{\"id\":\"land\",\"kind\":\"terrain\",\"params\":{\"blocks\":[{\"type\":\"flat\",\"x0\":-24,\"x1\":24,\"y\":0},{\"type\":\"riverbed\",\"x0\":-6,\"x1\":6,\"depth\":3}],\"trees\":[[-17,-9,1],[14,-10,1.1],[19,-6,0.9]]}},{\"id\":\"river\",\"kind\":\"waterBody\",\"params\":{\"body\":\"river\",\"x0\":-6,\"x1\":6,\"level\":-0.5}},{\"id\":\"dig\",\"kind\":\"dig\",\"params\":{\"mound\":{\"x\":-12.5,\"z\":-5,\"rx\":1.6,\"rz\":1.3,\"h\":1.1},\"clumps\":120,\"dark\":true}},{\"id\":\"tunnel\",\"kind\":\"rig\",\"main\":true,\"params\":{\"name\":\"bored tunnel\",\"synonyms\":[\"tunnel\",\"tunnel boring machine\",\"shield\",\"rings\"],\"pos\":[-7.3500000000000005,-10,0],\"nodes\":[{\"id\":\"hole\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[2,3.2,0.12],\"at\":[1,1.6,0.02],\"look\":\"paint\",\"color\":\"#2b2018\"}],\"moves\":[{\"name\":\"hole\",\"type\":\"appear\"}]},{\"id\":\"bore\",\"parent\":\"hole\",\"at\":[2,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[2,3.2,0.12],\"at\":[1,1.6,0.02],\"look\":\"paint\",\"color\":\"#2b2018\"}],\"moves\":[{\"name\":\"bore\",\"type\":\"extend\",\"axis\":\"x\",\"k\":6}]},{\"id\":\"lining\",\"parent\":\"hole\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[14,0.32,0.26],\"at\":[7,3.04,0.08],\"look\":\"concrete\",\"color\":\"#bdb8ae\"},{\"shape\":\"box\",\"size\":[14,0.32,0.26],\"at\":[7,0.16,0.08],\"look\":\"concrete\",\"color\":\"#bdb8ae\"},{\"shape\":\"box\",\"size\":[0.16,2.6,0.2],\"at\":[0.8,1.6,0.08],\"look\":\"concrete\",\"color\":\"#8f8a80\"},{\"shape\":\"box\",\"size\":[0.16,2.6,0.2],\"at\":[2.3,1.6,0.08],\"look\":\"concrete\",\"color\":\"#8f8a80\"},{\"shape\":\"box\",\"size\":[0.16,2.6,0.2],\"at\":[3.8,1.6,0.08],\"look\":\"concrete\",\"color\":\"#8f8a80\"},{\"shape\":\"box\",\"size\":[0.16,2.6,0.2],\"at\":[5.3,1.6,0.08],\"look\":\"concrete\",\"color\":\"#8f8a80\"},{\"shape\":\"box\",\"size\":[0.16,2.6,0.2],\"at\":[6.8,1.6,0.08],\"look\":\"concrete\",\"color\":\"#8f8a80\"},{\"shape\":\"box\",\"size\":[0.16,2.6,0.2],\"at\":[8.3,1.6,0.08],\"look\":\"concrete\",\"color\":\"#8f8a80\"},{\"shape\":\"box\",\"size\":[0.16,2.6,0.2],\"at\":[9.8,1.6,0.08],\"look\":\"concrete\",\"color\":\"#8f8a80\"},{\"shape\":\"box\",\"size\":[0.16,2.6,0.2],\"at\":[11.3,1.6,0.08],\"look\":\"concrete\",\"color\":\"#8f8a80\"},{\"shape\":\"box\",\"size\":[0.16,2.6,0.2],\"at\":[12.8,1.6,0.08],\"look\":\"concrete\",\"color\":\"#8f8a80\"}],\"moves\":[{\"name\":\"rings\",\"type\":\"appear\"}]},{\"id\":\"road\",\"parent\":\"lining\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[13.6,0.36,0.5],\"at\":[7,0.5,0.2],\"look\":\"paint\",\"color\":\"#34373c\"},{\"shape\":\"box\",\"size\":[13.2,0.04,0.52],\"at\":[7,0.7,0.2],\"look\":\"paint\",\"color\":\"#f2d23a\"}],\"moves\":[{\"name\":\"road\",\"type\":\"appear\"}]},{\"id\":\"lamps\",\"parent\":\"lining\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"light\",\"r\":0.3,\"at\":[1.2,2.6,0.3],\"color\":\"#ffcf4a\"},{\"shape\":\"light\",\"r\":0.3,\"at\":[3.5,2.6,0.3],\"color\":\"#ffcf4a\"},{\"shape\":\"light\",\"r\":0.3,\"at\":[5.8,2.6,0.3],\"color\":\"#ffcf4a\"},{\"shape\":\"light\",\"r\":0.3,\"at\":[8.1,2.6,0.3],\"color\":\"#ffcf4a\"},{\"shape\":\"light\",\"r\":0.3,\"at\":[10.4,2.6,0.3],\"color\":\"#ffcf4a\"},{\"shape\":\"light\",\"r\":0.3,\"at\":[12.7,2.6,0.3],\"color\":\"#ffcf4a\"}],\"moves\":[{\"name\":\"lights\",\"type\":\"light\"}]},{\"id\":\"tbm\",\"at\":[2.4,1.6,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":1.45,\"h\":3,\"axis\":\"x\",\"at\":[0,0,0],\"look\":\"paint\",\"color\":\"#e3a21a\"}],\"moves\":[{\"name\":\"shield\",\"type\":\"appear\"},{\"name\":\"push\",\"type\":\"slide\",\"to\":[8.6,0,0]}]},{\"id\":\"cutter\",\"parent\":\"tbm\",\"at\":[1.6,0,0],\"shapes\":[{\"shape\":\"fan\",\"r\":1.3,\"blades\":6,\"w\":0.25,\"axis\":\"z\",\"at\":[0,0,1.55],\"look\":\"metal\",\"color\":\"#59616b\"}],\"moves\":[{\"name\":\"spins\",\"type\":\"spin\",\"axis\":\"z\",\"turns\":1}]},{\"id\":\"belt\",\"parent\":\"lining\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"belt\",\"path\":[[12.4,0.75,0.3],[1,0.75,0.3]],\"w\":0.3,\"look\":\"rubber\",\"color\":\"#2a2a2a\"}],\"moves\":[{\"name\":\"carries\",\"type\":\"flow\",\"path\":[[12,0.95,0.6],[1,0.95,0.6],[-0.6,2.6,0.6],[-1,10,0.6]],\"color\":\"#6b4a2a\"}]},{\"id\":\"fan0\",\"parent\":\"lining\",\"at\":[3,2.05,0.3],\"shapes\":[{\"shape\":\"fan\",\"r\":0.8,\"blades\":5,\"w\":0.15,\"axis\":\"z\",\"at\":[0,0,0],\"look\":\"metal\",\"color\":\"#cfd6de\"}],\"moves\":[{\"name\":\"fansOn\",\"type\":\"appear\"},{\"name\":\"fans\",\"type\":\"spin\",\"axis\":\"z\",\"turns\":1.5}]},{\"id\":\"fan1\",\"parent\":\"lining\",\"at\":[7,2.05,0.3],\"shapes\":[{\"shape\":\"fan\",\"r\":0.8,\"blades\":5,\"w\":0.15,\"axis\":\"z\",\"at\":[0,0,0],\"look\":\"metal\",\"color\":\"#cfd6de\"}],\"moves\":[{\"name\":\"fansOn\",\"type\":\"appear\"},{\"name\":\"fans\",\"type\":\"spin\",\"axis\":\"z\",\"turns\":1.5}]},{\"id\":\"fan2\",\"parent\":\"lining\",\"at\":[11,2.05,0.3],\"shapes\":[{\"shape\":\"fan\",\"r\":0.8,\"blades\":5,\"w\":0.15,\"axis\":\"z\",\"at\":[0,0,0],\"look\":\"metal\",\"color\":\"#cfd6de\"}],\"moves\":[{\"name\":\"fansOn\",\"type\":\"appear\"},{\"name\":\"fans\",\"type\":\"spin\",\"axis\":\"z\",\"turns\":1.5}]}]}},{\"id\":\"mud\",\"kind\":\"drops\",\"params\":{\"x0\":-2,\"x1\":2,\"count\":26,\"fromY\":-6.6,\"landY\":-9.6,\"z\":0.2,\"mat\":\"mud\"}},{\"id\":\"leak\",\"kind\":\"water\",\"params\":{\"box\":{\"x0\":-3.5,\"x1\":3.5,\"y0\":-10,\"y1\":-8.6,\"z0\":-0.05,\"z1\":0.3},\"mat\":\"water\"}},{\"id\":\"seep\",\"kind\":\"flow\",\"params\":{\"path\":[[0.2,-2.6,0.35],[0,-5,0.35],[-0.2,-8.6,0.35]],\"look\":\"water\",\"size\":0.16,\"speed\":3,\"count\":8}},{\"id\":\"smoke\",\"kind\":\"fx\",\"params\":{\"type\":\"smoke\",\"at\":[-2,-9.3,0.4],\"size\":1.1}},{\"id\":\"air\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[-6.8,-7.7,0.6],\"dir\":[1,0],\"travel\":2.2,\"phase\":0},{\"at\":[-4.4,-7.7,0.6],\"dir\":[1,0],\"travel\":2.2,\"phase\":0.25},{\"at\":[-2,-7.7,0.6],\"dir\":[1,0],\"travel\":2.2,\"phase\":0.5},{\"at\":[0.2,-7.7,0.6],\"dir\":[1,0],\"travel\":2.2,\"phase\":0.75}],\"opts\":{\"scale\":1.3,\"color\":\"#ffffff\"}}},{\"id\":\"boat\",\"kind\":\"token\",\"params\":{\"type\":\"boat\",\"pos\":[0,-0.5,-6],\"path\":[[0,-0.5,-6],[0.3,-0.5,-4.5],[-0.2,-0.5,-3],[0.2,-0.5,-1.4]],\"size\":0.9,\"float\":true}},{\"id\":\"crumble\",\"kind\":\"drops\",\"params\":{\"x0\":-5.5,\"x1\":-1.5,\"count\":22,\"fromY\":-6.8,\"landY\":-9.6,\"z\":0.25,\"mat\":\"mud\"}},{\"id\":\"jointDrip\",\"kind\":\"fx\",\"params\":{\"type\":\"drip\",\"at\":[-3.43,-8.4,0.35],\"size\":0.9,\"color\":\"#7fb6d6\"}},{\"id\":\"seals\",\"kind\":\"rig\",\"params\":{\"name\":\"rubber seals\",\"synonyms\":[\"seals\",\"gaskets\"],\"pos\":[-7.35,-10,0],\"nodes\":[{\"id\":\"strip\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.09,2.6,0.1],\"at\":[0.92,1.6,0.26],\"look\":\"rubber\",\"color\":\"#141414\"},{\"shape\":\"box\",\"size\":[0.09,2.6,0.1],\"at\":[2.42,1.6,0.26],\"look\":\"rubber\",\"color\":\"#141414\"},{\"shape\":\"box\",\"size\":[0.09,2.6,0.1],\"at\":[3.92,1.6,0.26],\"look\":\"rubber\",\"color\":\"#141414\"},{\"shape\":\"box\",\"size\":[0.09,2.6,0.1],\"at\":[5.42,1.6,0.26],\"look\":\"rubber\",\"color\":\"#141414\"},{\"shape\":\"box\",\"size\":[0.09,2.6,0.1],\"at\":[6.92,1.6,0.26],\"look\":\"rubber\",\"color\":\"#141414\"},{\"shape\":\"box\",\"size\":[0.09,2.6,0.1],\"at\":[8.42,1.6,0.26],\"look\":\"rubber\",\"color\":\"#141414\"},{\"shape\":\"box\",\"size\":[0.09,2.6,0.1],\"at\":[9.92,1.6,0.26],\"look\":\"rubber\",\"color\":\"#141414\"},{\"shape\":\"box\",\"size\":[0.09,2.6,0.1],\"at\":[11.42,1.6,0.26],\"look\":\"rubber\",\"color\":\"#141414\"},{\"shape\":\"box\",\"size\":[0.09,2.6,0.1],\"at\":[12.92,1.6,0.26],\"look\":\"rubber\",\"color\":\"#141414\"}],\"moves\":[{\"name\":\"seals\",\"type\":\"appear\"}]}]}},{\"id\":\"pool\",\"kind\":\"water\",\"params\":{\"box\":{\"x0\":-2,\"x1\":2.5,\"y0\":-10,\"y1\":-9.35,\"z0\":-0.05,\"z1\":0.32},\"mat\":\"water\"}},{\"id\":\"rainIn\",\"kind\":\"flow\",\"params\":{\"path\":[[-8.2,0.2,0.4],[-8.2,-6,0.4],[-6.5,-9.4,0.4],[0,-9.6,0.4]],\"look\":\"water\",\"size\":0.16,\"speed\":3,\"count\":14}},{\"id\":\"pump\",\"kind\":\"boxPop\",\"params\":{\"size\":[0.9,0.7,0.5],\"pos\":[2.9,-9.65,0.3],\"r\":0.05,\"mat\":\"machineBody\"}},{\"id\":\"pumpPipe\",\"kind\":\"pipeRun\",\"params\":{\"path\":[[3.3,-9.3,0.32],[6.2,-9.3,0.32],[6.2,-2.4,0.32]],\"r\":0.16,\"mat\":\"pipeWhite\"}},{\"id\":\"pumpFlow\",\"kind\":\"pipeRunFlow\",\"params\":{\"pipe\":\"pumpPipe\",\"count\":12,\"size\":0.13,\"speed\":3,\"mat\":\"water\",\"dz\":0.22}},{\"id\":\"tbmOutline\",\"kind\":\"outline\",\"params\":{\"points\":[[2,-6.7,0.5],[5.6,-6.7,0.5],[5.6,-10.1,0.5],[2,-10.1,0.5]],\"opts\":{\"r\":0.1,\"closed\":true}}},{\"id\":\"sign\",\"kind\":\"sign\",\"params\":{\"at\":[12,0,-8],\"rotY\":-0.2,\"scale\":1.3}}],\"beats\":[{\"s\":\"hook\",\"shows\":{\"p\":\"tunnel\",\"does\":\"a shaft is dug beside the river and a dark hole is bored sideways under the riverbed while a boat floats above\"},\"do\":[{\"p\":\"boat\",\"v\":\"sit\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"dig\",\"v\":\"dig\",\"w\":\"dig\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tunnel\",\"v\":\"show\",\"w\":\"hole\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tunnel\",\"v\":\"hole\",\"w\":\"hole\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tunnel\",\"v\":\"bore\",\"w\":\"hole\",\"o\":0.3,\"d\":1.6,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"tunnel\"],\"type\":\"mid\"}]},{\"s\":\"problem\",\"shows\":{\"p\":\"leak\",\"does\":\"mud lumps fall from the roof of the hole and river water pours down and floods its floor\"},\"do\":[{\"p\":\"mud\",\"v\":\"fall\",\"w\":\"caves\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"seep\",\"v\":\"start\",\"w\":\"river\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"leak\",\"v\":\"flood\",\"w\":\"floods\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"tunnel\",\"boat\"],\"width\":0.9}]},{\"s\":\"fix1\",\"shows\":{\"p\":\"tunnel\",\"does\":\"a yellow steel shield appears in the hole and pushes forward, its cutter wheel spinning, the water drains\"},\"do\":[{\"p\":\"mud\",\"v\":\"hide\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"seep\",\"v\":\"stop\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"leak\",\"v\":\"drain\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tunnel\",\"v\":\"shield\",\"w\":\"shield\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tunnel\",\"v\":\"push\",\"w\":\"pushes\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tunnel\",\"v\":\"spins\",\"w\":\"spinning\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"tunnel\"],\"type\":\"mid\"}]},{\"s\":\"name\",\"shows\":{\"p\":\"tbmOutline\",\"does\":\"a glowing outline traces the shield\"},\"do\":[{\"p\":\"tbmOutline\",\"v\":\"show\",\"w\":\"boring\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"box\":{\"min\":[1.2,-10.4,-0.5],\"max\":[6.4,-6.4,1.8]},\"hero\":true,\"width\":0.7}]},{\"s\":\"problem2\",\"shows\":{\"p\":\"crumble\",\"does\":\"behind the machine, lumps of soil fall from the bare walls\"},\"do\":[{\"p\":\"tbmOutline\",\"v\":\"hide\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"crumble\",\"v\":\"fall\",\"w\":\"crumble\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"tunnel\"],\"type\":\"mid\"}]},{\"s\":\"fix2\",\"shows\":{\"p\":\"tunnel\",\"does\":\"concrete ring segments line the tunnel walls\"},\"do\":[{\"p\":\"crumble\",\"v\":\"hide\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tunnel\",\"v\":\"rings\",\"w\":\"rings\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"tunnel\"],\"type\":\"mid\"}]},{\"s\":\"problem3\",\"shows\":{\"p\":\"jointDrip\",\"does\":\"water drips through a joint between two rings\"},\"do\":[{\"p\":\"jointDrip\",\"v\":\"start\",\"w\":\"squeezes\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"tunnel\"],\"type\":\"close\"}]},{\"s\":\"fix3\",\"shows\":{\"p\":\"seals\",\"does\":\"dark rubber strips appear in every joint and the drip stops\"},\"do\":[{\"p\":\"seals\",\"v\":\"show\",\"w\":\"rubber\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"seals\",\"v\":\"seals\",\"w\":\"seals\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"jointDrip\",\"v\":\"stop\",\"w\":\"shut\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"seals\"],\"type\":\"close\"}]},{\"s\":\"problem4\",\"shows\":{\"p\":\"smoke\",\"does\":\"smoky air builds up inside the closed tunnel\"},\"do\":[{\"p\":\"tunnel\",\"v\":\"spinsBack\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"smoke\",\"v\":\"start\",\"w\":\"smoky\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"tunnel\"],\"type\":\"mid\"}]},{\"s\":\"fix4\",\"shows\":{\"p\":\"tunnel\",\"does\":\"fans appear along the ceiling and spin, the smoke clears and air arrows run through\"},\"do\":[{\"p\":\"tunnel\",\"v\":\"fansOn\",\"w\":\"fans\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tunnel\",\"v\":\"fans\",\"w\":\"fans\",\"o\":0.2,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"smoke\",\"v\":\"stop\",\"w\":\"fresh\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"air\",\"v\":\"show\",\"w\":\"air\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"tunnel\"],\"type\":\"mid\"}]},{\"s\":\"problem5\",\"shows\":{\"p\":\"pool\",\"does\":\"rain runs down the shaft into the tunnel and pools at its low point\"},\"do\":[{\"p\":\"air\",\"v\":\"hide\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"rainIn\",\"v\":\"start\",\"w\":\"rain\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"pool\",\"v\":\"flood\",\"w\":\"pools\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"pool\",\"tunnel\"],\"type\":\"mid\"}]},{\"s\":\"fix5\",\"shows\":{\"p\":\"pumpFlow\",\"does\":\"a pump starts and water runs up a pipe toward the river, the pool drains\"},\"do\":[{\"p\":\"pump\",\"v\":\"show\",\"w\":\"pumps\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"pumpPipe\",\"v\":\"grow\",\"w\":\"lift\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"pumpFlow\",\"v\":\"show\",\"w\":\"back\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"pool\",\"v\":\"drain\",\"w\":\"river\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"rainIn\",\"v\":\"stop\",\"w\":\"river\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"boat\",\"v\":\"ride\",\"w\":\"river\",\"o\":0,\"d\":0,\"amp\":0.4,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"pump\",\"pumpPipe\",\"boat\"],\"width\":0.9}]},{\"s\":\"finish\",\"shows\":{\"p\":\"tunnel\",\"does\":\"a road appears along the tunnel floor and lamps light up along the ceiling while the boat sails over\"},\"do\":[{\"p\":\"pumpFlow\",\"v\":\"hide\",\"w\":\"Pave\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tunnel\",\"v\":\"road\",\"w\":\"road\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tunnel\",\"v\":\"lights\",\"w\":\"light\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"boat\",\"v\":\"ride\",\"w\":\"river\",\"o\":0,\"d\":0,\"amp\":0.6,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"tunnel\",\"boat\"],\"width\":0.9}]},{\"s\":\"congrats\",\"shows\":{\"p\":\"tunnel\",\"does\":\"the lit tunnel runs under the river\"},\"do\":[],\"shots\":[{\"focus\":\"home\"}]}],\"audio\":{\"cards\":[],\"sfx\":[{\"lib\":\"dirt\",\"at\":{\"s\":\"hook\",\"w\":\"dig\",\"o\":0},\"d\":1.4},{\"lib\":\"water_rush\",\"at\":{\"s\":\"problem\",\"w\":\"floods\",\"o\":0},\"d\":1.4},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"fix1\",\"w\":\"spinning\",\"o\":0},\"d\":1.4},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"fix4\",\"w\":\"fans\",\"o\":0},\"d\":1.2}],\"chimes\":[{\"s\":\"name\",\"w\":\"\",\"o\":0},{\"s\":\"congrats\",\"w\":\"\",\"o\":0}]}}"
  }
 }

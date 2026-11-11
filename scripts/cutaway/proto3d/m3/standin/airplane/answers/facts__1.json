@@ -1,46 +1,70 @@
 {
  "hash": "*",
- "by": "stand-in planner (replan 2026-11-09)",
+ "by": "stand-in planner (agent), 2026-11-11",
  "searches": 4,
  "data": {
   "checks": [
    {
     "index": 0,
     "verdict": "keep",
-    "claim": "Older Cessna 172s, such as the 172R, have a maximum takeoff weight of about 2,450 lb (1,111 kg); newer 172S models are certified to 2,550 lb (1,157 kg).",
-    "why": "The FAA data sheet summary lists 2,450 lb for the 172R, and the 1,111 kg conversion is correct. The 172S/SP is higher at 2,550 lb (1,157 kg), and earlier models are lower. So the figure is not true for every 172 and needs the model qualifier.",
+    "claim": "A wing's curved shape, called an airfoil, turns the passing air so the wing is pushed up.",
+    "why": "Pilot Institute and Smithsonian: the airfoil's shape and angle turn the air down and make lower pressure on top; the reaction pushes the wing up.",
     "sources": [
      {
-      "url": "https://studentpilot.com/learn-to-fly/training-aircraft/cessna-172/",
-      "title": "Cessna 172 Specs: Skyhawk Cruise Speed, Fuel and Models"
+      "url": "https://pilotinstitute.com/what-is-an-airfoil/",
+      "title": "What Is an Airfoil? How Lift is Generated - Pilot Institute"
      },
      {
-      "url": "https://www.globalair.com/aircraft-specifications/cessna/cessna-172-sp-specifications/605",
-      "title": "CESSNA 172 SP Specifications, Performance, and Range"
-     },
-     {
-      "url": "https://www.thrustflight.com/cessna-172/",
-      "title": "The Cessna 172 Skyhawk - Thrust Flight"
-     },
-     {
-      "url": "https://airshow.fandom.com/wiki/Cessna_172",
-      "title": "Cessna 172"
+      "url": "https://howthingsfly.si.edu/ask-an-explainer/how-does-airfoil-lift",
+      "title": "How does an airfoil lift - Smithsonian How Things Fly"
      }
     ]
    },
    {
     "index": 1,
     "verdict": "keep",
-    "claim": "A Cessna 172 rotates at about 55 knots indicated airspeed, roughly 100 km/h.",
-    "why": "Flying magazine, citing the POH, and the Purdue 172SP data sheet both give 55 KIAS as the rotation speed. 55 kt is about 102 km/h. It is the speed at which the pilot raises the nose, not a groundspeed, so it is worded as rotation at indicated airspeed.",
+    "claim": "Ailerons roll an airplane, the elevator pitches its nose up and down, and the rudder swings the nose left and right.",
+    "why": "NASA and Wikipedia: ailerons control roll, elevators pitch, the rudder yaw; the rudder also counters the adverse yaw of a roll.",
     "sources": [
      {
-      "url": "https://www.flyingmag.com/how-fast-do-airplanes-take-off/",
-      "title": "How Fast Do Airplanes Take Off?"
+      "url": "https://en.wikipedia.org/wiki/Flight_control_surfaces",
+      "title": "Flight control surfaces - Wikipedia"
      },
      {
-      "url": "https://www.purdueaviationllc.com/storage/app/media/Data%20Sheets/C172SP%20Data%20Sheet.pdf",
-      "title": "Data Sheet- Cessna 172SP Weights Aircraft Number Empty Weight Empty Moment"
+      "url": "https://www.nasa.gov/wp-content/uploads/2023/06/axes-control-surfaces-k-4.pdf",
+      "title": "Axes and control surfaces - NASA"
+     }
+    ]
+   },
+   {
+    "index": 2,
+    "verdict": "keep",
+    "claim": "Many airplanes carry their fuel in tanks inside the wings.",
+    "why": "Wikipedia: the most common method is integral tanks inside the wings (wet wings).",
+    "sources": [
+     {
+      "url": "https://en.wikipedia.org/wiki/Aircraft_fuel_tank",
+      "title": "Aircraft fuel tank - Wikipedia"
+     },
+     {
+      "url": "https://aerocorner.com/blog/airplanes-fuel-wet-wings/",
+      "title": "Why Airplanes Store Fuel in the Wings - AeroCorner"
+     }
+    ]
+   },
+   {
+    "index": 3,
+    "verdict": "keep",
+    "claim": "Flaps let an airplane fly more slowly for landing.",
+    "why": "Extending flaps lowers the stall speed, so the plane approaches and touches down slower, with a shorter roll.",
+    "sources": [
+     {
+      "url": "https://en.wikipedia.org/wiki/Flap_(aeronautics)",
+      "title": "Flap (aeronautics) - Wikipedia"
+     },
+     {
+      "url": "https://www.boldmethod.com/blog/lists/2018/05/5-aerodynamic-facts-you-should-know-about-flaps/",
+      "title": "5 aerodynamic facts about flaps - Boldmethod"
      }
     ]
    }

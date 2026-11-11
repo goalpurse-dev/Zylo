@@ -1,0 +1,357 @@
+{
+ "hash": "*",
+ "by": "stand-in planner (agent), 2026-11-11",
+ "searches": 0,
+ "data": {
+  "why": "A street in section: the curb inlet on the left, the pipe sloping right under the road to a river channel at the right end of the cut, which is there from the first frame. The camera opens close on the curb, follows the water and the tennis ball down the pipe to the river, and ends on the whole street.",
+  "story": {
+   "title": "How a Storm Drain Works",
+   "hero": "a catch basin",
+   "parts": [
+    "hole",
+    "pipe",
+    "grate",
+    "catch basin",
+    "main",
+    "detention tank",
+    "rocks",
+    "flap gate",
+    "pump",
+    "generator",
+    "manholes"
+   ],
+   "flow": [
+    "street",
+    "grate",
+    "basin",
+    "main",
+    "tank",
+    "outlet",
+    "river"
+   ],
+   "recurring": {
+    "p": "token",
+    "what": "a tennis ball"
+   },
+   "ideas": [
+    {
+     "role": "hook",
+     "idea": "the hole is dug by the curb"
+    },
+    {
+     "role": "problem",
+     "idea": "the street floods into a pond"
+    },
+    {
+     "role": "fix1",
+     "idea": "a pipe grows from the hole down to the river"
+    },
+    {
+     "role": "problem2",
+     "idea": "leaves and the ball wash down and jam the pipe"
+    },
+    {
+     "role": "fix2",
+     "idea": "a grate covers the hole and catches leaves"
+    },
+    {
+     "role": "problem3",
+     "idea": "sand slips through the grate and piles in the pipe"
+    },
+    {
+     "role": "fix3",
+     "idea": "a chamber under the grate fills and the sand sinks to its floor"
+    },
+    {
+     "role": "name",
+     "idea": "the catch basin glows"
+    },
+    {
+     "role": "problem4",
+     "idea": "water shoots back up out of the grate and floods the street"
+    },
+    {
+     "role": "fix4",
+     "idea": "a big main grows under the street and the flood drains"
+    },
+    {
+     "role": "problem5",
+     "idea": "the river turns brown as the ball shoots out"
+    },
+    {
+     "role": "fix5",
+     "idea": "a tank fills and holds the surge"
+    },
+    {
+     "role": "problem6",
+     "idea": "the outflow cuts into the bank and it collapses"
+    },
+    {
+     "role": "fix6",
+     "idea": "rocks pile up around the outlet"
+    },
+    {
+     "role": "problem7",
+     "idea": "the river rises over the outlet and water runs back up to the grate"
+    },
+    {
+     "role": "fix7",
+     "idea": "the flap swings open then shut"
+    },
+    {
+     "role": "problem8",
+     "idea": "the street floods again"
+    },
+    {
+     "role": "fix8",
+     "idea": "the pump spins and lifts water over into the river"
+    },
+    {
+     "role": "problem9",
+     "idea": "the pump stops"
+    },
+    {
+     "role": "fix9",
+     "idea": "the generator appears and the pump runs again"
+    },
+    {
+     "role": "problem10",
+     "idea": "grit piles up in the tank"
+    },
+    {
+     "role": "fix10",
+     "idea": "shafts rise to the street with iron covers"
+    },
+    {
+     "role": "name3",
+     "idea": "the manhole covers glow"
+    },
+    {
+     "role": "finish",
+     "idea": "the street drains through the grate and the ball floats out to the river"
+    },
+    {
+     "role": "congrats",
+     "idea": "the finished drain rests under the street, the flap open"
+    }
+   ],
+   "chain": [
+    {
+     "problem": "problem",
+     "causedBy": "hook",
+     "shows": "the hole fills and the street floods",
+     "stakes": "the street",
+     "size": 2,
+     "at": "street",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem2",
+     "causedBy": "fix1",
+     "shows": "leaves and the tennis ball jam the open pipe",
+     "stakes": "the pipe",
+     "size": 3,
+     "at": "grate",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem3",
+     "causedBy": "fix2",
+     "shows": "fine sand slips through the grate into the pipe",
+     "stakes": "the pipe",
+     "size": 3,
+     "at": "basin",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem4",
+     "causedBy": "fix3",
+     "shows": "water shoots back out of the grate",
+     "stakes": "the whole street",
+     "size": 4,
+     "at": "main",
+     "scale": "street"
+    },
+    {
+     "problem": "problem5",
+     "causedBy": "fix4",
+     "shows": "the main dumps the storm into the river, which turns brown",
+     "stakes": "the river",
+     "size": 5,
+     "at": "tank",
+     "scale": "river"
+    },
+    {
+     "problem": "problem6",
+     "causedBy": "fix5",
+     "shows": "the outflow cuts the riverbank and it collapses",
+     "stakes": "the riverbank",
+     "size": 6,
+     "at": "outlet",
+     "scale": "river"
+    },
+    {
+     "problem": "problem7",
+     "causedBy": "fix6",
+     "shows": "the river rises and runs back up the pipe",
+     "stakes": "the street",
+     "size": 7,
+     "at": "outlet",
+     "scale": "river"
+    },
+    {
+     "problem": "problem8",
+     "causedBy": "fix7",
+     "shows": "the shut flap traps the rain and the street floods",
+     "stakes": "the street",
+     "size": 8,
+     "at": "outlet",
+     "scale": "river"
+    },
+    {
+     "problem": "problem9",
+     "causedBy": "fix8",
+     "shows": "the power fails and the pump stops",
+     "stakes": "the street",
+     "size": 8,
+     "at": "outlet",
+     "scale": "town"
+    },
+    {
+     "problem": "problem10",
+     "causedBy": "fix9",
+     "shows": "grit piles up in the tank and basin",
+     "stakes": "the drain",
+     "size": 9,
+     "at": "tank",
+     "scale": "town"
+    }
+   ],
+   "surprises": [
+    {
+     "claim": "A catch basin has a sump below its outlet pipe where sand and grit settle out.",
+     "role": "fix3",
+     "search": "catch basin sump below outlet pipe sediment settles"
+    },
+    {
+     "claim": "A detention tank holds storm water and releases it slowly to the river.",
+     "role": "fix5",
+     "search": "stormwater detention tank holds runoff releases slowly"
+    },
+    {
+     "claim": "A flap gate opens when water flows out and is forced shut when the river is higher.",
+     "role": "fix7",
+     "search": "flap gate storm drain outfall opens outflow closes river high"
+    },
+    {
+     "claim": "Storm water pump stations lift water over a closed flap gate when the river is high.",
+     "role": "fix8",
+     "search": "stormwater pump station flap gate closed high river pumps"
+    }
+   ]
+  },
+  "sentences": [
+   {
+    "role": "hook",
+    "text": "If you dig a hole beside the curb, you have a drain."
+   },
+   {
+    "role": "problem",
+    "text": "But the hole fills, and the street becomes a pond."
+   },
+   {
+    "role": "fix1",
+    "text": "So you run a pipe to the river."
+   },
+   {
+    "role": "problem2",
+    "text": "But leaves, sand and a tennis ball clog the pipe."
+   },
+   {
+    "role": "fix2",
+    "text": "So you cover the hole with a grate."
+   },
+   {
+    "role": "problem3",
+    "text": "But fine sand slips through the grate into the pipe."
+   },
+   {
+    "role": "fix3",
+    "text": "So a chamber below lets the sand sink."
+   },
+   {
+    "role": "name",
+    "text": "This is a catch basin."
+   },
+   {
+    "role": "problem4",
+    "text": "But every basin on the street feeds one small pipe."
+   },
+   {
+    "role": "fix4",
+    "text": "So you connect them to a much larger main."
+   },
+   {
+    "role": "problem5",
+    "text": "But the main dumps the whole storm into the river."
+   },
+   {
+    "role": "fix5",
+    "text": "So you add a tank that holds the surge."
+   },
+   {
+    "role": "problem6",
+    "text": "But the tank's outflow washes away the riverbank."
+   },
+   {
+    "role": "fix6",
+    "text": "So you pile heavy rocks around the outlet."
+   },
+   {
+    "role": "problem7",
+    "text": "But the river rises over the rocks and flows back."
+   },
+   {
+    "role": "fix7",
+    "text": "So a flap lets water push it open; the river forces it shut."
+   },
+   {
+    "role": "problem8",
+    "text": "But with the flap shut, the rain has nowhere to go."
+   },
+   {
+    "role": "fix8",
+    "text": "So you add a pump that lifts the water over."
+   },
+   {
+    "role": "problem9",
+    "text": "But a storm cuts the power, and the pump stops."
+   },
+   {
+    "role": "fix9",
+    "text": "So a backup generator keeps the pump running."
+   },
+   {
+    "role": "problem10",
+    "text": "But trapped grit piles up while the pump runs."
+   },
+   {
+    "role": "fix10",
+    "text": "So you add shafts with heavy iron covers."
+   },
+   {
+    "role": "name3",
+    "text": "Those are the manholes you drive over."
+   },
+   {
+    "role": "finish",
+    "text": "Now rain runs past the curb, through the grate, to the river."
+   },
+   {
+    "role": "congrats",
+    "text": "Congratulations, you have built a storm drain."
+   }
+  ],
+  "sceneJson": "{\"why\":\"A street in section: the curb inlet on the left, the pipe sloping right under the road to a river channel at the right end of the cut, which is there from the first frame.\",\"world\":{\"cut\":[-8,14,-3,6],\"house\":[40,0,-40],\"porch\":false,\"trees\":[],\"road\":false,\"rocksAvoid\":[[-6,14,-6.2,0.5]],\"backdrop\":{\"type\":\"street\",\"lampX\":16,\"benchX\":-12,\"road\":{\"side\":-1}},\"worker\":false,\"moreTrees\":false},\"parts\":[{\"id\":\"dig\",\"kind\":\"dig\",\"params\":{\"clumps\":150,\"margin\":0.6,\"endY\":1,\"arc\":4.2,\"uvFlip\":true,\"haul\":true,\"mound\":{\"x\":-12,\"z\":-5,\"rx\":1.8,\"rz\":1.4,\"flat\":0.5,\"base\":0.05,\"gain\":2.2,\"sx\":1.15,\"sy\":1,\"sz\":1}}},{\"id\":\"sideL\",\"kind\":\"wipe\",\"params\":{\"box\":{\"x0\":-8,\"x1\":-6.2,\"y0\":-0.6,\"y1\":0.12,\"z0\":-3,\"z1\":0},\"mat\":\"concrete\",\"axis\":\"x\",\"r\":0.03,\"uvScale\":1}},{\"id\":\"curbL\",\"kind\":\"wipe\",\"params\":{\"box\":{\"x0\":-6.2,\"x1\":-5.2,\"y0\":-0.6,\"y1\":0.3,\"z0\":-3,\"z1\":0},\"mat\":\"concrete\",\"axis\":\"y\",\"r\":0.03,\"uvScale\":1}},{\"id\":\"curbR\",\"kind\":\"wipe\",\"params\":{\"box\":{\"x0\":-3.6,\"x1\":-2.8,\"y0\":-0.6,\"y1\":0.3,\"z0\":-3,\"z1\":0},\"mat\":\"concrete\",\"axis\":\"y\",\"r\":0.03,\"uvScale\":1}},{\"id\":\"roadDeck\",\"kind\":\"wipe\",\"params\":{\"box\":{\"x0\":-2.8,\"x1\":9.6,\"y0\":-0.6,\"y1\":0.12,\"z0\":-3,\"z1\":0},\"mat\":\"chassis\",\"axis\":\"x\",\"r\":0.03,\"uvScale\":3}},{\"id\":\"flood\",\"kind\":\"water\",\"params\":{\"box\":{\"x0\":-2.8,\"x1\":3.5,\"y0\":0.12,\"y1\":0.5,\"z0\":-3,\"z1\":0},\"mat\":\"water\"}},{\"id\":\"drainPipe\",\"kind\":\"pipeRun\",\"params\":{\"path\":[[-4.4,-0.6,-0.6],[-4.4,-1.6,-0.6],[9.9,-3,-0.6]],\"r\":0.35,\"radial\":24,\"jointR\":0.4,\"mat\":\"concrete\"}},{\"id\":\"flow1\",\"kind\":\"pipeRunFlow\",\"params\":{\"pipe\":\"drainPipe\",\"count\":18,\"size\":0.16,\"speed\":3,\"dz\":0.36,\"mat\":\"water\"}},{\"id\":\"token\",\"kind\":\"token\",\"params\":{\"type\":\"tennisBall\",\"pos\":[-2.4,0.12,-0.6],\"path\":[[-4.4,0.3,-0.3],[-4.4,-1.6,-0.05],[1,-2,-0.05],[9.8,-3,-0.05],[11.5,-4.8,-0.3],[12.6,-4.8,-0.5]],\"size\":0.35}},{\"id\":\"leaves\",\"kind\":\"drops\",\"params\":{\"x0\":-4.9,\"x1\":-3.9,\"count\":18,\"fromY\":3,\"landY\":-1.5,\"z\":-0.3,\"mat\":\"leaf\"}},{\"id\":\"grate\",\"kind\":\"panels\",\"params\":{\"panels\":[{\"ch\":\"grate\",\"mat\":\"metal\",\"size\":[0.1,0.1,2.9],\"anchor\":[0,0,0],\"pos\":[-5,0.2,-1.5],\"axis\":null,\"vis\":0,\"r\":0.03},{\"ch\":\"grate\",\"mat\":\"metal\",\"size\":[0.1,0.1,2.9],\"anchor\":[0,0,0],\"pos\":[-4.7,0.2,-1.5],\"axis\":null,\"vis\":0,\"r\":0.03},{\"ch\":\"grate\",\"mat\":\"metal\",\"size\":[0.1,0.1,2.9],\"anchor\":[0,0,0],\"pos\":[-4.4,0.2,-1.5],\"axis\":null,\"vis\":0,\"r\":0.03},{\"ch\":\"grate\",\"mat\":\"metal\",\"size\":[0.1,0.1,2.9],\"anchor\":[0,0,0],\"pos\":[-4.1,0.2,-1.5],\"axis\":null,\"vis\":0,\"r\":0.03},{\"ch\":\"grate\",\"mat\":\"metal\",\"size\":[0.1,0.1,2.9],\"anchor\":[0,0,0],\"pos\":[-3.8,0.2,-1.5],\"axis\":null,\"vis\":0,\"r\":0.03},{\"ch\":\"grate\",\"mat\":\"metal\",\"size\":[1.5,0.12,0.12],\"anchor\":[0,0,0],\"pos\":[-4.4,0.2,-0.08],\"axis\":null,\"vis\":0,\"r\":0.03},{\"ch\":\"grate\",\"mat\":\"metal\",\"size\":[1.5,0.12,0.12],\"anchor\":[0,0,0],\"pos\":[-4.4,0.2,-2.92],\"axis\":null,\"vis\":0,\"r\":0.03}]}},{\"id\":\"leaves2\",\"kind\":\"drops\",\"params\":{\"x0\":-5,\"x1\":-3.8,\"count\":22,\"fromY\":3.5,\"landY\":0.28,\"z\":-1.2,\"mat\":\"leaf\"}},{\"id\":\"sand\",\"kind\":\"drops\",\"params\":{\"x0\":-3.6,\"x1\":3,\"count\":26,\"fromY\":-0.9,\"landY\":-2.25,\"z\":-0.15,\"mat\":\"mud\",\"size\":0.12}},{\"id\":\"basin\",\"kind\":\"settle\",\"params\":{\"box\":{\"x0\":-5.4,\"x1\":-3.4,\"y0\":-3.6,\"y1\":-0.6,\"z0\":-2.2,\"z1\":0},\"lid\":false,\"murky\":true,\"sandColor\":\"#8a7350\"}},{\"id\":\"outline\",\"kind\":\"outline\",\"params\":{\"of\":\"basin\",\"opts\":{\"r\":0.09,\"closed\":true}}},{\"id\":\"spray\",\"kind\":\"flow\",\"params\":{\"path\":[[-4.4,0.25,-0.8],[-4.4,1.9,-0.8],[-3.2,0.5,-0.9]],\"look\":\"spray\",\"size\":0.14,\"speed\":2,\"count\":18}},{\"id\":\"flood2\",\"kind\":\"water\",\"params\":{\"box\":{\"x0\":-2.8,\"x1\":3.5,\"y0\":0.12,\"y1\":0.55,\"z0\":-3,\"z1\":0},\"mat\":\"water\"}},{\"id\":\"main\",\"kind\":\"pipeRun\",\"params\":{\"path\":[[-3.4,-2.3,-1.6],[1.9,-3,-1.6],[1.9,-3.6,-1.6]],\"r\":0.6,\"radial\":24,\"jointR\":0.66,\"mat\":\"concrete\"}},{\"id\":\"flow2\",\"kind\":\"pipeRunFlow\",\"params\":{\"pipe\":\"main\",\"count\":16,\"size\":0.2,\"speed\":3,\"dz\":0.62,\"mat\":\"water\"}},{\"id\":\"river\",\"kind\":\"water\",\"base\":{\"flood\":1},\"params\":{\"box\":{\"x0\":10,\"x1\":14,\"y0\":-6,\"y1\":-4.8,\"z0\":-3,\"z1\":0},\"mat\":\"water\",\"dirtyColor\":\"#6b5a33\"}},{\"id\":\"riverHigh\",\"kind\":\"water\",\"params\":{\"box\":{\"x0\":10.55,\"x1\":14,\"y0\":-6,\"y1\":-3.2,\"z0\":-3,\"z1\":0},\"mat\":\"water\"}},{\"id\":\"tank\",\"kind\":\"settle\",\"params\":{\"box\":{\"x0\":1.6,\"x1\":7.6,\"y0\":-5.8,\"y1\":-3.6,\"z0\":-2.6,\"z1\":0},\"lid\":true,\"murky\":false}},{\"id\":\"outlet\",\"kind\":\"pipeRun\",\"params\":{\"path\":[[7.6,-4.2,-1],[10.3,-4.2,-1]],\"r\":0.4,\"radial\":24,\"jointR\":0.44,\"mat\":\"concrete\"}},{\"id\":\"outflow\",\"kind\":\"flow\",\"params\":{\"path\":[[7.8,-4.2,-0.5],[10.3,-4.2,-0.5],[10.9,-4.9,-0.5]],\"look\":\"water\",\"size\":0.14,\"speed\":1.6,\"count\":14}},{\"id\":\"bankFall\",\"kind\":\"fx\",\"params\":{\"type\":\"collapse\",\"at\":[10.1,-4.6,0.1],\"size\":0.7,\"color\":\"#6b4a2e\"}},{\"id\":\"rocks\",\"kind\":\"prop\",\"params\":{\"type\":\"rocks\",\"pos\":[10.6,-4.8,-1.2],\"size\":[1.2,2.4]}},{\"id\":\"backflow\",\"kind\":\"flow\",\"params\":{\"path\":[[12,-2.6,-0.2],[9.9,-3,-0.2],[-4.4,-1.6,-0.2],[-4.4,0.2,-0.2]],\"look\":\"water\",\"size\":0.16,\"speed\":2.2,\"count\":26}},{\"id\":\"flood3\",\"kind\":\"water\",\"params\":{\"box\":{\"x0\":3.5,\"x1\":9.6,\"y0\":0.12,\"y1\":0.55,\"z0\":-3,\"z1\":0},\"mat\":\"water\"}},{\"id\":\"grit\",\"kind\":\"drops\",\"params\":{\"x0\":2,\"x1\":7.2,\"count\":30,\"fromY\":-3.9,\"landY\":-5.6,\"z\":-0.5,\"mat\":\"mud\",\"size\":0.14}},{\"id\":\"shaft1\",\"kind\":\"riser\",\"params\":{\"x\":4.6,\"z\":-2,\"y0\":-3.6,\"y1\":0.12,\"r\":0.45,\"radial\":20,\"mat\":\"concrete\"}},{\"id\":\"shaft2\",\"kind\":\"riser\",\"params\":{\"x\":-0.6,\"z\":-2.2,\"y0\":-2.6,\"y1\":0.12,\"r\":0.45,\"radial\":20,\"mat\":\"concrete\"}},{\"id\":\"cover1\",\"kind\":\"boxPop\",\"params\":{\"size\":[1.2,0.08,1.2],\"pos\":[4.6,0.16,-2],\"r\":0.05,\"mat\":\"metal\"}},{\"id\":\"cover2\",\"kind\":\"boxPop\",\"params\":{\"size\":[1.2,0.08,1.2],\"pos\":[-0.6,0.16,-2.2],\"r\":0.05,\"mat\":\"metal\"}},{\"id\":\"flap\",\"kind\":\"rig\",\"params\":{\"name\":\"flap gate\",\"synonyms\":[\"tide gate\",\"backflow flap\"],\"pos\":[10.36,-4.75,-1],\"nodes\":[{\"id\":\"frame\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.14,1.1,1.1],\"at\":[0,0.55,0],\"look\":\"metal\",\"color\":\"#3a4046\"}]},{\"id\":\"lid\",\"parent\":\"frame\",\"at\":[0.1,1.1,0],\"shapes\":[{\"shape\":\"hinge\",\"r\":0.06,\"h\":0.9,\"axis\":\"z\",\"at\":[0,0,0],\"look\":\"metal\",\"color\":\"#2b2f33\"},{\"shape\":\"cylinder\",\"r\":0.5,\"h\":0.08,\"axis\":\"x\",\"at\":[0.02,-0.55,0],\"look\":\"metal\",\"color\":\"#2b2f33\"}],\"moves\":[{\"name\":\"open\",\"type\":\"swing\",\"axis\":\"z\",\"angle\":55}]}]}},{\"id\":\"pump\",\"kind\":\"rig\",\"params\":{\"name\":\"storm pump\",\"synonyms\":[\"pump station\"],\"pos\":[8.9,-6,-1.8],\"nodes\":[{\"id\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.9,1.2,0.9],\"at\":[0,0.6,0],\"look\":\"metal\",\"color\":\"#3d6fb0\"},{\"shape\":\"tube\",\"path\":[[0,1.2,0],[0,4.4,0],[2.2,4.4,0],[2.4,4,0]],\"r\":0.16,\"look\":\"metal\",\"color\":\"#9aa3ab\"}],\"moves\":[{\"name\":\"lift\",\"type\":\"flow\",\"path\":[[0,1.2,0.25],[0,4.4,0.25],[2.2,4.4,0.25],[2.4,3.6,0.25]],\"color\":\"#3ad6ff\",\"look\":\"stream\",\"speed\":2,\"size\":0.14}]},{\"id\":\"impeller\",\"parent\":\"body\",\"at\":[0,0.6,0.47],\"shapes\":[{\"shape\":\"fan\",\"r\":0.35,\"blades\":5,\"w\":0.08,\"axis\":\"z\",\"at\":[0,0,0],\"look\":\"metal\",\"color\":\"#d8dde2\"}],\"moves\":[{\"name\":\"spin\",\"type\":\"spin\",\"axis\":\"z\",\"turns\":2}]},{\"id\":\"gen\",\"parent\":\"body\",\"at\":[-0.95,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[1,0.9,0.8],\"at\":[0,0.45,0],\"look\":\"paint\",\"color\":\"#e0a020\"},{\"shape\":\"light\",\"r\":0.08,\"at\":[0,0.95,0.3],\"color\":\"#3aff6a\"}],\"moves\":[{\"name\":\"backup\",\"type\":\"appear\"}]}]}},{\"id\":\"outline3\",\"kind\":\"outline\",\"params\":{\"of\":\"cover1\",\"opts\":{\"r\":0.06,\"closed\":true}}},{\"id\":\"rain\",\"kind\":\"rain\",\"params\":{\"x0\":-10,\"x1\":16,\"z0\":-6,\"z1\":3,\"yTop\":12,\"yBot\":0.1,\"count\":900,\"width\":0.04,\"opacity\":0.5}},{\"id\":\"light\",\"kind\":\"light\",\"params\":{\"storm\":true}},{\"id\":\"sign\",\"kind\":\"sign\",\"params\":{\"at\":[5.5,0.14,-12],\"rotY\":0.2,\"scale\":1.3}}],\"beats\":[{\"s\":\"hook\",\"shows\":{\"p\":\"dig\",\"does\":\"the hole is dug by the curb\"},\"do\":[{\"p\":\"dig\",\"v\":\"dig\",\"w\":\"dig\",\"o\":0,\"d\":1.8,\"amp\":1,\"ch\":\"\"},{\"p\":\"sideL\",\"v\":\"grow\",\"w\":\"hole\",\"o\":0.3,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"curbL\",\"curbR\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem\",\"shows\":{\"p\":\"flood\",\"does\":\"the street floods into a pond\"},\"do\":[{\"p\":\"token\",\"v\":\"sit\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"rain\",\"v\":\"start\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"light\",\"v\":\"storm\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"flood\",\"v\":\"trickle\",\"w\":\"fills\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"flood\",\"v\":\"flood\",\"w\":\"pond\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"token\",\"v\":\"ride\",\"w\":\"pond\",\"o\":0,\"d\":2,\"amp\":0.093,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"flood\",\"curbR\"],\"view\":\"high\",\"width\":0.8,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix1\",\"shows\":{\"p\":\"drainPipe\",\"does\":\"a pipe grows from the hole down to the river\"},\"do\":[{\"p\":\"drainPipe\",\"v\":\"grow\",\"w\":\"pipe\",\"o\":0,\"d\":2.2,\"amp\":1,\"ch\":\"\"},{\"p\":\"flow1\",\"v\":\"show\",\"w\":\"river\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"flood\",\"v\":\"drain\",\"w\":\"river\",\"o\":0.3,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"drainPipe\"],\"view\":\"low\",\"width\":0.95,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem2\",\"shows\":{\"p\":\"leaves\",\"does\":\"leaves and the ball wash down and jam the pipe\"},\"do\":[{\"p\":\"leaves\",\"v\":\"fall\",\"w\":\"leaves\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"token\",\"v\":\"ride\",\"w\":\"ball\",\"o\":0,\"d\":2.4,\"amp\":0.336,\"ch\":\"\"},{\"p\":\"flow1\",\"v\":\"hide\",\"w\":\"clog\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-7,-3,-2.5,2,1.2,0.6]}]},{\"s\":\"fix2\",\"shows\":{\"p\":\"grate\",\"does\":\"a grate covers the hole and catches leaves\"},\"do\":[{\"p\":\"grate\",\"v\":\"pop\",\"w\":\"grate\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"grate\"},{\"p\":\"leaves2\",\"v\":\"fall\",\"w\":\"grate\",\"o\":0.3,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"flow1\",\"v\":\"show\",\"w\":\"grate\",\"o\":0.5,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"grate\"],\"view\":\"home\",\"width\":0.45,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem3\",\"shows\":{\"p\":\"sand\",\"does\":\"sand slips through the grate and piles in the pipe\"},\"do\":[{\"p\":\"sand\",\"v\":\"fall\",\"w\":\"sand\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-6.5,-3,-2.5,4,0.8,0.6]}]},{\"s\":\"fix3\",\"shows\":{\"p\":\"basin\",\"does\":\"a chamber under the grate fills and the sand sinks to its floor\"},\"do\":[{\"p\":\"basin\",\"v\":\"show\",\"w\":\"chamber\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"basin\",\"v\":\"fill\",\"w\":\"chamber\",\"o\":0.4,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"sand\",\"v\":\"hide\",\"w\":\"chamber\",\"o\":0.4,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"basin\",\"v\":\"sink\",\"w\":\"sink\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"basin\"],\"view\":\"home\",\"width\":0.6,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"name\",\"shows\":{\"p\":\"outline\",\"does\":\"the catch basin glows\"},\"do\":[{\"p\":\"outline\",\"v\":\"show\",\"w\":\"catch\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"basin\",\"grate\"],\"view\":\"home\",\"width\":0.6,\"type\":\"\",\"hero\":true,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem4\",\"shows\":{\"p\":\"flood2\",\"does\":\"water shoots back up out of the grate and floods the street\"},\"do\":[{\"p\":\"outline\",\"v\":\"hide\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"spray\",\"v\":\"start\",\"w\":\"feeds\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"flood2\",\"v\":\"flood\",\"w\":\"pipe\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"grate\",\"flood2\"],\"view\":\"high\",\"width\":0.9,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix4\",\"shows\":{\"p\":\"main\",\"does\":\"a big main grows under the street and the flood drains\"},\"do\":[{\"p\":\"main\",\"v\":\"grow\",\"w\":\"main\",\"o\":0,\"d\":2,\"amp\":1,\"ch\":\"\"},{\"p\":\"spray\",\"v\":\"stop\",\"w\":\"main\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"flood2\",\"v\":\"drain\",\"w\":\"main\",\"o\":0.8,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"flow2\",\"v\":\"show\",\"w\":\"main\",\"o\":1,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"main\"],\"view\":\"low\",\"width\":1,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem5\",\"shows\":{\"p\":\"river\",\"does\":\"the river turns brown as the ball shoots out\"},\"do\":[{\"p\":\"river\",\"v\":\"dirty\",\"w\":\"dumps\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"token\",\"v\":\"ride\",\"w\":\"storm\",\"o\":0,\"d\":2.6,\"amp\":0.406,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[3,-6.3,-3,14.5,0.6,0.6]}]},{\"s\":\"fix5\",\"shows\":{\"p\":\"tank\",\"does\":\"a tank fills and holds the surge\"},\"do\":[{\"p\":\"tank\",\"v\":\"show\",\"w\":\"tank\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tank\",\"v\":\"fill\",\"w\":\"holds\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"outlet\",\"v\":\"grow\",\"w\":\"tank\",\"o\":0.4,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"river\",\"v\":\"clean\",\"w\":\"surge\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"tank\"],\"view\":\"home\",\"width\":0.8,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem6\",\"shows\":{\"p\":\"bankFall\",\"does\":\"the outflow cuts into the bank and it collapses\"},\"do\":[{\"p\":\"outflow\",\"v\":\"start\",\"w\":\"outflow\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bankFall\",\"v\":\"go\",\"w\":\"washes\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[6.5,-6.3,-3,14.5,-1.5,0.6]}]},{\"s\":\"fix6\",\"shows\":{\"p\":\"rocks\",\"does\":\"rocks pile up around the outlet\"},\"do\":[{\"p\":\"rocks\",\"v\":\"show\",\"w\":\"rocks\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"rocks\",\"outlet\"],\"view\":\"home\",\"width\":0.7,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem7\",\"shows\":{\"p\":\"riverHigh\",\"does\":\"the river rises over the outlet and water runs back up to the grate\"},\"do\":[{\"p\":\"outflow\",\"v\":\"stop\",\"w\":\"rises\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"riverHigh\",\"v\":\"flood\",\"w\":\"rises\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"backflow\",\"v\":\"start\",\"w\":\"flows\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"spray\",\"v\":\"start\",\"w\":\"back\",\"o\":0.4,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"riverHigh\",\"outlet\"],\"view\":\"home\",\"width\":0.8,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix7\",\"shows\":{\"p\":\"flap\",\"does\":\"the flap swings open then shut\"},\"do\":[{\"p\":\"flap\",\"v\":\"show\",\"w\":\"flap\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"backflow\",\"v\":\"stop\",\"w\":\"flap\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"spray\",\"v\":\"stop\",\"w\":\"flap\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"flap\",\"v\":\"open\",\"w\":\"open\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"flap\",\"v\":\"openBack\",\"w\":\"shut\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"flap\"],\"view\":\"home\",\"width\":0.6,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem8\",\"shows\":{\"p\":\"flood3\",\"does\":\"the street floods again\"},\"do\":[{\"p\":\"flood3\",\"v\":\"flood\",\"w\":\"nowhere\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"flood3\"],\"view\":\"high\",\"width\":0.8,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix8\",\"shows\":{\"p\":\"pump\",\"does\":\"the pump spins and lifts water over into the river\"},\"do\":[{\"p\":\"pump\",\"v\":\"show\",\"w\":\"pump\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"pump\",\"v\":\"spin\",\"w\":\"lifts\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"pump\",\"v\":\"lift\",\"w\":\"lifts\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"flood3\",\"v\":\"drain\",\"w\":\"over\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"pump\"],\"view\":\"home\",\"width\":0.6,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem9\",\"shows\":{\"p\":\"pump\",\"does\":\"the pump stops\"},\"do\":[{\"p\":\"pump\",\"v\":\"spinBack\",\"w\":\"stops\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"pump\",\"v\":\"liftBack\",\"w\":\"stops\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"flood3\",\"v\":\"flood\",\"w\":\"power\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"pump\"],\"view\":\"home\",\"width\":0.6,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix9\",\"shows\":{\"p\":\"pump\",\"does\":\"the generator appears and the pump runs again\"},\"do\":[{\"p\":\"pump\",\"v\":\"backup\",\"w\":\"generator\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"pump\",\"v\":\"spin\",\"w\":\"pump\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"pump\",\"v\":\"lift\",\"w\":\"pump\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"flood3\",\"v\":\"drain\",\"w\":\"pump\",\"o\":0.3,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"pump\"],\"view\":\"home\",\"width\":0.6,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem10\",\"shows\":{\"p\":\"grit\",\"does\":\"grit piles up in the tank\"},\"do\":[{\"p\":\"grit\",\"v\":\"fall\",\"w\":\"grit\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"tank\"],\"view\":\"home\",\"width\":0.9,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix10\",\"shows\":{\"p\":\"shaft1\",\"does\":\"shafts rise to the street with iron covers\"},\"do\":[{\"p\":\"shaft1\",\"v\":\"grow\",\"w\":\"shafts\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"shaft2\",\"v\":\"grow\",\"w\":\"shafts\",\"o\":0.2,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"cover1\",\"v\":\"show\",\"w\":\"covers\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"cover2\",\"v\":\"show\",\"w\":\"covers\",\"o\":0.2,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"grit\",\"v\":\"hide\",\"w\":\"covers\",\"o\":0.6,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"shaft1\",\"shaft2\"],\"view\":\"home\",\"width\":0.8,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"name3\",\"shows\":{\"p\":\"outline3\",\"does\":\"the manhole covers glow\"},\"do\":[{\"p\":\"outline3\",\"v\":\"show\",\"w\":\"manholes\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"cover1\",\"cover2\"],\"view\":\"home\",\"width\":0.7,\"type\":\"\",\"hero\":true,\"word\":\"\",\"box\":[]}]},{\"s\":\"finish\",\"shows\":{\"p\":\"token\",\"does\":\"the street drains through the grate and the ball floats out to the river\"},\"do\":[{\"p\":\"outline3\",\"v\":\"hide\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"rain\",\"v\":\"stop\",\"w\":\"Now\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"light\",\"v\":\"clear\",\"w\":\"Now\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"riverHigh\",\"v\":\"drain\",\"w\":\"rain\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"token\",\"v\":\"ride\",\"w\":\"river\",\"o\":0,\"d\":2.4,\"amp\":0.165,\"ch\":\"\"},{\"p\":\"flow1\",\"v\":\"hide\",\"w\":\"river\",\"o\":0.8,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"flow2\",\"v\":\"hide\",\"w\":\"river\",\"o\":0.8,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"home\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"congrats\",\"shows\":{\"p\":\"tank\",\"does\":\"the finished drain rests under the street, the flap open\"},\"do\":[{\"p\":\"flap\",\"v\":\"open\",\"w\":\"built\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[]}],\"audio\":{\"cards\":[],\"sfx\":[{\"lib\":\"dirt\",\"at\":{\"s\":\"hook\",\"w\":\"dig\",\"o\":0.3},\"d\":1.4},{\"lib\":\"water_rush\",\"at\":{\"s\":\"fix1\",\"w\":\"river\",\"o\":0},\"d\":1.4},{\"lib\":\"drip\",\"at\":{\"s\":\"problem3\",\"w\":\"sand\",\"o\":0},\"d\":1.2},{\"lib\":\"water_rush\",\"at\":{\"s\":\"problem7\",\"w\":\"rises\",\"o\":0},\"d\":1.4},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"fix8\",\"w\":\"pump\",\"o\":0},\"d\":1.6}],\"chimes\":[{\"s\":\"name\",\"w\":\"\",\"o\":0},{\"s\":\"name3\",\"w\":\"\",\"o\":0},{\"s\":\"congrats\",\"w\":\"\",\"o\":0}],\"rain\":[{\"s\":\"problem\",\"w\":\"fills\",\"o\":0},{\"s\":\"finish\",\"w\":\"Now\",\"o\":0}]}}"
+ }
+}

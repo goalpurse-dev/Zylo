@@ -1,1400 +1,223 @@
 {
  "hash": "*",
- "by": "stand-in planner (replan 2026-11-09)",
+ "by": "stand-in planner (agent), 2026-11-11",
  "searches": 0,
  "data": {
-  "why": "A nuclear power plant on a plain lawn (no house): a cut-open plant hall holding an open-fronted reactor tank with big green fuel rods in blue water and the turbine generator, a cooling tower with a white plume outside, and a pylon carrying live power lines. The camera opens close on the rods in the tank, follows the steam pipe to the turbine, pulls out to the lines and the tower, and ends wide on the hall with the concrete dome over the reactor.",
+  "why": "A nuclear plant hall cut open beside a river with a small boat and the town on the far bank; the story follows the energy from the uranium in the tank to the steam, the turbine, the river water, the cooling tower and the power lines to the town. Each problem is seen on the thing (red-hot rods, boiling water, steam stalling the turbine, steam over the river round the boat, the dark town), and it ends sealing the hook's reactor in its dome as the town lights up.",
   "story": {
    "title": "How a nuclear power plant works",
    "hero": "a nuclear power plant",
    "parts": [
     "uranium fuel rods",
-    "reactor tank",
-    "water",
-    "steam",
     "control rods",
-    "turbine hall",
-    "turbine generator",
-    "power lines",
-    "pylon",
+    "reactor water",
+    "steam pipe",
+    "turbine",
+    "generator",
+    "river water intake",
     "cooling tower",
-    "fuel pellet",
-    "coal",
-    "concrete dome"
+    "power lines",
+    "containment dome"
+   ],
+   "flow": [
+    "reactor",
+    "steam pipe",
+    "turbine",
+    "river",
+    "cooling tower",
+    "power lines",
+    "town"
+   ],
+   "chain": [
+    {
+     "problem": "problem",
+     "causedBy": "hook",
+     "shows": "the uranium rods glow red hot",
+     "stakes": "the reactor itself",
+     "size": 4,
+     "at": "reactor",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem2",
+     "causedBy": "fix1",
+     "shows": "the slowed core still boils the water into steam",
+     "stakes": "the water boils away",
+     "size": 5,
+     "at": "reactor",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem3",
+     "causedBy": "fix2",
+     "shows": "used steam piles up and the turbine stalls",
+     "stakes": "no power comes out",
+     "size": 6,
+     "at": "turbine",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem4",
+     "causedBy": "fix3",
+     "shows": "warm water pours back and steams over the river",
+     "stakes": "the river and its fish",
+     "size": 7,
+     "at": "river",
+     "scale": "river"
+    },
+    {
+     "problem": "problem5",
+     "causedBy": "fix4",
+     "shows": "the town across the river stays dark",
+     "stakes": "a whole town without power",
+     "size": 8,
+     "at": "town",
+     "scale": "town"
+    }
+   ],
+   "recurring": {
+    "p": "boat",
+    "what": "a small boat on the river beside the plant"
+   },
+   "surprises": [
+    {
+     "claim": "Control rods absorb neutrons and slow down the chain reaction in a nuclear reactor.",
+     "role": "fix1",
+     "search": "control rods absorb neutrons slow chain reaction reactor"
+    },
+    {
+     "claim": "A nuclear plant's heat boils water into steam that spins a turbine connected to a generator.",
+     "role": "fix2",
+     "search": "nuclear power plant steam turbine generator how it works"
+    },
+    {
+     "claim": "Cooling towers release heat as water vapor, and their white plume is not smoke.",
+     "role": "fix4",
+     "search": "cooling tower plume water vapor not smoke nuclear"
+    },
+    {
+     "claim": "A thick concrete containment structure surrounds the reactor to keep radiation in.",
+     "role": "finish",
+     "search": "nuclear reactor containment building concrete steel radiation"
+    }
    ],
    "ideas": [
     {
      "role": "hook",
-     "idea": "stand uranium rods in a tank of water and you have a reactor"
+     "idea": "if you put uranium rods in water, you have a reactor"
     },
     {
      "role": "problem",
-     "idea": "the water boils and the steam just escapes into the air"
+     "idea": "but the rods heat up until the core glows red"
     },
     {
      "role": "fix1",
-     "idea": "pipe the steam to a turbine that spins a generator"
+     "idea": "so control rods slide in and slow it"
     },
     {
      "role": "problem2",
-     "idea": "the reaction speeds up and the rods glow red hot"
+     "idea": "but even slowed, the core boils the water"
     },
     {
      "role": "fix2",
-     "idea": "lower control rods that soak up neutrons and cool the core"
+     "idea": "so the steam spins a turbine and generator"
+    },
+    {
+     "role": "problem3",
+     "idea": "but used steam piles up and stalls the turbine"
+    },
+    {
+     "role": "fix3",
+     "idea": "so cold river water turns it back to water"
+    },
+    {
+     "role": "problem4",
+     "idea": "but the warm water steams over the river"
+    },
+    {
+     "role": "fix4",
+     "idea": "so a cooling tower vents the heat as a cloud"
+    },
+    {
+     "role": "problem5",
+     "idea": "but past the tower, the town stays dark"
+    },
+    {
+     "role": "fix5",
+     "idea": "so power lines carry it across the river"
     },
     {
      "role": "name",
      "idea": "this is a nuclear power plant"
     },
     {
-     "role": "how",
-     "idea": "steam spins the turbine and power runs out along the lines"
-    },
-    {
-     "role": "problem3",
-     "idea": "used steam piles up in the hall and the turbine stalls"
-    },
-    {
-     "role": "fix3",
-     "idea": "a cooling tower cools the steam; its white cloud is water vapor"
-    },
-    {
-     "role": "fact",
-     "idea": "one fuel pellet makes as much energy as a ton of coal"
-    },
-    {
      "role": "finish",
-     "idea": "a thick concrete dome goes over the reactor"
+     "idea": "seal the reactor in a dome, and the town lights up"
     },
     {
      "role": "congrats",
-     "idea": "you have built a nuclear power plant"
-    }
-   ],
-   "chain": [
-    {
-     "problem": "problem",
-     "causedBy": "hook",
-     "shows": "steam pours out of the open tank",
-     "stakes": "all the heat is wasted",
-     "size": 3
-    },
-    {
-     "problem": "problem2",
-     "causedBy": "fix1",
-     "shows": "the green fuel rods glow red hot",
-     "stakes": "the core could melt",
-     "size": 8
-    },
-    {
-     "problem": "problem3",
-     "causedBy": "fix2",
-     "shows": "steam fills the hall, the turbine stops and the lines go dark",
-     "stakes": "no power for the town",
-     "size": 9
-    }
-   ],
-   "surprises": [
-    {
-     "claim": "Control rods are made of materials like boron or cadmium that soak up neutrons and slow the chain reaction",
-     "role": "fix2",
-     "search": "control rods boron cadmium absorb neutrons"
-    },
-    {
-     "claim": "The white cloud over a cooling tower is water vapor, not smoke",
-     "role": "fix3",
-     "search": "cooling tower plume water vapor not smoke NRC"
-    },
-    {
-     "claim": "One uranium fuel pellet, about the size of a fingertip, makes about as much energy as one ton of coal",
-     "role": "fact",
-     "search": "uranium fuel pellet equivalent one ton of coal"
+     "idea": "congratulations, the town has power"
     }
    ]
   },
   "sentences": [
    {
     "role": "hook",
-    "text": "If you stand uranium rods in a tank of water, you have a reactor."
+    "text": "If you put uranium rods in water, you have a reactor."
    },
    {
     "role": "problem",
-    "text": "But the water boils, and the steam escapes."
+    "text": "But the rods heat up until the core glows red."
    },
    {
     "role": "fix1",
-    "text": "So you pipe the steam to a turbine that spins a generator."
+    "text": "So control rods slide in and slow it."
    },
    {
     "role": "problem2",
-    "text": "But now the reaction speeds up, and the rods glow red."
+    "text": "But even slowed, the core boils the water."
    },
    {
     "role": "fix2",
-    "text": "So you lower control rods that soak up neutrons."
+    "text": "So the steam spins a turbine and generator."
+   },
+   {
+    "role": "problem3",
+    "text": "But used steam piles up and stalls the turbine."
+   },
+   {
+    "role": "fix3",
+    "text": "So cold river water turns it back to water."
+   },
+   {
+    "role": "problem4",
+    "text": "But the warm water steams over the river."
+   },
+   {
+    "role": "fix4",
+    "text": "So a cooling tower vents the heat as a cloud."
+   },
+   {
+    "role": "problem5",
+    "text": "But past the tower, the town stays dark."
+   },
+   {
+    "role": "fix5",
+    "text": "So power lines carry it across the river."
    },
    {
     "role": "name",
     "text": "This is a nuclear power plant."
    },
    {
-    "role": "how",
-    "text": "Steam spins the turbine, and power runs along the lines."
-   },
-   {
-    "role": "problem3",
-    "text": "But now steam piles up, and the turbine stalls."
-   },
-   {
-    "role": "fix3",
-    "text": "So a cooling tower cools the steam; its white cloud is water vapor."
-   },
-   {
-    "role": "fact",
-    "text": "One fuel pellet makes about as much energy as one ton of coal."
-   },
-   {
     "role": "finish",
-    "text": "Add a concrete dome over the reactor."
+    "text": "Seal the reactor in a dome, and the town lights up."
    },
    {
     "role": "congrats",
-    "text": "Congratulations, you have built a nuclear power plant."
+    "text": "Congratulations, the town has power."
    }
   ],
-  "sceneJson": {
-   "world": {
-    "cut": [
-     -12,
-     6,
-     -2,
-     0.6
-    ],
-    "house": false,
-    "porch": false,
-    "trees": [
-     [
-      -20,
-      -12
-     ],
-     [
-      19,
-      -15,
-      0.9
-     ]
-    ],
-    "road": false,
-    "worker": false,
-    "moreTrees": false,
-    "rocksAvoid": []
-   },
-   "parts": [
-    {
-     "id": "light",
-     "kind": "light",
-     "params": {
-      "storm": false
-     }
-    },
-    {
-     "id": "reactor",
-     "kind": "rig",
-     "params": {
-      "name": "reactor tank",
-      "synonyms": [
-       "reactor",
-       "reactor vessel",
-       "fuel rods"
-      ],
-      "pos": [
-       -8.5,
-       0.2,
-       -3.4
-      ],
-      "nodes": [
-       {
-        "id": "tank",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           4,
-           0.3,
-           2.8
-          ],
-          "at": [
-           0,
-           0.15,
-           0
-          ],
-          "look": "concrete"
-         },
-         {
-          "shape": "box",
-          "size": [
-           4,
-           4,
-           0.25
-          ],
-          "at": [
-           0,
-           2.3,
-           -1.275
-          ],
-          "look": "metal",
-          "color": "#8d99a3"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.25,
-           4,
-           2.8
-          ],
-          "at": [
-           -1.875,
-           2.3,
-           0
-          ],
-          "look": "metal",
-          "color": "#8d99a3"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.25,
-           4,
-           2.8
-          ],
-          "at": [
-           1.875,
-           2.3,
-           0
-          ],
-          "look": "metal",
-          "color": "#8d99a3"
-         }
-        ],
-        "moves": [
-         {
-          "name": "fill",
-          "type": "fill",
-          "box": {
-           "size": [
-            3.5,
-            3.4,
-            1.9
-           ],
-           "at": [
-            0,
-            2,
-            -0.2
-           ],
-           "color": "#3a8fd6"
-          }
-         }
-        ]
-       },
-       {
-        "id": "fuel",
-        "parent": "tank",
-        "at": [
-         0,
-         0.3,
-         0.95
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           3.3,
-           0.14,
-           0.4
-          ],
-          "at": [
-           0,
-           0.07,
-           0
-          ],
-          "look": "metal",
-          "color": "#6b7680"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.26,
-           2.7,
-           0.26
-          ],
-          "at": [
-           -1.2,
-           1.49,
-           0
-          ],
-          "look": "paint",
-          "color": "#4fd64a"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.26,
-           2.7,
-           0.26
-          ],
-          "at": [
-           -0.6,
-           1.49,
-           0
-          ],
-          "look": "paint",
-          "color": "#4fd64a"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.26,
-           2.7,
-           0.26
-          ],
-          "at": [
-           0,
-           1.49,
-           0
-          ],
-          "look": "paint",
-          "color": "#4fd64a"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.26,
-           2.7,
-           0.26
-          ],
-          "at": [
-           0.6,
-           1.49,
-           0
-          ],
-          "look": "paint",
-          "color": "#4fd64a"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.26,
-           2.7,
-           0.26
-          ],
-          "at": [
-           1.2,
-           1.49,
-           0
-          ],
-          "look": "paint",
-          "color": "#4fd64a"
-         }
-        ],
-        "moves": [
-         {
-          "name": "load",
-          "type": "appear"
-         },
-         {
-          "name": "glow",
-          "type": "heat",
-          "color": "#ff3b1f"
-         }
-        ]
-       },
-       {
-        "id": "control",
-        "parent": "tank",
-        "at": [
-         0,
-         4.3,
-         0.95
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           2.6,
-           0.2,
-           0.4
-          ],
-          "at": [
-           0,
-           2.8,
-           0
-          ],
-          "look": "metal",
-          "color": "#5b6470"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.18,
-           2.7,
-           0.18
-          ],
-          "at": [
-           -0.9,
-           1.35,
-           0
-          ],
-          "look": "paint",
-          "color": "#2b2f33"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.18,
-           2.7,
-           0.18
-          ],
-          "at": [
-           -0.3,
-           1.35,
-           0
-          ],
-          "look": "paint",
-          "color": "#2b2f33"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.18,
-           2.7,
-           0.18
-          ],
-          "at": [
-           0.3,
-           1.35,
-           0
-          ],
-          "look": "paint",
-          "color": "#2b2f33"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.18,
-           2.7,
-           0.18
-          ],
-          "at": [
-           0.9,
-           1.35,
-           0
-          ],
-          "look": "paint",
-          "color": "#2b2f33"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.2,
-           0.3,
-           0.2
-          ],
-          "at": [
-           0,
-           -0.15,
-           -0.9
-          ],
-          "look": "metal",
-          "color": "#5b6470"
-         }
-        ],
-        "moves": [
-         {
-          "name": "rods",
-          "type": "appear"
-         },
-         {
-          "name": "lower",
-          "type": "slide",
-          "to": [
-           0,
-           -2.6,
-           0
-          ]
-         }
-        ]
-       }
-      ]
-     }
-    },
-    {
-     "id": "boil",
-     "kind": "bubbles",
-     "params": {
-      "x0": -10,
-      "x1": -7,
-      "y0": 0.8,
-      "y1": 3.8,
-      "z": -2.6,
-      "count": 40,
-      "speed": 1.2
-     }
-    },
-    {
-     "id": "vesselSteam",
-     "kind": "fx",
-     "params": {
-      "type": "smoke",
-      "at": [
-       -8.5,
-       4.8,
-       -3.2
-      ],
-      "size": 1.3,
-      "color": "#f4f6f8"
-     }
-    },
-    {
-     "id": "hall",
-     "kind": "building",
-     "params": {
-      "pos": [
-       -3,
-       0,
-       -0.5
-      ],
-      "width": 18,
-      "depth": 7,
-      "use": "plant",
-      "floors": [
-       {
-        "h": 8
-       }
-      ],
-      "roof": "flat"
-     },
-     "main": true
-    },
-    {
-     "id": "turbine",
-     "kind": "model",
-     "params": {
-      "keyword": "turbine generator",
-      "pos": [
-       0,
-       0.2,
-       -3.6
-      ]
-     }
-    },
-    {
-     "id": "steamPipe",
-     "kind": "pipeRun",
-     "params": {
-      "path": [
-       [
-        -7.3,
-        4.5,
-        -3.2
-       ],
-       [
-        -7.3,
-        5.6,
-        -3.2
-       ],
-       [
-        -3.6,
-        5.6,
-        -3.6
-       ],
-       [
-        -3.6,
-        1.75,
-        -3.6
-       ],
-       [
-        -2.6,
-        1.75,
-        -3.6
-       ]
-      ],
-      "r": 0.28,
-      "mat": "metal"
-     }
-    },
-    {
-     "id": "steamFlow",
-     "kind": "pipeRunFlow",
-     "params": {
-      "pipe": "steamPipe",
-      "count": 14,
-      "size": 0.16,
-      "speed": 3,
-      "dz": 0.3,
-      "mat": "pipeWhite"
-     }
-    },
-    {
-     "id": "hallSteam",
-     "kind": "fx",
-     "params": {
-      "type": "smoke",
-      "at": [
-       -0.6,
-       3.2,
-       -2.8
-      ],
-      "size": 1.4,
-      "color": "#d9dde0"
-     }
-    },
-    {
-     "id": "tower",
-     "kind": "model",
-     "params": {
-      "keyword": "cooling tower",
-      "pos": [
-       11,
-       0,
-       -9.5
-      ]
-     }
-    },
-    {
-     "id": "coolPipe",
-     "kind": "pipeRun",
-     "params": {
-      "path": [
-       [
-        6.1,
-        1.2,
-        -5.5
-       ],
-       [
-        7.6,
-        1.2,
-        -7.4
-       ]
-      ],
-      "r": 0.26,
-      "mat": "metal"
-     }
-    },
-    {
-     "id": "towerSteam",
-     "kind": "fx",
-     "params": {
-      "type": "smoke",
-      "at": [
-       11,
-       10.9,
-       -9.5
-      ],
-      "size": 3,
-      "color": "#ffffff"
-     }
-    },
-    {
-     "id": "pylon",
-     "kind": "model",
-     "params": {
-      "keyword": "pylon",
-      "pos": [
-       18.5,
-       0,
-       -4
-      ]
-     }
-    },
-    {
-     "id": "pole",
-     "kind": "model",
-     "params": {
-      "keyword": "utility pole",
-      "pos": [
-       23.5,
-       0,
-       -1
-      ]
-     }
-    },
-    {
-     "id": "lines",
-     "kind": "wires",
-     "params": {
-      "points": [
-       [
-        5.5,
-        8.1,
-        -2.5
-       ],
-       [
-        18.5,
-        12.5,
-        -4
-       ],
-       [
-        23.5,
-        8.5,
-        -1
-       ]
-      ],
-      "sag": 1,
-      "count": 2,
-      "spacing": 0.8
-     }
-    },
-    {
-     "id": "pellet",
-     "kind": "rig",
-     "params": {
-      "name": "fuel pellet",
-      "synonyms": [
-       "uranium pellet",
-       "pellet"
-      ],
-      "pos": [
-       -4.5,
-       0,
-       1.3
-      ],
-      "nodes": [
-       {
-        "id": "stand",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           0.8,
-           0.8,
-           0.8
-          ],
-          "at": [
-           0,
-           0.4,
-           0
-          ],
-          "look": "concrete"
-         }
-        ]
-       },
-       {
-        "id": "pill",
-        "parent": "stand",
-        "at": [
-         0,
-         0.8,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "cylinder",
-          "r": 0.3,
-          "h": 0.45,
-          "axis": "y",
-          "at": [
-           0,
-           0.225,
-           0
-          ],
-          "look": "metal",
-          "color": "#3c4248"
-         }
-        ],
-        "moves": [
-         {
-          "name": "pellet",
-          "type": "appear"
-         }
-        ]
-       },
-       {
-        "id": "coalPile",
-        "parent": "stand",
-        "at": [
-         1.2,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           1.6,
-           1.3,
-           1.4
-          ],
-          "at": [
-           0,
-           0.65,
-           0
-          ],
-          "look": "rubber",
-          "color": "#1d1e20"
-         }
-        ],
-        "moves": [
-         {
-          "name": "coal",
-          "type": "appear"
-         }
-        ]
-       }
-      ]
-     }
-    },
-    {
-     "id": "dome",
-     "kind": "rig",
-     "params": {
-      "name": "containment dome",
-      "synonyms": [
-       "concrete dome",
-       "dome"
-      ],
-      "pos": [
-       -8.5,
-       0.2,
-       -3.4
-      ],
-      "nodes": [
-       {
-        "id": "shell",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "cylinder",
-          "r": 2.6,
-          "h": 4.6,
-          "axis": "y",
-          "at": [
-           0,
-           2.3,
-           0
-          ],
-          "look": "concrete"
-         },
-         {
-          "shape": "sphere",
-          "r": 2.6,
-          "at": [
-           0,
-           4.6,
-           0
-          ],
-          "look": "concrete"
-         }
-        ]
-       }
-      ]
-     }
-    },
-    {
-     "id": "plantOutline",
-     "kind": "outline",
-     "params": {
-      "of": "hall",
-      "opts": {
-       "closed": true,
-       "r": 0.14,
-       "over": true
-      }
-     }
-    },
-    {
-     "id": "sign",
-     "kind": "sign",
-     "params": {
-      "at": [
-       -16,
-       0,
-       -6
-      ],
-      "rotY": 0.25,
-      "scale": 1.2
-     }
-    }
-   ],
-   "beats": [
-    {
-     "s": "hook",
-     "shows": {
-      "p": "reactor",
-      "does": "green uranium rods stand in the tank as water fills it"
-     },
-     "do": [
-      {
-       "p": "reactor",
-       "v": "show",
-       "w": ""
-      },
-      {
-       "p": "reactor",
-       "v": "load",
-       "w": "uranium"
-      },
-      {
-       "p": "reactor",
-       "v": "fill",
-       "w": "water"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "reactor"
-       ],
-       "width": 0.6
-      }
-     ]
-    },
-    {
-     "s": "problem",
-     "state": {
-      "text": "WASTED",
-      "w": "escapes"
-     },
-     "shows": {
-      "p": "vesselSteam",
-      "does": "the water bubbles and steam pours out of the open tank"
-     },
-     "do": [
-      {
-       "p": "boil",
-       "v": "show",
-       "w": "boils"
-      },
-      {
-       "p": "vesselSteam",
-       "v": "start",
-       "w": "steam"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "reactor",
-        "vesselSteam"
-       ],
-       "type": "mid"
-      }
-     ]
-    },
-    {
-     "s": "fix1",
-     "shows": {
-      "p": "turbine",
-      "does": "steam runs along the pipe and the turbine spins"
-     },
-     "do": [
-      {
-       "p": "vesselSteam",
-       "v": "stop",
-       "w": "pipe"
-      },
-      {
-       "p": "steamPipe",
-       "v": "grow",
-       "w": "pipe"
-      },
-      {
-       "p": "steamFlow",
-       "v": "show",
-       "w": "steam"
-      },
-      {
-       "p": "turbine",
-       "v": "show",
-       "w": "turbine"
-      },
-      {
-       "p": "turbine",
-       "v": "spin",
-       "w": "spins"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "reactor",
-        "turbine"
-       ],
-       "width": 0.85
-      }
-     ]
-    },
-    {
-     "s": "problem2",
-     "state": {
-      "text": "OVERHEAT",
-      "w": "glow"
-     },
-     "shows": {
-      "p": "reactor",
-      "does": "the green fuel rods glow red hot"
-     },
-     "do": [
-      {
-       "p": "reactor",
-       "v": "glow",
-       "w": "speeds"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "reactor"
-       ],
-       "type": "close"
-      }
-     ]
-    },
-    {
-     "s": "fix2",
-     "shows": {
-      "p": "reactor",
-      "does": "dark control rods slide down between the fuel rods and the red glow fades"
-     },
-     "do": [
-      {
-       "p": "boil",
-       "v": "hide",
-       "w": "So"
-      },
-      {
-       "p": "reactor",
-       "v": "rods",
-       "w": "So"
-      },
-      {
-       "p": "reactor",
-       "v": "lower",
-       "w": "lower"
-      },
-      {
-       "p": "reactor",
-       "v": "glowBack",
-       "w": "lower",
-       "o": 0.5
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "reactor"
-       ],
-       "type": "close"
-      }
-     ]
-    },
-    {
-     "s": "name",
-     "shows": {
-      "p": "plantOutline",
-      "does": "a glowing outline goes round the whole plant"
-     },
-     "do": [
-      {
-       "p": "plantOutline",
-       "v": "show",
-       "w": "nuclear"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "hall"
-       ],
-       "hero": true,
-       "width": 0.9
-      }
-     ]
-    },
-    {
-     "s": "how",
-     "shows": {
-      "p": "lines",
-      "does": "the turbine spins and bright pulses run along the power lines"
-     },
-     "do": [
-      {
-       "p": "plantOutline",
-       "v": "hide",
-       "w": "Steam"
-      },
-      {
-       "p": "pylon",
-       "v": "show",
-       "w": "power"
-      },
-      {
-       "p": "pole",
-       "v": "show",
-       "w": "power"
-      },
-      {
-       "p": "lines",
-       "v": "show",
-       "w": "power"
-      },
-      {
-       "p": "lines",
-       "v": "live",
-       "w": "lines"
-      },
-      {
-       "p": "hall",
-       "v": "lights",
-       "w": "power"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "hall",
-        "pylon"
-       ],
-       "type": "wide"
-      }
-     ]
-    },
-    {
-     "s": "problem3",
-     "state": {
-      "text": "STALLED",
-      "w": "stalls"
-     },
-     "shows": {
-      "p": "turbine",
-      "does": "steam clouds the hall and the turbine stops"
-     },
-     "do": [
-      {
-       "p": "hallSteam",
-       "v": "start",
-       "w": "steam"
-      },
-      {
-       "p": "turbine",
-       "v": "spinBack",
-       "w": "stalls"
-      },
-      {
-       "p": "lines",
-       "v": "off",
-       "w": "stalls"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "turbine",
-        "hallSteam"
-       ],
-       "type": "mid"
-      }
-     ]
-    },
-    {
-     "s": "fix3",
-     "shows": {
-      "p": "tower",
-      "does": "a cooling tower rises and a white cloud of vapor billows from its top"
-     },
-     "do": [
-      {
-       "p": "hallSteam",
-       "v": "stop",
-       "w": "So"
-      },
-      {
-       "p": "tower",
-       "v": "show",
-       "w": "cooling"
-      },
-      {
-       "p": "coolPipe",
-       "v": "grow",
-       "w": "tower"
-      },
-      {
-       "p": "towerSteam",
-       "v": "start",
-       "w": "steam"
-      },
-      {
-       "p": "turbine",
-       "v": "spin",
-       "w": "steam"
-      },
-      {
-       "p": "lines",
-       "v": "live",
-       "w": "white"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "tower",
-        "towerSteam"
-       ],
-       "type": "mid"
-      }
-     ]
-    },
-    {
-     "s": "fact",
-     "shows": {
-      "p": "pellet",
-      "does": "a small pellet appears, then a big black block of coal beside it"
-     },
-     "do": [
-      {
-       "p": "pellet",
-       "v": "show",
-       "w": ""
-      },
-      {
-       "p": "pellet",
-       "v": "pellet",
-       "w": "pellet"
-      },
-      {
-       "p": "pellet",
-       "v": "coal",
-       "w": "coal"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "pellet"
-       ],
-       "type": "close"
-      }
-     ]
-    },
-    {
-     "s": "finish",
-     "shows": {
-      "p": "dome",
-      "does": "a concrete dome covers the reactor"
-     },
-     "do": [
-      {
-       "p": "steamFlow",
-       "v": "hide",
-       "w": "Add"
-      },
-      {
-       "p": "dome",
-       "v": "show",
-       "w": "dome"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "home"
-       ]
-      }
-     ]
-    },
-    {
-     "s": "congrats",
-     "do": [],
-     "shots": [
-      {
-       "focus": [
-        "home"
-       ]
-      }
-     ]
-    }
-   ],
-   "audio": {
-    "cards": [
-     {
-      "text": "1 TON OF COAL",
-      "at": {
-       "s": "fact",
-       "w": "coal",
-       "o": 0
-      },
-      "d": 1.6
-     }
-    ],
-    "sfx": [
-     {
-      "lib": "water_rush",
-      "at": {
-       "s": "hook",
-       "w": "water",
-       "o": 0
-      },
-      "d": 1.2
-     },
-     {
-      "lib": "flame",
-      "at": {
-       "s": "problem",
-       "w": "boils",
-       "o": 0
-      },
-      "d": 1.2
-     },
-     {
-      "lib": "motor_hum",
-      "at": {
-       "s": "fix1",
-       "w": "spins",
-       "o": 0
-      },
-      "d": 1.6
-     },
-     {
-      "lib": "motor_hum",
-      "at": {
-       "s": "fix3",
-       "w": "steam",
-       "o": 0
-      },
-      "d": 1.4
-     }
-    ],
-    "chimes": [
-     {
-      "s": "name",
-      "w": "",
-      "o": 0
-     },
-     {
-      "s": "fact",
-      "w": "coal",
-      "o": 0
-     },
-     {
-      "s": "congrats",
-      "w": "",
-      "o": 0
-     }
-    ]
-   }
-  }
+  "sceneJson": "{\"world\":{\"cut\":[-12,6,-2,0.6],\"house\":false,\"porch\":false,\"trees\":[[-20,-12],[24,-15,0.9]],\"road\":false,\"worker\":false,\"moreTrees\":false,\"rocksAvoid\":[]},\"parts\":[{\"id\":\"light\",\"kind\":\"light\",\"params\":{\"storm\":false}},{\"id\":\"land\",\"kind\":\"terrain\",\"params\":{\"blocks\":[{\"type\":\"flat\",\"x0\":-24,\"x1\":24,\"y\":0},{\"type\":\"riverbed\",\"x0\":8.5,\"x1\":14.5,\"depth\":2.5}],\"trees\":[[-20,-12,1],[23,-14,0.9]]}},{\"id\":\"river\",\"kind\":\"waterBody\",\"params\":{\"body\":\"river\",\"x0\":8.5,\"x1\":14.5,\"level\":-0.6}},{\"id\":\"boat\",\"kind\":\"token\",\"params\":{\"type\":\"boat\",\"pos\":[11.5,-0.6,-4],\"path\":[[11.5,-0.6,-4],[11.2,-0.6,-3],[11.7,-0.6,-2],[11.3,-0.6,-1]],\"size\":0.8,\"float\":true}},{\"id\":\"town\",\"kind\":\"building\",\"params\":{\"pos\":[20,0,-2.5],\"width\":6,\"depth\":5,\"use\":\"house\",\"floors\":[{\"h\":3},{\"h\":3}],\"roof\":\"gable\"}},{\"id\":\"hall\",\"kind\":\"building\",\"params\":{\"pos\":[-3,0,-0.5],\"width\":18,\"depth\":7,\"use\":\"plant\",\"floors\":[{\"h\":8}],\"roof\":\"flat\"},\"main\":true},{\"id\":\"reactor\",\"kind\":\"rig\",\"params\":{\"name\":\"reactor tank\",\"synonyms\":[\"reactor\",\"reactor vessel\",\"fuel rods\"],\"pos\":[-8.5,0.2,-3.4],\"nodes\":[{\"id\":\"tank\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[4,0.3,2.8],\"at\":[0,0.15,0],\"look\":\"concrete\"},{\"shape\":\"box\",\"size\":[4,4,0.25],\"at\":[0,2.3,-1.275],\"look\":\"metal\",\"color\":\"#8d99a3\"},{\"shape\":\"box\",\"size\":[0.25,4,2.8],\"at\":[-1.875,2.3,0],\"look\":\"metal\",\"color\":\"#8d99a3\"},{\"shape\":\"box\",\"size\":[0.25,4,2.8],\"at\":[1.875,2.3,0],\"look\":\"metal\",\"color\":\"#8d99a3\"}],\"moves\":[{\"name\":\"fill\",\"type\":\"fill\",\"box\":{\"size\":[3.5,3.4,1.9],\"at\":[0,2,-0.2],\"color\":\"#3a8fd6\"}}]},{\"id\":\"fuel\",\"parent\":\"tank\",\"at\":[0,0.3,0.95],\"shapes\":[{\"shape\":\"box\",\"size\":[3.3,0.14,0.4],\"at\":[0,0.07,0],\"look\":\"metal\",\"color\":\"#6b7680\"},{\"shape\":\"box\",\"size\":[0.26,2.7,0.26],\"at\":[-1.2,1.49,0],\"look\":\"paint\",\"color\":\"#4fd64a\"},{\"shape\":\"box\",\"size\":[0.26,2.7,0.26],\"at\":[-0.6,1.49,0],\"look\":\"paint\",\"color\":\"#4fd64a\"},{\"shape\":\"box\",\"size\":[0.26,2.7,0.26],\"at\":[0,1.49,0],\"look\":\"paint\",\"color\":\"#4fd64a\"},{\"shape\":\"box\",\"size\":[0.26,2.7,0.26],\"at\":[0.6,1.49,0],\"look\":\"paint\",\"color\":\"#4fd64a\"},{\"shape\":\"box\",\"size\":[0.26,2.7,0.26],\"at\":[1.2,1.49,0],\"look\":\"paint\",\"color\":\"#4fd64a\"}],\"moves\":[{\"name\":\"load\",\"type\":\"appear\"},{\"name\":\"glow\",\"type\":\"heat\",\"color\":\"#ff3b1f\"}]},{\"id\":\"control\",\"parent\":\"tank\",\"at\":[0,4.3,0.95],\"shapes\":[{\"shape\":\"box\",\"size\":[2.6,0.2,0.4],\"at\":[0,2.8,0],\"look\":\"metal\",\"color\":\"#5b6470\"},{\"shape\":\"box\",\"size\":[0.18,2.7,0.18],\"at\":[-0.9,1.35,0],\"look\":\"paint\",\"color\":\"#2b2f33\"},{\"shape\":\"box\",\"size\":[0.18,2.7,0.18],\"at\":[-0.3,1.35,0],\"look\":\"paint\",\"color\":\"#2b2f33\"},{\"shape\":\"box\",\"size\":[0.18,2.7,0.18],\"at\":[0.3,1.35,0],\"look\":\"paint\",\"color\":\"#2b2f33\"},{\"shape\":\"box\",\"size\":[0.18,2.7,0.18],\"at\":[0.9,1.35,0],\"look\":\"paint\",\"color\":\"#2b2f33\"},{\"shape\":\"box\",\"size\":[0.2,0.3,0.2],\"at\":[0,-0.15,-0.9],\"look\":\"metal\",\"color\":\"#5b6470\"}],\"moves\":[{\"name\":\"rods\",\"type\":\"appear\"},{\"name\":\"lower\",\"type\":\"slide\",\"to\":[0,-2.6,0]}]}]}},{\"id\":\"boil\",\"kind\":\"bubbles\",\"params\":{\"x0\":-10,\"x1\":-7,\"y0\":0.8,\"y1\":3.8,\"z\":-2.6,\"count\":40,\"speed\":1.2}},{\"id\":\"vesselSteam\",\"kind\":\"fx\",\"params\":{\"type\":\"smoke\",\"at\":[-8.5,4.8,-3.2],\"size\":1.3,\"color\":\"#f4f6f8\"}},{\"id\":\"turbine\",\"kind\":\"model\",\"params\":{\"keyword\":\"turbine generator\",\"pos\":[0,0.2,-3.6]}},{\"id\":\"steamPipe\",\"kind\":\"pipeRun\",\"params\":{\"path\":[[-7.3,4.5,-3.2],[-7.3,5.6,-3.2],[-3.6,5.6,-3.6],[-3.6,1.75,-3.6],[-2.6,1.75,-3.6]],\"r\":0.28,\"mat\":\"metal\"}},{\"id\":\"steamFlow\",\"kind\":\"pipeRunFlow\",\"params\":{\"pipe\":\"steamPipe\",\"count\":14,\"size\":0.16,\"speed\":3,\"dz\":0.3,\"mat\":\"pipeWhite\"}},{\"id\":\"hallSteam\",\"kind\":\"fx\",\"params\":{\"type\":\"smoke\",\"at\":[-0.6,3.2,-2.8],\"size\":1.4,\"color\":\"#d9dde0\"}},{\"id\":\"intake\",\"kind\":\"pipeRun\",\"params\":{\"path\":[[9.2,0.3,-5.5],[5.9,0.3,-5.5]],\"r\":0.26,\"mat\":\"metal\"}},{\"id\":\"intakeFlow\",\"kind\":\"pipeRunFlow\",\"params\":{\"pipe\":\"intake\",\"count\":10,\"size\":0.14,\"speed\":3,\"mat\":\"water\",\"dz\":0.28}},{\"id\":\"warmOut\",\"kind\":\"flow\",\"params\":{\"path\":[[6.1,0.4,-2],[7.6,0.2,-2],[8.8,-0.3,-2],[9.6,-0.6,-2]],\"look\":\"water\",\"size\":0.22,\"speed\":2,\"count\":16}},{\"id\":\"riverSteam\",\"kind\":\"fx\",\"params\":{\"type\":\"smoke\",\"at\":[10.5,-0.4,-2.2],\"size\":1.4,\"color\":\"#f0f2f4\"}},{\"id\":\"tower\",\"kind\":\"model\",\"params\":{\"keyword\":\"cooling tower\",\"pos\":[-4,0,-14]}},{\"id\":\"coolPipe\",\"kind\":\"pipeRun\",\"params\":{\"path\":[[-3.2,0.4,-7.6],[-3.5,0.4,-9.8]],\"r\":0.26,\"mat\":\"metal\"}},{\"id\":\"towerSteam\",\"kind\":\"fx\",\"params\":{\"type\":\"smoke\",\"at\":[-4,10.9,-14],\"size\":3,\"color\":\"#ffffff\"}},{\"id\":\"pylonA\",\"kind\":\"model\",\"params\":{\"keyword\":\"pylon\",\"pos\":[7,0,-6]}},{\"id\":\"pylonB\",\"kind\":\"model\",\"params\":{\"keyword\":\"pylon\",\"pos\":[16,0,-6]}},{\"id\":\"lines\",\"kind\":\"wires\",\"params\":{\"points\":[[5.8,8.1,-4],[8.9,12.55,-6],[14.1,12.55,-6],[17.5,5.6,-3]],\"sag\":1,\"count\":2,\"spacing\":0.8}},{\"id\":\"dome\",\"kind\":\"rig\",\"params\":{\"name\":\"containment dome\",\"synonyms\":[\"concrete dome\",\"dome\"],\"pos\":[-8.5,0.2,-3.4],\"nodes\":[{\"id\":\"shell\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":2.6,\"h\":4.6,\"axis\":\"y\",\"at\":[0,2.3,0],\"look\":\"concrete\"},{\"shape\":\"sphere\",\"r\":2.6,\"at\":[0,4.6,0],\"look\":\"concrete\"}]}]}},{\"id\":\"plantOutline\",\"kind\":\"outline\",\"params\":{\"of\":\"hall\",\"opts\":{\"closed\":true,\"r\":0.14,\"over\":true}}},{\"id\":\"sign\",\"kind\":\"sign\",\"params\":{\"at\":[-9,0,-9.5],\"rotY\":0.2,\"scale\":1.2}}],\"beats\":[{\"s\":\"hook\",\"shows\":{\"p\":\"reactor\",\"does\":\"a steel tank appears, green uranium rods stand in it and it fills with water\"},\"do\":[{\"p\":\"reactor\",\"v\":\"show\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"boat\",\"v\":\"sit\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"reactor\",\"v\":\"load\",\"w\":\"uranium\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"reactor\",\"v\":\"fill\",\"w\":\"water\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"reactor\"],\"type\":\"close\"}]},{\"s\":\"problem\",\"shows\":{\"p\":\"reactor\",\"does\":\"the uranium rods glow red hot\"},\"do\":[{\"p\":\"reactor\",\"v\":\"glow\",\"w\":\"heat\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"reactor\"],\"type\":\"close\"}]},{\"s\":\"fix1\",\"shows\":{\"p\":\"reactor\",\"does\":\"dark control rods appear above and slide down between the fuel rods\"},\"do\":[{\"p\":\"reactor\",\"v\":\"rods\",\"w\":\"control\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"reactor\",\"v\":\"lower\",\"w\":\"slide\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"reactor\",\"v\":\"glowBack\",\"w\":\"slow\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"reactor\"],\"type\":\"close\"}]},{\"s\":\"problem2\",\"shows\":{\"p\":\"boil\",\"does\":\"the water in the tank boils and steam pours out of the top\"},\"do\":[{\"p\":\"boil\",\"v\":\"show\",\"w\":\"boils\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"vesselSteam\",\"v\":\"start\",\"w\":\"water\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"reactor\"],\"type\":\"mid\"}]},{\"s\":\"fix2\",\"shows\":{\"p\":\"turbine\",\"does\":\"a pipe carries the steam to a turbine and generator whose blades spin\"},\"do\":[{\"p\":\"vesselSteam\",\"v\":\"stop\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"steamPipe\",\"v\":\"grow\",\"w\":\"steam\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"steamFlow\",\"v\":\"show\",\"w\":\"steam\",\"o\":0.4,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"turbine\",\"v\":\"show\",\"w\":\"turbine\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"turbine\",\"v\":\"spin\",\"w\":\"spins\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"reactor\",\"turbine\"],\"type\":\"mid\"}]},{\"s\":\"problem3\",\"shows\":{\"p\":\"hallSteam\",\"does\":\"steam clouds pile up round the turbine and its blades stop\"},\"do\":[{\"p\":\"hallSteam\",\"v\":\"start\",\"w\":\"piles\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"turbine\",\"v\":\"spinBack\",\"w\":\"stalls\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"turbine\"],\"type\":\"mid\"}]},{\"s\":\"fix3\",\"shows\":{\"p\":\"intakeFlow\",\"does\":\"a pipe draws cold water from the river, the steam clouds clear and the turbine spins again\"},\"do\":[{\"p\":\"intake\",\"v\":\"grow\",\"w\":\"river\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"intakeFlow\",\"v\":\"show\",\"w\":\"water\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"hallSteam\",\"v\":\"stop\",\"w\":\"turns\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"turbine\",\"v\":\"spin\",\"w\":\"back\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"boat\",\"v\":\"ride\",\"w\":\"river\",\"o\":0,\"d\":0,\"amp\":0.3,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"intake\",\"turbine\",\"boat\"],\"width\":0.9}]},{\"s\":\"problem4\",\"shows\":{\"p\":\"warmOut\",\"does\":\"warm water pours back out and a cloud of steam rises over the river round the boat\"},\"do\":[{\"p\":\"warmOut\",\"v\":\"start\",\"w\":\"warm\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"riverSteam\",\"v\":\"start\",\"w\":\"steams\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"boat\",\"v\":\"ride\",\"w\":\"river\",\"o\":0,\"d\":0,\"amp\":0.3,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"boat\",\"warmOut\"],\"type\":\"mid\"}]},{\"s\":\"fix4\",\"shows\":{\"p\":\"towerSteam\",\"does\":\"a tall cooling tower stands behind the hall and a white cloud rises from it, the river calms\"},\"do\":[{\"p\":\"warmOut\",\"v\":\"stop\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"riverSteam\",\"v\":\"stop\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tower\",\"v\":\"show\",\"w\":\"tower\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"coolPipe\",\"v\":\"grow\",\"w\":\"cooling\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"towerSteam\",\"v\":\"start\",\"w\":\"cloud\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"tower\",\"hall\"],\"width\":0.9}]},{\"s\":\"problem5\",\"shows\":{\"p\":\"town\",\"does\":\"across the river the town's windows stay dark\"},\"do\":[{\"p\":\"town\",\"v\":\"dark\",\"w\":\"dark\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"town\",\"boat\"],\"type\":\"mid\"}]},{\"s\":\"fix5\",\"shows\":{\"p\":\"lines\",\"does\":\"power lines string from the hall over two pylons across the river and pulse with current, the town lights up\"},\"do\":[{\"p\":\"lines\",\"v\":\"show\",\"w\":\"lines\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lines\",\"v\":\"live\",\"w\":\"carry\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"town\",\"v\":\"lights\",\"w\":\"river\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"lines\",\"town\"],\"width\":0.9}]},{\"s\":\"name\",\"shows\":{\"p\":\"plantOutline\",\"does\":\"a glowing outline traces the plant hall\"},\"do\":[{\"p\":\"plantOutline\",\"v\":\"show\",\"w\":\"nuclear\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"hall\"],\"hero\":true,\"width\":0.85}]},{\"s\":\"finish\",\"shows\":{\"p\":\"dome\",\"does\":\"a concrete dome closes over the reactor while the boat drifts past the lit town\"},\"do\":[{\"p\":\"plantOutline\",\"v\":\"hide\",\"w\":\"Seal\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"boil\",\"v\":\"hide\",\"w\":\"Seal\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"steamFlow\",\"v\":\"hide\",\"w\":\"dome\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"intakeFlow\",\"v\":\"hide\",\"w\":\"dome\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"dome\",\"v\":\"show\",\"w\":\"dome\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"boat\",\"v\":\"ride\",\"w\":\"town\",\"o\":0,\"d\":0,\"amp\":0.4,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"dome\",\"reactor\"],\"type\":\"mid\"}]},{\"s\":\"congrats\",\"shows\":{\"p\":\"lines\",\"does\":\"current pulses along the lines to the lit town\"},\"do\":[],\"shots\":[{\"focus\":\"home\"}]}],\"audio\":{\"cards\":[],\"sfx\":[{\"lib\":\"water_rush\",\"at\":{\"s\":\"problem2\",\"w\":\"boils\",\"o\":0},\"d\":1.2},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"fix2\",\"w\":\"spins\",\"o\":0},\"d\":1.4},{\"lib\":\"water_rush\",\"at\":{\"s\":\"fix3\",\"w\":\"river\",\"o\":0},\"d\":1.2}],\"chimes\":[{\"s\":\"name\",\"w\":\"\",\"o\":0},{\"s\":\"congrats\",\"w\":\"\",\"o\":0}]}}"
  }
 }

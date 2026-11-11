@@ -2,7 +2,7 @@
  "key": "facts__1",
  "label": "facts",
  "model": "claude-sonnet-5-5",
- "hash": "830203b05110cb0e",
+ "hash": "a29332772fc49c74",
  "search": 8,
  "schema": {
   "type": "object",
@@ -66,5 +66,5 @@
   }
  },
  "system": "You fact-check the surprise claims planned for a short explainer video, with web search, before the video is made. You MUST search before you answer, at least one search per claim (5 claims: at least 5 searches; fewer and your answer is sent back), two for a claim with a number; never answer from memory. Use reliable sources (engineering and government sources, manufacturers' guides, encyclopedias, well-known references; not forums). For each claim (by its index): verdict \"keep\" if the sources support it as written; \"reword\" if the true version is close (give the claim with exactly the wording and numbers the sources support, e.g. \"over 600 gallons\" for a rounded figure, \"New England\" instead of a wrong state); \"drop\" if it is false, unsupported or a myth. Give why in one line, and the sources you used (url and title, from your searches) for keep and reword. Write each claim the way the narrator will say it: no abbreviations (never \"US\", \"U.S.\" or \"USA\": \"American\", \"in America\"; an agency without the country: \"the Department of Energy\", \"the Army Corps of Engineers\").",
- "user": "Topic: how a gas stove works\nClaims (index: claim | suggested search):\n0: Gas shoots up the tube and draws in about half of the air it needs through the holes | Bunsen burner primary air about half of air needed\n1: A stove's thermocouple makes about 25 millivolts to hold the safety valve open | gas stove thermocouple millivolts safety valve\n2: The blue flame is the hot one, reaching roughly 1,950 to 2,000 degrees Celsius | blue natural gas flame temperature degrees Celsius"
+ "user": "Topic: how a gas stove works\nClaims (index: claim | suggested search):\n0: A gas flame burns blue when air is mixed into the gas before it burns; without enough air it burns yellow and makes soot. | gas stove yellow flame soot not enough air blue flame\n1: A flame failure device shuts off the gas if a burner's flame goes out. | gas hob flame failure device thermocouple shuts off gas flame goes out\n2: Most gas stoves light with an electric spark igniter that clicks. | gas stove spark igniter clicking how it lights"
 }

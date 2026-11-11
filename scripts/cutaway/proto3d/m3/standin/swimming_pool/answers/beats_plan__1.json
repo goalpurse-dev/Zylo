@@ -1,0 +1,351 @@
+{
+ "hash": "*",
+ "by": "stand-in planner (agent), 2026-11-11",
+ "searches": 0,
+ "data": {
+  "why": "A backyard pool in section on the left, its equipment on the lawn to the right with the pipes in the cut face; the water's loop from the pool through the skimmer, pump, filter, heater and back is followed loop by loop. The camera opens close on the hole, stays on the pool for the water's problems and moves right along the pipes to each new machine, then ends on the warm, clear pool.",
+  "story": {
+   "title": "How a Swimming Pool Works",
+   "hero": "a sand filter",
+   "parts": [
+    "concrete shell",
+    "skimmer",
+    "pump",
+    "main drain",
+    "sand filter",
+    "chlorinator",
+    "heater",
+    "cover",
+    "overflow pipe"
+   ],
+   "flow": [
+    "hole",
+    "pool",
+    "skimmer",
+    "main drain",
+    "pump",
+    "filter",
+    "sewer",
+    "return jets",
+    "heater",
+    "cover",
+    "overflow"
+   ],
+   "recurring": {
+    "p": "token",
+    "what": "a rubber duck"
+   },
+   "ideas": [
+    {
+     "role": "hook",
+     "idea": "a hole is dug in the lawn"
+    },
+    {
+     "role": "problem",
+     "idea": "the walls cave in and brown water fills the hole"
+    },
+    {
+     "role": "fix1",
+     "idea": "concrete walls rise and clear water fills the shell"
+    },
+    {
+     "role": "problem2",
+     "idea": "leaves land and float on the water"
+    },
+    {
+     "role": "fix2",
+     "idea": "the skimmer pulls the leaves and the duck toward it"
+    },
+    {
+     "role": "problem3",
+     "idea": "the basket fills with leaves and the flow stops"
+    },
+    {
+     "role": "fix3",
+     "idea": "the pump spins and pulls water through the pipe"
+    },
+    {
+     "role": "problem4",
+     "idea": "dirt settles on the pool floor"
+    },
+    {
+     "role": "fix4",
+     "idea": "a drain in the floor pulls the dirt into a pipe"
+    },
+    {
+     "role": "problem5",
+     "idea": "brown dirt circles through the pipe and back"
+    },
+    {
+     "role": "fix5",
+     "idea": "a sand tank fills and the dirt sinks into the sand"
+    },
+    {
+     "role": "name",
+     "idea": "the sand filter glows"
+    },
+    {
+     "role": "problem6",
+     "idea": "the gauge needle climbs into the red"
+    },
+    {
+     "role": "fix6",
+     "idea": "brown water flushes out through a pipe to the sewer"
+    },
+    {
+     "role": "problem7",
+     "idea": "the pool water turns algae green"
+    },
+    {
+     "role": "fix7",
+     "idea": "the water clears"
+    },
+    {
+     "role": "problem8",
+     "idea": "frost creeps over the cold water"
+    },
+    {
+     "role": "fix8",
+     "idea": "the heater burns and warm water jets back into the pool"
+    },
+    {
+     "role": "problem9",
+     "idea": "steam rises off the open water into the night"
+    },
+    {
+     "role": "fix9",
+     "idea": "a blue cover lies on the water"
+    },
+    {
+     "role": "problem10",
+     "idea": "rain pools on the cover and water spills over the edge onto the lawn"
+    },
+    {
+     "role": "fix10",
+     "idea": "a pipe at the rim carries the extra water down"
+    },
+    {
+     "role": "finish",
+     "idea": "the cover slides off and the duck floats on clear water"
+    },
+    {
+     "role": "congrats",
+     "idea": "the finished pool in the sun"
+    }
+   ],
+   "chain": [
+    {
+     "problem": "problem",
+     "causedBy": "hook",
+     "shows": "the dirt walls cave in and the hole fills with mud",
+     "stakes": "the hole",
+     "size": 2,
+     "at": "hole",
+     "scale": "part"
+    },
+    {
+     "problem": "problem2",
+     "causedBy": "fix1",
+     "shows": "leaves float on the water",
+     "stakes": "the pool",
+     "size": 3,
+     "at": "pool",
+     "scale": "part"
+    },
+    {
+     "problem": "problem3",
+     "causedBy": "fix2",
+     "shows": "the skimmer basket fills and the water stops moving",
+     "stakes": "the pool",
+     "size": 3,
+     "at": "skimmer",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem4",
+     "causedBy": "fix3",
+     "shows": "dirt settles on the floor out of the pump's reach",
+     "stakes": "the pool",
+     "size": 4,
+     "at": "main drain",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem5",
+     "causedBy": "fix4",
+     "shows": "the dirt circles through the pump and back",
+     "stakes": "the pool",
+     "size": 4,
+     "at": "pump",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem6",
+     "causedBy": "fix5",
+     "shows": "the sand clogs and the pressure gauge climbs",
+     "stakes": "the filter",
+     "size": 5,
+     "at": "filter",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem7",
+     "causedBy": "fix6",
+     "shows": "the water turns green",
+     "stakes": "the swimmers",
+     "size": 6,
+     "at": "return jets",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem8",
+     "causedBy": "fix7",
+     "shows": "the clear water is cold",
+     "stakes": "the swimmers",
+     "size": 6,
+     "at": "heater",
+     "scale": "house"
+    },
+    {
+     "problem": "problem9",
+     "causedBy": "fix8",
+     "shows": "the heat escapes at night",
+     "stakes": "the swimmers",
+     "size": 7,
+     "at": "pool",
+     "scale": "house"
+    },
+    {
+     "problem": "problem10",
+     "causedBy": "fix9",
+     "shows": "rain pools on the cover and the pool spills over onto the lawn",
+     "stakes": "the yard",
+     "size": 8,
+     "at": "overflow",
+     "scale": "house"
+    }
+   ],
+   "surprises": [
+    {
+     "claim": "A pool skimmer pulls water and floating debris from the surface into a basket.",
+     "role": "fix2",
+     "search": "pool skimmer pulls surface water debris basket"
+    },
+    {
+     "claim": "A pool's main drain sits at the deepest point of the floor.",
+     "role": "fix4",
+     "search": "pool main drain located deepest point of pool floor"
+    },
+    {
+     "claim": "A sand filter is cleaned by backwashing: the flow is reversed and the dirt goes to waste.",
+     "role": "fix6",
+     "search": "sand filter backwash reverse flow dirt to waste"
+    },
+    {
+     "claim": "Chlorine kills the algae that turns pool water green.",
+     "role": "fix7",
+     "search": "chlorine kills algae green pool water"
+    }
+   ]
+  },
+  "sentences": [
+   {
+    "role": "hook",
+    "text": "If you dig a hole in your backyard, you have a pool."
+   },
+   {
+    "role": "problem",
+    "text": "But the dirt walls crumble, and the rain turns it to mud."
+   },
+   {
+    "role": "fix1",
+    "text": "So you pour a concrete shell and fill it with water."
+   },
+   {
+    "role": "problem2",
+    "text": "But leaves blow in and float on the water."
+   },
+   {
+    "role": "fix2",
+    "text": "So you cut a skimmer into the wall."
+   },
+   {
+    "role": "problem3",
+    "text": "But the skimmer basket fills, and the water barely moves."
+   },
+   {
+    "role": "fix3",
+    "text": "So a pump pulls the water through a pipe."
+   },
+   {
+    "role": "problem4",
+    "text": "But dirt sinks to the floor, below the pump's reach."
+   },
+   {
+    "role": "fix4",
+    "text": "So you add a drain at the deepest point."
+   },
+   {
+    "role": "problem5",
+    "text": "But the drain's dirt just spins round and round."
+   },
+   {
+    "role": "fix5",
+    "text": "So a tank of sand traps the dirt."
+   },
+   {
+    "role": "name",
+    "text": "This is a sand filter."
+   },
+   {
+    "role": "problem6",
+    "text": "But the sand clogs, and the pressure climbs."
+   },
+   {
+    "role": "fix6",
+    "text": "So you flush it backward, sending the dirt to the sewer."
+   },
+   {
+    "role": "problem7",
+    "text": "But even with the dirt gone, the water turns green."
+   },
+   {
+    "role": "fix7",
+    "text": "So a chlorinator adds chlorine that kills the algae."
+   },
+   {
+    "role": "problem8",
+    "text": "But the clear water is still freezing cold."
+   },
+   {
+    "role": "fix8",
+    "text": "So a heater warms it on the way back."
+   },
+   {
+    "role": "problem9",
+    "text": "But at night, the heat escapes from the open water."
+   },
+   {
+    "role": "fix9",
+    "text": "So you pull a cover over the pool at night."
+   },
+   {
+    "role": "problem10",
+    "text": "But rain pools on the cover, and the pool spills over."
+   },
+   {
+    "role": "fix10",
+    "text": "So an overflow pipe carries the extra water away."
+   },
+   {
+    "role": "finish",
+    "text": "Roll back the cover, and your backyard pool is warm and clear."
+   },
+   {
+    "role": "congrats",
+    "text": "Congratulations, you have built a pool."
+   }
+  ],
+  "sceneJson": "{\"why\":\"A backyard pool in section on the left, its equipment on the lawn to the right with the pipes in the cut face; the water's loop from the pool through the skimmer, pump, filter, heater and back is followed loop by loop.\",\"world\":{\"cut\":[-7,3,-6,3],\"rocksAvoid\":[[-7,9.6,-3.2,0.5]],\"worker\":false},\"parts\":[{\"id\":\"light\",\"kind\":\"light\",\"params\":{\"storm\":true}},{\"id\":\"dig\",\"kind\":\"dig\",\"params\":{\"clumps\":150,\"mound\":{\"x\":-11,\"z\":-6,\"rx\":1.9,\"rz\":1.5,\"h\":1.2}}},{\"id\":\"mud\",\"kind\":\"water\",\"params\":{\"box\":{\"x0\":-6.2,\"x1\":2.2,\"y0\":-2.9,\"y1\":-2,\"z0\":-5.6,\"z1\":0},\"mat\":\"water\",\"dirtyColor\":\"#6b5a33\"}},{\"id\":\"crumble\",\"kind\":\"fx\",\"params\":{\"type\":\"collapse\",\"at\":[-6.6,-1.2,0.1],\"size\":1,\"color\":\"#6b4a2e\"}},{\"id\":\"floor\",\"kind\":\"wipe\",\"params\":{\"box\":{\"x0\":-6.2,\"x1\":2.2,\"y0\":-2.6,\"y1\":-2.4,\"z0\":-5.2,\"z1\":0},\"mat\":\"concrete\",\"axis\":\"x\",\"r\":0.03,\"uvScale\":1}},{\"id\":\"wallL\",\"kind\":\"wipe\",\"params\":{\"box\":{\"x0\":-6.2,\"x1\":-6,\"y0\":-2.6,\"y1\":0.05,\"z0\":-5.2,\"z1\":0},\"mat\":\"concrete\",\"axis\":\"y\",\"r\":0.03,\"uvScale\":1}},{\"id\":\"wallR\",\"kind\":\"wipe\",\"params\":{\"box\":{\"x0\":2,\"x1\":2.2,\"y0\":-2.6,\"y1\":0.05,\"z0\":-5.2,\"z1\":0},\"mat\":\"concrete\",\"axis\":\"y\",\"r\":0.03,\"uvScale\":1}},{\"id\":\"wallB\",\"kind\":\"wipe\",\"params\":{\"box\":{\"x0\":-6.2,\"x1\":2.2,\"y0\":-2.6,\"y1\":0.05,\"z0\":-5.2,\"z1\":-5},\"mat\":\"concrete\",\"axis\":\"y\",\"r\":0.03,\"uvScale\":1}},{\"id\":\"poolWater\",\"kind\":\"water\",\"params\":{\"box\":{\"x0\":-6,\"x1\":2,\"y0\":-2.4,\"y1\":-0.25,\"z0\":-5,\"z1\":0},\"mat\":\"water\",\"dirtyColor\":\"#4e7d2c\"}},{\"id\":\"token\",\"kind\":\"token\",\"params\":{\"type\":\"duck\",\"pos\":[-3,-0.25,-1.2],\"path\":[[1.7,-0.25,-1.2],[-1,-0.25,-1.5],[-3.5,-0.25,-2],[-2,-0.25,-1]],\"size\":0.5}},{\"id\":\"leaves\",\"kind\":\"drops\",\"params\":{\"x0\":-5,\"x1\":1,\"count\":20,\"fromY\":4,\"landY\":-0.2,\"z\":-2.5,\"mat\":\"leaf\"}},{\"id\":\"skimmer\",\"kind\":\"boxPop\",\"params\":{\"size\":[0.5,0.6,0.8],\"pos\":[2.45,-0.35,-1.2],\"r\":0.05,\"mat\":\"pipeWhite\"}},{\"id\":\"leafFlow\",\"kind\":\"flow\",\"params\":{\"path\":[[-3,-0.22,-1.6],[2.1,-0.25,-1.2]],\"look\":\"water\",\"size\":0.12,\"speed\":1.4,\"count\":12}},{\"id\":\"leaves2\",\"kind\":\"drops\",\"params\":{\"x0\":2.25,\"x1\":2.65,\"count\":10,\"fromY\":1.2,\"landY\":-0.05,\"z\":-1.2,\"mat\":\"leaf\"}},{\"id\":\"pipe1\",\"kind\":\"pipeRun\",\"params\":{\"path\":[[2.6,-0.5,-0.06],[2.6,-1.4,-0.06],[4.6,-1.4,-0.06],[4.6,0.1,-0.06],[4.6,0.3,-1]],\"r\":0.12,\"radial\":16,\"jointR\":0.15,\"mat\":\"pipeWhite\"}},{\"id\":\"flowA\",\"kind\":\"pipeRunFlow\",\"params\":{\"pipe\":\"pipe1\",\"count\":12,\"size\":0.1,\"speed\":2.5,\"dz\":0.14,\"mat\":\"water\"}},{\"id\":\"dirt\",\"kind\":\"drops\",\"params\":{\"x0\":-5.5,\"x1\":1.5,\"count\":26,\"fromY\":-0.4,\"landY\":-2.35,\"z\":-1.5,\"mat\":\"mud\",\"size\":0.12}},{\"id\":\"drainGrate\",\"kind\":\"grate\",\"params\":{\"pos\":[-2.5,-2.38,-2.5],\"width\":1,\"depth\":0.8}},{\"id\":\"drainPipe\",\"kind\":\"pipeRun\",\"params\":{\"path\":[[-2.5,-2.55,-0.06],[2.6,-2.55,-0.06],[2.6,-1.4,-0.06]],\"r\":0.12,\"radial\":16,\"jointR\":0.15,\"mat\":\"pipeWhite\"}},{\"id\":\"dirtFlow\",\"kind\":\"pipeRunFlow\",\"params\":{\"pipe\":\"pipe1\",\"count\":14,\"size\":0.12,\"speed\":2.5,\"dz\":0.16,\"mat\":\"mud\"}},{\"id\":\"filter\",\"kind\":\"settle\",\"params\":{\"box\":{\"x0\":5.4,\"x1\":6.6,\"y0\":0,\"y1\":1.8,\"z0\":-1.8,\"z1\":0},\"lid\":false,\"murky\":true,\"sandColor\":\"#c9b27a\",\"wallColor\":\"#2f6fb0\"}},{\"id\":\"gauge\",\"kind\":\"counter\",\"params\":{\"pos\":[6,2.3,-0.9],\"size\":0.6,\"from\":10,\"to\":30,\"color\":\"#3ad6ff\",\"bar\":true,\"danger\":0.8}},{\"id\":\"backwash\",\"kind\":\"pipeRun\",\"params\":{\"path\":[[6.6,0.3,-0.4],[7,0.3,-0.4],[7,-0.2,-0.06],[7,-1.8,-0.06],[9.4,-2,-0.06]],\"r\":0.1,\"radial\":16,\"jointR\":0.13,\"mat\":\"pipeWhite\"}},{\"id\":\"mudFlow\",\"kind\":\"flow\",\"params\":{\"path\":[[6.6,0.3,-0.2],[7,0.3,-0.2],[7,-1.8,0.1],[9.4,-2,0.1]],\"look\":\"mud\",\"size\":0.12,\"speed\":1.8,\"count\":16}},{\"id\":\"chlor\",\"kind\":\"boxPop\",\"params\":{\"size\":[0.3,0.8,0.3],\"pos\":[9.2,0.4,-1],\"r\":0.06,\"mat\":\"pipeWhite\"}},{\"id\":\"returnPipe\",\"kind\":\"pipeRun\",\"params\":{\"path\":[[8.1,0.2,-0.6],[8.1,-0.2,-0.06],[8.1,-0.9,-0.06],[2.2,-0.9,-0.06]],\"r\":0.1,\"radial\":16,\"jointR\":0.13,\"mat\":\"pipeWhite\"}},{\"id\":\"jet\",\"kind\":\"flow\",\"params\":{\"path\":[[2,-0.9,-1],[-0.5,-0.8,-1]],\"look\":\"water\",\"size\":0.12,\"speed\":2,\"count\":12}},{\"id\":\"coverPuddle\",\"kind\":\"water\",\"params\":{\"box\":{\"x0\":-5.8,\"x1\":1.8,\"y0\":-0.14,\"y1\":-0.02,\"z0\":-4.8,\"z1\":0},\"mat\":\"water\"}},{\"id\":\"spill\",\"kind\":\"flow\",\"params\":{\"path\":[[-6.1,0.08,-1],[-7.8,0.03,-1]],\"look\":\"water\",\"size\":0.14,\"speed\":1.6,\"count\":14}},{\"id\":\"puddles\",\"kind\":\"puddles\",\"params\":{\"list\":[[-8.4,-2,1.3,0.9]],\"rise\":[0.3,0.2],\"fall\":[0.2,0]}},{\"id\":\"overflow\",\"kind\":\"pipeRun\",\"params\":{\"path\":[[-6,-0.45,-0.06],[-6.6,-0.45,-0.06],[-6.6,-2.9,-0.06]],\"r\":0.1,\"radial\":16,\"jointR\":0.13,\"mat\":\"pipeWhite\"}},{\"id\":\"frost\",\"kind\":\"fx\",\"params\":{\"type\":\"frost\",\"at\":[-2,-0.2,-0.4],\"size\":1.6}},{\"id\":\"steam\",\"kind\":\"fx\",\"params\":{\"type\":\"smoke\",\"at\":[-2,0.1,-1.5],\"size\":1.4,\"color\":\"#e8eef2\"}},{\"id\":\"pump\",\"kind\":\"rig\",\"params\":{\"name\":\"pool pump\",\"synonyms\":[\"pump\"],\"pos\":[4.6,0,-1.2],\"nodes\":[{\"id\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.9,0.12,0.6],\"at\":[0,0.06,0],\"look\":\"concrete\"},{\"shape\":\"cylinder\",\"r\":0.3,\"h\":0.8,\"axis\":\"x\",\"at\":[0,0.42,0],\"look\":\"paint\",\"color\":\"#2f6fb0\"},{\"shape\":\"cylinder\",\"r\":0.25,\"h\":0.3,\"axis\":\"z\",\"at\":[0.25,0.42,0.3],\"look\":\"plastic\",\"color\":\"#e8e8e4\"}]},{\"id\":\"impeller\",\"parent\":\"body\",\"at\":[0.25,0.42,0.46],\"shapes\":[{\"shape\":\"fan\",\"r\":0.2,\"blades\":5,\"w\":0.05,\"axis\":\"z\",\"at\":[0,0,0],\"look\":\"metal\",\"color\":\"#d8dde2\"}],\"moves\":[{\"name\":\"pulls\",\"type\":\"spin\",\"axis\":\"z\",\"turns\":2}]}]}},{\"id\":\"heater\",\"kind\":\"rig\",\"params\":{\"name\":\"pool heater\",\"synonyms\":[\"heater\"],\"pos\":[8.1,0,-1.2],\"nodes\":[{\"id\":\"box\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.9,1.3,0.8],\"at\":[0,0.65,0],\"look\":\"paint\",\"color\":\"#8a8f96\"}]},{\"id\":\"burner\",\"parent\":\"box\",\"at\":[0,0.3,0.42],\"shapes\":[{\"shape\":\"flame\",\"r\":0.22,\"h\":0.25,\"color\":\"#3a7bff\"}],\"moves\":[{\"name\":\"warms\",\"type\":\"burn\"}]}]}},{\"id\":\"cover\",\"kind\":\"rig\",\"params\":{\"name\":\"pool cover\",\"synonyms\":[\"cover\"],\"pos\":[-2,-0.24,-2.5],\"nodes\":[{\"id\":\"sheet\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[8,0.06,5],\"at\":[0,0.03,0],\"look\":\"plastic\",\"color\":\"#2f6fb0\"}],\"moves\":[{\"name\":\"cover\",\"type\":\"appear\"},{\"name\":\"roll\",\"type\":\"slide\",\"to\":[0,0.3,-5.6]}]}]}},{\"id\":\"outline\",\"kind\":\"outline\",\"params\":{\"of\":\"filter\",\"opts\":{\"r\":0.06,\"closed\":true}}},{\"id\":\"rain\",\"kind\":\"rain\",\"params\":{\"x0\":-9,\"x1\":10,\"z0\":-7,\"z1\":1,\"yTop\":14,\"yBot\":-0.3,\"count\":1100,\"width\":0.02,\"opacity\":0.4}},{\"id\":\"sign\",\"kind\":\"sign\",\"params\":{\"at\":[10.5,0.08,-5],\"rotY\":0.25,\"scale\":1.3}}],\"beats\":[{\"s\":\"hook\",\"shows\":{\"p\":\"dig\",\"does\":\"a hole is dug in the lawn\"},\"do\":[{\"p\":\"dig\",\"v\":\"dig\",\"w\":\"dig\",\"o\":0,\"d\":1.8,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"dig\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem\",\"shows\":{\"p\":\"mud\",\"does\":\"the walls cave in and brown water fills the hole\"},\"do\":[{\"p\":\"crumble\",\"v\":\"go\",\"w\":\"crumble\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"rain\",\"v\":\"start\",\"w\":\"rain\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"light\",\"v\":\"storm\",\"w\":\"rain\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"mud\",\"v\":\"flood\",\"w\":\"rain\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"mud\",\"v\":\"dirty\",\"w\":\"mud\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"mud\"],\"view\":\"home\",\"width\":0.8,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix1\",\"shows\":{\"p\":\"poolWater\",\"does\":\"concrete walls rise and clear water fills the shell\"},\"do\":[{\"p\":\"rain\",\"v\":\"stop\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"light\",\"v\":\"clear\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"mud\",\"v\":\"hide\",\"w\":\"concrete\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"floor\",\"v\":\"grow\",\"w\":\"concrete\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"wallL\",\"v\":\"grow\",\"w\":\"concrete\",\"o\":0.2,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"wallR\",\"v\":\"grow\",\"w\":\"concrete\",\"o\":0.3,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"wallB\",\"v\":\"grow\",\"w\":\"concrete\",\"o\":0.4,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"poolWater\",\"v\":\"flood\",\"w\":\"fill\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"poolWater\",\"v\":\"trickle\",\"w\":\"water\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"poolWater\"],\"view\":\"home\",\"width\":0.8,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem2\",\"shows\":{\"p\":\"leaves\",\"does\":\"leaves land and float on the water\"},\"do\":[{\"p\":\"token\",\"v\":\"sit\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"leaves\",\"v\":\"fall\",\"w\":\"leaves\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"poolWater\"],\"view\":\"home\",\"width\":0.8,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix2\",\"shows\":{\"p\":\"skimmer\",\"does\":\"the skimmer pulls the leaves and the duck toward it\"},\"do\":[{\"p\":\"skimmer\",\"v\":\"show\",\"w\":\"skimmer\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"leafFlow\",\"v\":\"start\",\"w\":\"wall\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"leaves\",\"v\":\"hide\",\"w\":\"wall\",\"o\":0.8,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"token\",\"v\":\"ride\",\"w\":\"wall\",\"o\":0,\"d\":2.4,\"amp\":0.399,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"skimmer\",\"poolWater\"],\"view\":\"home\",\"width\":0.7,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem3\",\"shows\":{\"p\":\"leaves2\",\"does\":\"the basket fills with leaves and the flow stops\"},\"do\":[{\"p\":\"leaves2\",\"v\":\"fall\",\"w\":\"basket\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"leafFlow\",\"v\":\"stop\",\"w\":\"barely\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"skimmer\"],\"view\":\"home\",\"width\":0.6,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix3\",\"shows\":{\"p\":\"pump\",\"does\":\"the pump spins and pulls water through the pipe\"},\"do\":[{\"p\":\"pump\",\"v\":\"show\",\"w\":\"pump\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"pump\",\"v\":\"pulls\",\"w\":\"pulls\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"pipe1\",\"v\":\"grow\",\"w\":\"pipe\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"flowA\",\"v\":\"show\",\"w\":\"pipe\",\"o\":0.8,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"leaves2\",\"v\":\"hide\",\"w\":\"pipe\",\"o\":0.6,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"pump\",\"pipe1\"],\"view\":\"home\",\"width\":0.7,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem4\",\"shows\":{\"p\":\"dirt\",\"does\":\"dirt settles on the pool floor\"},\"do\":[{\"p\":\"dirt\",\"v\":\"fall\",\"w\":\"sinks\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"poolWater\"],\"view\":\"home\",\"width\":0.8,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix4\",\"shows\":{\"p\":\"drainGrate\",\"does\":\"a drain in the floor pulls the dirt into a pipe\"},\"do\":[{\"p\":\"drainGrate\",\"v\":\"show\",\"w\":\"drain\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"drainPipe\",\"v\":\"grow\",\"w\":\"deepest\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"dirt\",\"v\":\"hide\",\"w\":\"point\",\"o\":0.4,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"drainGrate\",\"drainPipe\"],\"view\":\"home\",\"width\":0.7,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem5\",\"shows\":{\"p\":\"dirtFlow\",\"does\":\"brown dirt circles through the pipe and back\"},\"do\":[{\"p\":\"flowA\",\"v\":\"hide\",\"w\":\"dirt\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"dirtFlow\",\"v\":\"show\",\"w\":\"round\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"pipe1\",\"pump\"],\"view\":\"home\",\"width\":0.7,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix5\",\"shows\":{\"p\":\"filter\",\"does\":\"a sand tank fills and the dirt sinks into the sand\"},\"do\":[{\"p\":\"filter\",\"v\":\"show\",\"w\":\"tank\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"filter\",\"v\":\"fill\",\"w\":\"sand\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"filter\",\"v\":\"sink\",\"w\":\"traps\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"dirtFlow\",\"v\":\"hide\",\"w\":\"traps\",\"o\":0.5,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"flowA\",\"v\":\"show\",\"w\":\"traps\",\"o\":0.5,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"filter\"],\"view\":\"home\",\"width\":0.6,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"name\",\"shows\":{\"p\":\"outline\",\"does\":\"the sand filter glows\"},\"do\":[{\"p\":\"outline\",\"v\":\"show\",\"w\":\"sand\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"filter\"],\"view\":\"home\",\"width\":0.6,\"type\":\"\",\"hero\":true,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem6\",\"shows\":{\"p\":\"gauge\",\"does\":\"the gauge needle climbs into the red\"},\"do\":[{\"p\":\"outline\",\"v\":\"hide\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"gauge\",\"v\":\"show\",\"w\":\"sand\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"gauge\",\"v\":\"count\",\"w\":\"climbs\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"filter\",\"gauge\"],\"view\":\"home\",\"width\":0.6,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix6\",\"shows\":{\"p\":\"mudFlow\",\"does\":\"brown water flushes out through a pipe to the sewer\"},\"do\":[{\"p\":\"backwash\",\"v\":\"grow\",\"w\":\"flush\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"mudFlow\",\"v\":\"start\",\"w\":\"sewer\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"filter\",\"v\":\"clear\",\"w\":\"sewer\",\"o\":0.4,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"gauge\",\"v\":\"hide\",\"w\":\"sewer\",\"o\":0.8,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"backwash\",\"filter\"],\"view\":\"home\",\"width\":0.7,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem7\",\"shows\":{\"p\":\"poolWater\",\"does\":\"the pool water turns algae green\"},\"do\":[{\"p\":\"mudFlow\",\"v\":\"stop\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"poolWater\",\"v\":\"dirty\",\"w\":\"green\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"poolWater\"],\"view\":\"home\",\"width\":0.8,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix7\",\"shows\":{\"p\":\"poolWater\",\"does\":\"the water clears\"},\"do\":[{\"p\":\"chlor\",\"v\":\"show\",\"w\":\"chlorinator\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"poolWater\",\"v\":\"clean\",\"w\":\"kills\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"chlor\",\"filter\"],\"view\":\"home\",\"width\":0.6,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem8\",\"shows\":{\"p\":\"frost\",\"does\":\"frost creeps over the cold water\"},\"do\":[{\"p\":\"jet\",\"v\":\"stop\",\"w\":\"cold\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"frost\",\"v\":\"start\",\"w\":\"freezing\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"poolWater\"],\"view\":\"home\",\"width\":0.8,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix8\",\"shows\":{\"p\":\"heater\",\"does\":\"the heater burns and warm water jets back into the pool\"},\"do\":[{\"p\":\"heater\",\"v\":\"show\",\"w\":\"heater\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"heater\",\"v\":\"warms\",\"w\":\"warms\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"frost\",\"v\":\"stop\",\"w\":\"warms\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"returnPipe\",\"v\":\"grow\",\"w\":\"back\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"jet\",\"v\":\"start\",\"w\":\"back\",\"o\":0.6,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"token\",\"v\":\"ride\",\"w\":\"back\",\"o\":0,\"d\":2,\"amp\":0.231,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"heater\"],\"view\":\"home\",\"width\":0.5,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem9\",\"shows\":{\"p\":\"steam\",\"does\":\"steam rises off the open water into the night\"},\"do\":[{\"p\":\"light\",\"v\":\"night\",\"w\":\"night\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"heater\",\"v\":\"warmsBack\",\"w\":\"escapes\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"steam\",\"v\":\"start\",\"w\":\"escapes\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"poolWater\"],\"view\":\"home\",\"width\":0.8,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix9\",\"shows\":{\"p\":\"cover\",\"does\":\"a blue cover lies on the water\"},\"do\":[{\"p\":\"cover\",\"v\":\"cover\",\"w\":\"cover\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"steam\",\"v\":\"stop\",\"w\":\"cover\",\"o\":0.3,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"cover\"],\"view\":\"home\",\"width\":0.8,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem10\",\"shows\":{\"p\":\"spill\",\"does\":\"rain pools on the cover and water spills over the edge onto the lawn\"},\"do\":[{\"p\":\"light\",\"v\":\"day\",\"w\":\"rain\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"light\",\"v\":\"storm\",\"w\":\"rain\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"rain\",\"v\":\"start\",\"w\":\"rain\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"coverPuddle\",\"v\":\"flood\",\"w\":\"pools\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"spill\",\"v\":\"start\",\"w\":\"spills\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"puddles\",\"v\":\"rise\",\"w\":\"spills\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"cover\",\"puddles\"],\"view\":\"home\",\"width\":0.8,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix10\",\"shows\":{\"p\":\"overflow\",\"does\":\"a pipe at the rim carries the extra water down\"},\"do\":[{\"p\":\"overflow\",\"v\":\"grow\",\"w\":\"overflow\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"spill\",\"v\":\"stop\",\"w\":\"carries\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"coverPuddle\",\"v\":\"drain\",\"w\":\"away\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"puddles\",\"v\":\"dry\",\"w\":\"away\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"overflow\",\"wallL\"],\"view\":\"home\",\"width\":0.6,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"finish\",\"shows\":{\"p\":\"cover\",\"does\":\"the cover slides off and the duck floats on clear water\"},\"do\":[{\"p\":\"rain\",\"v\":\"stop\",\"w\":\"Roll\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"light\",\"v\":\"clear\",\"w\":\"Roll\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"cover\",\"v\":\"roll\",\"w\":\"Roll\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"heater\",\"v\":\"warms\",\"w\":\"warm\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"token\",\"v\":\"ride\",\"w\":\"warm\",\"o\":0,\"d\":2.2,\"amp\":0.37,\"ch\":\"\"},{\"p\":\"flowA\",\"v\":\"hide\",\"w\":\"clear\",\"o\":0.4,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"poolWater\"],\"view\":\"home\",\"width\":0.85,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"congrats\",\"shows\":{\"p\":\"poolWater\",\"does\":\"the finished pool in the sun\"},\"do\":[{\"p\":\"jet\",\"v\":\"stop\",\"w\":\"built\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[]}],\"audio\":{\"cards\":[],\"sfx\":[{\"lib\":\"dirt\",\"at\":{\"s\":\"hook\",\"w\":\"dig\",\"o\":0.2},\"d\":1.4},{\"lib\":\"water_rush\",\"at\":{\"s\":\"fix1\",\"w\":\"fill\",\"o\":0},\"d\":1.4},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"fix3\",\"w\":\"pump\",\"o\":0},\"d\":1.6},{\"lib\":\"water_rush\",\"at\":{\"s\":\"fix6\",\"w\":\"flush\",\"o\":0},\"d\":1.3},{\"lib\":\"flame\",\"at\":{\"s\":\"fix8\",\"w\":\"warms\",\"o\":0},\"d\":1.2}],\"chimes\":[{\"s\":\"name\",\"w\":\"\",\"o\":0},{\"s\":\"congrats\",\"w\":\"\",\"o\":0}],\"rain\":[{\"s\":\"problem\",\"w\":\"rain\",\"o\":0},{\"s\":\"fix1\",\"w\":\"So\",\"o\":0},{\"s\":\"problem10\",\"w\":\"rain\",\"o\":0},{\"s\":\"finish\",\"w\":\"Roll\",\"o\":0}]}}"
+ }
+}

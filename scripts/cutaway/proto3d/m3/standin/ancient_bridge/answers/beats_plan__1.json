@@ -1,65 +1,84 @@
 {
  "hash": "*",
- "by": "stand-in planner (replan 2026-11-09)",
+ "by": "stand-in planner (agent), 2026-11-11",
  "searches": 0,
  "data": {
-  "why": "A river in its own valley: terrain with a riverbed and a waterBody river, the bridge standing on the two banks. A plank snaps under a loaded cart, stone piers and a long slab replace it, the slab cracks, and an arch is built stone by stone over a wooden frame up to its keystone; the weight runs down the curve into the piers, the frame is pulled away and a road, walls and a rolling cart finish it. The camera frames the plank, then holds the bridge's front across the river.",
+  "why": "A river in its own valley (terrain with a riverbed, a river in it from the first frame), a toy boat drifting down it. The weight's path is the story: a plank snaps, a slab on piers cracks, an arch over a frame pushes the piers apart, packed stone holds them, a flood slams the solid piers, flood arches let it through, the rushing water digs the riverbed out, riprap stones fix it; the cart rolls across at the end. The camera opens on the plank, then holds the bridge's front with the river in section.",
   "story": {
-   "title": "Ancient arch bridge",
-   "hero": "an arch bridge",
+   "title": "Ancient stone arch bridge",
+   "hero": "a stone arch bridge",
    "parts": [
     "river",
     "plank",
     "cart",
     "stone piers",
     "slab",
-    "crack",
     "wooden frame",
     "wedge stones",
     "keystone",
+    "backfill",
+    "flood arches",
+    "riprap stones",
     "stone road",
-    "low walls"
+    "low walls",
+    "toy boat"
    ],
    "ideas": [
     {
      "role": "hook",
-     "idea": "a plank across a river is a bridge"
+     "idea": "a plank laid across a river is already a bridge"
     },
     {
      "role": "problem",
-     "idea": "a cart loaded with stone snaps the plank"
+     "idea": "a loaded cart is too heavy and the plank snaps"
     },
     {
      "role": "fix1",
-     "idea": "stone piers on the banks with slabs on top"
+     "idea": "stone piers on both banks with a stone slab across"
     },
     {
      "role": "problem2",
-     "idea": "the long slab cracks: stone is weak when stretched"
+     "idea": "the long slab bends under the weight and cracks"
     },
     {
      "role": "fix2",
-     "idea": "wedge stones curved over a wooden frame, locked by a keystone"
+     "idea": "wedge stones curved over a wooden frame make an arch that is only squeezed"
     },
     {
      "role": "name",
      "idea": "this is an arch bridge"
     },
     {
-     "role": "how",
-     "idea": "the weight is squeezed down the curve into the piers"
+     "role": "problem3",
+     "idea": "the arch pushes outward and shoves the piers apart"
     },
     {
      "role": "fix3",
-     "idea": "the frame comes away and the arch holds itself"
+     "idea": "heavy stone packed behind the piers holds them"
+    },
+    {
+     "role": "problem4",
+     "idea": "the heavy solid piers now block a spring flood, which slams into them"
+    },
+    {
+     "role": "fix4",
+     "idea": "flood arches through the piers let the floodwater pass"
+    },
+    {
+     "role": "problem5",
+     "idea": "the water rushing through digs the riverbed out from under the piers"
+    },
+    {
+     "role": "fix5",
+     "idea": "big stones piled round the pier feet stop the digging"
     },
     {
      "role": "finish",
-     "idea": "a stone road, low walls and a cart rolling across"
+     "idea": "paved road and walls: a cart rolls across over the river"
     },
     {
      "role": "congrats",
-     "idea": "you have built an arch bridge"
+     "idea": "you have built a stone arch bridge"
     }
    ],
    "chain": [
@@ -68,26 +87,78 @@
      "causedBy": "hook",
      "shows": "the loaded cart rolls on and the plank snaps in two",
      "stakes": "the cart falls in the river",
-     "size": 5
+     "size": 3,
+     "at": "deck",
+     "scale": "part"
     },
     {
      "problem": "problem2",
      "causedBy": "fix1",
-     "shows": "a crack opens in the long stone slab",
-     "stakes": "the slab will break under the next cart",
-     "size": 7
-    }
-   ],
-   "surprises": [
-    {
-     "claim": "Stone is typically about 10 to 20 times stronger in compression than in tension, depending on the rock.",
-     "role": "problem2",
-     "search": "rock compressive vs tensile strength ratio 10 to 20"
+     "shows": "the long stone slab cracks in the middle under a heavy block",
+     "stakes": "the next cart falls through",
+     "size": 4,
+     "at": "deck",
+     "scale": "thing"
     },
     {
-     "claim": "The Pons Fabricius in Rome was built in 62 BC and still carries walkers after more than 2000 years",
-     "role": "how",
-     "search": "Pons Fabricius 62 BC oldest bridge Rome still in use"
+     "problem": "problem3",
+     "causedBy": "fix2",
+     "shows": "without its frame the arch pushes the piers apart",
+     "stakes": "the arch falls in",
+     "size": 5,
+     "at": "arch",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem4",
+     "causedBy": "fix3",
+     "shows": "a flood rises to the arch and slams into the heavy piers, lifting a boat",
+     "stakes": "the whole bridge is pushed over",
+     "size": 7,
+     "at": "piers",
+     "scale": "river"
+    },
+    {
+     "problem": "problem5",
+     "causedBy": "fix4",
+     "shows": "water rushing through the flood arches digs out the riverbed and the piers sink",
+     "stakes": "the bridge sinks into the river",
+     "size": 8,
+     "at": "riverbed",
+     "scale": "river"
+    }
+   ],
+   "flow": [
+    "deck",
+    "arch",
+    "piers",
+    "riverbed",
+    "river"
+   ],
+   "recurring": {
+    "p": "boat",
+    "what": "a toy boat drifting down the river"
+   },
+   "surprises": [
+    {
+     "claim": "Roman arch stones were held up during building on a temporary wooden frame called centering, removed once the keystone was set",
+     "role": "fix2",
+     "search": "Roman arch bridge wooden centering removed after keystone"
+    },
+    {
+     "claim": "An arch pushes outward on its supports (thrust), so its ends need heavy abutments to stop them spreading",
+     "role": "problem3",
+     "search": "arch thrust pushes outward abutments resist spreading"
+    },
+    {
+     "claim": "Some Roman bridges have small flood openings through their piers so floodwater can pass, as in the Pons Fabricius in Rome",
+     "role": "fix4",
+     "search": "Pons Fabricius flood opening in pier"
+    },
+    {
+     "claim": "Scour, the riverbed washing away around piers, is the most common cause of bridge failure",
+     "role": "problem5",
+     "search": "scour most common cause of bridge failure"
     }
    ]
   },
@@ -98,1835 +169,57 @@
    },
    {
     "role": "problem",
-    "text": "But a cart loaded with stone rolls on and the plank snaps."
+    "text": "But a loaded cart snaps the plank."
    },
    {
     "role": "fix1",
-    "text": "So you build stone piers on both banks and rest slabs on top."
+    "text": "So you lay a slab on stone piers."
    },
    {
     "role": "problem2",
-    "text": "But now the slab cracks, because stone is about 10 to 20 times stronger in compression than in tension."
+    "text": "But under the weight, the long slab cracks."
    },
    {
     "role": "fix2",
-    "text": "So you set a wooden frame, curve wedge stones over it, and lock a keystone on top."
+    "text": "So you curve wedge stones over a wooden frame."
    },
    {
     "role": "name",
     "text": "This is an arch bridge."
    },
    {
-    "role": "how",
-    "text": "The weight squeezes the stones down the curve into the piers."
+    "role": "problem3",
+    "text": "But without the frame, the arch pushes the piers apart."
    },
    {
     "role": "fix3",
-    "text": "So you pull the frame away, and the arch holds itself."
+    "text": "So you pack heavy stone behind each pier."
+   },
+   {
+    "role": "problem4",
+    "text": "But a flood rises and pounds against the piers."
+   },
+   {
+    "role": "fix4",
+    "text": "So you open a flood arch through each pier."
+   },
+   {
+    "role": "problem5",
+    "text": "But water rushing through digs out the riverbed."
+   },
+   {
+    "role": "fix5",
+    "text": "So you pile big stones around their feet."
    },
    {
     "role": "finish",
-    "text": "Add a stone road and low walls, and a cart rolls across."
+    "text": "Pave the road, and a cart rolls across the river."
    },
    {
     "role": "congrats",
     "text": "Congratulations, you have built an arch bridge."
    }
   ],
-  "sceneJson": {
-   "world": {
-    "cut": [
-     -14,
-     -13.4,
-     -0.5,
-     0.3
-    ],
-    "house": false,
-    "porch": false,
-    "worker": false,
-    "road": false,
-    "moreTrees": false,
-    "trees": [
-     [
-      -13,
-      -8
-     ],
-     [
-      14,
-      -9,
-      1.1
-     ]
-    ]
-   },
-   "parts": [
-    {
-     "id": "light",
-     "kind": "light",
-     "params": {
-      "storm": false
-     }
-    },
-    {
-     "id": "dig",
-     "kind": "dig",
-     "params": {
-      "clumps": 4,
-      "mound": {
-       "x": -16,
-       "z": -8,
-       "rx": 0.3,
-       "rz": 0.3,
-       "h": 0.08
-      }
-     }
-    },
-    {
-     "id": "land",
-     "kind": "terrain",
-     "params": {
-      "blocks": [
-       {
-        "type": "flat",
-        "x0": -24,
-        "x1": 24,
-        "y": 0
-       },
-       {
-        "type": "riverbed",
-        "x0": -5,
-        "x1": 5,
-        "depth": 2.5
-       }
-      ],
-      "trees": [
-       [
-        -13,
-        -8,
-        1
-       ],
-       [
-        -18,
-        -12,
-        1.2
-       ],
-       [
-        14,
-        -9,
-        1.1
-       ]
-      ]
-     }
-    },
-    {
-     "id": "river",
-     "kind": "waterBody",
-     "params": {
-      "body": "river",
-      "x0": -5,
-      "x1": 5,
-      "level": -0.6
-     }
-    },
-    {
-     "id": "plank",
-     "kind": "rig",
-     "params": {
-      "name": "plank bridge",
-      "synonyms": [
-       "plank",
-       "board"
-      ],
-      "pos": [
-       0,
-       0,
-       -1.5
-      ],
-      "nodes": [
-       {
-        "id": "plank",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           13.4,
-           0.16,
-           1.8
-          ],
-          "at": [
-           0,
-           0.08,
-           0
-          ],
-          "look": "wood",
-          "color": "#9a6b3c"
-         }
-        ],
-        "moves": [
-         {
-          "name": "snaps",
-          "type": "snap",
-          "axis": "x",
-          "gap": 0.7
-         }
-        ]
-       },
-       {
-        "id": "cart",
-        "at": [
-         -5.6,
-         0.16,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           1.8,
-           0.3,
-           1.1
-          ],
-          "at": [
-           0,
-           0.55,
-           0
-          ],
-          "look": "wood",
-          "color": "#6b4a2a"
-         },
-         {
-          "shape": "wheel",
-          "r": 0.35,
-          "w": 0.12,
-          "axis": "z",
-          "at": [
-           -0.6,
-           0.35,
-           0.6
-          ],
-          "look": "wood",
-          "color": "#4a3220"
-         },
-         {
-          "shape": "wheel",
-          "r": 0.35,
-          "w": 0.12,
-          "axis": "z",
-          "at": [
-           0.6,
-           0.35,
-           0.6
-          ],
-          "look": "wood",
-          "color": "#4a3220"
-         },
-         {
-          "shape": "wheel",
-          "r": 0.35,
-          "w": 0.12,
-          "axis": "z",
-          "at": [
-           -0.6,
-           0.35,
-           -0.6
-          ],
-          "look": "wood",
-          "color": "#4a3220"
-         },
-         {
-          "shape": "wheel",
-          "r": 0.35,
-          "w": 0.12,
-          "axis": "z",
-          "at": [
-           0.6,
-           0.35,
-           -0.6
-          ],
-          "look": "wood",
-          "color": "#4a3220"
-         },
-         {
-          "shape": "box",
-          "size": [
-           1.1,
-           0.6,
-           0.8
-          ],
-          "at": [
-           0,
-           1,
-           0
-          ],
-          "look": "concrete",
-          "color": "#8d8a82"
-         }
-        ],
-        "moves": [
-         {
-          "name": "rolls",
-          "type": "slide",
-          "to": [
-           5,
-           0,
-           0
-          ]
-         }
-        ]
-       }
-      ]
-     }
-    },
-    {
-     "id": "bridge",
-     "kind": "rig",
-     "main": true,
-     "params": {
-      "name": "stone arch bridge",
-      "synonyms": [
-       "arch bridge",
-       "arch",
-       "bridge",
-       "piers",
-       "slabs"
-      ],
-      "pos": [
-       0,
-       0,
-       -1.5
-      ],
-      "nodes": [
-       {
-        "id": "piers",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           1.4,
-           3,
-           2.4
-          ],
-          "at": [
-           -5.9,
-           1.5,
-           0
-          ],
-          "look": "concrete",
-          "color": "#a39d90"
-         },
-         {
-          "shape": "box",
-          "size": [
-           1.4,
-           3,
-           2.4
-          ],
-          "at": [
-           5.9,
-           1.5,
-           0
-          ],
-          "look": "concrete",
-          "color": "#a39d90"
-         }
-        ],
-        "moves": [
-         {
-          "name": "piers",
-          "type": "appear"
-         }
-        ]
-       },
-       {
-        "id": "slab",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           13.200000000000001,
-           0.5,
-           2.4
-          ],
-          "at": [
-           0,
-           3.25,
-           0
-          ],
-          "look": "concrete",
-          "color": "#b8b3a8"
-         }
-        ],
-        "moves": [
-         {
-          "name": "slabs",
-          "type": "appear"
-         },
-         {
-          "name": "cracks",
-          "type": "snap",
-          "axis": "x",
-          "gap": 0.25
-         }
-        ]
-       },
-       {
-        "id": "frame",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           1.45,
-           0.22,
-           2
-          ],
-          "at": [
-           4.58,
-           0.96,
-           0
-          ],
-          "rot": [
-           0,
-           0,
-           -36.82
-          ],
-          "look": "wood",
-          "color": "#b07d4f"
-         },
-         {
-          "shape": "box",
-          "size": [
-           1.45,
-           0.22,
-           2
-          ],
-          "at": [
-           3.38,
-           1.69,
-           0
-          ],
-          "rot": [
-           0,
-           0,
-           -26.3
-          ],
-          "look": "wood",
-          "color": "#b07d4f"
-         },
-         {
-          "shape": "box",
-          "size": [
-           1.45,
-           0.22,
-           2
-          ],
-          "at": [
-           2.08,
-           2.19,
-           0
-          ],
-          "rot": [
-           0,
-           0,
-           -15.78
-          ],
-          "look": "wood",
-          "color": "#b07d4f"
-         },
-         {
-          "shape": "box",
-          "size": [
-           1.45,
-           0.22,
-           2
-          ],
-          "at": [
-           0.7,
-           2.45,
-           0
-          ],
-          "rot": [
-           0,
-           0,
-           -5.26
-          ],
-          "look": "wood",
-          "color": "#b07d4f"
-         },
-         {
-          "shape": "box",
-          "size": [
-           1.45,
-           0.22,
-           2
-          ],
-          "at": [
-           -0.7,
-           2.45,
-           0
-          ],
-          "rot": [
-           0,
-           0,
-           5.26
-          ],
-          "look": "wood",
-          "color": "#b07d4f"
-         },
-         {
-          "shape": "box",
-          "size": [
-           1.45,
-           0.22,
-           2
-          ],
-          "at": [
-           -2.08,
-           2.19,
-           0
-          ],
-          "rot": [
-           0,
-           0,
-           15.78
-          ],
-          "look": "wood",
-          "color": "#b07d4f"
-         },
-         {
-          "shape": "box",
-          "size": [
-           1.45,
-           0.22,
-           2
-          ],
-          "at": [
-           -3.38,
-           1.69,
-           0
-          ],
-          "rot": [
-           0,
-           0,
-           26.3
-          ],
-          "look": "wood",
-          "color": "#b07d4f"
-         },
-         {
-          "shape": "box",
-          "size": [
-           1.45,
-           0.22,
-           2
-          ],
-          "at": [
-           -4.58,
-           0.96,
-           0
-          ],
-          "rot": [
-           0,
-           0,
-           36.82
-          ],
-          "look": "wood",
-          "color": "#b07d4f"
-         }
-        ],
-        "moves": [
-         {
-          "name": "frame",
-          "type": "appear"
-         },
-         {
-          "name": "pull",
-          "type": "slide",
-          "to": [
-           0,
-           -0.9,
-           0
-          ]
-         }
-        ]
-       },
-       {
-        "id": "s0",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           1.35,
-           0.5,
-           2.4
-          ],
-          "at": [
-           4.87,
-           1.2,
-           0
-          ],
-          "rot": [
-           0,
-           0,
-           -37.4
-          ],
-          "look": "concrete",
-          "color": "#bdb5a2"
-         }
-        ],
-        "moves": [
-         {
-          "name": "curve",
-          "type": "appear"
-         }
-        ]
-       },
-       {
-        "id": "s1",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           1.35,
-           0.5,
-           2.4
-          ],
-          "at": [
-           3.77,
-           1.91,
-           0
-          ],
-          "rot": [
-           0,
-           0,
-           -28.05
-          ],
-          "look": "concrete",
-          "color": "#bdb5a2"
-         }
-        ],
-        "moves": [
-         {
-          "name": "wedge",
-          "type": "appear"
-         }
-        ]
-       },
-       {
-        "id": "s2",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           1.35,
-           0.5,
-           2.4
-          ],
-          "at": [
-           2.57,
-           2.43,
-           0
-          ],
-          "rot": [
-           0,
-           0,
-           -18.7
-          ],
-          "look": "concrete",
-          "color": "#bdb5a2"
-         }
-        ],
-        "moves": [
-         {
-          "name": "stones",
-          "type": "appear"
-         }
-        ]
-       },
-       {
-        "id": "s3",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           1.35,
-           0.5,
-           2.4
-          ],
-          "at": [
-           1.3,
-           2.74,
-           0
-          ],
-          "rot": [
-           0,
-           0,
-           -9.35
-          ],
-          "look": "concrete",
-          "color": "#bdb5a2"
-         }
-        ],
-        "moves": [
-         {
-          "name": "over",
-          "type": "appear"
-         }
-        ]
-       },
-       {
-        "id": "s4",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           1.35,
-           0.5,
-           2.4
-          ],
-          "at": [
-           0,
-           2.85,
-           0
-          ],
-          "rot": [
-           0,
-           0,
-           0
-          ],
-          "look": "concrete",
-          "color": "#d8cfb8"
-         }
-        ],
-        "moves": [
-         {
-          "name": "keystone",
-          "type": "appear"
-         }
-        ]
-       },
-       {
-        "id": "s5",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           1.35,
-           0.5,
-           2.4
-          ],
-          "at": [
-           -1.3,
-           2.74,
-           0
-          ],
-          "rot": [
-           0,
-           0,
-           9.35
-          ],
-          "look": "concrete",
-          "color": "#bdb5a2"
-         }
-        ],
-        "moves": [
-         {
-          "name": "over",
-          "type": "appear"
-         }
-        ]
-       },
-       {
-        "id": "s6",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           1.35,
-           0.5,
-           2.4
-          ],
-          "at": [
-           -2.57,
-           2.43,
-           0
-          ],
-          "rot": [
-           0,
-           0,
-           18.7
-          ],
-          "look": "concrete",
-          "color": "#bdb5a2"
-         }
-        ],
-        "moves": [
-         {
-          "name": "stones",
-          "type": "appear"
-         }
-        ]
-       },
-       {
-        "id": "s7",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           1.35,
-           0.5,
-           2.4
-          ],
-          "at": [
-           -3.77,
-           1.91,
-           0
-          ],
-          "rot": [
-           0,
-           0,
-           28.05
-          ],
-          "look": "concrete",
-          "color": "#bdb5a2"
-         }
-        ],
-        "moves": [
-         {
-          "name": "wedge",
-          "type": "appear"
-         }
-        ]
-       },
-       {
-        "id": "s8",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           1.35,
-           0.5,
-           2.4
-          ],
-          "at": [
-           -4.87,
-           1.2,
-           0
-          ],
-          "rot": [
-           0,
-           0,
-           37.4
-          ],
-          "look": "concrete",
-          "color": "#bdb5a2"
-         }
-        ],
-        "moves": [
-         {
-          "name": "curve",
-          "type": "appear"
-         }
-        ]
-       },
-       {
-        "id": "load",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           1.4,
-           0.9,
-           1.6
-          ],
-          "at": [
-           0,
-           3.55,
-           0
-          ],
-          "look": "concrete",
-          "color": "#6f6c66"
-         }
-        ],
-        "moves": [
-         {
-          "name": "weight",
-          "type": "appear"
-         }
-        ]
-       },
-       {
-        "id": "road",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           13.200000000000001,
-           0.3,
-           2.4
-          ],
-          "at": [
-           0,
-           3.25,
-           0
-          ],
-          "look": "concrete",
-          "color": "#7e7a73"
-         }
-        ],
-        "moves": [
-         {
-          "name": "road",
-          "type": "appear"
-         }
-        ]
-       },
-       {
-        "id": "walls",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           13.200000000000001,
-           0.6,
-           0.26
-          ],
-          "at": [
-           0,
-           3.7,
-           -1.07
-          ],
-          "look": "concrete",
-          "color": "#a39d90"
-         },
-         {
-          "shape": "box",
-          "size": [
-           13.200000000000001,
-           0.6,
-           0.26
-          ],
-          "at": [
-           0,
-           3.7,
-           1.07
-          ],
-          "look": "concrete",
-          "color": "#a39d90"
-         }
-        ],
-        "moves": [
-         {
-          "name": "walls",
-          "type": "appear"
-         }
-        ]
-       },
-       {
-        "id": "cart2",
-        "at": [
-         -5.4,
-         3.4,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           1.8,
-           0.3,
-           1.1
-          ],
-          "at": [
-           0,
-           0.55,
-           0
-          ],
-          "look": "wood",
-          "color": "#6b4a2a"
-         },
-         {
-          "shape": "wheel",
-          "r": 0.35,
-          "w": 0.12,
-          "axis": "z",
-          "at": [
-           -0.6,
-           0.35,
-           0.6
-          ],
-          "look": "wood",
-          "color": "#4a3220"
-         },
-         {
-          "shape": "wheel",
-          "r": 0.35,
-          "w": 0.12,
-          "axis": "z",
-          "at": [
-           0.6,
-           0.35,
-           0.6
-          ],
-          "look": "wood",
-          "color": "#4a3220"
-         },
-         {
-          "shape": "wheel",
-          "r": 0.35,
-          "w": 0.12,
-          "axis": "z",
-          "at": [
-           -0.6,
-           0.35,
-           -0.6
-          ],
-          "look": "wood",
-          "color": "#4a3220"
-         },
-         {
-          "shape": "wheel",
-          "r": 0.35,
-          "w": 0.12,
-          "axis": "z",
-          "at": [
-           0.6,
-           0.35,
-           -0.6
-          ],
-          "look": "wood",
-          "color": "#4a3220"
-         },
-         {
-          "shape": "box",
-          "size": [
-           1.1,
-           0.6,
-           0.8
-          ],
-          "at": [
-           0,
-           1,
-           0
-          ],
-          "look": "concrete",
-          "color": "#8d8a82"
-         }
-        ],
-        "moves": [
-         {
-          "name": "cart",
-          "type": "appear"
-         },
-         {
-          "name": "across",
-          "type": "slide",
-          "to": [
-           10.8,
-           0,
-           0
-          ]
-         }
-        ]
-       }
-      ]
-     }
-    },
-    {
-     "id": "thrust",
-     "kind": "arrows",
-     "params": {
-      "list": [
-       {
-        "at": [
-         3.52,
-         2.75,
-         -0.05
-        ],
-        "dir": [
-         0.91,
-         -0.41
-        ],
-        "travel": 1,
-        "phase": 0
-       },
-       {
-        "at": [
-         5.33,
-         1.66,
-         -0.05
-        ],
-        "dir": [
-         0.79,
-         -0.62
-        ],
-        "travel": 1,
-        "phase": 0.25
-       },
-       {
-        "at": [
-         -3.52,
-         2.75,
-         -0.05
-        ],
-        "dir": [
-         -0.91,
-         -0.41
-        ],
-        "travel": 1,
-        "phase": 0.5
-       },
-       {
-        "at": [
-         -5.33,
-         1.66,
-         -0.05
-        ],
-        "dir": [
-         -0.79,
-         -0.62
-        ],
-        "travel": 1,
-        "phase": 0.75
-       }
-      ],
-      "opts": {
-       "scale": 1.1,
-       "color": "#ffd23d"
-      }
-     }
-    },
-    {
-     "id": "archOutline",
-     "kind": "outline",
-     "params": {
-      "of": "archLine",
-      "points": [
-       [
-        -6.6000000000000005,
-        0.05,
-        -0.05
-       ],
-       [
-        -6.6000000000000005,
-        3,
-        -0.05
-       ],
-       [
-        -4.19,
-        2.1,
-        -0.05
-       ],
-       [
-        -2.17,
-        2.93,
-        -0.05
-       ],
-       [
-        0,
-        2.95,
-        -0.05
-       ],
-       [
-        2.17,
-        2.93,
-        -0.05
-       ],
-       [
-        4.19,
-        2.1,
-        -0.05
-       ],
-       [
-        6.6000000000000005,
-        3,
-        -0.05
-       ],
-       [
-        6.6000000000000005,
-        0.05,
-        -0.05
-       ]
-      ],
-      "opts": {
-       "closed": false,
-       "r": 0.11,
-       "over": true
-      }
-     }
-    },
-    {
-     "id": "sign",
-     "kind": "sign",
-     "params": {
-      "at": [
-       -12,
-       0,
-       -5
-      ],
-      "rotY": 0.25,
-      "scale": 1.3
-     }
-    }
-   ],
-   "beats": [
-    {
-     "s": "hook",
-     "shows": {
-      "p": "plank",
-      "does": "a wooden plank lies across the river from bank to bank"
-     },
-     "do": [
-      {
-       "p": "dig",
-       "v": "dig",
-       "w": "",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "plank",
-       "v": "show",
-       "w": "plank",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "plank"
-       ],
-       "view": "home",
-       "width": 0,
-       "type": "mid",
-       "hero": false,
-       "word": "",
-       "box": []
-      }
-     ]
-    },
-    {
-     "s": "problem",
-     "shows": {
-      "p": "plank",
-      "does": "a cart with a stone block rolls onto the plank and the plank snaps in two"
-     },
-     "state": {
-      "text": "BROKEN",
-      "w": "snaps"
-     },
-     "do": [
-      {
-       "p": "plank",
-       "v": "rolls",
-       "w": "rolls",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "plank",
-       "v": "snaps",
-       "w": "snaps",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "plank"
-       ],
-       "view": "home",
-       "width": 0,
-       "type": "mid",
-       "hero": false,
-       "word": "",
-       "box": []
-      }
-     ]
-    },
-    {
-     "s": "fix1",
-     "shows": {
-      "p": "bridge",
-      "does": "stone piers rise on both banks and a long stone slab is laid across them"
-     },
-     "do": [
-      {
-       "p": "plank",
-       "v": "hide",
-       "w": "So",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "bridge",
-       "v": "show",
-       "w": "So",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "bridge",
-       "v": "piers",
-       "w": "piers",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "bridge",
-       "v": "slabs",
-       "w": "slabs",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [],
-       "view": "home",
-       "width": 0,
-       "type": "",
-       "hero": false,
-       "word": "",
-       "box": [
-        -8,
-        -2.6,
-        -3,
-        8,
-        5.5,
-        0.5
-       ]
-      }
-     ]
-    },
-    {
-     "s": "problem2",
-     "shows": {
-      "p": "bridge",
-      "does": "a dark crack opens in the middle of the long slab"
-     },
-     "state": {
-      "text": "CRACKED",
-      "w": "cracks"
-     },
-     "do": [
-      {
-       "p": "bridge",
-       "v": "cracks",
-       "w": "cracks",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [],
-       "view": "home",
-       "width": 0,
-       "type": "",
-       "hero": false,
-       "word": "",
-       "box": [
-        -8,
-        -2.6,
-        -3,
-        8,
-        5.5,
-        0.5
-       ]
-      }
-     ]
-    },
-    {
-     "s": "fix2",
-     "shows": {
-      "p": "bridge",
-      "does": "a wooden frame goes under the slab and wedge stones curve over it, the pale keystone last at the top"
-     },
-     "do": [
-      {
-       "p": "bridge",
-       "v": "slabsBack",
-       "w": "frame",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "bridge",
-       "v": "frame",
-       "w": "frame",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "bridge",
-       "v": "curve",
-       "w": "curve",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "bridge",
-       "v": "wedge",
-       "w": "wedge",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "bridge",
-       "v": "stones",
-       "w": "stones",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "bridge",
-       "v": "over",
-       "w": "over",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "bridge",
-       "v": "keystone",
-       "w": "keystone",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [],
-       "view": "home",
-       "width": 0,
-       "type": "",
-       "hero": false,
-       "word": "",
-       "box": [
-        -8,
-        -2.6,
-        -3,
-        8,
-        5.5,
-        0.5
-       ]
-      }
-     ]
-    },
-    {
-     "s": "name",
-     "shows": {
-      "p": "archOutline",
-      "does": "a glowing line traces the arch and its piers"
-     },
-     "do": [
-      {
-       "p": "archOutline",
-       "v": "show",
-       "w": "arch",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "bridge"
-       ],
-       "view": "home",
-       "width": 0.85,
-       "type": "",
-       "hero": true,
-       "word": "",
-       "box": []
-      }
-     ]
-    },
-    {
-     "s": "how",
-     "shows": {
-      "p": "bridge",
-      "does": "a heavy block sits on the bridge and yellow arrows run down the curve into the piers"
-     },
-     "do": [
-      {
-       "p": "archOutline",
-       "v": "hide",
-       "w": "",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "bridge",
-       "v": "weight",
-       "w": "weight",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "thrust",
-       "v": "show",
-       "w": "squeezes",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [],
-       "view": "home",
-       "width": 0,
-       "type": "",
-       "hero": false,
-       "word": "",
-       "box": [
-        -8,
-        -2.6,
-        -3,
-        8,
-        5.5,
-        0.5
-       ]
-      }
-     ]
-    },
-    {
-     "s": "fix3",
-     "shows": {
-      "p": "bridge",
-      "does": "the wooden frame drops away and the stone arch stands on its own"
-     },
-     "do": [
-      {
-       "p": "thrust",
-       "v": "hide",
-       "w": "So",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "bridge",
-       "v": "weightBack",
-       "w": "So",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "bridge",
-       "v": "pull",
-       "w": "pull",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "bridge",
-       "v": "frameBack",
-       "w": "away",
-       "o": 0.3,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [],
-       "view": "home",
-       "width": 0,
-       "type": "",
-       "hero": false,
-       "word": "",
-       "box": [
-        -8,
-        -2.6,
-        -3,
-        8,
-        5.5,
-        0.5
-       ]
-      }
-     ]
-    },
-    {
-     "s": "finish",
-     "shows": {
-      "p": "bridge",
-      "does": "a stone road and low walls go on top, and a cart rolls across"
-     },
-     "do": [
-      {
-       "p": "bridge",
-       "v": "road",
-       "w": "road",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "bridge",
-       "v": "walls",
-       "w": "walls",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "bridge",
-       "v": "cart",
-       "w": "cart",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "bridge",
-       "v": "across",
-       "w": "rolls",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [],
-       "view": "home",
-       "width": 0,
-       "type": "",
-       "hero": false,
-       "word": "",
-       "box": [
-        -8,
-        -2.6,
-        -3,
-        8,
-        5.5,
-        0.5
-       ]
-      }
-     ]
-    },
-    {
-     "s": "congrats",
-     "shows": {
-      "p": "bridge",
-      "does": "the finished stone arch bridge over the river"
-     },
-     "do": [],
-     "shots": [
-      {
-       "focus": [
-        "home"
-       ],
-       "view": "home",
-       "width": 0,
-       "type": "",
-       "hero": false,
-       "word": "",
-       "box": []
-      }
-     ]
-    }
-   ],
-   "audio": {
-    "cards": [
-     {
-      "text": "10-20x",
-      "at": {
-       "s": "problem2",
-       "w": "10",
-       "o": 0
-      },
-      "d": 1.5
-     }
-    ],
-    "sfx": [
-     {
-      "lib": "dirt",
-      "at": {
-       "s": "problem",
-       "w": "snaps",
-       "o": 0
-      },
-      "d": 1
-     },
-     {
-      "lib": "dirt",
-      "at": {
-       "s": "fix1",
-       "w": "piers",
-       "o": 0
-      },
-      "d": 1
-     },
-     {
-      "lib": "dirt",
-      "at": {
-       "s": "fix2",
-       "w": "keystone",
-       "o": 0
-      },
-      "d": 0.8
-     },
-     {
-      "lib": "water_rush",
-      "at": {
-       "s": "hook",
-       "w": "river",
-       "o": 0
-      },
-      "d": 1.2
-     }
-    ],
-    "chimes": [
-     {
-      "s": "problem2",
-      "w": "10",
-      "o": 0
-     },
-     {
-      "s": "name",
-      "w": "",
-      "o": 0
-     },
-     {
-      "s": "congrats",
-      "w": "",
-      "o": 0
-     }
-    ],
-    "rain": []
-   }
-  }
+  "sceneJson": "{\"world\":{\"cut\":[-14,-13.4,-0.5,0.3],\"house\":false,\"porch\":false,\"worker\":false,\"road\":false,\"moreTrees\":false,\"trees\":[[-13,-9],[14,-10,1.1]]},\"parts\":[{\"id\":\"light\",\"kind\":\"light\",\"params\":{\"storm\":false}},{\"id\":\"dig\",\"kind\":\"dig\",\"params\":{\"clumps\":4,\"mound\":{\"x\":-16,\"z\":-8,\"rx\":0.3,\"rz\":0.3,\"h\":0.08}}},{\"id\":\"land\",\"kind\":\"terrain\",\"params\":{\"blocks\":[{\"type\":\"flat\",\"x0\":-24,\"x1\":24,\"y\":0},{\"type\":\"riverbed\",\"x0\":-5,\"x1\":5,\"depth\":2.5}],\"trees\":[[-13,-9,1],[-18,-13,1.2],[14,-10,1.1],[17,-15,1]]}},{\"id\":\"river\",\"kind\":\"waterBody\",\"params\":{\"body\":\"river\",\"x0\":-5,\"x1\":5,\"level\":-0.6}},{\"id\":\"floodWater\",\"kind\":\"water\",\"params\":{\"box\":{\"x0\":-5.1,\"x1\":5.1,\"y0\":-0.7,\"y1\":1.6,\"z0\":-8,\"z1\":0},\"mat\":\"water\"}},{\"id\":\"boat\",\"kind\":\"token\",\"params\":{\"type\":\"boat\",\"pos\":[-2,-0.6,-16],\"path\":[[-2,-0.6,-1.3],[-2,1.6,-1.3],[-2,-0.6,-1.3],[-0.6,-0.6,-1]],\"size\":0.8}},{\"id\":\"plank\",\"kind\":\"rig\",\"params\":{\"name\":\"plank bridge\",\"synonyms\":[\"plank\",\"board\"],\"pos\":[0,0,-3.5],\"nodes\":[{\"id\":\"plank\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[13.4,0.16,1.8],\"at\":[0,0.08,0],\"look\":\"wood\",\"color\":\"#9a6b3c\"}],\"moves\":[{\"name\":\"plank\",\"type\":\"appear\"},{\"name\":\"snaps\",\"type\":\"snap\",\"axis\":\"x\",\"gap\":0.7}]},{\"id\":\"cart\",\"at\":[-5.6,0.16,0],\"shapes\":[{\"shape\":\"box\",\"size\":[1.8,0.3,1.1],\"at\":[0,0.55,0],\"look\":\"wood\",\"color\":\"#6b4a2a\"},{\"shape\":\"wheel\",\"r\":0.35,\"w\":0.12,\"axis\":\"z\",\"at\":[-0.6,0.35,0.6],\"look\":\"wood\",\"color\":\"#4a3220\"},{\"shape\":\"wheel\",\"r\":0.35,\"w\":0.12,\"axis\":\"z\",\"at\":[0.6,0.35,0.6],\"look\":\"wood\",\"color\":\"#4a3220\"},{\"shape\":\"wheel\",\"r\":0.35,\"w\":0.12,\"axis\":\"z\",\"at\":[-0.6,0.35,-0.6],\"look\":\"wood\",\"color\":\"#4a3220\"},{\"shape\":\"wheel\",\"r\":0.35,\"w\":0.12,\"axis\":\"z\",\"at\":[0.6,0.35,-0.6],\"look\":\"wood\",\"color\":\"#4a3220\"},{\"shape\":\"box\",\"size\":[1.1,0.6,0.8],\"at\":[0,1,0],\"look\":\"concrete\",\"color\":\"#8d8a82\"}],\"moves\":[{\"name\":\"rolls\",\"type\":\"slide\",\"to\":[5,0,0]},{\"name\":\"falls\",\"type\":\"slide\",\"to\":[0,-1.6,0]}]}]}},{\"id\":\"bridge\",\"kind\":\"rig\",\"main\":true,\"params\":{\"name\":\"stone arch bridge\",\"synonyms\":[\"arch bridge\",\"arch\",\"bridge\",\"piers\",\"slab\"],\"pos\":[0,0,-3.5],\"nodes\":[{\"id\":\"pierL\",\"at\":[-5.9,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[2,1.4,2.4],\"at\":[0,0.7,0],\"look\":\"concrete\",\"color\":\"#a39d90\",\"surface\":\"stone\"},{\"shape\":\"box\",\"size\":[0.5,1,2.4],\"at\":[-0.75,1.9,0],\"look\":\"concrete\",\"color\":\"#a39d90\",\"surface\":\"stone\"},{\"shape\":\"box\",\"size\":[0.5,1,2.4],\"at\":[0.75,1.9,0],\"look\":\"concrete\",\"color\":\"#a39d90\",\"surface\":\"stone\"},{\"shape\":\"box\",\"size\":[2,0.6,2.4],\"at\":[0,2.7,0],\"look\":\"concrete\",\"color\":\"#a39d90\",\"surface\":\"stone\"}],\"moves\":[{\"name\":\"piers\",\"type\":\"appear\"},{\"name\":\"apart\",\"type\":\"slide\",\"to\":[-0.5,0,0]},{\"name\":\"digs\",\"type\":\"slide\",\"to\":[0,-0.35,0]}]},{\"id\":\"plugL\",\"parent\":\"pierL\",\"at\":[0,1.4,0],\"shapes\":[{\"shape\":\"box\",\"size\":[1,1,2.38],\"at\":[0,0.5,0],\"look\":\"concrete\",\"color\":\"#a39d90\",\"surface\":\"stone\"}],\"moves\":[{\"name\":\"open\",\"type\":\"slide\",\"to\":[0,-3.2,0]}]},{\"id\":\"pierR\",\"at\":[5.9,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[2,1.4,2.4],\"at\":[0,0.7,0],\"look\":\"concrete\",\"color\":\"#a39d90\",\"surface\":\"stone\"},{\"shape\":\"box\",\"size\":[0.5,1,2.4],\"at\":[-0.75,1.9,0],\"look\":\"concrete\",\"color\":\"#a39d90\",\"surface\":\"stone\"},{\"shape\":\"box\",\"size\":[0.5,1,2.4],\"at\":[0.75,1.9,0],\"look\":\"concrete\",\"color\":\"#a39d90\",\"surface\":\"stone\"},{\"shape\":\"box\",\"size\":[2,0.6,2.4],\"at\":[0,2.7,0],\"look\":\"concrete\",\"color\":\"#a39d90\",\"surface\":\"stone\"}],\"moves\":[{\"name\":\"piers\",\"type\":\"appear\"},{\"name\":\"apart\",\"type\":\"slide\",\"to\":[0.5,0,0]},{\"name\":\"digs\",\"type\":\"slide\",\"to\":[0,-0.35,0]}]},{\"id\":\"plugR\",\"parent\":\"pierR\",\"at\":[0,1.4,0],\"shapes\":[{\"shape\":\"box\",\"size\":[1,1,2.38],\"at\":[0,0.5,0],\"look\":\"concrete\",\"color\":\"#a39d90\",\"surface\":\"stone\"}],\"moves\":[{\"name\":\"open\",\"type\":\"slide\",\"to\":[0,-3.2,0]}]},{\"id\":\"slab\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[13.8,0.5,2.4],\"at\":[0,3.25,0],\"look\":\"concrete\",\"color\":\"#b8b3a8\",\"surface\":\"stone\"}],\"moves\":[{\"name\":\"slab\",\"type\":\"appear\"},{\"name\":\"cracks\",\"type\":\"snap\",\"axis\":\"x\",\"gap\":0.3}]},{\"id\":\"load\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[1.4,0.9,1.6],\"at\":[0,3.95,0],\"look\":\"concrete\",\"color\":\"#6f6c66\"}],\"moves\":[{\"name\":\"weight\",\"type\":\"appear\"}]},{\"id\":\"frame\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[1.45,0.22,2],\"at\":[4.58,0.96,0],\"rot\":[0,0,-36.82],\"look\":\"wood\",\"color\":\"#b07d4f\"},{\"shape\":\"box\",\"size\":[1.45,0.22,2],\"at\":[3.38,1.69,0],\"rot\":[0,0,-26.3],\"look\":\"wood\",\"color\":\"#b07d4f\"},{\"shape\":\"box\",\"size\":[1.45,0.22,2],\"at\":[2.08,2.19,0],\"rot\":[0,0,-15.78],\"look\":\"wood\",\"color\":\"#b07d4f\"},{\"shape\":\"box\",\"size\":[1.45,0.22,2],\"at\":[0.7,2.45,0],\"rot\":[0,0,-5.26],\"look\":\"wood\",\"color\":\"#b07d4f\"},{\"shape\":\"box\",\"size\":[1.45,0.22,2],\"at\":[-0.7,2.45,0],\"rot\":[0,0,5.26],\"look\":\"wood\",\"color\":\"#b07d4f\"},{\"shape\":\"box\",\"size\":[1.45,0.22,2],\"at\":[-2.08,2.19,0],\"rot\":[0,0,15.78],\"look\":\"wood\",\"color\":\"#b07d4f\"},{\"shape\":\"box\",\"size\":[1.45,0.22,2],\"at\":[-3.38,1.69,0],\"rot\":[0,0,26.3],\"look\":\"wood\",\"color\":\"#b07d4f\"},{\"shape\":\"box\",\"size\":[1.45,0.22,2],\"at\":[-4.58,0.96,0],\"rot\":[0,0,36.82],\"look\":\"wood\",\"color\":\"#b07d4f\"}],\"moves\":[{\"name\":\"frame\",\"type\":\"appear\"},{\"name\":\"pull\",\"type\":\"slide\",\"to\":[0,-0.9,0]}]},{\"id\":\"s0\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[1.35,0.5,2.4],\"at\":[4.87,1.2,0],\"rot\":[0,0,-37.4],\"look\":\"concrete\",\"color\":\"#bdb5a2\",\"surface\":\"stone\"}],\"moves\":[{\"name\":\"setcurve\",\"type\":\"appear\"}]},{\"id\":\"s1\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[1.35,0.5,2.4],\"at\":[3.77,1.91,0],\"rot\":[0,0,-28.05],\"look\":\"concrete\",\"color\":\"#bdb5a2\",\"surface\":\"stone\"}],\"moves\":[{\"name\":\"setwedge\",\"type\":\"appear\"}]},{\"id\":\"s2\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[1.35,0.5,2.4],\"at\":[2.57,2.43,0],\"rot\":[0,0,-18.7],\"look\":\"concrete\",\"color\":\"#bdb5a2\",\"surface\":\"stone\"}],\"moves\":[{\"name\":\"setstones\",\"type\":\"appear\"}]},{\"id\":\"s3\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[1.35,0.5,2.4],\"at\":[1.3,2.74,0],\"rot\":[0,0,-9.35],\"look\":\"concrete\",\"color\":\"#bdb5a2\",\"surface\":\"stone\"}],\"moves\":[{\"name\":\"setover\",\"type\":\"appear\"}]},{\"id\":\"s4\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[1.35,0.5,2.4],\"at\":[0,2.85,0],\"rot\":[0,0,0],\"look\":\"concrete\",\"color\":\"#d8cfb8\",\"surface\":\"stone\"}],\"moves\":[{\"name\":\"setframe\",\"type\":\"appear\"}]},{\"id\":\"s5\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[1.35,0.5,2.4],\"at\":[-1.3,2.74,0],\"rot\":[0,0,9.35],\"look\":\"concrete\",\"color\":\"#bdb5a2\",\"surface\":\"stone\"}],\"moves\":[{\"name\":\"setover\",\"type\":\"appear\"}]},{\"id\":\"s6\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[1.35,0.5,2.4],\"at\":[-2.57,2.43,0],\"rot\":[0,0,18.7],\"look\":\"concrete\",\"color\":\"#bdb5a2\",\"surface\":\"stone\"}],\"moves\":[{\"name\":\"setstones\",\"type\":\"appear\"}]},{\"id\":\"s7\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[1.35,0.5,2.4],\"at\":[-3.77,1.91,0],\"rot\":[0,0,28.05],\"look\":\"concrete\",\"color\":\"#bdb5a2\",\"surface\":\"stone\"}],\"moves\":[{\"name\":\"setwedge\",\"type\":\"appear\"}]},{\"id\":\"s8\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[1.35,0.5,2.4],\"at\":[-4.87,1.2,0],\"rot\":[0,0,37.4],\"look\":\"concrete\",\"color\":\"#bdb5a2\",\"surface\":\"stone\"}],\"moves\":[{\"name\":\"setcurve\",\"type\":\"appear\"}]},{\"id\":\"backfill\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[1.6,2.6,2.4],\"at\":[-7.7,1.3,0],\"look\":\"concrete\",\"color\":\"#958f82\",\"surface\":\"stone\"},{\"shape\":\"box\",\"size\":[1.6,2.6,2.4],\"at\":[7.7,1.3,0],\"look\":\"concrete\",\"color\":\"#958f82\",\"surface\":\"stone\"}],\"moves\":[{\"name\":\"pack\",\"type\":\"appear\"}]},{\"id\":\"riprap\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.8,0.6,0.7],\"rot\":[8,-40.5,-6],\"at\":[-4.5,-0.3,0.9],\"look\":\"concrete\",\"color\":\"#7d786e\",\"surface\":\"stone\"},{\"shape\":\"box\",\"size\":[0.8,0.6,0.7],\"rot\":[8,-39.6,-6],\"at\":[-4.4,-0.4,0.1],\"look\":\"concrete\",\"color\":\"#7d786e\",\"surface\":\"stone\"},{\"shape\":\"box\",\"size\":[0.8,0.6,0.7],\"rot\":[8,-41.4,-6],\"at\":[-4.6,-0.3,-0.8],\"look\":\"concrete\",\"color\":\"#7d786e\",\"surface\":\"stone\"},{\"shape\":\"box\",\"size\":[0.8,0.6,0.7],\"rot\":[8,40.5,-6],\"at\":[4.5,-0.3,0.9],\"look\":\"concrete\",\"color\":\"#7d786e\",\"surface\":\"stone\"},{\"shape\":\"box\",\"size\":[0.8,0.6,0.7],\"rot\":[8,39.6,-6],\"at\":[4.4,-0.4,0.1],\"look\":\"concrete\",\"color\":\"#7d786e\",\"surface\":\"stone\"},{\"shape\":\"box\",\"size\":[0.8,0.6,0.7],\"rot\":[8,41.4,-6],\"at\":[4.6,-0.3,-0.8],\"look\":\"concrete\",\"color\":\"#7d786e\",\"surface\":\"stone\"},{\"shape\":\"box\",\"size\":[0.8,0.6,0.7],\"rot\":[8,-45.9,-6],\"at\":[-5.1,0.1,1.45],\"look\":\"concrete\",\"color\":\"#7d786e\",\"surface\":\"stone\"},{\"shape\":\"box\",\"size\":[0.8,0.6,0.7],\"rot\":[8,45.9,-6],\"at\":[5.1,0.1,1.45],\"look\":\"concrete\",\"color\":\"#7d786e\",\"surface\":\"stone\"}],\"moves\":[{\"name\":\"pile\",\"type\":\"appear\"}]},{\"id\":\"road\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[13.8,0.3,2.4],\"at\":[0,3.25,0],\"look\":\"concrete\",\"color\":\"#7e7a73\",\"surface\":\"stone\"}],\"moves\":[{\"name\":\"pave\",\"type\":\"appear\"}]},{\"id\":\"walls\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[13.8,0.6,0.26],\"at\":[0,3.7,-1.07],\"look\":\"concrete\",\"color\":\"#a39d90\",\"surface\":\"stone\"},{\"shape\":\"box\",\"size\":[13.8,0.6,0.26],\"at\":[0,3.7,1.07],\"look\":\"concrete\",\"color\":\"#a39d90\",\"surface\":\"stone\"}],\"moves\":[{\"name\":\"walls\",\"type\":\"appear\"}]},{\"id\":\"cart2\",\"at\":[-5.4,3.4,0],\"shapes\":[{\"shape\":\"box\",\"size\":[1.8,0.3,1.1],\"at\":[0,0.55,0],\"look\":\"wood\",\"color\":\"#6b4a2a\"},{\"shape\":\"wheel\",\"r\":0.35,\"w\":0.12,\"axis\":\"z\",\"at\":[-0.6,0.35,0.6],\"look\":\"wood\",\"color\":\"#4a3220\"},{\"shape\":\"wheel\",\"r\":0.35,\"w\":0.12,\"axis\":\"z\",\"at\":[0.6,0.35,0.6],\"look\":\"wood\",\"color\":\"#4a3220\"},{\"shape\":\"wheel\",\"r\":0.35,\"w\":0.12,\"axis\":\"z\",\"at\":[-0.6,0.35,-0.6],\"look\":\"wood\",\"color\":\"#4a3220\"},{\"shape\":\"wheel\",\"r\":0.35,\"w\":0.12,\"axis\":\"z\",\"at\":[0.6,0.35,-0.6],\"look\":\"wood\",\"color\":\"#4a3220\"},{\"shape\":\"box\",\"size\":[1.1,0.6,0.8],\"at\":[0,1,0],\"look\":\"concrete\",\"color\":\"#8d8a82\"}],\"moves\":[{\"name\":\"cart\",\"type\":\"appear\"},{\"name\":\"across\",\"type\":\"slide\",\"to\":[10.8,0,0]}]}]}},{\"id\":\"thrust\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[3.6,2.4,-2.2],\"dir\":[0.91,-0.41],\"travel\":1,\"phase\":0},{\"at\":[-3.6,2.4,-2.2],\"dir\":[-0.91,-0.41],\"travel\":1,\"phase\":0.5}],\"opts\":{\"scale\":1.1,\"color\":\"#ffd23d\"}}},{\"id\":\"floodFlow\",\"kind\":\"flow\",\"params\":{\"path\":[[5.9,1.9,-7.5],[5.9,1.9,-1.9]],\"look\":\"water\",\"size\":0.2,\"speed\":2.4,\"count\":18}},{\"id\":\"floodFlowL\",\"kind\":\"flow\",\"params\":{\"path\":[[-5.9,1.9,-7.5],[-5.9,1.9,-1.9]],\"look\":\"water\",\"size\":0.2,\"speed\":2.4,\"count\":18}},{\"id\":\"scour\",\"kind\":\"fx\",\"params\":{\"type\":\"collapse\",\"at\":[-4.6,-0.3,-2.1],\"size\":0.9,\"color\":\"#6b5a3a\"}},{\"id\":\"mud\",\"kind\":\"flow\",\"params\":{\"path\":[[-4.6,-0.5,-2.2],[-2.5,-0.6,-1.5],[0,-0.6,-1.2999999999999998]],\"look\":\"mud\",\"size\":0.18,\"speed\":1.6,\"count\":14}},{\"id\":\"archOutline\",\"kind\":\"outline\",\"params\":{\"of\":\"bridge\",\"points\":[[-6.9,0.05,-2.2],[-6.9,3,-2.2],[-4.9,1.2,-2.2],[-2.6,2.6,-2.2],[0,3.1,-2.2],[2.6,2.6,-2.2],[4.9,1.2,-2.2],[6.9,3,-2.2],[6.9,0.05,-2.2]],\"opts\":{\"closed\":false,\"r\":0.11,\"over\":true}}},{\"id\":\"sign\",\"kind\":\"sign\",\"params\":{\"at\":[-12,0,-6],\"rotY\":0.25,\"scale\":1.3}}],\"beats\":[{\"s\":\"hook\",\"shows\":{\"p\":\"plank\",\"does\":\"a wooden plank is laid across the river from bank to bank, a toy boat drifts down the river under it\"},\"do\":[{\"p\":\"dig\",\"v\":\"dig\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plank\",\"v\":\"show\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plank\",\"v\":\"plank\",\"w\":\"plank\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"boat\",\"v\":\"sit\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"boat\",\"v\":\"ride\",\"w\":\"river\",\"o\":0,\"d\":3.2,\"amp\":0.66,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"plank\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem\",\"shows\":{\"p\":\"plank\",\"does\":\"a cart loaded with stone rolls onto the plank, the plank snaps in two and the cart drops into the river\"},\"do\":[{\"p\":\"plank\",\"v\":\"rolls\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plank\",\"v\":\"snaps\",\"w\":\"snaps\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plank\",\"v\":\"falls\",\"w\":\"snaps\",\"o\":0.1,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"plank\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix1\",\"shows\":{\"p\":\"bridge\",\"does\":\"stone piers rise on both banks and a long stone slab is laid across them\"},\"do\":[{\"p\":\"plank\",\"v\":\"hide\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bridge\",\"v\":\"show\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bridge\",\"v\":\"piers\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bridge\",\"v\":\"slab\",\"w\":\"slab\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-8.5,-2.6,-5,8.5,5.5,0]}]},{\"s\":\"problem2\",\"shows\":{\"p\":\"bridge\",\"does\":\"a heavy stone block sits on the long slab and the slab cracks in the middle\"},\"do\":[{\"p\":\"bridge\",\"v\":\"weight\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bridge\",\"v\":\"cracks\",\"w\":\"cracks\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-8.5,-2.6,-5,8.5,5.5,0]}]},{\"s\":\"fix2\",\"shows\":{\"p\":\"bridge\",\"does\":\"the cracked slab goes, a wooden frame stands between the piers and wedge stones curve over it up to the keystone\"},\"do\":[{\"p\":\"bridge\",\"v\":\"slabBack\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bridge\",\"v\":\"weightBack\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bridge\",\"v\":\"frame\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bridge\",\"v\":\"setcurve\",\"w\":\"curve\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bridge\",\"v\":\"setwedge\",\"w\":\"wedge\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bridge\",\"v\":\"setstones\",\"w\":\"stones\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bridge\",\"v\":\"setover\",\"w\":\"over\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bridge\",\"v\":\"setframe\",\"w\":\"frame\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-8.5,-2.6,-5,8.5,5.5,0]}]},{\"s\":\"name\",\"shows\":{\"p\":\"archOutline\",\"does\":\"a glowing line traces the stone arch and its piers\"},\"do\":[{\"p\":\"archOutline\",\"v\":\"show\",\"w\":\"arch\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"bridge\"],\"view\":\"home\",\"width\":0.85,\"type\":\"\",\"hero\":true,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem3\",\"shows\":{\"p\":\"bridge\",\"does\":\"the wooden frame drops away, yellow arrows push outward and the two piers slide apart\"},\"do\":[{\"p\":\"archOutline\",\"v\":\"hide\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bridge\",\"v\":\"pull\",\"w\":\"frame\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bridge\",\"v\":\"frameBack\",\"w\":\"arch\",\"o\":0.2,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"thrust\",\"v\":\"show\",\"w\":\"pushes\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bridge\",\"v\":\"apart\",\"w\":\"apart\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-8.5,-2.6,-5,8.5,5.5,0]}]},{\"s\":\"fix3\",\"shows\":{\"p\":\"bridge\",\"does\":\"heavy stone is packed behind each pier and the piers are pushed back under the arch\"},\"do\":[{\"p\":\"thrust\",\"v\":\"hide\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bridge\",\"v\":\"pack\",\"w\":\"stone\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bridge\",\"v\":\"apartBack\",\"w\":\"pier\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-8.5,-2.6,-5,8.5,5.5,0]}]},{\"s\":\"problem4\",\"shows\":{\"p\":\"floodWater\",\"does\":\"a flood rises up to the arch, lifts the toy boat and water pounds against the piers\"},\"do\":[{\"p\":\"floodWater\",\"v\":\"flood\",\"w\":\"rises\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"boat\",\"v\":\"ride\",\"w\":\"rises\",\"o\":0,\"d\":1.6,\"amp\":0.135,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"high\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-8.5,-2.6,-5,8.5,5.5,0]}]},{\"s\":\"fix4\",\"shows\":{\"p\":\"bridge\",\"does\":\"a flood arch opens through each pier and the floodwater runs through them\"},\"do\":[{\"p\":\"bridge\",\"v\":\"open\",\"w\":\"open\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"floodFlow\",\"v\":\"start\",\"w\":\"through\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"floodFlowL\",\"v\":\"start\",\"w\":\"through\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"high\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-8.5,-2.6,-5,8.5,5.5,0]}]},{\"s\":\"problem5\",\"shows\":{\"p\":\"scour\",\"does\":\"water rushing through the arches digs the riverbed out from under the piers, mud swirls away and the piers sink\"},\"do\":[{\"p\":\"mud\",\"v\":\"start\",\"w\":\"rushing\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"scour\",\"v\":\"go\",\"w\":\"digs\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bridge\",\"v\":\"digs\",\"w\":\"digs\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-8.5,-2.6,-5,8.5,5.5,0]}]},{\"s\":\"fix5\",\"shows\":{\"p\":\"bridge\",\"does\":\"the flood drains away and big stones are piled around the feet of the piers\"},\"do\":[{\"p\":\"floodWater\",\"v\":\"drain\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"boat\",\"v\":\"ride\",\"w\":\"So\",\"o\":0,\"d\":1.6,\"amp\":0.135,\"ch\":\"\"},{\"p\":\"floodFlow\",\"v\":\"stop\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"floodFlowL\",\"v\":\"stop\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"mud\",\"v\":\"stop\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bridge\",\"v\":\"pile\",\"w\":\"stones\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bridge\",\"v\":\"digsBack\",\"w\":\"feet\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-8.5,-2.6,-5,8.5,5.5,0]}]},{\"s\":\"finish\",\"shows\":{\"p\":\"bridge\",\"does\":\"a stone road and low walls go on the arch and a cart rolls across over the river, the toy boat bobbing below\"},\"do\":[{\"p\":\"bridge\",\"v\":\"pave\",\"w\":\"Pave\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bridge\",\"v\":\"walls\",\"w\":\"road\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bridge\",\"v\":\"cart\",\"w\":\"cart\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"bridge\",\"v\":\"across\",\"w\":\"rolls\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"boat\",\"v\":\"ride\",\"w\":\"river\",\"o\":0,\"d\":1.2,\"amp\":0.07,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-8.5,-2.6,-5,8.5,5.5,0]}]},{\"s\":\"congrats\",\"shows\":{\"p\":\"bridge\",\"does\":\"the finished stone arch bridge over the river with the toy boat in front\"},\"do\":[],\"shots\":[{\"focus\":[\"home\",\"boat\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]}],\"audio\":{\"cards\":[],\"sfx\":[{\"lib\":\"dirt\",\"at\":{\"s\":\"problem\",\"w\":\"snaps\",\"o\":0},\"d\":1},{\"lib\":\"dirt\",\"at\":{\"s\":\"fix1\",\"w\":\"slab\",\"o\":0},\"d\":1},{\"lib\":\"water_rush\",\"at\":{\"s\":\"problem4\",\"w\":\"rises\",\"o\":0},\"d\":1.6},{\"lib\":\"water_rush\",\"at\":{\"s\":\"fix4\",\"w\":\"through\",\"o\":0},\"d\":1.2},{\"lib\":\"dirt\",\"at\":{\"s\":\"fix5\",\"w\":\"stones\",\"o\":0},\"d\":1}],\"chimes\":[{\"s\":\"fix2\",\"w\":\"frame\",\"o\":0},{\"s\":\"congrats\",\"w\":\"\",\"o\":0}],\"rain\":[]}}"
  }
 }

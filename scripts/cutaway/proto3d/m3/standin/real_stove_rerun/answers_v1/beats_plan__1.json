@@ -1,0 +1,1783 @@
+{
+ "hash": "*",
+ "by": "stand-in planner (replan 2026-11-09)",
+ "searches": 0,
+ "data": {
+  "why": "A gas stove in a kitchen, cut open: a gas pipe, a knob and a nozzle grow into a Bunsen burner tube with air holes, a burner head and a thermocouple safety valve. The camera stays on the stove; the name line frames the whole burner and traces it.",
+  "story": {
+   "title": "How a gas stove works",
+   "hero": "a Bunsen burner",
+   "parts": [
+    "gas pipe",
+    "knob",
+    "burner tube",
+    "air holes",
+    "burner head",
+    "thermocouple",
+    "safety valve",
+    "grate",
+    "pot",
+    "spark igniter"
+   ],
+   "ideas": [
+    {
+     "role": "hook",
+     "idea": "let gas out of a pipe and light it and you already have a stove"
+    },
+    {
+     "role": "problem",
+     "idea": "the lazy yellow flame is full of unburnt soot that pours off it"
+    },
+    {
+     "role": "fix1",
+     "idea": "a burner tube with air holes mixes air in, so the flame burns clean and blue"
+    },
+    {
+     "role": "name",
+     "idea": "that tube with air holes is a Bunsen burner"
+    },
+    {
+     "role": "how",
+     "idea": "the gas jet pulls in about half the air it needs through the holes"
+    },
+    {
+     "role": "problem2",
+     "idea": "a draft blows the flame out and the gas keeps drifting into the room"
+    },
+    {
+     "role": "fix2",
+     "idea": "a thermocouple in the flame holds a safety valve open and lets it shut when the flame dies"
+    },
+    {
+     "role": "myth",
+     "idea": "people think the big yellow flame is the hotter one"
+    },
+    {
+     "role": "mythFact",
+     "idea": "the blue flame is the hot one, near 2,000 degrees"
+    },
+    {
+     "role": "finish",
+     "idea": "a grate, a pot and a spark igniter complete the stove"
+    },
+    {
+     "role": "congrats",
+     "idea": "calm end: a blue flame under the pot"
+    }
+   ],
+   "chain": [
+    {
+     "problem": "problem",
+     "causedBy": "hook",
+     "shows": "black soot rises off the yellow flame",
+     "stakes": "soot blackens the pot and the kitchen",
+     "size": 3
+    },
+    {
+     "problem": "problem2",
+     "causedBy": "fix1",
+     "shows": "a draft blows the flame out and gas drifts up into the room",
+     "stakes": "the room fills with gas",
+     "size": 7
+    }
+   ],
+   "surprises": [
+    {
+     "claim": "Gas shoots up the tube and draws in about half of the air it needs through the holes",
+     "role": "how",
+     "search": "Bunsen burner primary air about half of air needed"
+    },
+    {
+     "claim": "A stove's thermocouple makes about 25 millivolts to hold the safety valve open",
+     "role": "fix2",
+     "search": "gas stove thermocouple millivolts safety valve"
+    },
+    {
+     "claim": "The blue flame is the hot one, reaching roughly 1,950 to 2,000 degrees Celsius",
+     "role": "mythFact",
+     "search": "blue natural gas flame temperature degrees Celsius"
+    }
+   ]
+  },
+  "sentences": [
+   {
+    "role": "hook",
+    "text": "If you let gas out of a pipe and light it, you have a stove."
+   },
+   {
+    "role": "problem",
+    "text": "But the yellow flame pours off soot."
+   },
+   {
+    "role": "fix1",
+    "text": "So you add a burner with air holes, so it burns blue."
+   },
+   {
+    "role": "name",
+    "text": "This is a Bunsen burner."
+   },
+   {
+    "role": "how",
+    "text": "Gas shoots up the tube and draws in about half of the air it needs through the holes."
+   },
+   {
+    "role": "problem2",
+    "text": "But a draft blows the flame out, and gas leaks."
+   },
+   {
+    "role": "fix2",
+    "text": "So you add a thermocouple that makes about 25 millivolts, and the valve shuts."
+   },
+   {
+    "role": "myth",
+    "text": "And the big yellow flame is not hotter."
+   },
+   {
+    "role": "mythFact",
+    "text": "The blue flame is the hot one, reaching roughly 1,950 to 2,000 degrees Celsius."
+   },
+   {
+    "role": "finish",
+    "text": "Add a grate, a pot and a spark igniter."
+   },
+   {
+    "role": "congrats",
+    "text": "Congratulations, you have built a gas stove."
+   }
+  ],
+  "sceneJson": {
+   "world": {
+    "cut": [
+     10,
+     11.5,
+     -3,
+     0.6
+    ],
+    "house": false,
+    "porch": false,
+    "trees": [],
+    "road": false,
+    "rocksAvoid": [],
+    "worker": false,
+    "moreTrees": false,
+    "backdrop": {
+     "type": "kitchen",
+     "x0": -12,
+     "x1": 12,
+     "back": -7,
+     "h": 6.2,
+     "gap": [
+      -2.4,
+      2.4
+     ],
+     "color": "#e9e2d0"
+    }
+   },
+   "parts": [
+    {
+     "id": "light",
+     "kind": "light",
+     "params": {
+      "storm": false
+     }
+    },
+    {
+     "id": "stove",
+     "kind": "rig",
+     "params": {
+      "name": "gas stove",
+      "synonyms": [
+       "stove",
+       "gas range",
+       "cooker",
+       "hob"
+      ],
+      "pos": [
+       0,
+       0.12,
+       -1.8
+      ],
+      "scale": 2,
+      "nodes": [
+       {
+        "id": "body",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           0.76,
+           0.08,
+           0.6
+          ],
+          "at": [
+           0,
+           0.04,
+           0
+          ],
+          "look": "metal",
+          "color": "#9aa1a8"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.76,
+           0.8,
+           0.04
+          ],
+          "at": [
+           0,
+           0.48,
+           -0.28
+          ],
+          "look": "metal",
+          "color": "#454a52"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.04,
+           0.8,
+           0.6
+          ],
+          "at": [
+           -0.36,
+           0.48,
+           0
+          ],
+          "look": "metal",
+          "color": "#e8eaec"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.04,
+           0.8,
+           0.6
+          ],
+          "at": [
+           0.36,
+           0.48,
+           0
+          ],
+          "look": "metal",
+          "color": "#e8eaec"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.76,
+           0.04,
+           0.6
+          ],
+          "at": [
+           0,
+           0.88,
+           0
+          ],
+          "look": "metal",
+          "color": "#2b2e33"
+         }
+        ]
+       },
+       {
+        "id": "feed",
+        "parent": "body",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "tube",
+          "path": [
+           [
+            0.6,
+            0.03,
+            0
+           ],
+           [
+            0.6,
+            0.18,
+            0
+           ],
+           [
+            0.14,
+            0.18,
+            0
+           ]
+          ],
+          "r": 0.025,
+          "look": "metal",
+          "color": "#caa84a"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.12,
+           0.12,
+           0.12
+          ],
+          "at": [
+           0.14,
+           0.18,
+           0
+          ],
+          "look": "metal",
+          "color": "#caa84a"
+         },
+         {
+          "shape": "tube",
+          "path": [
+           [
+            0.08,
+            0.18,
+            0
+           ],
+           [
+            0,
+            0.18,
+            0
+           ],
+           [
+            0,
+            0.4,
+            0
+           ]
+          ],
+          "r": 0.025,
+          "look": "metal",
+          "color": "#caa84a"
+         },
+         {
+          "shape": "cone",
+          "r": 0.03,
+          "r2": 0.01,
+          "h": 0.05,
+          "axis": "y",
+          "at": [
+           0,
+           0.4,
+           0
+          ],
+          "look": "metal",
+          "color": "#caa84a"
+         },
+         {
+          "shape": "cylinder",
+          "r": 0.015,
+          "h": 0.3,
+          "axis": "z",
+          "at": [
+           0.14,
+           0.18,
+           0.21
+          ],
+          "look": "metal",
+          "color": "#9aa1a8"
+         }
+        ],
+        "moves": [
+         {
+          "name": "gas",
+          "type": "flow",
+          "path": [
+           [
+            0.6,
+            0.03,
+            0
+           ],
+           [
+            0.6,
+            0.18,
+            0
+           ],
+           [
+            0,
+            0.18,
+            0
+           ],
+           [
+            0,
+            0.4,
+            0
+           ]
+          ],
+          "color": "#ffe27a"
+         }
+        ]
+       },
+       {
+        "id": "knob",
+        "parent": "feed",
+        "at": [
+         0.14,
+         0.18,
+         0.36
+        ],
+        "shapes": [
+         {
+          "shape": "cylinder",
+          "r": 0.06,
+          "h": 0.04,
+          "axis": "z",
+          "at": [
+           0,
+           0,
+           0.02
+          ],
+          "look": "plastic",
+          "color": "#20242a"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.012,
+           0.05,
+           0.012
+          ],
+          "at": [
+           0,
+           0.035,
+           0.045
+          ],
+          "look": "paint",
+          "color": "#ffffff"
+         }
+        ],
+        "moves": [
+         {
+          "name": "turn",
+          "type": "swing",
+          "axis": "z",
+          "angle": 90
+         }
+        ]
+       },
+       {
+        "id": "spark",
+        "parent": "feed",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           0.1,
+           0.015,
+           0.015
+          ],
+          "at": [
+           0.05,
+           0.3,
+           0
+          ],
+          "look": "metal",
+          "color": "#9aa1a8"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.02,
+           0.16,
+           0.02
+          ],
+          "at": [
+           0.1,
+           0.37,
+           0
+          ],
+          "look": "paint",
+          "color": "#f5f5f0"
+         },
+         {
+          "shape": "light",
+          "r": 0.025,
+          "at": [
+           0.1,
+           0.47,
+           0
+          ],
+          "color": "#ffd23d"
+         }
+        ],
+        "moves": [
+         {
+          "name": "sparks",
+          "type": "blink",
+          "rate": 5
+         }
+        ]
+       },
+       {
+        "id": "flameY",
+        "parent": "feed",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "flame",
+          "r": 0.035,
+          "h": 0.2,
+          "color": "#ffb020",
+          "at": [
+           0,
+           0.425,
+           0
+          ]
+         }
+        ],
+        "moves": [
+         {
+          "name": "lightY",
+          "type": "burn"
+         }
+        ]
+       },
+       {
+        "id": "soot",
+        "parent": "flameY",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "cylinder",
+          "r": 0.01,
+          "h": 0.02,
+          "axis": "y",
+          "at": [
+           0,
+           0.5,
+           0
+          ],
+          "look": "paint",
+          "color": "#222222"
+         }
+        ],
+        "moves": [
+         {
+          "name": "sootRise",
+          "type": "flow",
+          "path": [
+           [
+            0,
+            0.62,
+            0
+           ],
+           [
+            0.04,
+            0.9,
+            0
+           ],
+           [
+            -0.03,
+            1.15,
+            0
+           ],
+           [
+            0.03,
+            1.4,
+            0
+           ]
+          ],
+          "color": "#1c1c1c"
+         }
+        ]
+       },
+       {
+        "id": "venturi",
+        "parent": "feed",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "cylinder",
+          "r": 0.04,
+          "h": 0.46,
+          "axis": "y",
+          "at": [
+           0,
+           0.65,
+           0
+          ],
+          "look": "metal",
+          "color": "#b0b6bd"
+         },
+         {
+          "shape": "torus",
+          "r": 0.047,
+          "tube": 0.012,
+          "axis": "y",
+          "at": [
+           0,
+           0.52,
+           0
+          ],
+          "look": "paint",
+          "color": "#c0392b"
+         }
+        ],
+        "moves": [
+         {
+          "name": "burner",
+          "type": "appear"
+         }
+        ]
+       },
+       {
+        "id": "airL",
+        "parent": "venturi",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           0.03,
+           0.05,
+           0.02
+          ],
+          "at": [
+           -0.03,
+           0.44,
+           0.04
+          ],
+          "look": "paint",
+          "color": "#111111"
+         }
+        ],
+        "moves": [
+         {
+          "name": "burner",
+          "type": "appear"
+         },
+         {
+          "name": "air",
+          "type": "flow",
+          "path": [
+           [
+            -0.3,
+            0.44,
+            0.05
+           ],
+           [
+            -0.04,
+            0.44,
+            0.05
+           ]
+          ],
+          "color": "#ffffff"
+         }
+        ]
+       },
+       {
+        "id": "airR",
+        "parent": "venturi",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           0.03,
+           0.05,
+           0.02
+          ],
+          "at": [
+           0.03,
+           0.44,
+           0.04
+          ],
+          "look": "paint",
+          "color": "#111111"
+         }
+        ],
+        "moves": [
+         {
+          "name": "burner",
+          "type": "appear"
+         },
+         {
+          "name": "air",
+          "type": "flow",
+          "path": [
+           [
+            0.3,
+            0.44,
+            0.05
+           ],
+           [
+            0.04,
+            0.44,
+            0.05
+           ]
+          ],
+          "color": "#ffffff"
+         }
+        ]
+       },
+       {
+        "id": "head",
+        "parent": "venturi",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "cylinder",
+          "r": 0.1,
+          "h": 0.05,
+          "axis": "y",
+          "at": [
+           0,
+           0.9,
+           0
+          ],
+          "look": "metal",
+          "color": "#303338"
+         },
+         {
+          "shape": "cylinder",
+          "r": 0.065,
+          "h": 0.03,
+          "axis": "y",
+          "at": [
+           0,
+           0.935,
+           0
+          ],
+          "look": "metal",
+          "color": "#555b61"
+         }
+        ],
+        "moves": [
+         {
+          "name": "burner",
+          "type": "appear"
+         },
+         {
+          "name": "leak",
+          "type": "flow",
+          "path": [
+           [
+            0,
+            0.97,
+            0
+           ],
+           [
+            0.04,
+            1.2,
+            0
+           ],
+           [
+            0.14,
+            1.4,
+            0
+           ],
+           [
+            0.2,
+            1.6,
+            0
+           ]
+          ],
+          "color": "#d6f55a"
+         }
+        ]
+       },
+       {
+        "id": "flameB",
+        "parent": "head",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "flame",
+          "r": 0.085,
+          "h": 0.07,
+          "at": [
+           0,
+           0.95,
+           0
+          ]
+         }
+        ],
+        "moves": [
+         {
+          "name": "lightB",
+          "type": "burn"
+         }
+        ]
+       },
+       {
+        "id": "flameY2",
+        "parent": "head",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "flame",
+          "r": 0.07,
+          "h": 0.17,
+          "color": "#ffb020",
+          "at": [
+           0,
+           0.95,
+           0
+          ]
+         }
+        ],
+        "moves": [
+         {
+          "name": "lightY2",
+          "type": "burn"
+         }
+        ]
+       },
+       {
+        "id": "safety",
+        "parent": "feed",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "cylinder",
+          "r": 0.05,
+          "h": 0.2,
+          "axis": "y",
+          "at": [
+           0.3,
+           0.28,
+           0
+          ],
+          "look": "paint",
+          "color": "#c0392b"
+         }
+        ],
+        "moves": [
+         {
+          "name": "safe",
+          "type": "appear"
+         }
+        ]
+       },
+       {
+        "id": "rod",
+        "parent": "safety",
+        "at": [
+         0.3,
+         0.38,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "cylinder",
+          "r": 0.02,
+          "h": 0.12,
+          "axis": "y",
+          "at": [
+           0,
+           0.06,
+           0
+          ],
+          "look": "metal",
+          "color": "#d0d4d8"
+         }
+        ],
+        "moves": [
+         {
+          "name": "safe",
+          "type": "appear"
+         },
+         {
+          "name": "shut",
+          "type": "slide",
+          "to": [
+           0,
+           -0.1,
+           0
+          ]
+         }
+        ]
+       },
+       {
+        "id": "tip",
+        "parent": "head",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "cylinder",
+          "r": 0.014,
+          "h": 0.075,
+          "axis": "y",
+          "at": [
+           0.1,
+           0.9575,
+           0
+          ],
+          "look": "metal",
+          "color": "#d9d9d9"
+         }
+        ],
+        "moves": [
+         {
+          "name": "safe",
+          "type": "appear"
+         },
+         {
+          "name": "warm",
+          "type": "heat",
+          "color": "#ff5a1f"
+         }
+        ]
+       },
+       {
+        "id": "wire",
+        "parent": "tip",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "tube",
+          "path": [
+           [
+            0.1,
+            0.92,
+            0
+           ],
+           [
+            0.1,
+            0.7,
+            0
+           ],
+           [
+            0.25,
+            0.55,
+            0
+           ],
+           [
+            0.25,
+            0.3,
+            0
+           ]
+          ],
+          "r": 0.012,
+          "look": "plastic",
+          "color": "#2a6fb0"
+         }
+        ],
+        "moves": [
+         {
+          "name": "safe",
+          "type": "appear"
+         }
+        ]
+       },
+       {
+        "id": "grate",
+        "parent": "body",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           0.03,
+           0.1,
+           0.03
+          ],
+          "at": [
+           -0.13,
+           0.95,
+           0.13
+          ],
+          "look": "metal",
+          "color": "#1d1f22"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.03,
+           0.1,
+           0.03
+          ],
+          "at": [
+           0.13,
+           0.95,
+           0.13
+          ],
+          "look": "metal",
+          "color": "#1d1f22"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.03,
+           0.1,
+           0.03
+          ],
+          "at": [
+           -0.13,
+           0.95,
+           -0.13
+          ],
+          "look": "metal",
+          "color": "#1d1f22"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.03,
+           0.1,
+           0.03
+          ],
+          "at": [
+           0.13,
+           0.95,
+           -0.13
+          ],
+          "look": "metal",
+          "color": "#1d1f22"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.29,
+           0.02,
+           0.03
+          ],
+          "at": [
+           0,
+           0.995,
+           0.13
+          ],
+          "look": "metal",
+          "color": "#1d1f22"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.29,
+           0.02,
+           0.03
+          ],
+          "at": [
+           0,
+           0.995,
+           -0.13
+          ],
+          "look": "metal",
+          "color": "#1d1f22"
+         }
+        ],
+        "moves": [
+         {
+          "name": "grate",
+          "type": "appear"
+         }
+        ]
+       },
+       {
+        "id": "pot",
+        "parent": "grate",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "cylinder",
+          "r": 0.14,
+          "h": 0.13,
+          "axis": "y",
+          "at": [
+           0,
+           1.07,
+           0
+          ],
+          "look": "metal",
+          "color": "#8a9199"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.12,
+           0.025,
+           0.04
+          ],
+          "at": [
+           0.2,
+           1.11,
+           0
+          ],
+          "look": "plastic",
+          "color": "#222222"
+         },
+         {
+          "shape": "cylinder",
+          "r": 0.145,
+          "h": 0.015,
+          "axis": "y",
+          "at": [
+           0,
+           1.14,
+           0
+          ],
+          "look": "metal",
+          "color": "#b8bdc3"
+         }
+        ],
+        "moves": [
+         {
+          "name": "pot",
+          "type": "appear"
+         }
+        ]
+       }
+      ]
+     },
+     "main": true
+    },
+    {
+     "id": "outline",
+     "kind": "outline",
+     "params": {
+      "of": "stove.venturi",
+      "opts": {
+       "closed": true,
+       "r": 0.03
+      }
+     }
+    },
+    {
+     "id": "airArrows",
+     "kind": "arrows",
+     "params": {
+      "list": [
+       {
+        "at": [
+         -0.62,
+         1.12,
+         -1.5
+        ],
+        "dir": [
+         1,
+         0
+        ],
+        "travel": 0.35,
+        "phase": 0
+       },
+       {
+        "at": [
+         0.62,
+         1.12,
+         -1.5
+        ],
+        "dir": [
+         -1,
+         0
+        ],
+        "travel": 0.35,
+        "phase": 0.4
+       }
+      ],
+      "opts": {
+       "scale": 0.5,
+       "color": "#ffffff"
+      }
+     }
+    },
+    {
+     "id": "draft",
+     "kind": "arrows",
+     "params": {
+      "list": [
+       {
+        "at": [
+         1.5,
+         2.05,
+         -1.5
+        ],
+        "dir": [
+         -1,
+         0
+        ],
+        "travel": 1,
+        "phase": 0
+       },
+       {
+        "at": [
+         1.5,
+         2.4,
+         -1.5
+        ],
+        "dir": [
+         -1,
+         0
+        ],
+        "travel": 1,
+        "phase": 0.5
+       }
+      ],
+      "opts": {
+       "scale": 0.7,
+       "color": "#ffffff"
+      }
+     }
+    },
+    {
+     "id": "post",
+     "kind": "box",
+     "params": {
+      "mat": "metal",
+      "size": [
+       0.14,
+       2.2,
+       0.14
+      ],
+      "pos": [
+       1.9,
+       1.22,
+       -1.55
+      ],
+      "r": 0.03
+     }
+    },
+    {
+     "id": "temp",
+     "kind": "counter",
+     "params": {
+      "pos": [
+       1.9,
+       2.65,
+       -1.5
+      ],
+      "size": 1.4,
+      "from": 1000,
+      "to": 1950,
+      "color": "#ff8a2a"
+     }
+    },
+    {
+     "id": "sign",
+     "kind": "sign",
+     "params": {
+      "at": [
+       4.36,
+       0.12,
+       -2.5
+      ],
+      "rotY": 0.2,
+      "scale": 0.6
+     }
+    }
+   ],
+   "beats": [
+    {
+     "s": "hook",
+     "shows": {
+      "p": "stove",
+      "does": "gas flows from the pipe and a spark lights a yellow flame"
+     },
+     "do": [
+      {
+       "p": "stove",
+       "v": "show"
+      },
+      {
+       "p": "stove",
+       "v": "turn",
+       "w": "let"
+      },
+      {
+       "p": "stove",
+       "v": "gas",
+       "w": "gas"
+      },
+      {
+       "p": "stove",
+       "v": "sparks",
+       "w": "light"
+      },
+      {
+       "p": "stove",
+       "v": "lightY",
+       "w": "light",
+       "o": 0.4
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "stove"
+       ],
+       "width": 0.94
+      }
+     ]
+    },
+    {
+     "s": "problem",
+     "shows": {
+      "p": "stove",
+      "does": "black soot rises from the lazy yellow flame"
+     },
+     "state": {
+      "text": "SOOTY",
+      "w": "soot"
+     },
+     "do": [
+      {
+       "p": "stove",
+       "v": "sparksBack",
+       "w": "But"
+      },
+      {
+       "p": "stove",
+       "v": "sootRise",
+       "w": "soot"
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "stove"
+       ],
+       "width": 0.94
+      }
+     ]
+    },
+    {
+     "s": "fix1",
+     "shows": {
+      "p": "stove",
+      "does": "a burner tube with air holes appears and the flame turns blue"
+     },
+     "do": [
+      {
+       "p": "stove",
+       "v": "sootRiseBack",
+       "w": "burner"
+      },
+      {
+       "p": "stove",
+       "v": "lightYBack",
+       "w": "burner"
+      },
+      {
+       "p": "stove",
+       "v": "burner",
+       "w": "burner"
+      },
+      {
+       "p": "stove",
+       "v": "lightB",
+       "w": "blue"
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "stove"
+       ],
+       "width": 0.94
+      }
+     ]
+    },
+    {
+     "s": "name",
+     "shows": {
+      "p": "outline",
+      "does": "a glowing outline traces the whole burner: the tube with its air holes, the head and its blue flame"
+     },
+     "do": [
+      {
+       "p": "outline",
+       "v": "show",
+       "w": "Bunsen"
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "stove.venturi"
+       ],
+       "hero": true,
+       "width": 0.5
+      }
+     ]
+    },
+    {
+     "s": "how",
+     "shows": {
+      "p": "stove",
+      "does": "air streams in through the holes as gas shoots up the tube"
+     },
+     "do": [
+      {
+       "p": "outline",
+       "v": "hide",
+       "w": "Gas"
+      },
+      {
+       "p": "stove",
+       "v": "air",
+       "w": "air"
+      },
+      {
+       "p": "airArrows",
+       "v": "show",
+       "w": "air"
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "stove"
+       ],
+       "width": 0.94
+      }
+     ]
+    },
+    {
+     "s": "problem2",
+     "shows": {
+      "p": "stove",
+      "does": "a draft snuffs the flame and gas drifts into the room"
+     },
+     "state": {
+      "text": "GAS LEAK",
+      "w": "gas"
+     },
+     "do": [
+      {
+       "p": "airArrows",
+       "v": "hide",
+       "w": "But"
+      },
+      {
+       "p": "stove",
+       "v": "airBack",
+       "w": "But"
+      },
+      {
+       "p": "draft",
+       "v": "show",
+       "w": "draft"
+      },
+      {
+       "p": "stove",
+       "v": "lightBBack",
+       "w": "out"
+      },
+      {
+       "p": "stove",
+       "v": "leak",
+       "w": "gas"
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "stove"
+       ],
+       "width": 0.94
+      }
+     ]
+    },
+    {
+     "s": "fix2",
+     "shows": {
+      "p": "stove",
+      "does": "a probe and wire appear and the valve plunger drops shut, stopping the gas"
+     },
+     "do": [
+      {
+       "p": "draft",
+       "v": "hide",
+       "w": "So"
+      },
+      {
+       "p": "stove",
+       "v": "safe",
+       "w": "thermocouple"
+      },
+      {
+       "p": "stove",
+       "v": "shut",
+       "w": "shuts"
+      },
+      {
+       "p": "stove",
+       "v": "leakBack",
+       "w": "shuts"
+      },
+      {
+       "p": "stove",
+       "v": "gasBack",
+       "w": "shuts"
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "stove"
+       ],
+       "width": 0.94
+      }
+     ]
+    },
+    {
+     "s": "myth",
+     "shows": {
+      "p": "stove",
+      "does": "a big yellow flame lights, a temperature counter appears, then the flame goes out on not"
+     },
+     "do": [
+      {
+       "p": "stove",
+       "v": "shutBack",
+       "w": "yellow"
+      },
+      {
+       "p": "stove",
+       "v": "gas",
+       "w": "yellow"
+      },
+      {
+       "p": "stove",
+       "v": "lightY2",
+       "w": "yellow",
+       "o": 0.3
+      },
+      {
+       "p": "temp",
+       "v": "show",
+       "w": "yellow"
+      },
+      {
+       "p": "stove",
+       "v": "lightY2Back",
+       "w": "not"
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "stove"
+       ],
+       "width": 0.94
+      }
+     ]
+    },
+    {
+     "s": "mythFact",
+     "shows": {
+      "p": "temp",
+      "does": "the blue flame lights and the counter climbs to 1950"
+     },
+     "do": [
+      {
+       "p": "stove",
+       "v": "lightB",
+       "w": "blue"
+      },
+      {
+       "p": "stove",
+       "v": "warm",
+       "w": "blue",
+       "o": 0.3
+      },
+      {
+       "p": "temp",
+       "v": "count",
+       "w": "blue",
+       "d": 2.4
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "temp",
+        "stove"
+       ],
+       "width": 0.94
+      }
+     ]
+    },
+    {
+     "s": "finish",
+     "shows": {
+      "p": "stove",
+      "does": "a grate and a pot appear over the blue flame and the spark ticks"
+     },
+     "do": [
+      {
+       "p": "temp",
+       "v": "hide",
+       "w": "Add"
+      },
+      {
+       "p": "stove",
+       "v": "grate",
+       "w": "grate"
+      },
+      {
+       "p": "stove",
+       "v": "pot",
+       "w": "pot"
+      },
+      {
+       "p": "stove",
+       "v": "sparks",
+       "w": "spark",
+       "o": -0.7
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "stove"
+       ],
+       "width": 0.85
+      }
+     ]
+    },
+    {
+     "s": "congrats",
+     "shows": {
+      "p": "stove",
+      "does": "a calm blue flame burns under the pot"
+     },
+     "do": [
+      {
+       "p": "stove",
+       "v": "sparksBack"
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "home"
+       ]
+      }
+     ]
+    }
+   ],
+   "audio": {
+    "cards": [
+     {
+      "text": "25 MILLIVOLTS",
+      "at": {
+       "s": "fix2",
+       "w": "25"
+      },
+      "d": 1.6
+     },
+     {
+      "text": "1950 °C",
+      "at": {
+       "s": "mythFact",
+       "w": "1950"
+      },
+      "d": 1.8
+     }
+    ],
+    "sfx": [
+     {
+      "lib": "flame",
+      "at": {
+       "s": "hook",
+       "w": "light",
+       "o": 0.4
+      },
+      "d": 1.2
+     },
+     {
+      "lib": "flame",
+      "at": {
+       "s": "fix1",
+       "w": "blue"
+      },
+      "d": 1.2
+     },
+     {
+      "lib": "water_rush",
+      "at": {
+       "s": "problem2",
+       "w": "gas"
+      },
+      "d": 1.4
+     },
+     {
+      "lib": "flame",
+      "at": {
+       "s": "mythFact",
+       "w": "blue"
+      },
+      "d": 1.2
+     }
+    ],
+    "chimes": [
+     {
+      "s": "name"
+     },
+     {
+      "s": "fix2",
+      "w": "25"
+     },
+     {
+      "s": "mythFact",
+      "w": "1950"
+     },
+     {
+      "s": "congrats"
+     }
+    ]
+   }
+  }
+ }
+}

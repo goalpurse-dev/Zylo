@@ -1,1979 +1,214 @@
 {
  "hash": "*",
- "by": "stand-in planner (replan 2026-11-09)",
+ "by": "stand-in planner (agent), 2026-11-11",
  "searches": 0,
  "data": {
-  "why": "A portable air conditioner standing on the kitchen floor, cut open: a fan beside an icy coil above a tray, a compressor and a hot coil below, a duct to a vent in the wall. The camera stays on the unit; the opening is close on the fan and the frosting coil.",
+  "why": "A portable air conditioner stands cut open in a living room beside a hot person fanning themselves; the heat is followed from the room air over the cold coil, through the compressor and the hot coil, up the duct and out the window, and the water it pulls from the air down the drain hose. The camera opens close on the fan and the ice, then frames each part as it is added, and ends on the person cooled.",
   "story": {
    "title": "How an air conditioner works",
-   "hero": "an air conditioner",
+   "hero": "a compressor",
    "parts": [
     "fan",
     "cold coil",
-    "drip tray",
-    "drain hose",
     "compressor",
-    "coolant pipes",
+    "hot coil and duct",
+    "window panel",
+    "drain tray and hose"
+   ],
+   "flow": [
+    "ice",
+    "cold coil",
+    "compressor",
     "hot coil",
-    "exhaust duct",
-    "wall vent",
-    "louvers",
-    "display",
-    "filter"
+    "duct",
+    "window",
+    "tray"
    ],
-   "ideas": [
-    {
-     "role": "hook",
-     "idea": "blow a fan through an icy coil and you already have an air conditioner"
-    },
-    {
-     "role": "problem",
-     "idea": "the cold coil pulls water out of the air and it drips onto the floor"
-    },
-    {
-     "role": "fix1",
-     "idea": "a tray under the coil and a hose drain the water away"
-    },
-    {
-     "role": "problem2",
-     "idea": "with nothing keeping it cold the coil warms up and blows warm air"
-    },
-    {
-     "role": "fix2",
-     "idea": "a compressor pumps coolant round to keep the coil cold"
-    },
-    {
-     "role": "name",
-     "idea": "this box with a fan, coils and a compressor is an air conditioner"
-    },
-    {
-     "role": "how",
-     "idea": "the heat goes to a hot coil and out through the wall along a duct"
-    },
-    {
-     "role": "myth",
-     "idea": "people think air conditioning was invented for comfort"
-    },
-    {
-     "role": "mythFact",
-     "idea": "Carrier designed it in 1902 to stop printing paper swelling"
-    },
-    {
-     "role": "finish",
-     "idea": "louvers, a display and a filter complete the unit"
-    },
-    {
-     "role": "congrats",
-     "idea": "calm end: the finished unit humming"
-    }
-   ],
+   "recurring": {
+    "p": "person",
+    "what": "a hot person fanning themselves"
+   },
    "chain": [
     {
      "problem": "problem",
      "causedBy": "hook",
-     "shows": "water drips off the cold coil and splashes on the floor",
-     "stakes": "the floor gets soaked",
-     "size": 3
+     "shows": "the ice melts into a puddle",
+     "stakes": "the room stays hot",
+     "size": 2,
+     "at": "ice",
+     "scale": "thing"
     },
     {
      "problem": "problem2",
      "causedBy": "fix1",
-     "shows": "the coil loses its frost and warm orange air blows out",
-     "stakes": "the room heats up instead of cooling",
-     "size": 6
+     "shows": "the coil's refrigerant boils off and the coil warms",
+     "stakes": "the cooling stops",
+     "size": 3,
+     "at": "cold coil",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem3",
+     "causedBy": "fix2",
+     "shows": "the squeezed gas makes the compressor red hot in the room",
+     "stakes": "the room heats back up",
+     "size": 4,
+     "at": "compressor",
+     "scale": "room"
+    },
+    {
+     "problem": "problem4",
+     "causedBy": "fix3",
+     "shows": "hot outdoor air leaks in round the duct at the window",
+     "stakes": "the room warms",
+     "size": 5,
+     "at": "window",
+     "scale": "room"
+    },
+    {
+     "problem": "problem5",
+     "causedBy": "fix4",
+     "shows": "in the sealed room the cold coil drips water on the floor",
+     "stakes": "the floor gets wet",
+     "size": 6,
+     "at": "cold coil",
+     "scale": "room"
     }
    ],
    "surprises": [
     {
-     "claim": "In 1902 Willis Carrier designed an air conditioning system for a printing plant in Brooklyn",
-     "role": "mythFact",
-     "search": "Willis Carrier 1902 Sackett-Wilhelms printing plant Brooklyn"
+     "claim": "An air conditioner's compressor squeezes refrigerant gas, which makes it hot, and the condenser coil releases that heat outside.",
+     "role": "fix3",
+     "search": "air conditioner compressor squeezes refrigerant hot condenser releases heat outside"
     },
     {
-     "claim": "Carrier's system was built to control humidity so the paper would not swell and the colours would line up",
-     "role": "mythFact",
-     "search": "Carrier 1902 humidity paper printing why invented"
+     "claim": "Portable air conditioners vent their hot air outside through a hose fitted into a window panel kit.",
+     "role": "fix4",
+     "search": "portable air conditioner exhaust hose window kit panel"
     },
     {
-     "claim": "An air conditioner's cold coil pulls water out of the air, which drips into a pan and drains away",
+     "claim": "An air conditioner's cold coil pulls water out of the air, which drips into a drain pan and runs out a drain line.",
+     "role": "fix5",
+     "search": "air conditioner evaporator coil condensation drain pan drain line"
+    }
+   ],
+   "ideas": [
+    {
+     "role": "hook",
+     "idea": "a fan blowing across ice is an air conditioner"
+    },
+    {
      "role": "problem",
-     "search": "air conditioner evaporator coil condensation drain pan"
+     "idea": "the ice melts and the air warms"
+    },
+    {
+     "role": "fix1",
+     "idea": "a coil of refrigerant replaces the ice"
+    },
+    {
+     "role": "problem2",
+     "idea": "the refrigerant boils off and the coil warms"
+    },
+    {
+     "role": "fix2",
+     "idea": "a compressor pumps the gas round and squeezes it back"
+    },
+    {
+     "role": "name",
+     "idea": "this is a compressor"
+    },
+    {
+     "role": "problem3",
+     "idea": "squeezing makes the gas burning hot, inside the room"
+    },
+    {
+     "role": "fix3",
+     "idea": "a hot coil and a duct dump that heat outside"
+    },
+    {
+     "role": "problem4",
+     "idea": "hot outdoor air leaks back in around the duct"
+    },
+    {
+     "role": "fix4",
+     "idea": "a window panel seals the gap"
+    },
+    {
+     "role": "problem5",
+     "idea": "the cold coil pulls water out of the room air and drips"
+    },
+    {
+     "role": "fix5",
+     "idea": "a tray and a hose drain the water away"
+    },
+    {
+     "role": "finish",
+     "idea": "switch it on and cool air blows in"
+    },
+    {
+     "role": "congrats",
+     "idea": "you built an air conditioner"
     }
    ]
   },
   "sentences": [
    {
     "role": "hook",
-    "text": "If you blow a fan through an icy coil, you have an air conditioner."
+    "text": "If you blow a fan across ice, you have an air conditioner."
    },
    {
     "role": "problem",
-    "text": "But the cold coil pulls water from the air, and it drips onto the floor."
+    "text": "But the ice melts, and the air warms up."
    },
    {
     "role": "fix1",
-    "text": "So you add a tray and a hose that drains the water away."
+    "text": "So you swap the ice for a coil of refrigerant."
    },
    {
     "role": "problem2",
-    "text": "But now the coil warms up, and warm air blows into the room."
+    "text": "But the refrigerant boils away, and the coil warms."
    },
    {
     "role": "fix2",
-    "text": "So you add a compressor that pumps coolant to keep the coil cold."
+    "text": "So a compressor pumps the gas round and squeezes it."
    },
    {
     "role": "name",
-    "text": "This is an air conditioner."
+    "text": "This is a compressor."
    },
    {
-    "role": "how",
-    "text": "The heat goes to a hot coil and out through the wall."
+    "role": "problem3",
+    "text": "But the squeezed gas runs burning hot."
    },
    {
-    "role": "myth",
-    "text": "And comfort is not why air conditioning was invented."
+    "role": "fix3",
+    "text": "So a hot coil dumps that heat out a duct."
    },
    {
-    "role": "mythFact",
-    "text": "Willis Carrier designed it in 1902 so printing paper would not swell."
+    "role": "problem4",
+    "text": "But hot outdoor air leaks back in around the duct."
+   },
+   {
+    "role": "fix4",
+    "text": "So you seal the window gap with a panel."
+   },
+   {
+    "role": "problem5",
+    "text": "But in the sealed room, the cold coil drips water."
+   },
+   {
+    "role": "fix5",
+    "text": "So a tray and a hose drain it away."
    },
    {
     "role": "finish",
-    "text": "Add louvers, a display and a filter."
+    "text": "Switch it on, and cool air blows in."
    },
    {
     "role": "congrats",
-    "text": "Congratulations, you have built an air conditioner."
+    "text": "Congratulations, you built an air conditioner."
    }
   ],
-  "sceneJson": {
-   "world": {
-    "cut": [
-     9.5,
-     11,
-     -4,
-     0.6
-    ],
-    "house": false,
-    "porch": false,
-    "trees": [],
-    "road": false,
-    "rocksAvoid": [],
-    "worker": false,
-    "moreTrees": false,
-    "backdrop": {
-     "type": "kitchen",
-     "x0": -12,
-     "x1": 12,
-     "back": -7,
-     "h": 6.2,
-     "gap": [
-      -1.8,
-      1.8
-     ],
-     "color": "#e8e0cf"
-    }
-   },
-   "parts": [
-    {
-     "id": "light",
-     "kind": "light",
-     "params": {
-      "storm": false
-     }
-    },
-    {
-     "id": "ac",
-     "kind": "rig",
-     "main": true,
-     "params": {
-      "name": "air conditioner",
-      "synonyms": [
-       "AC",
-       "portable air conditioner",
-       "air con"
-      ],
-      "pos": [
-       0,
-       0.12,
-       -4.4
-      ],
-      "scale": 2.4,
-      "nodes": [
-       {
-        "id": "body",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           0.6,
-           0.04,
-           0.45
-          ],
-          "at": [
-           0,
-           0.02,
-           0
-          ],
-          "look": "plastic",
-          "color": "#d9dee3"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.6,
-           0.9,
-           0.03
-          ],
-          "at": [
-           0,
-           0.45,
-           -0.21
-          ],
-          "look": "plastic",
-          "color": "#c9d3dc"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.03,
-           0.9,
-           0.45
-          ],
-          "at": [
-           -0.285,
-           0.45,
-           0
-          ],
-          "look": "plastic",
-          "color": "#eef1f4"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.03,
-           0.42,
-           0.45
-          ],
-          "at": [
-           0.285,
-           0.21,
-           0
-          ],
-          "look": "plastic",
-          "color": "#eef1f4"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.03,
-           0.04,
-           0.45
-          ],
-          "at": [
-           0.285,
-           0.88,
-           0
-          ],
-          "look": "plastic",
-          "color": "#eef1f4"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.03,
-           0.44,
-           0.03
-          ],
-          "at": [
-           0.285,
-           0.64,
-           -0.21
-          ],
-          "look": "plastic",
-          "color": "#eef1f4"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.03,
-           0.44,
-           0.03
-          ],
-          "at": [
-           0.285,
-           0.64,
-           0.21
-          ],
-          "look": "plastic",
-          "color": "#eef1f4"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.6,
-           0.04,
-           0.45
-          ],
-          "at": [
-           0,
-           0.88,
-           0
-          ],
-          "look": "plastic",
-          "color": "#eef1f4"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.54,
-           0.02,
-           0.42
-          ],
-          "at": [
-           0,
-           0.41,
-           0
-          ],
-          "look": "metal",
-          "color": "#aab4bd"
-         }
-        ]
-       },
-       {
-        "id": "fan",
-        "parent": "body",
-        "at": [
-         -0.13,
-         0.64,
-         -0.06
-        ],
-        "shapes": [
-         {
-          "shape": "cylinder",
-          "r": 0.04,
-          "h": 0.12,
-          "axis": "z",
-          "at": [
-           0,
-           0,
-           -0.08
-          ],
-          "look": "metal",
-          "color": "#3a3f44"
-         },
-         {
-          "shape": "fan",
-          "r": 0.12,
-          "blades": 5,
-          "w": 0.04,
-          "axis": "z",
-          "at": [
-           0,
-           0,
-           0
-          ],
-          "look": "plastic",
-          "color": "#2f6fb0"
-         }
-        ],
-        "moves": [
-         {
-          "name": "blow",
-          "type": "spin",
-          "axis": "z",
-          "turns": 3
-         }
-        ]
-       },
-       {
-        "id": "coil",
-        "parent": "body",
-        "at": [
-         0.13,
-         0.48,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "tube",
-          "r": 0.018,
-          "path": [
-           [
-            -0.1,
-            0,
-            0
-           ],
-           [
-            0.1,
-            0,
-            0
-           ],
-           [
-            0.1,
-            0.065,
-            0
-           ],
-           [
-            -0.1,
-            0.065,
-            0
-           ],
-           [
-            -0.1,
-            0.13,
-            0
-           ],
-           [
-            0.1,
-            0.13,
-            0
-           ],
-           [
-            0.1,
-            0.195,
-            0
-           ],
-           [
-            -0.1,
-            0.195,
-            0
-           ],
-           [
-            -0.1,
-            0.26,
-            0
-           ],
-           [
-            0.1,
-            0.26,
-            0
-           ],
-           [
-            0.1,
-            0.325,
-            0
-           ],
-           [
-            -0.1,
-            0.325,
-            0
-           ]
-          ],
-          "look": "metal",
-          "color": "#7d8a96"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.22,
-           0.36,
-           0.01
-          ],
-          "at": [
-           0,
-           0.165,
-           -0.03
-          ],
-          "look": "metal",
-          "color": "#9aa7b3"
-         }
-        ],
-        "moves": [
-         {
-          "name": "icy",
-          "type": "chill",
-          "color": "#bfe8ff"
-         },
-         {
-          "name": "warm",
-          "type": "heat",
-          "color": "#ffb070"
-         }
-        ]
-       },
-       {
-        "id": "tray",
-        "parent": "body",
-        "at": [
-         0,
-         0.42,
-         0.02
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           0.5,
-           0.04,
-           0.36
-          ],
-          "at": [
-           0,
-           0.02,
-           0
-          ],
-          "look": "plastic",
-          "color": "#3d6fb0"
-         }
-        ],
-        "moves": [
-         {
-          "name": "trayIn",
-          "type": "appear"
-         }
-        ]
-       },
-       {
-        "id": "hose",
-        "parent": "tray",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "tube",
-          "r": 0.02,
-          "path": [
-           [
-            0.24,
-            0.02,
-            0.14
-           ],
-           [
-            0.32,
-            0.02,
-            0.14
-           ],
-           [
-            0.32,
-            -0.4,
-            0.14
-           ],
-           [
-            0.46,
-            -0.4,
-            0.14
-           ]
-          ],
-          "look": "rubber",
-          "color": "#2f3235"
-         }
-        ],
-        "moves": [
-         {
-          "name": "hoseIn",
-          "type": "appear"
-         },
-         {
-          "name": "drain",
-          "type": "flow",
-          "color": "#3ad6ff",
-          "path": [
-           [
-            0.24,
-            0.02,
-            0.17
-           ],
-           [
-            0.32,
-            0.02,
-            0.17
-           ],
-           [
-            0.32,
-            -0.4,
-            0.17
-           ],
-           [
-            0.46,
-            -0.4,
-            0.17
-           ]
-          ]
-         }
-        ]
-       },
-       {
-        "id": "compressor",
-        "parent": "body",
-        "at": [
-         -0.13,
-         0.04,
-         0.04
-        ],
-        "shapes": [
-         {
-          "shape": "cylinder",
-          "r": 0.09,
-          "h": 0.26,
-          "axis": "y",
-          "at": [
-           0,
-           0.13,
-           0
-          ],
-          "look": "metal",
-          "color": "#2b2f33"
-         }
-        ],
-        "moves": [
-         {
-          "name": "compIn",
-          "type": "appear"
-         },
-         {
-          "name": "run",
-          "type": "shake",
-          "amp": 0.01,
-          "rate": 12
-         }
-        ]
-       },
-       {
-        "id": "condenser",
-        "parent": "body",
-        "at": [
-         0.06,
-         0.07,
-         0.1
-        ],
-        "shapes": [
-         {
-          "shape": "tube",
-          "r": 0.018,
-          "path": [
-           [
-            -0.06,
-            0,
-            0
-           ],
-           [
-            0.18,
-            0,
-            0
-           ],
-           [
-            0.18,
-            0.07,
-            0
-           ],
-           [
-            -0.06,
-            0.07,
-            0
-           ],
-           [
-            -0.06,
-            0.14,
-            0
-           ],
-           [
-            0.18,
-            0.14,
-            0
-           ],
-           [
-            0.18,
-            0.21,
-            0
-           ],
-           [
-            -0.06,
-            0.21,
-            0
-           ],
-           [
-            -0.06,
-            0.28,
-            0
-           ],
-           [
-            0.18,
-            0.28,
-            0
-           ]
-          ],
-          "look": "metal",
-          "color": "#3a3d40"
-         }
-        ],
-        "moves": [
-         {
-          "name": "condIn",
-          "type": "appear"
-         },
-         {
-          "name": "hot",
-          "type": "heat",
-          "color": "#ff5a1a"
-         }
-        ]
-       },
-       {
-        "id": "pipes",
-        "parent": "body",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "tube",
-          "r": 0.014,
-          "path": [
-           [
-            -0.13,
-            0.3,
-            0.04
-           ],
-           [
-            -0.13,
-            0.36,
-            -0.16
-           ],
-           [
-            0.24,
-            0.36,
-            -0.16
-           ],
-           [
-            0.24,
-            0.48,
-            -0.16
-           ],
-           [
-            0.23,
-            0.48,
-            0
-           ]
-          ],
-          "look": "metal",
-          "color": "#b87333"
-         },
-         {
-          "shape": "tube",
-          "r": 0.014,
-          "path": [
-           [
-            0.03,
-            0.81,
-            0
-           ],
-           [
-            -0.26,
-            0.81,
-            -0.16
-           ],
-           [
-            -0.26,
-            0.2,
-            -0.16
-           ],
-           [
-            -0.04,
-            0.2,
-            0.04
-           ]
-          ],
-          "look": "metal",
-          "color": "#b87333"
-         }
-        ],
-        "moves": [
-         {
-          "name": "pipesIn",
-          "type": "appear"
-         },
-         {
-          "name": "circulate",
-          "type": "flow",
-          "color": "#7fd0ff",
-          "path": [
-           [
-            -0.13,
-            0.3,
-            0.06
-           ],
-           [
-            -0.13,
-            0.36,
-            -0.14
-           ],
-           [
-            0.24,
-            0.36,
-            -0.14
-           ],
-           [
-            0.24,
-            0.48,
-            -0.14
-           ],
-           [
-            0.23,
-            0.48,
-            0.03
-           ],
-           [
-            0.03,
-            0.81,
-            0.03
-           ],
-           [
-            -0.26,
-            0.81,
-            -0.14
-           ],
-           [
-            -0.26,
-            0.2,
-            -0.14
-           ],
-           [
-            -0.04,
-            0.2,
-            0.06
-           ]
-          ]
-         }
-        ]
-       },
-       {
-        "id": "duct",
-        "parent": "body",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "tube",
-          "r": 0.06,
-          "path": [
-           [
-            0.12,
-            0.25,
-            -0.22
-           ],
-           [
-            0.12,
-            0.25,
-            -0.4
-           ],
-           [
-            0.12,
-            1.03,
-            -0.6
-           ],
-           [
-            0.12,
-            1.03,
-            -1.04
-           ]
-          ],
-          "look": "glass",
-          "color": "#e4ecf2"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.3,
-           0.3,
-           0.03
-          ],
-          "at": [
-           0.12,
-           1.03,
-           -1.05
-          ],
-          "look": "metal",
-          "color": "#5d656c"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.26,
-           0.025,
-           0.02
-          ],
-          "at": [
-           0.12,
-           0.9400000000000001,
-           -1.03
-          ],
-          "look": "metal",
-          "color": "#2c3237"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.26,
-           0.025,
-           0.02
-          ],
-          "at": [
-           0.12,
-           1,
-           -1.03
-          ],
-          "look": "metal",
-          "color": "#2c3237"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.26,
-           0.025,
-           0.02
-          ],
-          "at": [
-           0.12,
-           1.06,
-           -1.03
-          ],
-          "look": "metal",
-          "color": "#2c3237"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.26,
-           0.025,
-           0.02
-          ],
-          "at": [
-           0.12,
-           1.12,
-           -1.03
-          ],
-          "look": "metal",
-          "color": "#2c3237"
-         }
-        ],
-        "moves": [
-         {
-          "name": "ductIn",
-          "type": "appear"
-         },
-         {
-          "name": "exhaust",
-          "type": "flow",
-          "color": "#ff7a1a",
-          "path": [
-           [
-            0.12,
-            0.25,
-            -0.22
-           ],
-           [
-            0.12,
-            0.25,
-            -0.4
-           ],
-           [
-            0.12,
-            1.03,
-            -0.6
-           ],
-           [
-            0.12,
-            1.03,
-            -1.04
-           ]
-          ]
-         }
-        ]
-       },
-       {
-        "id": "louvers",
-        "parent": "body",
-        "at": [
-         0,
-         0.9,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           0.5,
-           0.02,
-           0.06
-          ],
-          "at": [
-           0,
-           0.01,
-           -0.12
-          ],
-          "rot": [
-           -30,
-           0,
-           0
-          ],
-          "look": "plastic",
-          "color": "#b8c2cb"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.5,
-           0.02,
-           0.06
-          ],
-          "at": [
-           0,
-           0.01,
-           -0.04
-          ],
-          "rot": [
-           -30,
-           0,
-           0
-          ],
-          "look": "plastic",
-          "color": "#b8c2cb"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.5,
-           0.02,
-           0.06
-          ],
-          "at": [
-           0,
-           0.01,
-           0.04
-          ],
-          "rot": [
-           -30,
-           0,
-           0
-          ],
-          "look": "plastic",
-          "color": "#b8c2cb"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.5,
-           0.02,
-           0.06
-          ],
-          "at": [
-           0,
-           0.01,
-           0.12
-          ],
-          "rot": [
-           -30,
-           0,
-           0
-          ],
-          "look": "plastic",
-          "color": "#b8c2cb"
-         }
-        ],
-        "moves": [
-         {
-          "name": "louversIn",
-          "type": "appear"
-         }
-        ]
-       },
-       {
-        "id": "display",
-        "parent": "body",
-        "at": [
-         0.13,
-         0.8,
-         0.23
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           0.2,
-           0.08,
-           0.02
-          ],
-          "at": [
-           0,
-           0,
-           0
-          ],
-          "look": "plastic",
-          "color": "#1d2226"
-         },
-         {
-          "shape": "light",
-          "r": 0.022,
-          "at": [
-           0.05,
-           0,
-           0.015
-          ],
-          "color": "#4fe36b"
-         }
-        ],
-        "moves": [
-         {
-          "name": "displayIn",
-          "type": "appear"
-         },
-         {
-          "name": "displayOn",
-          "type": "light"
-         }
-        ]
-       },
-       {
-        "id": "filter",
-        "parent": "body",
-        "at": [
-         -0.13,
-         0.64,
-         0.215
-        ],
-        "shapes": [
-         {
-          "shape": "panel",
-          "size": [
-           0.26,
-           0.38
-          ],
-          "thick": 0.012,
-          "at": [
-           0,
-           0,
-           0
-          ],
-          "look": "plastic",
-          "color": "#8fa3b2"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.01,
-           0.38,
-           0.016
-          ],
-          "at": [
-           -0.08,
-           0,
-           0.006
-          ],
-          "look": "plastic",
-          "color": "#5f7382"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.01,
-           0.38,
-           0.016
-          ],
-          "at": [
-           0,
-           0,
-           0.006
-          ],
-          "look": "plastic",
-          "color": "#5f7382"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.01,
-           0.38,
-           0.016
-          ],
-          "at": [
-           0.08,
-           0,
-           0.006
-          ],
-          "look": "plastic",
-          "color": "#5f7382"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.26,
-           0.01,
-           0.016
-          ],
-          "at": [
-           0,
-           -0.12,
-           0.006
-          ],
-          "look": "plastic",
-          "color": "#5f7382"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.26,
-           0.01,
-           0.016
-          ],
-          "at": [
-           0,
-           0,
-           0.006
-          ],
-          "look": "plastic",
-          "color": "#5f7382"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.26,
-           0.01,
-           0.016
-          ],
-          "at": [
-           0,
-           0.12,
-           0.006
-          ],
-          "look": "plastic",
-          "color": "#5f7382"
-         }
-        ],
-        "moves": [
-         {
-          "name": "filterIn",
-          "type": "appear"
-         }
-        ]
-       }
-      ]
-     }
-    },
-    {
-     "id": "coldAir",
-     "kind": "arrows",
-     "params": {
-      "list": [
-       {
-        "at": [
-         1.008,
-         1.848,
-         -4.16
-        ],
-        "dir": [
-         1,
-         0
-        ],
-        "travel": 0.5,
-        "phase": 0
-       },
-       {
-        "at": [
-         1.008,
-         1.44,
-         -4.16
-        ],
-        "dir": [
-         1,
-         0
-        ],
-        "travel": 0.5,
-        "phase": 0.5
-       }
-      ],
-      "opts": {
-       "scale": 0.55,
-       "color": "#ffffff"
-      }
-     }
-    },
-    {
-     "id": "warmAir",
-     "kind": "arrows",
-     "params": {
-      "list": [
-       {
-        "at": [
-         1.008,
-         1.848,
-         -4.16
-        ],
-        "dir": [
-         1,
-         0
-        ],
-        "travel": 0.5,
-        "phase": 0
-       },
-       {
-        "at": [
-         1.008,
-         1.44,
-         -4.16
-        ],
-        "dir": [
-         1,
-         0
-        ],
-        "travel": 0.5,
-        "phase": 0.5
-       }
-      ],
-      "opts": {
-       "scale": 0.55,
-       "color": "#ff8a2a"
-      }
-     }
-    },
-    {
-     "id": "frost",
-     "kind": "fx",
-     "params": {
-      "type": "frost",
-      "at": [
-       0.312,
-       1.656,
-       -4.28
-      ],
-      "size": 0.3
-     }
-    },
-    {
-     "id": "drip",
-     "kind": "fx",
-     "params": {
-      "type": "drip",
-      "at": [
-       0.48,
-       1.224,
-       -3.968
-      ],
-      "size": 0.35
-     }
-    },
-    {
-     "id": "splash",
-     "kind": "fx",
-     "params": {
-      "type": "splash",
-      "at": [
-       0.528,
-       0.144,
-       -3.68
-      ],
-      "size": 0.5
-     }
-    },
-    {
-     "id": "outline",
-     "kind": "outline",
-     "params": {
-      "of": "ac",
-      "opts": {
-       "closed": true
-      }
-     }
-    },
-    {
-     "id": "sheet",
-     "kind": "sheet",
-     "params": {
-      "masthead": "DAILY NEWS",
-      "date": "1902",
-      "headline": "COOL AIR FOR COMFORT",
-      "from": [
-       -1.9,
-       -0.6,
-       -4
-      ],
-      "to": [
-       -1.9,
-       1.4,
-       -4
-      ]
-     }
-    },
-    {
-     "id": "book",
-     "kind": "book",
-     "params": {
-      "w": 1.1,
-      "h": 1.5,
-      "bg": "#2b4a6f",
-      "book": true,
-      "spine": "#1c3149",
-      "lines": [
-       {
-        "text": "HUMIDITY",
-        "font": "bold 58px Georgia, serif",
-        "color": "#f2d58e",
-        "y": 160
-       },
-       {
-        "text": "CONTROL",
-        "font": "bold 58px Georgia, serif",
-        "color": "#f2d58e",
-        "y": 240
-       },
-       {
-        "rule": true,
-        "y": 275,
-        "color": "#f2d58e"
-       },
-       {
-        "text": "W. CARRIER",
-        "font": "bold 44px Georgia, serif",
-        "color": "#f2d58e",
-        "y": 380
-       },
-       {
-        "text": "1902",
-        "font": "bold 56px Georgia, serif",
-        "color": "#f2d58e",
-        "y": 540
-       }
-      ],
-      "from": [
-       1.9,
-       0.2,
-       -4
-      ],
-      "to": [
-       1.9,
-       1.5,
-       -4
-      ],
-      "rot": [
-       -0.1,
-       -0.25,
-       0.02
-      ]
-     }
-    },
-    {
-     "id": "sign",
-     "kind": "sign",
-     "params": {
-      "at": [
-       4.3,
-       0.12,
-       -2
-      ],
-      "rotY": -0.3,
-      "scale": 0.6
-     }
-    }
-   ],
-   "beats": [
-    {
-     "s": "hook",
-     "shows": {
-      "p": "ac",
-      "does": "a blue fan spins beside a coil that frosts icy pale blue, white air arrows blow out through the coil"
-     },
-     "do": [
-      {
-       "p": "ac",
-       "v": "show",
-       "w": ""
-      },
-      {
-       "p": "ac",
-       "v": "blow",
-       "w": ""
-      },
-      {
-       "p": "coldAir",
-       "v": "show",
-       "w": "fan"
-      },
-      {
-       "p": "ac",
-       "v": "icy",
-       "w": "icy"
-      },
-      {
-       "p": "frost",
-       "v": "start",
-       "w": "icy"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "ac.fan",
-        "ac.coil"
-       ],
-       "type": "close"
-      }
-     ]
-    },
-    {
-     "s": "problem",
-     "shows": {
-      "p": "ac",
-      "does": "water drips off the cold coil and splashes on the floor"
-     },
-     "state": {
-      "text": "LEAKING",
-      "w": "drips"
-     },
-     "do": [
-      {
-       "p": "ac",
-       "v": "icy",
-       "w": "cold"
-      },
-      {
-       "p": "drip",
-       "v": "start",
-       "w": "water"
-      },
-      {
-       "p": "splash",
-       "v": "start",
-       "w": "floor"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "ac"
-       ],
-       "type": "mid"
-      }
-     ]
-    },
-    {
-     "s": "fix1",
-     "shows": {
-      "p": "ac",
-      "does": "a blue drip tray and a black hose appear and water runs out the hose"
-     },
-     "do": [
-      {
-       "p": "drip",
-       "v": "stop",
-       "w": "So"
-      },
-      {
-       "p": "splash",
-       "v": "stop",
-       "w": "So"
-      },
-      {
-       "p": "ac",
-       "v": "trayIn",
-       "w": "tray"
-      },
-      {
-       "p": "ac",
-       "v": "hoseIn",
-       "w": "hose"
-      },
-      {
-       "p": "ac",
-       "v": "drain",
-       "w": "drains"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "ac"
-       ],
-       "type": "mid"
-      }
-     ]
-    },
-    {
-     "s": "problem2",
-     "shows": {
-      "p": "ac",
-      "does": "the frost leaves the coil, it turns warm orange, and the air arrows turn orange"
-     },
-     "state": {
-      "text": "WARM AIR",
-      "w": "warm"
-     },
-     "do": [
-      {
-       "p": "ac",
-       "v": "drainBack",
-       "w": "But"
-      },
-      {
-       "p": "frost",
-       "v": "stop",
-       "w": "coil"
-      },
-      {
-       "p": "ac",
-       "v": "icyBack",
-       "w": "coil"
-      },
-      {
-       "p": "ac",
-       "v": "warm",
-       "w": "warms"
-      },
-      {
-       "p": "coldAir",
-       "v": "hide",
-       "w": "warms"
-      },
-      {
-       "p": "warmAir",
-       "v": "show",
-       "w": "warm"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "ac.coil",
-        "ac.fan",
-        "warmAir"
-       ],
-       "type": "mid"
-      }
-     ]
-    },
-    {
-     "s": "fix2",
-     "shows": {
-      "p": "ac",
-      "does": "a compressor appears and shakes, coolant runs in the pipes, the coil frosts icy again"
-     },
-     "do": [
-      {
-       "p": "warmAir",
-       "v": "hide",
-       "w": "So"
-      },
-      {
-       "p": "ac",
-       "v": "compIn",
-       "w": "compressor"
-      },
-      {
-       "p": "ac",
-       "v": "pipesIn",
-       "w": "compressor"
-      },
-      {
-       "p": "ac",
-       "v": "run",
-       "w": "pumps"
-      },
-      {
-       "p": "ac",
-       "v": "circulate",
-       "w": "pumps"
-      },
-      {
-       "p": "ac",
-       "v": "warmBack",
-       "w": "pumps"
-      },
-      {
-       "p": "ac",
-       "v": "icy",
-       "w": "cold"
-      },
-      {
-       "p": "frost",
-       "v": "start",
-       "w": "cold"
-      },
-      {
-       "p": "coldAir",
-       "v": "show",
-       "w": "cold"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "ac"
-       ],
-       "type": "mid"
-      }
-     ]
-    },
-    {
-     "s": "name",
-     "shows": {
-      "p": "outline",
-      "does": "a glowing outline traces the whole unit standing on the floor"
-     },
-     "do": [
-      {
-       "p": "coldAir",
-       "v": "hide",
-       "w": ""
-      },
-      {
-       "p": "frost",
-       "v": "stop",
-       "w": ""
-      },
-      {
-       "p": "outline",
-       "v": "show",
-       "w": "air"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "ac"
-       ],
-       "hero": true,
-       "width": 0.6
-      }
-     ]
-    },
-    {
-     "s": "how",
-     "shows": {
-      "p": "ac",
-      "does": "the lower coil glows hot and orange dots run up the duct and out through a vent in the wall"
-     },
-     "do": [
-      {
-       "p": "outline",
-       "v": "hide",
-       "w": ""
-      },
-      {
-       "p": "ac",
-       "v": "condIn",
-       "w": "heat"
-      },
-      {
-       "p": "ac",
-       "v": "ductIn",
-       "w": "heat"
-      },
-      {
-       "p": "ac",
-       "v": "exhaust",
-       "w": "heat"
-      },
-      {
-       "p": "ac",
-       "v": "hot",
-       "w": "hot"
-      },
-      {
-       "p": "ac",
-       "v": "run",
-       "w": "wall"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "ac"
-       ],
-       "type": "wide"
-      }
-     ]
-    },
-    {
-     "s": "myth",
-     "shows": {
-      "p": "sheet",
-      "does": "a newspaper headline about cool air for comfort rises beside the unit"
-     },
-     "do": [
-      {
-       "p": "sheet",
-       "v": "show",
-       "w": "comfort"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "ac",
-        "sheet"
-       ],
-       "type": "mid"
-      }
-     ]
-    },
-    {
-     "s": "mythFact",
-     "shows": {
-      "p": "book",
-      "does": "the newspaper sinks and a Carrier 1902 humidity book rises"
-     },
-     "do": [
-      {
-       "p": "sheet",
-       "v": "hide",
-       "w": "Willis"
-      },
-      {
-       "p": "book",
-       "v": "show",
-       "w": "Willis"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "ac",
-        "book"
-       ],
-       "type": "mid"
-      }
-     ]
-    },
-    {
-     "s": "finish",
-     "shows": {
-      "p": "ac",
-      "does": "louvers, a lit display and a filter pop on"
-     },
-     "do": [
-      {
-       "p": "book",
-       "v": "hide",
-       "w": "Add"
-      },
-      {
-       "p": "ac",
-       "v": "louversIn",
-       "w": "louvers"
-      },
-      {
-       "p": "ac",
-       "v": "displayIn",
-       "w": "display"
-      },
-      {
-       "p": "ac",
-       "v": "displayOn",
-       "w": "display"
-      },
-      {
-       "p": "ac",
-       "v": "filterIn",
-       "w": "filter"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "ac"
-       ],
-       "type": "wide"
-      }
-     ]
-    },
-    {
-     "s": "congrats",
-     "shows": {
-      "p": "ac",
-      "does": "the finished unit hums, its fan turning"
-     },
-     "do": [],
-     "shots": [
-      {
-       "focus": [
-        "ac"
-       ],
-       "type": "wide"
-      }
-     ]
-    }
-   ],
-   "audio": {
-    "cards": [
-     {
-      "text": "1902",
-      "at": {
-       "s": "mythFact",
-       "w": "1902",
-       "o": 0
-      },
-      "d": 1.3
-     }
-    ],
-    "sfx": [
-     {
-      "lib": "motor_hum",
-      "at": {
-       "s": "hook",
-       "w": "fan",
-       "o": 0
-      },
-      "d": 1.4
-     },
-     {
-      "lib": "drip",
-      "at": {
-       "s": "problem",
-       "w": "drips",
-       "o": 0
-      },
-      "d": 1.3
-     },
-     {
-      "lib": "water_rush",
-      "at": {
-       "s": "fix1",
-       "w": "drains",
-       "o": 0
-      },
-      "d": 1.2
-     },
-     {
-      "lib": "motor_hum",
-      "at": {
-       "s": "fix2",
-       "w": "compressor",
-       "o": 0
-      },
-      "d": 1.5
-     }
-    ],
-    "chimes": [
-     {
-      "s": "name",
-      "w": "",
-      "o": 0
-     },
-     {
-      "s": "mythFact",
-      "w": "1902",
-      "o": 0
-     },
-     {
-      "s": "congrats",
-      "w": "",
-      "o": 0
-     }
-    ],
-    "rain": []
-   }
-  }
+  "sceneJson": "{\"world\":{\"cut\":[9.5,11,-4,0.6],\"house\":false,\"worker\":false,\"moreTrees\":false,\"road\":false,\"porch\":false,\"backdrop\":{\"type\":\"room\",\"windowX\":0.3,\"chairX\":-4.5}},\"parts\":[{\"id\":\"light\",\"kind\":\"light\",\"params\":{\"storm\":false}},{\"id\":\"ac\",\"kind\":\"rig\",\"main\":true,\"params\":{\"name\":\"air conditioner\",\"synonyms\":[\"AC\",\"portable air conditioner\",\"air con\"],\"pos\":[0,0.12,-4.4],\"scale\":2.4,\"nodes\":[{\"id\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.6,0.04,0.45],\"at\":[0,0.02,0],\"look\":\"plastic\",\"color\":\"#d9dee3\"},{\"shape\":\"box\",\"size\":[0.6,0.9,0.03],\"at\":[0,0.45,-0.21],\"look\":\"plastic\",\"color\":\"#c9d3dc\"},{\"shape\":\"box\",\"size\":[0.03,0.9,0.45],\"at\":[-0.285,0.45,0],\"look\":\"plastic\",\"color\":\"#eef1f4\"},{\"shape\":\"box\",\"size\":[0.03,0.42,0.45],\"at\":[0.285,0.21,0],\"look\":\"plastic\",\"color\":\"#eef1f4\"},{\"shape\":\"box\",\"size\":[0.03,0.04,0.45],\"at\":[0.285,0.88,0],\"look\":\"plastic\",\"color\":\"#eef1f4\"},{\"shape\":\"box\",\"size\":[0.03,0.44,0.03],\"at\":[0.285,0.64,-0.21],\"look\":\"plastic\",\"color\":\"#eef1f4\"},{\"shape\":\"box\",\"size\":[0.03,0.44,0.03],\"at\":[0.285,0.64,0.21],\"look\":\"plastic\",\"color\":\"#eef1f4\"},{\"shape\":\"box\",\"size\":[0.6,0.04,0.45],\"at\":[0,0.88,0],\"look\":\"plastic\",\"color\":\"#eef1f4\"},{\"shape\":\"box\",\"size\":[0.54,0.02,0.42],\"at\":[0,0.41,0],\"look\":\"metal\",\"color\":\"#aab4bd\"}]},{\"id\":\"fan\",\"parent\":\"body\",\"at\":[-0.13,0.64,-0.06],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.04,\"h\":0.12,\"axis\":\"z\",\"at\":[0,0,-0.08],\"look\":\"metal\",\"color\":\"#3a3f44\"},{\"shape\":\"fan\",\"r\":0.12,\"blades\":5,\"w\":0.04,\"axis\":\"z\",\"at\":[0,0,0],\"look\":\"plastic\",\"color\":\"#2f6fb0\"}],\"moves\":[{\"name\":\"blow\",\"type\":\"spin\",\"axis\":\"z\",\"turns\":3}]},{\"id\":\"ice\",\"parent\":\"body\",\"at\":[0.13,0.43,0.02],\"shapes\":[{\"shape\":\"box\",\"size\":[0.2,0.28,0.2],\"at\":[0,0.14,0],\"look\":\"plastic\",\"color\":\"#9fdcff\"},{\"shape\":\"box\",\"size\":[0.18,0.02,0.18],\"at\":[0,0.29,0],\"look\":\"paint\",\"color\":\"#eefaff\"}],\"moves\":[{\"name\":\"iceIn\",\"type\":\"appear\"},{\"name\":\"melt\",\"type\":\"extend\",\"axis\":\"y\",\"k\":0.2}]},{\"id\":\"puddle\",\"parent\":\"body\",\"at\":[0,0.42,0.02],\"shapes\":[{\"shape\":\"box\",\"size\":[0.02,0.02,0.02],\"at\":[-0.2,0.01,0],\"look\":\"metal\",\"color\":\"#aab4bd\"}],\"moves\":[{\"name\":\"pool\",\"type\":\"fill\",\"box\":{\"size\":[0.5,0.02,0.38],\"at\":[0,0.01,0],\"color\":\"#4fb0ec\"}}]},{\"id\":\"coil\",\"parent\":\"body\",\"at\":[0.13,0.48,0],\"shapes\":[{\"shape\":\"tube\",\"r\":0.018,\"path\":[[-0.1,0,0],[0.1,0,0],[0.1,0.065,0],[-0.1,0.065,0],[-0.1,0.13,0],[0.1,0.13,0],[0.1,0.195,0],[-0.1,0.195,0],[-0.1,0.26,0],[0.1,0.26,0],[0.1,0.325,0],[-0.1,0.325,0]],\"look\":\"metal\",\"color\":\"#7d8a96\"},{\"shape\":\"box\",\"size\":[0.22,0.36,0.01],\"at\":[0,0.165,-0.03],\"look\":\"metal\",\"color\":\"#9aa7b3\"}],\"moves\":[{\"name\":\"coilIn\",\"type\":\"appear\"},{\"name\":\"icy\",\"type\":\"chill\",\"color\":\"#bfe8ff\"},{\"name\":\"warm\",\"type\":\"heat\",\"color\":\"#ffb070\"}]},{\"id\":\"tray\",\"parent\":\"body\",\"at\":[0,0.42,0.02],\"shapes\":[{\"shape\":\"box\",\"size\":[0.5,0.04,0.36],\"at\":[0,0.02,0],\"look\":\"plastic\",\"color\":\"#3d6fb0\"}],\"moves\":[{\"name\":\"tray\",\"type\":\"appear\"}]},{\"id\":\"hose\",\"parent\":\"tray\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"tube\",\"r\":0.02,\"path\":[[0.24,0.02,0.14],[0.32,0.02,0.14],[0.32,-0.4,0.14],[0.46,-0.4,0.14]],\"look\":\"rubber\",\"color\":\"#2f3235\"}],\"moves\":[{\"name\":\"tray\",\"type\":\"appear\"},{\"name\":\"drain\",\"type\":\"flow\",\"color\":\"#3ad6ff\",\"look\":\"stream\",\"path\":[[0.24,0.02,0.17],[0.32,0.02,0.17],[0.32,-0.4,0.17],[0.46,-0.4,0.17]]}]},{\"id\":\"compressor\",\"parent\":\"body\",\"at\":[-0.13,0.04,0.04],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.09,\"h\":0.26,\"axis\":\"y\",\"at\":[0,0.13,0],\"look\":\"metal\",\"color\":\"#2b2f33\"}],\"moves\":[{\"name\":\"compIn\",\"type\":\"appear\"},{\"name\":\"run\",\"type\":\"shake\",\"amp\":0.01,\"rate\":12},{\"name\":\"scald\",\"type\":\"heat\",\"color\":\"#ff3a1a\"}]},{\"id\":\"condenser\",\"parent\":\"body\",\"at\":[0.06,0.07,0.1],\"shapes\":[{\"shape\":\"tube\",\"r\":0.018,\"path\":[[-0.06,0,0],[0.18,0,0],[0.18,0.07,0],[-0.06,0.07,0],[-0.06,0.14,0],[0.18,0.14,0],[0.18,0.21,0],[-0.06,0.21,0],[-0.06,0.28,0],[0.18,0.28,0]],\"look\":\"metal\",\"color\":\"#3a3d40\"}],\"moves\":[{\"name\":\"condIn\",\"type\":\"appear\"},{\"name\":\"hot\",\"type\":\"heat\",\"color\":\"#ff5a1a\"}]},{\"id\":\"pipes\",\"parent\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"tube\",\"r\":0.014,\"path\":[[-0.13,0.3,0.04],[-0.13,0.36,-0.16],[0.24,0.36,-0.16],[0.24,0.48,-0.16],[0.23,0.48,0]],\"look\":\"metal\",\"color\":\"#b87333\"},{\"shape\":\"tube\",\"r\":0.014,\"path\":[[0.03,0.81,0],[-0.26,0.81,-0.16],[-0.26,0.2,-0.16],[-0.04,0.2,0.04]],\"look\":\"metal\",\"color\":\"#b87333\"}],\"moves\":[{\"name\":\"compIn\",\"type\":\"appear\"},{\"name\":\"circulate\",\"type\":\"flow\",\"color\":\"#7fd0ff\",\"look\":\"dots\",\"size\":0.02,\"path\":[[-0.13,0.3,0.06],[-0.13,0.36,-0.14],[0.24,0.36,-0.14],[0.24,0.48,-0.14],[0.23,0.48,0.03],[0.03,0.81,0.03],[-0.26,0.81,-0.14],[-0.26,0.2,-0.14],[-0.04,0.2,0.06]]}]},{\"id\":\"duct\",\"parent\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"tube\",\"r\":0.06,\"path\":[[0.12,0.25,-0.22],[0.12,0.25,-0.4],[0.12,1.03,-0.6],[0.12,1.03,-1.04]],\"look\":\"glass\",\"color\":\"#e4ecf2\"},{\"shape\":\"box\",\"size\":[0.3,0.3,0.03],\"at\":[0.12,1.03,-1.05],\"look\":\"metal\",\"color\":\"#5d656c\"},{\"shape\":\"box\",\"size\":[0.26,0.025,0.02],\"at\":[0.12,0.9400000000000001,-1.03],\"look\":\"metal\",\"color\":\"#2c3237\"},{\"shape\":\"box\",\"size\":[0.26,0.025,0.02],\"at\":[0.12,1,-1.03],\"look\":\"metal\",\"color\":\"#2c3237\"},{\"shape\":\"box\",\"size\":[0.26,0.025,0.02],\"at\":[0.12,1.06,-1.03],\"look\":\"metal\",\"color\":\"#2c3237\"},{\"shape\":\"box\",\"size\":[0.26,0.025,0.02],\"at\":[0.12,1.12,-1.03],\"look\":\"metal\",\"color\":\"#2c3237\"}],\"moves\":[{\"name\":\"condIn\",\"type\":\"appear\"},{\"name\":\"exhaust\",\"type\":\"flow\",\"color\":\"#ff7a1a\",\"look\":\"dots\",\"path\":[[0.12,0.25,-0.22],[0.12,0.25,-0.4],[0.12,1.03,-0.6],[0.12,1.03,-1.04]]}]},{\"id\":\"panel\",\"parent\":\"duct\",\"at\":[0.12,1.03,-1.07],\"shapes\":[{\"shape\":\"box\",\"size\":[0.7,0.4,0.02],\"at\":[0,0,0],\"look\":\"plastic\",\"color\":\"#f2f4f6\"}],\"moves\":[{\"name\":\"panel\",\"type\":\"appear\"}]},{\"id\":\"louvers\",\"parent\":\"body\",\"at\":[0,0.9,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.5,0.02,0.06],\"at\":[0,0.01,-0.12],\"rot\":[-30,0,0],\"look\":\"plastic\",\"color\":\"#b8c2cb\"},{\"shape\":\"box\",\"size\":[0.5,0.02,0.06],\"at\":[0,0.01,-0.04],\"rot\":[-30,0,0],\"look\":\"plastic\",\"color\":\"#b8c2cb\"},{\"shape\":\"box\",\"size\":[0.5,0.02,0.06],\"at\":[0,0.01,0.04],\"rot\":[-30,0,0],\"look\":\"plastic\",\"color\":\"#b8c2cb\"},{\"shape\":\"box\",\"size\":[0.5,0.02,0.06],\"at\":[0,0.01,0.12],\"rot\":[-30,0,0],\"look\":\"plastic\",\"color\":\"#b8c2cb\"}]},{\"id\":\"display\",\"parent\":\"body\",\"at\":[0.13,0.8,0.23],\"shapes\":[{\"shape\":\"box\",\"size\":[0.2,0.08,0.02],\"at\":[0,0,0],\"look\":\"plastic\",\"color\":\"#1d2226\"},{\"shape\":\"light\",\"r\":0.022,\"at\":[0.05,0,0.015],\"color\":\"#4fe36b\"}],\"moves\":[{\"name\":\"displayOn\",\"type\":\"light\"}]}]}},{\"id\":\"person\",\"kind\":\"person\",\"params\":{\"pos\":[-1.35,0.12,-3.5],\"rotY\":0.6,\"action\":\"wave\",\"look\":\"casual\",\"height\":1.75}},{\"id\":\"coldAir\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[1,1.85,-4.16],\"dir\":[1,0],\"travel\":0.5,\"phase\":0},{\"at\":[1,1.44,-4.16],\"dir\":[1,0],\"travel\":0.5,\"phase\":0.5}],\"opts\":{\"scale\":0.55,\"color\":\"#ffffff\"}}},{\"id\":\"leakIn\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[0.95,2.6,-6.6],\"dir\":[0,-1],\"travel\":0.4,\"phase\":0},{\"at\":[-0.4,2.6,-6.6],\"dir\":[0,-1],\"travel\":0.4,\"phase\":0.5}],\"opts\":{\"scale\":0.5,\"color\":\"#ff8a2a\"}}},{\"id\":\"drip\",\"kind\":\"fx\",\"params\":{\"type\":\"drip\",\"at\":[0.31,1.2,-4.2],\"size\":0.35}},{\"id\":\"ring\",\"kind\":\"outline\",\"params\":{\"of\":\"ac.compressor\",\"opts\":{\"closed\":true}}},{\"id\":\"sign\",\"kind\":\"sign\",\"params\":{\"at\":[2.2,0.12,-3.6],\"rotY\":-0.3,\"scale\":0.6}}],\"beats\":[{\"s\":\"hook\",\"do\":[{\"p\":\"ac\",\"v\":\"show\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"person\",\"v\":\"show\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"ac\",\"v\":\"blow\",\"w\":\"blow\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"ac\",\"v\":\"iceIn\",\"w\":\"ice\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"ac\",\"does\":\"a fan blows across a block of ice while a hot person fans themselves\"},\"shots\":[{\"focus\":[\"ac.fan\",\"ac.ice\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem\",\"do\":[{\"p\":\"ac\",\"v\":\"melt\",\"w\":\"melts\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"ac\",\"v\":\"pool\",\"w\":\"melts\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"ac\",\"does\":\"the ice block melts into a puddle while the person keeps fanning\"},\"shots\":[{\"focus\":[\"ac\",\"person\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix1\",\"do\":[{\"p\":\"ac\",\"v\":\"iceInBack\",\"w\":\"swap\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"ac\",\"v\":\"poolBack\",\"w\":\"swap\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"ac\",\"v\":\"coilIn\",\"w\":\"coil\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"ac\",\"v\":\"icy\",\"w\":\"refrigerant\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"ac\",\"does\":\"the ice goes and a coil of refrigerant takes its place and frosts\"},\"shots\":[{\"focus\":[\"ac.coil\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem2\",\"do\":[{\"p\":\"ac\",\"v\":\"icyBack\",\"w\":\"boils\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"ac\",\"v\":\"warm\",\"w\":\"warms\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"ac\",\"does\":\"the coil's frost fades and it glows warm\"},\"shots\":[{\"focus\":[\"ac.coil\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix2\",\"do\":[{\"p\":\"ac\",\"v\":\"warmBack\",\"w\":\"compressor\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"ac\",\"v\":\"compIn\",\"w\":\"compressor\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"ac\",\"v\":\"run\",\"w\":\"pumps\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"ac\",\"v\":\"circulate\",\"w\":\"pumps\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"ac\",\"v\":\"icy\",\"w\":\"squeezes\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"ac\",\"does\":\"a compressor appears below, shakes and pumps refrigerant round the pipes; the coil frosts again\"},\"shots\":[{\"focus\":[\"ac.compressor\",\"ac.pipes\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"name\",\"do\":[{\"p\":\"ring\",\"v\":\"show\",\"w\":\"compressor\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"ring\",\"does\":\"a ring traced round the compressor\"},\"shots\":[{\"focus\":[\"ac.compressor\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":true,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem3\",\"do\":[{\"p\":\"ring\",\"v\":\"hide\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"ac\",\"v\":\"scald\",\"w\":\"hot\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"ac\",\"does\":\"the compressor glows red hot inside the room\"},\"shots\":[{\"focus\":[\"ac.compressor\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix3\",\"do\":[{\"p\":\"ac\",\"v\":\"condIn\",\"w\":\"coil\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"ac\",\"v\":\"hot\",\"w\":\"heat\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"ac\",\"v\":\"scaldBack\",\"w\":\"heat\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"ac\",\"v\":\"exhaust\",\"w\":\"duct\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"ac\",\"does\":\"a hot coil and a duct appear; hot air runs up the duct to the window\"},\"shots\":[{\"focus\":[\"ac.condenser\",\"ac.duct\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem4\",\"do\":[{\"p\":\"leakIn\",\"v\":\"show\",\"w\":\"leaks\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"leakIn\",\"does\":\"hot outdoor air pushes back in round the duct at the window\"},\"shots\":[{\"focus\":[\"ac.duct\",\"person\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix4\",\"do\":[{\"p\":\"ac\",\"v\":\"panel\",\"w\":\"panel\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"leakIn\",\"v\":\"hide\",\"w\":\"panel\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"ac\",\"does\":\"a panel seals the window gap round the duct\"},\"shots\":[{\"focus\":[\"ac.panel\",\"ac.duct\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem5\",\"do\":[{\"p\":\"drip\",\"v\":\"start\",\"w\":\"drips\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"drip\",\"does\":\"water from the air beads on the cold coil and drips on the floor\"},\"shots\":[{\"focus\":[\"ac.coil\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix5\",\"do\":[{\"p\":\"ac\",\"v\":\"tray\",\"w\":\"tray\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"ac\",\"v\":\"drain\",\"w\":\"drain\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"drip\",\"v\":\"stop\",\"w\":\"drain\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"ac\",\"does\":\"a tray catches the drips and a hose drains the water away\"},\"shots\":[{\"focus\":[\"ac.tray\",\"ac.hose\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"finish\",\"do\":[{\"p\":\"ac\",\"v\":\"displayOn\",\"w\":\"Switch\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"coldAir\",\"v\":\"show\",\"w\":\"blows\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"person\",\"v\":\"stop\",\"w\":\"cool\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"ac\",\"does\":\"the display lights, cool air blows out and the person stops fanning\"},\"shots\":[{\"focus\":[\"ac\",\"person\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"congrats\",\"do\":[],\"shows\":{\"p\":\"ac\",\"does\":\"the air conditioner running with the cooled person beside it\"},\"shots\":[{\"focus\":[\"ac\",\"person\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]}],\"audio\":{\"cards\":[],\"sfx\":[{\"lib\":\"motor_hum\",\"at\":{\"s\":\"hook\",\"w\":\"blow\",\"o\":0},\"d\":1.4},{\"lib\":\"drip\",\"at\":{\"s\":\"problem\",\"w\":\"melts\",\"o\":0},\"d\":1.2},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"fix2\",\"w\":\"pumps\",\"o\":0},\"d\":1.4},{\"lib\":\"drip\",\"at\":{\"s\":\"problem5\",\"w\":\"drips\",\"o\":0},\"d\":1.2}],\"chimes\":[{\"s\":\"name\",\"w\":\"\",\"o\":0},{\"s\":\"congrats\",\"w\":\"\",\"o\":0}],\"rain\":[]}}"
  }
 }

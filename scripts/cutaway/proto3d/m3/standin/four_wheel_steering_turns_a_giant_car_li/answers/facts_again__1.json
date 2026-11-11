@@ -1,0 +1,73 @@
+{
+ "hash": "*",
+ "by": "stand-in planner (agent), 2026-11-11",
+ "searches": 4,
+ "data": {
+  "checks": [
+   {
+    "index": 0,
+    "verdict": "keep",
+    "claim": "On the Mercedes S-Class, the rear wheels turn opposite the front below about 60 km/h (37 mph) and the same way above that",
+    "why": "Motor1, Mercedesblog and CarExpert (and this round's search) put the switch to same-direction steering at about 60 km/h.",
+    "sources": [
+     {
+      "url": "https://mercedesblog.com/the-new-mercedes-s-class-w223-received-rear-axle-steering-and-e-active-body-control-suspension/",
+      "title": "The new Mercedes S-Class W223 received rear axle steering"
+     },
+     {
+      "url": "https://www.carexpert.com.au/car-news/rear-wheel-steering-what-is-it",
+      "title": "Rear wheel steering: What is it? - CarExpert"
+     }
+    ]
+   },
+   {
+    "index": 1,
+    "verdict": "keep",
+    "claim": "Mercedes S-Class rear-axle steering turns the rear wheels up to 10 degrees and cuts the turning circle by up to about 2 meters",
+    "why": "Mercedes press text: up to 10 degrees rear steering angle (the optional system, at low speed), turning circle up to 2 m smaller; the video says only 'about 10 degrees'.",
+    "sources": [
+     {
+      "url": "https://media.mbusa.com/releases/the-new-mercedes-benz-s-class-2021",
+      "title": "The new Mercedes-Benz S-Class - Mercedes-Benz USA media"
+     },
+     {
+      "url": "https://www.autoevolution.com/news/mercedes-benz-revolutionizes-rear-wheel-steering-in-the-2021-s-class-149535.html",
+      "title": "Mercedes-Benz Revolutionizes Rear-wheel Steering in the 2021 S-Class - autoevolution"
+     }
+    ]
+   },
+   {
+    "index": 2,
+    "verdict": "keep",
+    "claim": "Rear-wheel steering systems use an electric motor actuator on the rear axle to turn the rear wheels.",
+    "why": "ZF AKC and AISIN Active Rear Steering use electromechanical actuators on the rear axle; patents describe a motor turning a threaded drive that moves the steering rod.",
+    "sources": [
+     {
+      "url": "https://www.aisin-europe.com/products-and-services/active-rear-steering/",
+      "title": "Active Rear Steering - AISIN Europe"
+     },
+     {
+      "url": "https://www.eenewseurope.com/en/rear-axle-becomes-steerable-by-wire/",
+      "title": "Rear axle becomes steerable by wire - eeNews Europe"
+     }
+    ]
+   },
+   {
+    "index": 3,
+    "verdict": "keep",
+    "claim": "The GMC Hummer EV's CrabWalk turns all four wheels the same way at low speed so the truck moves diagonally.",
+    "why": "GMC: CrabWalk turns the rear wheels at the same angle as the front at low speed; Cars.com: the vehicle moves diagonally.",
+    "sources": [
+     {
+      "url": "https://www.gmc.com/support/quick-start-guides/crabwalk",
+      "title": "CrabWalk - GMC quick start guide"
+     },
+     {
+      "url": "https://www.cars.com/articles/what-is-the-gmc-hummer-evs-crabwalk-feature-443574",
+      "title": "What Is the GMC Hummer EV's CrabWalk Feature? - Cars.com"
+     }
+    ]
+   }
+  ]
+ }
+}

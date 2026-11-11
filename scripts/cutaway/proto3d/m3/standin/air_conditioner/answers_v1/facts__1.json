@@ -1,0 +1,53 @@
+{
+ "hash": "*",
+ "by": "stand-in planner (replan 2026-11-09): claims checked in the earlier run of this topic",
+ "searches": 3,
+ "data": {
+  "checks": [
+   {
+    "index": 0,
+    "verdict": "keep",
+    "claim": "In 1902 Willis Carrier designed an air conditioning system for a printing plant in Brooklyn",
+    "why": "The date and the Brooklyn printing plant are supported by Carrier's own history page and Wikipedia.",
+    "sources": [
+     {
+      "url": "https://www.carrier.com/us/en/history/invention-of-air-conditioning/",
+      "title": "Invention of Air Conditioning (Carrier)"
+     },
+     {
+      "url": "https://en.wikipedia.org/wiki/Willis_Carrier",
+      "title": "Willis Carrier - Wikipedia"
+     }
+    ]
+   },
+   {
+    "index": 1,
+    "verdict": "keep",
+    "claim": "Carrier's system was built to control humidity so the paper would not swell and the colours would line up",
+    "why": "Carrier.com says humidity swings made the paper expand and contract and the colours misalign.",
+    "sources": [
+     {
+      "url": "https://www.carrier.com/us/en/history/invention-of-air-conditioning/",
+      "title": "Invention of Air Conditioning (Carrier)"
+     }
+    ]
+   },
+   {
+    "index": 2,
+    "verdict": "keep",
+    "claim": "An air conditioner's cold coil pulls water out of the air, which drips into a pan and drains away",
+    "why": "A drain-pan patent and an HVAC company both describe water collecting on the coil, dripping into a pan and draining away.",
+    "sources": [
+     {
+      "url": "https://patents.google.com/patent/US6978909",
+      "title": "US6978909B2 - Condensate drain pan for air conditioning system"
+     },
+     {
+      "url": "https://highperformancehvac.com/air-conditioner-condensation-water-dripping/",
+      "title": "Air conditioner condensation water dripping"
+     }
+    ]
+   }
+  ]
+ }
+}

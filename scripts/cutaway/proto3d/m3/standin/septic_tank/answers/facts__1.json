@@ -1,53 +1,5 @@
-{
- "hash": "*",
- "by": "stand-in planner (replan 2026-11-09): verified claims kept word for word",
- "searches": 4,
- "data": {
-  "checks": [
-   {
-    "index": 0,
-    "verdict": "keep",
-    "claim": "A family septic tank often holds around 1,000 gallons, the usual minimum for a three-bedroom home.",
-    "why": "The encyclopedia gives an average of 1,000 gallons and sizing guides call 1,000 gallons the common minimum for 3 bedrooms; codes vary and some say 1,250, so 'often around' fits.",
-    "sources": [
-     {
-      "url": "https://www.encyclopedia.com/reference/encyclopedias-almanacs-transcripts-and-maps/septic-tank",
-      "title": "Septic Tank - Encyclopedia.com"
-     },
-     {
-      "url": "https://hakaru.io/guides/septic-tank-size-calculator-guide",
-      "title": "Septic Tank Size Calculator Guide"
-     }
-    ]
-   },
-   {
-    "index": 1,
-    "verdict": "keep",
-    "claim": "In a septic tank solids settle to the bottom as sludge while fats, oil and grease float to the top as scum",
-    "why": "EPA and LA County Public Health describe exactly these three layers.",
-    "sources": [
-     {
-      "url": "https://www.epa.gov/septic/how-your-septic-system-works",
-      "title": "How Your Septic System Works - US EPA"
-     },
-     {
-      "url": "https://admin.publichealth.lacounty.gov/eh/docs/business/how-septic-system-works.pdf",
-      "title": "How a Septic System Works - LA County Public Health"
-     }
-    ]
-   },
-   {
-    "index": 2,
-    "verdict": "keep",
-    "claim": "A household septic tank is typically pumped every 3 to 5 years",
-    "why": "Cornell's copy of the EPA homeowner guide says sludge and scum should generally be pumped every three to five years.",
-    "sources": [
-     {
-      "url": "https://www.css.cornell.edu/cwmi/waterquality/septic/CCEWQ-YourSepticSystem-Print.pdf",
-      "title": "Your Septic System - Cornell Cooperative Extension"
-     }
-    ]
-   }
-  ]
- }
-}
+{"hash":"*","by":"stand-in planner (agent), 2026-11-11","searches":4,"data":{"checks":[
+{"index":0,"verdict":"keep","claim":"In a septic tank, solids sink to the bottom as sludge.","why":"Extension and health sources: heavy solids settle to the bottom and form sludge.","sources":[{"url":"https://pubs.ext.vt.edu/SPES/spes-380/spes-380.html","title":"Septic system basics (Virginia Tech Extension)"},{"url":"https://apps.msdh.ms.gov/wastewater/EPA/SRC/page9.htm","title":"Principles of Septic Systems (Mississippi State Department of Health)"}]},
+{"index":1,"verdict":"keep","claim":"Grease and oils float to the top of a septic tank as scum.","why":"Lighter greases and fats float up and form the scum layer; the outlet tee keeps it in the tank.","sources":[{"url":"https://inspectapedia.com/septic/Septic_Tank_Tees.php","title":"Septic Tank Inlet & Outlet Tees (InspectApedia)"},{"url":"https://www.pumper.com/editorial/2013/11/not_so_baffling_after_all","title":"What is the purpose of a septic tank baffle? (Pumper)"}]},
+{"index":2,"verdict":"keep","claim":"A drain field spreads the water through perforated pipes in gravel into the soil.","why":"Perforated pipes in gravel trenches spread the effluent, and the soil treats it.","sources":[{"url":"https://ossf.tamu.edu/conventioanl-drainfield-system","title":"Conventional Drainfield System (Texas A&M OSSF)"},{"url":"https://ohioline.osu.edu/factsheet/aex-743","title":"Ohio State Extension fact sheet AEX-743"}]},
+{"index":3,"verdict":"keep","claim":"A riser brings the tank's opening up to the ground so it can be pumped.","why":"Risers extend the buried access opening to grade so the tank is pumped without digging.","sources":[{"url":"https://www.septicsolutions.com/customer-service/knowledge-base/septic-tanks-risers--bring-your-access-to-ground-level","title":"Septic tank risers: bring your access to ground level (Septic Solutions)"},{"url":"https://www.jaspector.com/wiki/septic-riser/","title":"Septic Riser (Jaspector)"}]}]}}

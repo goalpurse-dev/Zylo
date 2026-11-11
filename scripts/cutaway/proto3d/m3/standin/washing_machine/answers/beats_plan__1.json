@@ -1,0 +1,214 @@
+{
+ "hash": "*",
+ "by": "stand-in planner (agent), 2026-11-11",
+ "searches": 0,
+ "data": {
+  "why": "A front-loading washer stands cut open in a laundry room; the tennis ball and the muddy shirt follow the water from the tap through the drum, the tub and the pump to the drain. The camera starts close on the spinning drum, steps out to the whole machine as each part is added, and goes close on the pump and its filter where the ball jams.",
+  "story": {
+   "title": "How a washing machine works",
+   "hero": "a washing machine",
+   "parts": [
+    "drum",
+    "tap and hose",
+    "sealed tub",
+    "drain pump",
+    "pump filter",
+    "spin cycle"
+   ],
+   "flow": [
+    "tap",
+    "hose",
+    "drum",
+    "tub",
+    "pump",
+    "filter",
+    "drain"
+   ],
+   "recurring": {
+    "p": "ball",
+    "what": "a tennis ball tossed in with the laundry"
+   },
+   "ideas": [
+    {
+     "role": "hook",
+     "idea": "spinning a muddy shirt in a drum is the start of a washer"
+    },
+    {
+     "role": "problem",
+     "idea": "dry, the mud just tumbles around with a tennis ball"
+    },
+    {
+     "role": "fix1",
+     "idea": "turn the tap: water runs down the hose and fills the drum"
+    },
+    {
+     "role": "problem2",
+     "idea": "the drum is full of holes, so the water pours straight out onto the floor"
+    },
+    {
+     "role": "fix2",
+     "idea": "a sealed tub round the drum holds the water in"
+    },
+    {
+     "role": "problem3",
+     "idea": "the mud comes off, and the tub now traps brown water"
+    },
+    {
+     "role": "fix3",
+     "idea": "a pump drains the brown water away up the hose"
+    },
+    {
+     "role": "problem4",
+     "idea": "the pump sucks in the tennis ball and jams"
+    },
+    {
+     "role": "fix4",
+     "idea": "a filter in front of the pump catches the ball"
+    },
+    {
+     "role": "name",
+     "idea": "this is the pump filter"
+    },
+    {
+     "role": "problem5",
+     "idea": "the pump drains the tub but not the water soaked in the shirt"
+    },
+    {
+     "role": "fix5",
+     "idea": "a fast spin flings that water out through the drum's holes"
+    },
+    {
+     "role": "finish",
+     "idea": "the clean shirt comes out, and the ball comes back from the filter"
+    },
+    {
+     "role": "congrats",
+     "idea": "you built a washing machine"
+    }
+   ],
+   "chain": [
+    {
+     "problem": "problem",
+     "causedBy": "hook",
+     "shows": "dry mud tumbles on the shirt beside the tennis ball",
+     "stakes": "the shirt stays dirty",
+     "size": 2,
+     "at": "drum",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem2",
+     "causedBy": "fix1",
+     "shows": "water pours out of the drum's holes onto the floor",
+     "stakes": "the laundry room floor floods",
+     "size": 4,
+     "at": "drum",
+     "scale": "room"
+    },
+    {
+     "problem": "problem3",
+     "causedBy": "fix2",
+     "shows": "the tub fills with brown water around the shirt",
+     "stakes": "the shirt soaks in its own mud",
+     "size": 5,
+     "at": "tub",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem4",
+     "causedBy": "fix3",
+     "shows": "the tennis ball rides into the pump and it jams, brown water backs up",
+     "stakes": "the pump stops and the machine cannot drain",
+     "size": 7,
+     "at": "pump",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem5",
+     "causedBy": "fix4",
+     "shows": "the drained shirt stays dark and dripping",
+     "stakes": "the clothes come out heavy and wet",
+     "size": 8,
+     "at": "drum",
+     "scale": "thing"
+    }
+   ],
+   "surprises": [
+    {
+     "claim": "A front-loading washer's final spin reaches about 1,200 revolutions per minute.",
+     "role": "fix5",
+     "search": "front load washer max spin speed rpm 1200"
+    },
+    {
+     "claim": "A washer's perforated inner drum sits inside a sealed outer tub that holds the water.",
+     "role": "fix2",
+     "search": "washing machine inner drum perforated outer tub holds water"
+    },
+    {
+     "claim": "Front-loading washers have a drain pump filter that catches coins, socks and small objects before they reach the pump.",
+     "role": "fix4",
+     "search": "washing machine drain pump filter catches coins socks"
+    }
+   ]
+  },
+  "sentences": [
+   {
+    "role": "hook",
+    "text": "If you spin a muddy shirt in a drum, you have a washer."
+   },
+   {
+    "role": "problem",
+    "text": "But dry mud just tumbles beside a tennis ball."
+   },
+   {
+    "role": "fix1",
+    "text": "So you turn the tap to fill the drum."
+   },
+   {
+    "role": "problem2",
+    "text": "But the water pours out through the drum's holes."
+   },
+   {
+    "role": "fix2",
+    "text": "So you wrap the drum in a sealed tub."
+   },
+   {
+    "role": "problem3",
+    "text": "But the tub traps all that brown water."
+   },
+   {
+    "role": "fix3",
+    "text": "So you add a pump that drains it."
+   },
+   {
+    "role": "problem4",
+    "text": "But the pump sucks in the ball and jams."
+   },
+   {
+    "role": "fix4",
+    "text": "So a filter in front catches the ball."
+   },
+   {
+    "role": "name",
+    "text": "This is the pump filter."
+   },
+   {
+    "role": "problem5",
+    "text": "But the pump cannot reach water in the shirt."
+   },
+   {
+    "role": "fix5",
+    "text": "So the drum spins 1,200 times a minute, flinging it out."
+   },
+   {
+    "role": "finish",
+    "text": "Pull out a clean shirt, and grab the ball."
+   },
+   {
+    "role": "congrats",
+    "text": "Congratulations, you built a washing machine."
+   }
+  ],
+  "sceneJson": "{\"world\":{\"cut\":[9.5,11,-4,0.6],\"house\":false,\"worker\":false,\"moreTrees\":false,\"road\":false,\"porch\":false,\"backdrop\":{\"type\":\"kitchen\",\"use\":\"laundry\",\"gap\":[-2.4,2.4]}},\"parts\":[{\"id\":\"light\",\"kind\":\"light\",\"params\":{\"storm\":false}},{\"id\":\"washer\",\"kind\":\"rig\",\"main\":true,\"params\":{\"name\":\"washing machine\",\"synonyms\":[\"washer\",\"front loader\"],\"pos\":[0,0.12,-1.8],\"scale\":1,\"nodes\":[{\"id\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.6,0.06,0.6],\"at\":[0,0.03,0],\"look\":\"metal\",\"color\":\"#cfd5db\"},{\"shape\":\"box\",\"size\":[0.6,0.85,0.03],\"at\":[0,0.425,-0.285],\"look\":\"paint\",\"color\":\"#eef1f4\"},{\"shape\":\"box\",\"size\":[0.03,0.85,0.6],\"at\":[-0.285,0.425,0],\"look\":\"paint\",\"color\":\"#e3e8ed\"},{\"shape\":\"box\",\"size\":[0.6,0.06,0.6],\"at\":[0,0.88,0],\"look\":\"paint\",\"color\":\"#f7f9fb\"},{\"shape\":\"box\",\"size\":[0.6,0.14,0.05],\"at\":[0,0.98,-0.275],\"look\":\"paint\",\"color\":\"#f7f9fb\"},{\"shape\":\"cylinder\",\"r\":0.02,\"h\":0.4,\"axis\":\"y\",\"at\":[0.2,1.1,-0.32],\"look\":\"metal\",\"color\":\"#c8a24a\"},{\"shape\":\"box\",\"size\":[0.07,0.07,0.07],\"at\":[0.2,1.22,-0.3],\"look\":\"metal\",\"color\":\"#c8a24a\"},{\"shape\":\"cylinder\",\"r\":0.035,\"h\":1,\"axis\":\"y\",\"at\":[-0.36,0.5,-0.22],\"look\":\"plastic\",\"color\":\"#f4f3ee\"}]},{\"id\":\"inlet\",\"parent\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"tube\",\"path\":[[0.2,1.2,-0.27],[0.2,0.86,-0.2],[0.12,0.66,-0.08]],\"r\":0.022,\"look\":\"rubber\",\"color\":\"#3d6fb0\"}],\"moves\":[{\"name\":\"pour\",\"type\":\"flow\",\"path\":[[0.2,1.2,-0.27],[0.2,0.86,-0.2],[0.12,0.66,-0.08],[0.06,0.3,0.02]],\"color\":\"#4aa8e0\",\"look\":\"stream\"}]},{\"id\":\"drum\",\"parent\":\"body\",\"at\":[0,0.45,0],\"shapes\":[{\"shape\":\"drum\",\"r\":0.26,\"h\":0.42,\"axis\":\"z\",\"holes\":true,\"at\":[0,0,0],\"look\":\"metal\",\"color\":\"#b8c0c8\"},{\"shape\":\"box\",\"size\":[0.05,0.04,0.38],\"at\":[0,0.235,0],\"look\":\"metal\",\"color\":\"#9aa3ab\"},{\"shape\":\"box\",\"size\":[0.05,0.04,0.38],\"at\":[0.2035,-0.1175,0],\"rot\":[0,0,60],\"look\":\"metal\",\"color\":\"#9aa3ab\"},{\"shape\":\"box\",\"size\":[0.05,0.04,0.38],\"at\":[-0.2035,-0.1175,0],\"rot\":[0,0,-60],\"look\":\"metal\",\"color\":\"#9aa3ab\"},{\"shape\":\"cylinder\",\"r\":0.04,\"h\":0.08,\"axis\":\"z\",\"at\":[0,0,-0.25],\"look\":\"metal\",\"color\":\"#8d969e\"}],\"moves\":[{\"name\":\"tumble\",\"type\":\"spin\",\"axis\":\"z\",\"turns\":0.35},{\"name\":\"wring\",\"type\":\"spin\",\"axis\":\"z\",\"turns\":2.5}]},{\"id\":\"water\",\"parent\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.02,0.02,0.02],\"at\":[0,0.2,-0.2],\"look\":\"metal\",\"color\":\"#b8c0c8\"}],\"moves\":[{\"name\":\"fill\",\"type\":\"fill\",\"box\":{\"size\":[0.46,0.26,0.4],\"at\":[0,0.32,0],\"color\":\"#4aa8e0\"}}]},{\"id\":\"dirty\",\"parent\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.02,0.02,0.02],\"at\":[0.02,0.2,-0.2],\"look\":\"metal\",\"color\":\"#b8c0c8\"}],\"moves\":[{\"name\":\"brown\",\"type\":\"fill\",\"box\":{\"size\":[0.48,0.28,0.42],\"at\":[0,0.33,0],\"color\":\"#7a5a33\"}}]},{\"id\":\"leak\",\"parent\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.3,0.02,0.04],\"at\":[0,0.07,0.24],\"look\":\"metal\",\"color\":\"#9aa3ab\"}],\"moves\":[{\"name\":\"leak\",\"type\":\"flow\",\"path\":[[0,0.2,0.12],[0,0.08,0.28],[0.1,0.01,0.5],[0.3,0,0.75]],\"color\":\"#4aa8e0\",\"look\":\"stream\"}]},{\"id\":\"tub\",\"parent\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.3,0.1,0.3],\"at\":[0,0.11,0],\"look\":\"plastic\",\"color\":\"#c9d1d8\"},{\"shape\":\"cylinder\",\"r\":0.3,\"h\":0.46,\"axis\":\"z\",\"at\":[0,0.45,0],\"look\":\"glass\",\"color\":\"#d6e6f0\"},{\"shape\":\"torus\",\"r\":0.3,\"tube\":0.02,\"axis\":\"z\",\"at\":[0,0.45,0.23],\"look\":\"rubber\",\"color\":\"#26282b\"},{\"shape\":\"spring\",\"r\":0.03,\"h\":0.12,\"turns\":6,\"wire\":0.008,\"axis\":\"y\",\"at\":[-0.18,0.79,0],\"look\":\"metal\",\"color\":\"#8d969e\"},{\"shape\":\"spring\",\"r\":0.03,\"h\":0.12,\"turns\":6,\"wire\":0.008,\"axis\":\"y\",\"at\":[0.18,0.79,0],\"look\":\"metal\",\"color\":\"#8d969e\"}],\"moves\":[{\"name\":\"tub\",\"type\":\"appear\"}]},{\"id\":\"shirt\",\"parent\":\"body\",\"at\":[0,0.22,0.04],\"shapes\":[{\"shape\":\"box\",\"size\":[0.22,0.04,0.18],\"at\":[0,0.02,0],\"look\":\"plastic\",\"color\":\"#f6f7f9\"},{\"shape\":\"box\",\"size\":[0.08,0.03,0.07],\"at\":[-0.14,0.02,0.05],\"rot\":[0,30,0],\"look\":\"plastic\",\"color\":\"#f6f7f9\"},{\"shape\":\"box\",\"size\":[0.08,0.03,0.07],\"at\":[0.14,0.02,0.05],\"rot\":[0,-30,0],\"look\":\"plastic\",\"color\":\"#f6f7f9\"}],\"moves\":[{\"name\":\"jiggle\",\"type\":\"shake\",\"amp\":0.015,\"rate\":3},{\"name\":\"pull\",\"type\":\"slide\",\"to\":[0.15,-0.25,0.6]}]},{\"id\":\"mud\",\"parent\":\"shirt\",\"at\":[0,0.045,0],\"shapes\":[{\"shape\":\"smear\",\"r\":0.06,\"axis\":\"y\",\"at\":[-0.04,0,0.02],\"color\":\"#6b4a2b\",\"amount\":0.9},{\"shape\":\"smear\",\"r\":0.045,\"axis\":\"y\",\"at\":[0.06,0,-0.04],\"color\":\"#6b4a2b\",\"amount\":0.8}],\"moves\":[{\"name\":\"muddy\",\"type\":\"appear\"}]},{\"id\":\"wet\",\"parent\":\"shirt\",\"at\":[0,0.042,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.2,0.006,0.16],\"at\":[0,0,0],\"look\":\"plastic\",\"color\":\"#8b98a6\"}],\"moves\":[{\"name\":\"soaked\",\"type\":\"appear\"}]},{\"id\":\"pump\",\"parent\":\"body\",\"at\":[-0.18,0.1,0.06],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.07,\"h\":0.08,\"axis\":\"z\",\"at\":[0,0,0],\"look\":\"plastic\",\"color\":\"#3d6fb0\"},{\"shape\":\"box\",\"size\":[0.05,0.04,0.05],\"at\":[0,-0.06,0],\"look\":\"plastic\",\"color\":\"#3d6fb0\"},{\"shape\":\"tube\",\"path\":[[0.04,0.05,0],[0.12,0.08,0]],\"r\":0.02,\"look\":\"rubber\",\"color\":\"#333333\"}],\"moves\":[{\"name\":\"pump\",\"type\":\"appear\"}]},{\"id\":\"impeller\",\"parent\":\"pump\",\"at\":[0,0,0.045],\"shapes\":[{\"shape\":\"fan\",\"r\":0.05,\"blades\":5,\"w\":0.01,\"axis\":\"z\",\"at\":[0,0,0],\"look\":\"plastic\",\"color\":\"#f2d23d\"}],\"moves\":[{\"name\":\"pump\",\"type\":\"appear\"},{\"name\":\"run\",\"type\":\"spin\",\"axis\":\"z\",\"turns\":3}]},{\"id\":\"hose\",\"parent\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"tube\",\"path\":[[-0.25,0.1,0.06],[-0.32,0.1,0.06],[-0.32,0.95,-0.1],[-0.36,1,-0.22]],\"r\":0.022,\"look\":\"rubber\",\"color\":\"#555b62\"}],\"moves\":[{\"name\":\"pump\",\"type\":\"appear\"},{\"name\":\"drain\",\"type\":\"flow\",\"path\":[[0,0.2,0.06],[-0.18,0.1,0.06],[-0.32,0.1,0.06],[-0.32,0.95,-0.1],[-0.36,1,-0.22],[-0.36,0.1,-0.22]],\"color\":\"#7a5a33\",\"look\":\"stream\"}]},{\"id\":\"filter\",\"parent\":\"body\",\"at\":[-0.24,0.1,0.16],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.06,\"h\":0.05,\"axis\":\"z\",\"at\":[0.06,0,0],\"look\":\"plastic\",\"color\":\"#e8892b\"},{\"shape\":\"box\",\"size\":[0.07,0.015,0.02],\"at\":[0.06,0,0.03],\"look\":\"plastic\",\"color\":\"#c96f1a\"}],\"moves\":[{\"name\":\"filter\",\"type\":\"appear\"},{\"name\":\"open\",\"type\":\"swing\",\"axis\":\"y\",\"angle\":-80}]},{\"id\":\"fling\",\"parent\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.02,0.02,0.02],\"at\":[-0.02,0.2,-0.2],\"look\":\"metal\",\"color\":\"#b8c0c8\"}],\"moves\":[{\"name\":\"fling\",\"type\":\"flow\",\"path\":[[0,0.62,0.05],[0.24,0.5,0.08],[0.27,0.25,0.08],[0.1,0.17,0.08],[-0.18,0.12,0.08]],\"color\":\"#4aa8e0\",\"look\":\"spray\"}]}]}},{\"id\":\"ball\",\"kind\":\"token\",\"params\":{\"type\":\"tennisBall\",\"size\":0.13,\"pos\":[0.1,0.33,-1.72],\"path\":[[0.02,0.29,-1.74],[-0.1,0.24,-1.7],[-0.18,0.2,-1.64],[-0.18,0.18,-1.58],[-0.06,0.12,-1.3]],\"float\":false}},{\"id\":\"hand\",\"kind\":\"hand\",\"params\":{\"pos\":[0.2,1.34,-2.07],\"size\":0.16,\"action\":\"turn\",\"sleeve\":\"#3d6fb0\"}},{\"id\":\"splash\",\"kind\":\"fx\",\"params\":{\"type\":\"splash\",\"at\":[0.2,0.14,-1.2],\"size\":0.35}},{\"id\":\"drip\",\"kind\":\"fx\",\"params\":{\"type\":\"drip\",\"at\":[0,0.4,-1.72],\"size\":0.25}},{\"id\":\"rpm\",\"kind\":\"counter\",\"params\":{\"pos\":[0.5,0.75,-1.6],\"size\":0.22,\"from\":0,\"to\":1200,\"color\":\"#ffd23d\",\"bar\":true,\"danger\":2}},{\"id\":\"ring\",\"kind\":\"outline\",\"params\":{\"of\":\"washer.filter\",\"opts\":{\"closed\":true}}},{\"id\":\"sign\",\"kind\":\"sign\",\"params\":{\"at\":[3,0.12,-5],\"rotY\":-0.25,\"scale\":1}}],\"beats\":[{\"s\":\"hook\",\"do\":[{\"p\":\"washer\",\"v\":\"show\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"washer\",\"v\":\"tumble\",\"w\":\"spin\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"washer\",\"v\":\"jiggle\",\"w\":\"spin\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"washer\",\"v\":\"muddy\",\"w\":\"muddy\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"washer\",\"does\":\"the drum spins a muddy shirt\"},\"shots\":[{\"focus\":[\"washer.drum\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem\",\"do\":[{\"p\":\"ball\",\"v\":\"sit\",\"w\":\"ball\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"ball\",\"does\":\"the dry muddy shirt and a tennis ball tumble in the dry drum\"},\"shots\":[{\"focus\":[\"washer.drum\",\"ball\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix1\",\"do\":[{\"p\":\"hand\",\"v\":\"show\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"hand\",\"v\":\"turn\",\"w\":\"turn\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"washer\",\"v\":\"pour\",\"w\":\"tap\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"washer\",\"v\":\"fill\",\"w\":\"fill\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"washer\",\"does\":\"the hand turns the tap, water runs down the hose and fills the drum\"},\"shots\":[{\"focus\":[\"washer\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem2\",\"do\":[{\"p\":\"hand\",\"v\":\"hide\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"washer\",\"v\":\"leak\",\"w\":\"pours\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"washer\",\"v\":\"fillBack\",\"w\":\"pours\",\"o\":0,\"d\":1.6,\"amp\":1,\"ch\":\"\"},{\"p\":\"splash\",\"v\":\"start\",\"w\":\"holes\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"washer\",\"does\":\"the water pours out of the drum's holes and splashes onto the floor\"},\"shots\":[{\"focus\":[\"washer\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix2\",\"do\":[{\"p\":\"washer\",\"v\":\"tub\",\"w\":\"tub\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"washer\",\"v\":\"leakBack\",\"w\":\"tub\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"splash\",\"v\":\"stop\",\"w\":\"tub\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"washer\",\"v\":\"fill\",\"w\":\"sealed\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"washer\",\"does\":\"a sealed tub closes round the drum and the water stays in\"},\"shots\":[{\"focus\":[\"washer\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem3\",\"do\":[{\"p\":\"washer\",\"v\":\"pourBack\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"washer\",\"v\":\"muddyBack\",\"w\":\"brown\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"washer\",\"v\":\"brown\",\"w\":\"brown\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"washer\",\"does\":\"the mud comes off the shirt and the tub fills with brown water\"},\"shots\":[{\"focus\":[\"washer.drum\",\"ball\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix3\",\"do\":[{\"p\":\"washer\",\"v\":\"pump\",\"w\":\"pump\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"washer\",\"v\":\"run\",\"w\":\"drains\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"washer\",\"v\":\"drain\",\"w\":\"drains\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"washer\",\"v\":\"brownBack\",\"w\":\"drains\",\"o\":0,\"d\":1.6,\"amp\":1,\"ch\":\"\"},{\"p\":\"washer\",\"v\":\"fillBack\",\"w\":\"drains\",\"o\":0,\"d\":1.6,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"washer\",\"does\":\"a pump appears and drains the brown water up the hose into the standpipe\"},\"shots\":[{\"focus\":[\"washer.pump\",\"washer.hose\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem4\",\"do\":[{\"p\":\"ball\",\"v\":\"ride\",\"w\":\"sucks\",\"o\":0,\"d\":1.4,\"amp\":0.47,\"ch\":\"\"},{\"p\":\"washer\",\"v\":\"runBack\",\"w\":\"jams\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"washer\",\"v\":\"drainBack\",\"w\":\"jams\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"washer\",\"v\":\"brown\",\"w\":\"jams\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"ball\",\"does\":\"the tennis ball rides the water into the pump, the pump jams and brown water backs up\"},\"shots\":[{\"focus\":[\"washer.pump\",\"ball\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix4\",\"do\":[{\"p\":\"washer\",\"v\":\"filter\",\"w\":\"filter\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"ball\",\"v\":\"ride\",\"w\":\"catches\",\"o\":0,\"d\":0,\"amp\":0.08,\"ch\":\"\"},{\"p\":\"washer\",\"v\":\"run\",\"w\":\"catches\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"washer\",\"v\":\"drain\",\"w\":\"catches\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"washer\",\"v\":\"brownBack\",\"w\":\"catches\",\"o\":0,\"d\":1.4,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"washer\",\"does\":\"the filter catches the ball; the pump runs again and drains the water\"},\"shots\":[{\"focus\":[\"washer.filter\",\"ball\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"name\",\"do\":[{\"p\":\"ring\",\"v\":\"show\",\"w\":\"filter\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"ring\",\"does\":\"a glowing ring round the pump filter holding the ball\"},\"shots\":[{\"focus\":[\"washer.filter\",\"ball\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":true,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem5\",\"do\":[{\"p\":\"ring\",\"v\":\"hide\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"washer\",\"v\":\"soaked\",\"w\":\"shirt\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"drip\",\"v\":\"start\",\"w\":\"shirt\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"washer\",\"does\":\"the drained shirt stays dark and dripping with water\"},\"shots\":[{\"focus\":[\"washer.drum\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix5\",\"do\":[{\"p\":\"washer\",\"v\":\"tumbleBack\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"rpm\",\"v\":\"show\",\"w\":\"drum\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"washer\",\"v\":\"wring\",\"w\":\"spins\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"rpm\",\"v\":\"count\",\"w\":\"spins\",\"o\":0,\"d\":2,\"amp\":1,\"ch\":\"\"},{\"p\":\"washer\",\"v\":\"fling\",\"w\":\"flinging\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"washer\",\"v\":\"soakedBack\",\"w\":\"flinging\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"drip\",\"v\":\"stop\",\"w\":\"flinging\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"washer\",\"does\":\"the drum spins fast and flings the water out through its holes\"},\"shots\":[{\"focus\":[\"washer\",\"rpm\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"finish\",\"do\":[{\"p\":\"washer\",\"v\":\"wringBack\",\"w\":\"Pull\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"rpm\",\"v\":\"hide\",\"w\":\"Pull\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"washer\",\"v\":\"flingBack\",\"w\":\"Pull\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"washer\",\"v\":\"runBack\",\"w\":\"Pull\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"washer\",\"v\":\"drainBack\",\"w\":\"Pull\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"washer\",\"v\":\"jiggleBack\",\"w\":\"Pull\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"washer\",\"v\":\"pull\",\"w\":\"Pull\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"washer\",\"v\":\"open\",\"w\":\"grab\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"ball\",\"v\":\"ride\",\"w\":\"ball\",\"o\":0,\"d\":0,\"amp\":0.45,\"ch\":\"\"}],\"shows\":{\"p\":\"washer\",\"does\":\"the clean shirt slides out of the drum and the filter opens to give back the ball\"},\"shots\":[{\"focus\":[\"washer\",\"ball\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"congrats\",\"do\":[{\"p\":\"washer\",\"v\":\"tumble\",\"w\":\"Congratulations\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"washer\",\"does\":\"the clean shirt and the ball in front of the washing machine, its drum turning\"},\"shots\":[{\"focus\":[\"washer\",\"ball\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]}],\"audio\":{\"cards\":[{\"text\":\"1,200\",\"at\":{\"s\":\"fix5\",\"w\":\"1,200\",\"o\":0},\"d\":1.5}],\"sfx\":[{\"lib\":\"water_rush\",\"at\":{\"s\":\"fix1\",\"w\":\"fill\",\"o\":0},\"d\":1.4},{\"lib\":\"drip\",\"at\":{\"s\":\"problem2\",\"w\":\"pours\",\"o\":0},\"d\":1.4},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"fix3\",\"w\":\"drains\",\"o\":0},\"d\":1.4},{\"lib\":\"water_rush\",\"at\":{\"s\":\"fix5\",\"w\":\"spins\",\"o\":0},\"d\":1.6}],\"chimes\":[{\"s\":\"fix5\",\"w\":\"1,200\",\"o\":0},{\"s\":\"congrats\",\"w\":\"\",\"o\":0}],\"rain\":[]}}"
+ }
+}

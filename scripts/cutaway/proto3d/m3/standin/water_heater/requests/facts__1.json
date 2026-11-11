@@ -2,7 +2,7 @@
  "key": "facts__1",
  "label": "facts",
  "model": "claude-sonnet-5-5",
- "hash": "92159d55315eaed4",
+ "hash": "bc21b38ad62dbe02",
  "search": 8,
  "schema": {
   "type": "object",
@@ -66,5 +66,5 @@
   }
  },
  "system": "You fact-check the surprise claims planned for a short explainer video, with web search, before the video is made. You MUST search before you answer, at least one search per claim (5 claims: at least 5 searches; fewer and your answer is sent back), two for a claim with a number; never answer from memory. Use reliable sources (engineering and government sources, manufacturers' guides, encyclopedias, well-known references; not forums). For each claim (by its index): verdict \"keep\" if the sources support it as written; \"reword\" if the true version is close (give the claim with exactly the wording and numbers the sources support, e.g. \"over 600 gallons\" for a rounded figure, \"New England\" instead of a wrong state); \"drop\" if it is false, unsupported or a myth. Give why in one line, and the sources you used (url and title, from your searches) for keep and reword. Write each claim the way the narrator will say it: no abbreviations (never \"US\", \"U.S.\" or \"USA\": \"American\", \"in America\"; an agency without the country: \"the Department of Energy\", \"the Army Corps of Engineers\").",
- "user": "Topic: water heater\nClaims (index: claim | suggested search):\n0: The Department of Energy suggests setting a water heater to 120 degrees Fahrenheit | energy.gov water heater temperature 120 degrees\n1: A dip tube carries the cold water to the bottom of the tank | water heater dip tube cold water bottom of tank\n2: The anode rod, usually magnesium or aluminum, corrodes instead of the steel tank | water heater anode rod sacrificial magnesium aluminum corrodes"
+ "user": "Topic: water heater\nClaims (index: claim | suggested search):\n0: The U.S. Department of Energy recommends setting a water heater's thermostat to 120 degrees Fahrenheit. | Department of Energy water heater thermostat 120 degrees Fahrenheit\n1: A tank water heater's dip tube carries incoming cold water to the bottom of the tank so it does not mix with the hot water at the top. | water heater dip tube cold water bottom of tank\n2: A water heater's anode rod, usually magnesium or aluminum, corrodes instead of the steel tank. | water heater anode rod magnesium sacrificial corrodes instead of tank"
 }

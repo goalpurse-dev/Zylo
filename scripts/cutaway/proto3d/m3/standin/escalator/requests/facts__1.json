@@ -2,8 +2,8 @@
  "key": "facts__1",
  "label": "facts",
  "model": "claude-sonnet-5-5",
- "hash": "720bae11d829be5c",
- "search": 8,
+ "hash": "4c378ba983672c48",
+ "search": 10,
  "schema": {
   "type": "object",
   "additionalProperties": false,
@@ -66,5 +66,5 @@
   }
  },
  "system": "You fact-check the surprise claims planned for a short explainer video, with web search, before the video is made. You MUST search before you answer, at least one search per claim (5 claims: at least 5 searches; fewer and your answer is sent back), two for a claim with a number; never answer from memory. Use reliable sources (engineering and government sources, manufacturers' guides, encyclopedias, well-known references; not forums). For each claim (by its index): verdict \"keep\" if the sources support it as written; \"reword\" if the true version is close (give the claim with exactly the wording and numbers the sources support, e.g. \"over 600 gallons\" for a rounded figure, \"New England\" instead of a wrong state); \"drop\" if it is false, unsupported or a myth. Give why in one line, and the sources you used (url and title, from your searches) for keep and reword. Write each claim the way the narrator will say it: no abbreviations (never \"US\", \"U.S.\" or \"USA\": \"American\", \"in America\"; an agency without the country: \"the Department of Energy\", \"the Army Corps of Engineers\").",
- "user": "Topic: escalator\nClaims (index: claim | suggested search):\n0: Escalators in the US are usually built at a 30 degree slope. | escalator standard incline 30 degrees ASME A17.1\n1: An escalator's steps ride on two sets of wheels running in two tracks, which keep each step level. | escalator step wheels two tracks keep step level how it works\n2: Safety codes require escalators to have a brake that stops them when the power fails. | escalator brake stops when power fails safety code"
+ "user": "Topic: escalator\nClaims (index: claim | suggested search):\n0: Each escalator step has wheels running in two separate tracks that keep the step level. | escalator step two tracks wheels keep step level\n1: A motor at the top of an escalator turns gears that pull the step chain. | escalator drive motor top gears step chain\n2: Escalators have a brake that stops the steps if the power fails. | escalator brake stops steps power failure\n3: An escalator's handrail moves at about the same speed as the steps. | escalator handrail moves same speed as steps"
 }

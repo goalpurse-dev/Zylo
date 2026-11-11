@@ -1,54 +1,70 @@
 {
  "hash": "*",
- "by": "stand-in planner (replan 2026-11-09)",
- "searches": 6,
+ "by": "stand-in planner (agent), 2026-11-11",
+ "searches": 4,
  "data": {
   "checks": [
    {
     "index": 0,
     "verdict": "keep",
-    "claim": "Brake fluid carries your push from a small piston at the pedal to bigger pistons at the wheel, multiplying the force about four to five times",
-    "why": "The study guide works 25.4 mm vs 54 mm pistons to about 4.5 times; HowStuffWorks confirms the principle.",
+    "claim": "Brake fluid carries the push from the pedal's master cylinder to the caliper pistons, multiplying the force.",
+    "why": "The pressure is the same through the closed fluid, so the larger caliper piston gets a force multiplied by the area ratio.",
     "sources": [
+     {
+      "url": "https://www.fluidpowerworld.com/how-do-hydraulic-brakes-work/",
+      "title": "How do hydraulic brakes work? - Fluid Power World"
+     },
      {
       "url": "https://science.howstuffworks.com/transport/engines-equipment/brake4.htm",
       "title": "How Brakes Work - HowStuffWorks"
-     },
-     {
-      "url": "https://open-exam-prep.com/study-guides/ca-red-seal-automotive-service-tech/brakes-steering-suspension-a/hydraulic-brake-systems",
-      "title": "Hydraulic Brake Systems & Master Cylinder/Caliper Service"
      }
     ]
    },
    {
     "index": 1,
     "verdict": "keep",
-    "claim": "Repeated hard stops from high speed can heat a brake disc past 500 degrees Celsius",
-    "why": "EngineerFix gives over 500 C for a very hard emergency stop or repeated stops from high speed; Kwik-Fit gives about 500 C on track.",
+    "claim": "Vented brake discs have air channels between their two faces that cool them.",
+    "why": "A ventilated disc has two friction faces separated by vanes that pump air from the hub out through the channels.",
     "sources": [
      {
-      "url": "https://engineerfix.com/how-hot-do-brakes-get-on-a-car/",
-      "title": "How Hot Do Brakes Get on a Car?"
+      "url": "https://cars-data.com/en/car-glossary/ventilated-disc",
+      "title": "Ventilated disc - cars-data glossary"
      },
      {
-      "url": "https://www.kwik-fit.com/blog/should-brake-discs-get-hot",
-      "title": "Should Brake Discs Get Hot? - Kwik Fit"
+      "url": "https://patents.google.com/patent/US4083435",
+      "title": "US4083435A - Brake disc with improved ventilation cooling"
      }
     ]
    },
    {
     "index": 2,
     "verdict": "keep",
-    "claim": "Vented discs have air channels between their two faces whose vanes pump cooling air",
-    "why": "Motor.com describes channels between the two faces and vanes acting like centrifugal fan blades.",
+    "claim": "Anti-lock brakes pulse the brake pressure many times a second to keep the wheels from locking.",
+    "why": "Mazda: the valves cut and restore pressure multiple times per second until the car stops; other sources up to about 15 a second. No number used.",
     "sources": [
      {
-      "url": "https://www.motor.com/magazine-summary/performance-perspectives-january-2009/",
-      "title": "Performance Perspectives - MOTOR"
+      "url": "https://www.mazdausa.com/resource-center/what-is-abs",
+      "title": "What Is an Anti-lock Braking System (ABS)? - Mazda USA"
      },
      {
-      "url": "https://cars-data.com/en/car-glossary/ventilated-disc",
-      "title": "Ventilated disc - cars-data.com"
+      "url": "https://www.thedrive.com/cars-101/39846/what-is-abs",
+      "title": "What is ABS - The Drive"
+     }
+    ]
+   },
+   {
+    "index": 3,
+    "verdict": "keep",
+    "claim": "Brake lights switch on when the brake pedal is pressed to warn drivers behind.",
+    "why": "The brake light switch at the pedal arm closes the circuit to the rear lights, signalling following drivers.",
+    "sources": [
+     {
+      "url": "https://www.yourmechanic.com/article/symptoms-of-a-bad-or-failing-brake-light-switch",
+      "title": "Symptoms of a Bad or Failing Brake Light Switch - YourMechanic"
+     },
+     {
+      "url": "https://2carpros.com/articles/how-automotive-brake-light-systems-work",
+      "title": "How Automotive Brake Light Systems Work - 2CarPros"
      }
     ]
    }

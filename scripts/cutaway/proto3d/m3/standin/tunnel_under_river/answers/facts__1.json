@@ -1,54 +1,70 @@
 {
  "hash": "*",
- "by": "stand-in planner (replan 2026-11-09): verified claims kept word for word",
- "searches": 3,
+ "by": "stand-in planner (agent), 2026-11-11",
+ "searches": 4,
  "data": {
   "checks": [
    {
     "index": 0,
     "verdict": "keep",
-    "claim": "The Holland Tunnel under the Hudson River has 84 ventilation fans that change all its air every 90 seconds.",
-    "why": "ASME and Britannica: 84 fans, air changed every 90 seconds at full speed.",
+    "claim": "A tunnel boring machine's shield holds back the ground while its rotating cutter head digs.",
+    "why": "The cutter head turns against the face and excavates; cylindrical shields behind it support the walls until the permanent lining is built.",
     "sources": [
      {
-      "url": "https://ethw.org/ASME-Landmark:Holland_Tunnel_Ventilation_System",
-      "title": "ASME Landmark: Holland Tunnel Ventilation System"
+      "url": "https://wikipedia.com/wiki/Bore_tunnel",
+      "title": "Tunnel boring machine (Wikipedia)"
      },
      {
-      "url": "https://www.britannica.com/topic/Holland-Tunnel",
-      "title": "Holland Tunnel (Britannica)"
+      "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/5102201",
+      "title": "Shield tunnelling machine (patent)"
      }
     ]
    },
    {
     "index": 1,
     "verdict": "keep",
-    "claim": "Marc Brunel's tunnelling shield made the Thames Tunnel (opened 1843) the first tunnel under a navigable river.",
-    "why": "Wikipedia and ASCE agree.",
+    "claim": "Behind the boring machine, the tunnel is lined with rings of precast concrete segments.",
+    "why": "ACI 533.5R: precast segment rings erected behind the TBM give ground support; the machine pushes off the completed rings.",
     "sources": [
      {
-      "url": "https://en.wikipedia.org/wiki/Thames_Tunnel",
-      "title": "Thames Tunnel"
+      "url": "https://tunnelingonline.com/aci-533-5r-guide-on-major-aspects-of-design-manufacturing-and-construction-of-precast-concrete-tunnel-segments/",
+      "title": "ACI 533.5R guide on precast tunnel segments"
      },
      {
-      "url": "https://www.asce.org/about-civil-engineering/history-and-heritage/historic-landmarks/thames-tunnel",
-      "title": "Thames Tunnel (ASCE)"
+      "url": "https://www.mines.edu/underground/wp-content/uploads/sites/183/2018/07/Segmental_Concrete_Liners_CSM_2016.pdf",
+      "title": "Colorado School of Mines: Segmental concrete liners"
      }
     ]
    },
    {
     "index": 2,
     "verdict": "keep",
-    "claim": "Behind its shield, a tunnel boring machine lines the tunnel with rings of precast concrete segments as it goes.",
-    "why": "Sources describe successive rings of precast segments set by an erector at the rear of the shield.",
+    "claim": "Rubber gaskets between tunnel segments are squeezed shut to keep water out.",
+    "why": "EPDM segment gaskets are compressed as segments are pushed together and must stay in compression to seal the joint.",
     "sources": [
      {
-      "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/10472962",
-      "title": "Automated laying of tunnel lining segments (patent)"
+      "url": "https://trelleborg.com/en/marine-and-infrastructure/products-solutions-and-services/infrastructure/seals/tunnel-segment-gaskets",
+      "title": "Trelleborg: Tunnel segment gaskets"
      },
      {
-      "url": "https://crosscut.com/2013/07/going-deep-how-bore-tunnel-pictures",
-      "title": "How to bore a tunnel, in pictures"
+      "url": "https://www.tunneltalk.com/TunnelTECH-Apr2016-Segmental-lining-gaskets-review.php",
+      "title": "TunnelTalk: Segmental lining gaskets review"
+     }
+    ]
+   },
+   {
+    "index": 3,
+    "verdict": "keep",
+    "claim": "Road tunnels use large fans to replace exhaust-filled air with fresh air.",
+    "why": "PIARC: tunnel ventilation dilutes vehicle emissions with fresh air and removes the exhaust; longitudinal systems use jet fans to move the air.",
+    "sources": [
+     {
+      "url": "https://tunnelsmanual.piarc.org/en/equipment-systems-general-support/tunnel-ventilation-system",
+      "title": "PIARC Road Tunnels Manual: Tunnel ventilation system"
+     },
+     {
+      "url": "https://www.novenco-building.com/solutions/tunnel-ventilation-system-description",
+      "title": "NOVENCO: Tunnel ventilation background"
      }
     ]
    }

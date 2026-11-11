@@ -1,0 +1,73 @@
+{
+ "hash": "*",
+ "by": "stand-in planner (replan 2026-11-09)",
+ "searches": 6,
+ "data": {
+  "checks": [
+   {
+    "index": 0,
+    "verdict": "keep",
+    "claim": "The average new car weighs a bit over 4,000 pounds, about 4,300 or more by recent EPA data (4,354 lb per the EPA's 2025 Automotive Trends Report).",
+    "why": "About 4,000 lb was accurate around 2018-2022, but the newest EPA-based figure is about 4,354 lb, so the claim as written is dated.",
+    "sources": [
+     {
+      "url": "https://www.jalopnik.com/2215966/heres-how-much-average-car-weighs/",
+      "title": "Here's How Much The Average Car Weighs These Days, And Why It Matters - Jalopnik"
+     },
+     {
+      "url": "https://www.jdpower.com/cars/shopping-guides/average-weight-of-a-car",
+      "title": "Average Weight Of A Car"
+     },
+     {
+      "url": "https://www.capitalone.com/cars/learn/finding-the-right-car/are-new-cars-and-trucks-getting-heavier/1260",
+      "title": "Are New Cars and Trucks Getting Heavier?"
+     }
+    ]
+   },
+   {
+    "index": 1,
+    "verdict": "keep",
+    "claim": "Bags usually top out around 100 psi, and the tank is typically filled to about 150-200 psi.",
+    "why": "100 psi is the typical maximum for bags, not the everyday setting. Tank and compressor ratings in kits run 150, 175 and 200 psi, so 'up to about 150' is on the low side. The tank figures come from retailer pages.",
+    "sources": [
+     {
+      "url": "https://www.firestoneairide.com/content/dam/fsip/pdfs/ride-rite-pdfs/RideRite_Catalog_2019.pdf",
+      "title": "APPLICATION GUIDE VALID FOR 2020 & OLDER VEHICLES riderite.com"
+     },
+     {
+      "url": "https://www.firestoneairide.com/content/dam/fsip/airide/off-highway/pdfs/firestoneip-off-highway-rail-Airail.pdf",
+      "title": "Rail Applications Design Guide AIRAIL 0105"
+     },
+     {
+      "url": "https://www.airliftperformance.com/product/27666",
+      "title": "Manual Air Management System - 27666"
+     },
+     {
+      "url": "https://www.universalair.com/shop/airlift-3p-h-air-management-package-782",
+      "title": "Airlift 3P/H Air Management Package - Universal Air"
+     }
+    ]
+   },
+   {
+    "index": 2,
+    "verdict": "keep",
+    "claim": "A bag with an effective diameter of about six inches, at 100 psi, supports roughly 2,800 pounds. Real bags give a bit less, depending on their shape and height.",
+    "why": "Force = pressure x effective area; a 6-inch circle at 100 psi gives about 2,827 lb. Real bags use effective area, which varies with height, and rated loads are lower (e.g. a 6.60 in max diameter spring is rated 1,600 lb).",
+    "sources": [
+     {
+      "url": "http://lhtech.com/pdf/automation/pneumatic/Goodyear-Air-Spring-Data.pdf",
+      "title": "BASIC PRINCIPLES OF AIR SPRINGS GENERAL DISCUSSION"
+     },
+     {
+      "url": "https://www.firestoneairide.com/content/dam/fsip/pdfs/airmount/EMDG_Imperial_2022.pdf",
+      "title": "EMDG0916 916 www.firestoneip.com Engineering Manual & Design Guide"
+     },
+     {
+      "url": "https://www.firestoneairide.com/content/dam/fsip/pdfs/ride-rite-pdfs/RideRite_Catalog_2019.pdf",
+      "title": "APPLICATION GUIDE VALID FOR 2020 & OLDER VEHICLES riderite.com"
+     }
+    ]
+   }
+  ]
+ }
+}

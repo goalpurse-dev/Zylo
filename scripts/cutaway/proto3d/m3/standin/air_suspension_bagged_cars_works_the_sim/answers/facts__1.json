@@ -1,70 +1,70 @@
 {
  "hash": "*",
- "by": "stand-in planner (replan 2026-11-09)",
- "searches": 6,
+ "by": "stand-in planner (agent), 2026-11-11",
+ "searches": 4,
  "data": {
   "checks": [
    {
     "index": 0,
     "verdict": "keep",
-    "claim": "The average new car weighs a bit over 4,000 pounds, about 4,300 or more by recent EPA data (4,354 lb per the EPA's 2025 Automotive Trends Report).",
-    "why": "About 4,000 lb was accurate around 2018-2022, but the newest EPA-based figure is about 4,354 lb, so the claim as written is dated.",
+    "claim": "Air suspension systems use a compressor to fill an air tank, which then fills the air springs through valves.",
+    "why": "AccuAir and HowStuffWorks: the compressor fills the tank slowly, the tank's stored air fills the bags quickly through the valve block's fill and dump valves.",
     "sources": [
      {
-      "url": "https://www.jalopnik.com/2215966/heres-how-much-average-car-weighs/",
-      "title": "Here's How Much The Average Car Weighs These Days, And Why It Matters - Jalopnik"
+      "url": "https://accuair.com/blogs/shop-talk/how-does-air-suspension-work",
+      "title": "How Does Air Suspension Work? - AccuAir"
      },
      {
-      "url": "https://www.jdpower.com/cars/shopping-guides/average-weight-of-a-car",
-      "title": "Average Weight Of A Car"
-     },
-     {
-      "url": "https://www.capitalone.com/cars/learn/finding-the-right-car/are-new-cars-and-trucks-getting-heavier/1260",
-      "title": "Are New Cars and Trucks Getting Heavier?"
+      "url": "https://auto.howstuffworks.com/air-suspension-systems.htm",
+      "title": "How Air Suspension Systems Work - HowStuffWorks"
      }
     ]
    },
    {
     "index": 1,
     "verdict": "keep",
-    "claim": "Bags usually top out around 100 psi, and the tank is typically filled to about 150-200 psi.",
-    "why": "100 psi is the typical maximum for bags, not the everyday setting. Tank and compressor ratings in kits run 150, 175 and 200 psi, so 'up to about 150' is on the low side. The tank figures come from retailer pages.",
+    "claim": "Compressed air holds moisture that condenses as water in the air tank, so air ride systems use water traps or drains.",
+    "why": "Bag Riders and AccuAir: water collects in the tank and lines; water traps and tank drains remove it.",
     "sources": [
      {
-      "url": "https://www.firestoneairide.com/content/dam/fsip/pdfs/ride-rite-pdfs/RideRite_Catalog_2019.pdf",
-      "title": "APPLICATION GUIDE VALID FOR 2020 & OLDER VEHICLES riderite.com"
+      "url": "https://www.bagriders.com/blog/what-is-a-water-trap",
+      "title": "What Are Water Traps, And Why Do I Need Them? - Bag Riders"
      },
      {
-      "url": "https://www.firestoneairide.com/content/dam/fsip/airide/off-highway/pdfs/firestoneip-off-highway-rail-Airail.pdf",
-      "title": "Rail Applications Design Guide AIRAIL 0105"
-     },
-     {
-      "url": "https://www.airliftperformance.com/product/27666",
-      "title": "Manual Air Management System - 27666"
-     },
-     {
-      "url": "https://www.universalair.com/shop/airlift-3p-h-air-management-package-782",
-      "title": "Airlift 3P/H Air Management Package - Universal Air"
+      "url": "https://accuair.com/blogs/shop-talk/how-to-drain-an-air-suspension-tank",
+      "title": "How To Drain An Air Suspension Tank - AccuAir"
      }
     ]
    },
    {
     "index": 2,
     "verdict": "keep",
-    "claim": "A bag with an effective diameter of about six inches, at 100 psi, supports roughly 2,800 pounds. Real bags give a bit less, depending on their shape and height.",
-    "why": "Force = pressure x effective area; a 6-inch circle at 100 psi gives about 2,827 lb. Real bags use effective area, which varies with height, and rated loads are lower (e.g. a 6.60 in max diameter spring is rated 1,600 lb).",
+    "claim": "Many air suspension systems use height sensors at each corner and can lower the car automatically at highway speed.",
+    "why": "Audi, Mercedes and Tesla manuals describe automatic lowering at speed; supplier pages list height sensors as standard components.",
     "sources": [
      {
-      "url": "http://lhtech.com/pdf/automation/pneumatic/Goodyear-Air-Spring-Data.pdf",
-      "title": "BASIC PRINCIPLES OF AIR SPRINGS GENERAL DISCUSSION"
+      "url": "https://www.manualslib.com/manual/3383075/Audi-Q7-2015.html?page=160",
+      "title": "Audi Q7 2015 manual: air suspension lowering at speed"
      },
      {
-      "url": "https://www.firestoneairide.com/content/dam/fsip/pdfs/airmount/EMDG_Imperial_2022.pdf",
-      "title": "EMDG0916 916 www.firestoneip.com Engineering Manual & Design Guide"
+      "url": "https://www.tesla.cn/ownersmanual/modelx/en_jp/GUID-F1B6801A-8946-41AD-8CF9-7A963CDA38E4.html",
+      "title": "Tesla Model X manual: Air Suspension"
+     }
+    ]
+   },
+   {
+    "index": 3,
+    "verdict": "keep",
+    "claim": "Air suspension still needs shock absorbers to stop the car from bouncing.",
+    "why": "Air springs cushion but give little damping; hydraulic shock absorbers provide it, or the car bounces at its natural frequency.",
+    "sources": [
+     {
+      "url": "https://www.hendrickson-intl.com/getattachment/38fb7947-b870-4202-b783-0e47e92756cf/L1262.pdf",
+      "title": "Hendrickson technical document on damping"
      },
      {
-      "url": "https://www.firestoneairide.com/content/dam/fsip/pdfs/ride-rite-pdfs/RideRite_Catalog_2019.pdf",
-      "title": "APPLICATION GUIDE VALID FOR 2020 & OLDER VEHICLES riderite.com"
+      "url": "https://balancemotorsport.co.uk/blog/air-suspension-and-replacement-dampers-for-air-ride.html",
+      "title": "Air Suspension and Replacement Dampers - Balance Motorsport"
      }
     ]
    }

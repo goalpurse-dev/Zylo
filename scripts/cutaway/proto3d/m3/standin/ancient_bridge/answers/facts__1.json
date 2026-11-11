@@ -1,37 +1,6 @@
-{
- "hash": "*",
- "by": "stand-in planner (replan 2026-11-09): verified claims kept word for word",
- "searches": 2,
- "data": {
-  "checks": [
-   {
-    "index": 0,
-    "verdict": "keep",
-    "claim": "Stone is typically about 10 to 20 times stronger in compression than in tension, depending on the rock.",
-    "why": "Sources give a ratio of 10 to 20 (Colorado notes), with some granites higher; said as the range.",
-    "sources": [
-     {
-      "url": "https://ceae.colorado.edu/~amadei/CVEN5768/PDF/NOTES8.pdf",
-      "title": "strength properties of rocks and rock masses"
-     },
-     {
-      "url": "https://www.researchgate.net/publication/270162174_Relation_between_tensile_and_compressive_engineering_properties_of_granites",
-      "title": "Relation between tensile and compressive engineering properties of granites"
-     }
-    ]
-   },
-   {
-    "index": 1,
-    "verdict": "keep",
-    "claim": "The Pons Fabricius in Rome was built in 62 BC and still carries walkers after more than 2000 years",
-    "why": "Sources date it to 62 BCE and call it the oldest bridge in Rome still standing and in continuous use.",
-    "sources": [
-     {
-      "url": "https://ancientromelive.org/pons-fabricius/",
-      "title": "Ancient Rome Live"
-     }
-    ]
-   }
-  ]
- }
-}
+{"hash": "*", "by": "stand-in planner (agent), 2026-11-11", "searches": 4, "data": {"checks": [
+{"index": 0, "verdict": "keep", "claim": "Roman arch stones were held up during building on a temporary wooden frame called centering, removed once the keystone was set", "why": "Centring is the temporary timber support of an arch, struck once the keystone makes the arch self-supporting.", "sources": [{"url": "https://en.wikipedia.org/wiki/Centring", "title": "Centring"}, {"url": "https://wikiwand.com/en/articles/Roman_bridge", "title": "Roman bridge"}]},
+{"index": 1, "verdict": "keep", "claim": "An arch pushes outward on its supports, so its ends need heavy abutments to stop them spreading", "why": "PBS Building Big: the abutments push back on the arch and keep its ends from spreading apart.", "sources": [{"url": "https://www.pbs.org/wgbh/buildingbig/bridge/arch_forces.html", "title": "BUILDING BIG: arch forces"}, {"url": "https://www.pbs.org/wgbh/buildingbig/for_siemens/basics/arch_bridge.html", "title": "BUILDING BIG Bridge basics"}]},
+{"index": 2, "verdict": "keep", "claim": "Some Roman bridges have small flood openings through their piers so floodwater can pass, as in the Pons Fabricius in Rome", "why": "The small arch in the Pons Fabricius central pier lets high water flow through and takes pressure off the bridge.", "sources": [{"url": "https://livius.org/articles/place/rome/rome-photos/rome-bridge-of-fabricius", "title": "Rome, Bridge of Fabricius (Livius)"}, {"url": "https://wikiwand.com/en/articles/Pons_Fabricius", "title": "Pons Fabricius"}]},
+{"index": 3, "verdict": "reword", "claim": "Floods and scour, the riverbed washing away around piers, are the most common cause of bridge failure", "why": "Studies put hydraulic causes (floods and scour together) first, about 53 percent of failures; scour alone is not separated in every study.", "sources": [{"url": "https://www.engineersireland.ie/Engineers-Journal/Civil/why-do-bridges-fail", "title": "Why do bridges fail (Engineers Ireland)"}, {"url": "https://www.equipmentworld.com/asce-offers-study-on-causes-of-bridge-failures-between-1989-and-2000/", "title": "ASCE study on causes of bridge failures 1989-2000"}]}
+]}}

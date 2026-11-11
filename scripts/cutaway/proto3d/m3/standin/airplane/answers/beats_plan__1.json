@@ -1,9 +1,9 @@
 {
  "hash": "*",
- "by": "stand-in planner (replan 2026-11-09)",
+ "by": "stand-in planner (agent), 2026-11-11",
  "searches": 0,
  "data": {
-  "why": "A white plane on an asphalt runway in an open field, built up piece by piece (wings, engine, curved wing, tail, hinged rudder and elevator, flaps, door). Close shots on the engine, wing and tail when they change, the whole plane for take-off and the outlines from the first word of their lines.",
+  "why": "A white plane on an asphalt runway in an open field, built up one part per problem along its trip: runway, wing, sky, landing, runway end, gate (engine, curved wing, tail fin, ailerons, elevator, rudder, fuel in the wings, flaps, brakes, door). A leaf on the runway is blown back by the first propeller and away again when the finished plane takes off. Close shots on the part that changes, the whole plane for take-off, landing and the end.",
   "story": {
    "title": "How an Airplane Works",
    "hero": "an airplane",
@@ -12,16 +12,29 @@
     "wings",
     "engine",
     "propeller",
-    "curved wing",
+    "airfoil",
     "tail fin",
-    "stabilizer",
-    "rudder",
+    "ailerons",
     "elevator",
+    "rudder",
+    "fuel tanks",
     "flaps",
+    "brakes",
     "door",
-    "windows",
     "stairs"
    ],
+   "flow": [
+    "runway",
+    "wing",
+    "sky",
+    "landing",
+    "runway end",
+    "gate"
+   ],
+   "recurring": {
+    "p": "leaf",
+    "what": "a leaf on the runway, blown back by the first propeller and away by the finished plane"
+   },
    "ideas": [
     {
      "role": "hook",
@@ -29,55 +42,91 @@
     },
     {
      "role": "problem",
-     "idea": "flat wings give no lift, so it sits on the runway"
-    },
-    {
-     "role": "stakes",
-     "idea": "an older Cessna 172 weighs about 2,450 pounds, all pinned down"
+     "idea": "without power it just sits on the runway"
     },
     {
      "role": "fix1",
-     "idea": "an engine and propeller push air, but it slides past flat wings"
-    },
-    {
-     "role": "fix2",
-     "idea": "a curved wing top speeds the air up and lifts"
-    },
-    {
-     "role": "fix3",
-     "idea": "a tail with a fin and stabilizer keeps the nose straight"
-    },
-    {
-     "role": "fix4",
-     "idea": "a hinged rudder and elevator steer the nose"
-    },
-    {
-     "role": "name",
-     "idea": "this is an airplane"
-    },
-    {
-     "role": "name2",
-     "idea": "the curved wing shape is an airfoil"
-    },
-    {
-     "role": "how",
-     "idea": "at about 100 km/h the wings lift it off"
+     "idea": "an engine and a propeller push air back"
     },
     {
      "role": "problem2",
-     "idea": "a gust tips it onto its side"
+     "idea": "the air slides past flat wings, so nothing lifts"
+    },
+    {
+     "role": "fix2",
+     "idea": "a curved wing top bends the air and the wing lifts"
+    },
+    {
+     "role": "name",
+     "idea": "the curved wing shape is an airfoil"
     },
     {
      "role": "problem3",
-     "idea": "to land it must slow, but 100 km/h is too fast"
+     "idea": "once airborne the nose wanders side to side"
+    },
+    {
+     "role": "fix3",
+     "idea": "a tail fin keeps the nose pointing straight"
+    },
+    {
+     "role": "problem4",
+     "idea": "a gust tips one wing down"
+    },
+    {
+     "role": "fix4",
+     "idea": "ailerons on the wing tips roll it level"
+    },
+    {
+     "role": "problem5",
+     "idea": "the nose drops as it slows"
     },
     {
      "role": "fix5",
-     "idea": "flaps level it and slow it onto the runway"
+     "idea": "an elevator on the tail lifts the nose"
+    },
+    {
+     "role": "problem6",
+     "idea": "rolling into a turn, the nose swings the wrong way"
+    },
+    {
+     "role": "fix6",
+     "idea": "a rudder on the fin steers the nose back"
+    },
+    {
+     "role": "problem7",
+     "idea": "after a long flight the engine runs out of fuel"
+    },
+    {
+     "role": "fix7",
+     "idea": "fuel tanks inside the wings"
+    },
+    {
+     "role": "problem8",
+     "idea": "a full, heavy plane comes in to land too fast"
+    },
+    {
+     "role": "fix8",
+     "idea": "flaps let the wing fly slower for landing"
+    },
+    {
+     "role": "problem9",
+     "idea": "it still rolls past the end of the runway"
+    },
+    {
+     "role": "fix9",
+     "idea": "wheel brakes stop it"
+    },
+    {
+     "role": "problem10",
+     "idea": "the stopped plane is sealed, nobody can get in"
+    },
+    {
+     "role": "fix10",
+     "idea": "a door and stairs"
     },
     {
      "role": "finish",
-     "idea": "a door, windows and stairs complete it"
+     "idea": "the finished plane blows the leaf away and takes off"
     },
     {
      "role": "congrats",
@@ -88,35 +137,114 @@
     {
      "problem": "problem",
      "causedBy": "hook",
-     "shows": "the plane sits on the runway under weight arrows",
-     "stakes": "it never flies",
-     "size": 3
+     "shows": "the plane sits still on the runway",
+     "stakes": "it never moves",
+     "size": 2,
+     "at": "runway",
+     "scale": "thing"
     },
     {
      "problem": "problem2",
-     "causedBy": "fix4",
-     "shows": "a gust tips the plane onto its side",
-     "stakes": "it could roll over",
-     "size": 6
+     "causedBy": "fix1",
+     "shows": "the propeller's air slides past the flat wings",
+     "stakes": "it never leaves the ground",
+     "size": 3,
+     "at": "wing",
+     "scale": "thing"
     },
     {
      "problem": "problem3",
+     "causedBy": "fix2",
+     "shows": "the flying plane's nose wobbles",
+     "stakes": "it cannot hold a course",
+     "size": 4,
+     "at": "sky",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem4",
+     "causedBy": "fix3",
+     "shows": "a gust tips the plane onto one wing",
+     "stakes": "it could roll over",
+     "size": 5,
+     "at": "sky",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem5",
+     "causedBy": "fix4",
+     "shows": "the nose drops",
+     "stakes": "it dives toward the ground",
+     "size": 6,
+     "at": "sky",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem6",
      "causedBy": "fix5",
-     "shows": "the speed gauge turns red at landing speed",
-     "stakes": "it would crash on landing",
-     "size": 8
+     "shows": "the nose swings out in a turn",
+     "stakes": "it skids through the turn",
+     "size": 6,
+     "at": "sky",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem7",
+     "causedBy": "fix6",
+     "shows": "smoke puffs and the propeller stops",
+     "stakes": "the engine dies in the air",
+     "size": 8,
+     "at": "sky",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem8",
+     "causedBy": "fix7",
+     "shows": "the heavy plane drops onto the runway fast",
+     "stakes": "a hard, fast landing",
+     "size": 8,
+     "at": "landing",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem9",
+     "causedBy": "fix8",
+     "shows": "the plane rolls on past the runway's end",
+     "stakes": "it runs off the runway",
+     "size": 9,
+     "at": "runway end",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem10",
+     "causedBy": "fix9",
+     "shows": "the stopped plane has no way in",
+     "stakes": "nobody can board",
+     "size": 5,
+     "at": "gate",
+     "scale": "thing"
     }
    ],
    "surprises": [
     {
-     "claim": "Older Cessna 172s, such as the 172R, have a maximum takeoff weight of about 2,450 lb (1,111 kg); newer 172S models are certified to 2,550 lb (1,157 kg).",
-     "role": "stakes",
-     "search": "Cessna 172R maximum takeoff weight 2450 lb"
+     "claim": "A wing's curved shape, called an airfoil, turns the passing air so the wing is pushed up.",
+     "role": "fix2",
+     "search": "airfoil wing shape lift how it works"
     },
     {
-     "claim": "A Cessna 172 rotates at about 55 knots indicated airspeed, roughly 100 km/h.",
-     "role": "how",
-     "search": "Cessna 172 rotation speed 55 knots"
+     "claim": "Ailerons roll an airplane, the elevator pitches its nose up and down, and the rudder swings the nose left and right.",
+     "role": "fix6",
+     "search": "ailerons roll elevator pitch rudder yaw airplane control surfaces"
+    },
+    {
+     "claim": "Many airplanes carry their fuel in tanks inside the wings.",
+     "role": "fix7",
+     "search": "airplane fuel tanks inside wings"
+    },
+    {
+     "claim": "Flaps let an airplane fly more slowly for landing.",
+     "role": "fix8",
+     "search": "wing flaps lower stall speed landing slower"
     }
    ]
   },
@@ -127,2280 +255,97 @@
    },
    {
     "role": "problem",
-    "text": "But the flat wings give no lift, so the wheels turn and the plane sits on the runway."
-   },
-   {
-    "role": "stakes",
-    "text": "An older Cessna 172 weighs about 2,450 pounds, and gravity pins every pound of it down."
+    "text": "But it just sits on the runway by a leaf."
    },
    {
     "role": "fix1",
-    "text": "So you add an engine and a propeller, but the air just slides past the flat wings."
-   },
-   {
-    "role": "fix2",
-    "text": "So you curve the top of the wing, and the air speeds up over it and the wing lifts."
-   },
-   {
-    "role": "fix3",
-    "text": "But now the nose wanders, so you add a tail with a fin and a stabilizer that hold the nose pointing straight."
-   },
-   {
-    "role": "fix4",
-    "text": "Then you hinge the back of the tail, so the rudder swings the nose sideways and the elevator tilts it up."
-   },
-   {
-    "role": "name",
-    "text": "This is an airplane."
-   },
-   {
-    "role": "name2",
-    "text": "The curved wing shape is called an airfoil."
-   },
-   {
-    "role": "how",
-    "text": "At about 100 kilometers per hour, the air over the wings lifts the plane off the runway."
+    "text": "So you add an engine with a spinning propeller."
    },
    {
     "role": "problem2",
-    "text": "But a gust of wind pushes one wing down, and the plane tips onto its side."
+    "text": "But the propeller's wind slides past the flat wings."
+   },
+   {
+    "role": "fix2",
+    "text": "So you curve the wing top, and air lifts it."
+   },
+   {
+    "role": "name",
+    "text": "This is an airfoil."
    },
    {
     "role": "problem3",
-    "text": "And to land, the plane must slow down, but at 100 kilometers per hour it is far too fast."
+    "text": "But once it lifts, the nose wobbles side to side."
+   },
+   {
+    "role": "fix3",
+    "text": "So you add a tail fin to hold it straight."
+   },
+   {
+    "role": "problem4",
+    "text": "But the tail fin cannot stop a gust tipping a wing."
+   },
+   {
+    "role": "fix4",
+    "text": "So you hinge ailerons that roll the wings level."
+   },
+   {
+    "role": "problem5",
+    "text": "But rolled level, it slows, and the nose drops."
    },
    {
     "role": "fix5",
-    "text": "So you add flaps on the wings that level the plane and slow it until it settles onto the runway."
+    "text": "So you hinge an elevator to lift the nose."
+   },
+   {
+    "role": "problem6",
+    "text": "But rolling into a turn, the nose swings wide."
+   },
+   {
+    "role": "fix6",
+    "text": "So you hinge a rudder to steer it back."
+   },
+   {
+    "role": "problem7",
+    "text": "But after hours of steering, the engine sputters out."
+   },
+   {
+    "role": "fix7",
+    "text": "So you fill the wings with fuel."
+   },
+   {
+    "role": "problem8",
+    "text": "But full of fuel, it lands heavy and rushes in."
+   },
+   {
+    "role": "fix8",
+    "text": "So you lower flaps so it lands slowly."
+   },
+   {
+    "role": "problem9",
+    "text": "But even with flaps down, it rolls past the end."
+   },
+   {
+    "role": "fix9",
+    "text": "So you add wheel brakes that stop it."
+   },
+   {
+    "role": "problem10",
+    "text": "But the braked plane sits sealed, with no way in."
+   },
+   {
+    "role": "fix10",
+    "text": "So you cut a door and roll up stairs."
    },
    {
     "role": "finish",
-    "text": "Add a door, windows and stairs so people can board."
+    "text": "Spin the propeller: the leaf blows away, and your winged tube takes off."
    },
    {
     "role": "congrats",
-    "text": "Congratulations, you have built an airplane."
+    "text": "Congratulations, you built an airplane."
    }
   ],
-  "sceneJson": {
-   "world": {
-    "cut": [
-     -1,
-     1,
-     -1.2,
-     0.6
-    ],
-    "house": false,
-    "worker": false,
-    "moreTrees": false,
-    "road": false,
-    "porch": false,
-    "trees": [
-     [
-      -16,
-      -14
-     ],
-     [
-      16,
-      -12,
-      0.9
-     ]
-    ]
-   },
-   "parts": [
-    {
-     "id": "light",
-     "kind": "light",
-     "params": {
-      "storm": false
-     }
-    },
-    {
-     "id": "runway",
-     "kind": "road",
-     "params": {
-      "points": [
-       [
-        -26,
-        -4.5,
-        1
-       ],
-       [
-        26,
-        -4.5,
-        1
-       ]
-      ],
-      "width": 8,
-      "surface": "asphalt"
-     }
-    },
-    {
-     "id": "plane",
-     "kind": "rig",
-     "params": {
-      "name": "airplane",
-      "synonyms": [
-       "plane",
-       "aircraft"
-      ],
-      "pos": [
-       0.5,
-       0.02,
-       -4
-      ],
-      "rotY": 0,
-      "scale": 1,
-      "nodes": [
-       {
-        "id": "body",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "cylinder",
-          "r": 0.7,
-          "h": 6,
-          "axis": "x",
-          "at": [
-           0,
-           1.5,
-           0
-          ],
-          "look": "paint",
-          "color": "#e9eef4"
-         },
-         {
-          "shape": "cylinder",
-          "r": 0.4,
-          "h": 2.4,
-          "axis": "x",
-          "at": [
-           -4.2,
-           1.6,
-           0
-          ],
-          "look": "paint",
-          "color": "#e9eef4"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.1,
-           0.6,
-           0.1
-          ],
-          "at": [
-           2.2,
-           0.7,
-           0
-          ],
-          "look": "metal"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.12,
-           0.6,
-           0.12
-          ],
-          "at": [
-           0.3,
-           0.5,
-           0
-          ],
-          "look": "metal"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.12,
-           0.12,
-           2.4
-          ],
-          "at": [
-           0.3,
-           0.4,
-           0
-          ],
-          "look": "metal"
-         }
-        ],
-        "moves": [
-         {
-          "name": "gust",
-          "type": "swing",
-          "axis": "x",
-          "angle": 25
-         },
-         {
-          "name": "takeoff",
-          "type": "track",
-          "path": [
-           [
-            0,
-            0,
-            0
-           ],
-           [
-            6,
-            0,
-            0
-           ],
-           [
-            10,
-            1.5,
-            0
-           ],
-           [
-            13,
-            4.5,
-            0
-           ]
-          ]
-         }
-        ]
-       },
-       {
-        "id": "wheelL",
-        "parent": "body",
-        "at": [
-         0.3,
-         0.4,
-         1.3
-        ],
-        "shapes": [
-         {
-          "shape": "wheel",
-          "r": 0.4,
-          "w": 0.25,
-          "axis": "z",
-          "at": [
-           0,
-           0,
-           0
-          ],
-          "look": "rubber"
-         }
-        ],
-        "moves": [
-         {
-          "name": "rollWheels",
-          "type": "spin",
-          "axis": "z",
-          "turns": 2
-         }
-        ]
-       },
-       {
-        "id": "wheelR",
-        "parent": "body",
-        "at": [
-         0.3,
-         0.4,
-         -1.3
-        ],
-        "shapes": [
-         {
-          "shape": "wheel",
-          "r": 0.4,
-          "w": 0.25,
-          "axis": "z",
-          "at": [
-           0,
-           0,
-           0
-          ],
-          "look": "rubber"
-         }
-        ],
-        "moves": [
-         {
-          "name": "rollWheels",
-          "type": "spin",
-          "axis": "z",
-          "turns": 2
-         }
-        ]
-       },
-       {
-        "id": "wheelN",
-        "parent": "body",
-        "at": [
-         2.2,
-         0.4,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "wheel",
-          "r": 0.4,
-          "w": 0.2,
-          "axis": "z",
-          "at": [
-           0,
-           0,
-           0
-          ],
-          "look": "rubber"
-         }
-        ],
-        "moves": [
-         {
-          "name": "rollWheels",
-          "type": "spin",
-          "axis": "z",
-          "turns": 2
-         }
-        ]
-       },
-       {
-        "id": "wing",
-        "parent": "body",
-        "at": [
-         0.6,
-         2.2,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           1.6,
-           0.12,
-           11
-          ],
-          "at": [
-           0,
-           0.06,
-           0
-          ],
-          "look": "paint",
-          "color": "#e23b2e"
-         },
-         {
-          "shape": "button",
-          "r": 0.12,
-          "at": [
-           -0.3,
-           0.13,
-           0.5
-          ],
-          "look": "metal"
-         },
-         {
-          "shape": "button",
-          "r": 0.12,
-          "at": [
-           -0.3,
-           0.13,
-           -0.5
-          ],
-          "look": "metal"
-         }
-        ],
-        "moves": [
-         {
-          "name": "wingsOn",
-          "type": "appear"
-         }
-        ]
-       },
-       {
-        "id": "camber",
-        "parent": "wing",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "cylinder",
-          "r": 0.25,
-          "h": 10.8,
-          "axis": "z",
-          "at": [
-           0.45,
-           0.37,
-           0
-          ],
-          "look": "paint",
-          "color": "#e23b2e"
-         }
-        ],
-        "moves": [
-         {
-          "name": "curve",
-          "type": "appear"
-         }
-        ]
-       },
-       {
-        "id": "aileronL",
-        "parent": "wing",
-        "at": [
-         -0.8,
-         0.06,
-         3.2
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           0.45,
-           0.08,
-           2.4
-          ],
-          "at": [
-           -0.225,
-           0,
-           0
-          ],
-          "look": "paint",
-          "color": "#b0261c"
-         }
-        ],
-        "moves": [
-         {
-          "name": "flapsOn",
-          "type": "appear"
-         },
-         {
-          "name": "flaps",
-          "type": "swing",
-          "axis": "z",
-          "angle": 25
-         }
-        ]
-       },
-       {
-        "id": "aileronR",
-        "parent": "wing",
-        "at": [
-         -0.8,
-         0.06,
-         -3.2
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           0.45,
-           0.08,
-           2.4
-          ],
-          "at": [
-           -0.225,
-           0,
-           0
-          ],
-          "look": "paint",
-          "color": "#b0261c"
-         }
-        ],
-        "moves": [
-         {
-          "name": "flapsOn",
-          "type": "appear"
-         },
-         {
-          "name": "flaps",
-          "type": "swing",
-          "axis": "z",
-          "angle": 25
-         }
-        ]
-       },
-       {
-        "id": "engine",
-        "parent": "body",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "cylinder",
-          "r": 0.6,
-          "h": 1,
-          "axis": "x",
-          "at": [
-           3.5,
-           1.5,
-           0
-          ],
-          "look": "paint",
-          "color": "#2f6fb0"
-         },
-         {
-          "shape": "cylinder",
-          "r": 0.2,
-          "h": 0.3,
-          "axis": "x",
-          "at": [
-           4.15,
-           1.5,
-           0
-          ],
-          "look": "metal"
-         }
-        ],
-        "moves": [
-         {
-          "name": "engineOn",
-          "type": "appear"
-         }
-        ]
-       },
-       {
-        "id": "prop",
-        "parent": "engine",
-        "at": [
-         4.3,
-         1.5,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           0.1,
-           2.4,
-           0.22
-          ],
-          "at": [
-           0,
-           0,
-           0
-          ],
-          "look": "paint",
-          "color": "#333333"
-         }
-        ],
-        "moves": [
-         {
-          "name": "engineOn",
-          "type": "appear"
-         },
-         {
-          "name": "spinProp",
-          "type": "spin",
-          "axis": "x",
-          "turns": 5
-         }
-        ]
-       },
-       {
-        "id": "tail",
-        "parent": "body",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           1,
-           1.4,
-           0.12
-          ],
-          "at": [
-           -5,
-           2.65,
-           0
-          ],
-          "look": "paint",
-          "color": "#e23b2e"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.8,
-           0.1,
-           3.6
-          ],
-          "at": [
-           -5,
-           1.6,
-           0
-          ],
-          "look": "paint",
-          "color": "#e23b2e"
-         }
-        ],
-        "moves": [
-         {
-          "name": "tailOn",
-          "type": "appear"
-         }
-        ]
-       },
-       {
-        "id": "elevator",
-        "parent": "tail",
-        "at": [
-         -5.4,
-         1.6,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           0.6,
-           0.1,
-           3.4
-          ],
-          "at": [
-           -0.3,
-           0,
-           0
-          ],
-          "look": "paint",
-          "color": "#ffd23d"
-         }
-        ],
-        "moves": [
-         {
-          "name": "tailOn",
-          "type": "appear"
-         },
-         {
-          "name": "elevate",
-          "type": "swing",
-          "axis": "z",
-          "angle": -30
-         }
-        ]
-       },
-       {
-        "id": "rudder",
-        "parent": "tail",
-        "at": [
-         -5.5,
-         2.65,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           0.6,
-           1.4,
-           0.12
-          ],
-          "at": [
-           -0.3,
-           0,
-           0
-          ],
-          "look": "paint",
-          "color": "#ffd23d"
-         }
-        ],
-        "moves": [
-         {
-          "name": "tailOn",
-          "type": "appear"
-         },
-         {
-          "name": "steer",
-          "type": "swing",
-          "axis": "y",
-          "angle": 35
-         }
-        ]
-       },
-       {
-        "id": "windows",
-        "parent": "body",
-        "at": [
-         2.4,
-         1.5,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "panel",
-          "size": [
-           0.45,
-           0.42
-          ],
-          "thick": 0.04,
-          "at": [
-           -0.6,
-           0.15,
-           0.7
-          ],
-          "look": "glass",
-          "color": "#7fc4ff"
-         },
-         {
-          "shape": "panel",
-          "size": [
-           0.45,
-           0.42
-          ],
-          "thick": 0.04,
-          "at": [
-           0,
-           0.15,
-           0.7
-          ],
-          "look": "glass",
-          "color": "#7fc4ff"
-         },
-         {
-          "shape": "panel",
-          "size": [
-           0.45,
-           0.42
-          ],
-          "thick": 0.04,
-          "at": [
-           0.6,
-           0.15,
-           0.7
-          ],
-          "look": "glass",
-          "color": "#7fc4ff"
-         }
-        ],
-        "moves": [
-         {
-          "name": "windowsOn",
-          "type": "appear"
-         }
-        ]
-       },
-       {
-        "id": "door",
-        "parent": "body",
-        "at": [
-         -1.9,
-         1.5,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "panel",
-          "size": [
-           0.9,
-           1.25
-          ],
-          "thick": 0.1,
-          "at": [
-           0,
-           -0.1,
-           0.7
-          ],
-          "look": "paint",
-          "color": "#2f6fb0"
-         }
-        ],
-        "moves": [
-         {
-          "name": "doorOn",
-          "type": "appear"
-         }
-        ]
-       }
-      ]
-     },
-     "main": true
-    },
-    {
-     "id": "weight",
-     "kind": "arrows",
-     "params": {
-      "list": [
-       {
-        "at": [
-         1.0999999999999996,
-         4.6,
-         -2.5
-        ],
-        "dir": [
-         0,
-         -1
-        ],
-        "travel": 1.6,
-        "phase": 0
-       },
-       {
-        "at": [
-         1.0999999999999996,
-         4.6,
-         -4
-        ],
-        "dir": [
-         0,
-         -1
-        ],
-        "travel": 1.6,
-        "phase": 0.3
-       },
-       {
-        "at": [
-         1.0999999999999996,
-         4.6,
-         -5.5
-        ],
-        "dir": [
-         0,
-         -1
-        ],
-        "travel": 1.6,
-        "phase": 0.6
-       }
-      ],
-      "opts": {
-       "scale": 1.2,
-       "color": "#ffd23d"
-      }
-     }
-    },
-    {
-     "id": "airFlat",
-     "kind": "arrows",
-     "params": {
-      "list": [
-       {
-        "at": [
-         3.1,
-         2.4,
-         -1
-        ],
-        "dir": [
-         -1,
-         0
-        ],
-        "travel": 3.2,
-        "phase": 0
-       },
-       {
-        "at": [
-         3.1,
-         2.4,
-         -2.5
-        ],
-        "dir": [
-         -1,
-         0
-        ],
-        "travel": 3.2,
-        "phase": 0.33
-       },
-       {
-        "at": [
-         3.1,
-         2.4,
-         0.3
-        ],
-        "dir": [
-         -1,
-         0
-        ],
-        "travel": 3.2,
-        "phase": 0.66
-       }
-      ],
-      "opts": {
-       "scale": 1.4,
-       "speed": 1.4,
-       "color": "#ffffff"
-      }
-     }
-    },
-    {
-     "id": "airStream",
-     "kind": "flow",
-     "params": {
-      "look": "spray",
-      "path": [
-       [
-        5.5,
-        2.35,
-        -0.2
-       ],
-       [
-        2.5,
-        2.35,
-        -0.2
-       ],
-       [
-        -1,
-        2.35,
-        -0.2
-       ]
-      ],
-      "size": 0.14,
-      "count": 18,
-      "speed": 2.4
-     }
-    },
-    {
-     "id": "airFast",
-     "kind": "arrows",
-     "params": {
-      "list": [
-       {
-        "at": [
-         2.7,
-         3.6,
-         -2.6
-        ],
-        "dir": [
-         -1,
-         0
-        ],
-        "travel": 4.2,
-        "phase": 0
-       },
-       {
-        "at": [
-         2.7,
-         3.6,
-         -4.3
-        ],
-        "dir": [
-         -1,
-         0
-        ],
-        "travel": 4.2,
-        "phase": 0.3
-       },
-       {
-        "at": [
-         2.7,
-         3.6,
-         -6
-        ],
-        "dir": [
-         -1,
-         0
-        ],
-        "travel": 4.2,
-        "phase": 0.6
-       }
-      ],
-      "opts": {
-       "scale": 1.5,
-       "speed": 1.6,
-       "color": "#ffffff"
-      }
-     }
-    },
-    {
-     "id": "lift",
-     "kind": "arrows",
-     "params": {
-      "list": [
-       {
-        "at": [
-         1.0999999999999996,
-         3.1,
-         -3.4
-        ],
-        "dir": [
-         0,
-         1
-        ],
-        "travel": 1.6,
-        "phase": 0
-       },
-       {
-        "at": [
-         1.0999999999999996,
-         3.1,
-         -5.1
-        ],
-        "dir": [
-         0,
-         1
-        ],
-        "travel": 1.6,
-        "phase": 0.4
-       }
-      ],
-      "opts": {
-       "scale": 1.3,
-       "color": "#ffd23d"
-      }
-     }
-    },
-    {
-     "id": "gustArrows",
-     "kind": "arrows",
-     "params": {
-      "list": [
-       {
-        "at": [
-         8.1,
-         8.8,
-         0.9
-        ],
-        "dir": [
-         0,
-         -1
-        ],
-        "travel": 1.5,
-        "phase": 0
-       }
-      ],
-      "opts": {
-       "scale": 1.4,
-       "color": "#ffffff"
-      }
-     }
-    },
-    {
-     "id": "pole1",
-     "kind": "boxPop",
-     "params": {
-      "size": [
-       0.2,
-       2,
-       0.2
-      ],
-      "pos": [
-       3.5,
-       1,
-       -1.1
-      ],
-      "mat": "metal"
-     }
-    },
-    {
-     "id": "pole2",
-     "kind": "boxPop",
-     "params": {
-      "size": [
-       0.2,
-       2,
-       0.2
-      ],
-      "pos": [
-       17,
-       1,
-       -1.1
-      ],
-      "mat": "metal"
-     }
-    },
-    {
-     "id": "wCount",
-     "kind": "counter",
-     "params": {
-      "pos": [
-       3.5,
-       2.7,
-       -0.9
-      ],
-      "size": 1.4,
-      "from": 0,
-      "to": 2450,
-      "color": "#ff6a4a",
-      "bar": true
-     }
-    },
-    {
-     "id": "hingePoint",
-     "kind": "arrows",
-     "params": {
-      "list": [
-       {
-        "at": [
-         -6.1,
-         2.9,
-         -2.6
-        ],
-        "dir": [
-         0,
-         1
-        ],
-        "travel": 0.5,
-        "phase": 0
-       },
-       {
-        "at": [
-         -5.9,
-         3.4,
-         -4.6
-        ],
-        "dir": [
-         0,
-         0,
-         1
-        ],
-        "travel": 0.5,
-        "phase": 0.5
-       }
-      ],
-      "opts": {
-       "scale": 0.9,
-       "color": "#ffffff"
-      }
-     }
-    },
-    {
-     "id": "tailPoint",
-     "kind": "arrows",
-     "params": {
-      "list": [
-       {
-        "at": [
-         -4.5,
-         4.3,
-         -4
-        ],
-        "dir": [
-         0,
-         -1
-        ],
-        "travel": 0.5,
-        "phase": 0
-       },
-       {
-        "at": [
-         -4.5,
-         2.5,
-         -1.9
-        ],
-        "dir": [
-         0,
-         -1
-        ],
-        "travel": 0.5,
-        "phase": 0.5
-       }
-      ],
-      "opts": {
-       "scale": 1,
-       "color": "#ffd23d"
-      }
-     }
-    },
-    {
-     "id": "boardPoint",
-     "kind": "arrows",
-     "params": {
-      "list": [
-       {
-        "at": [
-         -1.4000000000000004,
-         3.3,
-         -2.7
-        ],
-        "dir": [
-         0,
-         -1
-        ],
-        "travel": 0.5,
-        "phase": 0
-       },
-       {
-        "at": [
-         2.9,
-         2.9,
-         -2.7
-        ],
-        "dir": [
-         0,
-         -1
-        ],
-        "travel": 0.5,
-        "phase": 0.5
-       }
-      ],
-      "opts": {
-       "scale": 0.9,
-       "color": "#ffd23d"
-      }
-     }
-    },
-    {
-     "id": "speed",
-     "kind": "counter",
-     "params": {
-      "pos": [
-       17,
-       2.7,
-       -0.9
-      ],
-      "size": 1.4,
-      "from": 0,
-      "to": 100,
-      "color": "#7be07b",
-      "bar": true,
-      "danger": 2
-     }
-    },
-    {
-     "id": "landSpeed",
-     "kind": "counter",
-     "params": {
-      "pos": [
-       17,
-       2.7,
-       -0.9
-      ],
-      "size": 1.4,
-      "from": 0,
-      "to": 100,
-      "color": "#ff6a4a",
-      "bar": true
-     }
-    },
-    {
-     "id": "planeOutline",
-     "kind": "outline",
-     "params": {
-      "of": "plane",
-      "opts": {
-       "r": 0.12,
-       "closed": true,
-       "over": true
-      }
-     }
-    },
-    {
-     "id": "wingOutline",
-     "kind": "outline",
-     "params": {
-      "of": "plane.wing",
-      "opts": {
-       "r": 0.1,
-       "closed": true,
-       "over": true
-      }
-     }
-    },
-    {
-     "id": "stairs",
-     "kind": "prop",
-     "params": {
-      "type": "stairs",
-      "h": 1.4,
-      "w": 1.4,
-      "pos": [
-       -2.9000000000000004,
-       0.02,
-       -2.9
-      ]
-     }
-    },
-    {
-     "id": "sign",
-     "kind": "sign",
-     "params": {
-      "at": [
-       14,
-       0,
-       -1
-      ],
-      "rotY": 0.2,
-      "scale": 1
-     }
-    }
-   ],
-   "beats": [
-    {
-     "s": "hook",
-     "shows": {
-      "p": "plane",
-      "does": "wings pop onto the white tube on the runway"
-     },
-     "do": [
-      {
-       "p": "plane",
-       "v": "show",
-       "w": "",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "plane",
-       "v": "wingsOn",
-       "w": "wings",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "view": "home",
-       "width": 0.94,
-       "type": "",
-       "hero": false,
-       "word": "",
-       "box": [],
-       "focus": [
-        "plane"
-       ]
-      }
-     ]
-    },
-    {
-     "s": "problem",
-     "shows": {
-      "p": "plane",
-      "does": "the wheels spin on the runway but the plane stays pinned under yellow weight arrows"
-     },
-     "state": {
-      "text": "STUCK",
-      "w": "sits"
-     },
-     "do": [
-      {
-       "p": "weight",
-       "v": "show",
-       "w": "sits",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "plane",
-       "v": "rollWheels",
-       "w": "turn",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "view": "home",
-       "width": 0.94,
-       "type": "",
-       "hero": false,
-       "word": "",
-       "box": [],
-       "focus": [
-        "plane"
-       ]
-      }
-     ]
-    },
-    {
-     "s": "stakes",
-     "shows": {
-      "p": "wCount",
-      "does": "the weight counter ticks up to 2450 and its bar fills red"
-     },
-     "state": {
-      "text": "TOO HEAVY",
-      "w": "pins"
-     },
-     "do": [
-      {
-       "p": "plane",
-       "v": "rollWheelsBack",
-       "w": "Cessna",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "pole1",
-       "v": "show",
-       "w": "Cessna",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "wCount",
-       "v": "show",
-       "w": "Cessna",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "wCount",
-       "v": "count",
-       "w": "2,450",
-       "o": -0.8,
-       "d": 1.4,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "view": "home",
-       "width": 0.94,
-       "type": "",
-       "hero": false,
-       "word": "",
-       "box": [],
-       "focus": [
-        "plane",
-        "wCount"
-       ]
-      }
-     ]
-    },
-    {
-     "s": "fix1",
-     "shows": {
-      "p": "airStream",
-      "does": "an engine and a spinning propeller appear on the nose, and white air streams straight past the flat wing"
-     },
-     "do": [
-      {
-       "p": "wCount",
-       "v": "hide",
-       "w": "So",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "pole1",
-       "v": "hide",
-       "w": "So",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "weight",
-       "v": "hide",
-       "w": "So",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "plane",
-       "v": "engineOn",
-       "w": "engine",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "plane",
-       "v": "spinProp",
-       "w": "propeller",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "airFlat",
-       "v": "show",
-       "w": "air",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "airStream",
-       "v": "start",
-       "w": "air",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "view": "home",
-       "width": 0,
-       "type": "mid",
-       "hero": false,
-       "word": "",
-       "box": [],
-       "focus": [
-        "plane.engine",
-        "plane.wing"
-       ]
-      }
-     ]
-    },
-    {
-     "s": "fix2",
-     "shows": {
-      "p": "plane",
-      "does": "the wing top bulges, fast air arrows run over it and yellow lift arrows rise"
-     },
-     "do": [
-      {
-       "p": "airFlat",
-       "v": "hide",
-       "w": "So",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "airStream",
-       "v": "stop",
-       "w": "So",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "plane",
-       "v": "curve",
-       "w": "curve",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "airFast",
-       "v": "show",
-       "w": "speeds",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "lift",
-       "v": "show",
-       "w": "lifts",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "view": "home",
-       "width": 0.55,
-       "type": "",
-       "hero": false,
-       "word": "",
-       "box": [],
-       "focus": [
-        "plane.wing"
-       ]
-      }
-     ]
-    },
-    {
-     "s": "fix3",
-     "shows": {
-      "p": "tailPoint",
-      "does": "a fin and a stabilizer pop onto the tail, an arrow points at them"
-     },
-     "do": [
-      {
-       "p": "tailPoint",
-       "v": "show",
-       "w": "tail",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "airFast",
-       "v": "hide",
-       "w": "But",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "lift",
-       "v": "hide",
-       "w": "But",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "plane",
-       "v": "tailOn",
-       "w": "tail",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "view": "home",
-       "width": 0.9,
-       "type": "",
-       "hero": false,
-       "word": "",
-       "box": [
-        -6.1,
-        0,
-        -6.4,
-        -2.1,
-        4.8,
-        -1.6
-       ],
-       "focus": []
-      }
-     ]
-    },
-    {
-     "s": "fix4",
-     "shows": {
-      "p": "hingePoint",
-      "does": "the yellow rudder swings sideways and the yellow elevator tilts up on their hinges"
-     },
-     "do": [
-      {
-       "p": "tailPoint",
-       "v": "hide",
-       "w": "Then",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "hingePoint",
-       "v": "show",
-       "w": "hinge",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "plane",
-       "v": "steer",
-       "w": "rudder",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "plane",
-       "v": "elevate",
-       "w": "elevator",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "view": "home",
-       "width": 0,
-       "type": "mid",
-       "hero": false,
-       "word": "",
-       "box": [],
-       "focus": [
-        "plane.tail"
-       ]
-      }
-     ]
-    },
-    {
-     "s": "name",
-     "shows": {
-      "p": "planeOutline",
-      "does": "a yellow outline traces the whole plane"
-     },
-     "do": [
-      {
-       "p": "hingePoint",
-       "v": "hide",
-       "w": "",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "plane",
-       "v": "steerBack",
-       "w": "",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "plane",
-       "v": "elevateBack",
-       "w": "",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "planeOutline",
-       "v": "show",
-       "w": "",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "view": "home",
-       "width": 0.9,
-       "type": "",
-       "hero": true,
-       "word": "",
-       "box": [],
-       "focus": [
-        "plane"
-       ]
-      }
-     ]
-    },
-    {
-     "s": "name2",
-     "shows": {
-      "p": "wingOutline",
-      "does": "a yellow outline traces the curved wing"
-     },
-     "do": [
-      {
-       "p": "planeOutline",
-       "v": "hide",
-       "w": "",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "wingOutline",
-       "v": "show",
-       "w": "",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "view": "home",
-       "width": 0.7,
-       "type": "",
-       "hero": true,
-       "word": "",
-       "box": [],
-       "focus": [
-        "plane.wing"
-       ]
-      }
-     ]
-    },
-    {
-     "s": "how",
-     "shows": {
-      "p": "plane",
-      "does": "the plane rolls down the runway and climbs off it while the speed counter ticks to 100"
-     },
-     "do": [
-      {
-       "p": "wingOutline",
-       "v": "hide",
-       "w": "",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "pole2",
-       "v": "show",
-       "w": "",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "speed",
-       "v": "show",
-       "w": "",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "speed",
-       "v": "count",
-       "w": "100",
-       "o": -1.2,
-       "d": 1.4,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "plane",
-       "v": "rollWheels",
-       "w": "",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "plane",
-       "v": "takeoff",
-       "w": "",
-       "o": 0,
-       "d": 4.5,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "view": "home",
-       "width": 0.94,
-       "type": "",
-       "hero": false,
-       "word": "",
-       "box": [],
-       "focus": [
-        "plane",
-        "speed"
-       ]
-      }
-     ]
-    },
-    {
-     "s": "problem2",
-     "shows": {
-      "p": "plane",
-      "does": "a gust pushes down one wing and the plane tips onto its side in the air"
-     },
-     "state": {
-      "text": "ROLLING",
-      "w": "tips"
-     },
-     "do": [
-      {
-       "p": "speed",
-       "v": "hide",
-       "w": "But",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "gustArrows",
-       "v": "show",
-       "w": "gust",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "plane",
-       "v": "gust",
-       "w": "tips",
-       "o": -0.4,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "view": "home",
-       "width": 0.94,
-       "type": "",
-       "hero": false,
-       "word": "",
-       "box": [],
-       "focus": [
-        "plane"
-       ]
-      }
-     ]
-    },
-    {
-     "s": "problem3",
-     "shows": {
-      "p": "plane",
-      "does": "the plane is still tipped in the air while a speed gauge beside it climbs to 100 and turns red"
-     },
-     "state": {
-      "text": "TOO FAST",
-      "w": "fast"
-     },
-     "do": [
-      {
-       "p": "pole2",
-       "v": "show",
-       "w": "And",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "landSpeed",
-       "v": "show",
-       "w": "And",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "landSpeed",
-       "v": "count",
-       "w": "100",
-       "o": -0.6,
-       "d": 1.2,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "plane",
-       "v": "gust",
-       "w": "fast",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "view": "home",
-       "width": 0.95,
-       "type": "",
-       "hero": false,
-       "word": "",
-       "box": [],
-       "focus": [
-        "plane",
-        "landSpeed"
-       ]
-      }
-     ]
-    },
-    {
-     "s": "fix5",
-     "shows": {
-      "p": "plane",
-      "does": "flaps appear and tilt down, the plane levels out and settles back onto the runway"
-     },
-     "do": [
-      {
-       "p": "landSpeed",
-       "v": "hide",
-       "w": "So",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "pole2",
-       "v": "hide",
-       "w": "So",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "gustArrows",
-       "v": "hide",
-       "w": "So",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "plane",
-       "v": "flapsOn",
-       "w": "flaps",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "plane",
-       "v": "gustBack",
-       "w": "level",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "plane",
-       "v": "flaps",
-       "w": "slow",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "plane",
-       "v": "takeoffBack",
-       "w": "slow",
-       "o": 0.2,
-       "d": 4,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "view": "home",
-       "width": 0.94,
-       "type": "",
-       "hero": false,
-       "word": "",
-       "box": [],
-       "focus": [
-        "plane"
-       ]
-      }
-     ]
-    },
-    {
-     "s": "finish",
-     "shows": {
-      "p": "boardPoint",
-      "does": "a blue door and big windows pop onto the fuselage and stairs appear under the door"
-     },
-     "do": [
-      {
-       "p": "plane",
-       "v": "spinPropBack",
-       "w": "Add",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "plane",
-       "v": "rollWheelsBack",
-       "w": "Add",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "plane",
-       "v": "flapsBack",
-       "w": "Add",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "plane",
-       "v": "doorOn",
-       "w": "door",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "boardPoint",
-       "v": "show",
-       "w": "Add",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "plane",
-       "v": "windowsOn",
-       "w": "windows",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "stairs",
-       "v": "show",
-       "w": "stairs",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "view": "home",
-       "width": 0.9,
-       "type": "",
-       "hero": false,
-       "word": "",
-       "box": [
-        -3.1,
-        0,
-        -5.2,
-        3.6,
-        3.2,
-        -2.2
-       ],
-       "focus": []
-      }
-     ]
-    },
-    {
-     "s": "congrats",
-     "do": [
-      {
-       "p": "boardPoint",
-       "v": "hide",
-       "w": "",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "view": "home",
-       "width": 0.9,
-       "type": "",
-       "hero": false,
-       "word": "",
-       "box": [],
-       "focus": [
-        "plane"
-       ]
-      }
-     ]
-    }
-   ],
-   "audio": {
-    "cards": [
-     {
-      "text": "2,450 LB",
-      "at": {
-       "s": "stakes",
-       "w": "2,450",
-       "o": 0
-      },
-      "d": 1.5
-     },
-     {
-      "text": "100 KM/H",
-      "at": {
-       "s": "how",
-       "w": "100",
-       "o": 0
-      },
-      "d": 1.5
-     }
-    ],
-    "sfx": [
-     {
-      "lib": "motor_hum",
-      "at": {
-       "s": "fix1",
-       "w": "engine",
-       "o": 0
-      },
-      "d": 2
-     },
-     {
-      "lib": "motor_hum",
-      "at": {
-       "s": "how",
-       "w": "",
-       "o": 0.2
-      },
-      "d": 2.5
-     },
-     {
-      "lib": "water_rush",
-      "at": {
-       "s": "problem2",
-       "w": "gust",
-       "o": 0
-      },
-      "d": 1.2
-     }
-    ],
-    "chimes": [
-     {
-      "s": "stakes",
-      "w": "2,450",
-      "o": 0
-     },
-     {
-      "s": "name",
-      "w": "",
-      "o": 0
-     },
-     {
-      "s": "how",
-      "w": "100",
-      "o": 0
-     },
-     {
-      "s": "congrats",
-      "w": "",
-      "o": 0
-     }
-    ],
-    "rain": []
-   }
-  }
+  "sceneJson": "{\"why\":\"A white plane on an asphalt runway in an open field, built up one part per problem along its trip: runway, wing, sky, landing, runway end, gate (engine, curved wing, tail fin, ailerons, elevator, rudder, fuel in the wings, flaps, brakes, door). A leaf on the runway is blown back by the first propeller and away again when the finished plane takes off. Close shots on the part that changes, the whole plane for take-off, landing and the end.\",\"world\":{\"cut\":[-1,1,-1.2,0.6],\"house\":false,\"worker\":false,\"moreTrees\":false,\"road\":false,\"porch\":false,\"trees\":[[-16,-14],[16,-12,0.9]]},\"parts\":[{\"id\":\"plane\",\"kind\":\"rig\",\"params\":{\"name\":\"airplane\",\"synonyms\":[\"plane\",\"aircraft\"],\"pos\":[0.5,0.02,-4],\"rotY\":0,\"scale\":1,\"nodes\":[{\"id\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.7,\"h\":6,\"axis\":\"x\",\"at\":[0,1.5,0],\"look\":\"paint\",\"color\":\"#e9eef4\"},{\"shape\":\"cylinder\",\"r\":0.4,\"h\":2.4,\"axis\":\"x\",\"at\":[-4.2,1.6,0],\"look\":\"paint\",\"color\":\"#e9eef4\"},{\"shape\":\"box\",\"size\":[0.1,0.6,0.1],\"at\":[2.2,0.7,0],\"look\":\"metal\"},{\"shape\":\"box\",\"size\":[0.12,0.6,0.12],\"at\":[0.3,0.5,0],\"look\":\"metal\"},{\"shape\":\"box\",\"size\":[0.12,0.12,2.4],\"at\":[0.3,0.4,0],\"look\":\"metal\"}],\"moves\":[{\"name\":\"gust\",\"type\":\"swing\",\"axis\":\"x\",\"angle\":25},{\"name\":\"takeoff\",\"type\":\"track\",\"path\":[[0,0,0],[6,0,0],[10,1.5,0],[13,4.5,0]]},{\"name\":\"wobble\",\"type\":\"shake\",\"amp\":0.08,\"rate\":1.2},{\"name\":\"nosedown\",\"type\":\"swing\",\"axis\":\"z\",\"angle\":-10},{\"name\":\"yaw\",\"type\":\"swing\",\"axis\":\"y\",\"angle\":15},{\"name\":\"overrun\",\"type\":\"slide\",\"to\":[6,0,0]},{\"name\":\"fly\",\"type\":\"slide\",\"to\":[1.5,2.2,0]}]},{\"id\":\"wheelL\",\"parent\":\"body\",\"at\":[0.3,0.4,1.3],\"shapes\":[{\"shape\":\"wheel\",\"r\":0.4,\"w\":0.25,\"axis\":\"z\",\"at\":[0,0,0],\"look\":\"rubber\"}],\"moves\":[{\"name\":\"rollWheels\",\"type\":\"spin\",\"axis\":\"z\",\"turns\":2},{\"name\":\"brakes\",\"type\":\"heat\",\"color\":\"#ff5a1f\"}]},{\"id\":\"wheelR\",\"parent\":\"body\",\"at\":[0.3,0.4,-1.3],\"shapes\":[{\"shape\":\"wheel\",\"r\":0.4,\"w\":0.25,\"axis\":\"z\",\"at\":[0,0,0],\"look\":\"rubber\"}],\"moves\":[{\"name\":\"rollWheels\",\"type\":\"spin\",\"axis\":\"z\",\"turns\":2},{\"name\":\"brakes\",\"type\":\"heat\",\"color\":\"#ff5a1f\"}]},{\"id\":\"wheelN\",\"parent\":\"body\",\"at\":[2.2,0.4,0],\"shapes\":[{\"shape\":\"wheel\",\"r\":0.4,\"w\":0.2,\"axis\":\"z\",\"at\":[0,0,0],\"look\":\"rubber\"}],\"moves\":[{\"name\":\"rollWheels\",\"type\":\"spin\",\"axis\":\"z\",\"turns\":2},{\"name\":\"brakes\",\"type\":\"heat\",\"color\":\"#ff5a1f\"}]},{\"id\":\"wing\",\"parent\":\"body\",\"at\":[0.6,2.2,0],\"shapes\":[{\"shape\":\"box\",\"size\":[1.6,0.12,11],\"at\":[0,0.06,0],\"look\":\"paint\",\"color\":\"#e23b2e\"},{\"shape\":\"button\",\"r\":0.12,\"at\":[-0.3,0.13,0.5],\"look\":\"metal\"},{\"shape\":\"button\",\"r\":0.12,\"at\":[-0.3,0.13,-0.5],\"look\":\"metal\"}],\"moves\":[{\"name\":\"wingsOn\",\"type\":\"appear\"}]},{\"id\":\"camber\",\"parent\":\"wing\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.25,\"h\":10.8,\"axis\":\"z\",\"at\":[0.45,0.37,0],\"look\":\"paint\",\"color\":\"#e23b2e\"}],\"moves\":[{\"name\":\"curve\",\"type\":\"appear\"}]},{\"id\":\"aileronL\",\"parent\":\"wing\",\"at\":[-0.8,0.06,3.2],\"shapes\":[{\"shape\":\"box\",\"size\":[0.45,0.08,2.4],\"at\":[-0.225,0,0],\"look\":\"paint\",\"color\":\"#b0261c\"}],\"moves\":[{\"name\":\"aileronsOn\",\"type\":\"appear\"},{\"name\":\"roll\",\"type\":\"swing\",\"axis\":\"z\",\"angle\":25}]},{\"id\":\"aileronR\",\"parent\":\"wing\",\"at\":[-0.8,0.06,-3.2],\"shapes\":[{\"shape\":\"box\",\"size\":[0.45,0.08,2.4],\"at\":[-0.225,0,0],\"look\":\"paint\",\"color\":\"#b0261c\"}],\"moves\":[{\"name\":\"aileronsOn\",\"type\":\"appear\"},{\"name\":\"roll\",\"type\":\"swing\",\"axis\":\"z\",\"angle\":-25}]},{\"id\":\"engine\",\"parent\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.6,\"h\":1,\"axis\":\"x\",\"at\":[3.5,1.5,0],\"look\":\"paint\",\"color\":\"#2f6fb0\"},{\"shape\":\"cylinder\",\"r\":0.2,\"h\":0.3,\"axis\":\"x\",\"at\":[4.15,1.5,0],\"look\":\"metal\"}],\"moves\":[{\"name\":\"engineOn\",\"type\":\"appear\"}]},{\"id\":\"prop\",\"parent\":\"engine\",\"at\":[4.3,1.5,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.1,2.4,0.22],\"at\":[0,0,0],\"look\":\"paint\",\"color\":\"#333333\"}],\"moves\":[{\"name\":\"engineOn\",\"type\":\"appear\"},{\"name\":\"spinProp\",\"type\":\"spin\",\"axis\":\"x\",\"turns\":5}]},{\"id\":\"tail\",\"parent\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[1,1.4,0.12],\"at\":[-5,2.65,0],\"look\":\"paint\",\"color\":\"#e23b2e\"},{\"shape\":\"box\",\"size\":[0.8,0.1,3.6],\"at\":[-5,1.6,0],\"look\":\"paint\",\"color\":\"#e23b2e\"}],\"moves\":[{\"name\":\"tailOn\",\"type\":\"appear\"}]},{\"id\":\"elevator\",\"parent\":\"tail\",\"at\":[-5.4,1.6,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.6,0.1,3.4],\"at\":[-0.3,0,0],\"look\":\"paint\",\"color\":\"#ffd23d\"}],\"moves\":[{\"name\":\"elevatorOn\",\"type\":\"appear\"},{\"name\":\"elevate\",\"type\":\"swing\",\"axis\":\"z\",\"angle\":-30}]},{\"id\":\"rudder\",\"parent\":\"tail\",\"at\":[-5.5,2.65,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.6,1.4,0.12],\"at\":[-0.3,0,0],\"look\":\"paint\",\"color\":\"#ffd23d\"}],\"moves\":[{\"name\":\"rudderOn\",\"type\":\"appear\"},{\"name\":\"steer\",\"type\":\"swing\",\"axis\":\"y\",\"angle\":35}]},{\"id\":\"windows\",\"parent\":\"body\",\"at\":[2.4,1.5,0],\"shapes\":[{\"shape\":\"panel\",\"size\":[0.45,0.42],\"thick\":0.04,\"at\":[-0.6,0.15,0.7],\"look\":\"glass\",\"color\":\"#7fc4ff\"},{\"shape\":\"panel\",\"size\":[0.45,0.42],\"thick\":0.04,\"at\":[0,0.15,0.7],\"look\":\"glass\",\"color\":\"#7fc4ff\"},{\"shape\":\"panel\",\"size\":[0.45,0.42],\"thick\":0.04,\"at\":[0.6,0.15,0.7],\"look\":\"glass\",\"color\":\"#7fc4ff\"}],\"moves\":[{\"name\":\"windowsOn\",\"type\":\"appear\"}]},{\"id\":\"door\",\"parent\":\"body\",\"at\":[-1.9,1.5,0],\"shapes\":[{\"shape\":\"panel\",\"size\":[0.9,1.25],\"thick\":0.1,\"at\":[0,-0.1,0.7],\"look\":\"paint\",\"color\":\"#2f6fb0\"}],\"moves\":[{\"name\":\"doorOn\",\"type\":\"appear\"}]},{\"id\":\"flapL\",\"parent\":\"wing\",\"at\":[-0.8,0.06,1.3],\"shapes\":[{\"shape\":\"box\",\"size\":[0.45,0.08,1.4],\"at\":[-0.225,0,0],\"look\":\"paint\",\"color\":\"#ffd23d\"}],\"moves\":[{\"name\":\"flapsOn\",\"type\":\"appear\"},{\"name\":\"flaps\",\"type\":\"swing\",\"axis\":\"z\",\"angle\":30}]},{\"id\":\"flapR\",\"parent\":\"wing\",\"at\":[-0.8,0.06,-1.3],\"shapes\":[{\"shape\":\"box\",\"size\":[0.45,0.08,1.4],\"at\":[-0.225,0,0],\"look\":\"paint\",\"color\":\"#ffd23d\"}],\"moves\":[{\"name\":\"flapsOn\",\"type\":\"appear\"},{\"name\":\"flaps\",\"type\":\"swing\",\"axis\":\"z\",\"angle\":30}]},{\"id\":\"tanks\",\"parent\":\"wing\",\"at\":[0,0.13,0],\"shapes\":[{\"shape\":\"box\",\"size\":[1.2,0.1,9],\"at\":[0,0.05,0],\"look\":\"glass\",\"color\":\"#cfe8ff\"}],\"moves\":[{\"name\":\"fuel\",\"type\":\"fill\",\"box\":{\"size\":[1.1,0.09,8.8],\"at\":[0,0.05,0],\"color\":\"#ffb020\"}}]}]},\"main\":true},{\"id\":\"leaf\",\"kind\":\"token\",\"params\":{\"type\":\"leaf\",\"pos\":[6.5,0.05,-1.6],\"path\":[[6.5,0.05,-1.6],[3,0.4,-1.4],[-1,0.2,-1.2],[-4,0.05,-1.3],[-5,0.6,-1],[-6.5,0.05,-1.2]],\"size\":0.45}},{\"id\":\"smoke\",\"kind\":\"fx\",\"params\":{\"type\":\"smoke\",\"at\":[6.3,3.7,-3.2],\"size\":0.6,\"color\":\"#333333\"}},{\"id\":\"stairs\",\"kind\":\"prop\",\"params\":{\"type\":\"stairs\",\"h\":1.4,\"w\":1.4,\"pos\":[3.1,0.02,-2.9]}},{\"id\":\"light\",\"kind\":\"light\",\"params\":{\"storm\":false}},{\"id\":\"runway\",\"kind\":\"road\",\"params\":{\"points\":[[-26,-4.5,1],[26,-4.5,1]],\"width\":8,\"surface\":\"asphalt\"}},{\"id\":\"weight\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[1.0999999999999996,4.6,-2.5],\"dir\":[0,-1],\"travel\":1.6,\"phase\":0},{\"at\":[1.0999999999999996,4.6,-4],\"dir\":[0,-1],\"travel\":1.6,\"phase\":0.3},{\"at\":[1.0999999999999996,4.6,-5.5],\"dir\":[0,-1],\"travel\":1.6,\"phase\":0.6}],\"opts\":{\"scale\":1.2,\"color\":\"#ffd23d\"}}},{\"id\":\"airFlat\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[3.1,2.4,-1],\"dir\":[-1,0],\"travel\":3.2,\"phase\":0},{\"at\":[3.1,2.4,-2.5],\"dir\":[-1,0],\"travel\":3.2,\"phase\":0.33},{\"at\":[3.1,2.4,0.3],\"dir\":[-1,0],\"travel\":3.2,\"phase\":0.66}],\"opts\":{\"scale\":1.4,\"speed\":1.4,\"color\":\"#ffffff\"}}},{\"id\":\"airStream\",\"kind\":\"flow\",\"params\":{\"look\":\"spray\",\"path\":[[5.5,2.35,-0.2],[2.5,2.35,-0.2],[-1,2.35,-0.2]],\"size\":0.14,\"count\":18,\"speed\":2.4}},{\"id\":\"airFast\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[2.7,3.6,-2.6],\"dir\":[-1,0],\"travel\":4.2,\"phase\":0},{\"at\":[2.7,3.6,-4.3],\"dir\":[-1,0],\"travel\":4.2,\"phase\":0.3},{\"at\":[2.7,3.6,-6],\"dir\":[-1,0],\"travel\":4.2,\"phase\":0.6}],\"opts\":{\"scale\":1.5,\"speed\":1.6,\"color\":\"#ffffff\"}}},{\"id\":\"lift\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[1.0999999999999996,3.1,-3.4],\"dir\":[0,1],\"travel\":1.6,\"phase\":0},{\"at\":[1.0999999999999996,3.1,-5.1],\"dir\":[0,1],\"travel\":1.6,\"phase\":0.4}],\"opts\":{\"scale\":1.3,\"color\":\"#ffd23d\"}}},{\"id\":\"gustArrows\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[8.1,8.8,0.9],\"dir\":[0,-1],\"travel\":1.5,\"phase\":0}],\"opts\":{\"scale\":1.4,\"color\":\"#ffffff\"}}},{\"id\":\"wingOutline\",\"kind\":\"outline\",\"params\":{\"of\":\"plane.wing\",\"opts\":{\"r\":0.1,\"closed\":true,\"over\":true}}},{\"id\":\"sign\",\"kind\":\"sign\",\"params\":{\"at\":[14,0,-1],\"rotY\":0.2,\"scale\":1}}],\"beats\":[{\"s\":\"hook\",\"shows\":{\"p\":\"plane\",\"does\":\"two red wings pop onto a white tube on the runway\"},\"do\":[{\"p\":\"plane\",\"v\":\"show\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"wingsOn\",\"w\":\"wings\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"plane\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem\",\"shows\":{\"p\":\"leaf\",\"does\":\"a leaf drops onto the runway in front of the plane, which sits still under weight arrows\"},\"do\":[{\"p\":\"leaf\",\"v\":\"sit\",\"w\":\"leaf\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"weight\",\"v\":\"show\",\"w\":\"sits\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"plane\",\"leaf\"],\"view\":\"home\",\"width\":0.8,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix1\",\"shows\":{\"p\":\"plane\",\"does\":\"an engine and a spinning propeller appear on the nose; the wheels roll and the prop wash blows the leaf back under the wing\"},\"do\":[{\"p\":\"weight\",\"v\":\"hide\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"engineOn\",\"w\":\"engine\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"spinProp\",\"w\":\"spinning\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"rollWheels\",\"w\":\"propeller\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"leaf\",\"v\":\"ride\",\"w\":\"spinning\",\"o\":0,\"d\":2,\"amp\":0.57,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"plane.engine\",\"plane.prop\",\"leaf\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem2\",\"shows\":{\"p\":\"airStream\",\"does\":\"white air streaks slide straight past the flat wing\"},\"do\":[{\"p\":\"airStream\",\"v\":\"start\",\"w\":\"wind\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"airFlat\",\"v\":\"show\",\"w\":\"slides\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"plane.wing\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix2\",\"shows\":{\"p\":\"plane\",\"does\":\"a curved top grows on the wing, fast air arrows sweep over it, lift arrows rise and the plane takes off\"},\"do\":[{\"p\":\"airFlat\",\"v\":\"hide\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"airStream\",\"v\":\"stop\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"curve\",\"w\":\"curve\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"airFast\",\"v\":\"show\",\"w\":\"air\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lift\",\"v\":\"show\",\"w\":\"lifts\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"fly\",\"w\":\"lifts\",\"o\":0,\"d\":2.4,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"plane\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"name\",\"shows\":{\"p\":\"wingOutline\",\"does\":\"a glowing outline traces the curved wing\"},\"do\":[{\"p\":\"wingOutline\",\"v\":\"show\",\"w\":\"airfoil\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":true,\"word\":\"\",\"box\":[0.8,3.6,-9.6,4.4,5.2,1.6]}]},{\"s\":\"problem3\",\"shows\":{\"p\":\"plane\",\"does\":\"in the air the plane's nose wobbles from side to side\"},\"do\":[{\"p\":\"wingOutline\",\"v\":\"hide\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"airFast\",\"v\":\"hide\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lift\",\"v\":\"hide\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"wobble\",\"w\":\"wobbles\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"plane\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix3\",\"shows\":{\"p\":\"plane\",\"does\":\"a red tail fin and stabilizer appear and the wobble stops\"},\"do\":[{\"p\":\"plane\",\"v\":\"tailOn\",\"w\":\"tail\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"wobbleBack\",\"w\":\"straight\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-4.5,3.2,-6,-1.5,6.2,-2]}]},{\"s\":\"problem4\",\"shows\":{\"p\":\"plane\",\"does\":\"a white gust arrow hits and the plane tips onto one wing\"},\"do\":[{\"p\":\"gustArrows\",\"v\":\"show\",\"w\":\"gust\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"gust\",\"w\":\"tipping\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"plane\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix4\",\"shows\":{\"p\":\"plane\",\"does\":\"ailerons appear at the wing tips, swing, and the plane rolls back level\"},\"do\":[{\"p\":\"gustArrows\",\"v\":\"hide\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"aileronsOn\",\"w\":\"ailerons\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"roll\",\"w\":\"roll\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"gustBack\",\"w\":\"level\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"rollBack\",\"w\":\"level\",\"o\":0.3,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[0.8,3.6,-9.6,4.4,5.2,1.6]}]},{\"s\":\"problem5\",\"shows\":{\"p\":\"plane\",\"does\":\"the level plane slows and its nose tips down\"},\"do\":[{\"p\":\"plane\",\"v\":\"nosedown\",\"w\":\"drops\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"plane\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix5\",\"shows\":{\"p\":\"plane\",\"does\":\"a yellow elevator appears on the tail, swings, and the nose comes back up\"},\"do\":[{\"p\":\"plane\",\"v\":\"elevatorOn\",\"w\":\"elevator\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"elevate\",\"w\":\"lift\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"nosedownBack\",\"w\":\"nose\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-4.5,3.2,-6,-1.5,6.2,-2]}]},{\"s\":\"problem6\",\"shows\":{\"p\":\"plane\",\"does\":\"the plane rolls into a turn and its nose swings out the wrong way\"},\"do\":[{\"p\":\"plane\",\"v\":\"elevateBack\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"roll\",\"w\":\"rolling\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"yaw\",\"w\":\"swings\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"plane\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix6\",\"shows\":{\"p\":\"plane\",\"does\":\"a yellow rudder appears on the fin, swings, and the nose swings back in line\"},\"do\":[{\"p\":\"plane\",\"v\":\"rudderOn\",\"w\":\"rudder\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"steer\",\"w\":\"steer\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"yawBack\",\"w\":\"back\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"rollBack\",\"w\":\"back\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-4.5,3.2,-6,-1.5,6.2,-2]}]},{\"s\":\"problem7\",\"shows\":{\"p\":\"plane\",\"does\":\"black smoke puffs from the engine and the propeller stops\"},\"do\":[{\"p\":\"plane\",\"v\":\"steerBack\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"smoke\",\"v\":\"start\",\"w\":\"sputters\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"spinPropBack\",\"w\":\"sputters\",\"o\":0.5,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[4.5,2.4,-5.4,7.2,5,-2.6]}]},{\"s\":\"fix7\",\"shows\":{\"p\":\"plane\",\"does\":\"glass tanks in the wings fill with amber fuel and the propeller spins again\"},\"do\":[{\"p\":\"smoke\",\"v\":\"stop\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"fuel\",\"w\":\"fuel\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"spinProp\",\"w\":\"fuel\",\"o\":0.5,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[0.8,3.6,-9.6,4.4,5.2,1.6]}]},{\"s\":\"problem8\",\"shows\":{\"p\":\"plane\",\"does\":\"the heavy plane drops back onto the runway fast\"},\"state\":{\"text\":\"TOO FAST\",\"w\":\"rushes\"},\"do\":[{\"p\":\"plane\",\"v\":\"flyBack\",\"w\":\"lands\",\"o\":0,\"d\":1.6,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"plane\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix8\",\"shows\":{\"p\":\"plane\",\"does\":\"yellow flaps appear on the wing and swing down\"},\"do\":[{\"p\":\"plane\",\"v\":\"flapsOn\",\"w\":\"flaps\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"flaps\",\"w\":\"flaps\",\"o\":0.3,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-0.5,1.5,-9.6,3.5,3.4,1.6]}]},{\"s\":\"problem9\",\"shows\":{\"p\":\"plane\",\"does\":\"the plane keeps rolling down the runway, wheels spinning, past where it should stop\"},\"do\":[{\"p\":\"plane\",\"v\":\"overrun\",\"w\":\"rolls\",\"o\":0,\"d\":2,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"plane\"],\"view\":\"home\",\"width\":0,\"type\":\"wide\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix9\",\"shows\":{\"p\":\"plane\",\"does\":\"the wheel brakes glow and the wheels stop turning\"},\"do\":[{\"p\":\"plane\",\"v\":\"brakes\",\"w\":\"brakes\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"rollWheelsBack\",\"w\":\"stop\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[5.5,0,-6,10,2,-2]}]},{\"s\":\"problem10\",\"shows\":{\"p\":\"plane\",\"does\":\"the brakes cool; the plane sits sealed with no door\"},\"do\":[{\"p\":\"plane\",\"v\":\"brakesBack\",\"w\":\"sits\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"flapsBack\",\"w\":\"sits\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"plane\"],\"view\":\"home\",\"width\":0,\"type\":\"wide\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix10\",\"shows\":{\"p\":\"plane\",\"does\":\"a blue door appears in the side and stairs stand below it\"},\"do\":[{\"p\":\"plane\",\"v\":\"doorOn\",\"w\":\"door\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"stairs\",\"v\":\"show\",\"w\":\"stairs\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[1.5,0,-5,8,3.5,-1]}]},{\"s\":\"finish\",\"shows\":{\"p\":\"plane\",\"does\":\"the propeller spins, the leaf blows away down the runway and the plane takes off\"},\"do\":[{\"p\":\"leaf\",\"v\":\"ride\",\"w\":\"leaf\",\"o\":0,\"d\":2.4,\"amp\":0.43,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"rollWheels\",\"w\":\"blows\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"plane\",\"v\":\"fly\",\"w\":\"takes\",\"o\":0,\"d\":2.6,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"plane\",\"leaf\"],\"view\":\"home\",\"width\":0,\"type\":\"wide\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"congrats\",\"shows\":{\"p\":\"plane\",\"does\":\"the finished airplane in the air\"},\"do\":[],\"shots\":[{\"focus\":[\"plane\",\"leaf\"],\"view\":\"home\",\"width\":0.8,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]}],\"audio\":{\"cards\":[],\"sfx\":[{\"lib\":\"motor_hum\",\"at\":{\"s\":\"fix1\",\"w\":\"spinning\",\"o\":0},\"d\":2},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"fix2\",\"w\":\"lifts\",\"o\":0},\"d\":2},{\"lib\":\"flame\",\"at\":{\"s\":\"problem7\",\"w\":\"sputters\",\"o\":0},\"d\":1.2},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"finish\",\"w\":\"takes\",\"o\":0},\"d\":2.4}],\"chimes\":[{\"s\":\"name\",\"w\":\"\",\"o\":0},{\"s\":\"congrats\",\"w\":\"\",\"o\":0}],\"rain\":[]}}"
  }
 }

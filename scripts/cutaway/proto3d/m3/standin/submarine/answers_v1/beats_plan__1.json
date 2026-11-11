@@ -1,0 +1,1430 @@
+{
+ "hash": "*",
+ "by": "stand-in planner",
+ "searches": 0,
+ "data": {
+  "why": "A deep pit of sea water in section, the nearest thing the kit has to the sea, with a toy submarine that floats, floods its ballast tanks to dive, blows them with compressed air to rise, cracks deep down and gets a thick hull. The camera stays on the submarine in mid shots, closes in on the tanks and the crack, and ends wide with the submarine at the surface.",
+  "story": {
+   "title": "How a submarine dives and surfaces",
+   "hero": "a ballast tank",
+   "parts": [
+    "steel hull",
+    "sea water",
+    "ballast tanks",
+    "compressed air tanks",
+    "cracks",
+    "thick hull",
+    "periscope",
+    "propeller",
+    "depth counter"
+   ],
+   "ideas": [
+    {
+     "role": "hook",
+     "idea": "seal a steel tube and put it in the sea and you have a submarine"
+    },
+    {
+     "role": "problem",
+     "idea": "it just floats and bobs on the surface"
+    },
+    {
+     "role": "fix1",
+     "idea": "add ballast tanks that flood with sea water so it sinks"
+    },
+    {
+     "role": "problem2",
+     "idea": "now it keeps sinking to the bottom and cannot come back up"
+    },
+    {
+     "role": "fix2",
+     "idea": "compressed air blows the water out of the tanks and it rises"
+    },
+    {
+     "role": "name",
+     "idea": "this is a ballast tank"
+    },
+    {
+     "role": "how",
+     "idea": "flood the tanks to dive, blow them with air to rise"
+    },
+    {
+     "role": "problem3",
+     "idea": "deep down the water pressure cracks the hull"
+    },
+    {
+     "role": "fix3",
+     "idea": "a thick round hull of strong steel holds the pressure"
+    },
+    {
+     "role": "fact",
+     "idea": "navy submarines dive deeper than 800 feet"
+    },
+    {
+     "role": "finish",
+     "idea": "add a periscope and a propeller"
+    },
+    {
+     "role": "congrats",
+     "idea": "you have built a submarine"
+    }
+   ],
+   "chain": [
+    {
+     "problem": "problem",
+     "causedBy": "hook",
+     "shows": "the tube bobs on the surface",
+     "stakes": "it cannot dive",
+     "size": 3
+    },
+    {
+     "problem": "problem2",
+     "causedBy": "fix1",
+     "shows": "the submarine sinks all the way to the bottom",
+     "stakes": "the crew is stuck on the sea floor",
+     "size": 8
+    },
+    {
+     "problem": "problem3",
+     "causedBy": "fix2",
+     "shows": "cracks spread across the hull",
+     "stakes": "the hull could implode",
+     "size": 10
+    }
+   ],
+   "surprises": [
+    {
+     "claim": "A submarine dives by letting sea water into its ballast tanks and surfaces by blowing it out with compressed air",
+     "role": "fix2",
+     "search": "how submarines dive surface ballast tanks compressed air navy"
+    },
+    {
+     "claim": "Navy attack submarines can dive deeper than 800 feet",
+     "role": "fact",
+     "search": "US Navy fast attack submarine depth greater than 800 feet"
+    },
+    {
+     "claim": "Water pressure rises by about one atmosphere for every 10 meters, or 33 feet, of depth",
+     "role": "problem3",
+     "search": "NOAA pressure increases one atmosphere every 33 feet"
+    }
+   ]
+  },
+  "sentences": [
+   {
+    "role": "hook",
+    "text": "If you seal a steel tube and drop it in the sea, you have a submarine."
+   },
+   {
+    "role": "problem",
+    "text": "But it just floats and bobs on the surface."
+   },
+   {
+    "role": "fix1",
+    "text": "So you add tanks that flood with sea water, and it sinks."
+   },
+   {
+    "role": "problem2",
+    "text": "But now it keeps sinking until it sits stuck on the bottom."
+   },
+   {
+    "role": "fix2",
+    "text": "So you add tanks of air that blow the water out, and it rises."
+   },
+   {
+    "role": "name",
+    "text": "This is a ballast tank."
+   },
+   {
+    "role": "how",
+    "text": "Flood the tanks to dive, and blow them to rise."
+   },
+   {
+    "role": "problem3",
+    "text": "But deep down, the pressure squeezes the hull until it cracks."
+   },
+   {
+    "role": "fix3",
+    "text": "So you wrap it in a thick hull of strong steel."
+   },
+   {
+    "role": "fact",
+    "text": "Navy attack submarines dive deeper than 800 feet, and the exact depth is secret."
+   },
+   {
+    "role": "finish",
+    "text": "Add a periscope and a propeller."
+   },
+   {
+    "role": "congrats",
+    "text": "Congratulations, you have built a submarine."
+   }
+  ],
+  "sceneJson": {
+   "world": {
+    "cut": [
+     -6,
+     6,
+     -6,
+     9
+    ],
+    "house": false,
+    "porch": false,
+    "trees": [
+     [
+      -14,
+      -11
+     ],
+     [
+      14,
+      -12,
+      0.9
+     ]
+    ],
+    "road": false,
+    "worker": false,
+    "moreTrees": false,
+    "rocksAvoid": [
+     [
+      -6.5,
+      6.5,
+      -9.5,
+      0.2
+     ]
+    ],
+    "roots": {
+     "pad": 0.8,
+     "to": 8
+    }
+   },
+   "parts": [
+    {
+     "id": "light",
+     "kind": "light",
+     "params": {}
+    },
+    {
+     "id": "sea",
+     "kind": "water",
+     "params": {
+      "box": {
+       "x0": -5.98,
+       "x1": 5.98,
+       "y0": -8.98,
+       "y1": -0.3,
+       "z0": -5.98,
+       "z1": -0.01
+      },
+      "mat": "water"
+     }
+    },
+    {
+     "id": "sub",
+     "kind": "rig",
+     "main": true,
+     "params": {
+      "name": "submarine",
+      "synonyms": [
+       "sub",
+       "tube",
+       "hull",
+       "ballast tank",
+       "ballast tanks"
+      ],
+      "pos": [
+       0,
+       -1.2,
+       -3
+      ],
+      "nodes": [
+       {
+        "id": "hull",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "cylinder",
+          "r": 0.9,
+          "h": 5,
+          "axis": "x",
+          "at": [
+           0,
+           0,
+           0
+          ],
+          "look": "paint",
+          "color": "#3d4f63"
+         },
+         {
+          "shape": "sphere",
+          "r": 0.9,
+          "at": [
+           2.5,
+           0,
+           0
+          ],
+          "look": "paint",
+          "color": "#3d4f63"
+         },
+         {
+          "shape": "sphere",
+          "r": 0.9,
+          "at": [
+           -2.5,
+           0,
+           0
+          ],
+          "look": "paint",
+          "color": "#3d4f63"
+         },
+         {
+          "shape": "box",
+          "size": [
+           1.2,
+           1,
+           0.6
+          ],
+          "at": [
+           0.6,
+           1.3,
+           0
+          ],
+          "look": "paint",
+          "color": "#33414f"
+         }
+        ],
+        "moves": [
+         {
+          "name": "bob",
+          "type": "pump",
+          "axis": "y",
+          "stroke": 0.25,
+          "rate": 1
+         },
+         {
+          "name": "dive",
+          "type": "slide",
+          "to": [
+           0,
+           -3.5,
+           0
+          ]
+         },
+         {
+          "name": "plunge",
+          "type": "slide",
+          "to": [
+           0,
+           -6.2,
+           0
+          ]
+         }
+        ]
+       },
+       {
+        "id": "ballast",
+        "parent": "hull",
+        "at": [
+         0,
+         -0.95,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           4.4,
+           0.6,
+           1.5
+          ],
+          "at": [
+           0,
+           0,
+           0
+          ],
+          "look": "glass",
+          "color": "#cfe8ff"
+         }
+        ],
+        "moves": [
+         {
+          "name": "tanks",
+          "type": "appear"
+         },
+         {
+          "name": "flood",
+          "type": "fill",
+          "box": {
+           "size": [
+            4.2,
+            0.5,
+            1.3
+           ],
+           "at": [
+            0,
+            0,
+            0
+           ],
+           "color": "#2d6fb5"
+          }
+         }
+        ]
+       },
+       {
+        "id": "air",
+        "parent": "hull",
+        "at": [
+         0,
+         0.95,
+         0.35
+        ],
+        "shapes": [
+         {
+          "shape": "cylinder",
+          "r": 0.2,
+          "h": 1.6,
+          "axis": "x",
+          "at": [
+           -1.4,
+           0,
+           0
+          ],
+          "look": "paint",
+          "color": "#f2c94c"
+         },
+         {
+          "shape": "cylinder",
+          "r": 0.2,
+          "h": 1.6,
+          "axis": "x",
+          "at": [
+           1.9,
+           0,
+           0
+          ],
+          "look": "paint",
+          "color": "#f2c94c"
+         }
+        ],
+        "moves": [
+         {
+          "name": "air",
+          "type": "appear"
+         },
+         {
+          "name": "blow",
+          "type": "flow",
+          "path": [
+           [
+            -1.4,
+            0,
+            0.3
+           ],
+           [
+            -1.4,
+            -1.9,
+            0.6
+           ],
+           [
+            1.9,
+            -1.9,
+            0.6
+           ]
+          ],
+          "color": "#ffffff"
+         }
+        ]
+       },
+       {
+        "id": "cracks",
+        "parent": "hull",
+        "at": [
+         1.2,
+         0.1,
+         0.9
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           0.9,
+           0.12,
+           0.08
+          ],
+          "at": [
+           0,
+           0,
+           0
+          ],
+          "rot": [
+           0,
+           0,
+           30
+          ],
+          "look": "paint",
+          "color": "#f4f4f4"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.7,
+           0.12,
+           0.08
+          ],
+          "at": [
+           0.45,
+           0.3,
+           0
+          ],
+          "rot": [
+           0,
+           0,
+           -25
+          ],
+          "look": "paint",
+          "color": "#f4f4f4"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.6,
+           0.12,
+           0.08
+          ],
+          "at": [
+           -0.5,
+           -0.25,
+           0
+          ],
+          "rot": [
+           0,
+           0,
+           -40
+          ],
+          "look": "paint",
+          "color": "#f4f4f4"
+         }
+        ],
+        "moves": [
+         {
+          "name": "cracks",
+          "type": "appear"
+         }
+        ]
+       },
+       {
+        "id": "thick",
+        "parent": "hull",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "cylinder",
+          "r": 0.99,
+          "h": 5.05,
+          "axis": "x",
+          "at": [
+           0,
+           0,
+           0
+          ],
+          "look": "metal",
+          "color": "#8fa3b8"
+         },
+         {
+          "shape": "torus",
+          "r": 1,
+          "tube": 0.09,
+          "axis": "x",
+          "at": [
+           -1.6,
+           0,
+           0
+          ],
+          "look": "metal",
+          "color": "#c9d3dd"
+         },
+         {
+          "shape": "torus",
+          "r": 1,
+          "tube": 0.09,
+          "axis": "x",
+          "at": [
+           0,
+           0,
+           0
+          ],
+          "look": "metal",
+          "color": "#c9d3dd"
+         },
+         {
+          "shape": "torus",
+          "r": 1,
+          "tube": 0.09,
+          "axis": "x",
+          "at": [
+           1.6,
+           0,
+           0
+          ],
+          "look": "metal",
+          "color": "#c9d3dd"
+         }
+        ],
+        "moves": [
+         {
+          "name": "thick",
+          "type": "appear"
+         }
+        ]
+       },
+       {
+        "id": "scope",
+        "parent": "hull",
+        "at": [
+         0.8,
+         1.8,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "cylinder",
+          "r": 0.07,
+          "h": 1,
+          "axis": "y",
+          "at": [
+           0,
+           0.5,
+           0
+          ],
+          "look": "metal",
+          "color": "#9aa0a6"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.3,
+           0.14,
+           0.14
+          ],
+          "at": [
+           0.1,
+           1,
+           0
+          ],
+          "look": "metal",
+          "color": "#9aa0a6"
+         }
+        ],
+        "moves": [
+         {
+          "name": "periscope",
+          "type": "appear"
+         },
+         {
+          "name": "raise",
+          "type": "slide",
+          "to": [
+           0,
+           0.5,
+           0
+          ]
+         }
+        ]
+       },
+       {
+        "id": "prop",
+        "parent": "hull",
+        "at": [
+         -3.55,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "fan",
+          "r": 0.6,
+          "blades": 4,
+          "w": 0.15,
+          "axis": "x",
+          "at": [
+           0,
+           0,
+           0
+          ],
+          "look": "metal",
+          "color": "#c9a227"
+         },
+         {
+          "shape": "cylinder",
+          "r": 0.1,
+          "h": 0.4,
+          "axis": "x",
+          "at": [
+           0.25,
+           0,
+           0
+          ],
+          "look": "metal",
+          "color": "#9aa0a6"
+         }
+        ],
+        "moves": [
+         {
+          "name": "propeller",
+          "type": "appear"
+         },
+         {
+          "name": "spin",
+          "type": "spin",
+          "axis": "x",
+          "turns": 2
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "id": "standD",
+     "kind": "boxPop",
+     "params": {
+      "size": [
+       0.25,
+       2.4,
+       0.25
+      ],
+      "pos": [
+       3.5,
+       1.2,
+       -7.4
+      ],
+      "mat": "metal"
+     }
+    },
+    {
+     "id": "depth",
+     "kind": "counter",
+     "params": {
+      "pos": [
+       3.5,
+       2.9,
+       -7.4
+      ],
+      "size": 1.3,
+      "from": 0,
+      "to": 800,
+      "color": "#3ad6ff"
+     }
+    },
+    {
+     "id": "squeeze",
+     "kind": "arrows",
+     "params": {
+      "list": [
+       {
+        "at": [
+         0,
+         -5,
+         0.4
+        ],
+        "dir": [
+         0,
+         -1
+        ],
+        "travel": 0.6,
+        "phase": 0
+       },
+       {
+        "at": [
+         0,
+         -9.6,
+         0.4
+        ],
+        "dir": [
+         0,
+         1
+        ],
+        "travel": 0.6,
+        "phase": 0.5
+       }
+      ],
+      "opts": {
+       "scale": 1.1,
+       "color": "#ffd23d"
+      }
+     }
+    },
+    {
+     "id": "ballastOutline",
+     "kind": "outline",
+     "params": {
+      "of": "sub.ballast",
+      "opts": {
+       "r": 0.08,
+       "closed": true
+      }
+     }
+    },
+    {
+     "id": "sign",
+     "kind": "sign",
+     "params": {
+      "at": [
+       8.5,
+       0,
+       -6.5
+      ],
+      "rotY": -0.25,
+      "scale": 1.3
+     }
+    }
+   ],
+   "beats": [
+    {
+     "s": "hook",
+     "shows": {
+      "p": "sub",
+      "does": "a sealed steel tube sits in the sea water"
+     },
+     "do": [
+      {
+       "p": "sea",
+       "v": "flood",
+       "w": "",
+       "o": 0,
+       "d": 0.3,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "sub",
+       "v": "show",
+       "w": "tube",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "sub"
+       ],
+       "view": "home",
+       "width": 0,
+       "type": "close",
+       "hero": false,
+       "word": "",
+       "box": []
+      }
+     ]
+    },
+    {
+     "s": "problem",
+     "state": {
+      "text": "CAN'T DIVE",
+      "w": "floats"
+     },
+     "shows": {
+      "p": "sub",
+      "does": "the tube bobs up and down on the surface"
+     },
+     "do": [
+      {
+       "p": "sub",
+       "v": "bob",
+       "w": "floats",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "sub"
+       ],
+       "view": "home",
+       "width": 0,
+       "type": "mid",
+       "hero": false,
+       "word": "",
+       "box": []
+      }
+     ]
+    },
+    {
+     "s": "fix1",
+     "shows": {
+      "p": "sub",
+      "does": "glass tanks under the hull fill with water and the submarine sinks"
+     },
+     "do": [
+      {
+       "p": "sub",
+       "v": "bobBack",
+       "w": "So",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "sub",
+       "v": "tanks",
+       "w": "tanks",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "sub",
+       "v": "flood",
+       "w": "flood",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "sub",
+       "v": "dive",
+       "w": "sinks",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "sub"
+       ],
+       "view": "home",
+       "width": 0,
+       "type": "mid",
+       "hero": false,
+       "word": "",
+       "box": []
+      }
+     ]
+    },
+    {
+     "s": "problem2",
+     "state": {
+      "text": "STUCK",
+      "w": "bottom"
+     },
+     "shows": {
+      "p": "sub",
+      "does": "the submarine keeps sinking until it rests on the bottom"
+     },
+     "do": [
+      {
+       "p": "sub",
+       "v": "diveBack",
+       "w": "",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "sub",
+       "v": "plunge",
+       "w": "",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "sea"
+       ],
+       "view": "home",
+       "width": 0,
+       "type": "mid",
+       "hero": false,
+       "word": "",
+       "box": []
+      }
+     ]
+    },
+    {
+     "s": "fix2",
+     "shows": {
+      "p": "sub",
+      "does": "yellow air tanks blow white air into the ballast tanks, the water empties and the submarine rises"
+     },
+     "do": [
+      {
+       "p": "sub",
+       "v": "air",
+       "w": "air",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "sub",
+       "v": "blow",
+       "w": "blow",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "sub",
+       "v": "floodBack",
+       "w": "blow",
+       "o": 0.3,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "sub",
+       "v": "plungeBack",
+       "w": "blow",
+       "o": 0.5,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "sea"
+       ],
+       "view": "home",
+       "width": 0,
+       "type": "mid",
+       "hero": false,
+       "word": "",
+       "box": []
+      }
+     ]
+    },
+    {
+     "s": "name",
+     "shows": {
+      "p": "ballastOutline",
+      "does": "a glowing outline traces the ballast tanks"
+     },
+     "do": [
+      {
+       "p": "ballastOutline",
+       "v": "show",
+       "w": "ballast",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "sub.ballast"
+       ],
+       "view": "home",
+       "width": 0.6,
+       "type": "",
+       "hero": true,
+       "word": "",
+       "box": []
+      }
+     ]
+    },
+    {
+     "s": "how",
+     "shows": {
+      "p": "sub",
+      "does": "the tanks flood and the submarine dives"
+     },
+     "do": [
+      {
+       "p": "ballastOutline",
+       "v": "hide",
+       "w": "",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "sub",
+       "v": "flood",
+       "w": "flood",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "sub",
+       "v": "dive",
+       "w": "dive",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "sea"
+       ],
+       "view": "home",
+       "width": 0,
+       "type": "mid",
+       "hero": false,
+       "word": "",
+       "box": []
+      }
+     ]
+    },
+    {
+     "s": "problem3",
+     "state": {
+      "text": "CRUSHED",
+      "w": "cracks"
+     },
+     "shows": {
+      "p": "sub",
+      "does": "yellow arrows press on the hull and dark cracks appear on it"
+     },
+     "do": [
+      {
+       "p": "sub",
+       "v": "diveBack",
+       "w": "",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "sub",
+       "v": "plunge",
+       "w": "",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "squeeze",
+       "v": "show",
+       "w": "pressure",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "sub",
+       "v": "cracks",
+       "w": "cracks",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "sub.hull"
+       ],
+       "view": "home",
+       "width": 0,
+       "type": "close",
+       "hero": false,
+       "word": "",
+       "box": []
+      }
+     ]
+    },
+    {
+     "s": "fix3",
+     "shows": {
+      "p": "sub",
+      "does": "a thick steel hull wraps over the cracked one"
+     },
+     "do": [
+      {
+       "p": "sub",
+       "v": "thick",
+       "w": "hull",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "sub",
+       "v": "cracksBack",
+       "w": "hull",
+       "o": 0.4,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "squeeze",
+       "v": "hide",
+       "w": "steel",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "sub.hull"
+       ],
+       "view": "home",
+       "width": 0,
+       "type": "close",
+       "hero": false,
+       "word": "",
+       "box": []
+      }
+     ]
+    },
+    {
+     "s": "fact",
+     "shows": {
+      "p": "depth",
+      "does": "a depth counter behind the sea climbs to 800"
+     },
+     "do": [
+      {
+       "p": "standD",
+       "v": "show",
+       "w": "",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "depth",
+       "v": "show",
+       "w": "",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "depth",
+       "v": "count",
+       "w": "800",
+       "o": -0.8,
+       "d": 1.2,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "depth",
+        "sub"
+       ],
+       "view": "home",
+       "width": 0,
+       "type": "mid",
+       "hero": false,
+       "word": "",
+       "box": []
+      }
+     ]
+    },
+    {
+     "s": "finish",
+     "shows": {
+      "p": "sub",
+      "does": "the submarine rises to the surface, a periscope slides up and the propeller spins"
+     },
+     "do": [
+      {
+       "p": "depth",
+       "v": "hide",
+       "w": "Add",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "sub",
+       "v": "floodBack",
+       "w": "Add",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "sub",
+       "v": "plungeBack",
+       "w": "Add",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "sub",
+       "v": "periscope",
+       "w": "periscope",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "sub",
+       "v": "raise",
+       "w": "periscope",
+       "o": 0.2,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "sub",
+       "v": "propeller",
+       "w": "propeller",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "sub",
+       "v": "spin",
+       "w": "propeller",
+       "o": 0.2,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "focus": [
+        "home"
+       ],
+       "view": "home",
+       "width": 0,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": []
+      }
+     ]
+    },
+    {
+     "s": "congrats",
+     "do": [],
+     "shots": [
+      {
+       "focus": [
+        "home"
+       ],
+       "view": "home",
+       "width": 0,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": []
+      }
+     ]
+    }
+   ],
+   "audio": {
+    "cards": [
+     {
+      "text": "800 FEET",
+      "at": {
+       "s": "fact",
+       "w": "800",
+       "o": 0
+      },
+      "d": 1.6
+     }
+    ],
+    "sfx": [
+     {
+      "lib": "water_rush",
+      "at": {
+       "s": "fix1",
+       "w": "flood",
+       "o": 0
+      },
+      "d": 1.4
+     },
+     {
+      "lib": "water_rush",
+      "at": {
+       "s": "fix2",
+       "w": "blow",
+       "o": 0
+      },
+      "d": 1.4
+     },
+     {
+      "lib": "motor_hum",
+      "at": {
+       "s": "finish",
+       "w": "propeller",
+       "o": 0
+      },
+      "d": 1.6
+     }
+    ],
+    "chimes": [
+     {
+      "s": "name",
+      "w": "",
+      "o": 0
+     },
+     {
+      "s": "fact",
+      "w": "800",
+      "o": 0
+     },
+     {
+      "s": "congrats",
+      "w": "",
+      "o": 0
+     }
+    ],
+    "rain": []
+   }
+  }
+ }
+}

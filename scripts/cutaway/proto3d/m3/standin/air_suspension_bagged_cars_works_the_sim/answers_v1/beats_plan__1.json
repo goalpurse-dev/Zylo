@@ -1,0 +1,2160 @@
+{
+ "hash": "*",
+ "by": "stand-in planner (replan 2026-11-09)",
+ "searches": 0,
+ "data": {
+  "why": "A red car on a garage driveway, its body cut away low so the bags under it show, with the air kit (compressor, tank, valve, remote) building up beside it. The body visibly drops, lifts and shoots up on each line; shots frame the car and the kit together, close on the bag for its name.",
+  "story": {
+   "title": "How Air Suspension Works",
+   "hero": "an air spring",
+   "parts": [
+    "car",
+    "steel springs",
+    "air bags",
+    "compressor",
+    "hose",
+    "tank",
+    "valve",
+    "remote"
+   ],
+   "ideas": [
+    {
+     "role": "hook",
+     "idea": "swap the steel springs for bags of air"
+    },
+    {
+     "role": "problem",
+     "idea": "a bag leaks and the car sags onto its tires"
+    },
+    {
+     "role": "stakes",
+     "idea": "over 4,000 pounds press on a flat bag"
+    },
+    {
+     "role": "fix1",
+     "idea": "a compressor pumps air down a hose and lifts the car"
+    },
+    {
+     "role": "problem2",
+     "idea": "the small pump is slow, so after a bump the car stays low"
+    },
+    {
+     "role": "fix2",
+     "idea": "a tank of air at 150 to 200 psi refills the bag in seconds"
+    },
+    {
+     "role": "problem3",
+     "idea": "the tank's air rushes in and the car shoots up too high"
+    },
+    {
+     "role": "fix3",
+     "idea": "a valve lets air in or out to hold the right height"
+    },
+    {
+     "role": "name",
+     "idea": "the bag is an air spring"
+    },
+    {
+     "role": "name2",
+     "idea": "bag, pump, tank and valve together are air suspension"
+    },
+    {
+     "role": "how",
+     "idea": "the compressor fills the tank, the valve opens, air lifts the car"
+    },
+    {
+     "role": "fact",
+     "idea": "a six-inch bag at 100 psi holds about 2,800 pounds"
+    },
+    {
+     "role": "finish",
+     "idea": "a remote with a height button and a pressure light completes it"
+    },
+    {
+     "role": "congrats",
+     "idea": "a bagged car"
+    }
+   ],
+   "chain": [
+    {
+     "problem": "problem",
+     "causedBy": "hook",
+     "shows": "air sprays out and the car sinks onto its tires",
+     "stakes": "the car scrapes the ground",
+     "size": 3
+    },
+    {
+     "problem": "problem2",
+     "causedBy": "fix1",
+     "shows": "after a bump the car sinks and stays low",
+     "stakes": "the car rides on its stops",
+     "size": 5
+    },
+    {
+     "problem": "problem3",
+     "causedBy": "fix2",
+     "shows": "the bags swell and the car shoots up high",
+     "stakes": "the car tips and handles badly",
+     "size": 7
+    }
+   ],
+   "surprises": [
+    {
+     "claim": "The average new car weighs a bit over 4,000 pounds, about 4,300 or more by recent EPA data (4,354 lb per the EPA's 2025 Automotive Trends Report).",
+     "role": "stakes",
+     "search": "average new car weight pounds EPA trends report"
+    },
+    {
+     "claim": "Bags usually top out around 100 psi, and the tank is typically filled to about 150-200 psi.",
+     "role": "fix2",
+     "search": "air suspension tank pressure 150 200 psi bags 100 psi"
+    },
+    {
+     "claim": "A bag with an effective diameter of about six inches, at 100 psi, supports roughly 2,800 pounds. Real bags give a bit less, depending on their shape and height.",
+     "role": "fact",
+     "search": "air bag 6 inch diameter 100 psi load capacity pounds"
+    }
+   ]
+  },
+  "sentences": [
+   {
+    "role": "hook",
+    "text": "If you swap a car's steel springs for rubber bags of air, you have air suspension."
+   },
+   {
+    "role": "problem",
+    "text": "But a bag leaks and goes flat, and the car sags down onto its tires."
+   },
+   {
+    "role": "stakes",
+    "text": "Now over 4,000 pounds of car press down on a flat bag that cannot hold it."
+   },
+   {
+    "role": "fix1",
+    "text": "So you add a compressor that pumps air down a hose into the bag, and the car lifts."
+   },
+   {
+    "role": "problem2",
+    "text": "But the little pump is slow, so after every bump the car sinks and stays low."
+   },
+   {
+    "role": "fix2",
+    "text": "So you add a tank filled to about 150 to 200 pounds per square inch, and the bag refills in seconds."
+   },
+   {
+    "role": "problem3",
+    "text": "But now the tank's air rushes in, the bag swells, and the car shoots up too high."
+   },
+   {
+    "role": "fix3",
+    "text": "So you add a valve that lets air in or out, and the car settles at the right height."
+   },
+   {
+    "role": "name",
+    "text": "This bag is called an air spring."
+   },
+   {
+    "role": "name2",
+    "text": "And the bag, pump, tank and valve together are called air suspension."
+   },
+   {
+    "role": "how",
+    "text": "The compressor fills the tank, the valve opens, and air lifts the car."
+   },
+   {
+    "role": "fact",
+    "text": "At 100 pounds per square inch, a bag about six inches across holds roughly 2,800 pounds."
+   },
+   {
+    "role": "finish",
+    "text": "Add a remote with a height button and a pressure light."
+   },
+   {
+    "role": "congrats",
+    "text": "Congratulations, you have built a bagged car."
+   }
+  ],
+  "sceneJson": {
+   "world": {
+    "cut": [
+     -2,
+     2,
+     -1.5,
+     0.6
+    ],
+    "house": false,
+    "worker": false,
+    "moreTrees": false,
+    "road": false,
+    "porch": false,
+    "backdrop": {
+     "type": "garage",
+     "x": 0,
+     "back": -9,
+     "color": "#c9ced6"
+    }
+   },
+   "parts": [
+    {
+     "id": "light",
+     "kind": "light",
+     "params": {}
+    },
+    {
+     "id": "ride",
+     "kind": "rig",
+     "main": true,
+     "params": {
+      "name": "air suspension car",
+      "synonyms": [
+       "car",
+       "bagged car"
+      ],
+      "pos": [
+       -1.4,
+       0.08,
+       -3.2
+      ],
+      "nodes": [
+       {
+        "id": "chassis",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "cylinder",
+          "r": 0.06,
+          "h": 1.75,
+          "axis": "z",
+          "at": [
+           1.4,
+           0.36,
+           0
+          ],
+          "look": "metal",
+          "color": "#2b3038"
+         },
+         {
+          "shape": "cylinder",
+          "r": 0.06,
+          "h": 1.75,
+          "axis": "z",
+          "at": [
+           -1.4,
+           0.36,
+           0
+          ],
+          "look": "metal",
+          "color": "#2b3038"
+         },
+         {
+          "shape": "wheel",
+          "r": 0.36,
+          "w": 0.24,
+          "axis": "z",
+          "at": [
+           1.4,
+           0.36,
+           0.85
+          ],
+          "look": "rubber",
+          "color": "#1f1f1f"
+         },
+         {
+          "shape": "wheel",
+          "r": 0.36,
+          "w": 0.24,
+          "axis": "z",
+          "at": [
+           1.4,
+           0.36,
+           -0.85
+          ],
+          "look": "rubber",
+          "color": "#1f1f1f"
+         },
+         {
+          "shape": "wheel",
+          "r": 0.36,
+          "w": 0.24,
+          "axis": "z",
+          "at": [
+           -1.4,
+           0.36,
+           0.85
+          ],
+          "look": "rubber",
+          "color": "#1f1f1f"
+         },
+         {
+          "shape": "wheel",
+          "r": 0.36,
+          "w": 0.24,
+          "axis": "z",
+          "at": [
+           -1.4,
+           0.36,
+           -0.85
+          ],
+          "look": "rubber",
+          "color": "#1f1f1f"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.7,
+           0.08,
+           0.14
+          ],
+          "at": [
+           1.1,
+           0.44,
+           0.55
+          ],
+          "look": "metal",
+          "color": "#9aa0a6"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.7,
+           0.08,
+           0.14
+          ],
+          "at": [
+           -1.1,
+           0.44,
+           0.55
+          ],
+          "look": "metal",
+          "color": "#9aa0a6"
+         }
+        ]
+       },
+       {
+        "id": "body",
+        "parent": "chassis",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           4.4,
+           0.5,
+           1.7
+          ],
+          "at": [
+           0,
+           1.28,
+           0
+          ],
+          "look": "paint",
+          "color": "#d64535"
+         },
+         {
+          "shape": "box",
+          "size": [
+           2.2,
+           0.55,
+           1.5
+          ],
+          "at": [
+           -0.2,
+           1.8,
+           0
+          ],
+          "look": "glass",
+          "color": "#9fd8ff"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.12,
+           0.4,
+           0.12
+          ],
+          "at": [
+           0.85,
+           0.85,
+           0.55
+          ],
+          "look": "metal",
+          "color": "#9aa0a6"
+         },
+         {
+          "shape": "box",
+          "size": [
+           0.12,
+           0.4,
+           0.12
+          ],
+          "at": [
+           -0.85,
+           0.85,
+           0.55
+          ],
+          "look": "metal",
+          "color": "#9aa0a6"
+         }
+        ],
+        "moves": [
+         {
+          "name": "bodySags",
+          "type": "slide",
+          "to": [
+           0,
+           -0.38,
+           0
+          ]
+         },
+         {
+          "name": "bodyHigh",
+          "type": "slide",
+          "to": [
+           0,
+           0.45,
+           0
+          ]
+         },
+         {
+          "name": "bodyRise",
+          "type": "slide",
+          "to": [
+           0,
+           0.22,
+           0
+          ]
+         }
+        ]
+       },
+       {
+        "id": "springs",
+        "parent": "chassis",
+        "at": [
+         0,
+         0.48,
+         0.55
+        ],
+        "shapes": [
+         {
+          "shape": "spring",
+          "r": 0.17,
+          "h": 0.55,
+          "turns": 6,
+          "wire": 0.035,
+          "axis": "y",
+          "at": [
+           0.85,
+           0.275,
+           0
+          ],
+          "look": "metal",
+          "color": "#c8ccd2"
+         },
+         {
+          "shape": "spring",
+          "r": 0.17,
+          "h": 0.55,
+          "turns": 6,
+          "wire": 0.035,
+          "axis": "y",
+          "at": [
+           -0.85,
+           0.275,
+           0
+          ],
+          "look": "metal",
+          "color": "#c8ccd2"
+         }
+        ],
+        "moves": [
+         {
+          "name": "swap",
+          "type": "extend",
+          "axis": "y",
+          "k": 0.01
+         }
+        ]
+       },
+       {
+        "id": "bagFa",
+        "parent": "chassis",
+        "at": [
+         0.85,
+         0.48,
+         0.55
+        ],
+        "shapes": [
+         {
+          "shape": "cylinder",
+          "r": 0.25,
+          "h": 0.04,
+          "axis": "y",
+          "at": [
+           0,
+           0.02,
+           0
+          ],
+          "look": "metal",
+          "color": "#2b3038"
+         }
+        ],
+        "moves": [
+         {
+          "name": "sags",
+          "type": "extend",
+          "axis": "y",
+          "k": 0.3
+         }
+        ]
+       },
+       {
+        "id": "bagFb",
+        "parent": "bagFa",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "cylinder",
+          "r": 0.24,
+          "h": 0.03,
+          "axis": "y",
+          "at": [
+           0,
+           0.03,
+           0
+          ],
+          "look": "metal",
+          "color": "#2b3038"
+         }
+        ],
+        "moves": [
+         {
+          "name": "high",
+          "type": "extend",
+          "axis": "y",
+          "k": 1.82
+         }
+        ]
+       },
+       {
+        "id": "bagF",
+        "parent": "bagFb",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "bellows",
+          "r": 0.24,
+          "h": 0.55,
+          "folds": 4,
+          "axis": "y",
+          "at": [
+           0,
+           0.275,
+           0
+          ],
+          "look": "rubber",
+          "color": "#2f6fb0"
+         }
+        ],
+        "moves": [
+         {
+          "name": "rise",
+          "type": "extend",
+          "axis": "y",
+          "k": 1.4
+         },
+         {
+          "name": "bags",
+          "type": "appear"
+         }
+        ]
+       },
+       {
+        "id": "bagRa",
+        "parent": "chassis",
+        "at": [
+         -0.85,
+         0.48,
+         0.55
+        ],
+        "shapes": [
+         {
+          "shape": "cylinder",
+          "r": 0.25,
+          "h": 0.04,
+          "axis": "y",
+          "at": [
+           0,
+           0.02,
+           0
+          ],
+          "look": "metal",
+          "color": "#2b3038"
+         }
+        ],
+        "moves": [
+         {
+          "name": "sags",
+          "type": "extend",
+          "axis": "y",
+          "k": 0.3
+         }
+        ]
+       },
+       {
+        "id": "bagRb",
+        "parent": "bagRa",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "cylinder",
+          "r": 0.24,
+          "h": 0.03,
+          "axis": "y",
+          "at": [
+           0,
+           0.03,
+           0
+          ],
+          "look": "metal",
+          "color": "#2b3038"
+         }
+        ],
+        "moves": [
+         {
+          "name": "high",
+          "type": "extend",
+          "axis": "y",
+          "k": 1.82
+         }
+        ]
+       },
+       {
+        "id": "bagR",
+        "parent": "bagRb",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "bellows",
+          "r": 0.24,
+          "h": 0.55,
+          "folds": 4,
+          "axis": "y",
+          "at": [
+           0,
+           0.275,
+           0
+          ],
+          "look": "rubber",
+          "color": "#2f6fb0"
+         }
+        ],
+        "moves": [
+         {
+          "name": "rise",
+          "type": "extend",
+          "axis": "y",
+          "k": 1.4
+         },
+         {
+          "name": "bags",
+          "type": "appear"
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "id": "kit",
+     "kind": "rig",
+     "params": {
+      "name": "air kit",
+      "synonyms": [
+       "compressor",
+       "pump",
+       "tank",
+       "valve"
+      ],
+      "pos": [
+       2,
+       0.08,
+       -2.4
+      ],
+      "nodes": [
+       {
+        "id": "plate",
+        "at": [
+         0,
+         0,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           3.2,
+           0.06,
+           1.1
+          ],
+          "at": [
+           1,
+           0.03,
+           0
+          ],
+          "look": "metal",
+          "color": "#5b6470"
+         }
+        ]
+       },
+       {
+        "id": "pump",
+        "parent": "plate",
+        "at": [
+         0.3,
+         0.06,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           0.7,
+           0.6,
+           0.6
+          ],
+          "at": [
+           0,
+           0.3,
+           0
+          ],
+          "look": "metal",
+          "color": "#4a5a6a"
+         }
+        ]
+       },
+       {
+        "id": "fan",
+        "parent": "pump",
+        "at": [
+         0,
+         0.32,
+         0.31
+        ],
+        "shapes": [
+         {
+          "shape": "fan",
+          "r": 0.22,
+          "blades": 5,
+          "w": 0.04,
+          "axis": "z",
+          "at": [
+           0,
+           0,
+           0
+          ],
+          "look": "metal",
+          "color": "#f0a030"
+         }
+        ],
+        "moves": [
+         {
+          "name": "pumps",
+          "type": "spin",
+          "axis": "z",
+          "turns": 3
+         }
+        ]
+       },
+       {
+        "id": "hose",
+        "parent": "pump",
+        "at": [
+         -0.35,
+         0.3,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "tube",
+          "path": [
+           [
+            0,
+            0,
+            0
+           ],
+           [
+            -0.9,
+            -0.2,
+            0.3
+           ],
+           [
+            -2.1,
+            -0.24,
+            0.25
+           ],
+           [
+            -2.5,
+            0.36,
+            -0.15
+           ]
+          ],
+          "r": 0.06,
+          "look": "rubber",
+          "color": "#222222"
+         }
+        ],
+        "moves": [
+         {
+          "name": "hose",
+          "type": "appear"
+         },
+         {
+          "name": "air",
+          "type": "flow",
+          "path": [
+           [
+            0,
+            0,
+            0.08
+           ],
+           [
+            -0.9,
+            -0.2,
+            0.38
+           ],
+           [
+            -2.1,
+            -0.24,
+            0.33
+           ],
+           [
+            -2.5,
+            0.36,
+            -0.07
+           ]
+          ],
+          "color": "#e8f6ff",
+          "speed": 1.4
+         }
+        ]
+       },
+       {
+        "id": "tank",
+        "parent": "plate",
+        "at": [
+         1.4,
+         0.06,
+         0
+        ],
+        "shapes": [
+         {
+          "shape": "cylinder",
+          "r": 0.36,
+          "h": 1.2,
+          "axis": "x",
+          "at": [
+           0,
+           0.4,
+           0
+          ],
+          "look": "metal",
+          "color": "#ff7a1a"
+         },
+         {
+          "shape": "tube",
+          "path": [
+           [
+            -0.6,
+            0.4,
+            0
+           ],
+           [
+            -0.75,
+            0.4,
+            0
+           ]
+          ],
+          "r": 0.06,
+          "look": "rubber",
+          "color": "#222222"
+         }
+        ],
+        "moves": [
+         {
+          "name": "tank",
+          "type": "appear"
+         },
+         {
+          "name": "fills",
+          "type": "flow",
+          "path": [
+           [
+            -0.75,
+            0.6,
+            0.38
+           ],
+           [
+            0.5,
+            0.6,
+            0.38
+           ]
+          ],
+          "color": "#e8f6ff",
+          "speed": 1.2
+         }
+        ]
+       },
+       {
+        "id": "valve",
+        "parent": "plate",
+        "at": [
+         -0.35,
+         0.06,
+         0.4
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           0.4,
+           0.4,
+           0.4
+          ],
+          "at": [
+           0,
+           0.2,
+           0
+          ],
+          "look": "metal",
+          "color": "#d4a017"
+         },
+         {
+          "shape": "light",
+          "r": 0.11,
+          "at": [
+           0,
+           0.48,
+           0
+          ],
+          "color": "#3dff6a"
+         }
+        ],
+        "moves": [
+         {
+          "name": "valve",
+          "type": "appear"
+         },
+         {
+          "name": "opens",
+          "type": "light"
+         }
+        ]
+       },
+       {
+        "id": "remote",
+        "parent": "plate",
+        "at": [
+         2.4,
+         0.06,
+         0.2
+        ],
+        "shapes": [
+         {
+          "shape": "box",
+          "size": [
+           0.12,
+           1,
+           0.12
+          ],
+          "at": [
+           0,
+           0.5,
+           0
+          ],
+          "look": "metal",
+          "color": "#2b3038"
+         },
+         {
+          "shape": "box",
+          "size": [
+           1,
+           0.75,
+           0.18
+          ],
+          "at": [
+           0,
+           1.35,
+           0
+          ],
+          "look": "plastic",
+          "color": "#1d2127"
+         },
+         {
+          "shape": "button",
+          "r": 0.18,
+          "at": [
+           -0.2,
+           1.3,
+           0.11
+          ],
+          "color": "#e23b2e"
+         },
+         {
+          "shape": "light",
+          "r": 0.13,
+          "at": [
+           0.25,
+           1.45,
+           0.11
+          ],
+          "color": "#3dff6a"
+         }
+        ],
+        "moves": [
+         {
+          "name": "remote",
+          "type": "appear"
+         },
+         {
+          "name": "light",
+          "type": "light"
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "id": "leak",
+     "kind": "flow",
+     "params": {
+      "look": "spray",
+      "path": [
+       [
+        -0.55,
+        0.8,
+        -2.55
+       ],
+       [
+        -0.2,
+        1,
+        -2
+       ],
+       [
+        0.2,
+        1.25,
+        -1.6
+       ]
+      ],
+      "size": 0.16,
+      "count": 16,
+      "speed": 1.4
+     }
+    },
+    {
+     "id": "standA",
+     "kind": "boxPop",
+     "params": {
+      "size": [
+       0.16,
+       1.85,
+       0.16
+      ],
+      "pos": [
+       -4.3,
+       0.92,
+       -3.85
+      ],
+      "mat": "metal"
+     }
+    },
+    {
+     "id": "weightGauge",
+     "kind": "counter",
+     "params": {
+      "pos": [
+       -4.3,
+       2.3,
+       -3.6
+      ],
+      "size": 1,
+      "from": 0,
+      "to": 4000,
+      "color": "#ffd23d",
+      "bar": true,
+      "danger": 0.7
+     }
+    },
+    {
+     "id": "liftGauge",
+     "kind": "counter",
+     "params": {
+      "pos": [
+       -4.3,
+       2.3,
+       -3.6
+      ],
+      "size": 1,
+      "from": 0,
+      "to": 2800,
+      "color": "#3ad6ff",
+      "bar": true,
+      "danger": 2
+     }
+    },
+    {
+     "id": "weight",
+     "kind": "arrows",
+     "params": {
+      "list": [
+       {
+        "at": [
+         -2.3,
+         2.6,
+         -2.3
+        ],
+        "dir": [
+         0,
+         -1
+        ],
+        "travel": 0.6,
+        "phase": 0
+       },
+       {
+        "at": [
+         -0.5,
+         2.6,
+         -2.3
+        ],
+        "dir": [
+         0,
+         -1
+        ],
+        "travel": 0.6,
+        "phase": 0.5
+       }
+      ],
+      "opts": {
+       "color": "#ffd23d",
+       "scale": 1.1
+      }
+     }
+    },
+    {
+     "id": "liftArrows",
+     "kind": "arrows",
+     "params": {
+      "list": [
+       {
+        "at": [
+         -0.1,
+         0.7,
+         -2.4
+        ],
+        "dir": [
+         0,
+         1
+        ],
+        "travel": 0.5,
+        "phase": 0
+       },
+       {
+        "at": [
+         -1,
+         0.7,
+         -2.4
+        ],
+        "dir": [
+         0,
+         1
+        ],
+        "travel": 0.5,
+        "phase": 0.5
+       }
+      ],
+      "opts": {
+       "color": "#ffd23d",
+       "scale": 0.8
+      }
+     }
+    },
+    {
+     "id": "bagOutline",
+     "kind": "outline",
+     "params": {
+      "of": "ride.bagF",
+      "opts": {
+       "r": 0.04,
+       "closed": true,
+       "over": true
+      }
+     }
+    },
+    {
+     "id": "kitOutline",
+     "kind": "outline",
+     "params": {
+      "of": "kit",
+      "opts": {
+       "r": 0.07,
+       "closed": true,
+       "over": true
+      }
+     }
+    },
+    {
+     "id": "sign",
+     "kind": "sign",
+     "params": {
+      "at": [
+       5.6,
+       0.08,
+       -6.5
+      ],
+      "rotY": -0.25,
+      "scale": 1.2
+     }
+    }
+   ],
+   "beats": [
+    {
+     "s": "hook",
+     "shows": {
+      "p": "ride",
+      "does": "the steel springs under the car flatten away and blue rubber air bags pop in in their place"
+     },
+     "do": [
+      {
+       "p": "ride",
+       "v": "show",
+       "w": "",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "ride",
+       "v": "swap",
+       "w": "swap",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "ride",
+       "v": "bags",
+       "w": "bags",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "view": "home",
+       "width": 0,
+       "type": "mid",
+       "hero": false,
+       "word": "",
+       "box": [],
+       "focus": [
+        "ride"
+       ]
+      }
+     ]
+    },
+    {
+     "s": "problem",
+     "shows": {
+      "p": "ride",
+      "does": "air sprays out of the bag, the bags squash flat and the car body sinks low"
+     },
+     "state": {
+      "text": "SAGGING",
+      "w": "sags"
+     },
+     "do": [
+      {
+       "p": "leak",
+       "v": "start",
+       "w": "leaks",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "ride",
+       "v": "sags",
+       "w": "flat",
+       "o": -0.3,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "ride",
+       "v": "bodySags",
+       "w": "flat",
+       "o": -0.3,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "view": "home",
+       "width": 0,
+       "type": "mid",
+       "hero": false,
+       "word": "",
+       "box": [],
+       "focus": [
+        "ride.bagF",
+        "ride.body"
+       ]
+      }
+     ]
+    },
+    {
+     "s": "stakes",
+     "shows": {
+      "p": "ride",
+      "does": "the low car sits on its flat bags while yellow arrows press down and a weight gauge beside it climbs to 4000"
+     },
+     "do": [
+      {
+       "p": "leak",
+       "v": "stop",
+       "w": "Now",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "standA",
+       "v": "show",
+       "w": "Now",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "weightGauge",
+       "v": "show",
+       "w": "Now",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "weightGauge",
+       "v": "count",
+       "w": "4,000",
+       "o": -0.6,
+       "d": 1.2,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "weight",
+       "v": "show",
+       "w": "press",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "ride",
+       "v": "sags",
+       "w": "press",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "ride",
+       "v": "bodySags",
+       "w": "press",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "view": "home",
+       "width": 0.9,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": [],
+       "focus": [
+        "ride",
+        "weightGauge"
+       ]
+      }
+     ]
+    },
+    {
+     "s": "fix1",
+     "shows": {
+      "p": "kit",
+      "does": "a compressor appears, its fan spins, air dots run down the hose to the bag and the car lifts"
+     },
+     "do": [
+      {
+       "p": "weight",
+       "v": "hide",
+       "w": "So",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "weightGauge",
+       "v": "hide",
+       "w": "So",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "standA",
+       "v": "hide",
+       "w": "So",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "kit",
+       "v": "show",
+       "w": "compressor",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "kit",
+       "v": "pumps",
+       "w": "compressor",
+       "o": 0.3,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "kit",
+       "v": "hose",
+       "w": "hose",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "kit",
+       "v": "air",
+       "w": "hose",
+       "o": 0.2,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "ride",
+       "v": "sagsBack",
+       "w": "lifts",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "ride",
+       "v": "bodySagsBack",
+       "w": "lifts",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "view": "home",
+       "width": 0.9,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": [],
+       "focus": [
+        "ride",
+        "kit"
+       ]
+      }
+     ]
+    },
+    {
+     "s": "problem2",
+     "shows": {
+      "p": "ride",
+      "does": "the car body sinks low again while the small pump keeps running"
+     },
+     "state": {
+      "text": "TOO SLOW",
+      "w": "slow"
+     },
+     "do": [
+      {
+       "p": "ride",
+       "v": "sags",
+       "w": "sinks",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "ride",
+       "v": "bodySags",
+       "w": "sinks",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "view": "home",
+       "width": 0.9,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": [],
+       "focus": [
+        "ride",
+        "kit"
+       ]
+      }
+     ]
+    },
+    {
+     "s": "fix2",
+     "shows": {
+      "p": "kit",
+      "does": "an orange tank appears beside the pump, air runs into it and the car rises back up"
+     },
+     "do": [
+      {
+       "p": "kit",
+       "v": "tank",
+       "w": "tank",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "kit",
+       "v": "fills",
+       "w": "tank",
+       "o": 0.3,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "ride",
+       "v": "sagsBack",
+       "w": "refills",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "ride",
+       "v": "bodySagsBack",
+       "w": "refills",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "view": "home",
+       "width": 0.9,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": [],
+       "focus": [
+        "ride",
+        "kit"
+       ]
+      }
+     ]
+    },
+    {
+     "s": "problem3",
+     "shows": {
+      "p": "ride",
+      "does": "the bags swell tall and the car body shoots up high above its wheels"
+     },
+     "state": {
+      "text": "TOO HIGH",
+      "w": "high"
+     },
+     "do": [
+      {
+       "p": "ride",
+       "v": "high",
+       "w": "swells",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "ride",
+       "v": "bodyHigh",
+       "w": "swells",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "view": "home",
+       "width": 0,
+       "type": "mid",
+       "hero": false,
+       "word": "",
+       "box": [],
+       "focus": [
+        "ride"
+       ]
+      }
+     ]
+    },
+    {
+     "s": "fix3",
+     "shows": {
+      "p": "kit",
+      "does": "a gold valve appears on the hose, its green lamp lights and the car settles back down"
+     },
+     "do": [
+      {
+       "p": "kit",
+       "v": "valve",
+       "w": "valve",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "kit",
+       "v": "opens",
+       "w": "valve",
+       "o": 0.3,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "ride",
+       "v": "highBack",
+       "w": "settles",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "ride",
+       "v": "bodyHighBack",
+       "w": "settles",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "view": "home",
+       "width": 0.9,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": [],
+       "focus": [
+        "ride",
+        "kit"
+       ]
+      }
+     ]
+    },
+    {
+     "s": "name",
+     "shows": {
+      "p": "bagOutline",
+      "does": "a glowing outline traces the blue air bag"
+     },
+     "do": [
+      {
+       "p": "bagOutline",
+       "v": "show",
+       "w": "",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "view": "home",
+       "width": 0.35,
+       "type": "",
+       "hero": true,
+       "word": "",
+       "box": [],
+       "focus": [
+        "ride.bagF"
+       ]
+      }
+     ]
+    },
+    {
+     "s": "name2",
+     "shows": {
+      "p": "kitOutline",
+      "does": "a glowing outline traces the pump, the tank and the valve beside the car"
+     },
+     "do": [
+      {
+       "p": "bagOutline",
+       "v": "hide",
+       "w": "",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "kitOutline",
+       "v": "show",
+       "w": "",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "view": "home",
+       "width": 0.85,
+       "type": "",
+       "hero": true,
+       "word": "",
+       "box": [],
+       "focus": [
+        "kit",
+        "ride.bagF"
+       ]
+      }
+     ]
+    },
+    {
+     "s": "how",
+     "shows": {
+      "p": "ride",
+      "does": "air runs into the tank, the valve lamp lights, air runs down the hose and the car rises"
+     },
+     "do": [
+      {
+       "p": "kitOutline",
+       "v": "hide",
+       "w": "",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "kit",
+       "v": "fills",
+       "w": "fills",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "kit",
+       "v": "air",
+       "w": "opens",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "ride",
+       "v": "rise",
+       "w": "lifts",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "ride",
+       "v": "bodyRise",
+       "w": "lifts",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "view": "home",
+       "width": 0.9,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": [],
+       "focus": [
+        "ride",
+        "kit"
+       ]
+      }
+     ]
+    },
+    {
+     "s": "fact",
+     "shows": {
+      "p": "ride",
+      "does": "the raised car rides on its tall bags while yellow arrows push up and a gauge beside it counts to 2800"
+     },
+     "do": [
+      {
+       "p": "standA",
+       "v": "show",
+       "w": "",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "liftGauge",
+       "v": "show",
+       "w": "",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "liftArrows",
+       "v": "show",
+       "w": "",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "liftGauge",
+       "v": "count",
+       "w": "2,800",
+       "o": -0.8,
+       "d": 1.2,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "ride",
+       "v": "rise",
+       "w": "holds",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "ride",
+       "v": "bodyRise",
+       "w": "holds",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "view": "home",
+       "width": 0.9,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": [],
+       "focus": [
+        "ride",
+        "liftGauge"
+       ]
+      }
+     ]
+    },
+    {
+     "s": "finish",
+     "shows": {
+      "p": "kit",
+      "does": "a remote on a post appears with a red height button and its green pressure light comes on"
+     },
+     "do": [
+      {
+       "p": "liftGauge",
+       "v": "hide",
+       "w": "Add",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "standA",
+       "v": "hide",
+       "w": "Add",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "liftArrows",
+       "v": "hide",
+       "w": "Add",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "ride",
+       "v": "riseBack",
+       "w": "Add",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "ride",
+       "v": "bodyRiseBack",
+       "w": "Add",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "kit",
+       "v": "remote",
+       "w": "remote",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      },
+      {
+       "p": "kit",
+       "v": "light",
+       "w": "light",
+       "o": 0,
+       "d": 0,
+       "amp": 1,
+       "ch": ""
+      }
+     ],
+     "shots": [
+      {
+       "view": "home",
+       "width": 0.8,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": [],
+       "focus": [
+        "kit.remote",
+        "kit.tank"
+       ]
+      }
+     ]
+    },
+    {
+     "s": "congrats",
+     "do": [],
+     "shots": [
+      {
+       "view": "home",
+       "width": 0.9,
+       "type": "",
+       "hero": false,
+       "word": "",
+       "box": [],
+       "focus": [
+        "ride",
+        "kit"
+       ]
+      }
+     ]
+    }
+   ],
+   "audio": {
+    "cards": [
+     {
+      "text": "4,000 LB",
+      "at": {
+       "s": "stakes",
+       "w": "4,000",
+       "o": 0
+      },
+      "d": 1.5
+     },
+     {
+      "text": "150-200 PSI",
+      "at": {
+       "s": "fix2",
+       "w": "150",
+       "o": 0
+      },
+      "d": 1.5
+     },
+     {
+      "text": "2,800 LB",
+      "at": {
+       "s": "fact",
+       "w": "2,800",
+       "o": 0
+      },
+      "d": 1.5
+     }
+    ],
+    "sfx": [
+     {
+      "lib": "drip",
+      "at": {
+       "s": "problem",
+       "w": "leaks",
+       "o": 0
+      },
+      "d": 1.2
+     },
+     {
+      "lib": "motor_hum",
+      "at": {
+       "s": "fix1",
+       "w": "compressor",
+       "o": 0
+      },
+      "d": 2
+     },
+     {
+      "lib": "water_rush",
+      "at": {
+       "s": "problem3",
+       "w": "rushes",
+       "o": 0
+      },
+      "d": 1.2
+     },
+     {
+      "lib": "motor_hum",
+      "at": {
+       "s": "how",
+       "w": "fills",
+       "o": 0
+      },
+      "d": 1.5
+     }
+    ],
+    "chimes": [
+     {
+      "s": "stakes",
+      "w": "4,000",
+      "o": 0
+     },
+     {
+      "s": "name",
+      "w": "",
+      "o": 0
+     },
+     {
+      "s": "fact",
+      "w": "2,800",
+      "o": 0
+     },
+     {
+      "s": "congrats",
+      "w": "",
+      "o": 0
+     }
+    ],
+    "rain": []
+   }
+  }
+ }
+}

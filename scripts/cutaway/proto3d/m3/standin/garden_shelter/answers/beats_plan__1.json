@@ -1,1149 +1,218 @@
 {
  "hash": "*",
- "by": "stand-in planner",
+ "by": "stand-in planner (agent), 2026-11-11",
  "searches": 0,
  "data": {
-  "why": "A garden shelter on the lawn: four posts and a roof stand loose, the wind tips them, so a trench is dug along the front and concrete footings are poured under the posts (seen in section in the face), the floor under it turns to mud so paving slabs go down, rain then blows in from the side so a back wall and a side wall go up. The camera opens close on the shelter, stays mid on it and its footings, goes hero on the name and ends on the home view with stepping stones and bushes.",
+  "why": "The old shelter layout on the lawn; the rain is followed from the roof to the ground, the slabs, the low edge, the gutter and into a rain barrel, with a leaf riding along. The camera stays on the shelter and steps to the gutter and the barrel at the end.",
   "story": {
-   "title": "Garden Shelter",
+   "title": "How a Garden Shelter Works",
    "hero": "a garden shelter",
    "parts": [
-    "posts",
-    "roof",
-    "trench",
     "concrete footings",
     "paving slabs",
-    "back wall",
-    "side wall",
-    "stepping stones",
-    "bushes"
+    "walls",
+    "gutter",
+    "rain barrel"
    ],
-   "ideas": [
-    {
-     "role": "hook",
-     "idea": "four posts and a roof on the lawn keep the rain off"
-    },
-    {
-     "role": "problem",
-     "idea": "the first gust of wind catches the roof and tips the whole thing"
-    },
-    {
-     "role": "fix1",
-     "idea": "dig down and pour concrete footings that hold the posts"
-    },
-    {
-     "role": "problem2",
-     "idea": "under the roof, the grass is walked to mud and puddles"
-    },
-    {
-     "role": "fix2",
-     "idea": "lay paving slabs for a dry, flat floor"
-    },
-    {
-     "role": "problem3",
-     "idea": "the wind blows rain in sideways across the slabs"
-    },
-    {
-     "role": "fix3",
-     "idea": "a back wall and a side wall block the wind"
-    },
-    {
-     "role": "name",
-     "idea": "this is a garden shelter"
-    },
-    {
-     "role": "fact",
-     "idea": "a strong gust pushes about 20 pounds on every square foot of roof"
-    },
-    {
-     "role": "finish",
-     "idea": "stepping stones to its door and bushes around it"
-    },
-    {
-     "role": "congrats",
-     "idea": "you have built a garden shelter"
-    }
+   "flow": [
+    "roof",
+    "ground",
+    "slabs",
+    "roof edge",
+    "gutter",
+    "lawn",
+    "barrel"
    ],
+   "recurring": {
+    "p": "token",
+    "what": "a leaf"
+   },
    "chain": [
     {
      "problem": "problem",
      "causedBy": "hook",
-     "shows": "wind arrows hit the shelter and it tips up on one side",
-     "stakes": "the shelter could blow away",
-     "size": 5
+     "shows": "the wind tips the shelter up",
+     "stakes": "the shelter",
+     "size": 3,
+     "at": "roof",
+     "scale": "thing"
     },
     {
      "problem": "problem2",
      "causedBy": "fix1",
-     "shows": "puddles spread under the roof",
-     "stakes": "you stand in mud",
-     "size": 4
+     "shows": "the dug ground under it turns to mud",
+     "stakes": "the floor",
+     "size": 3,
+     "at": "ground",
+     "scale": "thing"
     },
     {
      "problem": "problem3",
      "causedBy": "fix2",
-     "shows": "rain spray blows in across the floor from the side",
-     "stakes": "everything inside still gets wet",
-     "size": 6
+     "shows": "rain blows in sideways over the slabs",
+     "stakes": "the people under it",
+     "size": 4,
+     "at": "slabs",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem4",
+     "causedBy": "fix3",
+     "shows": "rain pours off the roof behind the wall",
+     "stakes": "the floor",
+     "size": 5,
+     "at": "roof edge",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem5",
+     "causedBy": "fix4",
+     "shows": "the spout digs a hole in the lawn",
+     "stakes": "the yard",
+     "size": 6,
+     "at": "lawn",
+     "scale": "house"
     }
    ],
    "surprises": [
     {
-     "claim": "A 90 mph wind exerts a pressure of about 20 pounds per square foot",
-     "role": "fact",
-     "search": "90 mph wind pressure pounds per square foot 0.00256 V squared"
-    },
-    {
-     "claim": "Post footings must reach below the local frost line so frost heave does not lift them",
+     "claim": "Concrete footings anchor a shelter's posts against wind uplift.",
      "role": "fix1",
-     "search": "post footing depth below frost line frost heave"
+     "search": "concrete footings anchor posts wind uplift pergola"
     },
     {
-     "claim": "Paving slabs are laid on a compacted sub-base so they stay flat and drain",
+     "claim": "Paving slabs are laid on a compacted sub-base so they stay level.",
      "role": "fix2",
-     "search": "laying paving slabs compacted sub-base"
+     "search": "paving slabs compacted sub-base stay level"
+    },
+    {
+     "claim": "A gutter collects roof runoff and sends it to a downspout.",
+     "role": "fix4",
+     "search": "gutter collects roof runoff downspout"
+    },
+    {
+     "claim": "A rain barrel under a downspout stores roof water for the garden.",
+     "role": "fix5",
+     "search": "rain barrel under downspout stores rainwater for garden"
+    }
+   ],
+   "ideas": [
+    {
+     "role": "hook",
+     "idea": "four posts and a roof appear on the lawn"
+    },
+    {
+     "role": "problem",
+     "idea": "wind hits it and the shelter tips up on one side"
+    },
+    {
+     "role": "fix1",
+     "idea": "the shelter settles back, a trench is dug and concrete footings grow under the posts"
+    },
+    {
+     "role": "problem2",
+     "idea": "rain falls and muddy puddles spread under the roof"
+    },
+    {
+     "role": "fix2",
+     "idea": "a floor of paving slabs wipes in under the roof"
+    },
+    {
+     "role": "problem3",
+     "idea": "wind and rain spray blow in sideways across the floor"
+    },
+    {
+     "role": "fix3",
+     "idea": "a back wall and a side wall appear and the spray stops"
+    },
+    {
+     "role": "name",
+     "idea": "a garden shelter: a roof on anchored posts with a floor and walls"
+    },
+    {
+     "role": "problem4",
+     "idea": "rain pours off the roof's low edge onto the ground"
+    },
+    {
+     "role": "fix4",
+     "idea": "a gutter and spout appear along the low edge"
+    },
+    {
+     "role": "problem5",
+     "idea": "water from the spout splashes a muddy hole in the lawn"
+    },
+    {
+     "role": "fix5",
+     "idea": "a rain barrel catches the water from the spout"
+    },
+    {
+     "role": "finish",
+     "idea": "the rain stops; stepping stones lead to the dry shelter"
+    },
+    {
+     "role": "congrats",
+     "idea": "the finished shelter stands calm in the sun"
     }
    ]
   },
   "sentences": [
    {
     "role": "hook",
-    "text": "If you put up four posts and a roof, you have a garden shelter."
+    "text": "If you stand four posts under a roof, you have a garden shelter."
    },
    {
     "role": "problem",
-    "text": "But the first wind catches the roof and tips it over."
+    "text": "But wind catches the roof and tips it over."
    },
    {
     "role": "fix1",
-    "text": "So you dig down and pour concrete footings under the posts."
+    "text": "So you pour concrete footings under the posts."
    },
    {
     "role": "problem2",
-    "text": "But now rain turns the grass under it to mud."
+    "text": "But rain turns the dug ground into mud."
    },
    {
     "role": "fix2",
-    "text": "So you lay paving slabs on a compacted sub-base."
+    "text": "So you lay paving slabs on top."
    },
    {
     "role": "problem3",
-    "text": "But now the wind blows the rain in sideways."
+    "text": "But wind blows the rain sideways across the slabs."
    },
    {
     "role": "fix3",
-    "text": "So you add a back wall and a side wall."
+    "text": "So you add a back and a side wall."
    },
    {
     "role": "name",
     "text": "This is a garden shelter."
    },
    {
-    "role": "fact",
-    "text": "A 90 mile per hour wind gust pushes about 20 pounds on every square foot."
+    "role": "problem4",
+    "text": "But behind the back wall, rain pours off the roof."
+   },
+   {
+    "role": "fix4",
+    "text": "So you hang a gutter along the low edge."
+   },
+   {
+    "role": "problem5",
+    "text": "But the spout digs a hole in the lawn."
+   },
+   {
+    "role": "fix5",
+    "text": "So a barrel under the spout saves it."
    },
    {
     "role": "finish",
-    "text": "Add stepping stones and bushes around it."
+    "text": "Now sit under four dry posts and a roof."
    },
    {
     "role": "congrats",
     "text": "Congratulations, you have built a garden shelter."
    }
   ],
-  "sceneJson": {
-   "world": {
-    "cut": [
-     -2.2,
-     2.2,
-     -1,
-     1.4
-    ],
-    "house": [
-     -9,
-     0,
-     -22
-    ],
-    "porch": true,
-    "trees": [
-     [
-      -11,
-      -9
-     ],
-     [
-      10,
-      -8,
-      0.9
-     ]
-    ],
-    "road": [
-     9,
-     0.01,
-     -60
-    ],
-    "rocksAvoid": [
-     [
-      -3,
-      3,
-      -2,
-      0.3
-     ]
-    ],
-    "worker": false
-   },
-   "parts": [
-    {
-     "id": "light",
-     "kind": "light",
-     "params": {
-      "storm": true
-     }
-    },
-    {
-     "id": "shelter",
-     "kind": "rig",
-     "main": true,
-     "params": {
-      "name": "garden shelter",
-      "synonyms": [
-       "shelter",
-       "gazebo",
-       "pergola"
-      ],
-      "pos": [
-       0,
-       0,
-       -1.8
-      ],
-      "nodes": [
-       {
-        "id": "body",
-        "at": [
-         -1.7,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           0.18,
-           2.6,
-           0.18
-          ],
-          "at": [
-           0.1,
-           1.3,
-           1.3
-          ],
-          "look": "wood"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.18,
-           2.6,
-           0.18
-          ],
-          "at": [
-           3.3,
-           1.3,
-           1.3
-          ],
-          "look": "wood"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.18,
-           2.6,
-           0.18
-          ],
-          "at": [
-           0.1,
-           1.3,
-           -1.3
-          ],
-          "look": "wood"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.18,
-           2.6,
-           0.18
-          ],
-          "at": [
-           3.3,
-           1.3,
-           -1.3
-          ],
-          "look": "wood"
-         },
-         {
-          "shape": "box",
-          "size": [
-           3.6,
-           0.18,
-           0.2
-          ],
-          "at": [
-           1.7,
-           2.6,
-           1.3
-          ],
-          "look": "wood"
-         },
-         {
-          "shape": "box",
-          "size": [
-           3.6,
-           0.18,
-           0.2
-          ],
-          "at": [
-           1.7,
-           2.6,
-           -1.3
-          ],
-          "look": "wood"
-         },
-         {
-          "shape": "box",
-          "size": [
-           4.1,
-           0.12,
-           3.4
-          ],
-          "at": [
-           1.7,
-           2.76,
-           0
-          ],
-          "rot": [
-           0,
-           0,
-           -5
-          ],
-          "look": "paint",
-          "color": "#3f6e4f"
-         }
-        ],
-        "moves": [
-         {
-          "name": "tip",
-          "type": "swing",
-          "axis": "z",
-          "angle": 22
-         }
-        ]
-       },
-       {
-        "id": "walls",
-        "parent": "body",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           3.2,
-           2.3,
-           0.08
-          ],
-          "at": [
-           1.7,
-           1.3,
-           -1.3
-          ],
-          "look": "wood",
-          "color": "#b9875a"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.08,
-           2.3,
-           2.6
-          ],
-          "at": [
-           0.1,
-           1.3,
-           0
-          ],
-          "look": "wood",
-          "color": "#a97a4f"
-         }
-        ],
-        "moves": [
-         {
-          "name": "walls",
-          "type": "appear"
-         }
-        ]
-       }
-      ]
-     }
-    },
-    {
-     "id": "wind",
-     "kind": "arrows",
-     "params": {
-      "list": [
-       {
-        "at": [
-         -4.2,
-         1.6,
-         -0.6
-        ],
-        "dir": [
-         1,
-         0
-        ],
-        "travel": 1.4,
-        "phase": 0
-       },
-       {
-        "at": [
-         -4.2,
-         2.6,
-         -0.6
-        ],
-        "dir": [
-         1,
-         0
-        ],
-        "travel": 1.4,
-        "phase": 0.5
-       }
-      ],
-      "opts": {
-       "scale": 1.1,
-       "color": "#ffffff"
-      }
-     }
-    },
-    {
-     "id": "dig",
-     "kind": "dig",
-     "params": {
-      "clumps": 120,
-      "mound": {
-       "x": 4.5,
-       "z": -5,
-       "rx": 1.4,
-       "rz": 1,
-       "h": 0.8
-      }
-     }
-    },
-    {
-     "id": "footings",
-     "kind": "panels",
-     "params": {
-      "panels": [
-       {
-        "ch": "fL",
-        "mat": "concrete",
-        "size": [
-         0.7,
-         1.3,
-         1.03
-        ],
-        "anchor": [
-         0,
-         -1,
-         -1
-        ],
-        "pos": [
-         -1.6,
-         0,
-         0.03
-        ],
-        "axis": "y",
-        "vis": 0,
-        "r": 0.03
-       },
-       {
-        "ch": "fR",
-        "mat": "concrete",
-        "size": [
-         0.7,
-         1.3,
-         1.03
-        ],
-        "anchor": [
-         0,
-         -1,
-         -1
-        ],
-        "pos": [
-         1.6,
-         0,
-         0.03
-        ],
-        "axis": "y",
-        "vis": 0,
-        "r": 0.03
-       }
-      ]
-     }
-    },
-    {
-     "id": "backfill",
-     "kind": "wipe",
-     "params": {
-      "box": {
-       "x0": -2.18,
-       "x1": 2.18,
-       "y0": -1.4,
-       "y1": -0.02,
-       "z0": -0.98,
-       "z1": 0
-      },
-      "mat": "soil",
-      "axis": "y",
-      "r": 0.03
-     }
-    },
-    {
-     "id": "puddles",
-     "kind": "puddles",
-     "params": {
-      "list": [
-       [
-        -0.6,
-        -1,
-        1.3,
-        0.7
-       ],
-       [
-        0.9,
-        -1.3,
-        1.2,
-        0.7
-       ],
-       [
-        0,
-        -2.2,
-        1.6,
-        0.9
-       ]
-      ],
-      "rise": [
-       0.3,
-       0.2
-      ],
-      "fall": [
-       0.2,
-       0
-      ]
-     }
-    },
-    {
-     "id": "rain",
-     "kind": "rain",
-     "params": {
-      "x0": -7,
-      "x1": 7,
-      "z0": -7,
-      "z1": -0.1,
-      "yTop": 12,
-      "yBot": -0.4,
-      "count": 1000,
-      "width": 0.02,
-      "opacity": 0.36
-     }
-    },
-    {
-     "id": "slabs",
-     "kind": "wipe",
-     "params": {
-      "box": {
-       "x0": -2.1,
-       "x1": 2.1,
-       "y0": 0,
-       "y1": 0.1,
-       "z0": -3.4,
-       "z1": -0.15
-      },
-      "mat": "concrete",
-      "axis": "x",
-      "r": 0.03
-     }
-    },
-    {
-     "id": "spray",
-     "kind": "flow",
-     "params": {
-      "path": [
-       [
-        -4.5,
-        2.2,
-        -1.8
-       ],
-       [
-        -2.5,
-        1.4,
-        -1.8
-       ],
-       [
-        0.5,
-        0.15,
-        -1.8
-       ]
-      ],
-      "look": "spray",
-      "size": 0.14,
-      "speed": 2.4,
-      "count": 30
-     }
-    },
-    {
-     "id": "shelterOutline",
-     "kind": "outline",
-     "params": {
-      "of": "shelter"
-     }
-    },
-    {
-     "id": "stand",
-     "kind": "boxPop",
-     "params": {
-      "size": [
-       0.2,
-       1.3,
-       0.2
-      ],
-      "pos": [
-       -3.2,
-       0.6,
-       -0.5
-      ],
-      "mat": "metal"
-     }
-    },
-    {
-     "id": "pressure",
-     "kind": "counter",
-     "params": {
-      "pos": [
-       -3.2,
-       1.6,
-       -0.5
-      ],
-      "size": 1,
-      "from": 0,
-      "to": 20,
-      "color": "#ffffff",
-      "bar": true,
-      "danger": 1.2
-     }
-    },
-    {
-     "id": "stones",
-     "kind": "prop",
-     "params": {
-      "type": "steppingStones",
-      "size": [
-       4
-      ],
-      "pos": [
-       4.2,
-       0.02,
-       -1.4
-      ],
-      "rotY": 0,
-      "scale": 1.4
-     }
-    },
-    {
-     "id": "bushes",
-     "kind": "shrubs",
-     "params": {
-      "list": [
-       [
-        -3,
-        -3.6,
-        0.9
-       ],
-       [
-        3,
-        -3.6,
-        1
-       ],
-       [
-        3.2,
-        -1.2,
-        0.8
-       ]
-      ],
-      "stagger": 0.12
-     }
-    },
-    {
-     "id": "sign",
-     "kind": "sign",
-     "params": {
-      "at": [
-       4.5,
-       0.08,
-       -7
-      ],
-      "rotY": 0.2,
-      "scale": 1.4
-     }
-    }
-   ],
-   "beats": [
-    {
-     "s": "hook",
-     "shows": {
-      "p": "shelter",
-      "does": "four posts and a roof appear on the lawn"
-     },
-     "do": [
-      {
-       "p": "shelter",
-       "v": "show",
-       "w": "posts"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "shelter"
-       ],
-       "type": "mid"
-      }
-     ]
-    },
-    {
-     "s": "problem",
-     "shows": {
-      "p": "shelter",
-      "does": "wind arrows hit it and the shelter tips up on one side"
-     },
-     "state": {
-      "text": "TIPPING",
-      "w": "tips"
-     },
-     "do": [
-      {
-       "p": "light",
-       "v": "storm",
-       "w": "But"
-      },
-      {
-       "p": "wind",
-       "v": "show",
-       "w": "wind"
-      },
-      {
-       "p": "shelter",
-       "v": "tip",
-       "w": "wind",
-       "o": 0.3
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "shelter",
-        "wind"
-       ],
-       "width": 0.7
-      }
-     ]
-    },
-    {
-     "s": "fix1",
-     "shows": {
-      "p": "footings",
-      "does": "the shelter settles back, a trench is dug and concrete footings grow under the front posts"
-     },
-     "do": [
-      {
-       "p": "wind",
-       "v": "hide",
-       "w": "So"
-      },
-      {
-       "p": "shelter",
-       "v": "tipBack",
-       "w": "So"
-      },
-      {
-       "p": "dig",
-       "v": "dig",
-       "w": "dig"
-      },
-      {
-       "p": "footings",
-       "v": "grow",
-       "w": "concrete",
-       "ch": "fL"
-      },
-      {
-       "p": "footings",
-       "v": "grow",
-       "w": "concrete",
-       "o": 0.2,
-       "ch": "fR"
-      },
-      {
-       "p": "backfill",
-       "v": "grow",
-       "w": "posts",
-       "d": 0.7
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "footings",
-        "shelter"
-       ],
-       "width": 0.7
-      }
-     ]
-    },
-    {
-     "s": "problem2",
-     "shows": {
-      "p": "puddles",
-      "does": "rain falls and puddles spread under the roof"
-     },
-     "state": {
-      "text": "MUD",
-      "w": "mud"
-     },
-     "do": [
-      {
-       "p": "rain",
-       "v": "start",
-       "w": "But"
-      },
-      {
-       "p": "puddles",
-       "v": "rise",
-       "w": "mud"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "shelter",
-        "puddles"
-       ],
-       "width": 0.7,
-       "view": "high"
-      }
-     ]
-    },
-    {
-     "s": "fix2",
-     "shows": {
-      "p": "slabs",
-      "does": "a floor of paving slabs wipes in under the roof"
-     },
-     "do": [
-      {
-       "p": "puddles",
-       "v": "dry",
-       "w": "So"
-      },
-      {
-       "p": "slabs",
-       "v": "grow",
-       "w": "slabs",
-       "d": 1
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "shelter",
-        "slabs"
-       ],
-       "width": 0.7
-      }
-     ]
-    },
-    {
-     "s": "problem3",
-     "shows": {
-      "p": "spray",
-      "does": "wind arrows and rain spray blow in sideways across the floor"
-     },
-     "state": {
-      "text": "SOAKED",
-      "w": "sideways"
-     },
-     "do": [
-      {
-       "p": "wind",
-       "v": "show",
-       "w": "wind"
-      },
-      {
-       "p": "spray",
-       "v": "start",
-       "w": "sideways"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "shelter",
-        "spray"
-       ],
-       "width": 0.7
-      }
-     ]
-    },
-    {
-     "s": "fix3",
-     "shows": {
-      "p": "shelter",
-      "does": "a back wall and a side wall appear and the spray stops"
-     },
-     "do": [
-      {
-       "p": "shelter",
-       "v": "walls",
-       "w": "wall"
-      },
-      {
-       "p": "spray",
-       "v": "stop",
-       "w": "wall",
-       "o": 0.3
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "shelter"
-       ],
-       "width": 0.6
-      }
-     ]
-    },
-    {
-     "s": "name",
-     "shows": {
-      "p": "shelterOutline",
-      "does": "an outline traces the shelter"
-     },
-     "do": [
-      {
-       "p": "wind",
-       "v": "hide",
-       "w": ""
-      },
-      {
-       "p": "shelterOutline",
-       "v": "show",
-       "w": "garden"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "shelter"
-       ],
-       "hero": true,
-       "width": 0.6
-      }
-     ]
-    },
-    {
-     "s": "fact",
-     "shows": {
-      "p": "pressure",
-      "does": "wind arrows push on the roof and a counter beside it ticks up to 20"
-     },
-     "do": [
-      {
-       "p": "shelterOutline",
-       "v": "hide",
-       "w": "gust"
-      },
-      {
-       "p": "wind",
-       "v": "show",
-       "w": "gust"
-      },
-      {
-       "p": "stand",
-       "v": "show",
-       "w": "gust"
-      },
-      {
-       "p": "pressure",
-       "v": "show",
-       "w": "gust"
-      },
-      {
-       "p": "pressure",
-       "v": "count",
-       "w": "20",
-       "d": 1.2
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "shelter",
-        "pressure"
-       ],
-       "type": "wide"
-      }
-     ]
-    },
-    {
-     "s": "finish",
-     "shows": {
-      "p": "stones",
-      "does": "stepping stones and bushes appear, the rain stops"
-     },
-     "do": [
-      {
-       "p": "pressure",
-       "v": "hide",
-       "w": "Add"
-      },
-      {
-       "p": "stand",
-       "v": "hide",
-       "w": "Add"
-      },
-      {
-       "p": "wind",
-       "v": "hide",
-       "w": "Add"
-      },
-      {
-       "p": "rain",
-       "v": "stop",
-       "w": "Add"
-      },
-      {
-       "p": "light",
-       "v": "clear",
-       "w": "Add"
-      },
-      {
-       "p": "stones",
-       "v": "show",
-       "w": "stones"
-      },
-      {
-       "p": "bushes",
-       "v": "show",
-       "w": "bushes"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "home"
-       ]
-      }
-     ]
-    },
-    {
-     "s": "congrats",
-     "shows": {
-      "p": "shelter",
-      "does": "the finished shelter stands calm in the sun"
-     },
-     "do": [],
-     "shots": [
-      {
-       "focus": [
-        "home"
-       ]
-      }
-     ]
-    }
-   ],
-   "audio": {
-    "cards": [
-     {
-      "text": "20 LB / SQ FT",
-      "at": {
-       "s": "fact",
-       "w": "20"
-      },
-      "d": 1.8
-     }
-    ],
-    "sfx": [
-     {
-      "lib": "dirt",
-      "at": {
-       "s": "fix1",
-       "w": "dig"
-      },
-      "d": 1.2
-     },
-     {
-      "lib": "dirt",
-      "at": {
-       "s": "fix1",
-       "w": "concrete"
-      },
-      "d": 1
-     },
-     {
-      "lib": "drip",
-      "at": {
-       "s": "problem2",
-       "w": "mud"
-      },
-      "d": 1.2
-     },
-     {
-      "lib": "water_rush",
-      "at": {
-       "s": "problem3",
-       "w": "sideways"
-      },
-      "d": 1.3
-     }
-    ],
-    "chimes": [
-     {
-      "s": "fact",
-      "w": "20"
-     },
-     {
-      "s": "name",
-      "w": ""
-     },
-     {
-      "s": "congrats",
-      "w": ""
-     }
-    ],
-    "rain": [
-     {
-      "s": "problem2",
-      "w": "But",
-      "o": 0
-     },
-     {
-      "s": "finish",
-      "w": "Add",
-      "o": 0
-     }
-    ]
-   }
-  }
+  "sceneJson": "{\"world\":{\"cut\":[-2.2,2.2,-1,1.4],\"house\":[-9,0,-22],\"porch\":true,\"trees\":[[-11,-9],[10,-8,0.9]],\"road\":[9,0.01,-60],\"rocksAvoid\":[[-3,3,-2,0.3]],\"worker\":false},\"parts\":[{\"id\":\"light\",\"kind\":\"light\",\"params\":{\"storm\":true}},{\"id\":\"shelter\",\"kind\":\"rig\",\"main\":true,\"params\":{\"name\":\"garden shelter\",\"synonyms\":[\"shelter\",\"gazebo\",\"pergola\"],\"pos\":[0,0,-1.8],\"nodes\":[{\"id\":\"body\",\"at\":[-1.7,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.18,2.6,0.18],\"at\":[0.1,1.3,1.3],\"look\":\"wood\"},{\"shape\":\"box\",\"size\":[0.18,2.6,0.18],\"at\":[3.3,1.3,1.3],\"look\":\"wood\"},{\"shape\":\"box\",\"size\":[0.18,2.6,0.18],\"at\":[0.1,1.3,-1.3],\"look\":\"wood\"},{\"shape\":\"box\",\"size\":[0.18,2.6,0.18],\"at\":[3.3,1.3,-1.3],\"look\":\"wood\"},{\"shape\":\"box\",\"size\":[3.6,0.18,0.2],\"at\":[1.7,2.6,1.3],\"look\":\"wood\"},{\"shape\":\"box\",\"size\":[3.6,0.18,0.2],\"at\":[1.7,2.6,-1.3],\"look\":\"wood\"},{\"shape\":\"box\",\"size\":[4.1,0.12,3.4],\"at\":[1.7,2.76,0],\"rot\":[0,0,-5],\"look\":\"paint\",\"color\":\"#3f6e4f\"}],\"moves\":[{\"name\":\"tip\",\"type\":\"swing\",\"axis\":\"z\",\"angle\":22}]},{\"id\":\"walls\",\"parent\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[3.2,2.3,0.08],\"at\":[1.7,1.3,-1.3],\"look\":\"wood\",\"color\":\"#b9875a\"},{\"shape\":\"box\",\"size\":[0.08,2.3,2.6],\"at\":[0.1,1.3,0],\"look\":\"wood\",\"color\":\"#a97a4f\"}],\"moves\":[{\"name\":\"walls\",\"type\":\"appear\"}]},{\"id\":\"gutter\",\"parent\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.1,\"h\":3.4,\"axis\":\"z\",\"at\":[3.8,2.5,0],\"look\":\"metal\",\"color\":\"#9aa3ab\"},{\"shape\":\"tube\",\"path\":[[3.8,2.45,1.5],[3.8,1.2,1.5]],\"r\":0.06,\"look\":\"metal\",\"color\":\"#9aa3ab\"}],\"moves\":[{\"name\":\"gutter\",\"type\":\"appear\"}]}]}},{\"id\":\"wind\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[-4.2,1.6,-0.6],\"dir\":[1,0],\"travel\":1.4,\"phase\":0},{\"at\":[-4.2,2.6,-0.6],\"dir\":[1,0],\"travel\":1.4,\"phase\":0.5}],\"opts\":{\"scale\":1.1,\"color\":\"#ffffff\"}}},{\"id\":\"dig\",\"kind\":\"dig\",\"params\":{\"clumps\":120,\"mound\":{\"x\":4.5,\"z\":-5,\"rx\":1.4,\"rz\":1,\"h\":0.8}}},{\"id\":\"footings\",\"kind\":\"panels\",\"params\":{\"panels\":[{\"ch\":\"fL\",\"mat\":\"concrete\",\"size\":[0.7,1.3,1.03],\"anchor\":[0,-1,-1],\"pos\":[-1.6,0,0.03],\"axis\":\"y\",\"vis\":0,\"r\":0.03},{\"ch\":\"fR\",\"mat\":\"concrete\",\"size\":[0.7,1.3,1.03],\"anchor\":[0,-1,-1],\"pos\":[1.6,0,0.03],\"axis\":\"y\",\"vis\":0,\"r\":0.03}]}},{\"id\":\"backfill\",\"kind\":\"wipe\",\"params\":{\"box\":{\"x0\":-2.18,\"x1\":2.18,\"y0\":-1.4,\"y1\":-0.02,\"z0\":-0.98,\"z1\":0},\"mat\":\"soil\",\"axis\":\"y\",\"r\":0.03}},{\"id\":\"puddles\",\"kind\":\"puddles\",\"params\":{\"list\":[[-0.6,-1,1.3,0.7],[0.9,-1.3,1.2,0.7],[0,-2.2,1.6,0.9]],\"rise\":[0.3,0.2],\"fall\":[0.2,0]}},{\"id\":\"rain\",\"kind\":\"rain\",\"params\":{\"x0\":-7,\"x1\":7,\"z0\":-7,\"z1\":-0.1,\"yTop\":12,\"yBot\":-0.4,\"count\":1000,\"width\":0.02,\"opacity\":0.36}},{\"id\":\"slabs\",\"kind\":\"wipe\",\"params\":{\"box\":{\"x0\":-2.1,\"x1\":2.1,\"y0\":0,\"y1\":0.1,\"z0\":-3.4,\"z1\":-0.15},\"mat\":\"concrete\",\"axis\":\"x\",\"r\":0.03}},{\"id\":\"spray\",\"kind\":\"flow\",\"params\":{\"path\":[[-4.5,2.2,-1.8],[-2.5,1.4,-1.8],[0.5,0.15,-1.8]],\"look\":\"spray\",\"size\":0.14,\"speed\":2.4,\"count\":30}},{\"id\":\"shelterOutline\",\"kind\":\"outline\",\"params\":{\"of\":\"shelter\"}},{\"id\":\"stones\",\"kind\":\"prop\",\"params\":{\"type\":\"steppingStones\",\"size\":[4],\"pos\":[4.2,0.02,-1.4],\"rotY\":0,\"scale\":1.4}},{\"id\":\"token\",\"kind\":\"token\",\"params\":{\"type\":\"leaf\",\"pos\":[-0.5,2.94,-0.6],\"path\":[[2,2.72,-0.6],[2.1,2.5,-0.6],[2.1,2.5,-0.2],[2.1,1.25,-0.15],[2.25,1.05,-0.3]],\"size\":0.45}},{\"id\":\"eave\",\"kind\":\"stream\",\"params\":{\"x0\":2,\"x1\":2.25,\"z\":-1.8,\"yTop\":2.55,\"yBot\":0,\"count\":70}},{\"id\":\"spoutFlow\",\"kind\":\"flow\",\"params\":{\"path\":[[2.1,1.2,-0.1],[2.1,0.03,-0.05]],\"look\":\"water\",\"size\":0.12,\"speed\":2,\"count\":12}},{\"id\":\"splash\",\"kind\":\"fx\",\"params\":{\"type\":\"splash\",\"at\":[2.1,0.05,-0.1],\"size\":0.6}},{\"id\":\"hole\",\"kind\":\"puddles\",\"params\":{\"list\":[[2.2,-0.4,0.6,0.5]],\"rise\":[0.3,0.2],\"fall\":[0.2,0],\"mat\":\"mud\"}},{\"id\":\"barrel\",\"kind\":\"tank\",\"params\":{\"pos\":[2.15,0,-0.35],\"r\":0.42,\"h\":1,\"bands\":[0.3,0.7],\"mat\":\"tankBlue\"}},{\"id\":\"sign\",\"kind\":\"sign\",\"params\":{\"at\":[4.5,0.08,-7],\"rotY\":0.2,\"scale\":1.4}}],\"beats\":[{\"s\":\"hook\",\"shows\":{\"p\":\"shelter\",\"does\":\"four posts and a roof appear on the lawn\"},\"do\":[{\"p\":\"shelter\",\"v\":\"show\",\"w\":\"posts\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"shelter\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem\",\"shows\":{\"p\":\"shelter\",\"does\":\"wind hits it and the shelter tips up on one side\"},\"do\":[{\"p\":\"light\",\"v\":\"storm\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"wind\",\"v\":\"show\",\"w\":\"wind\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"shelter\",\"v\":\"tip\",\"w\":\"tips\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"shelter\",\"wind\"],\"view\":\"home\",\"width\":0.7,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix1\",\"shows\":{\"p\":\"footings\",\"does\":\"the shelter settles back, a trench is dug and concrete footings grow under the posts\"},\"do\":[{\"p\":\"wind\",\"v\":\"hide\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"shelter\",\"v\":\"tipBack\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"dig\",\"v\":\"dig\",\"w\":\"pour\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"footings\",\"v\":\"grow\",\"w\":\"concrete\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"fL\"},{\"p\":\"footings\",\"v\":\"grow\",\"w\":\"concrete\",\"o\":0.2,\"d\":0,\"amp\":1,\"ch\":\"fR\"},{\"p\":\"backfill\",\"v\":\"grow\",\"w\":\"posts\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"footings\",\"shelter\"],\"view\":\"home\",\"width\":0.7,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem2\",\"shows\":{\"p\":\"puddles\",\"does\":\"rain falls and muddy puddles spread under the roof\"},\"do\":[{\"p\":\"rain\",\"v\":\"start\",\"w\":\"rain\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"token\",\"v\":\"sit\",\"w\":\"rain\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"puddles\",\"v\":\"rise\",\"w\":\"mud\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"shelter\",\"puddles\"],\"view\":\"home\",\"width\":0.7,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix2\",\"shows\":{\"p\":\"slabs\",\"does\":\"a floor of paving slabs wipes in under the roof\"},\"do\":[{\"p\":\"puddles\",\"v\":\"dry\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"slabs\",\"v\":\"grow\",\"w\":\"slabs\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"shelter\",\"slabs\"],\"view\":\"home\",\"width\":0.7,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem3\",\"shows\":{\"p\":\"spray\",\"does\":\"wind and rain spray blow in sideways across the floor\"},\"do\":[{\"p\":\"wind\",\"v\":\"show\",\"w\":\"wind\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"spray\",\"v\":\"start\",\"w\":\"sideways\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"shelter\",\"spray\"],\"view\":\"home\",\"width\":0.7,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix3\",\"shows\":{\"p\":\"shelter\",\"does\":\"a back wall and a side wall appear and the spray stops\"},\"do\":[{\"p\":\"shelter\",\"v\":\"walls\",\"w\":\"back\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"spray\",\"v\":\"stop\",\"w\":\"wall\",\"o\":0.3,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"wind\",\"v\":\"hide\",\"w\":\"wall\",\"o\":0.3,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"shelter\"],\"view\":\"home\",\"width\":0.6,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"name\",\"shows\":{\"p\":\"shelterOutline\",\"does\":\"a garden shelter: a roof on anchored posts with a floor and walls\"},\"do\":[{\"p\":\"shelterOutline\",\"v\":\"show\",\"w\":\"garden\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"shelter\"],\"view\":\"home\",\"width\":0.6,\"type\":\"\",\"hero\":true,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem4\",\"shows\":{\"p\":\"eave\",\"does\":\"rain pours off the roof's low edge onto the ground\"},\"do\":[{\"p\":\"shelterOutline\",\"v\":\"hide\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"eave\",\"v\":\"start\",\"w\":\"pours\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"shelter\",\"eave\"],\"view\":\"home\",\"width\":0.7,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix4\",\"shows\":{\"p\":\"shelter\",\"does\":\"a gutter and spout appear along the low edge\"},\"do\":[{\"p\":\"shelter\",\"v\":\"gutter\",\"w\":\"gutter\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"eave\",\"v\":\"stop\",\"w\":\"gutter\",\"o\":0.3,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"token\",\"v\":\"ride\",\"w\":\"edge\",\"o\":0,\"d\":2,\"amp\":0.578,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"shelter.gutter\"],\"view\":\"home\",\"width\":0.6,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem5\",\"shows\":{\"p\":\"hole\",\"does\":\"water from the spout splashes a muddy hole in the lawn\"},\"do\":[{\"p\":\"spoutFlow\",\"v\":\"start\",\"w\":\"spout\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"splash\",\"v\":\"start\",\"w\":\"digs\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"hole\",\"v\":\"rise\",\"w\":\"hole\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"hole\",\"shelter.gutter\"],\"view\":\"home\",\"width\":0.6,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix5\",\"shows\":{\"p\":\"barrel\",\"does\":\"a rain barrel catches the water from the spout\"},\"do\":[{\"p\":\"barrel\",\"v\":\"show\",\"w\":\"barrel\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"splash\",\"v\":\"stop\",\"w\":\"barrel\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"hole\",\"v\":\"dry\",\"w\":\"saves\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"token\",\"v\":\"ride\",\"w\":\"saves\",\"o\":0,\"d\":2,\"amp\":0.38,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"barrel\"],\"view\":\"home\",\"width\":0.5,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"finish\",\"shows\":{\"p\":\"stones\",\"does\":\"the rain stops; stepping stones lead to the dry shelter\"},\"do\":[{\"p\":\"rain\",\"v\":\"stop\",\"w\":\"Now\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"light\",\"v\":\"clear\",\"w\":\"Now\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"spoutFlow\",\"v\":\"stop\",\"w\":\"dry\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"stones\",\"v\":\"show\",\"w\":\"sit\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"token\",\"v\":\"ride\",\"w\":\"roof\",\"o\":0,\"d\":1,\"amp\":0.042,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"home\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"congrats\",\"shows\":{\"p\":\"shelter\",\"does\":\"the finished shelter stands calm in the sun\"},\"do\":[],\"shots\":[{\"focus\":[\"home\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]}],\"audio\":{\"cards\":[],\"sfx\":[{\"lib\":\"dirt\",\"at\":{\"s\":\"fix1\",\"w\":\"concrete\",\"o\":0},\"d\":1.2},{\"lib\":\"drip\",\"at\":{\"s\":\"problem2\",\"w\":\"mud\",\"o\":0},\"d\":1.2},{\"lib\":\"water_rush\",\"at\":{\"s\":\"problem3\",\"w\":\"sideways\",\"o\":0},\"d\":1.3},{\"lib\":\"water_rush\",\"at\":{\"s\":\"problem4\",\"w\":\"pours\",\"o\":0},\"d\":1.3}],\"chimes\":[{\"s\":\"name\",\"w\":\"\",\"o\":0},{\"s\":\"congrats\",\"w\":\"\",\"o\":0}],\"rain\":[{\"s\":\"problem2\",\"w\":\"But\",\"o\":0},{\"s\":\"finish\",\"w\":\"Now\",\"o\":0}]}}"
  }
 }

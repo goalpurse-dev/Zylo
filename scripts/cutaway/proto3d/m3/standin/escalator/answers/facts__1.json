@@ -1,46 +1,70 @@
 {
  "hash": "*",
- "by": "converted (convert1d) from fact_check__1.json and the research's 3 searches",
- "searches": 3,
+ "by": "stand-in planner (agent), 2026-11-11",
+ "searches": 4,
  "data": {
   "checks": [
    {
     "index": 0,
-    "verdict": "reword",
-    "claim": "Escalators are built at a slope of no more than 30 degrees, and 30 degrees is the standard.",
-    "why": "Sources give 30 degrees as the standard angle and the code maximum.",
+    "verdict": "keep",
+    "claim": "Each escalator step has wheels running in two separate tracks that keep the step level.",
+    "why": "HowStuffWorks: front wheels on the step-wheel track, back wheels on the trailer-wheel track, spaced so each step stays level.",
     "sources": [
      {
-      "url": "https://illumin.usc.edu/elevating-experiences-the-role-of-escalators-in-public-spaces/",
-      "title": "Elevating experiences: escalators in public spaces (USC Illumin)"
+      "url": "https://science.howstuffworks.com/transport/engines-equipment/escalator1.htm",
+      "title": "How Escalators Work: Steppin' Out - HowStuffWorks"
+     },
+     {
+      "url": "https://www.designingbuildings.co.uk/wiki/Escalator_components",
+      "title": "Escalator components - Designing Buildings"
      }
     ]
    },
    {
     "index": 1,
     "verdict": "keep",
-    "claim": "An escalator's steps ride on two sets of wheels running in two tracks, which keep each step level.",
-    "why": "HowStuffWorks states it.",
+    "claim": "A motor at the top of an escalator turns gears that pull the step chain.",
+    "why": "An electric motor at the top turns the drive gears that move the pair of step chains.",
     "sources": [
      {
-      "url": "https://science.howstuffworks.com/transport/engines-equipment/escalator.htm",
-      "title": "How Escalators Work"
+      "url": "https://science.howstuffworks.com/escalator.htm",
+      "title": "How Escalators Work - HowStuffWorks"
+     },
+     {
+      "url": "https://www.designingbuildings.co.uk/wiki/Escalator",
+      "title": "Escalator - Designing Buildings"
      }
     ]
    },
    {
     "index": 2,
     "verdict": "keep",
-    "claim": "Safety codes require escalators to have a brake that stops them when the power fails.",
-    "why": "Pennsylvania and California codes require a brake that stops the escalator when the circuit opens.",
+    "claim": "Escalators have a brake that stops the steps if the power fails.",
+    "why": "California Title 8: the brake shall be applied automatically if the power supply is interrupted; brakes are spring-set and fail-safe.",
     "sources": [
      {
-      "url": "https://regulations.justia.com/states/pennsylvania/title-34/part-i/chapter-7/subchapter-j/section-7-324",
-      "title": "Pennsylvania Code 7.324"
+      "url": "https://dir.ca.gov/title8/3090.html",
+      "title": "California Code of Regulations Title 8 section 3090"
      },
      {
-      "url": "https://dir.ca.gov/title8/3090.html",
-      "title": "California Title 8 section 3090"
+      "url": "https://brevets-patents.ic.gc.ca/opic-cipo/cpd/eng/patent/1211065/summary.html",
+      "title": "Canadian patent: escalator brake"
+     }
+    ]
+   },
+   {
+    "index": 3,
+    "verdict": "keep",
+    "claim": "An escalator's handrail moves at about the same speed as the steps.",
+    "why": "Patents drive the handrail from the step drive at substantially the same speed; technicians set it slightly ahead, so 'about the same' holds.",
+    "sources": [
+     {
+      "url": "https://patents.google.com/patent/US4895240",
+      "title": "US4895240A - Cogbelt handrail drive for passenger conveyor"
+     },
+     {
+      "url": "https://www.designingbuildings.co.uk/wiki/Escalator_components",
+      "title": "Escalator components - Designing Buildings"
      }
     ]
    }

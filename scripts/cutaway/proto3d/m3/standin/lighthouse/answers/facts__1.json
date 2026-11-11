@@ -1,46 +1,70 @@
 {
  "hash": "*",
- "by": "stand-in planner (replan 2026-11-09): verified claims kept word for word",
- "searches": 3,
+ "by": "stand-in planner (agent), 2026-11-11",
+ "searches": 4,
  "data": {
   "checks": [
    {
     "index": 0,
     "verdict": "keep",
-    "claim": "Augustin Fresnel invented his lighthouse lens in 1822.",
-    "why": "1822 is the invention and official test; the first lighthouse lighting was 1823.",
+    "claim": "A Fresnel lens bends a lamp's light into a narrow beam that can be seen far out at sea.",
+    "why": "Rings of prisms bend the lamp's light into a parallel beam; the first one (Cordouan, 1823) was seen more than 20 miles out.",
     "sources": [
      {
-      "url": "https://en.wikipedia.org/wiki/Fresnel_lens",
-      "title": "Fresnel lens"
+      "url": "https://en.wikipedia.com/wiki/Fresnel_Lens",
+      "title": "Fresnel lens (Wikipedia)"
      },
      {
-      "url": "https://dunkirklighthouse.com/fresnel__lens_history.htm",
-      "title": "Fresnel lens history (Dunkirk Lighthouse)"
+      "url": "https://www.aip.org/inside-science/the-remarkable-lens-in-americas-oldest-lighthouse-station",
+      "title": "Inside Science: The remarkable lens in America's oldest lighthouse station"
      }
     ]
    },
    {
     "index": 1,
     "verdict": "keep",
-    "claim": "The beam of a large (first-order) Fresnel lens could be seen about 20 miles out to sea.",
-    "why": "NPS: visible over twenty miles out to sea.",
+    "claim": "Lighthouse lenses rotate so the beam sweeps around and flashes in a pattern.",
+    "why": "The lamp stays steady and the rotating Fresnel lens makes the flashes; flash panels and rotation speed set each light's characteristic.",
     "sources": [
      {
-      "url": "https://www.nps.gov/caha/learn/historyculture/fresnellens.htm",
-      "title": "The Fresnel Lens (NPS)"
+      "url": "https://www.nps.gov/articles/fresnel-lens.htm",
+      "title": "NPS: Fresnel lens"
+     },
+     {
+      "url": "https://www.ponceinlet.org/understanding-how-lighthouse-lenses-work/",
+      "title": "Ponce Inlet: Understanding how lighthouse lenses work"
      }
     ]
    },
    {
     "index": 2,
     "verdict": "keep",
-    "claim": "Big rotating lighthouse lenses floated on a bath of liquid mercury so they turned with very little friction.",
-    "why": "US Lighthouse Society: mercury float let multi-ton lenses start with one finger.",
+    "claim": "Large rotating lighthouse lenses were floated on a bath of liquid mercury to turn smoothly.",
+    "why": "From 1890 (Bourdelles) heavy optics floated on an annular mercury trough so they turned almost without friction and faster.",
     "sources": [
      {
-      "url": "https://uslhs.org/node/1614",
-      "title": "Mercury baths (US Lighthouse Society)"
+      "url": "https://uslhs.org/resources/lighthouse-technology/lens-rotation",
+      "title": "US Lighthouse Society: Lens rotation"
+     },
+     {
+      "url": "https://pharology.eu/howlighthouseswork/H24_opticrotation.html",
+      "title": "World Lighthouse Hub: Optic rotation"
+     }
+    ]
+   },
+   {
+    "index": 3,
+    "verdict": "keep",
+    "claim": "Foghorns warn ships with sound when fog hides a lighthouse's light.",
+    "why": "No light is visible in thick fog, so lighthouses added sound signals (cannon, bells, whistles, foghorns) to warn ships.",
+    "sources": [
+     {
+      "url": "https://en.wikipedia.org/wiki/Foghorn",
+      "title": "Foghorn (Wikipedia)"
+     },
+     {
+      "url": "https://www.cheslights.org/cheskids/html/foghorn.htm",
+      "title": "Chesapeake Chapter US Lighthouse Society: Foghorn"
      }
     ]
    }

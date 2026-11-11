@@ -1,30 +1,70 @@
 {
  "hash": "*",
- "by": "stand-in planner (replan 2026-11-09)",
+ "by": "stand-in planner (agent), 2026-11-11",
  "searches": 4,
  "data": {
   "checks": [
    {
     "index": 0,
     "verdict": "keep",
-    "claim": "A spark sets off a tiny blast of fuel and air on top of a piston.",
-    "why": "from the topic's earlier plan: the spark plug ignites the fuel-air mix above the piston",
+    "claim": "In a car engine, burning fuel and air pushes a piston down inside a cylinder.",
+    "why": "Haynes and RepairPal: the spark ignites the compressed fuel-air mix and the expanding gas forces the piston down (the power stroke).",
     "sources": [
      {
-      "url": "https://auto.howstuffworks.com/engine.htm",
-      "title": "How Car Engines Work - HowStuffWorks"
+      "url": "https://haynes.com/en-us/tips-tutorials/how-car-engine-works",
+      "title": "How a car engine works - Haynes"
+     },
+     {
+      "url": "https://repairpal.com/blog/how-does-your-engine-work",
+      "title": "How Does Your Engine Work? - RepairPal"
      }
     ]
    },
    {
     "index": 1,
     "verdict": "keep",
-    "claim": "The blast shoves the piston down, and the rod spins the crankshaft.",
-    "why": "from the topic's earlier plan: the connecting rod turns the piston's push into the crankshaft's spin",
+    "claim": "A connecting rod and crankshaft turn the piston's up-and-down motion into rotation.",
+    "why": "The connecting rod links piston and crank pin; together they convert reciprocating motion into rotation.",
     "sources": [
      {
-      "url": "https://auto.howstuffworks.com/engine.htm",
-      "title": "How Car Engines Work - HowStuffWorks"
+      "url": "https://www.wikipedia.org/wiki/Conrod",
+      "title": "Connecting rod - Wikipedia"
+     },
+     {
+      "url": "https://dannysengineportal.com/home/basic-engine-topics-top-and-bottom-end-individual-components/crankshafts-convert-vertical-movement-of-pistons-into-a-rotation",
+      "title": "Crankshafts convert vertical movement of pistons into a rotation"
+     }
+    ]
+   },
+   {
+    "index": 2,
+    "verdict": "keep",
+    "claim": "Intake valves let the fuel and air in and exhaust valves let the burnt gases out.",
+    "why": "Four-stroke cycle: the intake valve opens on the intake stroke, the exhaust valve opens so the rising piston pushes the burnt gases out.",
+    "sources": [
+     {
+      "url": "https://enginemechanics.tpub.com/14037/css/Engine-Cycles-93.htm",
+      "title": "Engine Cycles - Engine Mechanics"
+     },
+     {
+      "url": "https://aerotoolbox.com/four-stroke-engine/",
+      "title": "The Four Stroke Engine Cycle - AeroToolbox"
+     }
+    ]
+   },
+   {
+    "index": 3,
+    "verdict": "keep",
+    "claim": "A water pump circulates coolant around the cylinders to keep the engine from overheating.",
+    "why": "The pump pushes coolant through the block and head passages around the cylinders, then to the radiator; without it the engine overheats.",
+    "sources": [
+     {
+      "url": "https://www.oreillyauto.com/how-to-hub/cooling-system/cooling-system-basics",
+      "title": "Cooling System Basics - O'Reilly Auto Parts"
+     },
+     {
+      "url": "https://www.aa1car.com/library/water_pump.htm",
+      "title": "Water Pump - AA1Car"
      }
     ]
    }

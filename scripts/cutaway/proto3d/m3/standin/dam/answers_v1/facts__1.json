@@ -1,0 +1,53 @@
+{
+ "hash": "*",
+ "by": "converted (convert1d) from fact_check__1.json and the research's 3 searches",
+ "searches": 3,
+ "data": {
+  "checks": [
+   {
+    "index": 0,
+    "verdict": "keep",
+    "claim": "Hoover Dam is 660 feet thick at its base and only 45 feet thick at its top.",
+    "why": "USGS, NPS and ASCE all give 660 feet at the base and 45 feet at the top.",
+    "sources": [
+     {
+      "url": "https://www.usgs.gov/media/images/lake-mead-hoover-dam",
+      "title": "Lake Mead / Hoover Dam (USGS)"
+     },
+     {
+      "url": "https://npgallery.nps.gov/NRHP/GetAsset/NHLS/81000382_text",
+      "title": "Hoover Dam NRHP nomination (NPS)"
+     }
+    ]
+   },
+   {
+    "index": 1,
+    "verdict": "reword",
+    "claim": "Every 10 metres of water adds about one atmosphere of pressure, so 100 metres down the water pushes about 10 times harder than the air.",
+    "why": "WHOI gives one atmosphere per 10 m; at 100 m about 10 atm from the water, 11 in total.",
+    "sources": [
+     {
+      "url": "https://www.whoi.edu/know-your-ocean/did-you-know/why-is-pressure-different-in-the-ocean",
+      "title": "Why is pressure different in the ocean? (WHOI)"
+     }
+    ]
+   },
+   {
+    "index": 2,
+    "verdict": "reword",
+    "claim": "Overtopping, water flowing over the top, caused about 34 percent of dam failures.",
+    "why": "Bureau of Reclamation and Washington Ecology cite Costa (1985): 34 percent.",
+    "sources": [
+     {
+      "url": "https://www.usbr.gov/damsafety/Risk/BestPractices/Chapters/D3-FloodOvertoppingFailureOfDamsAndLevees.pdf",
+      "title": "D-3 Flood Overtopping Failure of Dams and Levees (USBR)"
+     },
+     {
+      "url": "https://ecology.wa.gov/water-shorelines/water-supply/dams/info-for-the-public/incidents-failures",
+      "title": "Historical incidents and failures (WA Ecology)"
+     }
+    ]
+   }
+  ]
+ }
+}

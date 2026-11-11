@@ -1,29 +1,72 @@
 {
  "hash": "*",
- "by": "stand-in planner (replan 2026-11-10, fix6): claims kept word for word from the old saved plan's verified sentences",
- "searches": 3,
+ "by": "stand-in planner (agent), 2026-11-11",
+ "searches": 4,
  "data": {
   "checks": [
    {
     "index": 0,
     "verdict": "keep",
-    "claim": "One full cycle at a busy corner lasts about 60 to 120 seconds.",
-    "why": "said in the old saved plan (m3/sweep/plans/traffic_light.json); stand-in only: no source was fetched for it (a real run searches)",
-    "sources": []
+    "claim": "A yellow light warns drivers that the signal is about to turn red.",
+    "why": "MUTCD 4D: a yellow follows every green; its function is to warn traffic of an impending change in right-of-way.",
+    "sources": [
+     {
+      "url": "https://mutcd.fhwa.dot.gov/htm/2009/part4/part4g.htm",
+      "title": "MUTCD 2009 Part 4"
+     },
+     {
+      "url": "https://highways.dot.gov/safety/proven-safety-countermeasures/yellow-change-intervals",
+      "title": "FHWA Yellow Change Intervals"
+     }
+    ]
    },
    {
     "index": 1,
     "verdict": "keep",
-    "claim": "Each green lets one car cross the line about every 2 seconds.",
-    "why": "said in the old saved plan (m3/sweep/plans/traffic_light.json); stand-in only: no source was fetched for it (a real run searches)",
-    "sources": []
+    "claim": "An all-red interval holds every signal red for a moment to clear the intersection.",
+    "why": "An optional red clearance interval after the yellow lets vehicles that entered on yellow clear before conflicting traffic gets green.",
+    "sources": [
+     {
+      "url": "https://www.webpages.uidaho.edu/niatt_labmanual/Chapters/signaltimingdesign/professionalpractice/IntergreenTime.htm",
+      "title": "Intergreen Time (U. Idaho)"
+     },
+     {
+      "url": "https://drivesmartbc.ca/qa/all-traffic-lights-red-once",
+      "title": "All Traffic Lights Red at Once"
+     }
+    ]
    },
    {
     "index": 2,
     "verdict": "keep",
-    "claim": "A yellow lamp gives drivers about 3 to 6 seconds to stop.",
-    "why": "said in the old saved plan (m3/sweep/plans/traffic_light.json); stand-in only: no source was fetched for it (a real run searches)",
-    "sources": []
+    "claim": "An inductive loop cut into the road feels the metal of a car above it.",
+    "why": "The metal of the vehicle disturbs the loop magnetic field, changing its inductance, which the detector senses.",
+    "sources": [
+     {
+      "url": "https://www.wikipedia.com/wiki/Loop_detector",
+      "title": "Induction loop"
+     },
+     {
+      "url": "https://webarchive.library.unt.edu/eot2008/20090117160345/http:/www.tfhrc.gov/pubrds/septoct98/loop.htm",
+      "title": "FHWA Public Roads: loop detectors"
+     }
+    ]
+   },
+   {
+    "index": 3,
+    "verdict": "keep",
+    "claim": "Emergency vehicle preemption turns a traffic signal green for an approaching fire truck.",
+    "why": "Preemption receivers on the signal detect an approaching emergency vehicle and switch the signal so it gets green and others red.",
+    "sources": [
+     {
+      "url": "https://www.winnipeg.ca/people-culture/our-city-our-stories/giving-emergency-vehicles-green-light",
+      "title": "Giving emergency vehicles the green light (Winnipeg)"
+     },
+     {
+      "url": "https://www.iteris.com/blog/all-green-how-advanced-traffic-signal-technology-can-wave-through-priority-vehicles-and-save",
+      "title": "All Green (Iteris)"
+     }
+    ]
    }
   ]
  }

@@ -1,39 +1,114 @@
 {
  "hash": "*",
- "by": "stand-in planner",
+ "by": "stand-in planner (agent), 2026-11-11",
  "searches": 0,
  "data": {
-  "why": "A photoelectric smoke alarm, its cover off, high on the living-room wall: a light beam crosses a dark chamber, smoke from a burning trash can drifts up, a side sensor catches the light the smoke bounces, a horn makes it loud, and a counter shows it lasts 10 years. The camera opens close on the dark chamber and its beam, frames the alarm with the smoke rising, and ends on the room.",
+  "why": "A photoelectric smoke detector hangs cut open on a living room wall above a burning trash can, with a hand at its test button; the smoke is followed from the fire up into the vents, across the beam onto the sensor and out as sound from the horn, and then its battery. The camera opens close on the dark box and its beam, steps back to show the fire and the smoke, and ends on the hand pressing test.",
   "story": {
    "title": "How a smoke detector works",
    "hero": "a photoelectric smoke detector",
    "parts": [
-    "dark chamber",
     "light beam",
-    "smoke",
-    "trash can fire",
-    "light sensor",
+    "side sensor",
     "horn",
-    "battery",
-    "test button",
-    "vents"
+    "mesh screen",
+    "battery chirp",
+    "test button"
+   ],
+   "flow": [
+    "fire",
+    "smoke",
+    "ceiling",
+    "vents",
+    "chamber",
+    "sensor",
+    "horn",
+    "battery"
+   ],
+   "recurring": {
+    "p": "hand",
+    "what": "a hand at the test button"
+   },
+   "chain": [
+    {
+     "problem": "problem",
+     "causedBy": "hook",
+     "shows": "smoke from a burning trash can drifts through the beam and nothing happens",
+     "stakes": "the fire grows unseen",
+     "size": 3,
+     "at": "smoke",
+     "scale": "room"
+    },
+    {
+     "problem": "problem2",
+     "causedBy": "fix1",
+     "shows": "the sensor sees the smoke but the room fills in silence",
+     "stakes": "everyone asleep",
+     "size": 6,
+     "at": "sensor",
+     "scale": "house"
+    },
+    {
+     "problem": "problem3",
+     "causedBy": "fix2",
+     "shows": "dust and bugs drift in and the horn blares for nothing",
+     "stakes": "false alarms",
+     "size": 7,
+     "at": "vents",
+     "scale": "house"
+    },
+    {
+     "problem": "problem4",
+     "causedBy": "fix3",
+     "shows": "behind the mesh screen the battery dies and the beam goes dark",
+     "stakes": "a dead alarm",
+     "size": 8,
+     "at": "battery",
+     "scale": "house"
+    },
+    {
+     "problem": "problem5",
+     "causedBy": "fix4",
+     "shows": "the battery chirp at night gets the battery pulled out",
+     "stakes": "no alarm at all",
+     "size": 9,
+     "at": "battery",
+     "scale": "house"
+    }
+   ],
+   "surprises": [
+    {
+     "claim": "A photoelectric smoke detector shines a light beam away from a sensor; smoke scatters the light onto the sensor and sets off the alarm.",
+     "role": "fix1",
+     "search": "photoelectric smoke detector light scattered onto sensor how it works"
+    },
+    {
+     "claim": "Smoke alarms must sound at least 85 decibels at 10 feet.",
+     "role": "fix2",
+     "search": "smoke alarm 85 decibels at 10 feet UL 217"
+    },
+    {
+     "claim": "Fire safety agencies say to test smoke alarms once a month by pressing the test button.",
+     "role": "fix5",
+     "search": "test smoke alarms monthly test button NFPA USFA"
+    }
    ],
    "ideas": [
     {
      "role": "hook",
-     "idea": "a light beam across a dark box is already the alarm"
+     "idea": "a light beam across a dark box is a smoke detector"
     },
     {
      "role": "problem",
-     "idea": "smoke drifts in, but nothing reacts"
+     "idea": "smoke drifts through the beam and nothing happens"
     },
     {
      "role": "fix1",
-     "idea": "a sensor off to the side catches the light that smoke bounces sideways"
+     "idea": "a sensor off to the side catches the light the smoke scatters"
     },
     {
      "role": "problem2",
-     "idea": "but a sensor makes no sound, and at night everyone sleeps through it"
+     "idea": "the sensor makes no sound while everyone sleeps"
     },
     {
      "role": "fix2",
@@ -44,868 +119,97 @@
      "idea": "this is a photoelectric smoke detector"
     },
     {
-     "role": "fact",
-     "idea": "replace the alarm every 10 years"
+     "role": "problem3",
+     "idea": "the horn also goes off for dust and bugs"
+    },
+    {
+     "role": "fix3",
+     "idea": "a fine mesh screen keeps them out"
+    },
+    {
+     "role": "problem4",
+     "idea": "behind the screen the battery quietly dies"
+    },
+    {
+     "role": "fix4",
+     "idea": "it chirps when the battery runs low"
+    },
+    {
+     "role": "problem5",
+     "idea": "a chirp at night gets the battery pulled out"
+    },
+    {
+     "role": "fix5",
+     "idea": "a test button to check it every month"
     },
     {
      "role": "finish",
-     "idea": "a battery, a test button and vents complete the alarm"
+     "idea": "press test and it flashes and screams"
     },
     {
      "role": "congrats",
-     "idea": "calm end: the alarm hangs quietly on the wall"
-    }
-   ],
-   "chain": [
-    {
-     "problem": "problem",
-     "causedBy": "hook",
-     "shows": "grey smoke rises from a burning trash can and drifts past the alarm",
-     "stakes": "a fire grows in the room",
-     "size": 4
-    },
-    {
-     "problem": "problem2",
-     "causedBy": "fix1",
-     "shows": "the room goes dark for the night while the smoke keeps rising and the alarm stays silent",
-     "stakes": "a sleeping family is not woken",
-     "size": 8
-    }
-   ],
-   "surprises": [
-    {
-     "claim": "Photoelectric alarms aim a light beam away from a sensor; smoke scatters the light onto the sensor and sets off the alarm",
-     "role": "fix1",
-     "search": "photoelectric smoke alarm light scattered onto sensor how it works"
-    },
-    {
-     "claim": "Smoke alarm horns must sound at least 85 decibels at 10 feet",
-     "role": "fix2",
-     "search": "smoke alarm 85 decibels 10 feet UL 217 NFPA 72"
-    },
-    {
-     "claim": "The NFPA says to replace smoke alarms every 10 years",
-     "role": "fact",
-     "search": "NFPA replace smoke alarms every 10 years"
+     "idea": "you built a smoke detector"
     }
    ]
   },
   "sentences": [
    {
     "role": "hook",
-    "text": "If you shine a light beam through a dark box, you have a smoke detector."
+    "text": "If you shine a light across a dark box, you have a smoke detector."
    },
    {
     "role": "problem",
-    "text": "But when smoke drifts up from a burning trash can, the beam just keeps shining."
+    "text": "But smoke drifts through the beam, and nothing happens."
    },
    {
     "role": "fix1",
-    "text": "So you add a sensor off to the side, and smoke bounces light onto it."
+    "text": "So a side sensor catches light the smoke scatters."
    },
    {
     "role": "problem2",
-    "text": "But a sensor makes no sound, and at night everyone sleeps through the fire."
+    "text": "But the sensor stays silent while everyone sleeps."
    },
    {
     "role": "fix2",
-    "text": "So you add a horn that blares at least 85 decibels at 10 feet."
+    "text": "So you add a horn that blares 85 decibels."
    },
    {
     "role": "name",
     "text": "This is a photoelectric smoke detector."
    },
    {
-    "role": "fact",
-    "text": "Fire safety experts say to replace it every 10 years."
+    "role": "problem3",
+    "text": "But the horn also blares at dust and bugs inside."
+   },
+   {
+    "role": "fix3",
+    "text": "So a fine mesh screen keeps them out."
+   },
+   {
+    "role": "problem4",
+    "text": "But behind that screen, the battery quietly dies."
+   },
+   {
+    "role": "fix4",
+    "text": "So it chirps when the battery runs low."
+   },
+   {
+    "role": "problem5",
+    "text": "But a chirp at 3 AM gets the battery pulled."
+   },
+   {
+    "role": "fix5",
+    "text": "So you add a test button to check it monthly."
    },
    {
     "role": "finish",
-    "text": "Add a battery, a test button and vents."
+    "text": "Press test, and the light flashes as it screams."
    },
    {
     "role": "congrats",
-    "text": "Congratulations, you have built a smoke detector."
+    "text": "Congratulations, you built a smoke detector."
    }
   ],
-  "sceneJson": {
-   "world": {
-    "cut": [
-     6,
-     7.5,
-     -3,
-     0.4
-    ],
-    "house": false,
-    "porch": false,
-    "trees": [],
-    "road": false,
-    "rocksAvoid": [],
-    "worker": false,
-    "moreTrees": false,
-    "backdrop": {
-     "type": "room",
-     "x0": -9,
-     "x1": 9,
-     "back": -7,
-     "h": 4.2,
-     "windowX": -4,
-     "chairX": -6
-    }
-   },
-   "parts": [
-    {
-     "id": "light",
-     "kind": "light",
-     "params": {
-      "storm": false
-     }
-    },
-    {
-     "id": "detector",
-     "kind": "rig",
-     "params": {
-      "name": "smoke detector",
-      "synonyms": [
-       "smoke alarm",
-       "fire alarm",
-       "photoelectric smoke detector"
-      ],
-      "main": true,
-      "mount": "wall",
-      "pos": [
-       1.5,
-       1.7,
-       -6.98
-      ],
-      "scale": 4,
-      "nodes": [
-       {
-        "id": "base",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "cylinder",
-          "r": 0.12,
-          "h": 0.03,
-          "axis": "z",
-          "at": [
-           0,
-           0,
-           0.015
-          ],
-          "look": "plastic",
-          "color": "#f2f4f6"
-         },
-         {
-          "shape": "cylinder",
-          "r": 0.075,
-          "h": 0.02,
-          "axis": "z",
-          "at": [
-           0,
-           0,
-           0.04
-          ],
-          "look": "plastic",
-          "color": "#1d2226"
-         }
-        ]
-       },
-       {
-        "id": "led",
-        "parent": "base",
-        "at": [
-         -0.06,
-         0,
-         0.055
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           0.025,
-           0.02,
-           0.02
-          ],
-          "at": [
-           0,
-           0,
-           0
-          ],
-          "look": "plastic",
-          "color": "#3a3d40"
-         },
-         {
-          "shape": "beam",
-          "from": [
-           0.012,
-           0,
-           0.005
-          ],
-          "to": [
-           0.12,
-           0,
-           0.005
-          ],
-          "r": 0.015,
-          "color": "#ff5a5a"
-         }
-        ],
-        "moves": [
-         {
-          "name": "beamOn",
-          "type": "light"
-         }
-        ]
-       },
-       {
-        "id": "sensor",
-        "parent": "base",
-        "at": [
-         0.01,
-         -0.06,
-         0.055
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           0.025,
-           0.025,
-           0.02
-          ],
-          "at": [
-           0,
-           0,
-           0
-          ],
-          "look": "plastic",
-          "color": "#2f6fb0"
-         }
-        ],
-        "moves": [
-         {
-          "name": "sensorIn",
-          "type": "appear"
-         }
-        ]
-       },
-       {
-        "id": "scatter",
-        "parent": "sensor",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "beam",
-          "from": [
-           0,
-           0.06,
-           0.006
-          ],
-          "to": [
-           0,
-           0.014,
-           0.006
-          ],
-          "r": 0.015,
-          "color": "#ff9a9a"
-         }
-        ],
-        "moves": [
-         {
-          "name": "bounce",
-          "type": "light"
-         }
-        ]
-       },
-       {
-        "id": "horn",
-        "parent": "base",
-        "at": [
-         0.075,
-         0.055,
-         0.045
-        ],
-        "shapes": [
-         {
-          "shape": "cylinder",
-          "r": 0.035,
-          "h": 0.015,
-          "axis": "z",
-          "at": [
-           0,
-           0,
-           0
-          ],
-          "look": "metal",
-          "color": "#c9a45c"
-         },
-         {
-          "shape": "light",
-          "r": 0.015,
-          "at": [
-           0,
-           -0.11,
-           0.005
-          ],
-          "color": "#ff2a2a"
-         }
-        ],
-        "moves": [
-         {
-          "name": "hornIn",
-          "type": "appear"
-         },
-         {
-          "name": "alarm",
-          "type": "blink",
-          "rate": 3
-         }
-        ]
-       },
-       {
-        "id": "battery",
-        "parent": "base",
-        "at": [
-         -0.065,
-         -0.065,
-         0.045
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           0.05,
-           0.03,
-           0.02
-          ],
-          "at": [
-           0,
-           0,
-           0
-          ],
-          "look": "paint",
-          "color": "#2b2f33"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.012,
-           0.03,
-           0.021
-          ],
-          "at": [
-           0.02,
-           0,
-           0
-          ],
-          "look": "paint",
-          "color": "#d8342b"
-         }
-        ],
-        "moves": [
-         {
-          "name": "batteryIn",
-          "type": "appear"
-         }
-        ]
-       },
-       {
-        "id": "button",
-        "parent": "base",
-        "at": [
-         -0.075,
-         0.055,
-         0.045
-        ],
-        "shapes": [
-         {
-          "shape": "button",
-          "r": 0.018,
-          "at": [
-           0,
-           0,
-           0
-          ]
-         }
-        ],
-        "moves": [
-         {
-          "name": "buttonIn",
-          "type": "appear"
-         }
-        ]
-       },
-       {
-        "id": "vents",
-        "parent": "base",
-        "at": [
-         0,
-         0,
-         0.035
-        ],
-        "shapes": [
-         {
-          "shape": "torus",
-          "r": 0.112,
-          "tube": 0.007,
-          "axis": "z",
-          "at": [
-           0,
-           0,
-           0
-          ],
-          "look": "plastic",
-          "color": "#e3e8ed"
-         },
-         {
-          "shape": "torus",
-          "r": 0.095,
-          "tube": 0.005,
-          "axis": "z",
-          "at": [
-           0,
-           0,
-           0.005
-          ],
-          "look": "plastic",
-          "color": "#e3e8ed"
-         }
-        ],
-        "moves": [
-         {
-          "name": "ventsIn",
-          "type": "appear"
-         }
-        ]
-       }
-      ]
-     }
-    },
-    {
-     "id": "trashcan",
-     "kind": "prop",
-     "params": {
-      "type": "trash can",
-      "pos": [
-       2.6,
-       0.12,
-       -6.2
-      ],
-      "scale": 1
-     }
-    },
-    {
-     "id": "fire",
-     "kind": "fx",
-     "params": {
-      "type": "fire",
-      "at": [
-       2.6,
-       0.9,
-       -6
-      ],
-      "size": 0.35
-     }
-    },
-    {
-     "id": "smoke",
-     "kind": "fx",
-     "params": {
-      "type": "smoke",
-      "at": [
-       2.6,
-       1.1,
-       -6.4
-      ],
-      "size": 0.6
-     }
-    },
-    {
-     "id": "years",
-     "kind": "counter",
-     "params": {
-      "pos": [
-       2.55,
-       1.75,
-       -6.7
-      ],
-      "size": 0.35,
-      "from": 0,
-      "to": 10,
-      "color": "#ffd23d",
-      "bar": false
-     }
-    },
-    {
-     "id": "outline",
-     "kind": "outline",
-     "params": {
-      "of": "detector",
-      "opts": {
-       "closed": true
-      }
-     }
-    },
-    {
-     "id": "sign",
-     "kind": "sign",
-     "params": {
-      "at": [
-       -2.5,
-       0.12,
-       -3
-      ],
-      "rotY": 0.2,
-      "scale": 1
-     }
-    }
-   ],
-   "beats": [
-    {
-     "s": "hook",
-     "shows": {
-      "p": "detector",
-      "does": "a red light beam shines across the dark chamber"
-     },
-     "do": [
-      {
-       "p": "detector",
-       "v": "show",
-       "w": ""
-      },
-      {
-       "p": "detector",
-       "v": "beamOn",
-       "w": "beam"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "detector"
-       ],
-       "type": "close"
-      }
-     ]
-    },
-    {
-     "s": "problem",
-     "shows": {
-      "p": "smoke",
-      "does": "a trash can catches fire and smoke rises past the alarm"
-     },
-     "state": {
-      "text": "NO ALARM",
-      "w": "smoke"
-     },
-     "do": [
-      {
-       "p": "trashcan",
-       "v": "show",
-       "w": ""
-      },
-      {
-       "p": "fire",
-       "v": "start",
-       "w": ""
-      },
-      {
-       "p": "smoke",
-       "v": "start",
-       "w": "smoke"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "detector",
-        "trashcan"
-       ],
-       "type": "mid"
-      }
-     ]
-    },
-    {
-     "s": "fix1",
-     "shows": {
-      "p": "detector",
-      "does": "a blue sensor appears below the beam and a pale ray bounces onto it"
-     },
-     "do": [
-      {
-       "p": "detector",
-       "v": "sensorIn",
-       "w": "sensor"
-      },
-      {
-       "p": "detector",
-       "v": "bounce",
-       "w": "bounces"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "detector"
-       ],
-       "type": "close"
-      }
-     ]
-    },
-    {
-     "s": "problem2",
-     "shows": {
-      "p": "light",
-      "does": "the room goes dark while the smoke keeps rising and the alarm stays silent"
-     },
-     "state": {
-      "text": "SILENT",
-      "w": "sound"
-     },
-     "do": [
-      {
-       "p": "light",
-       "v": "night",
-       "w": "night"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "detector",
-        "trashcan"
-       ],
-       "type": "mid"
-      }
-     ]
-    },
-    {
-     "s": "fix2",
-     "shows": {
-      "p": "detector",
-      "does": "a horn appears and a red lamp blinks"
-     },
-     "do": [
-      {
-       "p": "light",
-       "v": "day",
-       "w": "So"
-      },
-      {
-       "p": "detector",
-       "v": "hornIn",
-       "w": "horn"
-      },
-      {
-       "p": "detector",
-       "v": "alarm",
-       "w": "blares"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "detector"
-       ],
-       "type": "close"
-      }
-     ]
-    },
-    {
-     "s": "name",
-     "shows": {
-      "p": "outline",
-      "does": "a glowing outline traces the alarm"
-     },
-     "do": [
-      {
-       "p": "fire",
-       "v": "stop",
-       "w": ""
-      },
-      {
-       "p": "smoke",
-       "v": "stop",
-       "w": ""
-      },
-      {
-       "p": "detector",
-       "v": "alarmBack",
-       "w": "smoke"
-      },
-      {
-       "p": "outline",
-       "v": "show",
-       "w": "smoke"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "detector"
-       ],
-       "hero": true,
-       "width": 0.5
-      }
-     ]
-    },
-    {
-     "s": "fact",
-     "shows": {
-      "p": "years",
-      "does": "a counter beside the alarm counts up to 10 years"
-     },
-     "do": [
-      {
-       "p": "outline",
-       "v": "hide",
-       "w": ""
-      },
-      {
-       "p": "years",
-       "v": "show",
-       "w": ""
-      },
-      {
-       "p": "years",
-       "v": "count",
-       "w": "every",
-       "d": 1.6
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "detector",
-        "years"
-       ],
-       "type": "mid"
-      }
-     ]
-    },
-    {
-     "s": "finish",
-     "shows": {
-      "p": "detector",
-      "does": "a battery, a test button and vents pop on"
-     },
-     "do": [
-      {
-       "p": "years",
-       "v": "hide",
-       "w": "Add"
-      },
-      {
-       "p": "detector",
-       "v": "batteryIn",
-       "w": "battery"
-      },
-      {
-       "p": "detector",
-       "v": "buttonIn",
-       "w": "button"
-      },
-      {
-       "p": "detector",
-       "v": "ventsIn",
-       "w": "vents"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "home"
-       ]
-      }
-     ]
-    },
-    {
-     "s": "congrats",
-     "do": [],
-     "shots": [
-      {
-       "focus": [
-        "home"
-       ]
-      }
-     ]
-    }
-   ],
-   "audio": {
-    "cards": [
-     {
-      "text": "85 dB",
-      "at": {
-       "s": "fix2",
-       "w": "85",
-       "o": 0
-      },
-      "d": 1.5
-     },
-     {
-      "text": "10 YEARS",
-      "at": {
-       "s": "fact",
-       "w": "10",
-       "o": 0
-      },
-      "d": 1.5
-     }
-    ],
-    "sfx": [
-     {
-      "lib": "flame",
-      "at": {
-       "s": "problem",
-       "w": "smoke",
-       "o": 0
-      },
-      "d": 1.4
-     },
-     {
-      "lib": "motor_hum",
-      "at": {
-       "s": "fix2",
-       "w": "blares",
-       "o": 0
-      },
-      "d": 1.2
-     }
-    ],
-    "chimes": [
-     {
-      "s": "fix2",
-      "w": "85",
-      "o": 0
-     },
-     {
-      "s": "name",
-      "w": "",
-      "o": 0
-     },
-     {
-      "s": "fact",
-      "w": "10",
-      "o": 0
-     },
-     {
-      "s": "congrats",
-      "w": "",
-      "o": 0
-     }
-    ],
-    "rain": []
-   }
-  }
+  "sceneJson": "{\"world\":{\"cut\":[6,7.5,-3,0.4],\"house\":false,\"worker\":false,\"moreTrees\":false,\"road\":false,\"porch\":false,\"backdrop\":{\"type\":\"room\",\"windowX\":-4,\"chairX\":-6}},\"parts\":[{\"id\":\"light\",\"kind\":\"light\",\"params\":{\"storm\":false}},{\"id\":\"detector\",\"kind\":\"rig\",\"main\":true,\"params\":{\"name\":\"smoke detector\",\"synonyms\":[\"smoke alarm\",\"fire alarm\",\"photoelectric smoke detector\"],\"main\":true,\"mount\":\"wall\",\"pos\":[1.5,1.7,-6.98],\"scale\":4,\"nodes\":[{\"id\":\"base\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.12,\"h\":0.03,\"axis\":\"z\",\"at\":[0,0,0.015],\"look\":\"plastic\",\"color\":\"#f2f4f6\"},{\"shape\":\"cylinder\",\"r\":0.075,\"h\":0.02,\"axis\":\"z\",\"at\":[0,0,0.04],\"look\":\"plastic\",\"color\":\"#1d2226\"}]},{\"id\":\"led\",\"parent\":\"base\",\"at\":[-0.06,0,0.055],\"shapes\":[{\"shape\":\"box\",\"size\":[0.025,0.02,0.02],\"at\":[0,0,0],\"look\":\"plastic\",\"color\":\"#3a3d40\"},{\"shape\":\"beam\",\"from\":[0.012,0,0.005],\"to\":[0.12,0,0.005],\"r\":0.015,\"color\":\"#ff5a5a\"}],\"moves\":[{\"name\":\"beamOn\",\"type\":\"light\"}]},{\"id\":\"sensor\",\"parent\":\"base\",\"at\":[0.01,-0.06,0.055],\"shapes\":[{\"shape\":\"box\",\"size\":[0.025,0.025,0.02],\"at\":[0,0,0],\"look\":\"plastic\",\"color\":\"#2f6fb0\"}],\"moves\":[{\"name\":\"sensorIn\",\"type\":\"appear\"}]},{\"id\":\"scatter\",\"parent\":\"sensor\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"beam\",\"from\":[0,0.06,0.006],\"to\":[0,0.014,0.006],\"r\":0.015,\"color\":\"#ff9a9a\"}],\"moves\":[{\"name\":\"bounce\",\"type\":\"light\"}]},{\"id\":\"horn\",\"parent\":\"base\",\"at\":[0.075,0.055,0.045],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.035,\"h\":0.015,\"axis\":\"z\",\"at\":[0,0,0],\"look\":\"metal\",\"color\":\"#c9a45c\"},{\"shape\":\"light\",\"r\":0.015,\"at\":[0,-0.11,0.005],\"color\":\"#ff2a2a\"}],\"moves\":[{\"name\":\"hornIn\",\"type\":\"appear\"},{\"name\":\"alarm\",\"type\":\"blink\",\"rate\":3}]},{\"id\":\"battery\",\"parent\":\"base\",\"at\":[-0.065,-0.065,0.045],\"shapes\":[{\"shape\":\"box\",\"size\":[0.05,0.03,0.02],\"at\":[0,0,0],\"look\":\"paint\",\"color\":\"#2b2f33\"},{\"shape\":\"box\",\"size\":[0.012,0.03,0.021],\"at\":[0.02,0,0],\"look\":\"paint\",\"color\":\"#d8342b\"}],\"moves\":[{\"name\":\"batteryIn\",\"type\":\"appear\"},{\"name\":\"pull\",\"type\":\"slide\",\"to\":[0,-0.09,0.08]}]},{\"id\":\"button\",\"parent\":\"base\",\"at\":[-0.075,0.055,0.045],\"shapes\":[{\"shape\":\"button\",\"r\":0.018,\"at\":[0,0,0]}],\"moves\":[{\"name\":\"buttonIn\",\"type\":\"appear\"}]},{\"id\":\"vents\",\"parent\":\"base\",\"at\":[0,0,0.035],\"shapes\":[{\"shape\":\"torus\",\"r\":0.112,\"tube\":0.007,\"axis\":\"z\",\"at\":[0,0,0],\"look\":\"plastic\",\"color\":\"#e3e8ed\"},{\"shape\":\"torus\",\"r\":0.095,\"tube\":0.005,\"axis\":\"z\",\"at\":[0,0,0.005],\"look\":\"plastic\",\"color\":\"#e3e8ed\"}],\"moves\":[{\"name\":\"ventsIn\",\"type\":\"appear\"}]}]}},{\"id\":\"trashcan\",\"kind\":\"prop\",\"params\":{\"type\":\"trash can\",\"pos\":[2.6,0.12,-6.2],\"scale\":1}},{\"id\":\"fire\",\"kind\":\"fx\",\"params\":{\"type\":\"fire\",\"at\":[2.6,0.9,-6],\"size\":0.35}},{\"id\":\"smoke\",\"kind\":\"fx\",\"params\":{\"type\":\"smoke\",\"at\":[2.6,1.1,-6.4],\"size\":0.6}},{\"id\":\"smokeIn\",\"kind\":\"fx\",\"params\":{\"type\":\"smoke\",\"at\":[1.5,1.75,-6.7],\"size\":0.35}},{\"id\":\"smokeRoom\",\"kind\":\"fx\",\"params\":{\"type\":\"smoke\",\"at\":[1.2,2.6,-5.8],\"size\":1}},{\"id\":\"dust\",\"kind\":\"fx\",\"params\":{\"type\":\"motes\",\"at\":[1.5,1.7,-6.6],\"size\":0.35}},{\"id\":\"hand\",\"kind\":\"hand\",\"params\":{\"pos\":[1.2,1.92,-6.75],\"size\":0.35,\"action\":\"press\",\"sleeve\":\"#3d6fb0\"}},{\"id\":\"ring\",\"kind\":\"outline\",\"params\":{\"of\":\"detector\",\"opts\":{\"closed\":true}}},{\"id\":\"sign\",\"kind\":\"sign\",\"params\":{\"at\":[-2.5,0.12,-3],\"rotY\":0.2,\"scale\":1}}],\"beats\":[{\"s\":\"hook\",\"do\":[{\"p\":\"detector\",\"v\":\"show\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"hand\",\"v\":\"show\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"hand\",\"v\":\"press\",\"w\":\"shine\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"detector\",\"v\":\"beamOn\",\"w\":\"light\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"detector\",\"does\":\"a hand switches it on and a red beam crosses the dark box\"},\"shots\":[{\"focus\":[\"detector\",\"hand\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem\",\"do\":[{\"p\":\"trashcan\",\"v\":\"show\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"fire\",\"v\":\"start\",\"w\":\"smoke\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"smoke\",\"v\":\"start\",\"w\":\"smoke\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"smokeIn\",\"v\":\"start\",\"w\":\"drifts\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"smokeIn\",\"does\":\"smoke from a burning trash can drifts into the box and through the beam\"},\"shots\":[{\"focus\":[\"detector\",\"trashcan\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix1\",\"do\":[{\"p\":\"detector\",\"v\":\"sensorIn\",\"w\":\"sensor\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"detector\",\"v\":\"bounce\",\"w\":\"scatters\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"detector\",\"does\":\"a sensor appears beside the beam and the scattered light lands on it\"},\"shots\":[{\"focus\":[\"detector.sensor\",\"detector.led\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem2\",\"do\":[{\"p\":\"smokeRoom\",\"v\":\"start\",\"w\":\"sleeps\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"state\":{\"text\":\"NO SOUND\",\"w\":\"silent\"},\"shows\":{\"p\":\"smokeRoom\",\"does\":\"the sensor glows but the room fills with smoke in silence\"},\"shots\":[{\"focus\":[\"detector\",\"trashcan\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix2\",\"do\":[{\"p\":\"detector\",\"v\":\"hornIn\",\"w\":\"horn\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"detector\",\"v\":\"alarm\",\"w\":\"blares\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"detector\",\"does\":\"a horn appears and its red light flashes as it blares\"},\"shots\":[{\"focus\":[\"detector.horn\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"name\",\"do\":[{\"p\":\"fire\",\"v\":\"stop\",\"w\":\"This\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"smoke\",\"v\":\"stop\",\"w\":\"This\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"smokeIn\",\"v\":\"stop\",\"w\":\"This\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"smokeRoom\",\"v\":\"stop\",\"w\":\"This\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"ring\",\"v\":\"show\",\"w\":\"photoelectric\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"ring\",\"does\":\"a ring traced round the smoke detector\"},\"shots\":[{\"focus\":[\"detector\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":true,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem3\",\"do\":[{\"p\":\"ring\",\"v\":\"hide\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"dust\",\"v\":\"start\",\"w\":\"dust\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"dust\",\"does\":\"dust and specks drift into the box and the horn keeps flashing\"},\"shots\":[{\"focus\":[\"detector\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix3\",\"do\":[{\"p\":\"detector\",\"v\":\"ventsIn\",\"w\":\"mesh\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"dust\",\"v\":\"stop\",\"w\":\"out\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"detector\",\"v\":\"alarmBack\",\"w\":\"out\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"detector\",\"does\":\"a fine mesh ring closes over the vents and the dust stays out\"},\"shots\":[{\"focus\":[\"detector.vents\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem4\",\"do\":[{\"p\":\"detector\",\"v\":\"beamOnBack\",\"w\":\"dies\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"detector\",\"v\":\"bounceBack\",\"w\":\"dies\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"detector\",\"does\":\"the beam goes dark as the battery dies behind the screen\"},\"shots\":[{\"focus\":[\"detector.led\",\"detector.battery\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix4\",\"do\":[{\"p\":\"detector\",\"v\":\"batteryIn\",\"w\":\"battery\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"detector\",\"v\":\"beamOn\",\"w\":\"low\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"detector\",\"v\":\"alarm\",\"w\":\"chirps\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"detector\",\"does\":\"a battery appears and the horn light blinks a chirp\"},\"shots\":[{\"focus\":[\"detector.battery\",\"detector.horn\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem5\",\"do\":[{\"p\":\"detector\",\"v\":\"alarmBack\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"detector\",\"v\":\"pull\",\"w\":\"pulled\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"detector\",\"does\":\"the battery slides out of the detector\"},\"shots\":[{\"focus\":[\"detector.battery\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix5\",\"do\":[{\"p\":\"detector\",\"v\":\"pullBack\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"detector\",\"v\":\"buttonIn\",\"w\":\"button\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"hand\",\"v\":\"press\",\"w\":\"check\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"hand\",\"does\":\"a test button appears and the hand presses it\"},\"shots\":[{\"focus\":[\"detector.button\",\"hand\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"finish\",\"do\":[{\"p\":\"hand\",\"v\":\"press\",\"w\":\"Press\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"detector\",\"v\":\"alarm\",\"w\":\"flashes\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"detector\",\"does\":\"the hand presses test and the horn light flashes\"},\"shots\":[{\"focus\":[\"detector\",\"hand\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"congrats\",\"do\":[],\"shows\":{\"p\":\"detector\",\"does\":\"the smoke detector on the wall with its light flashing\"},\"shots\":[{\"focus\":[\"detector\",\"hand\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]}],\"audio\":{\"cards\":[{\"text\":\"85 dB\",\"at\":{\"s\":\"fix2\",\"w\":\"85\",\"o\":0},\"d\":1.5}],\"sfx\":[{\"lib\":\"flame\",\"at\":{\"s\":\"problem\",\"w\":\"smoke\",\"o\":0},\"d\":1.4}],\"chimes\":[{\"s\":\"fix2\",\"w\":\"85\",\"o\":0},{\"s\":\"name\",\"w\":\"\",\"o\":0},{\"s\":\"congrats\",\"w\":\"\",\"o\":0}],\"rain\":[]}}"
  }
 }

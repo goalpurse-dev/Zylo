@@ -1,2115 +1,346 @@
 {
  "hash": "*",
- "by": "stand-in planner (replan 2026-11-09)",
+ "by": "stand-in planner (agent), 2026-11-11",
  "searches": 0,
  "data": {
-  "why": "A chip factory grows out of a muddy pit on a plain lawn: the pit in section in front, where muddy water settles to sand, and a row of machines right behind it (an arc furnace with a carbon bin, a crystal puller, a light printer and a wafer rack), which a factory hall is built around at the end to make a cleanroom. The camera opens close on the pit, then frames each machine in mid shots as it is added, and ends on the lit hall with the clear pit in front.",
+  "why": "A muddy puddle on a plain lawn in section in front, a battery and bulb beside it, and the chip line behind (furnace with a carbon bin, crystal puller, wafer table, light printer) that a hall closes around later. The story follows the sand: furnace, silicon, crystal, wafer, printer, chip; each fix brings the next problem, and the bulb that stayed dark on sand glows on the finished chip over the clear puddle. The camera opens close on the puddle and frames each machine as it works.",
   "story": {
-   "title": "How a puddle of mud becomes a chip factory",
-   "hero": "a Czochralski crystal puller",
+   "title": "Chip factory",
+   "hero": "a cleanroom",
    "parts": [
-    "muddy pit",
+    "muddy puddle",
     "sand",
     "battery and bulb",
-    "clay and iron",
     "arc furnace",
     "carbon",
-    "gas",
+    "silicon lumps",
     "crystal puller",
-    "silicon crystal",
     "wafers",
-    "light printer",
-    "dust",
-    "rain and mud",
-    "factory hall",
-    "filtered air",
-    "ceiling lights"
+    "printer",
+    "cleanroom hall",
+    "copper wires",
+    "chip case"
    ],
    "ideas": [
     {
      "role": "hook",
-     "idea": "dig a pit and let muddy water settle and you get a sandy floor"
+     "idea": "a muddy puddle that settles leaves a bed of sand"
     },
     {
      "role": "problem",
-     "idea": "sand is silicon locked to oxygen, so no current passes and the bulb stays dark"
-    },
-    {
-     "role": "stakes",
-     "idea": "the sand is full of clay and iron, yet a chip allows only one foreign atom per billion"
+     "idea": "sand is silicon bound to oxygen and carries no current"
     },
     {
      "role": "fix1",
-     "idea": "pour the sand into a furnace with carbon"
-    },
-    {
-     "role": "fix2",
-     "idea": "heat it to about 2,000 degrees Celsius and the oxygen burns off as gas"
-    },
-    {
-     "role": "fix3",
-     "idea": "melt the pure silicon and pull one single crystal out of it"
-    },
-    {
-     "role": "name",
-     "idea": "this is a Czochralski crystal puller"
-    },
-    {
-     "role": "name2",
-     "idea": "slice the crystal into thin discs: each disc is a wafer"
-    },
-    {
-     "role": "how",
-     "idea": "machines print layer after layer of tiny switches onto each wafer with light"
-    },
-    {
-     "role": "fact",
-     "idea": "one modern chip holds over 20 billion of those switches"
+     "idea": "the sand goes into a furnace with carbon"
     },
     {
      "role": "problem2",
-     "idea": "a single speck of dust landing on a wafer can kill the chip"
+     "idea": "cold, the oxygen stays bound to the silicon"
+    },
+    {
+     "role": "fix2",
+     "idea": "electric arcs heat it so hot the carbon takes the oxygen away as gas"
     },
     {
      "role": "problem3",
-     "idea": "out in the open, rain blows mud onto the machines and ruins a batch"
+     "idea": "the silicon comes out as a jumble of many small crystals"
+    },
+    {
+     "role": "fix3",
+     "idea": "it is melted and one single crystal is pulled from it"
+    },
+    {
+     "role": "problem4",
+     "idea": "the single crystal is a big heavy log"
     },
     {
      "role": "fix4",
-     "idea": "build a hall around the machines and push filtered air down: a cleanroom"
+     "idea": "a wire saw cuts it into thin wafers"
+    },
+    {
+     "role": "problem5",
+     "idea": "the saw leaves the wafers scratched"
+    },
+    {
+     "role": "fix5",
+     "idea": "polishing makes each wafer a perfect mirror"
+    },
+    {
+     "role": "problem6",
+     "idea": "a plain mirror of silicon does nothing yet"
+    },
+    {
+     "role": "fix6",
+     "idea": "a printer uses light through a mask to draw switches on the wafer"
+    },
+    {
+     "role": "problem7",
+     "idea": "a single speck of dust in the light spoils a chip"
+    },
+    {
+     "role": "fix7",
+     "idea": "a hall with filtered air blowing down keeps the dust out"
+    },
+    {
+     "role": "name",
+     "idea": "this is a cleanroom"
+    },
+    {
+     "role": "problem8",
+     "idea": "the switches stand alone with no wiring between them"
+    },
+    {
+     "role": "fix8",
+     "idea": "layers of copper wiring join them up"
+    },
+    {
+     "role": "problem9",
+     "idea": "a few of the wires are faulty and some chips fail"
+    },
+    {
+     "role": "fix9",
+     "idea": "every chip is tested and the bad ones are marked"
+    },
+    {
+     "role": "problem10",
+     "idea": "a good chip is a bare sliver with nothing to plug into"
+    },
+    {
+     "role": "fix10",
+     "idea": "it is sealed in a black case with metal legs"
     },
     {
      "role": "finish",
-     "idea": "ceiling lights over the machines, and the pit water runs clear"
+     "idea": "the chip plugs in and the bulb glows over the clear puddle"
     },
     {
      "role": "congrats",
-     "idea": "you have built a semiconductor factory"
+     "idea": "you have built a chip factory"
     }
    ],
    "chain": [
     {
      "problem": "problem",
      "causedBy": "hook",
-     "shows": "a battery's bulb wired into the sand stays dark",
-     "stakes": "sand cannot carry current, so no chip",
-     "size": 3
+     "shows": "a battery and bulb in the sand stay dark",
+     "stakes": "nothing can be made from it",
+     "size": 2,
+     "at": "sand",
+     "scale": "thing"
     },
     {
      "problem": "problem2",
-     "causedBy": "how",
-     "shows": "dust lumps land on the wafer in the printer",
-     "stakes": "the chip dies",
-     "size": 7
+     "causedBy": "fix1",
+     "shows": "the cold furnace full of sand and carbon does nothing",
+     "stakes": "no silicon comes out",
+     "size": 3,
+     "at": "furnace",
+     "scale": "thing"
     },
     {
      "problem": "problem3",
-     "causedBy": "problem2",
-     "shows": "rain and mud blow onto the open machines",
-     "stakes": "a whole batch is ruined",
-     "size": 9
-    }
-   ],
-   "surprises": [
-    {
-     "claim": "Chip-grade silicon must be at least about nine nines (99.9999999 percent) pure, roughly one foreign atom per billion, with top grades even purer.",
-     "role": "stakes",
-     "search": "electronic grade silicon purity nine nines one atom per billion"
+     "causedBy": "fix2",
+     "shows": "the silicon pours out as a jumble of grey lumps",
+     "stakes": "electrons trip at every crystal edge",
+     "size": 4,
+     "at": "silicon",
+     "scale": "thing"
     },
     {
-     "claim": "Silicon is made by heating quartz with carbon in an electric arc furnace at up to about 2,000 °C (industry ranges run from roughly 1,500 or 1,300 °C up to 2,000 °C).",
+     "problem": "problem4",
+     "causedBy": "fix3",
+     "shows": "the pulled crystal hangs as a heavy log",
+     "stakes": "it is far too thick for a chip",
+     "size": 4,
+     "at": "crystal",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem5",
+     "causedBy": "fix4",
+     "shows": "the saw leaves the wafers scratched",
+     "stakes": "no pattern can be printed on them",
+     "size": 5,
+     "at": "wafer",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem6",
+     "causedBy": "fix5",
+     "shows": "the polished wafers are bare and empty",
+     "stakes": "they do nothing",
+     "size": 5,
+     "at": "wafer",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem7",
+     "causedBy": "fix6",
+     "shows": "dust specks fall in the printer's light onto the wafer",
+     "stakes": "the chips are ruined",
+     "size": 6,
+     "at": "printer",
+     "scale": "house"
+    },
+    {
+     "problem": "problem8",
+     "causedBy": "fix7",
+     "shows": "the printed switches sit apart with nothing joining them",
+     "stakes": "the chip cannot work",
+     "size": 6,
+     "at": "chip",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem9",
+     "causedBy": "fix8",
+     "shows": "sparks fly from faulty copper wires",
+     "stakes": "some chips fail",
+     "size": 7,
+     "at": "chip",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem10",
+     "causedBy": "fix9",
+     "shows": "a good chip is a bare sliver with nothing to plug into",
+     "stakes": "it cannot be used in anything",
+     "size": 7,
+     "at": "chip",
+     "scale": "thing"
+    }
+   ],
+   "flow": [
+    "puddle",
+    "sand",
+    "furnace",
+    "silicon",
+    "crystal",
+    "wafer",
+    "printer",
+    "chip"
+   ],
+   "recurring": {
+    "p": "tester",
+    "what": "a battery and bulb: dark on sand, glowing on the finished chip"
+   },
+   "surprises": [
+    {
+     "claim": "Silicon is made by heating quartz sand with carbon in an electric arc furnace at up to about 2,000 degrees Celsius",
      "role": "fix2",
      "search": "metallurgical silicon arc furnace quartz carbon 2000 C"
     },
     {
-     "claim": "A single modern chip can hold over 20 billion transistors.",
-     "role": "fact",
-     "search": "chip transistor count over 20 billion"
+     "claim": "Chips are made from one single silicon crystal pulled slowly from melted silicon (the Czochralski method)",
+     "role": "fix3",
+     "search": "Czochralski process single crystal silicon ingot pulled from melt"
+    },
+    {
+     "claim": "Cleanrooms for chips blow filtered air down from the ceiling to keep dust off the wafers",
+     "role": "fix7",
+     "search": "semiconductor cleanroom HEPA filtered laminar airflow ceiling down"
     }
    ]
   },
   "sentences": [
    {
     "role": "hook",
-    "text": "If you dig a pit and let muddy water settle, you have a sandy floor."
+    "text": "If you let a muddy puddle settle, you have sand."
    },
    {
     "role": "problem",
-    "text": "But sand is silicon locked to oxygen, so no current passes through it."
-   },
-   {
-    "role": "stakes",
-    "text": "It is full of clay and iron, yet a chip allows only one foreign atom per billion."
+    "text": "But sand is silicon locked to oxygen, so the bulb stays dark."
    },
    {
     "role": "fix1",
-    "text": "So you pour the sand into a furnace with carbon."
-   },
-   {
-    "role": "fix2",
-    "text": "Then you heat it to about 2,000 degrees Celsius, and the oxygen burns off as gas."
-   },
-   {
-    "role": "fix3",
-    "text": "So you melt the pure silicon and pull one single crystal out of it."
-   },
-   {
-    "role": "name",
-    "text": "This is a Czochralski crystal puller."
-   },
-   {
-    "role": "name2",
-    "text": "Slice the crystal into thin discs, and each disc is a wafer."
-   },
-   {
-    "role": "how",
-    "text": "Machines print layer after layer of tiny switches onto each wafer with light."
-   },
-   {
-    "role": "fact",
-    "text": "One modern chip can hold over 20 billion of those switches."
+    "text": "So you shovel the sand into a furnace with carbon."
    },
    {
     "role": "problem2",
-    "text": "But a single speck of dust landing on a wafer can kill the chip."
+    "text": "But in a cold furnace, the oxygen stays locked on."
+   },
+   {
+    "role": "fix2",
+    "text": "So electric arcs heat it to about 2,000 degrees."
    },
    {
     "role": "problem3",
-    "text": "And out in the open, rain blows mud onto the machines and ruins a whole batch."
+    "text": "But the silicon pours out as a jumble of crystals."
+   },
+   {
+    "role": "fix3",
+    "text": "So you melt it and pull out one single crystal."
+   },
+   {
+    "role": "problem4",
+    "text": "But that crystal is a heavy log, far too thick."
    },
    {
     "role": "fix4",
-    "text": "So you build a hall around the machines and push filtered air down, making a cleanroom."
+    "text": "So a wire saw slices it into thin wafers."
+   },
+   {
+    "role": "problem5",
+    "text": "But the saw leaves every wafer scratched and rough."
+   },
+   {
+    "role": "fix5",
+    "text": "So you polish each wafer into a mirror."
+   },
+   {
+    "role": "problem6",
+    "text": "But a bare silicon mirror does nothing on its own."
+   },
+   {
+    "role": "fix6",
+    "text": "So a printer shines light through a mask, drawing switches."
+   },
+   {
+    "role": "problem7",
+    "text": "But one speck of dust in that light ruins the chip."
+   },
+   {
+    "role": "fix7",
+    "text": "So you build a hall and blow filtered air down."
+   },
+   {
+    "role": "name",
+    "text": "This is a cleanroom."
+   },
+   {
+    "role": "problem8",
+    "text": "But even in the hall, the printed switches sit unconnected."
+   },
+   {
+    "role": "fix8",
+    "text": "So you lay thin copper wires over them in layers."
+   },
+   {
+    "role": "problem9",
+    "text": "But a few copper wires short out, and some chips fail."
+   },
+   {
+    "role": "fix9",
+    "text": "So you test every chip and mark the bad ones."
+   },
+   {
+    "role": "problem10",
+    "text": "But good chips are bare slivers with nothing to plug in."
+   },
+   {
+    "role": "fix10",
+    "text": "So you seal each in a black case with legs."
    },
    {
     "role": "finish",
-    "text": "Add ceiling lights over the machines, and the pit water runs clear."
+    "text": "Plug one in, and the bulb glows over the clear puddle."
    },
    {
     "role": "congrats",
-    "text": "Congratulations, you have built a semiconductor factory."
+    "text": "Congratulations, you have built a chip factory."
    }
   ],
-  "sceneJson": {
-   "world": {
-    "cut": [
-     -6,
-     0,
-     -4,
-     3
-    ],
-    "house": false,
-    "porch": false,
-    "trees": [
-     [
-      -15,
-      -12
-     ],
-     [
-      13,
-      -14,
-      0.9
-     ]
-    ],
-    "road": false,
-    "worker": false,
-    "moreTrees": false,
-    "rocksAvoid": [
-     [
-      -6.5,
-      0.5,
-      -3.2,
-      0.2
-     ]
-    ]
-   },
-   "parts": [
-    {
-     "id": "light",
-     "kind": "light",
-     "params": {
-      "storm": true
-     }
-    },
-    {
-     "id": "dig",
-     "kind": "dig",
-     "params": {
-      "clumps": 100,
-      "mound": {
-       "x": -10,
-       "z": -6,
-       "rx": 1.8,
-       "rz": 1.4,
-       "h": 1
-      }
-     }
-    },
-    {
-     "id": "sandPit",
-     "kind": "settle",
-     "params": {
-      "box": {
-       "x0": -5.8,
-       "x1": -0.2,
-       "y0": -2.8,
-       "y1": -0.1,
-       "z0": -3.8,
-       "z1": 0
-      },
-      "wallColor": "#7a5a3a",
-      "lid": false,
-      "murky": true,
-      "clearColor": "#8fc9e0",
-      "sandColor": "#e0c68e",
-      "grains": 220
-     }
-    },
-    {
-     "id": "tester",
-     "kind": "rig",
-     "params": {
-      "name": "battery and bulb",
-      "synonyms": [
-       "battery",
-       "bulb",
-       "circuit tester"
-      ],
-      "pos": [
-       -1.2,
-       0,
-       -4.8
-      ],
-      "nodes": [
-       {
-        "id": "battery",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           0.9,
-           0.7,
-           0.6
-          ],
-          "at": [
-           0,
-           0.35,
-           0
-          ],
-          "look": "paint",
-          "color": "#2d2f33"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.9,
-           0.12,
-           0.6
-          ],
-          "at": [
-           0,
-           0.76,
-           0
-          ],
-          "look": "paint",
-          "color": "#e8b02a"
-         },
-         {
-          "shape": "cylinder",
-          "r": 0.08,
-          "h": 0.5,
-          "axis": "y",
-          "at": [
-           0,
-           1.07,
-           0
-          ],
-          "look": "metal"
-         },
-         {
-          "shape": "sphere",
-          "r": 0.3,
-          "at": [
-           0,
-           1.55,
-           0
-          ],
-          "look": "glass",
-          "color": "#f2f2e8"
-         },
-         {
-          "shape": "cable",
-          "path": [
-           [
-            -0.3,
-            0.82,
-            0.2
-           ],
-           [
-            -0.8,
-            0.6,
-            1
-           ],
-           [
-            -1.6,
-            -1.2,
-            2.6
-           ],
-           [
-            -1.8,
-            -2.3,
-            3.4
-           ]
-          ],
-          "r": 0.05,
-          "look": "rubber",
-          "color": "#d23b2e"
-         },
-         {
-          "shape": "cable",
-          "path": [
-           [
-            0.3,
-            0.82,
-            0.2
-           ],
-           [
-            0.2,
-            0.6,
-            1
-           ],
-           [
-            -0.4,
-            -1.2,
-            2.6
-           ],
-           [
-            -0.6,
-            -2.3,
-            3.4
-           ]
-          ],
-          "r": 0.05,
-          "look": "rubber",
-          "color": "#1e1e22"
-         }
-        ]
-       },
-       {
-        "id": "lamp",
-        "parent": "battery",
-        "at": [
-         0,
-         1.55,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "light",
-          "r": 0.18,
-          "color": "#ffd23d"
-         }
-        ],
-        "moves": [
-         {
-          "name": "glowBulb",
-          "type": "light"
-         }
-        ]
-       }
-      ]
-     }
-    },
-    {
-     "id": "dirt",
-     "kind": "drops",
-     "params": {
-      "x0": -5.4,
-      "x1": -0.6,
-      "count": 22,
-      "fromY": 0.8,
-      "landY": -2.5,
-      "z": -0.6,
-      "mat": "mud",
-      "size": 0.34
-     }
-    },
-    {
-     "id": "furnace",
-     "kind": "rig",
-     "params": {
-      "name": "arc furnace",
-      "synonyms": [
-       "furnace",
-       "electric arc furnace"
-      ],
-      "pos": [
-       -5,
-       0,
-       -8
-      ],
-      "nodes": [
-       {
-        "id": "shell",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "cylinder",
-          "r": 1.3,
-          "h": 2.2,
-          "axis": "y",
-          "at": [
-           0,
-           1.1,
-           0
-          ],
-          "look": "metal",
-          "color": "#5a6168"
-         },
-         {
-          "shape": "torus",
-          "r": 1.3,
-          "tube": 0.1,
-          "axis": "y",
-          "at": [
-           0,
-           2.2,
-           0
-          ],
-          "look": "metal",
-          "color": "#3c4248"
-         }
-        ],
-        "moves": [
-         {
-          "name": "heat",
-          "type": "heat",
-          "color": "#ff5a1a"
-         }
-        ]
-       },
-       {
-        "id": "electrodes",
-        "parent": "shell",
-        "at": [
-         0,
-         2.2,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "cylinder",
-          "r": 0.16,
-          "h": 1.6,
-          "axis": "y",
-          "at": [
-           -0.5,
-           0.8,
-           0
-          ],
-          "look": "paint",
-          "color": "#2b2b2b"
-         },
-         {
-          "shape": "cylinder",
-          "r": 0.16,
-          "h": 1.6,
-          "axis": "y",
-          "at": [
-           0,
-           0.8,
-           0
-          ],
-          "look": "paint",
-          "color": "#2b2b2b"
-         },
-         {
-          "shape": "cylinder",
-          "r": 0.16,
-          "h": 1.6,
-          "axis": "y",
-          "at": [
-           0.5,
-           0.8,
-           0
-          ],
-          "look": "paint",
-          "color": "#2b2b2b"
-         }
-        ]
-       }
-      ]
-     }
-    },
-    {
-     "id": "carbonBin",
-     "kind": "rig",
-     "params": {
-      "name": "carbon bin",
-      "synonyms": [
-       "carbon",
-       "coke bin"
-      ],
-      "pos": [
-       -7.5,
-       0,
-       -6.6
-      ],
-      "nodes": [
-       {
-        "id": "bin",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           1,
-           1.1,
-           1
-          ],
-          "at": [
-           0,
-           0.55,
-           0
-          ],
-          "look": "paint",
-          "color": "#2a2b2e"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.9,
-           0.12,
-           0.9
-          ],
-          "at": [
-           0,
-           1.16,
-           0
-          ],
-          "look": "rubber",
-          "color": "#111214"
-         }
-        ]
-       }
-      ]
-     }
-    },
-    {
-     "id": "sandPour",
-     "kind": "flow",
-     "params": {
-      "path": [
-       [
-        -3,
-        -2.3,
-        -1.5
-       ],
-       [
-        -3.6,
-        0.6,
-        -3.6
-       ],
-       [
-        -4.6,
-        2.8,
-        -7.4
-       ],
-       [
-        -5,
-        2.4,
-        -8
-       ]
-      ],
-      "look": "mud",
-      "size": 0.2,
-      "speed": 2.2,
-      "count": 24
-     }
-    },
-    {
-     "id": "carbonPour",
-     "kind": "flow",
-     "params": {
-      "path": [
-       [
-        -7.5,
-        1.3,
-        -6.6
-       ],
-       [
-        -6.6,
-        2.8,
-        -7.4
-       ],
-       [
-        -5.4,
-        2.4,
-        -8
-       ]
-      ],
-      "look": "oil",
-      "size": 0.18,
-      "speed": 2,
-      "count": 12
-     }
-    },
-    {
-     "id": "tempStand",
-     "kind": "boxPop",
-     "params": {
-      "size": [
-       0.2,
-       1.6,
-       0.2
-      ],
-      "pos": [
-       -3.1,
-       0.8,
-       -6.2
-      ],
-      "mat": "metal"
-     }
-    },
-    {
-     "id": "temp",
-     "kind": "counter",
-     "params": {
-      "pos": [
-       -3.1,
-       2.2,
-       -6.2
-      ],
-      "size": 1,
-      "from": 0,
-      "to": 2000,
-      "color": "#ff8a2a",
-      "bar": true,
-      "danger": 0.9
-     }
-    },
-    {
-     "id": "gas",
-     "kind": "fx",
-     "params": {
-      "type": "smoke",
-      "at": [
-       -5,
-       3.9,
-       -8
-      ],
-      "size": 1.2,
-      "color": "#cfd3d6"
-     }
-    },
-    {
-     "id": "puller",
-     "kind": "rig",
-     "main": true,
-     "params": {
-      "name": "Czochralski crystal puller",
-      "synonyms": [
-       "crystal puller",
-       "puller",
-       "Czochralski puller"
-      ],
-      "pos": [
-       -1,
-       0,
-       -8
-      ],
-      "nodes": [
-       {
-        "id": "frame",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           1.8,
-           0.8,
-           1.6
-          ],
-          "at": [
-           0,
-           0.4,
-           0
-          ],
-          "look": "metal",
-          "color": "#7b8792"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.16,
-           3.8,
-           0.16
-          ],
-          "at": [
-           -0.82,
-           2.7,
-           -0.6
-          ],
-          "look": "metal"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.16,
-           3.8,
-           0.16
-          ],
-          "at": [
-           0.82,
-           2.7,
-           -0.6
-          ],
-          "look": "metal"
-         },
-         {
-          "shape": "box",
-          "size": [
-           1.8,
-           0.22,
-           0.4
-          ],
-          "at": [
-           0,
-           4.6,
-           -0.6
-          ],
-          "look": "paint",
-          "color": "#2f6fb0"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.4,
-           0.22,
-           0.6
-          ],
-          "at": [
-           0,
-           4.6,
-           -0.2
-          ],
-          "look": "paint",
-          "color": "#2f6fb0"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.06,
-           1,
-           0.06
-          ],
-          "at": [
-           0,
-           4,
-           0
-          ],
-          "look": "metal"
-         }
-        ]
-       },
-       {
-        "id": "crucible",
-        "parent": "frame",
-        "at": [
-         0,
-         0.8,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "cylinder",
-          "r": 0.6,
-          "h": 0.5,
-          "axis": "y",
-          "at": [
-           0,
-           0.25,
-           0
-          ],
-          "look": "paint",
-          "color": "#c9cdd2"
-         }
-        ],
-        "moves": [
-         {
-          "name": "melt",
-          "type": "heat",
-          "color": "#ff7a1a"
-         }
-        ]
-       },
-       {
-        "id": "ingot",
-        "parent": "crucible",
-        "at": [
-         0,
-         0.5,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "cylinder",
-          "r": 0.36,
-          "h": 1.7,
-          "axis": "y",
-          "at": [
-           0,
-           0.85,
-           0
-          ],
-          "look": "metal",
-          "color": "#9aa3ad"
-         },
-         {
-          "shape": "cone",
-          "r": 0.36,
-          "r2": 0.05,
-          "h": 0.4,
-          "axis": "y",
-          "at": [
-           0,
-           1.9,
-           0
-          ],
-          "look": "metal",
-          "color": "#9aa3ad"
-         }
-        ],
-        "moves": [
-         {
-          "name": "crystal",
-          "type": "appear"
-         },
-         {
-          "name": "pull",
-          "type": "slide",
-          "to": [
-           0,
-           0.9,
-           0
-          ]
-         },
-         {
-          "name": "turn",
-          "type": "spin",
-          "axis": "y",
-          "turns": 0.4
-         }
-        ]
-       }
-      ]
-     }
-    },
-    {
-     "id": "wafers",
-     "kind": "rig",
-     "params": {
-      "name": "wafers",
-      "synonyms": [
-       "silicon wafers",
-       "wafer rack"
-      ],
-      "pos": [
-       5.6,
-       0,
-       -8
-      ],
-      "nodes": [
-       {
-        "id": "table",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           3.2,
-           0.9,
-           1.2
-          ],
-          "at": [
-           0,
-           0.45,
-           0
-          ],
-          "look": "metal",
-          "color": "#7b8792"
-         },
-         {
-          "shape": "box",
-          "size": [
-           3,
-           0.1,
-           0.4
-          ],
-          "at": [
-           0,
-           0.95,
-           0
-          ],
-          "look": "paint",
-          "color": "#2d2f33"
-         }
-        ]
-       },
-       {
-        "id": "discs",
-        "parent": "table",
-        "at": [
-         0,
-         1,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "cylinder",
-          "r": 0.36,
-          "h": 0.05,
-          "axis": "z",
-          "at": [
-           -1.2,
-           0.41,
-           0.05
-          ],
-          "look": "paint",
-          "color": "#c3cfe2"
-         },
-         {
-          "shape": "cylinder",
-          "r": 0.36,
-          "h": 0.05,
-          "axis": "z",
-          "at": [
-           -0.4,
-           0.41,
-           0.05
-          ],
-          "look": "paint",
-          "color": "#c3cfe2"
-         },
-         {
-          "shape": "cylinder",
-          "r": 0.36,
-          "h": 0.05,
-          "axis": "z",
-          "at": [
-           0.4,
-           0.41,
-           0.05
-          ],
-          "look": "paint",
-          "color": "#c3cfe2"
-         },
-         {
-          "shape": "cylinder",
-          "r": 0.36,
-          "h": 0.05,
-          "axis": "z",
-          "at": [
-           1.2,
-           0.41,
-           0.05
-          ],
-          "look": "paint",
-          "color": "#c3cfe2"
-         }
-        ],
-        "moves": [
-         {
-          "name": "slice",
-          "type": "appear"
-         }
-        ]
-       }
-      ]
-     }
-    },
-    {
-     "id": "printer",
-     "kind": "rig",
-     "params": {
-      "name": "light printer",
-      "synonyms": [
-       "lithography machine",
-       "chip printer",
-       "stepper"
-      ],
-      "pos": [
-       1.9,
-       0,
-       -8
-      ],
-      "nodes": [
-       {
-        "id": "base",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           1.8,
-           1,
-           1.4
-          ],
-          "at": [
-           0,
-           0.5,
-           0
-          ],
-          "look": "paint",
-          "color": "#e8e4dc"
-         },
-         {
-          "shape": "cylinder",
-          "r": 0.5,
-          "h": 0.05,
-          "axis": "y",
-          "at": [
-           0,
-           1.03,
-           0.1
-          ],
-          "look": "metal",
-          "color": "#a9b4c4"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.3,
-           2.4,
-           0.3
-          ],
-          "at": [
-           -0.75,
-           2.2,
-           -0.5
-          ],
-          "look": "paint",
-          "color": "#e8e4dc"
-         },
-         {
-          "shape": "box",
-          "size": [
-           1.2,
-           0.45,
-           0.6
-          ],
-          "at": [
-           0,
-           3.2,
-           -0.3
-          ],
-          "look": "paint",
-          "color": "#3d6fb0"
-         }
-        ]
-       },
-       {
-        "id": "ray",
-        "parent": "base",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "beam",
-          "from": [
-           0,
-           2.97,
-           -0.1
-          ],
-          "to": [
-           0,
-           1.06,
-           0.1
-          ],
-          "r": 0.09,
-          "color": "#a070ff"
-         }
-        ],
-        "moves": [
-         {
-          "name": "expose",
-          "type": "light"
-         }
-        ]
-       },
-       {
-        "id": "specks",
-        "parent": "base",
-        "at": [
-         0,
-         2.35,
-         0.1
-        ],
-        "shapes": [
-         {
-          "shape": "sphere",
-          "r": 0.09,
-          "at": [
-           -0.3,
-           0,
-           0.1
-          ],
-          "look": "rubber",
-          "color": "#3a2a1c"
-         },
-         {
-          "shape": "sphere",
-          "r": 0.09,
-          "at": [
-           0.05,
-           0.15,
-           -0.1
-          ],
-          "look": "rubber",
-          "color": "#3a2a1c"
-         },
-         {
-          "shape": "sphere",
-          "r": 0.09,
-          "at": [
-           0.3,
-           0.05,
-           0.15
-          ],
-          "look": "rubber",
-          "color": "#3a2a1c"
-         },
-         {
-          "shape": "sphere",
-          "r": 0.09,
-          "at": [
-           -0.1,
-           -0.1,
-           0.25
-          ],
-          "look": "rubber",
-          "color": "#3a2a1c"
-         },
-         {
-          "shape": "sphere",
-          "r": 0.09,
-          "at": [
-           0.15,
-           -0.2,
-           -0.2
-          ],
-          "look": "rubber",
-          "color": "#3a2a1c"
-         }
-        ],
-        "moves": [
-         {
-          "name": "dust",
-          "type": "appear"
-         },
-         {
-          "name": "land",
-          "type": "slide",
-          "to": [
-           0,
-           -1.12,
-           0
-          ]
-         }
-        ]
-       }
-      ]
-     }
-    },
-    {
-     "id": "chipStand",
-     "kind": "boxPop",
-     "params": {
-      "size": [
-       0.2,
-       1.6,
-       0.2
-      ],
-      "pos": [
-       3.4,
-       0.8,
-       -6.2
-      ],
-      "mat": "metal"
-     }
-    },
-    {
-     "id": "chips",
-     "kind": "counter",
-     "params": {
-      "pos": [
-       3.4,
-       2.2,
-       -6.2
-      ],
-      "size": 1,
-      "from": 0,
-      "to": 20,
-      "color": "#3ad6ff"
-     }
-    },
-    {
-     "id": "rain",
-     "kind": "rain",
-     "params": {
-      "x0": -9,
-      "x1": 9,
-      "z0": -12,
-      "z1": -4.4,
-      "yTop": 14,
-      "yBot": 0,
-      "count": 1100,
-      "width": 0.025,
-      "opacity": 0.45
-     }
-    },
-    {
-     "id": "mud",
-     "kind": "drops",
-     "params": {
-      "x0": -4,
-      "x1": 6,
-      "count": 26,
-      "fromY": 3,
-      "landY": 1,
-      "z": -7.3,
-      "mat": "mud",
-      "size": 0.3
-     }
-    },
-    {
-     "id": "hall",
-     "kind": "building",
-     "params": {
-      "pos": [
-       0,
-       0,
-       -5
-      ],
-      "width": 17,
-      "depth": 7,
-      "use": "factory",
-      "floors": [
-       {
-        "h": 6
-       }
-      ],
-      "roof": "flat",
-      "walls": "#e9edf0"
-     }
-    },
-    {
-     "id": "airflow",
-     "kind": "arrows",
-     "params": {
-      "list": [
-       {
-        "at": [
-         -4,
-         5.2,
-         -7.5
-        ],
-        "dir": [
-         0,
-         -1
-        ],
-        "travel": 1.2,
-        "phase": 0
-       },
-       {
-        "at": [
-         -1,
-         5.2,
-         -7.5
-        ],
-        "dir": [
-         0,
-         -1
-        ],
-        "travel": 1.2,
-        "phase": 0.33
-       },
-       {
-        "at": [
-         1.9,
-         5.2,
-         -7.5
-        ],
-        "dir": [
-         0,
-         -1
-        ],
-        "travel": 1.2,
-        "phase": 0.66
-       },
-       {
-        "at": [
-         5.6,
-         5.2,
-         -7.5
-        ],
-        "dir": [
-         0,
-         -1
-        ],
-        "travel": 1.2,
-        "phase": 0.5
-       }
-      ],
-      "opts": {
-       "color": "#ffffff",
-       "scale": 1.1
-      }
-     }
-    },
-    {
-     "id": "lamp1",
-     "kind": "prop",
-     "params": {
-      "type": "ceilingLight",
-      "pos": [
-       -3,
-       0,
-       -8.9
-      ],
-      "h": 6,
-      "drop": 0.8
-     }
-    },
-    {
-     "id": "lamp2",
-     "kind": "prop",
-     "params": {
-      "type": "ceilingLight",
-      "pos": [
-       1,
-       0,
-       -8.9
-      ],
-      "h": 6,
-      "drop": 0.8
-     }
-    },
-    {
-     "id": "lamp3",
-     "kind": "prop",
-     "params": {
-      "type": "ceilingLight",
-      "pos": [
-       5,
-       0,
-       -8.9
-      ],
-      "h": 6,
-      "drop": 0.8
-     }
-    },
-    {
-     "id": "puller_outline",
-     "kind": "outline",
-     "params": {
-      "of": "puller",
-      "opts": {
-       "closed": true,
-       "r": 0.1,
-       "over": true
-      }
-     }
-    },
-    {
-     "id": "sign",
-     "kind": "sign",
-     "params": {
-      "at": [
-       11,
-       0,
-       -5
-      ],
-      "rotY": -0.25,
-      "scale": 1.3
-     }
-    }
-   ],
-   "beats": [
-    {
-     "s": "hook",
-     "shows": {
-      "p": "sandPit",
-      "does": "a pit is dug, muddy water fills it and sand sinks to its floor"
-     },
-     "do": [
-      {
-       "p": "dig",
-       "v": "dig",
-       "w": "dig",
-       "o": -0.5
-      },
-      {
-       "p": "sandPit",
-       "v": "show",
-       "w": "pit"
-      },
-      {
-       "p": "sandPit",
-       "v": "fill",
-       "w": "muddy"
-      },
-      {
-       "p": "sandPit",
-       "v": "sink",
-       "w": "muddy",
-       "o": 0.4
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "sandPit"
-       ],
-       "type": "close"
-      }
-     ]
-    },
-    {
-     "s": "problem",
-     "state": {
-      "text": "NO CURRENT",
-      "w": "current"
-     },
-     "shows": {
-      "p": "tester",
-      "does": "a battery wired into the sand, its bulb stays dark"
-     },
-     "do": [
-      {
-       "p": "tester",
-       "v": "show",
-       "w": "But"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "tester",
-        "sandPit"
-       ],
-       "type": "mid"
-      }
-     ]
-    },
-    {
-     "s": "stakes",
-     "state": {
-      "text": "TOO DIRTY",
-      "w": "allows"
-     },
-     "shows": {
-      "p": "dirt",
-      "does": "lumps of clay and iron fall into the sand"
-     },
-     "do": [
-      {
-       "p": "tester",
-       "v": "hide",
-       "w": "It"
-      },
-      {
-       "p": "dirt",
-       "v": "fall",
-       "w": "clay"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "sandPit",
-        "dirt"
-       ],
-       "type": "mid"
-      }
-     ]
-    },
-    {
-     "s": "fix1",
-     "shows": {
-      "p": "sandPour",
-      "does": "sand streams out of the pit into a furnace, and black carbon pours in beside it"
-     },
-     "do": [
-      {
-       "p": "dirt",
-       "v": "hide",
-       "w": "So"
-      },
-      {
-       "p": "sandPour",
-       "v": "start",
-       "w": "pour"
-      },
-      {
-       "p": "furnace",
-       "v": "show",
-       "w": "pour"
-      },
-      {
-       "p": "carbonBin",
-       "v": "show",
-       "w": "carbon"
-      },
-      {
-       "p": "carbonPour",
-       "v": "start",
-       "w": "carbon"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "furnace",
-        "sandPour"
-       ],
-       "type": "mid"
-      }
-     ]
-    },
-    {
-     "s": "fix2",
-     "shows": {
-      "p": "furnace",
-      "does": "the furnace glows red hot, a gauge climbs to 2,000 and gas pours out of its top"
-     },
-     "do": [
-      {
-       "p": "sandPour",
-       "v": "stop",
-       "w": "Then"
-      },
-      {
-       "p": "carbonPour",
-       "v": "stop",
-       "w": "Then"
-      },
-      {
-       "p": "furnace",
-       "v": "heat",
-       "w": "heat"
-      },
-      {
-       "p": "tempStand",
-       "v": "show",
-       "w": "heat"
-      },
-      {
-       "p": "temp",
-       "v": "show",
-       "w": "heat"
-      },
-      {
-       "p": "temp",
-       "v": "count",
-       "w": "heat",
-       "o": 0.2,
-       "d": 1.6
-      },
-      {
-       "p": "gas",
-       "v": "start",
-       "w": "gas"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "furnace",
-        "temp"
-       ],
-       "type": "mid"
-      }
-     ]
-    },
-    {
-     "s": "fix3",
-     "shows": {
-      "p": "puller",
-      "does": "the silicon melts glowing in a crucible and a turning crystal is pulled up out of it"
-     },
-     "do": [
-      {
-       "p": "gas",
-       "v": "stop",
-       "w": "So"
-      },
-      {
-       "p": "temp",
-       "v": "hide",
-       "w": "So"
-      },
-      {
-       "p": "puller",
-       "v": "show",
-       "w": "melt"
-      },
-      {
-       "p": "puller",
-       "v": "melt",
-       "w": "melt"
-      },
-      {
-       "p": "puller",
-       "v": "crystal",
-       "w": "pull"
-      },
-      {
-       "p": "puller",
-       "v": "pull",
-       "w": "pull"
-      },
-      {
-       "p": "puller",
-       "v": "turn",
-       "w": "pull"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "puller"
-       ],
-       "type": "mid"
-      }
-     ]
-    },
-    {
-     "s": "name",
-     "shows": {
-      "p": "puller_outline",
-      "does": "a glowing outline goes round the crystal puller"
-     },
-     "do": [
-      {
-       "p": "puller_outline",
-       "v": "show",
-       "w": "crystal"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "puller"
-       ],
-       "hero": true,
-       "width": 0.6
-      }
-     ]
-    },
-    {
-     "s": "name2",
-     "shows": {
-      "p": "wafers",
-      "does": "thin shiny discs appear standing in a rack beside the puller"
-     },
-     "do": [
-      {
-       "p": "puller_outline",
-       "v": "hide",
-       "w": "Slice"
-      },
-      {
-       "p": "wafers",
-       "v": "show",
-       "w": "Slice"
-      },
-      {
-       "p": "wafers",
-       "v": "slice",
-       "w": "discs"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "wafers"
-       ],
-       "type": "mid"
-      }
-     ]
-    },
-    {
-     "s": "how",
-     "shows": {
-      "p": "printer",
-      "does": "a machine shines a violet beam of light down onto a wafer"
-     },
-     "do": [
-      {
-       "p": "printer",
-       "v": "show",
-       "w": "Machines"
-      },
-      {
-       "p": "printer",
-       "v": "expose",
-       "w": "print"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "printer"
-       ],
-       "type": "mid"
-      }
-     ]
-    },
-    {
-     "s": "fact",
-     "shows": {
-      "p": "chips",
-      "does": "a counter beside the printer climbs to 20"
-     },
-     "do": [
-      {
-       "p": "chipStand",
-       "v": "show",
-       "w": "One"
-      },
-      {
-       "p": "chips",
-       "v": "show",
-       "w": "One"
-      },
-      {
-       "p": "chips",
-       "v": "count",
-       "w": "chip",
-       "d": 1.4
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "printer",
-        "chips"
-       ],
-       "type": "mid"
-      }
-     ]
-    },
-    {
-     "s": "problem2",
-     "state": {
-      "text": "DEAD CHIP",
-      "w": "kill"
-     },
-     "shows": {
-      "p": "printer",
-      "does": "dark specks of dust drop onto the wafer under the beam"
-     },
-     "do": [
-      {
-       "p": "chips",
-       "v": "hide",
-       "w": "But"
-      },
-      {
-       "p": "printer",
-       "v": "dust",
-       "w": "single"
-      },
-      {
-       "p": "printer",
-       "v": "land",
-       "w": "dust"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "printer"
-       ],
-       "type": "close"
-      }
-     ]
-    },
-    {
-     "s": "problem3",
-     "state": {
-      "text": "BATCH RUINED",
-      "w": "ruins"
-     },
-     "shows": {
-      "p": "mud",
-      "does": "rain pours and mud splatters onto the open machines"
-     },
-     "do": [
-      {
-       "p": "light",
-       "v": "storm",
-       "w": "rain"
-      },
-      {
-       "p": "rain",
-       "v": "start",
-       "w": "rain"
-      },
-      {
-       "p": "mud",
-       "v": "fall",
-       "w": "mud"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "puller",
-        "wafers",
-        "printer"
-       ],
-       "type": "mid"
-      }
-     ]
-    },
-    {
-     "s": "fix4",
-     "shows": {
-      "p": "hall",
-      "does": "a factory hall rises round the machines and white arrows show clean air pushed down"
-     },
-     "do": [
-      {
-       "p": "light",
-       "v": "clear",
-       "w": "So"
-      },
-      {
-       "p": "rain",
-       "v": "stop",
-       "w": "So"
-      },
-      {
-       "p": "mud",
-       "v": "hide",
-       "w": "build"
-      },
-      {
-       "p": "hall",
-       "v": "build",
-       "w": "build"
-      },
-      {
-       "p": "airflow",
-       "v": "show",
-       "w": "air"
-      },
-      {
-       "p": "printer",
-       "v": "dustBack",
-       "w": "build"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "hall"
-       ],
-       "type": "wide"
-      }
-     ]
-    },
-    {
-     "s": "finish",
-     "shows": {
-      "p": "lamp2",
-      "does": "ceiling lights hang over the machines and the pit water clears"
-     },
-     "do": [
-      {
-       "p": "airflow",
-       "v": "hide",
-       "w": "Add"
-      },
-      {
-       "p": "lamp1",
-       "v": "show",
-       "w": "lights"
-      },
-      {
-       "p": "lamp2",
-       "v": "show",
-       "w": "lights"
-      },
-      {
-       "p": "lamp3",
-       "v": "show",
-       "w": "lights"
-      },
-      {
-       "p": "hall",
-       "v": "lights",
-       "w": "lights"
-      },
-      {
-       "p": "sandPit",
-       "v": "clear",
-       "w": "clear"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "home"
-       ]
-      }
-     ]
-    },
-    {
-     "s": "congrats",
-     "do": [],
-     "shots": [
-      {
-       "focus": [
-        "home"
-       ]
-      }
-     ]
-    }
-   ],
-   "audio": {
-    "cards": [
-     {
-      "text": "2,000 °C",
-      "at": {
-       "s": "fix2",
-       "w": "2,000",
-       "o": 0
-      },
-      "d": 1.6
-     },
-     {
-      "text": "20 BILLION",
-      "at": {
-       "s": "fact",
-       "w": "20",
-       "o": 0
-      },
-      "d": 1.6
-     }
-    ],
-    "sfx": [
-     {
-      "lib": "dirt",
-      "at": {
-       "s": "hook",
-       "w": "dig",
-       "o": 0
-      },
-      "d": 1.2
-     },
-     {
-      "lib": "water_rush",
-      "at": {
-       "s": "hook",
-       "w": "muddy",
-       "o": 0
-      },
-      "d": 1.2
-     },
-     {
-      "lib": "dirt",
-      "at": {
-       "s": "fix1",
-       "w": "pour",
-       "o": 0
-      },
-      "d": 1.2
-     },
-     {
-      "lib": "flame",
-      "at": {
-       "s": "fix2",
-       "w": "heat",
-       "o": 0
-      },
-      "d": 1.4
-     },
-     {
-      "lib": "motor_hum",
-      "at": {
-       "s": "how",
-       "w": "print",
-       "o": 0
-      },
-      "d": 1.4
-     }
-    ],
-    "chimes": [
-     {
-      "s": "fix2",
-      "w": "2,000",
-      "o": 0
-     },
-     {
-      "s": "name",
-      "w": "",
-      "o": 0
-     },
-     {
-      "s": "fact",
-      "w": "20",
-      "o": 0
-     },
-     {
-      "s": "congrats",
-      "w": "",
-      "o": 0
-     }
-    ],
-    "rain": [
-     {
-      "s": "problem3",
-      "w": "rain",
-      "o": 0
-     },
-     {
-      "s": "fix4",
-      "w": "So",
-      "o": 0
-     }
-    ]
-   }
-  }
+  "sceneJson": "{\"world\":{\"cut\":[-6,0,-4,3],\"house\":false,\"porch\":false,\"trees\":[[-15,-12],[13,-14,0.9]],\"road\":false,\"worker\":false,\"moreTrees\":false,\"rocksAvoid\":[[-6.5,0.5,-3.2,0.2]]},\"parts\":[{\"id\":\"light\",\"kind\":\"light\",\"params\":{\"storm\":false}},{\"id\":\"dig\",\"kind\":\"dig\",\"params\":{\"clumps\":100,\"mound\":{\"x\":-10,\"z\":-6,\"rx\":1.8,\"rz\":1.4,\"h\":1}}},{\"id\":\"sandPit\",\"kind\":\"settle\",\"params\":{\"box\":{\"x0\":-5.8,\"x1\":-0.2,\"y0\":-2.8,\"y1\":-0.1,\"z0\":-3.8,\"z1\":0},\"wallColor\":\"#7a5a3a\",\"lid\":false,\"murky\":true,\"clearColor\":\"#8fc9e0\",\"sandColor\":\"#e0c68e\",\"grains\":220}},{\"id\":\"tester\",\"kind\":\"rig\",\"params\":{\"name\":\"battery and bulb\",\"synonyms\":[\"battery\",\"bulb\",\"circuit tester\"],\"pos\":[1.4,0,-2.4],\"nodes\":[{\"id\":\"battery\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.9,0.7,0.6],\"at\":[0,0.35,0],\"look\":\"paint\",\"color\":\"#2d2f33\"},{\"shape\":\"box\",\"size\":[0.9,0.12,0.6],\"at\":[0,0.76,0],\"look\":\"paint\",\"color\":\"#e8b02a\"},{\"shape\":\"cylinder\",\"r\":0.08,\"h\":0.5,\"axis\":\"y\",\"at\":[0,1.07,0],\"look\":\"metal\"},{\"shape\":\"sphere\",\"r\":0.3,\"at\":[0,1.55,0],\"look\":\"glass\",\"color\":\"#f2f2e8\"},{\"shape\":\"cable\",\"path\":[[-0.3,0.82,0.2],[-0.8,0.6,1],[-1.6,-1.2,2.6],[-1.8,-2.3,3.4]],\"r\":0.05,\"look\":\"rubber\",\"color\":\"#d23b2e\"},{\"shape\":\"cable\",\"path\":[[0.3,0.82,0.2],[0.2,0.6,1],[-0.4,-1.2,2.6],[-0.6,-2.3,3.4]],\"r\":0.05,\"look\":\"rubber\",\"color\":\"#1e1e22\"}]},{\"id\":\"lamp\",\"parent\":\"battery\",\"at\":[0,1.55,0],\"shapes\":[{\"shape\":\"light\",\"r\":0.18,\"color\":\"#ffd23d\"}],\"moves\":[{\"name\":\"glowBulb\",\"type\":\"light\"}]},{\"id\":\"cord\",\"parent\":\"battery\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"cable\",\"path\":[[0.45,0.3,0],[1,0.1,-0.3],[1.6,0.1,-0.6]],\"r\":0.03,\"look\":\"rubber\",\"color\":\"#202020\"}],\"moves\":[{\"name\":\"plug\",\"type\":\"appear\"}]}]}},{\"id\":\"furnace\",\"kind\":\"rig\",\"params\":{\"name\":\"arc furnace\",\"synonyms\":[\"furnace\",\"electric arc furnace\"],\"pos\":[-5,0,-8],\"nodes\":[{\"id\":\"shell\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":1.3,\"h\":2.2,\"axis\":\"y\",\"at\":[0,1.1,0],\"look\":\"metal\",\"color\":\"#5a6168\"},{\"shape\":\"torus\",\"r\":1.3,\"tube\":0.1,\"axis\":\"y\",\"at\":[0,2.2,0],\"look\":\"metal\",\"color\":\"#3c4248\"}],\"moves\":[{\"name\":\"heat\",\"type\":\"heat\",\"color\":\"#ff5a1a\"}]},{\"id\":\"electrodes\",\"parent\":\"shell\",\"at\":[0,2.2,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.16,\"h\":1.6,\"axis\":\"y\",\"at\":[-0.5,0.8,0],\"look\":\"paint\",\"color\":\"#2b2b2b\"},{\"shape\":\"cylinder\",\"r\":0.16,\"h\":1.6,\"axis\":\"y\",\"at\":[0,0.8,0],\"look\":\"paint\",\"color\":\"#2b2b2b\"},{\"shape\":\"cylinder\",\"r\":0.16,\"h\":1.6,\"axis\":\"y\",\"at\":[0.5,0.8,0],\"look\":\"paint\",\"color\":\"#2b2b2b\"}]}]}},{\"id\":\"carbonBin\",\"kind\":\"rig\",\"params\":{\"name\":\"carbon bin\",\"synonyms\":[\"carbon\",\"coke bin\"],\"pos\":[-7.5,0,-6.6],\"nodes\":[{\"id\":\"bin\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[1,1.1,1],\"at\":[0,0.55,0],\"look\":\"paint\",\"color\":\"#2a2b2e\"},{\"shape\":\"box\",\"size\":[0.9,0.12,0.9],\"at\":[0,1.16,0],\"look\":\"rubber\",\"color\":\"#111214\"}]}]}},{\"id\":\"sandPour\",\"kind\":\"flow\",\"params\":{\"path\":[[-3,-2.3,-1.5],[-3.6,0.6,-3.6],[-4.6,2.8,-7.4],[-5,2.4,-8]],\"look\":\"mud\",\"size\":0.2,\"speed\":2.2,\"count\":24}},{\"id\":\"carbonPour\",\"kind\":\"flow\",\"params\":{\"path\":[[-7.5,1.3,-6.6],[-6.6,2.8,-7.4],[-5.4,2.4,-8]],\"look\":\"oil\",\"size\":0.18,\"speed\":2,\"count\":12}},{\"id\":\"tempStand\",\"kind\":\"boxPop\",\"params\":{\"size\":[0.2,1.6,0.2],\"pos\":[-3.1,0.8,-6.2],\"mat\":\"metal\"}},{\"id\":\"temp\",\"kind\":\"counter\",\"params\":{\"pos\":[-3.1,2.2,-6.2],\"size\":1,\"from\":0,\"to\":2000,\"color\":\"#ff8a2a\",\"bar\":true,\"danger\":0.9}},{\"id\":\"gas\",\"kind\":\"fx\",\"params\":{\"type\":\"smoke\",\"at\":[-5,3.9,-8],\"size\":1.2,\"color\":\"#cfd3d6\"}},{\"id\":\"lumps\",\"kind\":\"rig\",\"params\":{\"name\":\"silicon lumps\",\"synonyms\":[\"silicon\",\"lumps\"],\"pos\":[-3,0,-6.4],\"nodes\":[{\"id\":\"pile\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.5,0.4,0.45],\"at\":[-0.4,0.2,0],\"look\":\"metal\",\"color\":\"#6f7680\",\"rot\":[20,14,10]},{\"shape\":\"box\",\"size\":[0.5,0.4,0.45],\"at\":[0.1,0.22,0.2],\"look\":\"metal\",\"color\":\"#6f7680\",\"rot\":[-15,-10.5,10]},{\"shape\":\"box\",\"size\":[0.5,0.4,0.45],\"at\":[0.45,0.18,-0.2],\"look\":\"metal\",\"color\":\"#6f7680\",\"rot\":[35,24.5,10]},{\"shape\":\"box\",\"size\":[0.5,0.4,0.45],\"at\":[0,0.55,0],\"look\":\"metal\",\"color\":\"#6f7680\",\"rot\":[5,3.5,10]},{\"shape\":\"box\",\"size\":[0.5,0.4,0.45],\"at\":[-0.2,0.2,-0.4],\"look\":\"metal\",\"color\":\"#6f7680\",\"rot\":[50,35,10]}],\"moves\":[{\"name\":\"pours\",\"type\":\"appear\"}]}]}},{\"id\":\"puller\",\"kind\":\"rig\",\"main\":true,\"params\":{\"name\":\"Czochralski crystal puller\",\"synonyms\":[\"crystal puller\",\"puller\",\"Czochralski puller\"],\"pos\":[-1,0,-8],\"nodes\":[{\"id\":\"frame\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[1.8,0.8,1.6],\"at\":[0,0.4,0],\"look\":\"metal\",\"color\":\"#7b8792\"},{\"shape\":\"box\",\"size\":[0.16,3.8,0.16],\"at\":[-0.82,2.7,-0.6],\"look\":\"metal\"},{\"shape\":\"box\",\"size\":[0.16,3.8,0.16],\"at\":[0.82,2.7,-0.6],\"look\":\"metal\"},{\"shape\":\"box\",\"size\":[1.8,0.22,0.4],\"at\":[0,4.6,-0.6],\"look\":\"paint\",\"color\":\"#2f6fb0\"},{\"shape\":\"box\",\"size\":[0.4,0.22,0.6],\"at\":[0,4.6,-0.2],\"look\":\"paint\",\"color\":\"#2f6fb0\"},{\"shape\":\"box\",\"size\":[0.06,1,0.06],\"at\":[0,4,0],\"look\":\"metal\"}]},{\"id\":\"crucible\",\"parent\":\"frame\",\"at\":[0,0.8,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.6,\"h\":0.5,\"axis\":\"y\",\"at\":[0,0.25,0],\"look\":\"paint\",\"color\":\"#c9cdd2\"}],\"moves\":[{\"name\":\"melt\",\"type\":\"heat\",\"color\":\"#ff7a1a\"}]},{\"id\":\"ingot\",\"parent\":\"crucible\",\"at\":[0,0.5,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.36,\"h\":1.7,\"axis\":\"y\",\"at\":[0,0.85,0],\"look\":\"metal\",\"color\":\"#9aa3ad\"},{\"shape\":\"cone\",\"r\":0.36,\"r2\":0.05,\"h\":0.4,\"axis\":\"y\",\"at\":[0,1.9,0],\"look\":\"metal\",\"color\":\"#9aa3ad\"}],\"moves\":[{\"name\":\"crystal\",\"type\":\"appear\"},{\"name\":\"pull\",\"type\":\"slide\",\"to\":[0,0.9,0]},{\"name\":\"turn\",\"type\":\"spin\",\"axis\":\"y\",\"turns\":0.4}]}]}},{\"id\":\"wafers\",\"kind\":\"rig\",\"params\":{\"name\":\"wafers\",\"synonyms\":[\"silicon wafers\",\"wafer rack\"],\"pos\":[2.4,0,-8],\"nodes\":[{\"id\":\"table\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[3.2,0.9,1.2],\"at\":[0,0.45,0],\"look\":\"metal\",\"color\":\"#7b8792\"},{\"shape\":\"box\",\"size\":[3,0.1,0.4],\"at\":[0,0.95,0],\"look\":\"paint\",\"color\":\"#2d2f33\"}]},{\"id\":\"discs\",\"parent\":\"table\",\"at\":[0,1,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.36,\"h\":0.05,\"axis\":\"z\",\"at\":[-1.2,0.41,0.05],\"look\":\"paint\",\"color\":\"#c3cfe2\"},{\"shape\":\"cylinder\",\"r\":0.36,\"h\":0.05,\"axis\":\"z\",\"at\":[-0.4,0.41,0.05],\"look\":\"paint\",\"color\":\"#c3cfe2\"},{\"shape\":\"cylinder\",\"r\":0.36,\"h\":0.05,\"axis\":\"z\",\"at\":[0.4,0.41,0.05],\"look\":\"paint\",\"color\":\"#c3cfe2\"},{\"shape\":\"cylinder\",\"r\":0.36,\"h\":0.05,\"axis\":\"z\",\"at\":[1.2,0.41,0.05],\"look\":\"paint\",\"color\":\"#c3cfe2\"}],\"moves\":[{\"name\":\"slice\",\"type\":\"appear\"}]},{\"id\":\"scratches\",\"parent\":\"discs\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.5,0.02,0.03],\"at\":[-1.2,0.47,0.1],\"look\":\"paint\",\"color\":\"#4b4f55\",\"rot\":[0,0,20]},{\"shape\":\"box\",\"size\":[0.4,0.02,0.03],\"at\":[-1.2,0.32999999999999996,0.1],\"look\":\"paint\",\"color\":\"#4b4f55\",\"rot\":[0,0,-15]},{\"shape\":\"box\",\"size\":[0.5,0.02,0.03],\"at\":[-0.4,0.47,0.1],\"look\":\"paint\",\"color\":\"#4b4f55\",\"rot\":[0,0,20]},{\"shape\":\"box\",\"size\":[0.4,0.02,0.03],\"at\":[-0.4,0.32999999999999996,0.1],\"look\":\"paint\",\"color\":\"#4b4f55\",\"rot\":[0,0,-15]},{\"shape\":\"box\",\"size\":[0.5,0.02,0.03],\"at\":[0.4,0.47,0.1],\"look\":\"paint\",\"color\":\"#4b4f55\",\"rot\":[0,0,20]},{\"shape\":\"box\",\"size\":[0.4,0.02,0.03],\"at\":[0.4,0.32999999999999996,0.1],\"look\":\"paint\",\"color\":\"#4b4f55\",\"rot\":[0,0,-15]},{\"shape\":\"box\",\"size\":[0.5,0.02,0.03],\"at\":[1.2,0.47,0.1],\"look\":\"paint\",\"color\":\"#4b4f55\",\"rot\":[0,0,20]},{\"shape\":\"box\",\"size\":[0.4,0.02,0.03],\"at\":[1.2,0.32999999999999996,0.1],\"look\":\"paint\",\"color\":\"#4b4f55\",\"rot\":[0,0,-15]}],\"moves\":[{\"name\":\"scratched\",\"type\":\"appear\"}]},{\"id\":\"shine\",\"parent\":\"discs\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.33,\"h\":0.02,\"axis\":\"z\",\"at\":[-1.2,0.41,0.11],\"look\":\"metal\",\"color\":\"#dfe6ee\"},{\"shape\":\"cylinder\",\"r\":0.33,\"h\":0.02,\"axis\":\"z\",\"at\":[-0.4,0.41,0.11],\"look\":\"metal\",\"color\":\"#dfe6ee\"},{\"shape\":\"cylinder\",\"r\":0.33,\"h\":0.02,\"axis\":\"z\",\"at\":[0.4,0.41,0.11],\"look\":\"metal\",\"color\":\"#dfe6ee\"},{\"shape\":\"cylinder\",\"r\":0.33,\"h\":0.02,\"axis\":\"z\",\"at\":[1.2,0.41,0.11],\"look\":\"metal\",\"color\":\"#dfe6ee\"}],\"moves\":[{\"name\":\"mirror\",\"type\":\"appear\"}]},{\"id\":\"grid\",\"parent\":\"discs\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.06,0.3,0.01],\"at\":[-1.3199999999999998,0.41,0.13],\"look\":\"paint\",\"color\":\"#3d6fb0\"},{\"shape\":\"box\",\"size\":[0.06,0.3,0.01],\"at\":[-1.2,0.41,0.13],\"look\":\"paint\",\"color\":\"#3d6fb0\"},{\"shape\":\"box\",\"size\":[0.06,0.3,0.01],\"at\":[-1.08,0.41,0.13],\"look\":\"paint\",\"color\":\"#3d6fb0\"},{\"shape\":\"box\",\"size\":[0.06,0.3,0.01],\"at\":[-0.52,0.41,0.13],\"look\":\"paint\",\"color\":\"#3d6fb0\"},{\"shape\":\"box\",\"size\":[0.06,0.3,0.01],\"at\":[-0.4,0.41,0.13],\"look\":\"paint\",\"color\":\"#3d6fb0\"},{\"shape\":\"box\",\"size\":[0.06,0.3,0.01],\"at\":[-0.28,0.41,0.13],\"look\":\"paint\",\"color\":\"#3d6fb0\"},{\"shape\":\"box\",\"size\":[0.06,0.3,0.01],\"at\":[0.28,0.41,0.13],\"look\":\"paint\",\"color\":\"#3d6fb0\"},{\"shape\":\"box\",\"size\":[0.06,0.3,0.01],\"at\":[0.4,0.41,0.13],\"look\":\"paint\",\"color\":\"#3d6fb0\"},{\"shape\":\"box\",\"size\":[0.06,0.3,0.01],\"at\":[0.52,0.41,0.13],\"look\":\"paint\",\"color\":\"#3d6fb0\"},{\"shape\":\"box\",\"size\":[0.06,0.3,0.01],\"at\":[1.08,0.41,0.13],\"look\":\"paint\",\"color\":\"#3d6fb0\"},{\"shape\":\"box\",\"size\":[0.06,0.3,0.01],\"at\":[1.2,0.41,0.13],\"look\":\"paint\",\"color\":\"#3d6fb0\"},{\"shape\":\"box\",\"size\":[0.06,0.3,0.01],\"at\":[1.3199999999999998,0.41,0.13],\"look\":\"paint\",\"color\":\"#3d6fb0\"}],\"moves\":[{\"name\":\"switches\",\"type\":\"appear\"}]},{\"id\":\"copper\",\"parent\":\"discs\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.42,0.025,0.01],\"at\":[-1.2,0.32999999999999996,0.14],\"look\":\"paint\",\"color\":\"#c87533\"},{\"shape\":\"box\",\"size\":[0.42,0.025,0.01],\"at\":[-1.2,0.49,0.14],\"look\":\"paint\",\"color\":\"#c87533\"},{\"shape\":\"box\",\"size\":[0.42,0.025,0.01],\"at\":[-0.4,0.32999999999999996,0.14],\"look\":\"paint\",\"color\":\"#c87533\"},{\"shape\":\"box\",\"size\":[0.42,0.025,0.01],\"at\":[-0.4,0.49,0.14],\"look\":\"paint\",\"color\":\"#c87533\"},{\"shape\":\"box\",\"size\":[0.42,0.025,0.01],\"at\":[0.4,0.32999999999999996,0.14],\"look\":\"paint\",\"color\":\"#c87533\"},{\"shape\":\"box\",\"size\":[0.42,0.025,0.01],\"at\":[0.4,0.49,0.14],\"look\":\"paint\",\"color\":\"#c87533\"},{\"shape\":\"box\",\"size\":[0.42,0.025,0.01],\"at\":[1.2,0.32999999999999996,0.14],\"look\":\"paint\",\"color\":\"#c87533\"},{\"shape\":\"box\",\"size\":[0.42,0.025,0.01],\"at\":[1.2,0.49,0.14],\"look\":\"paint\",\"color\":\"#c87533\"}],\"moves\":[{\"name\":\"copper\",\"type\":\"appear\"}]},{\"id\":\"marks\",\"parent\":\"discs\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"sphere\",\"r\":0.07,\"at\":[-0.28,0.53,0.15000000000000002],\"look\":\"paint\",\"color\":\"#e0262a\"},{\"shape\":\"sphere\",\"r\":0.07,\"at\":[1.3199999999999998,0.53,0.15000000000000002],\"look\":\"paint\",\"color\":\"#e0262a\"}],\"moves\":[{\"name\":\"mark\",\"type\":\"appear\"}]}]}},{\"id\":\"printer\",\"kind\":\"rig\",\"params\":{\"name\":\"light printer\",\"synonyms\":[\"lithography machine\",\"chip printer\",\"stepper\"],\"pos\":[6,0,-8],\"nodes\":[{\"id\":\"base\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[1.8,1,1.4],\"at\":[0,0.5,0],\"look\":\"paint\",\"color\":\"#e8e4dc\"},{\"shape\":\"cylinder\",\"r\":0.5,\"h\":0.05,\"axis\":\"y\",\"at\":[0,1.03,0.1],\"look\":\"metal\",\"color\":\"#a9b4c4\"},{\"shape\":\"box\",\"size\":[0.3,2.4,0.3],\"at\":[-0.75,2.2,-0.5],\"look\":\"paint\",\"color\":\"#e8e4dc\"},{\"shape\":\"box\",\"size\":[1.2,0.45,0.6],\"at\":[0,3.2,-0.3],\"look\":\"paint\",\"color\":\"#3d6fb0\"}]},{\"id\":\"ray\",\"parent\":\"base\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"beam\",\"from\":[0,2.97,-0.1],\"to\":[0,1.06,0.1],\"r\":0.09,\"color\":\"#a070ff\"}],\"moves\":[{\"name\":\"expose\",\"type\":\"light\"}]},{\"id\":\"specks\",\"parent\":\"base\",\"at\":[0,2.35,0.1],\"shapes\":[{\"shape\":\"sphere\",\"r\":0.09,\"at\":[-0.3,0,0.1],\"look\":\"rubber\",\"color\":\"#3a2a1c\"},{\"shape\":\"sphere\",\"r\":0.09,\"at\":[0.05,0.15,-0.1],\"look\":\"rubber\",\"color\":\"#3a2a1c\"},{\"shape\":\"sphere\",\"r\":0.09,\"at\":[0.3,0.05,0.15],\"look\":\"rubber\",\"color\":\"#3a2a1c\"},{\"shape\":\"sphere\",\"r\":0.09,\"at\":[-0.1,-0.1,0.25],\"look\":\"rubber\",\"color\":\"#3a2a1c\"},{\"shape\":\"sphere\",\"r\":0.09,\"at\":[0.15,-0.2,-0.2],\"look\":\"rubber\",\"color\":\"#3a2a1c\"}],\"moves\":[{\"name\":\"dust\",\"type\":\"appear\"},{\"name\":\"land\",\"type\":\"slide\",\"to\":[0,-1.12,0]}]}]}},{\"id\":\"chip\",\"kind\":\"rig\",\"params\":{\"name\":\"chip\",\"synonyms\":[\"chip\",\"microchip\"],\"pos\":[3.3,0,-2.9],\"nodes\":[{\"id\":\"stand\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[1.2,0.9,0.8],\"at\":[0,0.45,0],\"look\":\"metal\",\"color\":\"#7b8792\"}]},{\"id\":\"sliver\",\"parent\":\"stand\",\"at\":[0,0.9,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.6,0.04,0.6],\"at\":[0,0.02,0],\"look\":\"metal\",\"color\":\"#9aa3ad\"}],\"moves\":[{\"name\":\"slivers\",\"type\":\"appear\"}]},{\"id\":\"case\",\"parent\":\"stand\",\"at\":[0,0.9,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.7,0.14,0.7],\"at\":[0,0.07,0],\"look\":\"plastic\",\"color\":\"#18191b\"}],\"moves\":[{\"name\":\"case\",\"type\":\"appear\"}]},{\"id\":\"legs\",\"parent\":\"case\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.14,0.03,0.05],\"at\":[-0.41,0.05,-0.24],\"look\":\"metal\",\"color\":\"#c9ccd0\"},{\"shape\":\"box\",\"size\":[0.14,0.03,0.05],\"at\":[0.41,0.05,-0.24],\"look\":\"metal\",\"color\":\"#c9ccd0\"},{\"shape\":\"box\",\"size\":[0.14,0.03,0.05],\"at\":[-0.41,0.05,-0.08],\"look\":\"metal\",\"color\":\"#c9ccd0\"},{\"shape\":\"box\",\"size\":[0.14,0.03,0.05],\"at\":[0.41,0.05,-0.08],\"look\":\"metal\",\"color\":\"#c9ccd0\"},{\"shape\":\"box\",\"size\":[0.14,0.03,0.05],\"at\":[-0.41,0.05,0.08],\"look\":\"metal\",\"color\":\"#c9ccd0\"},{\"shape\":\"box\",\"size\":[0.14,0.03,0.05],\"at\":[0.41,0.05,0.08],\"look\":\"metal\",\"color\":\"#c9ccd0\"},{\"shape\":\"box\",\"size\":[0.14,0.03,0.05],\"at\":[-0.41,0.05,0.24],\"look\":\"metal\",\"color\":\"#c9ccd0\"},{\"shape\":\"box\",\"size\":[0.14,0.03,0.05],\"at\":[0.41,0.05,0.24],\"look\":\"metal\",\"color\":\"#c9ccd0\"}],\"moves\":[{\"name\":\"legs\",\"type\":\"appear\"}]}]}},{\"id\":\"bareOutline\",\"kind\":\"outline\",\"params\":{\"of\":\"wafers\",\"opts\":{\"closed\":true,\"r\":0.08,\"over\":true}}},{\"id\":\"loneOutline\",\"kind\":\"outline\",\"params\":{\"of\":\"wafers\",\"opts\":{\"closed\":true,\"r\":0.08,\"over\":true,\"color\":\"#ff8a2a\"}}},{\"id\":\"spark\",\"kind\":\"fx\",\"params\":{\"type\":\"spark\",\"at\":[2.4,1.4,-7.3],\"size\":0.6}},{\"id\":\"hall\",\"kind\":\"building\",\"params\":{\"pos\":[0,0,-5],\"width\":17,\"depth\":7,\"use\":\"factory\",\"floors\":[{\"h\":6}],\"roof\":\"flat\",\"walls\":\"#e9edf0\"}},{\"id\":\"airflow\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[-4,5.2,-7.5],\"dir\":[0,-1],\"travel\":1.2,\"phase\":0},{\"at\":[-1,5.2,-7.5],\"dir\":[0,-1],\"travel\":1.2,\"phase\":0.33},{\"at\":[1.9,5.2,-7.5],\"dir\":[0,-1],\"travel\":1.2,\"phase\":0.66},{\"at\":[5.6,5.2,-7.5],\"dir\":[0,-1],\"travel\":1.2,\"phase\":0.5}],\"opts\":{\"color\":\"#ffffff\",\"scale\":1.1}}},{\"id\":\"sign\",\"kind\":\"sign\",\"params\":{\"at\":[11,0,-4],\"rotY\":-0.25,\"scale\":1.3}}],\"beats\":[{\"s\":\"hook\",\"shows\":{\"p\":\"sandPit\",\"does\":\"a muddy puddle fills the pit and the sand settles to its floor\"},\"do\":[{\"p\":\"dig\",\"v\":\"dig\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"sandPit\",\"v\":\"show\",\"w\":\"muddy\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"sandPit\",\"v\":\"fill\",\"w\":\"muddy\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"sandPit\",\"v\":\"sink\",\"w\":\"settle\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"sandPit\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem\",\"shows\":{\"p\":\"tester\",\"does\":\"a battery and bulb wired into the sand: the bulb stays dark\"},\"state\":{\"text\":\"NO CURRENT\",\"w\":\"dark\"},\"do\":[{\"p\":\"tester\",\"v\":\"show\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"tester\",\"sandPit\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix1\",\"shows\":{\"p\":\"sandPour\",\"does\":\"sand streams from the pit up into a furnace, black carbon pours in from a bin\"},\"do\":[{\"p\":\"furnace\",\"v\":\"show\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"carbonBin\",\"v\":\"show\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"sandPour\",\"v\":\"start\",\"w\":\"shovel\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"carbonPour\",\"v\":\"start\",\"w\":\"carbon\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"furnace\",\"carbonBin\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem2\",\"shows\":{\"p\":\"temp\",\"does\":\"a temperature gauge beside the cold grey furnace reads zero and nothing changes\"},\"do\":[{\"p\":\"sandPour\",\"v\":\"stop\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"carbonPour\",\"v\":\"stop\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tempStand\",\"v\":\"show\",\"w\":\"cold\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"temp\",\"v\":\"show\",\"w\":\"cold\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"furnace\",\"temp\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix2\",\"shows\":{\"p\":\"furnace\",\"does\":\"the furnace glows red hot, the gauge climbs to 2,000 and oxygen leaves as a cloud of gas, freeing the silicon to pour out\"},\"do\":[{\"p\":\"furnace\",\"v\":\"heat\",\"w\":\"arcs\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"temp\",\"v\":\"count\",\"w\":\"heat\",\"o\":0,\"d\":1.6,\"amp\":1,\"ch\":\"\"},{\"p\":\"gas\",\"v\":\"start\",\"w\":\"heat\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"furnace\",\"temp\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem3\",\"shows\":{\"p\":\"lumps\",\"does\":\"the silicon pours out and lies in a grey jumble of lumps\"},\"do\":[{\"p\":\"gas\",\"v\":\"stop\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"temp\",\"v\":\"hide\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tempStand\",\"v\":\"hide\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lumps\",\"v\":\"show\",\"w\":\"pours\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lumps\",\"v\":\"pours\",\"w\":\"pours\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"lumps\",\"furnace\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix3\",\"shows\":{\"p\":\"puller\",\"does\":\"the silicon melts in a glowing crucible and one turning crystal is pulled up out of it\"},\"do\":[{\"p\":\"lumps\",\"v\":\"hide\",\"w\":\"melt\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"puller\",\"v\":\"show\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"puller\",\"v\":\"melt\",\"w\":\"melt\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"puller\",\"v\":\"crystal\",\"w\":\"pull\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"puller\",\"v\":\"pull\",\"w\":\"pull\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"puller\",\"v\":\"turn\",\"w\":\"crystal\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"puller\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem4\",\"shows\":{\"p\":\"puller\",\"does\":\"the crystal stops turning and hangs as a heavy log\"},\"do\":[{\"p\":\"puller\",\"v\":\"turnBack\",\"w\":\"log\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"puller\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix4\",\"shows\":{\"p\":\"wafers\",\"does\":\"thin round wafers appear on the table, sliced from the crystal\"},\"do\":[{\"p\":\"wafers\",\"v\":\"show\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"wafers\",\"v\":\"slice\",\"w\":\"slices\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"wafers\",\"puller\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem5\",\"shows\":{\"p\":\"wafers\",\"does\":\"dark scratch marks cover every wafer\"},\"do\":[{\"p\":\"wafers\",\"v\":\"scratched\",\"w\":\"scratched\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"wafers\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix5\",\"shows\":{\"p\":\"wafers\",\"does\":\"each wafer is polished bright as a mirror and the scratches are gone\"},\"do\":[{\"p\":\"wafers\",\"v\":\"scratchedBack\",\"w\":\"polish\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"wafers\",\"v\":\"mirror\",\"w\":\"mirror\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"wafers\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem6\",\"shows\":{\"p\":\"bareOutline\",\"does\":\"a glowing line traces the bare, empty wafers\"},\"do\":[{\"p\":\"bareOutline\",\"v\":\"show\",\"w\":\"bare\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"wafers\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix6\",\"shows\":{\"p\":\"printer\",\"does\":\"a printer shines a violet beam down and lines of tiny switches appear on the wafers\"},\"do\":[{\"p\":\"bareOutline\",\"v\":\"hide\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"printer\",\"v\":\"show\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"printer\",\"v\":\"expose\",\"w\":\"light\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"wafers\",\"v\":\"switches\",\"w\":\"switches\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"printer\",\"wafers\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem7\",\"shows\":{\"p\":\"printer\",\"does\":\"specks of dust drift into the beam and land on the wafer\"},\"do\":[{\"p\":\"printer\",\"v\":\"dust\",\"w\":\"speck\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"printer\",\"v\":\"land\",\"w\":\"ruins\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"printer\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix7\",\"shows\":{\"p\":\"hall\",\"does\":\"a white hall rises around the machines and arrows of filtered air blow down, the dust is gone\"},\"do\":[{\"p\":\"hall\",\"v\":\"build\",\"w\":\"hall\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"airflow\",\"v\":\"show\",\"w\":\"air\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"printer\",\"v\":\"landBack\",\"w\":\"filtered\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"printer\",\"v\":\"dustBack\",\"w\":\"filtered\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"hall\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"name\",\"shows\":{\"p\":\"hall\",\"does\":\"the hall's lights come on over the clean machines\"},\"do\":[{\"p\":\"hall\",\"v\":\"lights\",\"w\":\"cleanroom\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"hall\"],\"view\":\"home\",\"width\":0.85,\"type\":\"\",\"hero\":true,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem8\",\"shows\":{\"p\":\"loneOutline\",\"does\":\"an orange line traces the wafers' switches, standing apart with nothing between them\"},\"do\":[{\"p\":\"airflow\",\"v\":\"hide\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"loneOutline\",\"v\":\"show\",\"w\":\"unconnected\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"wafers\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix8\",\"shows\":{\"p\":\"wafers\",\"does\":\"thin copper lines are laid over the switches in layers\"},\"do\":[{\"p\":\"loneOutline\",\"v\":\"hide\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"wafers\",\"v\":\"copper\",\"w\":\"copper\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"wafers\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem9\",\"shows\":{\"p\":\"spark\",\"does\":\"sparks fly from a few faulty copper wires on the wafer\"},\"do\":[{\"p\":\"spark\",\"v\":\"start\",\"w\":\"short\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"wafers\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix9\",\"shows\":{\"p\":\"wafers\",\"does\":\"red dots mark the failed chips on the wafer and the sparks stop\"},\"do\":[{\"p\":\"spark\",\"v\":\"stop\",\"w\":\"test\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"wafers\",\"v\":\"mark\",\"w\":\"mark\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"wafers\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem10\",\"shows\":{\"p\":\"chip\",\"does\":\"a bare grey sliver of a chip lies on a stand beside the bulb\"},\"do\":[{\"p\":\"chip\",\"v\":\"show\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"chip\",\"v\":\"slivers\",\"w\":\"slivers\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"chip\",\"tester\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix10\",\"shows\":{\"p\":\"chip\",\"does\":\"the sliver is sealed in a black case and metal legs appear on its sides\"},\"do\":[{\"p\":\"chip\",\"v\":\"case\",\"w\":\"case\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"chip\",\"v\":\"legs\",\"w\":\"legs\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"chip\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"finish\",\"shows\":{\"p\":\"tester\",\"does\":\"a cord plugs the chip in, the bulb glows and the puddle in front runs clear\"},\"do\":[{\"p\":\"tester\",\"v\":\"plug\",\"w\":\"Plug\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tester\",\"v\":\"glowBulb\",\"w\":\"glows\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"sandPit\",\"v\":\"clear\",\"w\":\"clear\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"tester\",\"chip\",\"sandPit\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"congrats\",\"shows\":{\"p\":\"hall\",\"does\":\"the lit chip factory stands behind the clear puddle with the glowing bulb\"},\"do\":[],\"shots\":[{\"focus\":[\"home\",\"tester\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]}],\"audio\":{\"cards\":[{\"text\":\"2,000°C\",\"at\":{\"s\":\"fix2\",\"w\":\"2,000\",\"o\":0},\"d\":1.5}],\"sfx\":[{\"lib\":\"dirt\",\"at\":{\"s\":\"hook\",\"w\":\"settle\",\"o\":0},\"d\":1.2},{\"lib\":\"dirt\",\"at\":{\"s\":\"fix1\",\"w\":\"shovel\",\"o\":0},\"d\":1.2},{\"lib\":\"flame\",\"at\":{\"s\":\"fix2\",\"w\":\"arcs\",\"o\":0},\"d\":1.6},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"fix3\",\"w\":\"pull\",\"o\":0},\"d\":1.4},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"fix7\",\"w\":\"air\",\"o\":0},\"d\":1.4}],\"chimes\":[{\"s\":\"fix2\",\"w\":\"2,000\",\"o\":0},{\"s\":\"name\",\"w\":\"\",\"o\":0},{\"s\":\"congrats\",\"w\":\"\",\"o\":0}],\"rain\":[]}}"
  }
 }

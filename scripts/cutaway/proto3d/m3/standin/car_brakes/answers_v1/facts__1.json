@@ -1,0 +1,57 @@
+{
+ "hash": "*",
+ "by": "stand-in planner (replan 2026-11-09)",
+ "searches": 6,
+ "data": {
+  "checks": [
+   {
+    "index": 0,
+    "verdict": "keep",
+    "claim": "Brake fluid carries your push from a small piston at the pedal to bigger pistons at the wheel, multiplying the force about four to five times",
+    "why": "The study guide works 25.4 mm vs 54 mm pistons to about 4.5 times; HowStuffWorks confirms the principle.",
+    "sources": [
+     {
+      "url": "https://science.howstuffworks.com/transport/engines-equipment/brake4.htm",
+      "title": "How Brakes Work - HowStuffWorks"
+     },
+     {
+      "url": "https://open-exam-prep.com/study-guides/ca-red-seal-automotive-service-tech/brakes-steering-suspension-a/hydraulic-brake-systems",
+      "title": "Hydraulic Brake Systems & Master Cylinder/Caliper Service"
+     }
+    ]
+   },
+   {
+    "index": 1,
+    "verdict": "keep",
+    "claim": "Repeated hard stops from high speed can heat a brake disc past 500 degrees Celsius",
+    "why": "EngineerFix gives over 500 C for a very hard emergency stop or repeated stops from high speed; Kwik-Fit gives about 500 C on track.",
+    "sources": [
+     {
+      "url": "https://engineerfix.com/how-hot-do-brakes-get-on-a-car/",
+      "title": "How Hot Do Brakes Get on a Car?"
+     },
+     {
+      "url": "https://www.kwik-fit.com/blog/should-brake-discs-get-hot",
+      "title": "Should Brake Discs Get Hot? - Kwik Fit"
+     }
+    ]
+   },
+   {
+    "index": 2,
+    "verdict": "keep",
+    "claim": "Vented discs have air channels between their two faces whose vanes pump cooling air",
+    "why": "Motor.com describes channels between the two faces and vanes acting like centrifugal fan blades.",
+    "sources": [
+     {
+      "url": "https://www.motor.com/magazine-summary/performance-perspectives-january-2009/",
+      "title": "Performance Perspectives - MOTOR"
+     },
+     {
+      "url": "https://cars-data.com/en/car-glossary/ventilated-disc",
+      "title": "Ventilated disc - cars-data.com"
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -1,1446 +1,351 @@
 {
  "hash": "*",
- "by": "stand-in planner (replan 2026-11-09), from the real run 89cf9139",
+ "by": "stand-in planner (agent), 2026-11-11",
  "searches": 0,
  "data": {
-  "why": "A garden pond in a park, its water box dug into the lawn in section: goldfish swim, a pump pulls water to a settling tank, a gravel biofilter on the return pipe cleans it, an air pump adds bubbles and young trees shade it. The camera opens on the hole being dug, stays mid on the pond and each added part, and ends on the finished pond with rocks and lily pads.",
-  "sceneJson": {
-   "world": {
-    "cut": [
-     -9,
-     0,
-     -6,
-     1.6
-    ],
-    "house": false,
-    "trees": [
-     [
-      -13,
-      -10
-     ],
-     [
-      13,
-      -9,
-      0.9
-     ]
-    ],
-    "road": false,
-    "worker": false,
-    "moreTrees": false,
-    "rocksAvoid": [
-     [
-      -9.8,
-      6,
-      -4.1,
-      -1.9
-     ],
-     [
-      0,
-      6,
-      -3.3,
-      -0.3
-     ]
-    ],
-    "backdrop": {
-     "type": "park",
-     "lampX": 11.5,
-     "benchX": -11.5
-    }
-   },
-   "parts": [
-    {
-     "id": "light",
-     "kind": "light",
-     "params": {
-      "storm": false
-     }
-    },
-    {
-     "id": "dig",
-     "kind": "dig",
-     "params": {
-      "clumps": 150,
-      "mound": {
-       "x": 5.6,
-       "z": -8.2,
-       "rx": 2.2,
-       "rz": 1.4,
-       "h": 1
-      }
-     }
-    },
-    {
-     "id": "pondWater",
-     "kind": "water",
-     "params": {
-      "box": {
-       "x0": -8.98,
-       "x1": -0.02,
-       "y0": -1.55,
-       "y1": -0.15,
-       "z0": -5.98,
-       "z1": -0.01
-      },
-      "mat": "water",
-      "dirtyColor": "#3f9a2a"
-     }
-    },
-    {
-     "id": "fishA",
-     "kind": "prop",
-     "params": {
-      "type": "fish",
-      "size": [
-       6,
-       3.5
-      ],
-      "pos": [
-       -4.5,
-       -0.85,
-       -3
-      ]
-     }
-    },
-    {
-     "id": "fishTop",
-     "kind": "prop",
-     "params": {
-      "type": "fish",
-      "size": [
-       4,
-       2.5
-      ],
-      "pos": [
-       -4.5,
-       -0.4,
-       -3
-      ]
-     }
-    },
-    {
-     "id": "post",
-     "kind": "box",
-     "params": {
-      "mat": "metal",
-      "size": [
-       0.25,
-       1.5,
-       0.25
-      ],
-      "pos": [
-       1,
-       0.75,
-       -2.2
-      ],
-      "r": 0.03
-     }
-    },
-    {
-     "id": "ammUp",
-     "kind": "counter",
-     "params": {
-      "pos": [
-       1,
-       1.9,
-       -2
-      ],
-      "size": 1.1,
-      "from": 0,
-      "to": 5,
-      "bar": true,
-      "color": "#ff4d3d"
-     }
-    },
-    {
-     "id": "ammDown",
-     "kind": "counter",
-     "params": {
-      "pos": [
-       1,
-       1.9,
-       -2
-      ],
-      "size": 1.1,
-      "from": 5,
-      "to": 0,
-      "bar": true,
-      "color": "#4dd67a"
-     }
-    },
-    {
-     "id": "oxy",
-     "kind": "counter",
-     "params": {
-      "pos": [
-       1,
-       1.9,
-       -2
-      ],
-      "size": 1.1,
-      "from": 9,
-      "to": 3,
-      "bar": false,
-      "color": "#ff4d3d"
-     }
-    },
-    {
-     "id": "oxy2",
-     "kind": "counter",
-     "params": {
-      "pos": [
-       1,
-       1.9,
-       -2
-      ],
-      "size": 1.1,
-      "from": 3,
-      "to": 9,
-      "bar": false,
-      "color": "#4dd67a"
-     }
-    },
-    {
-     "id": "pump",
-     "kind": "machine",
-     "params": {
-      "pos": [
-       1.8,
-       0,
-       -3.8
-      ],
-      "rotY": 0
-     }
-    },
-    {
-     "id": "pipe1",
-     "kind": "pipeRun",
-     "params": {
-      "path": [
-       [
-        0,
-        -0.9,
-        -0.06
-       ],
-       [
-        2.4,
-        -0.9,
-        -0.06
-       ]
-      ],
-      "r": 0.2,
-      "mat": "pipeWhite"
-     }
-    },
-    {
-     "id": "flowA",
-     "kind": "pipeRunFlow",
-     "params": {
-      "pipe": "pipe1",
-      "count": 8,
-      "size": 0.12,
-      "speed": 3,
-      "mat": "juice"
-     }
-    },
-    {
-     "id": "settle",
-     "kind": "settle",
-     "params": {
-      "box": {
-       "x0": 2.4,
-       "x1": 5.6,
-       "y0": -3.2,
-       "y1": -0.5,
-       "z0": -3,
-       "z1": 0
-      },
-      "wallColor": "#2f6fb0",
-      "lid": false
-     }
-    },
-    {
-     "id": "pipeRet",
-     "kind": "pipeRun",
-     "params": {
-      "path": [
-       [
-        2.4,
-        -2.8,
-        -0.06
-       ],
-       [
-        -9.4,
-        -2.8,
-        -0.06
-       ],
-       [
-        -9.4,
-        -1.2,
-        -0.06
-       ],
-       [
-        -9,
-        -1.2,
-        -0.06
-       ]
-      ],
-      "r": 0.2,
-      "mat": "pipeWhite"
-     }
-    },
-    {
-     "id": "flowRet",
-     "kind": "pipeRunFlow",
-     "params": {
-      "pipe": "pipeRet",
-      "count": 24,
-      "size": 0.12,
-      "speed": 3.2,
-      "mat": "juice"
-     }
-    },
-    {
-     "id": "bio",
-     "kind": "soakPit",
-     "params": {
-      "box": {
-       "x0": -7.6,
-       "x1": -2.6,
-       "y0": -3.5,
-       "y1": -2.1,
-       "z0": -2.4,
-       "z1": 0.015
-      },
-      "faceBox": {
-       "x0": -7.6,
-       "x1": -2.6,
-       "y0": -3.5,
-       "y1": -2.1,
-       "z0": -2.3,
-       "z1": 0.04
-      },
-      "mat": "gravelPit",
-      "pebbleMat": "pebblesPit"
-     },
-     "base": {
-      "wetY": -3.5
-     }
-    },
-    {
-     "id": "bioOutline",
-     "kind": "outline",
-     "params": {
-      "points": [
-       [
-        -7.75,
-        -2,
-        0.12
-       ],
-       [
-        -7.75,
-        -3.65,
-        0.12
-       ],
-       [
-        -2.45,
-        -3.65,
-        0.12
-       ],
-       [
-        -2.45,
-        -2,
-        0.12
-       ],
-       [
-        -7.75,
-        -2,
-        0.12
-       ]
-      ]
-     }
-    },
-    {
-     "id": "airArrows",
-     "kind": "arrows",
-     "params": {
-      "list": [
-       {
-        "at": [
-         -5.8,
-         -0.9,
-         0.3
-        ],
-        "dir": [
-         0,
-         -1
-        ],
-        "travel": 1,
-        "phase": 0
-       },
-       {
-        "at": [
-         -3.8,
-         -0.9,
-         0.3
-        ],
-        "dir": [
-         0,
-         -1
-        ],
-        "travel": 1,
-        "phase": 0.5
-       }
-      ],
-      "opts": {
-       "color": "#ffffff",
-       "scale": 0.9
-      }
-     }
-    },
-    {
-     "id": "airPump",
-     "kind": "boxPop",
-     "params": {
-      "size": [
-       0.8,
-       0.5,
-       0.6
-      ],
-      "pos": [
-       1.7,
-       0.25,
-       -0.5
-      ],
-      "mat": "machineBody"
-     }
-    },
-    {
-     "id": "airHose",
-     "kind": "pipeRun",
-     "params": {
-      "path": [
-       [
-        1.3,
-        0.25,
-        -0.5
-       ],
-       [
-        0.3,
-        0.25,
-        -0.5
-       ],
-       [
-        -0.6,
-        -0.3,
-        -0.5
-       ],
-       [
-        -0.6,
-        -1.55,
-        -0.5
-       ]
-      ],
-      "r": 0.07,
-      "mat": "pipeWhite"
-     }
-    },
-    {
-     "id": "bubbles",
-     "kind": "bubbles",
-     "params": {
-      "x0": -1.4,
-      "x1": -0.2,
-      "y0": -1.5,
-      "y1": -0.25,
-      "z": -0.55,
-      "count": 40,
-      "speed": 1
-     }
-    },
-    {
-     "id": "trees",
-     "kind": "youngTrees",
-     "params": {
-      "trees": [
-       [
-        -7,
-        -8.8,
-        1.1
-       ],
-       [
-        -4,
-        -9.4,
-        1.3
-       ],
-       [
-        -1,
-        -8.8,
-        1
-       ]
-      ],
-      "stagger": 0.3
-     }
-    },
-    {
-     "id": "rocks",
-     "kind": "prop",
-     "params": {
-      "type": "rocks",
-      "size": [
-       10,
-       7
-      ],
-      "pos": [
-       -4.5,
-       0.05,
-       -3
-      ],
-      "open": [
-       "front"
-      ]
-     }
-    },
-    {
-     "id": "lily",
-     "kind": "prop",
-     "params": {
-      "type": "lilyPads",
-      "size": [
-       8,
-       5
-      ],
-      "pos": [
-       -4.5,
-       -0.15,
-       -3
-      ]
-     }
-    },
-    {
-     "id": "sign",
-     "kind": "sign",
-     "params": {
-      "at": [
-       8.8,
-       0.08,
-       -3.5
-      ],
-      "rotY": -0.2,
-      "scale": 1.4
-     }
-    }
-   ],
-   "beats": [
-    {
-     "s": "hook",
-     "shows": {
-      "p": "dig",
-      "does": "dig the hole, water fills it, goldfish swim"
-     },
-     "do": [
-      {
-       "p": "dig",
-       "v": "dig",
-       "w": "dig",
-       "o": -0.5,
-       "d": 0
-      },
-      {
-       "p": "pondWater",
-       "v": "flood",
-       "w": "water",
-       "o": 0,
-       "d": 2
-      },
-      {
-       "p": "fishA",
-       "v": "show",
-       "w": "goldfish",
-       "o": 0,
-       "d": 0
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "dig"
-       ],
-       "view": "home",
-       "type": "close",
-       "hero": false,
-       "word": ""
-      },
-      {
-       "focus": [
-        "pondWater"
-       ],
-       "view": "home",
-       "type": "mid",
-       "hero": false,
-       "word": "goldfish"
-      }
-     ]
-    },
-    {
-     "s": "problem",
-     "shows": {
-      "p": "pondWater",
-      "does": "water turns green"
-     },
-     "state": {
-      "text": "GREEN WATER",
-      "w": "green"
-     },
-     "do": [
-      {
-       "p": "pondWater",
-       "v": "dirty",
-       "w": "waste",
-       "o": 0,
-       "d": 1.2,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "pondWater"
-       ],
-       "view": "home",
-       "type": "mid",
-       "hero": false,
-       "word": ""
-      }
-     ]
-    },
-    {
-     "s": "stakes",
-     "shows": {
-      "p": "ammUp",
-      "does": "ammonia gauge climbs into red"
-     },
-     "state": {
-      "text": "TOXIC",
-      "w": "harm"
-     },
-     "do": [
-      {
-       "p": "ammUp",
-       "v": "show",
-       "w": "ammonia",
-       "o": 0,
-       "d": 0
-      },
-      {
-       "p": "ammUp",
-       "v": "count",
-       "w": "ammonia",
-       "o": 0.3,
-       "d": 2.4
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "pondWater",
-        "ammUp"
-       ],
-       "view": "home",
-       "type": "mid",
-       "hero": false,
-       "word": ""
-      }
-     ]
-    },
-    {
-     "s": "fix1",
-     "shows": {
-      "p": "pipe1",
-      "does": "pipe grows from the pond, dirty water is pulled out"
-     },
-     "do": [
-      {
-       "p": "pump",
-       "v": "show",
-       "w": "pump",
-       "o": 0,
-       "d": 0
-      },
-      {
-       "p": "pipe1",
-       "v": "grow",
-       "w": "pipe",
-       "o": 0,
-       "d": 1
-      },
-      {
-       "p": "flowA",
-       "v": "show",
-       "w": "pull",
-       "o": 0,
-       "d": 0
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "pump",
-        "pipe1",
-        "pondWater"
-       ],
-       "view": "home",
-       "width": 0.85,
-       "hero": false,
-       "word": ""
-      }
-     ]
-    },
-    {
-     "s": "fix2",
-     "shows": {
-      "p": "settle",
-      "does": "tank fills, sludge sinks, scum floats, water clears"
-     },
-     "do": [
-      {
-       "p": "settle",
-       "v": "show",
-       "w": "tank",
-       "o": 0,
-       "d": 0
-      },
-      {
-       "p": "settle",
-       "v": "fill",
-       "w": "tank",
-       "o": 0.4,
-       "d": 0
-      },
-      {
-       "p": "settle",
-       "v": "sink",
-       "w": "sinks",
-       "o": 0,
-       "d": 0
-      },
-      {
-       "p": "settle",
-       "v": "float",
-       "w": "floats",
-       "o": 0,
-       "d": 0
-      },
-      {
-       "p": "settle",
-       "v": "clear",
-       "w": "floats",
-       "o": 1,
-       "d": 0
-      },
-      {
-       "p": "pipeRet",
-       "v": "grow",
-       "w": "back",
-       "o": 0,
-       "d": 3
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "settle"
-       ],
-       "view": "home",
-       "type": "mid",
-       "hero": false,
-       "word": ""
-      }
-     ]
-    },
-    {
-     "s": "problem2",
-     "shows": {
-      "p": "flowRet",
-      "does": "dots carry the ammonia back along the return pipe"
-     },
-     "state": {
-      "text": "STILL TOXIC",
-      "w": "carries"
-     },
-     "do": [
-      {
-       "p": "flowRet",
-       "v": "show",
-       "w": "carries",
-       "o": 0,
-       "d": 0
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "pipeRet",
-        "pondWater"
-       ],
-       "view": "home",
-       "width": 1,
-       "hero": false,
-       "word": ""
-      }
-     ]
-    },
-    {
-     "s": "fix3",
-     "shows": {
-      "p": "bio",
-      "does": "gravel bed grows over the return pipe and gets wet"
-     },
-     "do": [
-      {
-       "p": "bio",
-       "v": "grow",
-       "w": "gravel",
-       "o": 0,
-       "d": 1.3
-      },
-      {
-       "p": "bio",
-       "v": "wet",
-       "w": "bacteria",
-       "o": 0,
-       "d": 0
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "bio"
-       ],
-       "view": "home",
-       "type": "mid",
-       "hero": false,
-       "word": ""
-      }
-     ]
-    },
-    {
-     "s": "name",
-     "shows": {
-      "p": "bioOutline",
-      "does": "outline traces the gravel bed"
-     },
-     "do": [
-      {
-       "p": "bioOutline",
-       "v": "show",
-       "w": "biofilter",
-       "o": 0,
-       "d": 0
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "bio"
-       ],
-       "view": "home",
-       "width": 0.6,
-       "hero": true,
-       "word": ""
-      }
-     ]
-    },
-    {
-     "s": "how",
-     "shows": {
-      "p": "pondWater",
-      "does": "water runs through the gravel bed and the green pond turns clear"
-     },
-     "do": [
-      {
-       "p": "bioOutline",
-       "v": "hide",
-       "w": "Water",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "ammUp",
-       "v": "hide",
-       "w": "Water",
-       "o": 0,
-       "d": 0
-      },
-      {
-       "p": "ammDown",
-       "v": "show",
-       "w": "eat",
-       "o": 0,
-       "d": 0
-      },
-      {
-       "p": "ammDown",
-       "v": "count",
-       "w": "eat",
-       "o": 0.3,
-       "d": 2.5
-      },
-      {
-       "p": "pondWater",
-       "v": "clean",
-       "w": "clear",
-       "o": 0,
-       "d": 0
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "bio",
-        "pondWater"
-       ],
-       "view": "home",
-       "width": 0,
-       "type": "mid",
-       "hero": false,
-       "word": "",
-       "box": []
-      }
-     ]
-    },
-    {
-     "s": "fact",
-     "shows": {
-      "p": "airArrows",
-      "does": "white arrows pull oxygen from the pond down toward the gravel"
-     },
-     "do": [
-      {
-       "p": "airArrows",
-       "v": "show",
-       "w": "oxygen",
-       "o": 0,
-       "d": 0
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "bio",
-        "pondWater"
-       ],
-       "view": "home",
-       "type": "mid",
-       "hero": false,
-       "word": ""
-      }
-     ]
-    },
-    {
-     "s": "problem3",
-     "shows": {
-      "p": "fishTop",
-      "does": "the goldfish crowd at the water surface while the oxygen gauge drops"
-     },
-     "state": {
-      "text": "LOW OXYGEN",
-      "w": "gasping"
-     },
-     "do": [
-      {
-       "p": "airArrows",
-       "v": "hide",
-       "w": "But",
-       "o": 0,
-       "d": 0
-      },
-      {
-       "p": "ammDown",
-       "v": "hide",
-       "w": "But",
-       "o": 0,
-       "d": 0
-      },
-      {
-       "p": "oxy",
-       "v": "show",
-       "w": "hot",
-       "o": 0,
-       "d": 0
-      },
-      {
-       "p": "oxy",
-       "v": "count",
-       "w": "less",
-       "o": 0,
-       "d": 2.5
-      },
-      {
-       "p": "fishTop",
-       "v": "show",
-       "w": "crowd",
-       "o": 0,
-       "d": 0
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "pondWater",
-        "fishTop"
-       ],
-       "view": "home",
-       "width": 0,
-       "type": "mid",
-       "hero": false,
-       "word": "",
-       "box": []
-      }
-     ]
-    },
-    {
-     "s": "fix4",
-     "shows": {
-      "p": "bubbles",
-      "does": "air pump blows bubbles up through the water, oxygen gauge rises"
-     },
-     "do": [
-      {
-       "p": "airPump",
-       "v": "show",
-       "w": "pump",
-       "o": 0,
-       "d": 0
-      },
-      {
-       "p": "airHose",
-       "v": "grow",
-       "w": "blows",
-       "o": 0,
-       "d": 1
-      },
-      {
-       "p": "bubbles",
-       "v": "show",
-       "w": "bubbles",
-       "o": 0,
-       "d": 0
-      },
-      {
-       "p": "oxy",
-       "v": "hide",
-       "w": "bubbles",
-       "o": 0,
-       "d": 0
-      },
-      {
-       "p": "oxy2",
-       "v": "show",
-       "w": "bubbles",
-       "o": 0.1,
-       "d": 0
-      },
-      {
-       "p": "oxy2",
-       "v": "count",
-       "w": "water",
-       "o": 0,
-       "d": 2
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "airPump",
-        "pondWater"
-       ],
-       "view": "home",
-       "type": "mid",
-       "hero": false,
-       "word": ""
-      }
-     ]
-    },
-    {
-     "s": "fix5",
-     "shows": {
-      "p": "trees",
-      "does": "young trees pop in behind the pond to shade it"
-     },
-     "do": [
-      {
-       "p": "trees",
-       "v": "show",
-       "w": "trees",
-       "o": 0,
-       "d": 0
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "pondWater",
-        "trees"
-       ],
-       "view": "home",
-       "width": 0.9,
-       "hero": false,
-       "word": ""
-      }
-     ]
-    },
-    {
-     "s": "finish",
-     "shows": {
-      "p": "rocks",
-      "does": "rocks ring the pond edge and lily pads float on the water"
-     },
-     "do": [
-      {
-       "p": "oxy2",
-       "v": "hide",
-       "w": "Add",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "bubbles",
-       "v": "hide",
-       "w": "Add",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "rocks",
-       "v": "show",
-       "w": "rocks",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "lily",
-       "v": "show",
-       "w": "lily",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "flowA",
-       "v": "hide",
-       "w": "Add",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "flowRet",
-       "v": "hide",
-       "w": "Add",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "home"
-       ],
-       "view": "home",
-       "hero": false,
-       "word": ""
-      }
-     ]
-    },
-    {
-     "s": "congrats",
-     "do": [],
-     "shots": [
-      {
-       "focus": [
-        "home"
-       ],
-       "view": "home",
-       "hero": false,
-       "word": ""
-      }
-     ]
-    }
-   ],
-   "audio": {
-    "cards": [
-     {
-      "text": "4.57 G OXYGEN",
-      "at": {
-       "s": "fact",
-       "w": "4.57",
-       "o": 0
-      },
-      "d": 1.8
-     }
-    ],
-    "sfx": [
-     {
-      "lib": "dirt",
-      "at": {
-       "s": "hook",
-       "w": "dig",
-       "o": 0.05
-      },
-      "d": 1.2
-     },
-     {
-      "lib": "water_rush",
-      "at": {
-       "s": "hook",
-       "w": "water",
-       "o": 0
-      },
-      "d": 1.6
-     },
-     {
-      "lib": "motor_hum",
-      "at": {
-       "s": "fix1",
-       "w": "pump",
-       "o": 0
-      },
-      "d": 1.5
-     },
-     {
-      "lib": "water_rush",
-      "at": {
-       "s": "fix2",
-       "w": "back",
-       "o": 0
-      },
-      "d": 1.5
-     },
-     {
-      "lib": "motor_hum",
-      "at": {
-       "s": "fix4",
-       "w": "pump",
-       "o": 0
-      },
-      "d": 1.5
-     }
-    ],
-    "chimes": [
-     {
-      "s": "fact",
-      "w": "4.57",
-      "o": 0
-     },
-     {
-      "s": "name",
-      "w": "",
-      "o": 0
-     },
-     {
-      "s": "congrats",
-      "w": "",
-      "o": 0
-     }
-    ],
-    "rain": []
-   }
-  },
+  "why": "A park pond in section with a big storybook fish in it, built cut open like an anatomy plate so its organs face the camera, and a leaf floating on the water. The story follows the water into the fish (mouth, rakers, gills, covers) and then the fish up to the surface: it sinks, gets a swim bladder, drifts, gets a tail, swings, gets fins, needs oxygen, gets gills, clogs, gets rakers, stops, gets covers, warm water runs low, it rises, a heron spots it, a dark back, a strike, a lateral line, a scrape, scales. The camera stays close on the fish and pulls out to the pond at the end.",
   "story": {
-   "title": "How a fish pond stays clear",
-   "hero": "a biofilter",
+   "title": "Fish",
+   "hero": "a fish",
    "parts": [
     "pond",
-    "water",
-    "goldfish",
-    "pump",
-    "pipe",
-    "settling tank",
-    "gravel bed",
-    "gauge",
-    "air pump",
-    "bubbles",
-    "young trees",
-    "rocks",
+    "body",
+    "swim bladder",
+    "tail",
+    "fins",
+    "gills",
+    "gill rakers",
+    "gill covers",
+    "dark back",
+    "lateral line",
+    "scales",
+    "heron",
+    "leaf",
     "lily pads"
    ],
    "ideas": [
     {
      "role": "hook",
-     "idea": "dig a hole, fill it with water and add goldfish, you have a fish pond"
+     "idea": "a tube of meat in a pond is the start of a fish"
     },
     {
      "role": "problem",
-     "idea": "the fish make waste that feeds algae, so the clear water turns green"
-    },
-    {
-     "role": "stakes",
-     "idea": "the waste turns into ammonia, and above about 0.02 milligrams per liter it can harm the fish gills"
+     "idea": "meat is denser than water and goes to the bottom"
     },
     {
      "role": "fix1",
-     "idea": "add a pump and a pipe to pull the dirty water out of the pond"
-    },
-    {
-     "role": "fix2",
-     "idea": "add a settling tank where sludge sinks, scum floats, and clearer water goes back"
+     "idea": "a gas-filled swim bladder makes it float"
     },
     {
      "role": "problem2",
-     "idea": "ammonia is dissolved, so the clear-looking water carries it straight back into the pond"
+     "idea": "floating is not moving: it just hangs there"
     },
     {
-     "role": "fix3",
-     "idea": "add a bed of gravel on the return pipe, giving bacteria a place to live"
-    },
-    {
-     "role": "name",
-     "idea": "this is a biofilter"
-    },
-    {
-     "role": "how",
-     "idea": "water flows through the gravel, bacteria eat the ammonia, and the pond turns clear"
-    },
-    {
-     "role": "fact",
-     "idea": "turning one gram of ammonia nitrogen into nitrate uses about 4.57 grams of oxygen from the water"
+     "role": "fix2",
+     "idea": "a tail pushes it forward"
     },
     {
      "role": "problem3",
-     "idea": "on a hot day, warm water holds less oxygen, so the fish crowd the surface, gasping"
+     "idea": "each push of the tail turns the whole body"
+    },
+    {
+     "role": "fix3",
+     "idea": "fins keep it straight"
+    },
+    {
+     "role": "problem4",
+     "idea": "swimming uses oxygen, and it has no way to get any"
     },
     {
      "role": "fix4",
-     "idea": "add an air pump that blows bubbles up through the water, and the oxygen climbs back"
+     "idea": "water goes in at the mouth and over red gills that take its oxygen"
+    },
+    {
+     "role": "problem5",
+     "idea": "the water brings grit that clogs the gills"
     },
     {
      "role": "fix5",
-     "idea": "plant young trees behind the pond to shade it, so the water stays cool"
+     "idea": "gill rakers comb the grit out first"
+    },
+    {
+     "role": "problem6",
+     "idea": "a fish at rest moves no water over its gills"
+    },
+    {
+     "role": "fix6",
+     "idea": "gill covers pump water through even at rest"
+    },
+    {
+     "role": "problem7",
+     "idea": "warm water holds little oxygen"
+    },
+    {
+     "role": "fix7",
+     "idea": "it goes up to the surface where the water is richer"
+    },
+    {
+     "role": "problem8",
+     "idea": "at the surface a heron sees the bright fish"
+    },
+    {
+     "role": "fix8",
+     "idea": "a dark back hides it against the mud"
+    },
+    {
+     "role": "problem9",
+     "idea": "the heron still aims at the dark shape"
+    },
+    {
+     "role": "fix9",
+     "idea": "a lateral line feels the beak's ripple so it gets away"
+    },
+    {
+     "role": "name",
+     "idea": "this is the lateral line"
+    },
+    {
+     "role": "problem10",
+     "idea": "the warning comes late and the beak scrapes its skin"
+    },
+    {
+     "role": "fix10",
+     "idea": "scales and slime protect the skin"
     },
     {
      "role": "finish",
-     "idea": "add rocks around the edge and lily pads on the water"
+     "idea": "lily pads on the pond and the fish swims across"
     },
     {
      "role": "congrats",
-     "idea": "congratulations, you have built a fish pond"
+     "idea": "you have built a fish"
     }
    ],
    "chain": [
     {
      "problem": "problem",
      "causedBy": "hook",
-     "shows": "the clear pond water turns green around the goldfish",
-     "stakes": "the fish live in dirty water that grows worse every day",
-     "size": 3
+     "shows": "the heavy tube sinks to the bottom of the pond",
+     "stakes": "the fish lies stuck on the bottom",
+     "size": 2,
+     "at": "pond",
+     "scale": "thing"
     },
     {
      "problem": "problem2",
-     "causedBy": "fix2",
-     "shows": "dots of dissolved ammonia run back along the return pipe into the pond while the gauge stays red",
-     "stakes": "the fish keep breathing toxic water even though it looks clearer",
-     "size": 6
+     "causedBy": "fix1",
+     "shows": "the fish floats but only drifts with the leaf",
+     "stakes": "it cannot go anywhere",
+     "size": 3,
+     "at": "pond",
+     "scale": "thing"
     },
     {
      "problem": "problem3",
+     "causedBy": "fix2",
+     "shows": "every tail sweep swings the body sideways",
+     "stakes": "it goes in circles",
+     "size": 3,
+     "at": "pond",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem4",
      "causedBy": "fix3",
-     "shows": "the oxygen gauge drops on a hot day and the fish crowd at the surface",
-     "stakes": "the fish can suffocate",
-     "size": 9
+     "shows": "the swimming fish has no way to breathe",
+     "stakes": "it suffocates",
+     "size": 5,
+     "at": "mouth",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem5",
+     "causedBy": "fix4",
+     "shows": "grit in the gulped water clogs the gills",
+     "stakes": "the gills choke",
+     "size": 5,
+     "at": "gill rakers",
+     "scale": "part"
+    },
+    {
+     "problem": "problem6",
+     "causedBy": "fix5",
+     "shows": "the fish stops and the water stops flowing over the gills",
+     "stakes": "it suffocates at rest",
+     "size": 6,
+     "at": "gills",
+     "scale": "part"
+    },
+    {
+     "problem": "problem7",
+     "causedBy": "fix6",
+     "shows": "on a hot day the oxygen in the pumped water falls",
+     "stakes": "the whole pond runs short of air",
+     "size": 7,
+     "at": "gill covers",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem8",
+     "causedBy": "fix7",
+     "shows": "at the surface a heron spots the bright fish",
+     "stakes": "the fish is seen from above",
+     "size": 8,
+     "at": "surface",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem9",
+     "causedBy": "fix8",
+     "shows": "the heron strikes at the dark back anyway",
+     "stakes": "the fish is caught",
+     "size": 9,
+     "at": "surface",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem10",
+     "causedBy": "fix9",
+     "shows": "the beak scrapes the fish's soft skin",
+     "stakes": "the fish is wounded",
+     "size": 9,
+     "at": "surface",
+     "scale": "thing"
     }
    ],
+   "flow": [
+    "pond",
+    "mouth",
+    "gill rakers",
+    "gills",
+    "gill covers",
+    "surface"
+   ],
+   "recurring": {
+    "p": "leaf",
+    "what": "a leaf floating on the pond"
+   },
    "surprises": [
     {
-     "claim": "Nitrifying one gram of ammonia nitrogen into nitrate uses about 4.57 grams of oxygen.",
-     "role": "fact",
-     "search": "nitrification 4.57 g oxygen per g ammonia nitrogen oxidized"
+     "claim": "A swim bladder is a gas-filled organ that lets a bony fish control how it floats",
+     "role": "fix1",
+     "search": "swim bladder gas filled organ buoyancy bony fish"
     },
     {
-     "claim": "Long-term exposure to unionized ammonia above about 0.02 mg per liter is generally considered potentially harmful to fish, including their gills; some guides put the damage point nearer 0.05 mg per liter.",
-     "role": "stakes",
-     "search": "ammonia toxicity fish 0.02 mg/L unionized gill damage"
+     "claim": "Gill rakers are comb-like projections on the gill arches that keep particles away from the gill filaments",
+     "role": "fix5",
+     "search": "gill rakers function filter particles protect gill filaments"
     },
     {
-     "claim": "Fresh water holds about 14.6 mg of oxygen per liter at 0 degrees C but only about 7.6 mg per liter at 30 degrees C (at saturation and sea-level pressure).",
-     "role": "problem3",
+     "claim": "Fresh water holds about 14.6 milligrams of oxygen per liter at 0 degrees Celsius but only about 7.6 at 30 degrees",
+     "role": "problem7",
      "search": "dissolved oxygen saturation freshwater 0 C 14.6 mg/L 30 C 7.6 mg/L"
+    },
+    {
+     "claim": "The lateral line is a sense organ that lets fish feel movements and vibrations in the water around them",
+     "role": "fix9",
+     "search": "fish lateral line detects water movement vibration"
     }
    ]
   },
   "sentences": [
    {
     "role": "hook",
-    "text": "If you dig a hole, fill it with water and add goldfish, you have a fish pond."
+    "text": "If you drop a tube of meat in a pond, you have a fish."
    },
    {
     "role": "problem",
-    "text": "But the fish make waste that feeds algae, so the clear water turns green."
-   },
-   {
-    "role": "stakes",
-    "text": "The waste turns into ammonia, and above about 0.02 milligrams per liter it can harm the fish gills."
+    "text": "But meat is heavier than water, so it sinks."
    },
    {
     "role": "fix1",
-    "text": "So you add a pump and a pipe to pull the dirty water out of the pond."
-   },
-   {
-    "role": "fix2",
-    "text": "So you add a settling tank where sludge sinks, scum floats, and clearer water goes back."
+    "text": "So you give it a swim bladder full of gas."
    },
    {
     "role": "problem2",
-    "text": "But ammonia is dissolved, so the clear-looking water carries it straight back into the pond."
+    "text": "But the bladder only floats it, so it drifts."
    },
    {
-    "role": "fix3",
-    "text": "So you add a bed of gravel on the return pipe, giving bacteria a place to live."
-   },
-   {
-    "role": "name",
-    "text": "This is a biofilter."
-   },
-   {
-    "role": "how",
-    "text": "Water flows through the gravel, bacteria eat the ammonia, and the pond turns clear."
-   },
-   {
-    "role": "fact",
-    "text": "Turning one gram of ammonia nitrogen into nitrate uses about 4.57 grams of oxygen from the water."
+    "role": "fix2",
+    "text": "So you add a tail that sweeps it forward."
    },
    {
     "role": "problem3",
-    "text": "But on a hot day, warm water holds less oxygen, so the fish crowd the surface, gasping."
+    "text": "But every tail sweep swings its whole body sideways."
+   },
+   {
+    "role": "fix3",
+    "text": "So you add fins that hold it straight."
+   },
+   {
+    "role": "problem4",
+    "text": "But the fins keep it swimming, which burns oxygen."
    },
    {
     "role": "fix4",
-    "text": "So you add an air pump that blows bubbles up through the water, and the oxygen climbs back."
+    "text": "So it gulps water through its mouth and over red gills."
+   },
+   {
+    "role": "problem5",
+    "text": "But the water it gulps carries grit that clogs the gills."
    },
    {
     "role": "fix5",
-    "text": "Then you plant young trees behind the pond to shade it, so the water stays cool."
+    "text": "So you add gill rakers, a comb that catches grit."
+   },
+   {
+    "role": "problem6",
+    "text": "But when it stops, no water flows over the gills."
+   },
+   {
+    "role": "fix6",
+    "text": "So you add gill covers that pump water at rest."
+   },
+   {
+    "role": "problem7",
+    "text": "But on hot days, the water it pumps holds little oxygen."
+   },
+   {
+    "role": "fix7",
+    "text": "So it rises to gulp the richer water at the surface."
+   },
+   {
+    "role": "problem8",
+    "text": "But at the surface, a heron spots the bright fish."
+   },
+   {
+    "role": "fix8",
+    "text": "So you give it a dark back like the mud."
+   },
+   {
+    "role": "problem9",
+    "text": "But the heron still strikes at the dark back."
+   },
+   {
+    "role": "fix9",
+    "text": "So you add a lateral line that feels the ripple."
+   },
+   {
+    "role": "name",
+    "text": "This is the lateral line."
+   },
+   {
+    "role": "problem10",
+    "text": "But the line is late, and the beak scrapes its skin."
+   },
+   {
+    "role": "fix10",
+    "text": "So you cover it in scales and slime."
    },
    {
     "role": "finish",
-    "text": "Add rocks around the edge and lily pads on the water."
+    "text": "Add lily pads, and let it swim across the pond."
    },
    {
     "role": "congrats",
-    "text": "Congratulations, you have built a fish pond."
+    "text": "Congratulations, you have built a fish."
    }
-  ]
+  ],
+  "sceneJson": "{\"world\":{\"cut\":[-7,3,-5,3.2],\"house\":false,\"porch\":false,\"worker\":false,\"road\":false,\"moreTrees\":false,\"trees\":[[-13,-10],[13,-9,0.9]],\"backdrop\":{\"type\":\"park\",\"lampX\":11.5,\"benchX\":-12}},\"parts\":[{\"id\":\"light\",\"kind\":\"light\",\"params\":{\"storm\":false}},{\"id\":\"dig\",\"kind\":\"dig\",\"params\":{\"clumps\":60,\"mound\":{\"x\":6.5,\"z\":-7,\"rx\":1.4,\"rz\":1,\"h\":0.6}}},{\"id\":\"pond\",\"kind\":\"waterBody\",\"params\":{\"body\":\"lake\",\"x0\":-7,\"x1\":3,\"level\":-0.15,\"depth\":3.2,\"z0\":-5}},{\"id\":\"leaf\",\"kind\":\"token\",\"params\":{\"type\":\"leaf\",\"pos\":[-6,-0.13,-3.5],\"path\":[[-3.5,-0.13,-2.4],[-1,-0.13,-1.4],[1.5,-0.13,-0.9],[2.4,-0.13,-0.7]],\"size\":0.5}},{\"id\":\"fish\",\"kind\":\"rig\",\"main\":true,\"params\":{\"name\":\"fish\",\"synonyms\":[\"fish\",\"goldfish\",\"meat\"],\"pos\":[-4.4,-1.6,-1],\"scale\":1.2,\"nodes\":[{\"id\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.36,\"h\":1.1,\"axis\":\"x\",\"at\":[0,0,0],\"look\":\"paint\",\"color\":\"#e8822a\"},{\"shape\":\"cone\",\"r\":0.1,\"r2\":0.36,\"h\":0.4,\"axis\":\"x\",\"at\":[0.75,0,0],\"look\":\"paint\",\"color\":\"#e8822a\"},{\"shape\":\"cone\",\"r\":0.36,\"r2\":0.12,\"h\":0.4,\"axis\":\"x\",\"at\":[-0.75,0,0],\"look\":\"paint\",\"color\":\"#e8822a\"},{\"shape\":\"sphere\",\"r\":0.06,\"at\":[0.72,0.12,0.26],\"look\":\"paint\",\"color\":\"#151515\"}],\"moves\":[{\"name\":\"sinks\",\"type\":\"slide\",\"to\":[0,-1,0]},{\"name\":\"swings\",\"type\":\"swing\",\"axis\":\"y\",\"angle\":35},{\"name\":\"drifts\",\"type\":\"swing\",\"axis\":\"z\",\"angle\":14},{\"name\":\"gasps\",\"type\":\"pump\",\"axis\":\"y\",\"stroke\":0.05,\"rate\":3},{\"name\":\"rises\",\"type\":\"slide\",\"to\":[0,1.15,0]},{\"name\":\"darts\",\"type\":\"slide\",\"to\":[1.2,-0.4,0]},{\"name\":\"swims\",\"type\":\"slide\",\"to\":[2.2,0,0]}]},{\"id\":\"bladder\",\"parent\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"sphere\",\"r\":0.2,\"at\":[-0.15,0.08,0.24],\"look\":\"glass\",\"color\":\"#d8e4ea\"}],\"moves\":[{\"name\":\"bladder\",\"type\":\"appear\"}]},{\"id\":\"tail\",\"parent\":\"body\",\"at\":[-0.95,0,0],\"shapes\":[{\"shape\":\"panel\",\"size\":[0.55,0.7],\"thick\":0.04,\"at\":[-0.27,0,0],\"look\":\"paint\",\"color\":\"#f0a040\"}],\"moves\":[{\"name\":\"tail\",\"type\":\"appear\"},{\"name\":\"sweeps\",\"type\":\"pump\",\"axis\":\"z\",\"stroke\":0.16,\"rate\":2.4},{\"name\":\"swim\",\"type\":\"pump\",\"axis\":\"z\",\"stroke\":0.16,\"rate\":2.4}]},{\"id\":\"fins\",\"parent\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.5,0.32,0.03],\"at\":[0,0.48,0],\"look\":\"paint\",\"color\":\"#f0a040\"},{\"shape\":\"box\",\"size\":[0.3,0.05,0.22],\"at\":[0.35,-0.32,0.3],\"look\":\"paint\",\"color\":\"#f0a040\",\"rot\":[0,0,-20]},{\"shape\":\"box\",\"size\":[0.3,0.2,0.03],\"at\":[-0.35,-0.42,0],\"look\":\"paint\",\"color\":\"#f0a040\"}],\"moves\":[{\"name\":\"fins\",\"type\":\"appear\"}]},{\"id\":\"gills\",\"parent\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.045,0.42,0.04],\"at\":[0.38,-0.02,0.37],\"look\":\"paint\",\"color\":\"#c8283a\"},{\"shape\":\"box\",\"size\":[0.045,0.42,0.04],\"at\":[0.45,-0.02,0.37],\"look\":\"paint\",\"color\":\"#c8283a\"},{\"shape\":\"box\",\"size\":[0.045,0.42,0.04],\"at\":[0.52,-0.02,0.37],\"look\":\"paint\",\"color\":\"#c8283a\"}],\"moves\":[{\"name\":\"gills\",\"type\":\"appear\"},{\"name\":\"gulps\",\"type\":\"flow\",\"path\":[[0.95,0,0.42],[0.6,-0.02,0.42],[0.45,-0.05,0.42],[0.3,-0.1,0.45],[0.05,-0.2,0.5]],\"look\":\"dots\",\"color\":\"#bfe8ff\",\"size\":0.04}]},{\"id\":\"clog\",\"parent\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.06,0.3,0.05],\"at\":[0.38,-0.05,0.39],\"look\":\"paint\",\"color\":\"#6b5030\"},{\"shape\":\"box\",\"size\":[0.06,0.3,0.05],\"at\":[0.45,-0.05,0.39],\"look\":\"paint\",\"color\":\"#6b5030\"},{\"shape\":\"box\",\"size\":[0.06,0.3,0.05],\"at\":[0.52,-0.05,0.39],\"look\":\"paint\",\"color\":\"#6b5030\"}],\"moves\":[{\"name\":\"clogs\",\"type\":\"appear\"}]},{\"id\":\"grit\",\"parent\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"sphere\",\"r\":0.02,\"at\":[0.95,0,0.42],\"look\":\"paint\",\"color\":\"#6b5030\"}],\"moves\":[{\"name\":\"grit\",\"type\":\"flow\",\"path\":[[0.95,0,0.42],[0.6,-0.02,0.42],[0.45,-0.05,0.42]],\"look\":\"mud\",\"color\":\"#6b5030\",\"size\":0.05}]},{\"id\":\"rakers\",\"parent\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.12,0.025,0.03],\"at\":[0.62,-0.15,0.38],\"look\":\"paint\",\"color\":\"#f4efe4\"},{\"shape\":\"box\",\"size\":[0.12,0.025,0.03],\"at\":[0.62,-0.05,0.38],\"look\":\"paint\",\"color\":\"#f4efe4\"},{\"shape\":\"box\",\"size\":[0.12,0.025,0.03],\"at\":[0.62,0.05,0.38],\"look\":\"paint\",\"color\":\"#f4efe4\"},{\"shape\":\"box\",\"size\":[0.12,0.025,0.03],\"at\":[0.62,0.15,0.38],\"look\":\"paint\",\"color\":\"#f4efe4\"}],\"moves\":[{\"name\":\"rakers\",\"type\":\"appear\"}]},{\"id\":\"cover\",\"parent\":\"body\",\"at\":[0.32,0,0.4],\"shapes\":[{\"shape\":\"panel\",\"size\":[0.3,0.6],\"thick\":0.02,\"at\":[0.12,0,0],\"look\":\"paint\",\"color\":\"#f29a48\"}],\"moves\":[{\"name\":\"covers\",\"type\":\"appear\"},{\"name\":\"pump\",\"type\":\"pump\",\"axis\":\"x\",\"stroke\":0.04,\"rate\":2},{\"name\":\"through\",\"type\":\"flow\",\"path\":[[0.6299999999999999,0,0.09],[0.27999999999999997,-0.02,0.09],[0.13,-0.05,0.09],[-0.020000000000000018,-0.1,0.12000000000000002],[-0.27,-0.2,0.17]],\"look\":\"dots\",\"color\":\"#bfe8ff\",\"size\":0.04}]},{\"id\":\"back\",\"parent\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[1.1,0.14,0.62],\"at\":[0,0.32,0],\"look\":\"paint\",\"color\":\"#3d3a22\"}],\"moves\":[{\"name\":\"dark\",\"type\":\"appear\"}]},{\"id\":\"line\",\"parent\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"tube\",\"path\":[[-0.7,0.08,0.37],[-0.2,0.1,0.38],[0.3,0.08,0.37]],\"r\":0.018,\"look\":\"paint\",\"color\":\"#202020\"}],\"moves\":[{\"name\":\"lateral\",\"type\":\"appear\"}]},{\"id\":\"scrape\",\"parent\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.28,0.025,0.02],\"at\":[-0.3,-0.05,0.39],\"look\":\"paint\",\"color\":\"#b0182a\",\"rot\":[0,0,25]},{\"shape\":\"box\",\"size\":[0.28,0.025,0.02],\"at\":[-0.15,0,0.39],\"look\":\"paint\",\"color\":\"#b0182a\",\"rot\":[0,0,25]},{\"shape\":\"box\",\"size\":[0.28,0.025,0.02],\"at\":[0,-0.08,0.39],\"look\":\"paint\",\"color\":\"#b0182a\",\"rot\":[0,0,25]}],\"moves\":[{\"name\":\"scrapes\",\"type\":\"appear\"}]},{\"id\":\"scales\",\"parent\":\"body\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"sphere\",\"r\":0.07,\"at\":[-0.55,-0.18,0.33],\"look\":\"metal\",\"color\":\"#f2b25a\"},{\"shape\":\"sphere\",\"r\":0.07,\"at\":[-0.55,0,0.33],\"look\":\"metal\",\"color\":\"#f2b25a\"},{\"shape\":\"sphere\",\"r\":0.07,\"at\":[-0.55,0.18,0.33],\"look\":\"metal\",\"color\":\"#f2b25a\"},{\"shape\":\"sphere\",\"r\":0.07,\"at\":[-0.4,-0.09,0.33],\"look\":\"metal\",\"color\":\"#f2b25a\"},{\"shape\":\"sphere\",\"r\":0.07,\"at\":[-0.4,0.09,0.33],\"look\":\"metal\",\"color\":\"#f2b25a\"},{\"shape\":\"sphere\",\"r\":0.07,\"at\":[-0.4,0.27,0.33],\"look\":\"metal\",\"color\":\"#f2b25a\"},{\"shape\":\"sphere\",\"r\":0.07,\"at\":[-0.25,-0.18,0.33],\"look\":\"metal\",\"color\":\"#f2b25a\"},{\"shape\":\"sphere\",\"r\":0.07,\"at\":[-0.25,0,0.33],\"look\":\"metal\",\"color\":\"#f2b25a\"},{\"shape\":\"sphere\",\"r\":0.07,\"at\":[-0.25,0.18,0.33],\"look\":\"metal\",\"color\":\"#f2b25a\"},{\"shape\":\"sphere\",\"r\":0.07,\"at\":[-0.1,-0.09,0.33],\"look\":\"metal\",\"color\":\"#f2b25a\"},{\"shape\":\"sphere\",\"r\":0.07,\"at\":[-0.1,0.09,0.33],\"look\":\"metal\",\"color\":\"#f2b25a\"},{\"shape\":\"sphere\",\"r\":0.07,\"at\":[-0.1,0.27,0.33],\"look\":\"metal\",\"color\":\"#f2b25a\"},{\"shape\":\"sphere\",\"r\":0.07,\"at\":[0.05,-0.18,0.33],\"look\":\"metal\",\"color\":\"#f2b25a\"},{\"shape\":\"sphere\",\"r\":0.07,\"at\":[0.05,0,0.33],\"look\":\"metal\",\"color\":\"#f2b25a\"},{\"shape\":\"sphere\",\"r\":0.07,\"at\":[0.05,0.18,0.33],\"look\":\"metal\",\"color\":\"#f2b25a\"},{\"shape\":\"sphere\",\"r\":0.07,\"at\":[0.2,-0.09,0.33],\"look\":\"metal\",\"color\":\"#f2b25a\"},{\"shape\":\"sphere\",\"r\":0.07,\"at\":[0.2,0.09,0.33],\"look\":\"metal\",\"color\":\"#f2b25a\"},{\"shape\":\"sphere\",\"r\":0.07,\"at\":[0.2,0.27,0.33],\"look\":\"metal\",\"color\":\"#f2b25a\"}],\"moves\":[{\"name\":\"scales\",\"type\":\"appear\"}]}]}},{\"id\":\"heron\",\"kind\":\"rig\",\"params\":{\"name\":\"heron\",\"synonyms\":[\"heron\",\"bird\"],\"pos\":[-7.8,0,-1.4],\"nodes\":[{\"id\":\"legs\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.03,\"h\":1,\"axis\":\"y\",\"at\":[-0.08,0.5,0],\"look\":\"paint\",\"color\":\"#c9a24a\"},{\"shape\":\"cylinder\",\"r\":0.03,\"h\":1,\"axis\":\"y\",\"at\":[0.08,0.5,0],\"look\":\"paint\",\"color\":\"#c9a24a\"},{\"shape\":\"sphere\",\"r\":0.34,\"at\":[0,1.25,0],\"look\":\"paint\",\"color\":\"#9aa3ab\"},{\"shape\":\"cone\",\"r\":0.18,\"r2\":0.02,\"h\":0.5,\"axis\":\"x\",\"at\":[-0.45,1.25,0],\"rot\":[0,0,180],\"look\":\"paint\",\"color\":\"#7d868e\"}]},{\"id\":\"neck\",\"parent\":\"legs\",\"at\":[0.2,1.4,0],\"shapes\":[{\"shape\":\"tube\",\"path\":[[0,0,0],[0.15,0.4,0],[0.32,0.7,0]],\"r\":0.06,\"look\":\"paint\",\"color\":\"#c6ccd1\"},{\"shape\":\"sphere\",\"r\":0.11,\"at\":[0.34,0.74,0],\"look\":\"paint\",\"color\":\"#e8ecef\"},{\"shape\":\"cone\",\"r\":0.05,\"r2\":0.005,\"h\":0.42,\"axis\":\"x\",\"at\":[0.62,0.72,0],\"look\":\"paint\",\"color\":\"#e0a030\"}],\"moves\":[{\"name\":\"spots\",\"type\":\"swing\",\"axis\":\"z\",\"angle\":-25},{\"name\":\"strikes\",\"type\":\"swing\",\"axis\":\"z\",\"angle\":-40}]}]}},{\"id\":\"oxy\",\"kind\":\"counter\",\"params\":{\"pos\":[-8.6,1.1,-0.8],\"size\":1.1,\"from\":9,\"to\":4,\"color\":\"#ff8a2a\",\"bar\":true,\"danger\":0.6}},{\"id\":\"ripple\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[-6.6,-0.5,-0.4],\"dir\":[1,0],\"travel\":0.8,\"phase\":0},{\"at\":[-6.6,-0.9,-0.4],\"dir\":[1,0],\"travel\":0.8,\"phase\":0.5}],\"opts\":{\"color\":\"#3ad6ff\",\"scale\":0.9}}},{\"id\":\"fishOutline\",\"kind\":\"outline\",\"params\":{\"of\":\"fish.line\"}},{\"id\":\"lily\",\"kind\":\"prop\",\"params\":{\"type\":\"lilyPads\",\"size\":[8,4],\"pos\":[-2,-0.15,-3]}},{\"id\":\"sign\",\"kind\":\"sign\",\"params\":{\"at\":[8,0.05,-4],\"rotY\":-0.2,\"scale\":1.3}}],\"beats\":[{\"s\":\"hook\",\"shows\":{\"p\":\"fish\",\"does\":\"a plain orange tube of meat drops into the pond, a leaf floats on the water\"},\"do\":[{\"p\":\"dig\",\"v\":\"dig\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"fish\",\"v\":\"show\",\"w\":\"drop\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"leaf\",\"v\":\"sit\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"leaf\",\"v\":\"ride\",\"w\":\"pond\",\"o\":0,\"d\":2.4,\"amp\":0.25,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"fish\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem\",\"shows\":{\"p\":\"fish\",\"does\":\"the heavy tube sinks to the bottom of the pond\"},\"do\":[{\"p\":\"fish\",\"v\":\"sinks\",\"w\":\"sinks\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"fish\",\"pond\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix1\",\"shows\":{\"p\":\"fish\",\"does\":\"a silvery gas bladder appears inside and the fish floats back up\"},\"do\":[{\"p\":\"fish\",\"v\":\"bladder\",\"w\":\"bladder\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"fish\",\"v\":\"sinksBack\",\"w\":\"gas\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"fish\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem2\",\"shows\":{\"p\":\"fish\",\"does\":\"the fish hangs in the water and tilts, drifting with the leaf\"},\"do\":[{\"p\":\"fish\",\"v\":\"drifts\",\"w\":\"drifts\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"leaf\",\"v\":\"ride\",\"w\":\"drifts\",\"o\":0,\"d\":2.4,\"amp\":0.25,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"fish\",\"leaf\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix2\",\"shows\":{\"p\":\"fish\",\"does\":\"a tail fin appears and sweeps from side to side\"},\"do\":[{\"p\":\"fish\",\"v\":\"driftsBack\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"fish\",\"v\":\"tail\",\"w\":\"tail\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"fish\",\"v\":\"sweeps\",\"w\":\"sweeps\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"fish\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem3\",\"shows\":{\"p\":\"fish\",\"does\":\"every sweep of the tail swings the whole body sideways\"},\"do\":[{\"p\":\"fish\",\"v\":\"swings\",\"w\":\"swings\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"fish\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix3\",\"shows\":{\"p\":\"fish\",\"does\":\"fins appear on its back and belly and the body holds straight\"},\"do\":[{\"p\":\"fish\",\"v\":\"fins\",\"w\":\"fins\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"fish\",\"v\":\"swingsBack\",\"w\":\"straight\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"fish\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem4\",\"shows\":{\"p\":\"fish\",\"does\":\"the fish swims on and shudders, with no way to breathe\"},\"state\":{\"text\":\"NO OXYGEN\",\"w\":\"oxygen\"},\"do\":[{\"p\":\"fish\",\"v\":\"gasps\",\"w\":\"burns\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"fish\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix4\",\"shows\":{\"p\":\"fish\",\"does\":\"red gills appear behind the mouth and water runs in at the mouth and over them\"},\"do\":[{\"p\":\"fish\",\"v\":\"gills\",\"w\":\"gills\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"fish\",\"v\":\"gulps\",\"w\":\"gulps\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"fish\",\"v\":\"gaspsBack\",\"w\":\"gills\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"fish\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem5\",\"shows\":{\"p\":\"fish\",\"does\":\"brown grit rides in with the water and clogs the red gills\"},\"do\":[{\"p\":\"fish\",\"v\":\"grit\",\"w\":\"grit\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"fish\",\"v\":\"clogs\",\"w\":\"clogs\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"fish\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix5\",\"shows\":{\"p\":\"fish\",\"does\":\"a white comb of gill rakers appears and catches the grit, the gills turn red again\"},\"do\":[{\"p\":\"fish\",\"v\":\"rakers\",\"w\":\"rakers\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"fish\",\"v\":\"clogsBack\",\"w\":\"catches\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"fish\",\"v\":\"gritBack\",\"w\":\"catches\",\"o\":0.3,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"fish\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem6\",\"shows\":{\"p\":\"fish\",\"does\":\"the tail stops and the water stops running over the gills\"},\"do\":[{\"p\":\"fish\",\"v\":\"sweepsBack\",\"w\":\"stops\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"fish\",\"v\":\"gulpsBack\",\"w\":\"flows\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"fish\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix6\",\"shows\":{\"p\":\"fish\",\"does\":\"a gill cover appears and pumps, and water runs through again while the fish rests\"},\"do\":[{\"p\":\"fish\",\"v\":\"covers\",\"w\":\"covers\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"fish\",\"v\":\"pump\",\"w\":\"pump\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"fish\",\"v\":\"through\",\"w\":\"water\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"fish\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem7\",\"shows\":{\"p\":\"oxy\",\"does\":\"on a hot day the oxygen gauge beside the pond falls into the red\"},\"do\":[{\"p\":\"oxy\",\"v\":\"show\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"oxy\",\"v\":\"count\",\"w\":\"oxygen\",\"o\":0,\"d\":1.6,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"oxy\",\"fish\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix7\",\"shows\":{\"p\":\"fish\",\"does\":\"the fish rises to the surface by the floating leaf\"},\"do\":[{\"p\":\"oxy\",\"v\":\"hide\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"fish\",\"v\":\"rises\",\"w\":\"rises\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"leaf\",\"v\":\"ride\",\"w\":\"surface\",\"o\":0,\"d\":2.4,\"amp\":0.25,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"fish\",\"leaf\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem8\",\"shows\":{\"p\":\"heron\",\"does\":\"a heron on the bank bends its neck toward the bright fish\"},\"do\":[{\"p\":\"heron\",\"v\":\"show\",\"w\":\"heron\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"heron\",\"v\":\"spots\",\"w\":\"spots\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"heron\",\"fish\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix8\",\"shows\":{\"p\":\"fish\",\"does\":\"the fish's back turns dark like the mud\"},\"do\":[{\"p\":\"fish\",\"v\":\"dark\",\"w\":\"dark\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"fish\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem9\",\"shows\":{\"p\":\"heron\",\"does\":\"the heron strikes down at the dark back\"},\"do\":[{\"p\":\"heron\",\"v\":\"strikes\",\"w\":\"strikes\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"heron\",\"fish\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix9\",\"shows\":{\"p\":\"fish\",\"does\":\"a dark line appears along the fish's side and ripples from the beak run to it\"},\"do\":[{\"p\":\"fish\",\"v\":\"lateral\",\"w\":\"lateral\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"ripple\",\"v\":\"show\",\"w\":\"ripple\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"fish\",\"heron\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"name\",\"shows\":{\"p\":\"fishOutline\",\"does\":\"a glowing line traces the line along the fish's side\"},\"do\":[{\"p\":\"ripple\",\"v\":\"hide\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"fishOutline\",\"v\":\"show\",\"w\":\"lateral\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"fish\"],\"view\":\"home\",\"width\":0.6,\"type\":\"\",\"hero\":true,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem10\",\"shows\":{\"p\":\"fish\",\"does\":\"red scrape marks appear on the fish's soft side\"},\"do\":[{\"p\":\"fishOutline\",\"v\":\"hide\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"fish\",\"v\":\"scrapes\",\"w\":\"scrapes\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"fish\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix10\",\"shows\":{\"p\":\"fish\",\"does\":\"shiny scales cover the fish's side and the scrapes are gone\"},\"do\":[{\"p\":\"fish\",\"v\":\"scales\",\"w\":\"scales\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"fish\",\"v\":\"scrapesBack\",\"w\":\"slime\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"heron\",\"v\":\"spotsBack\",\"w\":\"slime\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"heron\",\"v\":\"strikesBack\",\"w\":\"slime\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"fish\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"finish\",\"shows\":{\"p\":\"lily\",\"does\":\"lily pads float on the pond and the fish swims across under the leaf\"},\"do\":[{\"p\":\"lily\",\"v\":\"show\",\"w\":\"lily\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"fish\",\"v\":\"swim\",\"w\":\"swim\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"fish\",\"v\":\"swims\",\"w\":\"swim\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"leaf\",\"v\":\"ride\",\"w\":\"pond\",\"o\":0,\"d\":2.4,\"amp\":0.25,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"home\",\"leaf\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"congrats\",\"shows\":{\"p\":\"fish\",\"does\":\"the finished fish swims in the calm pond under the leaf\"},\"do\":[],\"shots\":[{\"focus\":[\"home\",\"leaf\",\"fish\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]}],\"audio\":{\"cards\":[],\"sfx\":[{\"lib\":\"water_rush\",\"at\":{\"s\":\"hook\",\"w\":\"drop\",\"o\":0},\"d\":1},{\"lib\":\"water_rush\",\"at\":{\"s\":\"fix4\",\"w\":\"gulps\",\"o\":0},\"d\":1.2},{\"lib\":\"drip\",\"at\":{\"s\":\"problem5\",\"w\":\"grit\",\"o\":0},\"d\":1},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"fix6\",\"w\":\"pump\",\"o\":0},\"d\":1.2}],\"chimes\":[{\"s\":\"name\",\"w\":\"\",\"o\":0},{\"s\":\"congrats\",\"w\":\"\",\"o\":0}],\"rain\":[]}}"
  }
 }

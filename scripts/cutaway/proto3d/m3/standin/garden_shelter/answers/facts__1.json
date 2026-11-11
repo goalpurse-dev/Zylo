@@ -1,53 +1,5 @@
-{
- "hash": "*",
- "by": "converted (convert1d) from fact_check__1.json and the research's 3 searches",
- "searches": 3,
- "data": {
-  "checks": [
-   {
-    "index": 0,
-    "verdict": "reword",
-    "claim": "A 90 mile per hour wind pushes about 20 pounds on every square foot.",
-    "why": "q = 0.00256 x 90^2 = 20.7 psf in the wind pressure tables; it is the basic pressure before code factors.",
-    "sources": [
-     {
-      "url": "https://www.engr.psu.edu/ae/Thesis/portfolios/2006/hsm117/Final%20Report/Appendix%20A.pdf",
-      "title": "Penn State AE thesis, wind pressure appendix"
-     }
-    ]
-   },
-   {
-    "index": 1,
-    "verdict": "reword",
-    "claim": "Footings usually go below the frost line, so frost cannot heave them up.",
-    "why": "IRC and deck guides require footings below the frost line to prevent heave; some freestanding structures are exempt, so 'usually'.",
-    "sources": [
-     {
-      "url": "https://www.jaspector.com/codes/irc-2021/ch04-foundations/footing-depth-frost-line-requirements/",
-      "title": "IRC 2021 footing depth and frost line"
-     },
-     {
-      "url": "https://www.decks.com/how-to/articles/deck-footing-frost-depth-map",
-      "title": "Deck Footing Depth Guide - Decks.com"
-     }
-    ]
-   },
-   {
-    "index": 2,
-    "verdict": "keep",
-    "claim": "Paving slabs are laid on a compacted sub-base so they stay flat and drain",
-    "why": "Wickes and Bradstone both specify a compacted MOT Type 1 sub-base under slabs.",
-    "sources": [
-     {
-      "url": "https://www.wickes.co.uk/how-to-guides/garden-landscaping/lay-a-patio",
-      "title": "How to lay a patio - Wickes"
-     },
-     {
-      "url": "https://www.bradstone.com/homeowner/blog/how-to-lay-paving-slabs-for-your-patio",
-      "title": "How to lay paving slabs - Bradstone"
-     }
-    ]
-   }
-  ]
- }
-}
+{"hash":"*","by":"stand-in planner (agent), 2026-11-11","searches":4,"data":{"checks":[
+{"index":0,"verdict":"keep","claim":"Concrete footings anchor a shelter's posts against wind uplift.","why":"Installer and engineering guides: post bases set in concrete footings resist wind uplift and lateral loads.","sources":[{"url":"https://www.engineeringexpress.com/wiki/how-to-determine-uplift-reaction-for-canopies-carports-pergolas","title":"Canopies & Wind Uplift (Engineering Express)"},{"url":"https://www.westerntimberframe.com/footings-and-attachment/","title":"Footings & Attachment (Western Timber Frame)"}]},
+{"index":1,"verdict":"keep","claim":"Paving slabs are laid on a compacted sub-base so they stay level.","why":"Guides call for a compacted sub-base; soft spots otherwise sink into dips within months.","sources":[{"url":"https://www.screwfix.com/guides/building-doors/bricklaying-cement/how-to-lay-a-patio-and-paving-slabs","title":"How to Lay a Patio & Paving Slabs (Screwfix)"},{"url":"https://www.wickes.co.uk/how-to-guides/garden-landscaping/lay-a-patio","title":"Lay a patio (Wickes)"}]},
+{"index":2,"verdict":"keep","claim":"A gutter collects roof runoff and sends it to a downspout.","why":"County guidance: gutters collect roof rainwater and direct it to the ground via a downspout.","sources":[{"url":"https://snohomishcountywa.gov/6944/Gutters-and-Downspouts","title":"Gutters and Downspouts (Snohomish County)"},{"url":"https://inspectapedia.com/exterior/Gutter_Downspout_Guide.php","title":"Gutter and Downspout Guide (InspectApedia)"}]},
+{"index":3,"verdict":"keep","claim":"A rain barrel under a downspout stores roof water for the garden.","why":"Extension services describe barrels at downspouts that collect roof runoff for watering gardens.","sources":[{"url":"https://extension.psu.edu/rain-barrels","title":"Rain Barrels (Penn State Extension)"},{"url":"https://njaes.rutgers.edu/fs1118/","title":"Fact Sheet FS1118 (Rutgers NJAES)"}]}]}}

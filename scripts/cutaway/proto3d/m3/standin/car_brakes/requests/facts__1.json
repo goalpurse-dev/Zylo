@@ -2,8 +2,8 @@
  "key": "facts__1",
  "label": "facts",
  "model": "claude-sonnet-5-5",
- "hash": "0f9018e86f49b5f8",
- "search": 8,
+ "hash": "10f9f71d8aa73bd1",
+ "search": 10,
  "schema": {
   "type": "object",
   "additionalProperties": false,
@@ -66,5 +66,5 @@
   }
  },
  "system": "You fact-check the surprise claims planned for a short explainer video, with web search, before the video is made. You MUST search before you answer, at least one search per claim (5 claims: at least 5 searches; fewer and your answer is sent back), two for a claim with a number; never answer from memory. Use reliable sources (engineering and government sources, manufacturers' guides, encyclopedias, well-known references; not forums). For each claim (by its index): verdict \"keep\" if the sources support it as written; \"reword\" if the true version is close (give the claim with exactly the wording and numbers the sources support, e.g. \"over 600 gallons\" for a rounded figure, \"New England\" instead of a wrong state); \"drop\" if it is false, unsupported or a myth. Give why in one line, and the sources you used (url and title, from your searches) for keep and reword. Write each claim the way the narrator will say it: no abbreviations (never \"US\", \"U.S.\" or \"USA\": \"American\", \"in America\"; an agency without the country: \"the Department of Energy\", \"the Army Corps of Engineers\").",
- "user": "Topic: car brakes\nClaims (index: claim | suggested search):\n0: Brake fluid carries your push from a small piston at the pedal to bigger pistons at the wheel, multiplying the force about four to five times | hydraulic brake force multiplication master cylinder caliper\n1: Repeated hard stops from high speed can heat a brake disc past 500 degrees Celsius | brake disc temperature hard stops 500 C\n2: Vented discs have air channels between their two faces whose vanes pump cooling air | vented brake disc vanes cooling air"
+ "user": "Topic: car brakes\nClaims (index: claim | suggested search):\n0: Brake fluid carries the push from the pedal's master cylinder to the caliper pistons, multiplying the force. | hydraulic brake master cylinder caliper force multiplication\n1: Vented brake discs have air channels between their two faces that cool them. | vented brake disc vanes cooling air\n2: Anti-lock brakes pulse the brake pressure many times a second to keep the wheels from locking. | anti-lock braking system pulses brakes times per second prevent wheel lock\n3: Brake lights switch on when the brake pedal is pressed to warn drivers behind. | brake light switch pedal warns drivers behind"
 }

@@ -2,7 +2,7 @@
  "key": "facts__1",
  "label": "facts",
  "model": "claude-sonnet-5-5",
- "hash": "f7124fe6ed348c7f",
+ "hash": "1ea75d44cd7ea588",
  "search": 8,
  "schema": {
   "type": "object",
@@ -66,5 +66,5 @@
   }
  },
  "system": "You fact-check the surprise claims planned for a short explainer video, with web search, before the video is made. You MUST search before you answer, at least one search per claim (5 claims: at least 5 searches; fewer and your answer is sent back), two for a claim with a number; never answer from memory. Use reliable sources (engineering and government sources, manufacturers' guides, encyclopedias, well-known references; not forums). For each claim (by its index): verdict \"keep\" if the sources support it as written; \"reword\" if the true version is close (give the claim with exactly the wording and numbers the sources support, e.g. \"over 600 gallons\" for a rounded figure, \"New England\" instead of a wrong state); \"drop\" if it is false, unsupported or a myth. Give why in one line, and the sources you used (url and title, from your searches) for keep and reword. Write each claim the way the narrator will say it: no abbreviations (never \"US\", \"U.S.\" or \"USA\": \"American\", \"in America\"; an agency without the country: \"the Department of Energy\", \"the Army Corps of Engineers\").",
- "user": "Topic: smoke detector\nClaims (index: claim | suggested search):\n0: Photoelectric alarms aim a light beam away from a sensor; smoke scatters the light onto the sensor and sets off the alarm | photoelectric smoke alarm light scattered onto sensor how it works\n1: Smoke alarm horns must sound at least 85 decibels at 10 feet | smoke alarm 85 decibels 10 feet UL 217 NFPA 72\n2: The NFPA says to replace smoke alarms every 10 years | NFPA replace smoke alarms every 10 years"
+ "user": "Topic: smoke detector\nClaims (index: claim | suggested search):\n0: A photoelectric smoke detector shines a light beam away from a sensor; smoke scatters the light onto the sensor and sets off the alarm. | photoelectric smoke detector light scattered onto sensor how it works\n1: Smoke alarms must sound at least 85 decibels at 10 feet. | smoke alarm 85 decibels at 10 feet UL 217\n2: Fire safety agencies say to test smoke alarms once a month by pressing the test button. | test smoke alarms monthly test button NFPA USFA"
 }

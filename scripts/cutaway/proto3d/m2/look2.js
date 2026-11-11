@@ -167,7 +167,11 @@ export function addDepthPasses({ THREE, ShaderPass, UnrealBloomPass, composer, c
         haze.uniforms.hStart.value = Math.max(f * HAZE.mult, f + HAZE.behind);
         // the weather: how far a light cue has dimmed the sun from its first frame (a storm cue, a dip, night)
         const k = sun ? Math.min(1, Math.max(0, 1 - sun.intensity / baseSun)) : 0;
-        haze.uniforms.storm.value = mood === "night" ? 0 : Math.min(1, k * 1.2);
+        // (a storm dims the sun by at most 72%, a line's night by 90% (m2/parts.js light): past about 80% it is night, and the
+        // storm's grey sky and shadow lift fade out, or a night line came out as bright as day; road and four-wheel steering
+        // re-plans, 2026-11-11)
+        const nightK = Math.min(1, Math.max(0, (k - 0.76) / 0.1));
+        haze.uniforms.storm.value = mood === "night" ? 0 : Math.min(1, k * 1.2) * (1 - nightK);
         // depth of field: from the shot size (the field across the frame at the focus distance)
         const field = 2 * f * Math.tan((camera.fov * Math.PI) / 360) * camera.aspect;
         const s = Math.min(1, Math.max(0, (DOF.none - field) / (DOF.none - DOF.full)));
@@ -187,7 +191,7 @@ export function addDepthPasses({ THREE, ShaderPass, UnrealBloomPass, composer, c
         mb.enabled = moved * MBLUR.shutter >= MBLUR.minPx;
         if (mb.enabled) { mb.uniforms.prevVP.value.copy(vp); mb.uniforms.invVP.value.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse).invert(); }
         for (const p of [haze, dof]) { p.uniforms.cNear.value = camera.near; p.uniforms.cFar.value = camera.far; }
-        return { focus: f, field, dofPx: kPx, movePx: moved, storm: k };
+        return { focus: f, field, dofPx: kPx, movePx: moved, storm: mood === "night" ? 0 : k * (1 - nightK), night: nightK };
       } catch (e) {
         // (a bad value never stops a video: the plain frame, no focus or blur)
         dof.enabled = false; mb.enabled = false;

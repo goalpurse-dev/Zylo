@@ -1,0 +1,49 @@
+{
+ "hash": "*",
+ "by": "converted (convert1d) from fact_check__1.json and the research's 3 searches",
+ "searches": 3,
+ "data": {
+  "checks": [
+   {
+    "index": 0,
+    "verdict": "keep",
+    "claim": "Photoelectric alarms aim a light beam away from a sensor; smoke scatters the light onto the sensor and sets off the alarm",
+    "why": "Two fire-protection sources describe the angled source and sensor and the scattering.",
+    "sources": [
+     {
+      "url": "https://orrprotection.com/detection/spot-smoke",
+      "title": "Spot smoke detection (Orr Protection)"
+     },
+     {
+      "url": "https://safelincs.co.uk/smoke-alarm-types-optical-alarms-overview",
+      "title": "Optical alarms overview (Safelincs)"
+     }
+    ]
+   },
+   {
+    "index": 1,
+    "verdict": "reword",
+    "claim": "Smoke alarm horns sound at least 85 decibels at 10 feet",
+    "why": "Manufacturer manuals give at least 85 dBA at 10 feet under UL 217.",
+    "sources": [
+     {
+      "url": "https://manuals.online/gentex/smoke-alarm/7109cs/user-manual/23bzk",
+      "title": "Gentex 7109CS user manual"
+     }
+    ]
+   },
+   {
+    "index": 2,
+    "verdict": "keep",
+    "claim": "The NFPA says to replace smoke alarms every 10 years",
+    "why": "NFPA 72 requires replacement at least every 10 years.",
+    "sources": [
+     {
+      "url": "https://www.cepro.com/news/nfpa_smoke_alarms_need_replacement_every_10_years",
+      "title": "NFPA: Smoke Alarms Need Replacement Every 10 Years"
+     }
+    ]
+   }
+  ]
+ }
+}

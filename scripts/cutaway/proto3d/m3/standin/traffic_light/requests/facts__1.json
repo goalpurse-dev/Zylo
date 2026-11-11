@@ -2,8 +2,8 @@
  "key": "facts__1",
  "label": "facts",
  "model": "claude-sonnet-5-5",
- "hash": "d86488a9e7cb41a5",
- "search": 8,
+ "hash": "90d783f166eadf66",
+ "search": 10,
  "schema": {
   "type": "object",
   "additionalProperties": false,
@@ -66,5 +66,5 @@
   }
  },
  "system": "You fact-check the surprise claims planned for a short explainer video, with web search, before the video is made. You MUST search before you answer, at least one search per claim (5 claims: at least 5 searches; fewer and your answer is sent back), two for a claim with a number; never answer from memory. Use reliable sources (engineering and government sources, manufacturers' guides, encyclopedias, well-known references; not forums). For each claim (by its index): verdict \"keep\" if the sources support it as written; \"reword\" if the true version is close (give the claim with exactly the wording and numbers the sources support, e.g. \"over 600 gallons\" for a rounded figure, \"New England\" instead of a wrong state); \"drop\" if it is false, unsupported or a myth. Give why in one line, and the sources you used (url and title, from your searches) for keep and reword. Write each claim the way the narrator will say it: no abbreviations (never \"US\", \"U.S.\" or \"USA\": \"American\", \"in America\"; an agency without the country: \"the Department of Energy\", \"the Army Corps of Engineers\").",
- "user": "Topic: How a traffic light works\nClaims (index: claim | suggested search):\n0: One full cycle at a busy corner lasts about 60 to 120 seconds. | traffic signal cycle length busy intersection 60 120 seconds\n1: Each green lets one car cross the line about every 2 seconds. | saturation flow headway 2 seconds per vehicle signal\n2: A yellow lamp gives drivers about 3 to 6 seconds to stop. | yellow change interval 3 to 6 seconds"
+ "user": "Topic: How a traffic light works\nClaims (index: claim | suggested search):\n0: A yellow light warns drivers that the signal is about to turn red. | yellow change interval warns drivers signal turning red\n1: An all-red interval holds every signal red for a moment to clear the intersection. | all-red clearance interval traffic signal purpose\n2: An inductive loop cut into the road feels the metal of a car above it. | inductive loop detector how it detects vehicles metal\n3: Emergency vehicle preemption turns a traffic signal green for an approaching fire truck. | emergency vehicle preemption traffic signal fire truck green"
 }

@@ -1,50 +1,70 @@
 {
  "hash": "*",
- "by": "converted (convert1d) from fact_check__1.json and the research's 3 searches",
- "searches": 3,
+ "by": "stand-in planner (agent), 2026-11-11",
+ "searches": 4,
  "data": {
   "checks": [
    {
     "index": 0,
     "verdict": "keep",
-    "claim": "Hoover Dam is 660 feet thick at its base and only 45 feet thick at its top.",
-    "why": "USGS, NPS and ASCE all give 660 feet at the base and 45 feet at the top.",
+    "claim": "Water pressure grows with depth, so a dam must be strongest at its base.",
+    "why": "Hydrostatic pressure equals density x g x depth, so the load is greatest at the bottom; dams are built thicker there to resist it.",
     "sources": [
      {
-      "url": "https://www.usgs.gov/media/images/lake-mead-hoover-dam",
-      "title": "Lake Mead / Hoover Dam (USGS)"
+      "url": "https://schoolphysics.co.uk/age11-14/Matter/text/Pressure_in_liquids/index.html",
+      "title": "schoolphysics: Pressure in liquids"
      },
      {
-      "url": "https://npgallery.nps.gov/NRHP/GetAsset/NHLS/81000382_text",
-      "title": "Hoover Dam NRHP nomination (NPS)"
+      "url": "https://byjus.com/question-answer/dams-are-made-thicker-at-the-bottom-than-at-the-top-why",
+      "title": "Why dams are thicker at the bottom"
      }
     ]
    },
    {
     "index": 1,
-    "verdict": "reword",
-    "claim": "Every 10 metres of water adds about one atmosphere of pressure, so 100 metres down the water pushes about 10 times harder than the air.",
-    "why": "WHOI gives one atmosphere per 10 m; at 100 m about 10 atm from the water, 11 in total.",
+    "verdict": "keep",
+    "claim": "A gravity dam holds back water with its own weight.",
+    "why": "Britannica: a concrete or masonry dam proportioned to resist overturning and sliding by its own weight.",
     "sources": [
      {
-      "url": "https://www.whoi.edu/know-your-ocean/did-you-know/why-is-pressure-different-in-the-ocean",
-      "title": "Why is pressure different in the ocean? (WHOI)"
+      "url": "https://britannica.com/technology/gravity-dam",
+      "title": "Britannica: gravity dam"
+     },
+     {
+      "url": "https://testbook.com/civil-engineering/gravity-dam-definition-components-and-types",
+      "title": "Gravity dam: definition, components and types"
      }
     ]
    },
    {
     "index": 2,
-    "verdict": "reword",
-    "claim": "Overtopping, water flowing over the top, caused about 34 percent of dam failures.",
-    "why": "Bureau of Reclamation and Washington Ecology cite Costa (1985): 34 percent.",
+    "verdict": "keep",
+    "claim": "A spillway lets flood water pass a dam safely instead of pouring over the top.",
+    "why": "ASDSO: a spillway safely conveys reservoir inflows over or around a dam to the drainage channel, protecting it from overtopping failure.",
     "sources": [
      {
-      "url": "https://www.usbr.gov/damsafety/Risk/BestPractices/Chapters/D3-FloodOvertoppingFailureOfDamsAndLevees.pdf",
-      "title": "D-3 Flood Overtopping Failure of Dams and Levees (USBR)"
+      "url": "https://damsafety.org/dam-owners/open-channel-spillways",
+      "title": "ASDSO: Open channel spillways"
      },
      {
-      "url": "https://ecology.wa.gov/water-shorelines/water-supply/dams/info-for-the-public/incidents-failures",
-      "title": "Historical incidents and failures (WA Ecology)"
+      "url": "https://practical.engineering/blog/2019/5/28/how-do-spillways-work",
+      "title": "Practical Engineering: How do spillways work"
+     }
+    ]
+   },
+   {
+    "index": 3,
+    "verdict": "keep",
+    "claim": "A stilling basin at the foot of a spillway slows the water so it does not scour the riverbed.",
+    "why": "Stilling basins dissipate the energy of fast spillway water (often with a hydraulic jump) so it re-enters the river slowly and does not erode the bed.",
+    "sources": [
+     {
+      "url": "https://damsafety.org/dam-owners/outlet-erosion-control-structures",
+      "title": "ASDSO: Outlet erosion control structures (stilling basins)"
+     },
+     {
+      "url": "https://damtoolbox.org/wiki/Energy_Dissipation",
+      "title": "Dam Safety Toolbox: Energy dissipation"
      }
     ]
    }

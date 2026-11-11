@@ -2,8 +2,8 @@
  "key": "facts__1",
  "label": "facts",
  "model": "claude-sonnet-5-5",
- "hash": "af7a510a193150ec",
- "search": 8,
+ "hash": "dd955582b314e3c6",
+ "search": 10,
  "schema": {
   "type": "object",
   "additionalProperties": false,
@@ -66,5 +66,5 @@
   }
  },
  "system": "You fact-check the surprise claims planned for a short explainer video, with web search, before the video is made. You MUST search before you answer, at least one search per claim (5 claims: at least 5 searches; fewer and your answer is sent back), two for a claim with a number; never answer from memory. Use reliable sources (engineering and government sources, manufacturers' guides, encyclopedias, well-known references; not forums). For each claim (by its index): verdict \"keep\" if the sources support it as written; \"reword\" if the true version is close (give the claim with exactly the wording and numbers the sources support, e.g. \"over 600 gallons\" for a rounded figure, \"New England\" instead of a wrong state); \"drop\" if it is false, unsupported or a myth. Give why in one line, and the sources you used (url and title, from your searches) for keep and reword. Write each claim the way the narrator will say it: no abbreviations (never \"US\", \"U.S.\" or \"USA\": \"American\", \"in America\"; an agency without the country: \"the Department of Energy\", \"the Army Corps of Engineers\").",
- "user": "Topic: How air suspension (bagged cars) works the simple way\nClaims (index: claim | suggested search):\n0: The average new car weighs a bit over 4,000 pounds, about 4,300 or more by recent EPA data (4,354 lb per the EPA's 2025 Automotive Trends Report). | average new car weight pounds EPA trends report\n1: Bags usually top out around 100 psi, and the tank is typically filled to about 150-200 psi. | air suspension tank pressure 150 200 psi bags 100 psi\n2: A bag with an effective diameter of about six inches, at 100 psi, supports roughly 2,800 pounds. Real bags give a bit less, depending on their shape and height. | air bag 6 inch diameter 100 psi load capacity pounds"
+ "user": "Topic: How air suspension (bagged cars) works the simple way\nClaims (index: claim | suggested search):\n0: Air suspension systems use a compressor to fill an air tank, which then fills the air springs through valves. | air suspension compressor tank valves air springs how it works\n1: Compressed air holds moisture that condenses as water in the air tank, so air ride systems use water traps or drains. | air ride suspension water trap moisture tank drain\n2: Many air suspension systems use height sensors at each corner and can lower the car automatically at highway speed. | air suspension height sensors lowers automatically highway speed\n3: Air suspension still needs shock absorbers to stop the car from bouncing. | air suspension needs shock absorbers air springs bounce damping"
 }

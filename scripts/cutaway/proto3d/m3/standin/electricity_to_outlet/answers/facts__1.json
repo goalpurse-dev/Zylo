@@ -1,50 +1,70 @@
 {
  "hash": "*",
- "by": "converted (convert1d) from fact_check__1.json and the research's 3 searches",
- "searches": 3,
+ "by": "stand-in planner (agent), 2026-11-11",
+ "searches": 4,
  "data": {
   "checks": [
    {
     "index": 0,
-    "verdict": "reword",
-    "claim": "Long-distance power lines run at 100,000 to 800,000 volts, because higher voltage needs less current and loses less power as heat",
-    "why": "Energy Education gives 100 kV to 800 kV for overhead lines; GAO says higher voltage means less current and lower losses.",
+    "verdict": "keep",
+    "claim": "Raising the voltage on a transmission line lowers the power lost as heat in the wire.",
+    "why": "For the same power, higher voltage means lower current, and resistive loss goes with the square of the current (I squared R): double the voltage, a quarter of the loss.",
     "sources": [
      {
-      "url": "https://energyeducation.ca/encyclopedia/Electrical_transmission",
-      "title": "Electrical transmission - Energy Education"
+      "url": "https://eepower.com/technical-articles/principles-of-high-voltage-transmission/",
+      "title": "EEPower: Principles of high voltage transmission"
      },
      {
-      "url": "https://www.gao.gov/assets/red-76-107.pdf",
-      "title": "GAO RED-76-107"
+      "url": "https://www.electricaltechnology.org/?p=68190",
+      "title": "Why is power transmitted at high voltage"
      }
     ]
    },
    {
     "index": 1,
-    "verdict": "reword",
-    "claim": "A common pole transformer turns 7,200 volts into the 240 and 120 volts a house uses",
-    "why": "7200 primary 120/240 secondary pole-mount units are standard listings; primaries vary.",
+    "verdict": "keep",
+    "claim": "A pole transformer steps the street's voltage down to the 120 and 240 volts used in homes.",
+    "why": "Pole-mounted distribution transformers take about 7.2 to 34.5 kV and reduce it to split-phase 120/240 V for homes.",
     "sources": [
      {
-      "url": "https://npcelectric.com/transformers/pole-mounted-transformer",
-      "title": "Pole mounted transformer - NPC Electric"
+      "url": "https://en.wikipedia.org/wiki/Distribution_transformer",
+      "title": "Distribution transformer (Wikipedia)"
      },
      {
-      "url": "https://surplusrecord.com/listing/15-kva-7200-pri-240-120-sec-1-phase-polemount-transformer-new-495087/",
-      "title": "15 kVA 7200 pri 240/120 sec polemount transformer"
+      "url": "https://osha.gov/etools/electric-power/illustrated-glossary/distribution-system",
+      "title": "OSHA: Distribution systems glossary"
      }
     ]
    },
    {
     "index": 2,
-    "verdict": "keep",
-    "claim": "About 5 percent of the electricity is lost in transmission and distribution in America",
-    "why": "EIA FAQ: about 5% in 2018 through 2022.",
+    "verdict": "reword",
+    "claim": "Underground power lines are less exposed to wind and falling trees than overhead lines.",
+    "why": "Utilities say buried lines are less susceptible to wind and falling trees, but they are exposed to flooding and storm surge, so 'far less exposed to storm damage' overstates it.",
     "sources": [
      {
-      "url": "https://www.eia.gov/tools/faqs/faq.php?id=105&t=3",
-      "title": "EIA FAQ: How much electricity is lost in transmission and distribution?"
+      "url": "https://www.bchydro.com/news/conservation/2019/pros-cons-underground-power-lines.html",
+      "title": "BC Hydro: pros and cons of underground power lines"
+     },
+     {
+      "url": "https://www.eenews.net/articles/can-buried-power-lines-keep-the-lights-on-during-extreme-storms",
+      "title": "E&E News: Can buried power lines keep the lights on"
+     }
+    ]
+   },
+   {
+    "index": 3,
+    "verdict": "keep",
+    "claim": "A circuit breaker trips to cut the power when a circuit is overloaded.",
+    "why": "Overcurrent devices protect conductors from overheating; a sustained overload heats the breaker's bimetal strip and trips it.",
+    "sources": [
+     {
+      "url": "https://iaeimagazine.org/2002/2002march/circuit-overcurrent-protection/",
+      "title": "IAEI: Circuit overcurrent protection"
+     },
+     {
+      "url": "https://eepower.com/technical-articles/what-are-overcurrent-protection-devices/",
+      "title": "EEPower: What are overcurrent protection devices"
      }
     ]
    }

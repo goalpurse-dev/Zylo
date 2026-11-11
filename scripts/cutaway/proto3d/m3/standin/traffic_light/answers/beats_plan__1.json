@@ -1,1726 +1,347 @@
 {
  "hash": "*",
- "by": "stand-in planner (replan 2026-11-10, fix6)",
+ "by": "stand-in planner (agent), 2026-11-11",
  "searches": 0,
  "data": {
-  "why": "A street corner with a traffic signal on a mast arm over the lane going away and its gray controller box on the sidewalk. The video opens on one red lamp hanging over the road; the full signal and the box come at fix1, then the timer, the lone car at night, the wire loop, the rear-end crash the yellow lamp fixes, and the finished crossing.",
+  "why": "A street corner with a signal on its mast arm over the lane going away, its gray controller on the sidewalk and a woman waiting to cross. It opens close on one red lamp on a wire, then each fix lands on the signal itself (mast arm, green, controller, yellow, all-red, loops, button, battery, fire truck sensor) with the queue, the crash and the woman as the visible consequences; it ends with the woman stepping out on red.",
   "story": {
    "title": "How a traffic light works",
-   "hero": "the signal controller",
+   "hero": "a signal controller",
    "parts": [
-    "single red lamp",
-    "traffic signal",
+    "red lamp",
+    "mast arm",
+    "green lamp",
     "controller box",
-    "wait timer",
-    "cycle timer",
-    "cars",
+    "yellow lamp",
     "wire loop",
-    "crosswalk",
-    "stop line",
-    "street sign"
+    "second loop",
+    "push button",
+    "battery",
+    "fire truck sensor"
    ],
    "ideas": [
     {
      "role": "hook",
-     "idea": "if you hang one red lamp over the road, you have a traffic light"
+     "idea": "if you hang a red lamp over a road, you have a traffic light"
     },
     {
      "role": "problem",
-     "idea": "but it never changes, so cars pile up nose to tail at the red"
-    },
-    {
-     "role": "stakes",
-     "idea": "drivers wait one minute, then two, then five, and nobody moves"
+     "idea": "but one small lamp is easy to miss, so cars roll through"
     },
     {
      "role": "fix1",
-     "idea": "so you add a green lamp and a gray box that switches them"
+     "idea": "so you mount it on a mast arm with a backplate"
+    },
+    {
+     "role": "problem2",
+     "idea": "but the red never changes, so cars pile up"
+    },
+    {
+     "role": "fix2",
+     "idea": "so you add a green lamp, and cars go"
+    },
+    {
+     "role": "problem3",
+     "idea": "but the green never ends, and the woman cannot cross"
+    },
+    {
+     "role": "fix3",
+     "idea": "so you add a box that switches green to red"
     },
     {
      "role": "name",
      "idea": "this is a signal controller"
     },
     {
-     "role": "how",
-     "idea": "inside, a timer switches the lamps from green to red on a fixed clock"
-    },
-    {
-     "role": "fact",
-     "idea": "one full cycle at a busy corner lasts about 60 to 120 seconds"
-    },
-    {
-     "role": "factProof",
-     "idea": "each green lets one car cross the line about every 2 seconds"
-    },
-    {
-     "role": "problem2",
-     "idea": "but the box runs on a clock, so at midnight one car waits at an empty red"
-    },
-    {
-     "role": "fix2",
-     "idea": "so you cut a loop of wire into the road that feels a car's metal"
-    },
-    {
-     "role": "name2",
-     "idea": "this is an inductive loop detector"
-    },
-    {
-     "role": "problem3",
-     "idea": "but now the light flips the instant a car arrives, and the car behind slams into it"
-    },
-    {
-     "role": "fix3",
-     "idea": "so you add a yellow lamp that gives drivers about 3 to 6 seconds to stop"
+     "role": "problem4",
+     "idea": "but the box jumps straight to red, and cars crash"
     },
     {
      "role": "fix4",
-     "idea": "and late at night, quiet corners just flash red, so you stop and go"
+     "idea": "so you add a yellow lamp that warns drivers first"
     },
     {
-     "role": "myth",
-     "idea": "and the loop under the road is not a scale that weighs your car"
+     "role": "problem5",
+     "idea": "but drivers racing the yellow shoot into the crosswalk"
     },
     {
-     "role": "mythFact",
-     "idea": "it feels the metal changing its field, and the box turns the lamp green"
+     "role": "fix5",
+     "idea": "so you hold every lamp red for a moment"
+    },
+    {
+     "role": "problem6",
+     "idea": "but at night, that red makes one lone car wait"
+    },
+    {
+     "role": "fix6",
+     "idea": "so you cut a wire loop that feels its metal"
+    },
+    {
+     "role": "problem7",
+     "idea": "but the loop feels only the first car, so lines grow"
+    },
+    {
+     "role": "fix7",
+     "idea": "so a second loop farther back stretches the green"
+    },
+    {
+     "role": "problem8",
+     "idea": "but longer greens keep the woman waiting on the corner"
+    },
+    {
+     "role": "fix8",
+     "idea": "so you add a button that she presses to cross"
+    },
+    {
+     "role": "problem9",
+     "idea": "but the button needs power, and a storm cuts it"
+    },
+    {
+     "role": "fix9",
+     "idea": "so you add a battery that keeps the lamps running"
+    },
+    {
+     "role": "problem10",
+     "idea": "but running lamps still stop a fire truck at the red"
+    },
+    {
+     "role": "fix10",
+     "idea": "so a sensor turns it green for the truck"
     },
     {
      "role": "finish",
-     "idea": "add crosswalk stripes, a stop line, and a street sign"
+     "idea": "now the lamp turns red, and the woman crosses"
     },
     {
      "role": "congrats",
      "idea": "congratulations, you have built a traffic light"
     }
    ],
+   "flow": [
+    "stop line",
+    "crosswalk",
+    "wire loop",
+    "lane",
+    "corner",
+    "town"
+   ],
    "chain": [
     {
      "problem": "problem",
      "causedBy": "hook",
-     "shows": "one red lamp never changes and cars queue nose to tail",
-     "stakes": "nobody moves for minutes",
-     "size": 4
+     "shows": "a car rolls past the small lamp",
+     "stakes": "drivers miss the light",
+     "size": 2,
+     "at": "stop line",
+     "scale": "thing"
     },
     {
      "problem": "problem2",
      "causedBy": "fix1",
-     "shows": "at midnight one car waits alone at a red",
-     "stakes": "drivers wait for nothing",
-     "size": 5
+     "shows": "cars pile up at a red that never changes",
+     "stakes": "a whole queue is stuck",
+     "size": 3,
+     "at": "stop line",
+     "scale": "street"
     },
     {
      "problem": "problem3",
      "causedBy": "fix2",
-     "shows": "the light flips the instant a car arrives and the car behind rear-ends it",
-     "stakes": "crashes at the corner",
-     "size": 8
+     "shows": "the green never ends and the woman cannot cross",
+     "stakes": "people on foot are stuck",
+     "size": 4,
+     "at": "crosswalk",
+     "scale": "street"
+    },
+    {
+     "problem": "problem4",
+     "causedBy": "fix3",
+     "shows": "the box jumps to red and the second car rear-ends the first",
+     "stakes": "a crash at the line",
+     "size": 6,
+     "at": "crosswalk",
+     "scale": "street"
+    },
+    {
+     "problem": "problem5",
+     "causedBy": "fix4",
+     "shows": "cars race the yellow into the crosswalk",
+     "stakes": "the woman at the crossing",
+     "size": 6,
+     "at": "crosswalk",
+     "scale": "street"
+    },
+    {
+     "problem": "problem6",
+     "causedBy": "fix5",
+     "shows": "one car waits alone at a red at night",
+     "stakes": "drivers waste time",
+     "size": 5,
+     "at": "wire loop",
+     "scale": "street"
+    },
+    {
+     "problem": "problem7",
+     "causedBy": "fix6",
+     "shows": "a long line backs up past the loop",
+     "stakes": "the whole lane",
+     "size": 6,
+     "at": "lane",
+     "scale": "street"
+    },
+    {
+     "problem": "problem8",
+     "causedBy": "fix7",
+     "shows": "longer greens leave the woman waiting",
+     "stakes": "people on foot",
+     "size": 6,
+     "at": "corner",
+     "scale": "street"
+    },
+    {
+     "problem": "problem9",
+     "causedBy": "fix8",
+     "shows": "a storm cuts the power and the signal blinks",
+     "stakes": "the whole corner",
+     "size": 7,
+     "at": "corner",
+     "scale": "town"
+    },
+    {
+     "problem": "problem10",
+     "causedBy": "fix9",
+     "shows": "a fire truck waits at the red",
+     "stakes": "a fire somewhere in town",
+     "size": 9,
+     "at": "town",
+     "scale": "town"
     }
    ],
+   "recurring": {
+    "p": "walker",
+    "what": "a woman waiting to cross at the corner"
+   },
    "surprises": [
     {
-     "claim": "One full cycle at a busy corner lasts about 60 to 120 seconds.",
-     "role": "fact",
-     "search": "traffic signal cycle length busy intersection 60 120 seconds"
+     "claim": "A yellow light warns drivers that the signal is about to turn red.",
+     "role": "fix4",
+     "search": "yellow change interval warns drivers signal turning red"
     },
     {
-     "claim": "Each green lets one car cross the line about every 2 seconds.",
-     "role": "factProof",
-     "search": "saturation flow headway 2 seconds per vehicle signal"
+     "claim": "An all-red interval holds every signal red for a moment to clear the intersection.",
+     "role": "fix5",
+     "search": "all-red clearance interval traffic signal purpose"
     },
     {
-     "claim": "A yellow lamp gives drivers about 3 to 6 seconds to stop.",
-     "role": "fix3",
-     "search": "yellow change interval 3 to 6 seconds"
+     "claim": "An inductive loop cut into the road feels the metal of a car above it.",
+     "role": "fix6",
+     "search": "inductive loop detector how it detects vehicles metal"
+    },
+    {
+     "claim": "Emergency vehicle preemption turns a traffic signal green for an approaching fire truck.",
+     "role": "fix10",
+     "search": "emergency vehicle preemption traffic signal fire truck green"
     }
    ]
   },
   "sentences": [
    {
     "role": "hook",
-    "text": "If you hang one red lamp over the road, you have a traffic light."
+    "text": "If you hang a red lamp over a road, you have a traffic light."
    },
    {
     "role": "problem",
-    "text": "But it never changes, so cars pile up nose to tail at the red."
-   },
-   {
-    "role": "stakes",
-    "text": "Drivers wait one minute, then two, then five, and nobody moves."
+    "text": "But one small lamp is easy to miss, so cars roll through."
    },
    {
     "role": "fix1",
-    "text": "So you add a green lamp and a gray box that switches them."
+    "text": "So you mount it on a mast arm with a backplate."
+   },
+   {
+    "role": "problem2",
+    "text": "But the red never changes, so cars pile up."
+   },
+   {
+    "role": "fix2",
+    "text": "So you add a green lamp, and cars go."
+   },
+   {
+    "role": "problem3",
+    "text": "But the green never ends, and the woman cannot cross."
+   },
+   {
+    "role": "fix3",
+    "text": "So you add a box that switches green to red."
    },
    {
     "role": "name",
     "text": "This is a signal controller."
    },
    {
-    "role": "how",
-    "text": "Inside, a timer switches the lamps from green to red on a fixed clock."
-   },
-   {
-    "role": "fact",
-    "text": "One full cycle at a busy corner lasts about 60 to 120 seconds."
-   },
-   {
-    "role": "factProof",
-    "text": "Each green lets one car cross the line about every 2 seconds."
-   },
-   {
-    "role": "problem2",
-    "text": "But the box runs on a clock, so at midnight one car waits at an empty red."
-   },
-   {
-    "role": "fix2",
-    "text": "So you cut a loop of wire into the road that feels a car's metal."
-   },
-   {
-    "role": "name2",
-    "text": "This is an inductive loop detector."
-   },
-   {
-    "role": "problem3",
-    "text": "But now the light flips the instant a car arrives, and the car behind slams into it."
-   },
-   {
-    "role": "fix3",
-    "text": "So you add a yellow lamp that gives drivers about 3 to 6 seconds to stop."
+    "role": "problem4",
+    "text": "But the box jumps straight to red, and cars crash."
    },
    {
     "role": "fix4",
-    "text": "And late at night, quiet corners just flash red, so you stop and go."
+    "text": "So you add a yellow lamp that warns drivers first."
    },
    {
-    "role": "myth",
-    "text": "And the loop under the road is not a scale that weighs your car."
+    "role": "problem5",
+    "text": "But drivers racing the yellow shoot into the crosswalk."
    },
    {
-    "role": "mythFact",
-    "text": "It feels the metal changing its field, and the box turns the lamp green."
+    "role": "fix5",
+    "text": "So you hold every lamp red for a moment."
+   },
+   {
+    "role": "problem6",
+    "text": "But at night, that red makes one lone car wait."
+   },
+   {
+    "role": "fix6",
+    "text": "So you cut a wire loop that feels its metal."
+   },
+   {
+    "role": "problem7",
+    "text": "But the loop feels only the first car, so lines grow."
+   },
+   {
+    "role": "fix7",
+    "text": "So a second loop farther back stretches the green."
+   },
+   {
+    "role": "problem8",
+    "text": "But longer greens keep the woman waiting on the corner."
+   },
+   {
+    "role": "fix8",
+    "text": "So you add a button that she presses to cross."
+   },
+   {
+    "role": "problem9",
+    "text": "But the button needs power, and a storm cuts it."
+   },
+   {
+    "role": "fix9",
+    "text": "So you add a battery that keeps the lamps running."
+   },
+   {
+    "role": "problem10",
+    "text": "But running lamps still stop a fire truck at the red."
+   },
+   {
+    "role": "fix10",
+    "text": "So a sensor turns it green for the truck."
    },
    {
     "role": "finish",
-    "text": "Add crosswalk stripes, a stop line, and a street sign."
+    "text": "Now the lamp turns red, and the woman crosses."
    },
    {
     "role": "congrats",
     "text": "Congratulations, you have built a traffic light."
    }
   ],
-  "sceneJson": {
-   "world": {
-    "cut": [
-     -3,
-     3,
-     -4,
-     0.6
-    ],
-    "house": false,
-    "porch": false,
-    "worker": false,
-    "road": false,
-    "moreTrees": false,
-    "trees": [],
-    "backdrop": {
-     "type": "street",
-     "sign": "CORNER CAFE",
-     "lampX": -8,
-     "benchX": -6,
-     "road": {
-      "side": 1
-     },
-     "back": -15
-    }
-   },
-   "parts": [
-    {
-     "id": "tl",
-     "kind": "trafficLight",
-     "params": {
-      "pos": [
-       3.5,
-       0.12,
-       -13.4
-      ],
-      "height": 5,
-      "arm": 4.59,
-      "armDir": 1,
-      "loop": [
-       9.95,
-       -11.4,
-       1.8,
-       2
-      ],
-      "phase": 0
-     },
-     "main": true
-    },
-    {
-     "id": "lamp",
-     "kind": "rig",
-     "params": {
-      "name": "single red lamp",
-      "synonyms": [
-       "red lamp",
-       "one red lamp",
-       "lamp"
-      ],
-      "pos": [
-       8.1,
-       0.12,
-       -16
-      ],
-      "nodes": [
-       {
-        "id": "span",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "cylinder",
-          "r": 0.13,
-          "h": 5.8,
-          "axis": "y",
-          "at": [
-           -4.1,
-           2.9,
-           0
-          ],
-          "look": "paint",
-          "color": "#4a4f55"
-         },
-         {
-          "shape": "cylinder",
-          "r": 0.13,
-          "h": 5.8,
-          "axis": "y",
-          "at": [
-           4.1,
-           2.9,
-           0
-          ],
-          "look": "paint",
-          "color": "#4a4f55"
-         },
-         {
-          "shape": "cable",
-          "path": [
-           [
-            -4.1,
-            5.6,
-            0
-           ],
-           [
-            -2.05,
-            5.412,
-            0
-           ],
-           [
-            0,
-            5.35,
-            0
-           ],
-           [
-            2.05,
-            5.412,
-            0
-           ],
-           [
-            4.1,
-            5.6,
-            0
-           ]
-          ],
-          "r": 0.05,
-          "look": "metal",
-          "color": "#2a2d31"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.07,
-           0.42589976204640045,
-           0.07
-          ],
-          "at": [
-           1.8499999999999996,
-           5.187949881023201,
-           0
-          ],
-          "look": "metal",
-          "color": "#3a3f45"
-         },
-         {
-          "shape": "box",
-          "size": [
-           1.5,
-           1.6500000000000001,
-           0.5
-          ],
-          "at": [
-           1.8499999999999996,
-           4.15,
-           0
-          ],
-          "look": "paint",
-          "color": "#1f2226"
-         },
-         {
-          "shape": "box",
-          "size": [
-           1.68,
-           1.83,
-           0.04
-          ],
-          "at": [
-           1.8499999999999996,
-           4.15,
-           0.27
-          ],
-          "look": "paint",
-          "color": "#2a2d31"
-         },
-         {
-          "shape": "box",
-          "size": [
-           1.2000000000000002,
-           0.06,
-           0.3
-          ],
-          "at": [
-           1.8499999999999996,
-           4.78,
-           0.42
-          ],
-          "look": "paint",
-          "color": "#1f2226"
-         }
-        ]
-       },
-       {
-        "id": "red",
-        "parent": "span",
-        "at": [
-         1.8499999999999996,
-         4.15,
-         0.3
-        ],
-        "shapes": [
-         {
-          "shape": "light",
-          "r": 0.58,
-          "color": "#b00000"
-         }
-        ],
-        "moves": [
-         {
-          "name": "glow",
-          "type": "light"
-         }
-        ]
-       }
-      ]
-     }
-    },
-    {
-     "id": "cab",
-     "kind": "cabinet",
-     "params": {
-      "pos": [
-       4.45,
-       0.77,
-       -13.4
-      ],
-      "size": [
-       0.9,
-       1.3,
-       0.6
-      ]
-     }
-    },
-    {
-     "id": "waitTimer",
-     "kind": "counter",
-     "params": {
-      "pos": [
-       2.35,
-       2.12,
-       -13.4
-      ],
-      "size": 1.4,
-      "from": 0,
-      "to": 5,
-      "color": "#ff5a4a",
-      "bar": true
-     }
-    },
-    {
-     "id": "cycleTimer",
-     "kind": "counter",
-     "params": {
-      "pos": [
-       2.35,
-       2.12,
-       -13.4
-      ],
-      "size": 1.4,
-      "from": 120,
-      "to": 0,
-      "color": "#ffd23d",
-      "bar": false
-     }
-    },
-    {
-     "id": "scale",
-     "kind": "counter",
-     "params": {
-      "pos": [
-       2.35,
-       2.12,
-       -13.4
-      ],
-      "size": 1.4,
-      "from": 0,
-      "to": 1500,
-      "color": "#ffffff",
-      "bar": true
-     }
-    },
-    {
-     "id": "trafficA",
-     "kind": "traffic",
-     "params": {
-      "lane": [
-       9.95,
-       -12.6
-      ],
-      "dir": -1,
-      "n": 3,
-      "gap": 5.6,
-      "colors": [
-       "#3d6fb0",
-       "#e8c43a",
-       "#d94a3a",
-       "#7a7f86"
-      ],
-      "y": 0.12
-     }
-    },
-    {
-     "id": "trafficB",
-     "kind": "traffic",
-     "params": {
-      "lane": [
-       9.95,
-       -12.6
-      ],
-      "dir": -1,
-      "n": 3,
-      "gap": 5.6,
-      "colors": [
-       "#2f9e6a",
-       "#f2f2f2",
-       "#3d6fb0"
-      ],
-      "y": 0.12
-     }
-    },
-    {
-     "id": "trafficC",
-     "kind": "traffic",
-     "params": {
-      "lane": [
-       9.95,
-       -12.6
-      ],
-      "dir": -1,
-      "n": 2,
-      "gap": 5.6,
-      "colors": [
-       "#3d6fb0",
-       "#e8c43a"
-      ],
-      "y": 0.12
-     }
-    },
-    {
-     "id": "lone",
-     "kind": "car",
-     "params": {
-      "pos": [
-       9.95,
-       0.12,
-       -6.6
-      ],
-      "model": "sedan",
-      "color": "#d94a3a",
-      "axis": "z",
-      "from": -0.4,
-      "to": -33
-     }
-    },
-    {
-     "id": "probe",
-     "kind": "car",
-     "params": {
-      "pos": [
-       9.95,
-       0.12,
-       -6.6
-      ],
-      "model": "suv",
-      "color": "#7a7f86",
-      "axis": "z",
-      "from": -0.4,
-      "to": -33
-     }
-    },
-    {
-     "id": "passer",
-     "kind": "car",
-     "params": {
-      "pos": [
-       9.95,
-       0.12,
-       -6.6
-      ],
-      "model": "taxi",
-      "axis": "z",
-      "from": -0.4,
-      "to": -33
-     }
-    },
-    {
-     "id": "outline",
-     "kind": "outline",
-     "params": {
-      "of": "cab",
-      "opts": {
-       "r": 0.07,
-       "closed": true,
-       "over": true
-      }
-     }
-    },
-    {
-     "id": "loopLine",
-     "kind": "outline",
-     "params": {
-      "points": [
-       [
-        9.049999999999999,
-        0.06,
-        -12.4
-       ],
-       [
-        9.049999999999999,
-        0.06,
-        -10.4
-       ],
-       [
-        10.85,
-        0.06,
-        -10.4
-       ],
-       [
-        10.85,
-        0.06,
-        -12.4
-       ]
-      ],
-      "opts": {
-       "r": 0.06,
-       "closed": true
-      }
-     }
-    },
-    {
-     "id": "crosswalk",
-     "kind": "prop",
-     "params": {
-      "type": "crosswalk",
-      "size": [
-       7,
-       1.6
-      ],
-      "pos": [
-       8.1,
-       0.15,
-       -13.8
-      ],
-      "rotY": 0,
-      "scale": 1
-     }
-    },
-    {
-     "id": "stopLine",
-     "kind": "prop",
-     "params": {
-      "type": "stopLine",
-      "size": [
-       3.4
-      ],
-      "pos": [
-       9.95,
-       0.15,
-       -12.6
-      ],
-      "rotY": 0,
-      "scale": 1
-     }
-    },
-    {
-     "id": "streetSign",
-     "kind": "prop",
-     "params": {
-      "type": "streetSign",
-      "text": "MAIN ST",
-      "pos": [
-       3.2,
-       0.12,
-       -10.8
-      ],
-      "rotY": 0,
-      "scale": 1
-     }
-    },
-    {
-     "id": "light",
-     "kind": "light",
-     "params": {
-      "storm": false
-     }
-    },
-    {
-     "id": "sign",
-     "kind": "sign",
-     "params": {
-      "at": [
-       0.7899999999999991,
-       0.12,
-       -10
-      ],
-      "rotY": 0.2,
-      "scale": 1
-     }
-    }
-   ],
-   "beats": [
-    {
-     "s": "hook",
-     "shows": {
-      "p": "lamp",
-      "does": "one red lamp hangs from a wire strung across the road, right above the lane, and glows red"
-     },
-     "do": [
-      {
-       "p": "lamp",
-       "v": "show",
-       "w": "",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "lamp",
-       "v": "glow",
-       "w": "red",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "lamp"
-       ],
-       "width": 0.8
-      }
-     ]
-    },
-    {
-     "s": "problem",
-     "shows": {
-      "p": "trafficA",
-      "does": "the single red lamp stays red and four cars queue nose to tail at the stop line"
-     },
-     "state": {
-      "text": "STUCK",
-      "w": "pile"
-     },
-     "do": [
-      {
-       "p": "trafficA",
-       "v": "pile",
-       "d": 2.5,
-       "w": "",
-       "o": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "lamp",
-        "trafficA"
-       ],
-       "view": "high",
-       "width": 0.9
-      }
-     ]
-    },
-    {
-     "s": "stakes",
-     "shows": {
-      "p": "waitTimer",
-      "does": "the wait timer counts up to 5 minutes"
-     },
-     "state": {
-      "text": "NOBODY MOVES",
-      "w": "minute"
-     },
-     "do": [
-      {
-       "p": "waitTimer",
-       "v": "show",
-       "w": "Drivers",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "waitTimer",
-       "v": "count",
-       "w": "minute",
-       "d": 2.5,
-       "o": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "box": {
-        "min": [
-         2.9,
-         0.12,
-         -13.8
-        ],
-        "max": [
-         11.049999999999999,
-         5.42,
-         -2.4000000000000004
-        ]
-       },
-       "width": 0.9,
-       "zone": "center"
-      }
-     ]
-    },
-    {
-     "s": "fix1",
-     "shows": {
-      "p": "tl",
-      "does": "the signal gets a green lamp and lights green, and a gray box appears beside the pole"
-     },
-     "do": [
-      {
-       "p": "waitTimer",
-       "v": "hide",
-       "w": "So",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "lamp",
-       "v": "hide",
-       "w": "green",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "tl",
-       "v": "show",
-       "w": "green",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "tl",
-       "v": "green",
-       "w": "green",
-       "o": 0.3,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "cab",
-       "v": "show",
-       "w": "gray",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "cab",
-       "v": "lights",
-       "w": "switches",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "trafficA",
-       "v": "go",
-       "w": "switches",
-       "o": 0.5,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "cab",
-        "tl"
-       ],
-       "width": 0.8
-      }
-     ]
-    },
-    {
-     "s": "name",
-     "shows": {
-      "p": "outline",
-      "does": "a glowing outline traces the gray controller box and its door opens"
-     },
-     "do": [
-      {
-       "p": "outline",
-       "v": "show",
-       "w": "This",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "cab",
-       "v": "open",
-       "w": "controller",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "hero": true,
-       "focus": [
-        "cab"
-       ],
-       "width": 0.6
-      }
-     ]
-    },
-    {
-     "s": "how",
-     "shows": {
-      "p": "tl",
-      "does": "the lamps switch from green to red on the timer"
-     },
-     "do": [
-      {
-       "p": "outline",
-       "v": "hide",
-       "w": "Inside",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "cab",
-       "v": "lights",
-       "w": "timer",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "tl",
-       "v": "green",
-       "w": "green",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "tl",
-       "v": "red",
-       "w": "red",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "cab",
-        "tl"
-       ],
-       "width": 0.8
-      }
-     ]
-    },
-    {
-     "s": "fact",
-     "shows": {
-      "p": "cycleTimer",
-      "does": "a timer counts down from 120 while cars queue at the red"
-     },
-     "do": [
-      {
-       "p": "cab",
-       "v": "close",
-       "w": "One",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "cycleTimer",
-       "v": "show",
-       "w": "One",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "tl",
-       "v": "red",
-       "w": "One",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "trafficB",
-       "v": "pile",
-       "w": "cycle",
-       "d": 2.5,
-       "o": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "cycleTimer",
-       "v": "count",
-       "w": "about",
-       "o": 0,
-       "d": 3,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "cycleTimer",
-        "tl",
-        "trafficB"
-       ],
-       "width": 0.9
-      }
-     ]
-    },
-    {
-     "s": "factProof",
-     "shows": {
-      "p": "trafficB",
-      "does": "the light turns green and the cars drive off one by one"
-     },
-     "do": [
-      {
-       "p": "cycleTimer",
-       "v": "hide",
-       "w": "Each",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "tl",
-       "v": "green",
-       "w": "green",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "trafficB",
-       "v": "go",
-       "w": "car",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "box": {
-        "min": [
-         2.9,
-         0.12,
-         -13.8
-        ],
-        "max": [
-         11.049999999999999,
-         5.42,
-         -2.4000000000000004
-        ]
-       },
-       "width": 0.9,
-       "zone": "center"
-      }
-     ]
-    },
-    {
-     "s": "problem2",
-     "shows": {
-      "p": "lone",
-      "does": "at night the lamp glows red and one car waits alone at the stop line"
-     },
-     "state": {
-      "text": "EMPTY RED",
-      "w": "waits"
-     },
-     "do": [
-      {
-       "p": "light",
-       "v": "night",
-       "w": "But",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "tl",
-       "v": "red",
-       "w": "But",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "lone",
-       "v": "arrive",
-       "w": "one",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "lone",
-        "tl"
-       ],
-       "width": 0.8
-      }
-     ]
-    },
-    {
-     "s": "fix2",
-     "shows": {
-      "p": "tl",
-      "does": "a wire loop appears in the road and its field rings under the car"
-     },
-     "do": [
-      {
-       "p": "light",
-       "v": "day",
-       "w": "",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "tl",
-       "v": "loop",
-       "w": "loop",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "tl",
-       "v": "pulse",
-       "w": "feels",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "tl",
-       "v": "green",
-       "w": "metal",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "lone",
-       "v": "leave",
-       "w": "metal",
-       "o": 0.3,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "tl",
-        "lone"
-       ],
-       "width": 0.8
-      }
-     ]
-    },
-    {
-     "s": "name2",
-     "shows": {
-      "p": "loopLine",
-      "does": "a glowing outline traces the wire loop in the lane"
-     },
-     "do": [
-      {
-       "p": "loopLine",
-       "v": "show",
-       "w": "inductive",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "box": {
-        "min": [
-         8.35,
-         0,
-         -12.9
-        ],
-        "max": [
-         11.549999999999999,
-         1.9,
-         -4.199999999999999
-        ]
-       },
-       "width": 0.9,
-       "zone": "center",
-       "view": "high"
-      }
-     ]
-    },
-    {
-     "s": "problem3",
-     "shows": {
-      "p": "trafficC",
-      "does": "the second car rear-ends the first at the sudden red"
-     },
-     "state": {
-      "text": "CRASH!",
-      "w": "slams"
-     },
-     "do": [
-      {
-       "p": "loopLine",
-       "v": "hide",
-       "w": "But",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "tl",
-       "v": "stopPulse",
-       "w": "But",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "tl",
-       "v": "green",
-       "w": "But",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "trafficC",
-       "v": "pile",
-       "d": 2,
-       "w": "",
-       "o": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "tl",
-       "v": "red",
-       "w": "instant",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "trafficC",
-       "v": "bump",
-       "w": "slams",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "box": {
-        "min": [
-         2.9,
-         0.12,
-         -13.8
-        ],
-        "max": [
-         11.049999999999999,
-         5.42,
-         -2.4000000000000004
-        ]
-       },
-       "width": 0.9,
-       "zone": "center"
-      }
-     ]
-    },
-    {
-     "s": "fix3",
-     "shows": {
-      "p": "tl",
-      "does": "the yellow lamp lights and the dent is fixed"
-     },
-     "do": [
-      {
-       "p": "tl",
-       "v": "yellow",
-       "w": "yellow",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "trafficC",
-       "v": "unbump",
-       "w": "drivers",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "trafficC",
-       "v": "go",
-       "w": "stop",
-       "o": 0.3,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "tl"
-       ],
-       "width": 0.7
-      }
-     ]
-    },
-    {
-     "s": "fix4",
-     "shows": {
-      "p": "tl",
-      "does": "at night the signal blinks red"
-     },
-     "do": [
-      {
-       "p": "light",
-       "v": "night",
-       "w": "night",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "tl",
-       "v": "flash",
-       "w": "flash",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "tl"
-       ],
-       "width": 0.7
-      }
-     ]
-    },
-    {
-     "s": "myth",
-     "shows": {
-      "p": "scale",
-      "does": "a scale reading climbs to 1500 like the loop weighs the car"
-     },
-     "do": [
-      {
-       "p": "light",
-       "v": "day",
-       "w": "And",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "tl",
-       "v": "stopFlash",
-       "w": "And",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "tl",
-       "v": "red",
-       "w": "And",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "scale",
-       "v": "show",
-       "w": "And",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "scale",
-       "v": "count",
-       "w": "weighs",
-       "o": 0.2,
-       "d": 2,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "scale",
-        "tl"
-       ],
-       "width": 0.8
-      }
-     ]
-    },
-    {
-     "s": "mythFact",
-     "shows": {
-      "p": "tl",
-      "does": "a car rolls onto the loop, its field rings and the lamp turns green"
-     },
-     "do": [
-      {
-       "p": "scale",
-       "v": "hide",
-       "w": "It",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "probe",
-       "v": "arrive",
-       "w": "metal",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "tl",
-       "v": "pulse",
-       "w": "field",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "tl",
-       "v": "green",
-       "w": "green",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "probe",
-       "v": "leave",
-       "w": "green",
-       "o": 0.4,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "tl",
-        "probe"
-       ],
-       "width": 0.8
-      }
-     ]
-    },
-    {
-     "s": "finish",
-     "shows": {
-      "p": "crosswalk",
-      "does": "crosswalk stripes, a stop line and a street sign appear while the light cycles"
-     },
-     "do": [
-      {
-       "p": "tl",
-       "v": "stopPulse",
-       "w": "Add",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "tl",
-       "v": "cycle",
-       "w": "Add",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "crosswalk",
-       "v": "show",
-       "w": "crosswalk",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "stopLine",
-       "v": "show",
-       "w": "line",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "streetSign",
-       "v": "show",
-       "w": "sign",
-       "o": -0.7,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "tl",
-        "crosswalk",
-        "stopLine",
-        "streetSign"
-       ],
-       "width": 0.85
-      }
-     ]
-    },
-    {
-     "s": "congrats",
-     "shows": {
-      "p": "passer",
-      "does": "a taxi drives through on the working light"
-     },
-     "do": [
-      {
-       "p": "passer",
-       "v": "arrive",
-       "w": "Congratulations",
-       "o": 0,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      },
-      {
-       "p": "passer",
-       "v": "leave",
-       "w": "light",
-       "o": 0.3,
-       "d": 0,
-       "amp": 1,
-       "ch": ""
-      }
-     ],
-     "shots": []
-    }
-   ],
-   "audio": {
-    "cards": [
-     {
-      "text": "60 SECONDS",
-      "at": {
-       "s": "fact",
-       "w": "60"
-      },
-      "d": 1.8
-     },
-     {
-      "text": "2 SECONDS",
-      "at": {
-       "s": "factProof",
-       "w": "2"
-      },
-      "d": 1.6
-     },
-     {
-      "text": "3 TO 6 SECONDS",
-      "at": {
-       "s": "fix3",
-       "w": "3"
-      },
-      "d": 1.8
-     }
-    ],
-    "sfx": [
-     {
-      "lib": "motor_hum",
-      "at": {
-       "s": "fix1",
-       "w": "box"
-      },
-      "d": 1.4
-     },
-     {
-      "lib": "motor_hum",
-      "at": {
-       "s": "how",
-       "w": "timer"
-      },
-      "d": 1.2
-     },
-     {
-      "lib": "motor_hum",
-      "at": {
-       "s": "fix2",
-       "w": "feels"
-      },
-      "d": 1.2
-     }
-    ],
-    "chimes": [
-     {
-      "s": "name"
-     },
-     {
-      "s": "fact",
-      "w": "60"
-     },
-     {
-      "s": "name2"
-     },
-     {
-      "s": "fix3",
-      "w": "3"
-     },
-     {
-      "s": "congrats"
-     }
-    ]
-   }
-  }
+  "sceneJson": "{\"world\":{\"cut\":[-3,3,-4,0.6],\"house\":false,\"porch\":false,\"worker\":false,\"road\":false,\"moreTrees\":false,\"trees\":[],\"backdrop\":{\"type\":\"street\",\"sign\":\"CORNER CAFE\",\"lampX\":-8,\"benchX\":-6,\"road\":{\"side\":1},\"back\":-15}},\"parts\":[{\"id\":\"tl\",\"kind\":\"trafficLight\",\"params\":{\"pos\":[3.5,0.12,-13.4],\"height\":5,\"arm\":4.59,\"armDir\":1,\"loop\":[9.95,-11.4,1.8,2],\"phase\":0},\"main\":true},{\"id\":\"lamp\",\"kind\":\"rig\",\"params\":{\"name\":\"single red lamp\",\"synonyms\":[\"red lamp\",\"one red lamp\",\"lamp\"],\"pos\":[8.1,0.12,-16],\"nodes\":[{\"id\":\"span\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.13,\"h\":5.8,\"axis\":\"y\",\"at\":[-4.1,2.9,0],\"look\":\"paint\",\"color\":\"#4a4f55\"},{\"shape\":\"cylinder\",\"r\":0.13,\"h\":5.8,\"axis\":\"y\",\"at\":[4.1,2.9,0],\"look\":\"paint\",\"color\":\"#4a4f55\"},{\"shape\":\"cable\",\"path\":[[-4.1,5.6,0],[-2.05,5.41,0],[0,5.35,0],[2.05,5.41,0],[4.1,5.6,0]],\"r\":0.05,\"look\":\"metal\",\"color\":\"#2a2d31\"},{\"shape\":\"box\",\"size\":[0.07,0.43,0.07],\"at\":[1.85,5.19,0],\"look\":\"metal\",\"color\":\"#3a3f45\"},{\"shape\":\"box\",\"size\":[0.6,0.6,0.45],\"at\":[1.85,4.68,0],\"look\":\"paint\",\"color\":\"#1f2226\"}]},{\"id\":\"red\",\"parent\":\"span\",\"at\":[1.85,4.68,0.24],\"shapes\":[{\"shape\":\"light\",\"r\":0.24,\"color\":\"#d01010\"}],\"moves\":[{\"name\":\"glow\",\"type\":\"light\"}]}]}},{\"id\":\"cab\",\"kind\":\"cabinet\",\"params\":{\"pos\":[2.4,0.77,-13.4],\"size\":[0.9,1.3,0.6]}},{\"id\":\"button\",\"kind\":\"rig\",\"params\":{\"name\":\"crosswalk button\",\"synonyms\":[\"push button\",\"button\"],\"pos\":[3.6,0.12,-12.4],\"nodes\":[{\"id\":\"post\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.05,\"h\":1.1,\"axis\":\"y\",\"at\":[0,0.55,0],\"look\":\"metal\",\"color\":\"#6b7178\"},{\"shape\":\"box\",\"size\":[0.16,0.26,0.16],\"at\":[0,1.2,0],\"look\":\"paint\",\"color\":\"#e8c43a\"},{\"shape\":\"button\",\"r\":0.05,\"at\":[-0.09,1.2,0]},{\"shape\":\"light\",\"r\":0.035,\"at\":[-0.09,1.3,0],\"color\":\"#ffffff\"}],\"moves\":[{\"name\":\"glow\",\"type\":\"light\"}]}]}},{\"id\":\"battery\",\"kind\":\"boxPop\",\"params\":{\"size\":[0.6,0.8,0.6],\"pos\":[1.55,0.52,-13.4],\"r\":0.04,\"mat\":\"machineBody\"}},{\"id\":\"sensor\",\"kind\":\"boxPop\",\"params\":{\"size\":[0.3,0.3,0.3],\"pos\":[2.4,1.57,-13.4],\"r\":0.04,\"mat\":\"metal\"}},{\"id\":\"trafficA\",\"kind\":\"traffic\",\"params\":{\"lane\":[9.95,-12.6],\"dir\":-1,\"n\":3,\"gap\":5.6,\"colors\":[\"#3d6fb0\",\"#e8c43a\",\"#7a7f86\"],\"y\":0.12}},{\"id\":\"trafficB\",\"kind\":\"traffic\",\"params\":{\"lane\":[9.95,-12.6],\"dir\":-1,\"n\":2,\"gap\":5.6,\"colors\":[\"#2f9e6a\",\"#f2f2f2\"],\"y\":0.12}},{\"id\":\"trafficC\",\"kind\":\"traffic\",\"params\":{\"lane\":[9.95,-12.6],\"dir\":-1,\"n\":3,\"gap\":5.6,\"colors\":[\"#d94a3a\",\"#3d6fb0\",\"#e8c43a\"],\"y\":0.12}},{\"id\":\"trafficD\",\"kind\":\"traffic\",\"params\":{\"lane\":[9.95,-12.6],\"dir\":-1,\"n\":2,\"gap\":5.6,\"colors\":[\"#7a7f86\",\"#2f9e6a\"],\"y\":0.12}},{\"id\":\"runner\",\"kind\":\"car\",\"params\":{\"pos\":[9.95,0.12,-6.6],\"model\":\"sedan\",\"color\":\"#3d6fb0\",\"axis\":\"z\",\"from\":-0.4,\"to\":-33}},{\"id\":\"streamer\",\"kind\":\"car\",\"params\":{\"pos\":[9.95,0.12,-6.6],\"model\":\"suv\",\"color\":\"#f2f2f2\",\"axis\":\"z\",\"from\":-0.4,\"to\":-33}},{\"id\":\"commuter\",\"kind\":\"car\",\"params\":{\"pos\":[9.95,0.12,-6.6],\"model\":\"taxi\",\"axis\":\"z\",\"from\":-0.4,\"to\":-33}},{\"id\":\"lone\",\"kind\":\"car\",\"params\":{\"pos\":[9.95,0.12,-6.6],\"model\":\"sedan\",\"color\":\"#d94a3a\",\"axis\":\"z\",\"from\":-0.4,\"to\":-33}},{\"id\":\"fire\",\"kind\":\"car\",\"params\":{\"pos\":[9.95,0.12,-6.6],\"model\":\"firetruck\",\"axis\":\"z\",\"from\":-0.4,\"to\":-33}},{\"id\":\"walker\",\"kind\":\"person\",\"params\":{\"pos\":[3,0.12,-12.4],\"rotY\":1.5708,\"action\":\"press\",\"path\":[[3.2,0.12,-12],[3.45,0.12,-11.6]],\"look\":\"casual\"}},{\"id\":\"outline\",\"kind\":\"outline\",\"params\":{\"of\":\"cab\",\"opts\":{\"r\":0.07,\"closed\":true,\"over\":true}}},{\"id\":\"advance\",\"kind\":\"outline\",\"params\":{\"points\":[[9.05,0.06,-4.8],[9.05,0.06,-2.8],[10.85,0.06,-2.8],[10.85,0.06,-4.8]],\"opts\":{\"r\":0.06,\"closed\":true}}},{\"id\":\"rain\",\"kind\":\"rain\",\"params\":{\"x0\":0,\"x1\":14,\"z0\":-16,\"z1\":-0.1,\"yTop\":14,\"yBot\":0.12,\"count\":900,\"width\":0.03,\"opacity\":0.55}},{\"id\":\"light\",\"kind\":\"light\",\"params\":{\"storm\":true}},{\"id\":\"sign\",\"kind\":\"sign\",\"params\":{\"at\":[0.8,0.12,-10],\"rotY\":0.2,\"scale\":1}}],\"beats\":[{\"s\":\"hook\",\"shows\":{\"p\":\"lamp\",\"does\":\"one red lamp hangs from a wire over the lane and glows red\"},\"do\":[{\"p\":\"lamp\",\"v\":\"show\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lamp\",\"v\":\"glow\",\"w\":\"red\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"lamp\"],\"width\":0.8}]},{\"s\":\"problem\",\"shows\":{\"p\":\"runner\",\"does\":\"a car rolls right past the small red lamp without stopping while a woman waits on the corner\"},\"do\":[{\"p\":\"walker\",\"v\":\"show\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"runner\",\"v\":\"arrive\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"runner\",\"v\":\"leave\",\"w\":\"through\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"lamp\",\"runner\"],\"width\":0.85}]},{\"s\":\"fix1\",\"shows\":{\"p\":\"tl\",\"does\":\"the signal on its mast arm with a black backplate glows red over the lane\"},\"do\":[{\"p\":\"lamp\",\"v\":\"hide\",\"w\":\"mount\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tl\",\"v\":\"show\",\"w\":\"arm\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tl\",\"v\":\"red\",\"w\":\"backplate\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"tl\"],\"type\":\"mid\"}]},{\"s\":\"problem2\",\"shows\":{\"p\":\"trafficA\",\"does\":\"the red never changes and cars pile up nose to tail at the line\"},\"do\":[{\"p\":\"trafficA\",\"v\":\"pile\",\"w\":\"\",\"o\":0,\"d\":2.5,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"tl\",\"trafficA\"]}]},{\"s\":\"fix2\",\"shows\":{\"p\":\"tl\",\"does\":\"the green lamp lights and the queue drives off\"},\"do\":[{\"p\":\"tl\",\"v\":\"green\",\"w\":\"green\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"trafficA\",\"v\":\"go\",\"w\":\"go\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"tl\",\"trafficA\"]}]},{\"s\":\"problem3\",\"shows\":{\"p\":\"streamer\",\"does\":\"the green stays on and a car streams past the woman waiting at the curb\"},\"do\":[{\"p\":\"streamer\",\"v\":\"arrive\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"streamer\",\"v\":\"leave\",\"w\":\"cross\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"walker\",\"tl\"],\"width\":0.7}]},{\"s\":\"fix3\",\"shows\":{\"p\":\"cab\",\"does\":\"a gray controller box appears by the pole and switches the lamp from green to red\"},\"do\":[{\"p\":\"cab\",\"v\":\"show\",\"w\":\"box\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"cab\",\"v\":\"lights\",\"w\":\"switches\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tl\",\"v\":\"red\",\"w\":\"red\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"cab\",\"tl\"],\"width\":0.8}]},{\"s\":\"name\",\"shows\":{\"p\":\"outline\",\"does\":\"a glowing outline traces the gray box and its door opens on the blinking modules\"},\"do\":[{\"p\":\"outline\",\"v\":\"show\",\"w\":\"This\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"cab\",\"v\":\"open\",\"w\":\"controller\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"cab\"],\"hero\":true,\"width\":0.6}]},{\"s\":\"problem4\",\"shows\":{\"p\":\"trafficB\",\"does\":\"the box jumps from green straight to red and the second car rear-ends the first\"},\"do\":[{\"p\":\"outline\",\"v\":\"hide\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"cab\",\"v\":\"close\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tl\",\"v\":\"green\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"trafficB\",\"v\":\"pile\",\"w\":\"\",\"o\":0,\"d\":2,\"amp\":1,\"ch\":\"\"},{\"p\":\"tl\",\"v\":\"red\",\"w\":\"red\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"trafficB\",\"v\":\"bump\",\"w\":\"crash\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"tl\",\"trafficB\"]}]},{\"s\":\"fix4\",\"shows\":{\"p\":\"tl\",\"does\":\"the yellow lamp lights before the red and the dent is gone\"},\"do\":[{\"p\":\"tl\",\"v\":\"yellow\",\"w\":\"yellow\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"trafficB\",\"v\":\"unbump\",\"w\":\"warns\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tl\",\"v\":\"red\",\"w\":\"first\",\"o\":0.3,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"tl\"],\"width\":0.7}]},{\"s\":\"problem5\",\"shows\":{\"p\":\"trafficB\",\"does\":\"on yellow the cars race on and shoot across the crosswalk past the waiting woman\"},\"do\":[{\"p\":\"tl\",\"v\":\"yellow\",\"w\":\"yellow\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"trafficB\",\"v\":\"go\",\"w\":\"shoot\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tl\",\"v\":\"red\",\"w\":\"crosswalk\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"walker\",\"trafficB\"]}]},{\"s\":\"fix5\",\"shows\":{\"p\":\"tl\",\"does\":\"every lamp holds red for a moment\"},\"do\":[{\"p\":\"tl\",\"v\":\"allRed\",\"w\":\"red\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"tl\"],\"width\":0.7}]},{\"s\":\"problem6\",\"shows\":{\"p\":\"lone\",\"does\":\"at night one red car waits alone at the red on an empty road\"},\"do\":[{\"p\":\"light\",\"v\":\"night\",\"w\":\"night\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tl\",\"v\":\"red\",\"w\":\"red\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lone\",\"v\":\"arrive\",\"w\":\"car\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"lone\",\"tl\"],\"width\":0.8}]},{\"s\":\"fix6\",\"shows\":{\"p\":\"tl\",\"does\":\"a wire loop appears in the lane, its field rings under the car, the lamp turns green and the car goes\"},\"do\":[{\"p\":\"tl\",\"v\":\"loop\",\"w\":\"loop\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tl\",\"v\":\"pulse\",\"w\":\"feels\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tl\",\"v\":\"green\",\"w\":\"metal\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"lone\",\"v\":\"leave\",\"w\":\"metal\",\"o\":0.5,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"tl\",\"lone\"],\"width\":0.8}]},{\"s\":\"problem7\",\"shows\":{\"p\":\"trafficC\",\"does\":\"the loop feels only the first car while a long line of cars backs up behind it\"},\"do\":[{\"p\":\"light\",\"v\":\"day\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tl\",\"v\":\"stopPulse\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tl\",\"v\":\"red\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"trafficC\",\"v\":\"pile\",\"w\":\"\",\"o\":0,\"d\":2.5,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"tl\",\"trafficC\"]}]},{\"s\":\"fix7\",\"shows\":{\"p\":\"advance\",\"does\":\"a second loop glows farther back in the lane, the lamp turns green and the whole line drives off\"},\"do\":[{\"p\":\"advance\",\"v\":\"show\",\"w\":\"second\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tl\",\"v\":\"green\",\"w\":\"green\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"trafficC\",\"v\":\"go\",\"w\":\"green\",\"o\":0.4,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"advance\",\"tl\"],\"width\":0.9,\"view\":\"high\"}]},{\"s\":\"problem8\",\"shows\":{\"p\":\"commuter\",\"does\":\"the long green stays on and a taxi passes the woman still waiting on the corner\"},\"do\":[{\"p\":\"advance\",\"v\":\"hide\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"commuter\",\"v\":\"arrive\",\"w\":\"greens\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"commuter\",\"v\":\"leave\",\"w\":\"waiting\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"walker\",\"tl\"],\"width\":0.7}]},{\"s\":\"fix8\",\"shows\":{\"p\":\"button\",\"does\":\"a push button appears on a post and the woman presses it, the lamp turns red\"},\"do\":[{\"p\":\"button\",\"v\":\"show\",\"w\":\"button\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"walker\",\"v\":\"start\",\"w\":\"presses\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"button\",\"v\":\"glow\",\"w\":\"presses\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tl\",\"v\":\"red\",\"w\":\"cross\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"box\":{\"min\":[1.8,0,-14.2],\"max\":[4.2,2.1,-11.8]},\"width\":0.9}]},{\"s\":\"problem9\",\"shows\":{\"p\":\"tl\",\"does\":\"a storm rolls in with rain and the signal falls back to blinking red\"},\"do\":[{\"p\":\"walker\",\"v\":\"stop\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"light\",\"v\":\"storm\",\"w\":\"storm\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"rain\",\"v\":\"start\",\"w\":\"storm\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tl\",\"v\":\"flash\",\"w\":\"cuts\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"tl\",\"cab\"],\"width\":0.8}]},{\"s\":\"fix9\",\"shows\":{\"p\":\"cab\",\"does\":\"a battery cabinet appears beside the controller, its lights blink and the lamps cycle again as the storm clears\"},\"do\":[{\"p\":\"rain\",\"v\":\"stop\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"light\",\"v\":\"clear\",\"w\":\"So\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"battery\",\"v\":\"show\",\"w\":\"battery\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"cab\",\"v\":\"lights\",\"w\":\"keeps\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tl\",\"v\":\"stopFlash\",\"w\":\"running\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tl\",\"v\":\"cycle\",\"w\":\"running\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"box\":{\"min\":[1.6,0,-14],\"max\":[3.4,1.8,-12.2]},\"width\":0.9}]},{\"s\":\"problem10\",\"shows\":{\"p\":\"fire\",\"does\":\"a fire truck pulls up and waits at the red\"},\"do\":[{\"p\":\"tl\",\"v\":\"stopCycle\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tl\",\"v\":\"red\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"fire\",\"v\":\"arrive\",\"w\":\"fire\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"fire\",\"tl\"],\"width\":0.8}]},{\"s\":\"fix10\",\"shows\":{\"p\":\"fire\",\"does\":\"a sensor appears on the pole, the lamp turns green and the fire truck drives through\"},\"do\":[{\"p\":\"sensor\",\"v\":\"show\",\"w\":\"sensor\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"tl\",\"v\":\"green\",\"w\":\"green\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"fire\",\"v\":\"leave\",\"w\":\"truck\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"sensor\",\"cab\",\"fire\"],\"width\":0.8}]},{\"s\":\"finish\",\"shows\":{\"p\":\"walker\",\"does\":\"the lamp turns red, two cars wait at the line and the woman steps out to cross\"},\"do\":[{\"p\":\"tl\",\"v\":\"red\",\"w\":\"red\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"trafficD\",\"v\":\"pile\",\"w\":\"\",\"o\":0,\"d\":2,\"amp\":1,\"ch\":\"\"},{\"p\":\"walker\",\"v\":\"walk\",\"w\":\"crosses\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[{\"focus\":[\"walker\",\"tl\",\"trafficD\"]}]},{\"s\":\"congrats\",\"shows\":{\"p\":\"tl\",\"does\":\"the signal runs its cycle over the street\"},\"do\":[{\"p\":\"tl\",\"v\":\"cycle\",\"w\":\"Congratulations\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shots\":[]}],\"audio\":{\"cards\":[],\"sfx\":[{\"lib\":\"motor_hum\",\"at\":{\"s\":\"fix3\",\"w\":\"box\",\"o\":0},\"d\":1.4},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"fix6\",\"w\":\"feels\",\"o\":0},\"d\":1.2},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"fix9\",\"w\":\"battery\",\"o\":0},\"d\":1.2}],\"chimes\":[{\"s\":\"name\",\"w\":\"\",\"o\":0},{\"s\":\"fix8\",\"w\":\"presses\",\"o\":0},{\"s\":\"congrats\",\"w\":\"\",\"o\":0}],\"rain\":[{\"s\":\"problem9\",\"w\":\"storm\",\"o\":0},{\"s\":\"fix9\",\"w\":\"So\",\"o\":0}]}}"
  }
 }

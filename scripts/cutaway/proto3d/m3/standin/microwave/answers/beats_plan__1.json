@@ -1,1490 +1,214 @@
 {
  "hash": "*",
- "by": "stand-in planner",
+ "by": "stand-in planner (agent), 2026-11-11",
  "searches": 0,
  "data": {
-  "why": "A microwave oven cut open on a small kitchen cart: a magnetron shines waves at a bowl of food, one side stays cold, a turntable spins it, the waves leak out, a mesh door keeps them in; then the myth that it cooks from the inside out. The camera opens close on the food in the waves, stays mid on the oven, and ends on the home view.",
+  "why": "A microwave oven stands cut open on a cart in a kitchen with a cold mug on its turntable and a hand at its start button; the waves are followed from the magnetron into the cavity, onto the mug and out at the door, and the heat they leave in the magnetron to its fan. The camera opens close on the mug under the waves, frames each part as it is added, and ends on the hand pressing start and the mug steaming.",
   "story": {
    "title": "How a microwave works",
-   "hero": "a microwave oven",
+   "hero": "a Faraday cage",
    "parts": [
-    "food",
     "magnetron",
-    "waves",
     "turntable",
     "mesh door",
-    "keypad",
-    "timer",
-    "light"
+    "door switch",
+    "cooling fan",
+    "timer"
    ],
-   "ideas": [
-    {
-     "role": "hook",
-     "idea": "shine microwaves at food and you already have a microwave oven"
-    },
-    {
-     "role": "problem",
-     "idea": "the waves heat one side and the other side stays cold"
-    },
-    {
-     "role": "fix1",
-     "idea": "a turntable spins the food through the waves so it heats evenly"
-    },
-    {
-     "role": "problem2",
-     "idea": "now the waves leak out of the open front"
-    },
-    {
-     "role": "fix2",
-     "idea": "a metal door with a mesh window keeps the waves in because the holes are smaller than the waves"
-    },
-    {
-     "role": "name",
-     "idea": "this box with a magnetron and a turntable is a microwave oven"
-    },
-    {
-     "role": "how",
-     "idea": "the waves shake the water in the food 2.45 billion times a second and that makes heat"
-    },
-    {
-     "role": "myth",
-     "idea": "a microwave does not cook from the inside out"
-    },
-    {
-     "role": "mythFact",
-     "idea": "the waves reach only about an inch into the food and the heat moves inward from there"
-    },
-    {
-     "role": "finish",
-     "idea": "a keypad, a timer and a light complete the oven"
-    },
-    {
-     "role": "congrats",
-     "idea": "calm end: the finished oven sits on its cart with its light on"
-    }
+   "flow": [
+    "magnetron",
+    "cavity",
+    "mug",
+    "door",
+    "latch",
+    "fan",
+    "timer"
    ],
+   "recurring": {
+    "p": "hand",
+    "what": "a hand at the start button"
+   },
    "chain": [
     {
      "problem": "problem",
      "causedBy": "hook",
-     "shows": "one half of the food glows hot, the other half frosts blue",
-     "stakes": "a meal hot on one side and cold on the other",
-     "size": 3
+     "shows": "one side of the mug glows hot while the rest stays cold",
+     "stakes": "a cold sip of coffee",
+     "size": 2,
+     "at": "cavity",
+     "scale": "thing"
     },
     {
      "problem": "problem2",
      "causedBy": "fix1",
-     "shows": "purple wave rays shoot out of the open front",
-     "stakes": "the waves would heat whatever is in front of it",
-     "size": 6
+     "shows": "the waves leak out of the open front past the spinning turntable",
+     "stakes": "the kitchen is hit by waves",
+     "size": 4,
+     "at": "door",
+     "scale": "room"
+    },
+    {
+     "problem": "problem3",
+     "causedBy": "fix2",
+     "shows": "the door swings open mid-cook and waves leak at the hand",
+     "stakes": "your hand",
+     "size": 5,
+     "at": "door",
+     "scale": "room"
+    },
+    {
+     "problem": "problem4",
+     "causedBy": "fix3",
+     "shows": "with the latch switch letting power back on, the magnetron glows red hot",
+     "stakes": "the magnetron burns out",
+     "size": 6,
+     "at": "fan",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem5",
+     "causedBy": "fix4",
+     "shows": "kept cool by the fan, it never stops and the mug boils over",
+     "stakes": "a mess in the oven",
+     "size": 7,
+     "at": "timer",
+     "scale": "thing"
     }
    ],
    "surprises": [
     {
-     "claim": "Home microwave ovens use waves at 2.45 gigahertz, about 2.45 billion cycles a second",
-     "role": "how",
-     "search": "microwave oven frequency 2.45 GHz"
+     "claim": "Microwaves bounce around inside the oven and form hot and cold spots, which is why most ovens have a turntable.",
+     "role": "fix1",
+     "search": "microwave oven standing waves hot spots turntable why"
     },
     {
-     "claim": "Microwaves penetrate only about 1 to 1.5 inches into food; deeper parts are cooked by heat conduction",
-     "role": "mythFact",
-     "search": "USDA microwaves penetrate 1 to 1.5 inches food cook inside out myth"
-    },
-    {
-     "claim": "The metal mesh in a microwave door has holes much smaller than the 12 centimetre wavelength, so the waves cannot pass",
+     "claim": "The metal mesh in a microwave's door has holes much smaller than the microwaves' wavelength of about 12 centimeters, so the waves cannot pass through.",
      "role": "fix2",
-     "search": "microwave door mesh holes smaller than wavelength 12 cm"
+     "search": "microwave door mesh holes smaller than wavelength 12 cm Faraday cage"
+    },
+    {
+     "claim": "Microwave ovens have interlock switches that cut power to the magnetron as soon as the door opens.",
+     "role": "fix3",
+     "search": "microwave oven door interlock switches cut power magnetron when door opens"
+    }
+   ],
+   "ideas": [
+    {
+     "role": "hook",
+     "idea": "waves aimed at a cold mug is a microwave"
+    },
+    {
+     "role": "problem",
+     "idea": "the waves bounce into hot spots and half the mug stays cold"
+    },
+    {
+     "role": "fix1",
+     "idea": "a turntable carries the mug through the hot spots"
+    },
+    {
+     "role": "problem2",
+     "idea": "the waves leak out of the open front"
+    },
+    {
+     "role": "fix2",
+     "idea": "a door with a metal mesh blocks them"
+    },
+    {
+     "role": "name",
+     "idea": "this is a Faraday cage"
+    },
+    {
+     "role": "problem3",
+     "idea": "opening that door mid-cook lets waves out at your hand"
+    },
+    {
+     "role": "fix3",
+     "idea": "a switch in the door latch cuts the power"
+    },
+    {
+     "role": "problem4",
+     "idea": "the magnetron gets burning hot"
+    },
+    {
+     "role": "fix4",
+     "idea": "a fan blows cool air across it"
+    },
+    {
+     "role": "problem5",
+     "idea": "the mug keeps cooking until it boils over"
+    },
+    {
+     "role": "fix5",
+     "idea": "a timer switches the waves off"
+    },
+    {
+     "role": "finish",
+     "idea": "press start and the mug comes out steaming"
+    },
+    {
+     "role": "congrats",
+     "idea": "you built a microwave"
     }
    ]
   },
   "sentences": [
    {
     "role": "hook",
-    "text": "If you shine invisible waves at food, you have a microwave oven."
+    "text": "If you aim invisible waves at a cold mug, you have a microwave."
    },
    {
     "role": "problem",
-    "text": "But the waves heat one side, and the other side stays cold."
+    "text": "But the waves bounce into hot spots, and half stays cold."
    },
    {
     "role": "fix1",
-    "text": "So you add a turntable that spins the food through the waves."
+    "text": "So a turntable spins the mug through the spots."
    },
    {
     "role": "problem2",
-    "text": "But now the waves leak out of the open front."
+    "text": "But the waves leak out the open front."
    },
    {
     "role": "fix2",
-    "text": "So you add a door with a metal mesh whose holes are far smaller than the waves."
+    "text": "So a door with metal mesh blocks them."
    },
    {
     "role": "name",
-    "text": "This is a microwave oven."
+    "text": "This is a Faraday cage."
    },
    {
-    "role": "how",
-    "text": "The waves shake water in the food 2.45 billion times a second."
+    "role": "problem3",
+    "text": "But open that door mid-cook, and waves hit your hand."
    },
    {
-    "role": "myth",
-    "text": "And it does not cook from the inside out."
+    "role": "fix3",
+    "text": "So a switch in the latch cuts the power."
    },
    {
-    "role": "mythFact",
-    "text": "The waves reach just 1 to 1.5 inches, and heat creeps inward inch by inch."
+    "role": "problem4",
+    "text": "But the hard-working magnetron gets burning hot."
+   },
+   {
+    "role": "fix4",
+    "text": "So a fan blows cool air across it."
+   },
+   {
+    "role": "problem5",
+    "text": "But the mug keeps cooking until it boils over."
+   },
+   {
+    "role": "fix5",
+    "text": "So a timer switches the waves off."
    },
    {
     "role": "finish",
-    "text": "Add a keypad, a timer and a light."
+    "text": "Press start, and your mug comes out steaming."
    },
    {
     "role": "congrats",
-    "text": "Congratulations, you have built a microwave oven."
+    "text": "Congratulations, you built a microwave."
    }
   ],
-  "sceneJson": {
-   "world": {
-    "cut": [
-     9.5,
-     11,
-     -4,
-     0.6
-    ],
-    "house": false,
-    "porch": false,
-    "trees": [],
-    "road": false,
-    "rocksAvoid": [],
-    "worker": false,
-    "moreTrees": false,
-    "backdrop": {
-     "type": "kitchen",
-     "x0": -12,
-     "x1": 12,
-     "back": -7,
-     "h": 6.2,
-     "gap": [
-      -1.8,
-      1.8
-     ],
-     "color": "#e8d9bf"
-    }
-   },
-   "parts": [
-    {
-     "id": "light",
-     "kind": "light",
-     "params": {
-      "storm": false
-     }
-    },
-    {
-     "id": "microwave",
-     "kind": "rig",
-     "params": {
-      "name": "microwave oven",
-      "synonyms": [
-       "microwave",
-       "oven"
-      ],
-      "main": true,
-      "pos": [
-       0,
-       0.12,
-       -1.8
-      ],
-      "scale": 2.2,
-      "nodes": [
-       {
-        "id": "cart",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           0.7,
-           0.03,
-           0.45
-          ],
-          "at": [
-           0,
-           0.42,
-           0
-          ],
-          "look": "wood",
-          "color": "#b07a45"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.03,
-           0.42,
-           0.03
-          ],
-          "at": [
-           -0.32,
-           0.21,
-           -0.2
-          ],
-          "look": "metal",
-          "color": "#5a6168"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.03,
-           0.42,
-           0.03
-          ],
-          "at": [
-           0.32,
-           0.21,
-           -0.2
-          ],
-          "look": "metal",
-          "color": "#5a6168"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.03,
-           0.42,
-           0.03
-          ],
-          "at": [
-           -0.32,
-           0.21,
-           0.2
-          ],
-          "look": "metal",
-          "color": "#5a6168"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.03,
-           0.42,
-           0.03
-          ],
-          "at": [
-           0.32,
-           0.21,
-           0.2
-          ],
-          "look": "metal",
-          "color": "#5a6168"
-         }
-        ]
-       },
-       {
-        "id": "body",
-        "parent": "cart",
-        "at": [
-         0,
-         0.435,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           0.5,
-           0.02,
-           0.36
-          ],
-          "at": [
-           0,
-           0.01,
-           0
-          ],
-          "look": "metal",
-          "color": "#cfd5db"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.5,
-           0.3,
-           0.02
-          ],
-          "at": [
-           0,
-           0.15,
-           -0.17
-          ],
-          "look": "metal",
-          "color": "#e3e8ed"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.02,
-           0.3,
-           0.36
-          ],
-          "at": [
-           -0.24,
-           0.15,
-           0
-          ],
-          "look": "metal",
-          "color": "#d9dee3"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.5,
-           0.02,
-           0.36
-          ],
-          "at": [
-           0,
-           0.29,
-           0
-          ],
-          "look": "metal",
-          "color": "#e3e8ed"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.02,
-           0.3,
-           0.36
-          ],
-          "at": [
-           0.12,
-           0.15,
-           0
-          ],
-          "look": "metal",
-          "color": "#d9dee3"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.02,
-           0.3,
-           0.36
-          ],
-          "at": [
-           0.24,
-           0.15,
-           0
-          ],
-          "look": "metal",
-          "color": "#d9dee3"
-         }
-        ]
-       },
-       {
-        "id": "magnetron",
-        "parent": "body",
-        "at": [
-         0.18,
-         0.17,
-         -0.02
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           0.09,
-           0.1,
-           0.12
-          ],
-          "at": [
-           0,
-           0,
-           0
-          ],
-          "look": "metal",
-          "color": "#7c848c"
-         },
-         {
-          "shape": "cylinder",
-          "r": 0.03,
-          "h": 0.04,
-          "axis": "y",
-          "at": [
-           0,
-           0.07,
-           0
-          ],
-          "look": "metal",
-          "color": "#c9a45c"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.22,
-           0.04,
-           0.06
-          ],
-          "at": [
-           -0.12,
-           0.1,
-           -0.02
-          ],
-          "look": "metal",
-          "color": "#9aa3ab"
-         }
-        ]
-       },
-       {
-        "id": "waves",
-        "parent": "body",
-        "at": [
-         -0.06,
-         0.27,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "beam",
-          "from": [
-           0,
-           0,
-           0
-          ],
-          "to": [
-           -0.08,
-           -0.18,
-           0.06
-          ],
-          "r": 0.012,
-          "color": "#c77dff"
-         },
-         {
-          "shape": "beam",
-          "from": [
-           0,
-           0,
-           0
-          ],
-          "to": [
-           0,
-           -0.18,
-           0.06
-          ],
-          "r": 0.012,
-          "color": "#c77dff"
-         },
-         {
-          "shape": "beam",
-          "from": [
-           0,
-           0,
-           0
-          ],
-          "to": [
-           0.08,
-           -0.18,
-           0.06
-          ],
-          "r": 0.012,
-          "color": "#c77dff"
-         }
-        ],
-        "moves": [
-         {
-          "name": "zap",
-          "type": "light"
-         }
-        ]
-       },
-       {
-        "id": "turntable",
-        "parent": "body",
-        "at": [
-         -0.06,
-         0.02,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "cylinder",
-          "r": 0.02,
-          "h": 0.01,
-          "axis": "y",
-          "at": [
-           0,
-           0.005,
-           0
-          ],
-          "look": "plastic",
-          "color": "#5a6168"
-         }
-        ],
-        "moves": [
-         {
-          "name": "turn",
-          "type": "spin",
-          "axis": "y",
-          "turns": 0.5
-         }
-        ]
-       },
-       {
-        "id": "plate",
-        "parent": "turntable",
-        "at": [
-         0,
-         0,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "cylinder",
-          "r": 0.13,
-          "h": 0.012,
-          "axis": "y",
-          "at": [
-           0,
-           0.012,
-           0
-          ],
-          "look": "glass",
-          "color": "#dff0ff"
-         }
-        ],
-        "moves": [
-         {
-          "name": "plateIn",
-          "type": "appear"
-         }
-        ]
-       },
-       {
-        "id": "foodHot",
-        "parent": "turntable",
-        "at": [
-         0,
-         0.02,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           0.07,
-           0.06,
-           0.13
-          ],
-          "at": [
-           -0.037,
-           0.03,
-           0
-          ],
-          "look": "paint",
-          "color": "#d9a066"
-         }
-        ],
-        "moves": [
-         {
-          "name": "cookA",
-          "type": "heat",
-          "color": "#ff5a1a"
-         },
-         {
-          "name": "shakeA",
-          "type": "shake",
-          "amp": 0.004,
-          "rate": 14
-         }
-        ]
-       },
-       {
-        "id": "foodCold",
-        "parent": "turntable",
-        "at": [
-         0,
-         0.02,
-         0
-        ],
-        "shapes": [
-         {
-          "shape": "box",
-          "size": [
-           0.07,
-           0.06,
-           0.13
-          ],
-          "at": [
-           0.037,
-           0.03,
-           0
-          ],
-          "look": "paint",
-          "color": "#d9a066"
-         }
-        ],
-        "moves": [
-         {
-          "name": "coldSpot",
-          "type": "chill",
-          "color": "#bfe6ff"
-         },
-         {
-          "name": "cookB",
-          "type": "heat",
-          "color": "#ff5a1a"
-         },
-         {
-          "name": "shakeB",
-          "type": "shake",
-          "amp": 0.004,
-          "rate": 14
-         }
-        ]
-       },
-       {
-        "id": "leak",
-        "parent": "body",
-        "at": [
-         -0.06,
-         0.15,
-         0.18
-        ],
-        "shapes": [
-         {
-          "shape": "beam",
-          "from": [
-           0,
-           0,
-           0
-          ],
-          "to": [
-           -0.12,
-           0.08,
-           0.3
-          ],
-          "r": 0.012,
-          "color": "#c77dff"
-         },
-         {
-          "shape": "beam",
-          "from": [
-           0,
-           0,
-           0
-          ],
-          "to": [
-           0.04,
-           0.1,
-           0.32
-          ],
-          "r": 0.012,
-          "color": "#c77dff"
-         },
-         {
-          "shape": "beam",
-          "from": [
-           0,
-           0,
-           0
-          ],
-          "to": [
-           -0.02,
-           -0.08,
-           0.3
-          ],
-          "r": 0.012,
-          "color": "#c77dff"
-         }
-        ],
-        "moves": [
-         {
-          "name": "leakOut",
-          "type": "appear"
-         },
-         {
-          "name": "leakLit",
-          "type": "light"
-         }
-        ]
-       },
-       {
-        "id": "door",
-        "parent": "body",
-        "at": [
-         -0.06,
-         0.15,
-         0.19
-        ],
-        "shapes": [
-         {
-          "shape": "panel",
-          "size": [
-           0.34,
-           0.28
-          ],
-          "thick": 0.01,
-          "at": [
-           0,
-           0,
-           0
-          ],
-          "look": "glass",
-          "color": "#2a3238"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.36,
-           0.02,
-           0.02
-          ],
-          "at": [
-           0,
-           0.14,
-           0.005
-          ],
-          "look": "metal",
-          "color": "#9aa3ab"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.36,
-           0.02,
-           0.02
-          ],
-          "at": [
-           0,
-           -0.14,
-           0.005
-          ],
-          "look": "metal",
-          "color": "#9aa3ab"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.3,
-           0.004,
-           0.006
-          ],
-          "at": [
-           0,
-           0.06,
-           0.008
-          ],
-          "look": "metal",
-          "color": "#9aa3ab"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.3,
-           0.004,
-           0.006
-          ],
-          "at": [
-           0,
-           0,
-           0.008
-          ],
-          "look": "metal",
-          "color": "#9aa3ab"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.3,
-           0.004,
-           0.006
-          ],
-          "at": [
-           0,
-           -0.06,
-           0.008
-          ],
-          "look": "metal",
-          "color": "#9aa3ab"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.004,
-           0.24,
-           0.006
-          ],
-          "at": [
-           -0.08,
-           0,
-           0.008
-          ],
-          "look": "metal",
-          "color": "#9aa3ab"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.004,
-           0.24,
-           0.006
-          ],
-          "at": [
-           0,
-           0,
-           0.008
-          ],
-          "look": "metal",
-          "color": "#9aa3ab"
-         },
-         {
-          "shape": "box",
-          "size": [
-           0.004,
-           0.24,
-           0.006
-          ],
-          "at": [
-           0.08,
-           0,
-           0.008
-          ],
-          "look": "metal",
-          "color": "#9aa3ab"
-         }
-        ],
-        "moves": [
-         {
-          "name": "doorOn",
-          "type": "appear"
-         }
-        ]
-       },
-       {
-        "id": "keypad",
-        "parent": "body",
-        "at": [
-         0.18,
-         0.1,
-         0.185
-        ],
-        "shapes": [
-         {
-          "shape": "panel",
-          "size": [
-           0.1,
-           0.12
-          ],
-          "thick": 0.01,
-          "at": [
-           0,
-           0,
-           0
-          ],
-          "look": "plastic",
-          "color": "#1d2226"
-         },
-         {
-          "shape": "button",
-          "r": 0.012,
-          "at": [
-           -0.025,
-           0.02,
-           0.008
-          ]
-         },
-         {
-          "shape": "button",
-          "r": 0.012,
-          "at": [
-           0.025,
-           0.02,
-           0.008
-          ]
-         },
-         {
-          "shape": "button",
-          "r": 0.012,
-          "at": [
-           -0.025,
-           -0.03,
-           0.008
-          ]
-         },
-         {
-          "shape": "button",
-          "r": 0.012,
-          "at": [
-           0.025,
-           -0.03,
-           0.008
-          ]
-         }
-        ],
-        "moves": [
-         {
-          "name": "keypadIn",
-          "type": "appear"
-         }
-        ]
-       },
-       {
-        "id": "timer",
-        "parent": "body",
-        "at": [
-         0.18,
-         0.23,
-         0.19
-        ],
-        "shapes": [
-         {
-          "shape": "screen",
-          "size": [
-           0.09,
-           0.04
-          ],
-          "at": [
-           0,
-           0,
-           0
-          ]
-         }
-        ],
-        "moves": [
-         {
-          "name": "timerIn",
-          "type": "appear"
-         },
-         {
-          "name": "countdown",
-          "type": "count",
-          "from": 30,
-          "to": 0
-         }
-        ]
-       },
-       {
-        "id": "lamp",
-        "parent": "body",
-        "at": [
-         -0.06,
-         0.27,
-         0.12
-        ],
-        "shapes": [
-         {
-          "shape": "light",
-          "r": 0.02,
-          "at": [
-           0,
-           0,
-           0
-          ],
-          "color": "#fff3c4"
-         }
-        ],
-        "moves": [
-         {
-          "name": "lampOn",
-          "type": "light"
-         }
-        ]
-       }
-      ]
-     }
-    },
-    {
-     "id": "outArrows",
-     "kind": "arrows",
-     "params": {
-      "list": [
-       {
-        "at": [
-         -0.05,
-         1.25,
-         -1.4
-        ],
-        "dir": [
-         1,
-         0
-        ],
-        "travel": 0.25,
-        "phase": 0
-       },
-       {
-        "at": [
-         -0.25,
-         1.25,
-         -1.4
-        ],
-        "dir": [
-         -1,
-         0
-        ],
-        "travel": 0.25,
-        "phase": 0.5
-       }
-      ],
-      "opts": {
-       "scale": 0.3,
-       "color": "#ff8a2a"
-      }
-     }
-    },
-    {
-     "id": "inArrows",
-     "kind": "arrows",
-     "params": {
-      "list": [
-       {
-        "at": [
-         -0.55,
-         1.25,
-         -1.4
-        ],
-        "dir": [
-         1,
-         0
-        ],
-        "travel": 0.25,
-        "phase": 0
-       },
-       {
-        "at": [
-         0.25,
-         1.25,
-         -1.4
-        ],
-        "dir": [
-         -1,
-         0
-        ],
-        "travel": 0.25,
-        "phase": 0.5
-       }
-      ],
-      "opts": {
-       "scale": 0.3,
-       "color": "#ff8a2a"
-      }
-     }
-    },
-    {
-     "id": "outline",
-     "kind": "outline",
-     "params": {
-      "of": "microwave",
-      "opts": {
-       "closed": true
-      }
-     }
-    },
-    {
-     "id": "sign",
-     "kind": "sign",
-     "params": {
-      "at": [
-       3,
-       0.12,
-       -5
-      ],
-      "rotY": -0.25,
-      "scale": 1
-     }
-    }
-   ],
-   "beats": [
-    {
-     "s": "hook",
-     "shows": {
-      "p": "microwave",
-      "does": "purple wave rays shine down on the food"
-     },
-     "do": [
-      {
-       "p": "microwave",
-       "v": "show",
-       "w": ""
-      },
-      {
-       "p": "microwave",
-       "v": "zap",
-       "w": "waves"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "microwave.body"
-       ],
-       "width": 0.85
-      }
-     ]
-    },
-    {
-     "s": "problem",
-     "shows": {
-      "p": "microwave",
-      "does": "one half of the food glows hot, the other half frosts cold"
-     },
-     "state": {
-      "text": "COLD SPOT",
-      "w": "cold"
-     },
-     "do": [
-      {
-       "p": "microwave",
-       "v": "cookA",
-       "w": "heat"
-      },
-      {
-       "p": "microwave",
-       "v": "coldSpot",
-       "w": "cold"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "microwave.body"
-       ],
-       "type": "mid"
-      }
-     ]
-    },
-    {
-     "s": "fix1",
-     "shows": {
-      "p": "microwave",
-      "does": "a glass turntable appears and spins the food, both halves glow"
-     },
-     "do": [
-      {
-       "p": "microwave",
-       "v": "plateIn",
-       "w": "turntable"
-      },
-      {
-       "p": "microwave",
-       "v": "turn",
-       "w": "spins"
-      },
-      {
-       "p": "microwave",
-       "v": "coldSpotBack",
-       "w": "spins"
-      },
-      {
-       "p": "microwave",
-       "v": "cookB",
-       "w": "spins"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "microwave.body"
-       ],
-       "type": "mid"
-      }
-     ]
-    },
-    {
-     "s": "problem2",
-     "shows": {
-      "p": "microwave",
-      "does": "wave rays shoot out of the open front"
-     },
-     "state": {
-      "text": "LEAKING",
-      "w": "leak"
-     },
-     "do": [
-      {
-       "p": "microwave",
-       "v": "leakOut",
-       "w": "leak"
-      },
-      {
-       "p": "microwave",
-       "v": "leakLit",
-       "w": "leak"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "microwave.body"
-       ],
-       "type": "mid"
-      }
-     ]
-    },
-    {
-     "s": "fix2",
-     "shows": {
-      "p": "microwave",
-      "does": "a dark mesh door closes the front and the leaking rays vanish"
-     },
-     "do": [
-      {
-       "p": "microwave",
-       "v": "doorOn",
-       "w": "door"
-      },
-      {
-       "p": "microwave",
-       "v": "leakOutBack",
-       "w": "door"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "microwave.body"
-       ],
-       "type": "mid"
-      }
-     ]
-    },
-    {
-     "s": "name",
-     "shows": {
-      "p": "outline",
-      "does": "a glowing outline traces the oven"
-     },
-     "do": [
-      {
-       "p": "outline",
-       "v": "show",
-       "w": "microwave"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "microwave"
-       ],
-       "hero": true,
-       "width": 0.6
-      }
-     ]
-    },
-    {
-     "s": "how",
-     "shows": {
-      "p": "microwave",
-      "does": "the food shakes and glows hot in the waves"
-     },
-     "do": [
-      {
-       "p": "outline",
-       "v": "hide",
-       "w": ""
-      },
-      {
-       "p": "microwave",
-       "v": "shakeA",
-       "w": "shake"
-      },
-      {
-       "p": "microwave",
-       "v": "shakeB",
-       "w": "shake"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "microwave.body"
-       ],
-       "type": "mid"
-      }
-     ]
-    },
-    {
-     "s": "myth",
-     "shows": {
-      "p": "outArrows",
-      "does": "arrows point outward from the food's middle, then vanish"
-     },
-     "do": [
-      {
-       "p": "microwave",
-       "v": "shakeABack",
-       "w": "And"
-      },
-      {
-       "p": "microwave",
-       "v": "shakeBBack",
-       "w": "And"
-      },
-      {
-       "p": "outArrows",
-       "v": "show",
-       "w": "And"
-      },
-      {
-       "p": "outArrows",
-       "v": "hide",
-       "w": "not"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "microwave.body"
-       ],
-       "type": "mid"
-      }
-     ]
-    },
-    {
-     "s": "mythFact",
-     "shows": {
-      "p": "inArrows",
-      "does": "arrows point from the food's edges inward"
-     },
-     "do": [
-      {
-       "p": "inArrows",
-       "v": "show",
-       "w": "inch"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "microwave.body"
-       ],
-       "type": "mid"
-      }
-     ]
-    },
-    {
-     "s": "finish",
-     "shows": {
-      "p": "microwave",
-      "does": "a keypad, a counting timer and a light pop on"
-     },
-     "do": [
-      {
-       "p": "inArrows",
-       "v": "hide",
-       "w": "Add"
-      },
-      {
-       "p": "microwave",
-       "v": "keypadIn",
-       "w": "keypad"
-      },
-      {
-       "p": "microwave",
-       "v": "timerIn",
-       "w": "timer"
-      },
-      {
-       "p": "microwave",
-       "v": "countdown",
-       "w": "timer",
-       "d": 2
-      },
-      {
-       "p": "microwave",
-       "v": "lampOn",
-       "w": "light"
-      }
-     ],
-     "shots": [
-      {
-       "focus": [
-        "home"
-       ]
-      }
-     ]
-    },
-    {
-     "s": "congrats",
-     "do": [],
-     "shots": [
-      {
-       "focus": [
-        "home"
-       ]
-      }
-     ]
-    }
-   ],
-   "audio": {
-    "cards": [
-     {
-      "text": "2.45 GHz",
-      "at": {
-       "s": "how",
-       "w": "2.45",
-       "o": 0
-      },
-      "d": 1.5
-     },
-     {
-      "text": "1 INCH",
-      "at": {
-       "s": "mythFact",
-       "w": "inch",
-       "o": 0
-      },
-      "d": 1.3
-     }
-    ],
-    "sfx": [
-     {
-      "lib": "motor_hum",
-      "at": {
-       "s": "hook",
-       "w": "waves",
-       "o": 0
-      },
-      "d": 1.4
-     },
-     {
-      "lib": "motor_hum",
-      "at": {
-       "s": "fix1",
-       "w": "spins",
-       "o": 0
-      },
-      "d": 1.3
-     },
-     {
-      "lib": "motor_hum",
-      "at": {
-       "s": "how",
-       "w": "shake",
-       "o": 0
-      },
-      "d": 1.2
-     }
-    ],
-    "chimes": [
-     {
-      "s": "name",
-      "w": "",
-      "o": 0
-     },
-     {
-      "s": "how",
-      "w": "2.45",
-      "o": 0
-     },
-     {
-      "s": "congrats",
-      "w": "",
-      "o": 0
-     }
-    ],
-    "rain": []
-   }
-  }
+  "sceneJson": "{\"world\":{\"cut\":[9.5,11,-4,0.6],\"house\":false,\"worker\":false,\"moreTrees\":false,\"road\":false,\"porch\":false,\"backdrop\":{\"type\":\"kitchen\",\"gap\":[-1.8,1.8]}},\"parts\":[{\"id\":\"light\",\"kind\":\"light\",\"params\":{\"storm\":false}},{\"id\":\"microwave\",\"kind\":\"rig\",\"main\":true,\"params\":{\"name\":\"microwave oven\",\"synonyms\":[\"microwave\",\"oven\"],\"main\":true,\"pos\":[0,0.12,-1.8],\"scale\":2.2,\"nodes\":[{\"id\":\"cart\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.7,0.03,0.45],\"at\":[0,0.42,0],\"look\":\"wood\",\"color\":\"#b07a45\"},{\"shape\":\"box\",\"size\":[0.03,0.42,0.03],\"at\":[-0.32,0.21,-0.2],\"look\":\"metal\",\"color\":\"#5a6168\"},{\"shape\":\"box\",\"size\":[0.03,0.42,0.03],\"at\":[0.32,0.21,-0.2],\"look\":\"metal\",\"color\":\"#5a6168\"},{\"shape\":\"box\",\"size\":[0.03,0.42,0.03],\"at\":[-0.32,0.21,0.2],\"look\":\"metal\",\"color\":\"#5a6168\"},{\"shape\":\"box\",\"size\":[0.03,0.42,0.03],\"at\":[0.32,0.21,0.2],\"look\":\"metal\",\"color\":\"#5a6168\"}]},{\"id\":\"body\",\"parent\":\"cart\",\"at\":[0,0.435,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.5,0.02,0.36],\"at\":[0,0.01,0],\"look\":\"metal\",\"color\":\"#cfd5db\"},{\"shape\":\"box\",\"size\":[0.5,0.3,0.02],\"at\":[0,0.15,-0.17],\"look\":\"metal\",\"color\":\"#e3e8ed\"},{\"shape\":\"box\",\"size\":[0.02,0.3,0.36],\"at\":[-0.24,0.15,0],\"look\":\"metal\",\"color\":\"#d9dee3\"},{\"shape\":\"box\",\"size\":[0.5,0.02,0.36],\"at\":[0,0.29,0],\"look\":\"metal\",\"color\":\"#e3e8ed\"},{\"shape\":\"box\",\"size\":[0.02,0.3,0.36],\"at\":[0.12,0.15,0],\"look\":\"metal\",\"color\":\"#d9dee3\"},{\"shape\":\"box\",\"size\":[0.02,0.3,0.36],\"at\":[0.24,0.15,0],\"look\":\"metal\",\"color\":\"#d9dee3\"}]},{\"id\":\"magnetron\",\"parent\":\"body\",\"at\":[0.18,0.17,-0.02],\"shapes\":[{\"shape\":\"box\",\"size\":[0.09,0.1,0.12],\"at\":[0,0,0],\"look\":\"metal\",\"color\":\"#7c848c\"},{\"shape\":\"cylinder\",\"r\":0.03,\"h\":0.04,\"axis\":\"y\",\"at\":[0,0.07,0],\"look\":\"metal\",\"color\":\"#c9a45c\"},{\"shape\":\"box\",\"size\":[0.22,0.04,0.06],\"at\":[-0.12,0.1,-0.02],\"look\":\"metal\",\"color\":\"#9aa3ab\"}],\"moves\":[{\"name\":\"glow\",\"type\":\"heat\",\"color\":\"#ff3a1a\"}]},{\"id\":\"waves\",\"parent\":\"body\",\"at\":[-0.06,0.27,0],\"shapes\":[{\"shape\":\"beam\",\"from\":[0,0,0],\"to\":[-0.08,-0.18,0.06],\"r\":0.012,\"color\":\"#c77dff\"},{\"shape\":\"beam\",\"from\":[0,0,0],\"to\":[0,-0.18,0.06],\"r\":0.012,\"color\":\"#c77dff\"},{\"shape\":\"beam\",\"from\":[0,0,0],\"to\":[0.08,-0.18,0.06],\"r\":0.012,\"color\":\"#c77dff\"}],\"moves\":[{\"name\":\"zap\",\"type\":\"light\"}]},{\"id\":\"turntable\",\"parent\":\"body\",\"at\":[-0.06,0.02,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.02,\"h\":0.01,\"axis\":\"y\",\"at\":[0,0.005,0],\"look\":\"plastic\",\"color\":\"#5a6168\"}],\"moves\":[{\"name\":\"turn\",\"type\":\"spin\",\"axis\":\"y\",\"turns\":0.5}]},{\"id\":\"plate\",\"parent\":\"turntable\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.13,\"h\":0.012,\"axis\":\"y\",\"at\":[0,0.012,0],\"look\":\"glass\",\"color\":\"#dff0ff\"}]},{\"id\":\"mug\",\"parent\":\"turntable\",\"at\":[0,0.02,0],\"shapes\":[{\"shape\":\"cup\",\"r\":0.045,\"h\":0.09,\"at\":[0,0,0],\"look\":\"plastic\",\"color\":\"#e8eef2\"}],\"moves\":[{\"name\":\"cold\",\"type\":\"chill\",\"color\":\"#9fd4ff\"},{\"name\":\"hot\",\"type\":\"heat\",\"color\":\"#ff7a3a\"}]},{\"id\":\"spot\",\"parent\":\"mug\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.03,0.06,0.03],\"at\":[-0.035,0.05,0.03],\"look\":\"paint\",\"color\":\"#d9a066\"}],\"moves\":[{\"name\":\"spot\",\"type\":\"heat\",\"color\":\"#ff3a1a\"}]},{\"id\":\"leak\",\"parent\":\"body\",\"at\":[-0.06,0.15,0.18],\"shapes\":[{\"shape\":\"beam\",\"from\":[0,0,0],\"to\":[-0.12,0.08,0.3],\"r\":0.012,\"color\":\"#c77dff\"},{\"shape\":\"beam\",\"from\":[0,0,0],\"to\":[0.04,0.1,0.32],\"r\":0.012,\"color\":\"#c77dff\"},{\"shape\":\"beam\",\"from\":[0,0,0],\"to\":[-0.02,-0.08,0.3],\"r\":0.012,\"color\":\"#c77dff\"}],\"moves\":[{\"name\":\"leakOut\",\"type\":\"appear\"},{\"name\":\"leakLit\",\"type\":\"light\"}]},{\"id\":\"door\",\"parent\":\"body\",\"at\":[-0.23,0.15,0.19],\"shapes\":[{\"shape\":\"panel\",\"size\":[0.34,0.28],\"thick\":0.01,\"at\":[0.17,0,0],\"look\":\"glass\",\"color\":\"#2a3238\"},{\"shape\":\"box\",\"size\":[0.36,0.02,0.02],\"at\":[0.17,0.14,0.005],\"look\":\"metal\",\"color\":\"#9aa3ab\"},{\"shape\":\"box\",\"size\":[0.36,0.02,0.02],\"at\":[0.17,-0.14,0.005],\"look\":\"metal\",\"color\":\"#9aa3ab\"},{\"shape\":\"box\",\"size\":[0.3,0.004,0.006],\"at\":[0.17,0.06,0.008],\"look\":\"metal\",\"color\":\"#9aa3ab\"},{\"shape\":\"box\",\"size\":[0.3,0.004,0.006],\"at\":[0.17,0,0.008],\"look\":\"metal\",\"color\":\"#9aa3ab\"},{\"shape\":\"box\",\"size\":[0.3,0.004,0.006],\"at\":[0.17,-0.06,0.008],\"look\":\"metal\",\"color\":\"#9aa3ab\"},{\"shape\":\"box\",\"size\":[0.004,0.24,0.006],\"at\":[0.09000000000000001,0,0.008],\"look\":\"metal\",\"color\":\"#9aa3ab\"},{\"shape\":\"box\",\"size\":[0.004,0.24,0.006],\"at\":[0.17,0,0.008],\"look\":\"metal\",\"color\":\"#9aa3ab\"},{\"shape\":\"box\",\"size\":[0.004,0.24,0.006],\"at\":[0.25,0,0.008],\"look\":\"metal\",\"color\":\"#9aa3ab\"}],\"moves\":[{\"name\":\"doorOn\",\"type\":\"appear\"},{\"name\":\"open\",\"type\":\"swing\",\"axis\":\"y\",\"angle\":-100}]},{\"id\":\"latch\",\"parent\":\"body\",\"at\":[0.1,0.15,0.17],\"shapes\":[{\"shape\":\"box\",\"size\":[0.03,0.06,0.03],\"at\":[0,0,0],\"look\":\"plastic\",\"color\":\"#d8342b\"}],\"moves\":[{\"name\":\"switch\",\"type\":\"appear\"}]},{\"id\":\"fan\",\"parent\":\"body\",\"at\":[0.18,0.06,-0.08],\"shapes\":[{\"shape\":\"fan\",\"r\":0.04,\"blades\":5,\"w\":0.01,\"axis\":\"z\",\"at\":[0,0,0],\"look\":\"plastic\",\"color\":\"#2f6fb0\"}],\"moves\":[{\"name\":\"fanIn\",\"type\":\"appear\"},{\"name\":\"blows\",\"type\":\"spin\",\"axis\":\"z\",\"turns\":4}]},{\"id\":\"keypad\",\"parent\":\"body\",\"at\":[0.18,0.1,0.185],\"shapes\":[{\"shape\":\"panel\",\"size\":[0.1,0.12],\"thick\":0.01,\"at\":[0,0,0],\"look\":\"plastic\",\"color\":\"#1d2226\"},{\"shape\":\"button\",\"r\":0.012,\"at\":[-0.025,0.02,0.008]},{\"shape\":\"button\",\"r\":0.012,\"at\":[0.025,0.02,0.008]},{\"shape\":\"button\",\"r\":0.012,\"at\":[-0.025,-0.03,0.008]},{\"shape\":\"button\",\"r\":0.012,\"at\":[0.025,-0.03,0.008]}]},{\"id\":\"timer\",\"parent\":\"body\",\"at\":[0.18,0.23,0.19],\"shapes\":[{\"shape\":\"screen\",\"size\":[0.09,0.04],\"at\":[0,0,0]}],\"moves\":[{\"name\":\"timerIn\",\"type\":\"appear\"},{\"name\":\"countdown\",\"type\":\"count\",\"from\":30,\"to\":0}]},{\"id\":\"lamp\",\"parent\":\"body\",\"at\":[-0.06,0.27,0.12],\"shapes\":[{\"shape\":\"light\",\"r\":0.02,\"at\":[0,0,0],\"color\":\"#fff3c4\"}],\"moves\":[{\"name\":\"lampOn\",\"type\":\"light\"}]}]}},{\"id\":\"hand\",\"kind\":\"hand\",\"params\":{\"pos\":[0.4,1.3,-1.35],\"size\":0.3,\"action\":\"press\",\"sleeve\":\"#3d6fb0\"}},{\"id\":\"steam\",\"kind\":\"fx\",\"params\":{\"type\":\"smoke\",\"at\":[-0.13,1.4,-1.75],\"size\":0.25,\"color\":\"#f4f6f8\"}},{\"id\":\"spill\",\"kind\":\"fx\",\"params\":{\"type\":\"splash\",\"at\":[-0.13,1.2,-1.7],\"size\":0.25}},{\"id\":\"cool\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[0.62,1.2,-1.9],\"dir\":[-1,0],\"travel\":0.25,\"phase\":0}],\"opts\":{\"scale\":0.3,\"color\":\"#ffffff\"}}},{\"id\":\"ring\",\"kind\":\"outline\",\"params\":{\"of\":\"microwave.door\",\"opts\":{\"closed\":true}}},{\"id\":\"sign\",\"kind\":\"sign\",\"params\":{\"at\":[3,0.12,-5],\"rotY\":-0.25,\"scale\":1}}],\"beats\":[{\"s\":\"hook\",\"do\":[{\"p\":\"microwave\",\"v\":\"show\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"hand\",\"v\":\"show\",\"w\":\"\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"hand\",\"v\":\"press\",\"w\":\"aim\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"microwave\",\"v\":\"zap\",\"w\":\"waves\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"microwave\",\"v\":\"cold\",\"w\":\"cold\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"microwave\",\"does\":\"a hand presses start and violet waves shine down on a cold mug\"},\"shots\":[{\"focus\":[\"microwave.mug\",\"microwave.waves\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem\",\"do\":[{\"p\":\"microwave\",\"v\":\"spot\",\"w\":\"hot\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"microwave\",\"does\":\"one side of the mug glows hot while the rest stays cold blue\"},\"shots\":[{\"focus\":[\"microwave.mug\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix1\",\"do\":[{\"p\":\"microwave\",\"v\":\"turn\",\"w\":\"spins\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"microwave\",\"v\":\"coldBack\",\"w\":\"spots\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"microwave\",\"v\":\"spotBack\",\"w\":\"spots\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"microwave\",\"v\":\"hot\",\"w\":\"spots\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"microwave\",\"does\":\"the turntable spins the mug through the waves and it warms all round\"},\"shots\":[{\"focus\":[\"microwave.turntable\",\"microwave.mug\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem2\",\"do\":[{\"p\":\"microwave\",\"v\":\"leakOut\",\"w\":\"leak\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"microwave\",\"v\":\"leakLit\",\"w\":\"leak\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"microwave\",\"does\":\"violet waves leak out of the open front\"},\"shots\":[{\"focus\":[\"microwave.leak\",\"microwave.body\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix2\",\"do\":[{\"p\":\"microwave\",\"v\":\"doorOn\",\"w\":\"door\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"microwave\",\"v\":\"leakOutBack\",\"w\":\"blocks\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"microwave\",\"does\":\"a door with a metal mesh closes the front and the leaking waves stop\"},\"shots\":[{\"focus\":[\"microwave.door\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"name\",\"do\":[{\"p\":\"ring\",\"v\":\"show\",\"w\":\"Faraday\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"ring\",\"does\":\"a ring traced round the mesh door\"},\"shots\":[{\"focus\":[\"microwave.door\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":true,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem3\",\"do\":[{\"p\":\"ring\",\"v\":\"hide\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"microwave\",\"v\":\"open\",\"w\":\"open\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"microwave\",\"v\":\"leakOut\",\"w\":\"waves\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"microwave\",\"v\":\"leakLit\",\"w\":\"waves\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"microwave\",\"does\":\"the door swings open mid-cook and waves leak toward the hand\"},\"shots\":[{\"focus\":[\"microwave.door\",\"hand\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix3\",\"do\":[{\"p\":\"microwave\",\"v\":\"switch\",\"w\":\"switch\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"microwave\",\"v\":\"openBack\",\"w\":\"cuts\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"microwave\",\"v\":\"leakOutBack\",\"w\":\"cuts\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"microwave\",\"v\":\"zapBack\",\"w\":\"cuts\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"microwave\",\"does\":\"a red latch switch appears, the door shuts and the waves cut out\"},\"shots\":[{\"focus\":[\"microwave.latch\",\"microwave.door\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem4\",\"do\":[{\"p\":\"microwave\",\"v\":\"zap\",\"w\":\"magnetron\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"microwave\",\"v\":\"glow\",\"w\":\"burning\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"microwave\",\"does\":\"the magnetron runs again and glows red hot\"},\"shots\":[{\"focus\":[\"microwave.magnetron\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix4\",\"do\":[{\"p\":\"microwave\",\"v\":\"fanIn\",\"w\":\"fan\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"microwave\",\"v\":\"blows\",\"w\":\"blows\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"cool\",\"v\":\"show\",\"w\":\"cool\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"microwave\",\"v\":\"glowBack\",\"w\":\"cool\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"microwave\",\"does\":\"a fan appears and blows cool air across the magnetron\"},\"shots\":[{\"focus\":[\"microwave.fan\",\"microwave.magnetron\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem5\",\"do\":[{\"p\":\"cool\",\"v\":\"hide\",\"w\":\"But\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"steam\",\"v\":\"start\",\"w\":\"cooking\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"spill\",\"v\":\"start\",\"w\":\"boils\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"spill\",\"does\":\"the mug keeps cooking and boils over in a spill of steam\"},\"shots\":[{\"focus\":[\"microwave.mug\",\"hand\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix5\",\"do\":[{\"p\":\"microwave\",\"v\":\"timerIn\",\"w\":\"timer\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"microwave\",\"v\":\"countdown\",\"w\":\"timer\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"microwave\",\"v\":\"zapBack\",\"w\":\"off\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"spill\",\"v\":\"stop\",\"w\":\"off\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"steam\",\"v\":\"stop\",\"w\":\"off\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"microwave\",\"does\":\"a timer counts down and the waves switch off\"},\"shots\":[{\"focus\":[\"microwave.timer\",\"microwave.mug\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"finish\",\"do\":[{\"p\":\"hand\",\"v\":\"press\",\"w\":\"Press\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"microwave\",\"v\":\"zap\",\"w\":\"start\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"microwave\",\"v\":\"lampOn\",\"w\":\"start\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"},{\"p\":\"steam\",\"v\":\"start\",\"w\":\"steaming\",\"o\":0,\"d\":0,\"amp\":1,\"ch\":\"\"}],\"shows\":{\"p\":\"microwave\",\"does\":\"the hand presses start, the light comes on and the mug steams\"},\"shots\":[{\"focus\":[\"microwave\",\"hand\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"congrats\",\"do\":[],\"shows\":{\"p\":\"microwave\",\"does\":\"the microwave running with a steaming mug\"},\"shots\":[{\"focus\":[\"microwave\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]}],\"audio\":{\"cards\":[],\"sfx\":[{\"lib\":\"motor_hum\",\"at\":{\"s\":\"hook\",\"w\":\"waves\",\"o\":0},\"d\":1.4},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"fix4\",\"w\":\"blows\",\"o\":0},\"d\":1.2}],\"chimes\":[{\"s\":\"name\",\"w\":\"\",\"o\":0},{\"s\":\"congrats\",\"w\":\"\",\"o\":0}],\"rain\":[]}}"
  }
 }
