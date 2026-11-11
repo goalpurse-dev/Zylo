@@ -80,7 +80,7 @@ export async function writePrompts({ apiKey, tl, board, capUsd = 0.15, parts = 2
 }
 
 // ------------------------------------------------------------------------------------------------ the free checks
-const STEM = { flew: "fl(y|ies|ew|ying)|kite", slept: "sleep|slept|asleep", said: "say|says|said|talk|speak", says: "say|says|said|talk|speak", caught: "catch|caught|spot|step", lost: "poke|lost|hid", finds: "find|hunt|search|look|stare|scan", filled: "fill|press", look: "look|peek", went: "dark|off|go", staring: "star", peeked: "peek|finger", looked: "look|tilt|gaze|stare", backed: "back|retreat|step" };
+const STEM = { sleeps: "sleep|slept|asleep|awake|stare", bulging: "bulg|puff|spill", flew: "fl(y|ies|ew|ying)|kite", slept: "sleep|slept|asleep", said: "say|says|said|talk|speak", says: "say|says|said|talk|speak", caught: "catch|caught|spot|step", lost: "poke|lost|hid", finds: "find|hunt|search|look|stare|scan", filled: "fill|press", look: "look|peek", went: "dark|off|go", staring: "star", peeked: "peek|finger", looked: "look|tilt|gaze|stare", backed: "back|retreat|step" };
 function verbRe(v) {
   const w = v.verb.toLowerCase().split(/\s+/)[0];
   if (STEM[w]) return new RegExp(STEM[w], "i");
