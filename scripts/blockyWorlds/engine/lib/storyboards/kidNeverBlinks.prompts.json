@@ -1,0 +1,2894 @@
+{
+ "model": "claude-sonnet-5-5 + free fixes",
+ "costUsd": 0.2412,
+ "prompts": [
+  {
+   "id": 0,
+   "image": "Dusk over the blocky town street, orange-purple sky. Seven curtained houses in a row, no people outside, street empty. Windows begin to light warm yellow. Wide shot, high eye level, 24mm, whole street visible, curtains drawn.",
+   "video": [
+    {
+     "t": 0.14,
+     "who": "windows",
+     "do": "light up warm yellow one by one from left to right, quickly, each flickering on in 0.2 s"
+    },
+    {
+     "t": 1.28,
+     "who": "house lights",
+     "do": "all glow steadily, casting soft squares on the empty pavement"
+    }
+   ],
+   "camera": "slow push-in, wide, steady",
+   "effects": "soft warm glow",
+   "start": {
+    "curtains": "on",
+    "nell_sock": "on",
+    "windows": "dark",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "empty"
+   },
+   "end": {
+    "curtains": "on",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "empty"
+   },
+   "outside": []
+  },
+  {
+   "id": 1,
+   "image": "Dusk, inside Rudy's front room, Rudy stands at his window facing it, back partly to camera, worried face in profile. Closed curtains with a small gap he holds with his right hand. Warm lamp light, dark purple sky outside. Medium shot, eye level, 35mm.",
+   "video": [
+    {
+     "t": 0,
+     "who": "rudy",
+     "do": "slowly pinches the curtain edge with the right hand and pulls it open a finger-width"
+    },
+    {
+     "t": 0,
+     "who": "town1",
+     "do": "looks out past the curtain edge with one eye, slowly, the curtain trembling in the fingers"
+    },
+    {
+     "t": 0.6,
+     "who": "rudy",
+     "do": "leans his head toward the gap, the curtain trembles"
+    },
+    {
+     "t": 1.29,
+     "who": "rudy",
+     "do": "quickly lets go and steps back, the curtain swings shut and sways"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0,
+     "who": "town1",
+     "face": "worried",
+     "word": "Never"
+    },
+    {
+     "t": 1.29,
+     "who": "town1",
+     "face": "scared",
+     "word": "dark"
+    }
+   ],
+   "camera": "slow push-in, medium to close",
+   "effects": "none",
+   "start": {
+    "curtains": "on",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "empty"
+   },
+   "end": {
+    "curtains": "on",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "empty"
+   },
+   "outside": []
+  },
+  {
+   "id": 2,
+   "image": "Blocky street at night from street end, low camera 24mm. Tall dark Peeker with one huge glowing eye stands far down the road. Three houses in a row; Rudy, Rosa and Gus peek scared from curtained windows. Streets empty, windows warm.",
+   "video": [
+    {
+     "t": 0,
+     "who": "monster",
+     "do": "lurks, sways slowly side to side at the street end, eye sweeping"
+    },
+    {
+     "t": 0.44,
+     "who": "monster",
+     "do": "lowers its head slowly toward the houses"
+    },
+    {
+     "t": 0.89,
+     "who": "town1",
+     "do": "finds the Peeker's gaze, quickly pulls the curtain shut with the right hand, curtain swings"
+    },
+    {
+     "t": 1.14,
+     "who": "town2",
+     "do": "ducks behind the curtain in 0.3 s, curtain shakes"
+    },
+    {
+     "t": 1.49,
+     "who": "town3",
+     "do": "hides behind curtains, pulling them tight with both hands"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0,
+     "who": "town1",
+     "face": "scared",
+     "word": "You"
+    },
+    {
+     "t": 1.14,
+     "who": "town2",
+     "face": "scared",
+     "word": "people"
+    }
+   ],
+   "camera": "slow push-in, low angle, street end to houses",
+   "effects": "none",
+   "start": {
+    "curtains": "on",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "street_end",
+    "street": "empty"
+   },
+   "end": {
+    "curtains": "on",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "street_end",
+    "street": "empty"
+   },
+   "outside": []
+  },
+  {
+   "id": 3,
+   "image": "Night, outside Rudy's upstairs window, blocky house, curtains closed. One huge glowing eye of the tall dark Peeker fills the pane from outside, pressed against the glass, pupil large. Street empty and dark. Medium shot, straight on, 35mm.",
+   "video": [
+    {
+     "t": 0,
+     "who": "peeker",
+     "do": "slides its giant eye toward the window slowly"
+    },
+    {
+     "t": 0.45,
+     "who": "peeker",
+     "do": "presses the eye flat against the glass, the pane bows and rattles slightly"
+    },
+    {
+     "t": 1.93,
+     "who": "window",
+     "do": "glows bright white, light spilling over the pavement"
+    }
+   ],
+   "camera": "slow push-in toward the window",
+   "effects": "white glow pulsing",
+   "start": {
+    "curtains": "on",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "at_window",
+    "street": "empty"
+   },
+   "end": {
+    "curtains": "on",
+    "nell_sock": "on",
+    "windows": "white",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "at_window",
+    "street": "empty"
+   },
+   "outside": []
+  },
+  {
+   "id": 4,
+   "image": "Inside Town1's bedroom at night, top-down view over the bed, 35mm. Rudy lies on his back under a blanket, eyes wide open, staring at the ceiling. A cold white glow from the window washes over the ceiling and wall. Curtains still on. The viewer sees he cannot sleep.",
+   "video": [
+    {
+     "t": 0,
+     "who": "town1",
+     "do": "lies rigid, stares up at the ceiling, eyes wide"
+    },
+    {
+     "t": 0.3,
+     "who": "window",
+     "do": "white glow pulses softly across the ceiling"
+    },
+    {
+     "t": 0.73,
+     "who": "town1",
+     "do": "turns his head slowly left, then right, unable to sleep"
+    },
+    {
+     "t": 1.24,
+     "who": "town1",
+     "do": "pulls the blanket up to his chin with both hands, quickly"
+    },
+    {
+     "t": 1.54,
+     "who": "town1",
+     "do": "stares again at the ceiling, blinking slowly, eyes wide"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0,
+     "who": "town1",
+     "face": "scared",
+     "word": "and"
+    },
+    {
+     "t": 0.73,
+     "who": "town1",
+     "face": "worried",
+     "word": "sleeps"
+    }
+   ],
+   "camera": "slow push-in from the bed top, high angle",
+   "effects": "glow",
+   "start": {
+    "curtains": "on",
+    "nell_sock": "on",
+    "windows": "white",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "at_window",
+    "street": "empty"
+   },
+   "end": {
+    "curtains": "on",
+    "nell_sock": "on",
+    "windows": "white",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "at_window",
+    "street": "empty"
+   },
+   "outside": []
+  },
+  {
+   "id": 5,
+   "image": "Mr. Hollis's blocky room at night, over-the-shoulder 35mm toward the window. Hollis in the foreground, back to camera, carries a brick toward a half-built brick wall under the curtained window. Bricks stacked, lamp light warm, worried mood.",
+   "video": [
+    {
+     "t": 0,
+     "who": "hollis",
+     "do": "walks slowly to the wall carrying a brick in both arms"
+    },
+    {
+     "t": 0.86,
+     "who": "hollis",
+     "do": "points the left hand at ten curtains hanging over the window, they sway"
+    },
+    {
+     "t": 1.43,
+     "who": "hollis",
+     "do": "stacks the brick on the wall with the right hand, the wall wobbles slightly"
+    },
+    {
+     "t": 1.72,
+     "who": "hollis",
+     "do": "pats the bricks and steps back, dust puffs"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0,
+     "who": "hollis",
+     "face": "worried",
+     "word": "Mr."
+    }
+   ],
+   "camera": "static over-shoulder, slight push-in",
+   "effects": "dust",
+   "start": {
+    "curtains": "on",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "empty"
+   },
+   "end": {
+    "curtains": "on",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "empty"
+   },
+   "outside": []
+  },
+  {
+   "id": 6,
+   "image": "Dottie Pell's house at night, low camera near the ground, 28mm. A huge cloud of curtains bulges off the house. A cat's head pokes out of the curtain puffs. Dottie, sad, is at the lower window with a hand on the glass. Streets empty, windows normal warm.",
+   "video": [
+    {
+     "t": 0,
+     "who": "dottie",
+     "do": "pushes the curtain puffs aside with her right hand, looking sadly around"
+    },
+    {
+     "t": 0.3,
+     "who": "dottie",
+     "do": "lost: pats the curtain pile slowly, searching with the right hand"
+    },
+    {
+     "t": 0.62,
+     "who": "cat",
+     "do": "pokes its head out of the curtains slowly, ears twitching"
+    },
+    {
+     "t": 1.06,
+     "who": "curtains",
+     "do": "wobble and sag as the cat wriggles deeper"
+    },
+    {
+     "t": 1.47,
+     "who": "cat",
+     "do": "vanishes back into the folds"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0,
+     "who": "dottie",
+     "face": "sad",
+     "word": "lost"
+    }
+   ],
+   "camera": "low static, slight tilt up",
+   "effects": "none",
+   "start": {
+    "curtains": "on",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "empty"
+   },
+   "end": {
+    "curtains": "on",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "empty"
+   },
+   "outside": []
+  },
+  {
+   "id": 7,
+   "image": "Mr. Hollis's room at night, over-the-shoulder behind him toward a curtained window, 35mm. Hollis carries a brick, a half-built brick wall stands beside the window, ten curtains hang. He looks worried. Warm lamp light, streets empty.",
+   "video": [
+    {
+     "t": 0,
+     "who": "hollis",
+     "do": "walks to the wall holding a brick in both hands, slowly"
+    },
+    {
+     "t": 0.27,
+     "who": "hollis",
+     "do": "sets the brick on the wall carefully with the right hand"
+    },
+    {
+     "t": 0.65,
+     "who": "hollis",
+     "do": "tugs the ten curtains straight with his left hand, quickly"
+    },
+    {
+     "t": 1.43,
+     "who": "hollis",
+     "do": "stacks another brick, the wall wobbles slightly"
+    },
+    {
+     "t": 1.72,
+     "who": "hollis",
+     "do": "pats the top of the bricks with his palm, slowly"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0,
+     "who": "hollis",
+     "face": "worried",
+     "word": "Hollis"
+    }
+   ],
+   "camera": "slow dolly right over the shoulder",
+   "effects": "none",
+   "start": {
+    "curtains": "on",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "empty"
+   },
+   "end": {
+    "curtains": "on",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "empty"
+   },
+   "outside": []
+  },
+  {
+   "id": 8,
+   "image": "Mrs. Fenwick's window at night, medium shot, 35mm. Three thin see-through curtains flutter in front of the glass. Fenwick stands behind them, worried, hands clasped. Lamp light behind her, streets empty, dark sky.",
+   "video": [
+    {
+     "t": 0,
+     "who": "fenwick",
+     "do": "stands at the window, clasping her hands to her chest"
+    },
+    {
+     "t": 0.6,
+     "who": "curtains",
+     "do": "tremble and ripple lightly"
+    },
+    {
+     "t": 1.2,
+     "who": "fenwick",
+     "do": "touches a thin curtain with her right hand, it flutters"
+    },
+    {
+     "t": 1.45,
+     "who": "fenwick",
+     "do": "steps back one pace, shoulders hunched, slowly"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0,
+     "who": "fenwick",
+     "face": "worried",
+     "word": "Fenwick"
+    }
+   ],
+   "camera": "slow push-in, eye level",
+   "effects": "none",
+   "start": {
+    "curtains": "on",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "empty"
+   },
+   "end": {
+    "curtains": "on",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "empty"
+   },
+   "outside": []
+  },
+  {
+   "id": 9,
+   "image": "Nell's bedroom at night, medium shot, 35mm. Nell stands by her window which has no curtains, only one sock taped over a corner of the glass. She waves at the viewer, happy. Cat on the bed. Warm lamp light, dark street outside, empty.",
+   "video": [
+    {
+     "t": 0,
+     "who": "me",
+     "do": "waves her right hand high at the camera, slowly"
+    },
+    {
+     "t": 0.78,
+     "who": "me",
+     "do": "points to herself with her thumb, slowly with the right hand"
+    },
+    {
+     "t": 1.42,
+     "who": "me",
+     "do": "spreads both arms to show the bare window, slowly"
+    },
+    {
+     "t": 2.6,
+     "who": "me",
+     "do": "taps the taped sock with her right finger, it swings"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0,
+     "who": "me",
+     "face": "happy",
+     "word": "me"
+    },
+    {
+     "t": 2.6,
+     "who": "me",
+     "face": "smirk",
+     "word": "one"
+    }
+   ],
+   "camera": "slow push-in, eye level",
+   "effects": "none",
+   "start": {
+    "curtains": "on",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "empty"
+   },
+   "end": {
+    "curtains": "on",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "empty"
+   },
+   "outside": []
+  },
+  {
+   "id": 10,
+   "image": "Closeup of Nell's face beside the taped sock on her window, a small hole in the sock, her eye at the hole, smirking, night, 50mm.",
+   "video": [
+    {
+     "t": 0.45,
+     "who": "me",
+     "do": "points at the hole in the sock, slowly with the right hand"
+    },
+    {
+     "t": 1.09,
+     "who": "me",
+     "do": "peeks through the hole, slowly, eyes wide"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0.81,
+     "who": "me",
+     "face": "smirk",
+     "word": "because"
+    }
+   ],
+   "camera": "static closeup",
+   "effects": "none",
+   "start": {
+    "curtains": "on",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "empty"
+   },
+   "end": {
+    "curtains": "on",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "empty"
+   },
+   "outside": []
+  },
+  {
+   "id": 11,
+   "image": "Low camera in Nell's bedroom at night, Nell center of the floor in a face-off with the cat, both staring, neutral, dim lamp light, 28mm.",
+   "video": [
+    {
+     "t": 0.35,
+     "who": "me",
+     "do": "stares at the cat, slowly, eyes wide"
+    },
+    {
+     "t": 1.56,
+     "who": "cat",
+     "do": "looks away, slowly"
+    },
+    {
+     "t": 2.03,
+     "who": "me",
+     "do": "keeps staring at the cat, slowly"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0,
+     "who": "me",
+     "face": "neutral",
+     "word": "I've"
+    }
+   ],
+   "camera": "low static, slow push-in",
+   "effects": "none",
+   "start": {
+    "curtains": "on",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "empty"
+   },
+   "end": {
+    "curtains": "on",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "empty"
+   },
+   "outside": []
+  },
+  {
+   "id": 12,
+   "image": "Medium shot toward Nell's bedroom door at night, Grandpa Wim stands in the doorway smiling, Nell at the window peeking through the sock hole, smirking, 35mm.",
+   "video": [
+    {
+     "t": 0.2,
+     "who": "me",
+     "do": "peeks through the sock hole, slowly, eyes wide"
+    },
+    {
+     "t": 0.59,
+     "who": "wim",
+     "do": "catches her, pointing at her, slowly with the right hand"
+    },
+    {
+     "t": 1.67,
+     "who": "wim",
+     "do": "waves off a scolding with his hand, slowly"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0.59,
+     "who": "me",
+     "face": "surprised",
+     "word": "caught"
+    },
+    {
+     "t": 1.5,
+     "who": "wim",
+     "face": "happy",
+     "word": "even"
+    }
+   ],
+   "camera": "static medium",
+   "effects": "none",
+   "start": {
+    "curtains": "on",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "empty"
+   },
+   "end": {
+    "curtains": "on",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "empty"
+   },
+   "outside": []
+  },
+  {
+   "id": 13,
+   "image": "Closeup of Grandpa Wim's face in Nell's doorway at night, a wise smirk, warm lamp light, 50mm.",
+   "video": [
+    {
+     "t": 0.13,
+     "who": "wim",
+     "do": "talks to Nell, slowly toward the window"
+    },
+    {
+     "t": 1.08,
+     "who": "wim",
+     "do": "points at rude things, slowly with the right hand"
+    },
+    {
+     "t": 2.79,
+     "who": "wim",
+     "do": "winks, slowly toward the window"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0.48,
+     "who": "wim",
+     "face": "smirk",
+     "word": "Stare"
+    }
+   ],
+   "camera": "static closeup, slight push-in",
+   "effects": "none",
+   "start": {
+    "curtains": "on",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "empty"
+   },
+   "end": {
+    "curtains": "on",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "empty"
+   },
+   "outside": []
+  },
+  {
+   "id": 14,
+   "image": "Wide shot of the street at night, empty pavement, seven curtained houses, wild wind bending the trees, curtains tearing off windows, only Nell's sock staying, 24mm.",
+   "video": [
+    {
+     "t": 0.2,
+     "who": "wind",
+     "do": "howls down the street, slowly"
+    },
+    {
+     "t": 1.03,
+     "who": "wind",
+     "do": "rips curtains off every window, quickly"
+    },
+    {
+     "t": 1.44,
+     "who": "curtains",
+     "do": "tear free from every house, quickly toward the window"
+    }
+   ],
+   "camera": "static wide, slight shake",
+   "effects": "wind, flying debris",
+   "start": {
+    "curtains": "on",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "empty"
+   },
+   "end": {
+    "curtains": "ripping",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "empty"
+   },
+   "outside": []
+  },
+  {
+   "id": 15,
+   "image": "Low camera looking up at the night sky above the street, curtains in many colors flying away like kites, rooftops at the edges, 20mm.",
+   "video": [
+    {
+     "t": 0.17,
+     "who": "curtains",
+     "do": "fly up over the roofs"
+    },
+    {
+     "t": 0.42,
+     "who": "curtains",
+     "do": "fly away into the sky"
+    }
+   ],
+   "camera": "low tilt up, slow",
+   "effects": "wind",
+   "start": {
+    "curtains": "ripping",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "empty"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "empty"
+   },
+   "outside": []
+  },
+  {
+   "id": 16,
+   "image": "Wide shot of the street at night, every window bare, Rudy, Rosa and Dottie looking up from windows, shocked, empty pavement, 24mm.",
+   "video": [
+    {
+     "t": 0.2,
+     "who": "town1",
+     "do": "looks up from the window, slowly"
+    },
+    {
+     "t": 0.3,
+     "who": "town2",
+     "do": "looks up from the window, slowly"
+    },
+    {
+     "t": 0.5,
+     "who": "dottie",
+     "do": "looks up from the window, slowly"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0.28,
+     "who": "town1",
+     "face": "shocked",
+     "word": "window"
+    },
+    {
+     "t": 0.28,
+     "who": "town2",
+     "face": "shocked",
+     "word": "window"
+    },
+    {
+     "t": 0.58,
+     "who": "dottie",
+     "face": "sad",
+     "word": "went"
+    }
+   ],
+   "camera": "static wide",
+   "effects": "dust",
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "empty"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "empty"
+   },
+   "outside": []
+  },
+  {
+   "id": 17,
+   "image": "Wide shot in Mr. Hollis's room at night, bare window behind a brick wall, Hollis angry in the center, holding wooden boards and a hammer, 24mm.",
+   "video": [
+    {
+     "t": 0.62,
+     "who": "hollis",
+     "do": "grabs boards from the pile, quickly with the right hand"
+    },
+    {
+     "t": 1.39,
+     "who": "hollis",
+     "do": "grabs the hammer, quickly with the right hand"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0,
+     "who": "hollis",
+     "face": "angry",
+     "word": "Mr."
+    }
+   ],
+   "camera": "static wide, slight push-in",
+   "effects": "none",
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "at_window",
+    "street": "empty"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "at_window",
+    "street": "empty"
+   },
+   "outside": []
+  },
+  {
+   "id": 18,
+   "image": "Medium shot of Mr. Hollis at a painting of a boat on his wall at night, angry, hammer raised, boards across the painting, 35mm.",
+   "video": [
+    {
+     "t": 0.19,
+     "who": "hollis",
+     "do": "nails a board over the painting, quickly"
+    },
+    {
+     "t": 0.9,
+     "who": "hollis",
+     "do": "nails another board, quickly with the right hand"
+    },
+    {
+     "t": 1.77,
+     "who": "hollis",
+     "do": "steps back from the boarded painting, slowly"
+    }
+   ],
+   "camera": "static medium, slow push-in",
+   "effects": "dust",
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "at_window",
+    "street": "empty"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "at_window",
+    "street": "empty"
+   },
+   "outside": []
+  },
+  {
+   "id": 19,
+   "image": "Over-the-shoulder shot behind Mr. Hollis at night as he hammers boards on the painting, the real window behind him is filled with one giant glowing white eye, 28mm.",
+   "video": [
+    {
+     "t": 0.2,
+     "who": "hollis",
+     "do": "nails the last board, quickly with the right hand"
+    },
+    {
+     "t": 1.34,
+     "who": "monster",
+     "do": "presses its eye on the window, slowly"
+    },
+    {
+     "t": 2.44,
+     "who": "window",
+     "do": "glows white behind him"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0,
+     "who": "hollis",
+     "face": "happy",
+     "word": "The"
+    },
+    {
+     "t": 2.44,
+     "who": "hollis",
+     "face": "shocked",
+     "word": "giant"
+    }
+   ],
+   "camera": "slow push-in over shoulder",
+   "effects": "white glow",
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "at_window",
+    "street": "empty"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "at_window",
+    "street": "empty"
+   },
+   "outside": []
+  },
+  {
+   "id": 20,
+   "image": "Dottie Pell's blocky room at night, side medium shot 35mm. Dottie, angry, stands at the window holding a bowl of pancake batter, one hand scooping. Bare window, some panes already smeared. Warm lamp, empty street outside.",
+   "video": [
+    {
+     "t": 0,
+     "who": "dottie",
+     "do": "grips the bowl in the left hand, glares at the window, slowly"
+    },
+    {
+     "t": 0.59,
+     "who": "dottie",
+     "do": "scoops batter with the right hand and slaps it flat on the pane, batter splats, quickly"
+    },
+    {
+     "t": 1.24,
+     "who": "dottie",
+     "do": "smears batter across the glass quickly, it drips down slowly"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0,
+     "who": "dottie",
+     "face": "angry",
+     "word": "Dottie"
+    }
+   ],
+   "camera": "slow push-in from the side",
+   "effects": "none",
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "in_street",
+    "street": "empty"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "on",
+    "blanket": "none",
+    "monster": "in_street",
+    "street": "empty"
+   },
+   "outside": [],
+   "repaired": true
+  },
+  {
+   "id": 21,
+   "image": "Dottie's blocky house at night, wide 28mm from the street. Every pane smeared with pancake batter. The tall Peeker arrives beside the house, its huge glowing eye at window level, staring. Street empty, windows dim yellow.",
+   "video": [
+    {
+     "t": 0,
+     "who": "monster",
+     "do": "strides in from the left in 0.5 s, the ground shakes"
+    },
+    {
+     "t": 0.3,
+     "who": "monster",
+     "do": "stops and bends, pressing its eye to the window, batter oozes at the edges, slowly"
+    }
+   ],
+   "camera": "static wide, slight shake on arrival",
+   "effects": "glow",
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "on",
+    "blanket": "none",
+    "monster": "in_street",
+    "street": "empty"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "on",
+    "blanket": "none",
+    "monster": "at_window",
+    "street": "empty"
+   },
+   "outside": []
+  },
+  {
+   "id": 22,
+   "image": "Close medium 50mm of Dottie's window at night, covered in pancake batter. The Peeker's huge glowing eye is pressed behind the smeared glass, staring. Nobody visible, street empty.",
+   "video": [
+    {
+     "t": 0,
+     "who": "monster",
+     "do": "stares through the batter, eye unmoving, slowly"
+    },
+    {
+     "t": 0.43,
+     "who": "monster",
+     "do": "licks the glass with a long tongue, slowly left to right"
+    },
+    {
+     "t": 1.03,
+     "who": "monster",
+     "do": "finishes, the pane is clean and shiny, the batter gone, slowly, its huge eye forward"
+    }
+   ],
+   "faces": [],
+   "camera": "slow push-in on the window",
+   "effects": "glow",
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "on",
+    "blanket": "none",
+    "monster": "at_window",
+    "street": "empty"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "licked",
+    "blanket": "none",
+    "monster": "at_window",
+    "street": "empty"
+   },
+   "outside": []
+  },
+  {
+   "id": 23,
+   "image": "Mrs. Fenwick's blocky house at night, wide 28mm from the street. Thin curtains tremble at her window. Mrs. Fenwick peeks scared behind them. The Peeker's glowing eye stares from the next window. Street empty.",
+   "video": [
+    {
+     "t": 0,
+     "who": "monster",
+     "do": "arrives quickly from the left, stops at the house"
+    },
+    {
+     "t": 0.29,
+     "who": "fenwick",
+     "do": "pulls the thin curtain across with both hands, it trembles"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0,
+     "who": "fenwick",
+     "face": "scared",
+     "word": "Mrs."
+    }
+   ],
+   "camera": "static wide",
+   "effects": "glow",
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "licked",
+    "blanket": "none",
+    "monster": "in_street",
+    "street": "empty"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "licked",
+    "blanket": "none",
+    "monster": "at_window",
+    "street": "empty"
+   },
+   "outside": []
+  },
+  {
+   "id": 24,
+   "image": "Mrs. Fenwick's blocky living room at night, wide 24mm. Fenwick stands at the door waving her arms to herd Rudy, Dottie, Hollis and Wim into a huddle under one big blanket, all eyes shut. Warm lamplight.",
+   "video": [
+    {
+     "t": 0,
+     "who": "fenwick",
+     "do": "herds the grown-ups by sweeping both arms toward the center, slowly"
+    },
+    {
+     "t": 0.36,
+     "who": "town1",
+     "do": "shuffles quickly into the huddle, eyes shut"
+    },
+    {
+     "t": 0.76,
+     "who": "dottie",
+     "do": "squeezes in beside him, tugging the blanket, slowly with the right hand"
+    },
+    {
+     "t": 0.94,
+     "who": "fenwick",
+     "do": "throws one big blanket over all four, it settles, slowly"
+    },
+    {
+     "t": 1.7,
+     "who": "hollis",
+     "do": "squeezes eyes shut, the blanket trembles"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0,
+     "who": "fenwick",
+     "face": "angry",
+     "word": "herded"
+    },
+    {
+     "t": 1.7,
+     "who": "wim",
+     "face": "scared",
+     "word": "eyes"
+    }
+   ],
+   "camera": "static wide, slow push-in",
+   "effects": "none",
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "licked",
+    "blanket": "none",
+    "monster": "at_window",
+    "street": "empty"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "licked",
+    "blanket": "over",
+    "monster": "at_window",
+    "street": "empty"
+   },
+   "outside": []
+  },
+  {
+   "id": 25,
+   "image": "Fenwick's living room at night, medium 35mm at the door. Mrs. Fenwick stands by the door in front of four grown-ups under a blanket, eyes shut. She scrunches her nose, about to sneeze.",
+   "video": [
+    {
+     "t": 0,
+     "who": "fenwick",
+     "do": "scrunches her nose, then sneezes, head jerking forward"
+    },
+    {
+     "t": 0.81,
+     "who": "blanket",
+     "do": "blows off the huddle in 0.4 s"
+    },
+    {
+     "t": 1.15,
+     "who": "blanket",
+     "do": "flies away across the room and out of frame, fluttering"
+    },
+    {
+     "t": 1.2,
+     "who": "town1",
+     "do": "stays huddled with eyes shut, hair blown back, slowly"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0.17,
+     "who": "fenwick",
+     "face": "surprised",
+     "word": "sneezed"
+    }
+   ],
+   "camera": "slight push-in, shake on the sneeze",
+   "effects": "wind",
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "licked",
+    "blanket": "over",
+    "monster": "at_window",
+    "street": "empty"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "licked",
+    "blanket": "flying",
+    "monster": "at_window",
+    "street": "empty"
+   },
+   "outside": []
+  },
+  {
+   "id": 26,
+   "image": "Inside Mrs. Fenwick's warm living room at night, seen from the window high up (the eye's view, 24mm, looking down): Mrs. Fenwick, Rudy, Dottie Pell, Mr. Hollis and Grandpa Wim stand huddled on the red rug, the blanket gone, faces tipped straight up at the lens, eyes wide; white light from the window floods their faces.",
+   "video": [
+    {
+     "t": 0,
+     "who": "town1",
+     "do": "tips his head back slowly, eyes widening, mouth falling open"
+    },
+    {
+     "t": 0.15,
+     "who": "dottie",
+     "do": "tilts her head up quickly with both hands at her cheeks, shaking"
+    },
+    {
+     "t": 0.3,
+     "who": "hollis",
+     "do": "looks straight up, his chin lifting in a slow jerk, shoulders stiff"
+    },
+    {
+     "t": 0.45,
+     "who": "wim",
+     "do": "raises his face to the window slowly, the white glow sliding over his cheeks"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0,
+     "who": "town1",
+     "face": "shocked",
+     "word": "Every"
+    },
+    {
+     "t": 0.3,
+     "who": "hollis",
+     "face": "shocked",
+     "word": "looked"
+    }
+   ],
+   "camera": "static high POV from the window, slight push down",
+   "effects": "white glow from the window",
+   "outside": [],
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "licked",
+    "blanket": "flying",
+    "monster": "at_window",
+    "street": "empty"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "licked",
+    "blanket": "flying",
+    "monster": "at_window",
+    "street": "empty"
+   }
+  },
+  {
+   "id": 27,
+   "image": "Inside the living room, close on the back window from 1.5 m (35mm, eye level): the Peeker's one huge glowing eye fills the whole pane, pressed to the glass, the room's warm light on the frame; nothing else in frame.",
+   "video": [
+    {
+     "t": 0,
+     "who": "monster",
+     "do": "presses its eye harder to the glass, the pane bowing slightly and the frame rattling"
+    },
+    {
+     "t": 0.2,
+     "who": "monster",
+     "do": "rolls its pupil slowly down toward the room, the glow pulsing brighter"
+    }
+   ],
+   "camera": "static close-up, tiny push in",
+   "effects": "white glow",
+   "outside": [],
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "licked",
+    "blanket": "flying",
+    "monster": "at_window",
+    "street": "empty"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "on",
+    "windows": "warm",
+    "batter": "licked",
+    "blanket": "flying",
+    "monster": "at_window",
+    "street": "empty"
+   }
+  },
+  {
+   "id": 28,
+   "image": "Blocky street at night, wide 24mm from the middle of the road. Every house window glows white. The tall Peeker stands near Hollis's house in the street, then turns its huge eye toward Nell's house at the end. No one outside.",
+   "video": [
+    {
+     "t": 0,
+     "who": "monster",
+     "do": "stands still in the street, eye sweeping slowly"
+    },
+    {
+     "t": 0,
+     "who": "windows",
+     "do": "every window glows white, one after another, quickly, the light spilling onto the empty street"
+    },
+    {
+     "t": 1.58,
+     "who": "monster",
+     "do": "turns its whole body slowly to the right"
+    },
+    {
+     "t": 2.13,
+     "who": "monster",
+     "do": "locks its eye on Nell's house, leaning forward, slowly"
+    }
+   ],
+   "camera": "static wide, tiny push-in",
+   "effects": "glow",
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "on",
+    "windows": "white",
+    "batter": "licked",
+    "blanket": "flying",
+    "monster": "in_street",
+    "street": "empty"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "on",
+    "windows": "white",
+    "batter": "licked",
+    "blanket": "flying",
+    "monster": "in_street",
+    "street": "empty"
+   },
+   "outside": []
+  },
+  {
+   "id": 29,
+   "image": "Nell's bedroom at night, over-the-shoulder 35mm. Nell stands scared in the room center. Her window is filled by the Peeker's giant glowing eye, pressed right behind the taped sock with a hole. White light floods the room.",
+   "video": [
+    {
+     "t": 0,
+     "who": "monster",
+     "do": "presses its eye to the window, glass bulges and rattles"
+    },
+    {
+     "t": 0.53,
+     "who": "monster",
+     "do": "the eye fills the whole pane, glowing brighter"
+    },
+    {
+     "t": 1.54,
+     "who": "nell",
+     "do": "steps back one pace, gripping her fists, slowly"
+    },
+    {
+     "t": 2.17,
+     "who": "sock",
+     "do": "flutters on the glass as the eye sits right behind it"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0,
+     "who": "me",
+     "face": "scared",
+     "word": "Its"
+    }
+   ],
+   "camera": "slow push-in over Nell's shoulder",
+   "effects": "glow",
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "on",
+    "windows": "white",
+    "batter": "licked",
+    "blanket": "flying",
+    "monster": "at_window",
+    "street": "empty"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "on",
+    "windows": "white",
+    "batter": "licked",
+    "blanket": "flying",
+    "monster": "at_window",
+    "street": "empty"
+   },
+   "outside": []
+  },
+  {
+   "id": 30,
+   "image": "Close-up 50mm on Nell's face in her bedroom at night, lit white from the window. Faint Grandpa Wim smirks in the doorway behind. Nell looks thoughtful, eyes wide open.",
+   "video": [
+    {
+     "t": 0,
+     "who": "nell",
+     "do": "narrows her eyes slowly, thinking"
+    },
+    {
+     "t": 0.16,
+     "who": "nell",
+     "do": "turns her head slightly toward the door"
+    },
+    {
+     "t": 0.71,
+     "who": "wim",
+     "do": "nods once from the doorway, smirking toward the window"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0,
+     "who": "me",
+     "face": "thinking",
+     "word": "I"
+    },
+    {
+     "t": 0.71,
+     "who": "me",
+     "face": "smirk",
+     "word": "Grandpa"
+    }
+   ],
+   "camera": "slow push-in on the face",
+   "effects": "glow",
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "on",
+    "windows": "white",
+    "batter": "licked",
+    "blanket": "flying",
+    "monster": "at_window",
+    "street": "empty"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "on",
+    "windows": "white",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "at_window",
+    "street": "empty"
+   },
+   "outside": [],
+   "repaired": true
+  },
+  {
+   "id": 31,
+   "image": "Nell's bedroom, night. Close-up of Nell's angry face, centered and facing the camera, striped pajamas. Behind her the window glows white with the Peeker's giant eye pressed to the glass. The sock is still taped over the pane. Camera at eye level, 50mm. The viewer sees her stare back.",
+   "video": [
+    {
+     "t": 0,
+     "who": "me",
+     "do": "narrows both eyes and locks her gaze on the window, jaw clenched, slowly"
+    },
+    {
+     "t": 0.34,
+     "who": "me",
+     "do": "leans her head forward 5 cm, slowly, keeping her eyes wide open"
+    },
+    {
+     "t": 0.68,
+     "who": "monster",
+     "do": "eye behind the glass quivers slightly, the white glow flickers once"
+    },
+    {
+     "t": 1.03,
+     "who": "me",
+     "do": "holds the stare without blinking, the nostrils flare, quickly with the right hand"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0,
+     "who": "me",
+     "face": "angry",
+     "word": "Rude"
+    }
+   ],
+   "camera": "slow push-in on the face, 50mm",
+   "effects": "glow",
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "on",
+    "windows": "white",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "at_window",
+    "street": "empty"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "on",
+    "windows": "white",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "at_window",
+    "street": "empty"
+   },
+   "outside": []
+  },
+  {
+   "id": 32,
+   "image": "Nell's bedroom, night. Over-the-shoulder behind Nell, who stands at the window in pajamas facing it. The taped sock hangs over the glowing white pane, and the giant eye shows behind it. Camera 1.2 m high, 35mm. The viewer sees her about to act.",
+   "video": [
+    {
+     "t": 0,
+     "who": "me",
+     "do": "reaches up with the right hand toward the sock, slowly"
+    },
+    {
+     "t": 0.16,
+     "who": "me",
+     "do": "pulls the sock off the window in 0.3 s, tape ripping loose"
+    },
+    {
+     "t": 0.49,
+     "who": "me",
+     "do": "flings the sock sideways, it tumbles to the floor, slowly"
+    },
+    {
+     "t": 0.74,
+     "who": "monster",
+     "do": "eye in the bare window glows brighter and fills the whole pane"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0.16,
+     "who": "me",
+     "face": "angry",
+     "word": "pulled"
+    }
+   ],
+   "camera": "static over-the-shoulder, slight push-in",
+   "effects": "glow",
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "on",
+    "windows": "white",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "at_window",
+    "street": "empty"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "white",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "at_window",
+    "street": "empty"
+   },
+   "outside": []
+  },
+  {
+   "id": 33,
+   "image": "Night street of blocky houses, all windows glowing white and curtains gone. Nell in pajamas walks from her front door toward the tall Peeker in the middle distance, one huge glowing eye squinting. Camera low, two-shot, 28mm. The street is otherwise empty.",
+   "video": [
+    {
+     "t": 0,
+     "who": "me",
+     "do": "steps out through her front door, arms straight at her sides, slowly"
+    },
+    {
+     "t": 0.12,
+     "who": "me",
+     "do": "walks quickly down the path toward the street, bare feet slapping"
+    },
+    {
+     "t": 0.31,
+     "who": "me",
+     "do": "strides out onto the pavement, slowly"
+    },
+    {
+     "t": 0.8,
+     "who": "me",
+     "do": "stops, lifts her chin, and looks straight at the monster, slowly"
+    },
+    {
+     "t": 1.02,
+     "who": "monster",
+     "do": "squints its eye and leans down slowly toward her"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0,
+     "who": "me",
+     "face": "angry",
+     "word": "walked"
+    }
+   ],
+   "camera": "low two-shot, slow track behind Nell",
+   "effects": "glow",
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "white",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "in_street",
+    "street": "hero_only"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "white",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "in_street",
+    "street": "hero_only"
+   },
+   "outside": [
+    "me"
+   ]
+  },
+  {
+   "id": 34,
+   "image": "Night street, low angle. Nell stands small in the foreground in pajamas, scared but angry, looking up. Behind her the huge blocky Peeker looms, seen from the back, its glowing eye squinting down. Windows white. 24mm.",
+   "video": [
+    {
+     "t": 0,
+     "who": "monster",
+     "do": "stares down, its eye widening and the glow pulsing"
+    },
+    {
+     "t": 0.21,
+     "who": "me",
+     "do": "clenches both fists and plants her feet, her body trembling slightly"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0,
+     "who": "me",
+     "face": "scared",
+     "word": "It"
+    },
+    {
+     "t": 0.21,
+     "who": "me",
+     "face": "angry",
+     "word": "stared"
+    }
+   ],
+   "camera": "low angle, slow push-in",
+   "effects": "glow",
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "white",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "in_street",
+    "street": "hero_only"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "white",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "in_street",
+    "street": "hero_only"
+   },
+   "outside": [
+    "me"
+   ]
+  },
+  {
+   "id": 35,
+   "image": "Night street, close-up of Nell's face, angry, eyes wide open, looking straight at the camera. Behind her blurred, the Peeker's huge glowing eye squints. White window glow lights her cheeks. 50mm, eye level.",
+   "video": [
+    {
+     "t": 0,
+     "who": "me",
+     "do": "opens her eyes very wide and stares unblinking"
+    },
+    {
+     "t": 0.19,
+     "who": "me",
+     "do": "furrows her brows hard and holds still, the eye behind her glows"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0,
+     "who": "me",
+     "face": "angry",
+     "word": "I"
+    }
+   ],
+   "camera": "slow push-in close-up",
+   "effects": "glow",
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "white",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "in_street",
+    "street": "hero_only"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "white",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "in_street",
+    "street": "hero_only"
+   },
+   "outside": [
+    "me"
+   ],
+   "repaired": true
+  },
+  {
+   "id": 36,
+   "image": "Night street, close on the ground-floor window of Dottie Pell's pink house (the curtains torn away, the pane bare) from 4 m (40mm, eye level): Dottie Pell stands just behind the white-glowing glass, both hands over the face, peeking through spread fingers.",
+   "video": [
+    {
+     "t": 0,
+     "who": "dottie",
+     "do": "presses both hands over the face, spreading two fingers slowly to peek through the gap"
+    },
+    {
+     "t": 0.3,
+     "who": "dottie",
+     "do": "flinches back 10 cm from the glass, the fingers snapping shut, then opening again"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0,
+     "who": "dottie",
+     "face": "scared",
+     "word": "peeked"
+    }
+   ],
+   "camera": "static medium close-up",
+   "effects": "white glow",
+   "outside": [],
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "white",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "in_street",
+    "street": "hero_only"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "white",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "in_street",
+    "street": "hero_only"
+   }
+  },
+  {
+   "id": 37,
+   "image": "Night street, close on the ground-floor window of Mr. Hollis's house (the curtains and bricks gone, the pane bare) from 4 m (40mm, eye level): Mr. Hollis stands just behind the white-glowing glass, both hands over the face, peeking through spread fingers.",
+   "video": [
+    {
+     "t": 0,
+     "who": "hollis",
+     "do": "presses both hands over the face, spreading two fingers slowly to peek through the gap"
+    },
+    {
+     "t": 0.3,
+     "who": "hollis",
+     "do": "flinches back 10 cm from the glass, the fingers snapping shut, then opening again"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0,
+     "who": "hollis",
+     "face": "scared",
+     "word": "peeked"
+    }
+   ],
+   "camera": "static medium close-up",
+   "effects": "white glow",
+   "outside": [],
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "white",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "in_street",
+    "street": "hero_only"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "white",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "in_street",
+    "street": "hero_only"
+   }
+  },
+  {
+   "id": 38,
+   "image": "Night street, Mrs. Fenwick's house straight on from 11 m (35mm, eye level): every window glows white; Mrs. Fenwick (ground floor), Grandpa Wim and Gus (upstairs) stand behind the glass, all with both hands over their faces, peeking through their fingers; the pavement empty.",
+   "video": [
+    {
+     "t": 0,
+     "who": "fenwick",
+     "do": "lifts both hands to her face quickly, peeking through spread fingers"
+    },
+    {
+     "t": 0.15,
+     "who": "wim",
+     "do": "covers his face with both hands, one eye peeping slowly between two fingers"
+    },
+    {
+     "t": 0.3,
+     "who": "town3",
+     "do": "ducks his head and spreads his fingers fast, peeking out, his shoulders shaking"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0,
+     "who": "fenwick",
+     "face": "scared",
+     "word": "peeked"
+    }
+   ],
+   "camera": "static wide, straight on",
+   "effects": "white window glow",
+   "outside": [],
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "white",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "in_street",
+    "street": "hero_only"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "white",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "in_street",
+    "street": "hero_only"
+   }
+  },
+  {
+   "id": 39,
+   "image": "Closeup of Nell on the night street, standing facing the huge glowing eye of the Peeker looming behind her. Eyes wide and watering, angry face, jaw set. Low white glow lights her face. Camera at chest height, 50mm, slight push-in. Viewer sees her refusing to blink.",
+   "video": [
+    {
+     "t": 0,
+     "who": "nell",
+     "do": "holds her eyes wide open, tears welling and sliding slowly down her cheeks"
+    },
+    {
+     "t": 0.16,
+     "who": "nell",
+     "do": "squints her brow while a tear drips off her chin"
+    },
+    {
+     "t": 0.42,
+     "who": "eye",
+     "do": "glows steadily, light flickering on her wet face"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0,
+     "who": "me",
+     "face": "angry",
+     "word": "My"
+    }
+   ],
+   "camera": "slow push-in on face",
+   "effects": "white glow, dust",
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "white",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "in_street",
+    "street": "hero_only"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "white",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "in_street",
+    "street": "hero_only"
+   },
+   "outside": [
+    "me"
+   ]
+  },
+  {
+   "id": 40,
+   "image": "Extreme closeup of Nell's blocky face at night on the street, her nose scrunched, eyes wide open, glowing white eye reflected in her pupils. Angry, determined. Camera eye level, 85mm, static.",
+   "video": [
+    {
+     "t": 0,
+     "who": "nell",
+     "do": "scrunches her nose quickly, twitching it twice"
+    },
+    {
+     "t": 0.3,
+     "who": "nell",
+     "do": "stays rigid, trembling slightly, eyelids stretched wide"
+    },
+    {
+     "t": 0.48,
+     "who": "nell",
+     "do": "sniffs sharply, her head jerking back 2 cm"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0.48,
+     "who": "me",
+     "face": "angry",
+     "word": "itched"
+    }
+   ],
+   "camera": "static closeup, slight handheld shake",
+   "effects": "white glow",
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "white",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "in_street",
+    "street": "hero_only"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "white",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "in_street",
+    "street": "hero_only"
+   },
+   "outside": [
+    "me"
+   ]
+  },
+  {
+   "id": 41,
+   "image": "Low-angle night street: small Nell in the foreground looking up, fists clenched, angry, facing the far tall dark Peeker whose one huge eye glows white above the rooftops. Bare glowing windows line both sides. Camera at ground level, 24mm.",
+   "video": [
+    {
+     "t": 0,
+     "who": "nell",
+     "do": "tilts her head up slowly, planting both feet wide"
+    },
+    {
+     "t": 0.13,
+     "who": "nell",
+     "do": "clenches both fists at her sides, slowly"
+    },
+    {
+     "t": 0.25,
+     "who": "nell",
+     "do": "locks her stare, not moving, slowly, eyes wide"
+    },
+    {
+     "t": 0.44,
+     "who": "peeker",
+     "do": "stays still, its eye glowing brighter"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0.44,
+     "who": "me",
+     "face": "angry",
+     "word": "blink"
+    }
+   ],
+   "camera": "low static, tiny push-in",
+   "effects": "white glow, dust at feet",
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "white",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "in_street",
+    "street": "hero_only"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "white",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "in_street",
+    "street": "hero_only"
+   },
+   "outside": [
+    "me"
+   ]
+  },
+  {
+   "id": 42,
+   "image": "Closeup of Nell at night, seen from the side, her angry face lit white by the Peeker's giant eye looming behind her, back view of its dark body. Nell stands firm. Camera chest height, 50mm.",
+   "video": [
+    {
+     "t": 0,
+     "who": "nell",
+     "do": "stands firm, narrowing her eyes slightly"
+    },
+    {
+     "t": 0.24,
+     "who": "peeker",
+     "do": "leans its huge eye 0.5 m closer, the glow swelling"
+    }
+   ],
+   "camera": "slow push-in",
+   "effects": "white glow pulsing",
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "white",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "in_street",
+    "street": "hero_only"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "white",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "in_street",
+    "street": "hero_only"
+   },
+   "outside": [
+    "me"
+   ],
+   "repaired": true
+  },
+  {
+   "id": 43,
+   "image": "Blocky street at night under a dark sky; Nell (small kid, facing the camera, scared look) stands in the middle of the empty pavement in pyjamas. The Peeker towers behind her, its one huge white-glowing eye twitching. Low-angle 24mm. Houses behind have bare, white-glowing windows. Viewer sees the eyelid twitch.",
+   "video": [
+    {
+     "t": 0,
+     "who": "monster",
+     "do": "holds its huge eye wide open, the glow pulsing slowly"
+    },
+    {
+     "t": 0,
+     "who": "nell",
+     "do": "stands still with both fists clenched at her sides, feet planted"
+    },
+    {
+     "t": 0.43,
+     "who": "monster",
+     "do": "twitches its eyelid quickly in 0.2 s, the white glow flickers on the pavement"
+    },
+    {
+     "t": 0.6,
+     "who": "nell",
+     "do": "grips her fists tighter, shoulders rising a little, slowly"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0,
+     "who": "nell",
+     "face": "scared",
+     "word": "eyelid"
+    }
+   ],
+   "camera": "static low angle, slight push-in",
+   "effects": "glow flicker",
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "white",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "in_street",
+    "street": "hero_only"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "white",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "in_street",
+    "street": "hero_only"
+   },
+   "outside": [
+    "me"
+   ]
+  },
+  {
+   "id": 44,
+   "image": "Blocky street at night; closeup of Nell's angry face, eyes wide open, framed from the chest up, facing the camera. Behind her the Peeker's huge glowing white eye fills the dark sky, out of focus. Bare houses with white windows at the edges. Camera at eye level, 50mm.",
+   "video": [
+    {
+     "t": 0,
+     "who": "nell",
+     "do": "glares straight ahead, eyes wide, brows pulled low and still"
+    },
+    {
+     "t": 0.31,
+     "who": "nell",
+     "do": "leans her head forward 5 cm, jaw set tight"
+    },
+    {
+     "t": 0.65,
+     "who": "nell",
+     "do": "keeps her eyes open without blinking, nostrils flaring slightly"
+    },
+    {
+     "t": 0.99,
+     "who": "monster",
+     "do": "the eye behind her trembles slightly, glow dimming a little"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0,
+     "who": "nell",
+     "face": "angry",
+     "word": "Rude"
+    }
+   ],
+   "camera": "slow push-in on her face",
+   "effects": "glow",
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "white",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "in_street",
+    "street": "hero_only"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "white",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "in_street",
+    "street": "hero_only"
+   },
+   "outside": [
+    "me"
+   ]
+  },
+  {
+   "id": 45,
+   "image": "Blocky street at night; extreme closeup of the Peeker's one huge glowing white eye, filling the frame, eyelid fully open, a dark blocky lid above and below. Camera at eye level, 85mm. The viewer sees the eye about to blink.",
+   "video": [
+    {
+     "t": 0,
+     "who": "monster",
+     "do": "holds its eye wide open, glow steady"
+    },
+    {
+     "t": 0.17,
+     "who": "monster",
+     "do": "blinks, the eyelid snapping shut in 0.15 s then opening slowly"
+    },
+    {
+     "t": 0.75,
+     "who": "monster",
+     "do": "flinches, the whole eye jerking back 20 cm and shaking, the glow flickering"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0.17,
+     "who": "monster",
+     "face": "surprised",
+     "word": "blinked"
+    },
+    {
+     "t": 0.75,
+     "who": "monster",
+     "face": "scared",
+     "word": "flinched"
+    }
+   ],
+   "camera": "static closeup, tiny shake on the flinch",
+   "effects": "glow flicker",
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "white",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "in_street",
+    "street": "empty"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "white",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "in_street",
+    "street": "empty"
+   },
+   "outside": []
+  },
+  {
+   "id": 46,
+   "image": "Wide blocky street at night, empty pavement; the Peeker, very tall and dark with one glowing eye, stands in the middle of the road facing the camera, about to retreat. Bare houses with white windows on both sides. Camera at street height, 24mm.",
+   "video": [
+    {
+     "t": 0,
+     "who": "monster",
+     "do": "stands tall, eye glowing, body leaning back a little"
+    },
+    {
+     "t": 0.16,
+     "who": "monster",
+     "do": "backs away, stepping slowly backward on its long legs"
+    },
+    {
+     "t": 0.42,
+     "who": "monster",
+     "do": "keeps moving away down the street, shrinking into the distance, slowly"
+    },
+    {
+     "t": 0.84,
+     "who": "monster",
+     "do": "fades into the dark, only its eye glow still faintly visible"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0.16,
+     "who": "monster",
+     "face": "scared",
+     "word": "backed"
+    }
+   ],
+   "camera": "static wide, slow pull-back",
+   "effects": "dust at feet, glow fades",
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "white",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "in_street",
+    "street": "empty"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "white",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "backing_away",
+    "street": "empty"
+   },
+   "outside": []
+  },
+  {
+   "id": 47,
+   "image": "Wide blocky street at night, empty pavement, bare houses in a row, every window glowing white. Town1, Town2 and Town3 sleepy faces are visible behind the glass of their windows. Camera at street height, 24mm. The viewer sees the windows about to go dark.",
+   "video": [
+    {
+     "t": 0,
+     "who": "windows",
+     "do": "all glow steadily white"
+    },
+    {
+     "t": 0.35,
+     "who": "windows",
+     "do": "begin to dim, fading from the left houses to the right, slowly"
+    },
+    {
+     "t": 0.73,
+     "who": "town1",
+     "do": "rubs one eye with the right hand behind the glass, slowly"
+    },
+    {
+     "t": 1,
+     "who": "windows",
+     "do": "go dark, one after another in 0.3 s toward the window"
+    },
+    {
+     "t": 1.16,
+     "who": "town2",
+     "do": "slowly sinks down out of the window view yawning"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0,
+     "who": "town1",
+     "face": "sleepy",
+     "word": "Every"
+    },
+    {
+     "t": 0,
+     "who": "town2",
+     "face": "sleepy",
+     "word": "Every"
+    },
+    {
+     "t": 0,
+     "who": "town3",
+     "face": "sleepy",
+     "word": "Every"
+    }
+   ],
+   "camera": "static wide, very slow push-in",
+   "effects": "glow fades to dark",
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "white",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "backing_away",
+    "street": "empty"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "dark",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "empty"
+   },
+   "repaired": true,
+   "outside": []
+  },
+  {
+   "id": 48,
+   "image": "Wide street at night, all houses with bare windows now dark, empty pavement and road, no monster. Soft moonlight, blue tint. Houses 0-6 in a row, Nell's window with sock gone. Camera medium, eye height, 35mm, static. Town is quiet and asleep.",
+   "video": [
+    {
+     "t": 0,
+     "who": "windows",
+     "do": "stay dark, a faint white afterglow fades out slowly over 0.5 s"
+    },
+    {
+     "t": 0.14,
+     "who": "street",
+     "do": "stays empty, a loose paper scrap drifts slowly across the road and settles"
+    },
+    {
+     "t": 0.55,
+     "who": "town",
+     "do": "falls still, a soft moonlit calm settles over the houses"
+    },
+    {
+     "t": 0.94,
+     "who": "chimney smoke",
+     "do": "rises slowly straight up as the town sleeps"
+    }
+   ],
+   "camera": "slow dolly-in, gentle, medium -> slightly closer",
+   "effects": "dust, soft moonlight",
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "dark",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "empty"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "dark",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "empty"
+   },
+   "outside": [],
+   "repaired": true
+  },
+  {
+   "id": 49,
+   "image": "Wide street in bright morning daylight, row of seven blocky houses, every window bare with no curtains, six windows shut, one window (Nell's, house 6) left deliberately open and bare. Empty clean street, blue sky. Camera wide, eye height, 24mm, static.",
+   "video": [
+    {
+     "t": 0,
+     "who": "sun",
+     "do": "light brightens across the rooftops slowly"
+    },
+    {
+     "t": 0.59,
+     "who": "town1",
+     "do": "leaves its bare window alone and turns away, slowly"
+    },
+    {
+     "t": 0.89,
+     "who": "windows",
+     "do": "six windows stay shut while one stays bare, slowly toward the window"
+    },
+    {
+     "t": 1.39,
+     "who": "Nell's window",
+     "do": "glints in the sun, drawing the eye to it, slowly"
+    }
+   ],
+   "camera": "slow pan right toward the last house, wide",
+   "effects": "none",
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "dark",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "people"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "day",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "people"
+   },
+   "outside": [],
+   "repaired": true
+  },
+  {
+   "id": 50,
+   "image": "Medium shot of Nell's house in morning daylight, her bare window unobstructed with no sock and no curtain, a cat shape visible on the sill. Empty street, blue sky. Camera medium, eye height, 35mm, static.",
+   "video": [
+    {
+     "t": 0,
+     "who": "Nell's window",
+     "do": "shines bare in the sun, slowly toward the window"
+    },
+    {
+     "t": 0.59,
+     "who": "cat",
+     "do": "hops quickly onto the sill and sits by the glass"
+    },
+    {
+     "t": 0.78,
+     "who": "cat",
+     "do": "curls its tail slowly around its paws, watching the street, eyes wide"
+    }
+   ],
+   "camera": "slow push-in, medium -> closer on the window",
+   "effects": "none",
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "day",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "people"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "day",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "people"
+   },
+   "outside": [],
+   "repaired": true
+  },
+  {
+   "id": 51,
+   "image": "Medium shot on the street in daylight, Nell (small kid) standing right, grinning, facing Grandpa Wim (tall adult) on the left, who faces her and gestures. Nell's house behind them, bare windows. Camera medium, eye height, 35mm.",
+   "video": [
+    {
+     "t": 0,
+     "who": "wim",
+     "do": "talks, lifting his right hand and pointing it at Nell, slowly"
+    },
+    {
+     "t": 0.42,
+     "who": "wim",
+     "do": "nods slowly once as he says it toward the window"
+    },
+    {
+     "t": 0.71,
+     "who": "nell",
+     "do": "puffs out her chest and puts both hands on her hips"
+    },
+    {
+     "t": 0.84,
+     "who": "nell",
+     "do": "lifts her chin proudly, rocking up onto her toes"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0,
+     "who": "wim",
+     "face": "happy",
+     "word": "Grandpa"
+    },
+    {
+     "t": 0.71,
+     "who": "me",
+     "face": "happy",
+     "word": "I'm"
+    }
+   ],
+   "camera": "static, medium",
+   "effects": "none",
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "day",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "people"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "day",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "people"
+   },
+   "outside": [
+    "wim",
+    "me"
+   ],
+   "repaired": true
+  },
+  {
+   "id": 52,
+   "image": "Close-up in daylight of Nell and Grandpa Wim on the street, both grinning, Wim at left bending slightly toward Nell at right. Bare houses blurred behind, blue sky. Camera closeup, eye height, 50mm.",
+   "video": [
+    {
+     "t": 0,
+     "who": "wim",
+     "do": "talks, ruffles Nell's hair with his right hand quickly"
+    },
+    {
+     "t": 0.31,
+     "who": "nell",
+     "do": "ducks her head, her hair bouncing up"
+    },
+    {
+     "t": 0.52,
+     "who": "wim",
+     "do": "points his left finger at her, nodding, slowly"
+    },
+    {
+     "t": 0.62,
+     "who": "nell",
+     "do": "beams, grin widening, and nods once firmly toward the window"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0,
+     "who": "wim",
+     "face": "happy",
+     "word": "rudest"
+    },
+    {
+     "t": 0.31,
+     "who": "me",
+     "face": "happy",
+     "word": "thing"
+    }
+   ],
+   "camera": "slow push-in, closeup",
+   "effects": "none",
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "day",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "people"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "day",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "people"
+   },
+   "outside": [
+    "wim",
+    "me"
+   ],
+   "repaired": true
+  },
+  {
+   "id": 53,
+   "image": "Day, bright morning on the blocky town street. Dottie Pell stands on the pavement in front of her house, facing the camera, in her pink cardigan, arms open and happy. Mrs. Fenwick stands beside her, grinning. All windows bare, no curtains, no monster. Wide shot, eye level, 28mm.",
+   "video": [
+    {
+     "t": 0,
+     "who": "dottie",
+     "do": "stands on the pavement and looks toward the camera, then turns her head quickly to the right"
+    },
+    {
+     "t": 0.46,
+     "who": "dottie",
+     "do": "finds her cat and throws both arms up in joy, bouncing on her toes"
+    },
+    {
+     "t": 0.77,
+     "who": "fenwick",
+     "do": "claps both hands together twice and points her right arm toward Nell's house"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0.46,
+     "who": "dottie",
+     "face": "happy",
+     "word": "found"
+    }
+   ],
+   "camera": "slow push-in, wide to medium-wide, steady",
+   "effects": "none",
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "day",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "people"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "day",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "people"
+   },
+   "outside": [
+    "dottie",
+    "fenwick"
+   ]
+  },
+  {
+   "id": 54,
+   "image": "Day, sunny street in front of Nell's house. Nell stands facing the camera, in her usual outfit, holding the taped sock out in both hands, a small orange cat curled asleep inside it. Her window behind her is bare. Medium shot, eye level, 35mm.",
+   "video": [
+    {
+     "t": 0,
+     "who": "nell",
+     "do": "lifts the sock slowly with both hands up to chest height"
+    },
+    {
+     "t": 0.37,
+     "who": "nell",
+     "do": "tilts the sock toward the camera, the cat's head pokes out and wiggles its ears"
+    },
+    {
+     "t": 0.53,
+     "who": "nell",
+     "do": "grins and gives the sock one gentle bounce, the cat sways inside, slowly"
+    }
+   ],
+   "faces": [
+    {
+     "t": 0.53,
+     "who": "nell",
+     "face": "happy",
+     "word": "sock"
+    }
+   ],
+   "camera": "slow push-in on Nell and the sock",
+   "effects": "none",
+   "start": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "day",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "people"
+   },
+   "end": {
+    "curtains": "gone",
+    "nell_sock": "off",
+    "windows": "day",
+    "batter": "none",
+    "blanket": "none",
+    "monster": "absent",
+    "street": "people"
+   },
+   "outside": [
+    "me"
+   ]
+  }
+ ]
+}

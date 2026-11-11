@@ -119,9 +119,9 @@ function makeWindow(parent, o, k, seed) {
   const curt = [-1, 1].map((s) => { const c = cloth(o.w * 0.55, o.h + 0.2, col, { folds: 4 }); c.position.set(s * o.w * 0.25, o.h / 2, -0.25); g.add(c); c.userData.home = c.position.clone(); return c; });
   const rod = box(g, [o.w + 0.4, 0.06, 0.06], [0, o.h + 0.08, -0.22], mat("#6b4a2a"));
   const thin = [-1, 0, 1].map((s) => { const c = cloth(o.w * 0.36, o.h + 0.1, "#f7f2e6", { folds: 3, opacity: 0.45, pattern: false, depth: 0.04 }); c.position.set(s * o.w * 0.32, o.h / 2, -0.22); g.add(c); return c; });
-  const sock = new THREE.Mesh(new THREE.PlaneGeometry(o.w * 0.92, o.h * 0.95), new THREE.MeshStandardMaterial({ map: SOCK_TEX(), transparent: true, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.9 }));
-  sock.position.set(0, o.h / 2, -0.12); g.add(sock); sock.userData.home = sock.position.clone();
-  const tape = [[-1, 1], [1, 1], [-1, -1], [1, -1]].map(([sx, sy]) => { const t = box(g, [0.3, 0.08, 0.01], [sx * o.w * 0.38, o.h / 2 + sy * o.h * 0.42, -0.11], mat("#f2e6b0"), { cast: false }); t.rotation.z = sx * sy * 0.6; return t; });
+  const sock = new THREE.Mesh(new THREE.PlaneGeometry(o.w * 0.62, o.h * 0.68), new THREE.MeshStandardMaterial({ map: SOCK_TEX(), transparent: true, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.9 }));
+  sock.position.set(0, o.h * 0.4, -0.12); g.add(sock); sock.userData.home = sock.position.clone(); // the lower middle: the eye glows above and around it
+  const tape = [[-1, 1], [1, 1], [-1, -1], [1, -1]].map(([sx, sy]) => { const t = box(g, [0.3, 0.08, 0.01], [sx * o.w * 0.27, o.h * 0.4 + sy * o.h * 0.31, -0.11], mat("#f2e6b0"), { cast: false }); t.rotation.z = sx * sy * 0.6; return t; });
   const bricks = new THREE.Mesh(new THREE.PlaneGeometry(o.w, o.h), new THREE.MeshStandardMaterial({ map: BRICK_TEX(), roughness: 0.9 }));
   bricks.position.set(0, o.h / 2, -0.4); g.add(bricks);
   // batter: blobs on the glass (smeared / licked)
@@ -238,6 +238,7 @@ export function buildBoard({ tl = null } = {}) {
   S.tongue = rbox(new THREE.Group(), [0.55, 0.14, 1.5], [0, 0, 0.75], mat("#e8577a", { rough: 0.4 }), 0.07).parent;
   S.leaves = Array.from({ length: 40 }, (_, i) => box(root, [0.18, 0.02, 0.12], [0, 0, 0], mat(["#e8a33d", "#d6453c", "#6cc070"][i % 3]), { cast: false }));
   S.held = [];
+  S.camFill = new THREE.PointLight("#fff1dc", 0, 9, 1.2); root.add(S.camFill); // a soft key from the lens side indoors (faces read, not dark silhouettes)
   S.setWindows = () => {};
   S.boardShot = (ctx) => boardShot(S, ctx);
   for (const k of Object.keys(BOARD_ACTIONS)) if (!ACTS.has(k)) throw new Error(`board: action ${k} has no animation`);
@@ -298,9 +299,10 @@ function boardShot(S, { shot, lt, dur, camera, people, monster, animateMonster, 
       yaw = w === "room:window" ? (has("peek:sock") ? Math.PI : has("smear:batter") ? Math.PI - 0.7 : has("pull:sock") ? Math.PI - 0.9 : has("stack:bricks") ? Math.PI * 0.55 : 0.3) : w === "room:painting" ? -Math.PI / 2 + 0.5 : w === "room:door" ? Math.PI * 0.35 : /^room:huddle/.test(w) ? (p.pose === "look_up" ? Math.PI - 1.5 : 0.15) : 0;
       if (p.peek) { pos = room.g.localToWorld(V(-0.38, 0, -2.55)); yaw = Math.PI - 0.7; } // the eye at the hole, the face 3/4 to the lens
       if (w === "room:center" && has("stare:cat")) { pos = room.g.localToWorld(V(0.75, 0, -0.4)); yaw = Math.PI / 2; }
-      if (w === "room:center" && (has("grab:boards"))) { pos = room.g.localToWorld(V(1.0, 0, 0.3)); yaw = 0.3; }
+      if (w === "room:center" && (has("grab:boards"))) { pos = room.g.localToWorld(V(1.0, 0, 0.3)); yaw = -0.4; }
       if (w === "room:bed") { pos = room.g.localToWorld(V(0.6, 0.62, -0.75)); }
     }
+    if (b.cam === "pov_eye" && room) { const c = room.g.localToWorld(V(0.15, 0, -2.75)); yaw = Math.atan2(c.x - pos.x, c.z - pos.z); } // the eye's view: every face turned up to it
     if (has("catch:peeking") && p.id === acts.get("catch:peeking").who && room) { pos = room.g.localToWorld(V(1.6 + 0.9 * (1 - ease(lt / 0.8)), 0, 0.3)); yaw = -0.2; } // steps in from the right, Nell at the sock behind him
     o.position.copy(pos); o.rotation.y = yaw;
     let pose = p.pose ?? "stand";
@@ -339,7 +341,7 @@ function boardShot(S, { shot, lt, dur, camera, people, monster, animateMonster, 
   if (has("nail:boards") && room?.props.boards) { const k = Math.min(1, lt / Math.max(0.6, dur * 0.8)); room.props.boards.forEach((x, i) => { x.visible = k > i * 0.3 || houseOf("hollis")?.painting === "boarded" && b.cam !== "painting"; }); room.props.nails.forEach((ns, i) => ns.forEach((n) => { n.visible = k > i * 0.3 + 0.12; })); }
   if (has("smear:batter") && room) { const n = room.win.batter.length; room.win.batter.forEach((x, i) => { x.visible = lt > 0.25 + i * (dur * 0.8 / n); const k = ease((lt - 0.25 - i * (dur * 0.8 / n)) / 0.2); x.scale.z = 0.25 * k; x.scale.x = (x.userData.sx0 ??= x.scale.x) * (0.4 + 0.6 * k); }); }
   if (has("lick:glass")) { const w = S.houses.dottie.wins[0]; const sweep = -0.9 + 1.8 * ease(lt / Math.max(0.6, dur * 0.85)); w.batter.forEach((x) => { x.visible = x.position.x > sweep; x.scale.z = 0.25; }); }
-  if (has("pull:sock") && room) { const k = ease((lt - 0.2) / Math.max(0.5, dur * 0.5)); room.win.sock.position.set(0.3 * k, room.win.o.h / 2 - 1.6 * k, -0.12 + 0.6 * k); room.win.sock.rotation.set(-0.9 * k, 0, 0.6 * k); room.win.sock.visible = k < 0.98; room.win.tape.forEach((t) => { t.visible = k < 0.2; }); }
+  if (has("pull:sock") && room) { const k = ease((lt - 0.2) / Math.max(0.5, dur * 0.5)); room.win.sock.position.set(0.3 * k, room.win.o.h * 0.4 - 1.4 * k, -0.12 + 0.6 * k); room.win.sock.rotation.set(-0.9 * k, 0, 0.6 * k); room.win.sock.visible = k < 0.98; room.win.tape.forEach((t) => { t.visible = k < 0.2; }); }
   if (has("rip:curtains")) {
     const t0 = dur * 0.18;
     for (const Hh of Object.values(S.houses)) Hh.wins.forEach((w, k) => {
@@ -374,7 +376,7 @@ function boardShot(S, { shot, lt, dur, camera, people, monster, animateMonster, 
       const c = winWorld(win), facing = out ? Math.PI : 0, fwd = V(Math.sin(facing), 0, Math.cos(facing));
       const target = c.clone().addScaledVector(fwd, -0.45);
       const opts = { eye: eye === "press" ? "press" : eye, eyeAt, kneel: { bend: kneelBend(target.y) }, crisp: !out };
-      M.rotation.y = facing; animateMonster(M, "lurk", lt, opts); M.updateMatrixWorld(true);
+      M.rotation.y = facing; animateMonster(M, "lurk", lt, opts); if (out) M.userData.head.rotation.y -= 0.9; M.updateMatrixWorld(true); // outside: the eye turned to the lens (side-on it read as a dark block)
       const e = M.userData.eyes[0].e.getWorldPosition(V(0, 0, 0));
       M.position.x += target.x - e.x; M.position.z += target.z - e.z; M.position.y += Math.min(0.6, Math.max(-0.6, target.y - e.y));
       if (arriving < 1) { // still walking in: upright, on the road, legs striding, then down to the window
@@ -411,14 +413,16 @@ function boardShot(S, { shot, lt, dur, camera, people, monster, animateMonster, 
   else if (/^houses:/.test(cam)) { const hs = cam.split(":").slice(1).map((h) => S.houses[h]).filter(Boolean); const x0 = Math.min(...hs.map((h) => h.x)); pos = V(x0 - 2, 1.8, HZ + 5); look = V(x0 + 8, 1.6, HZ); fov = 50; }
   else if (/^front:/.test(cam)) { const h = S.houses[cam.slice(6)]; pos = V(h.x, 3.0, HZ + 11); look = V(h.x, 2.9, HZ); fov = 52; } // one house straight on: every window readable
   else if (/^house:/.test(cam)) { const h = S.houses[cam.slice(6)]; pos = V(h.x + 3.5, 3.0, HZ + 16 - 2 * k); look = V(h.x, 3.6, HZ); fov = 50; }
-  else if (/^window:/.test(cam)) { const [, h, kk] = cam.split(":"); const c = winWorld(S.houses[h].wins[Number(kk) || 0]); if (mon || has("lick:glass")) { pos = c.clone().add(V(2.6, 1.4, 0.7)); look = c.clone().add(V(-0.3, -0.1, 0.45)); fov = 54; } else { pos = c.clone().add(V(0.7, 0.15, 4.2 - 0.5 * k)); look = c.clone().add(V(0, -0.05, 0)); fov = 40; } } // the eye at a window: from the side, the head in profile against the glass, the body going back to the road
+  else if (/^window:/.test(cam)) { const [, h, kk] = cam.split(":"); const c = winWorld(S.houses[h].wins[Number(kk) || 0]); if (mon || has("lick:glass")) { pos = c.clone().add(V(2.4, 0.5, 2.2)); look = c.clone().add(V(-0.1, 0.05, 0.35)); fov = 50; } else { pos = c.clone().add(V(0.7, 0.15, 4.2 - 0.5 * k)); look = c.clone().add(V(0, -0.05, 0)); fov = 40; } } // the eye at a window: from the side, the head in profile against the glass, the body going back to the road
   else if (/^cat:/.test(cam)) { const c = winWorld(S.houses[cam.slice(4)].wins[0]); pos = c.clone().add(V(0.9, 0.3, 2.6)); look = c.clone().add(V(0.25, 0.15, 0.4)); fov = 44; }
   else if (/^arrive:/.test(cam)) { const h = S.houses[cam.slice(7)]; pos = V(h.x + 6, 2.0, 14); look = V(h.x - 4, 5, -2); fov = 62; }
   else if (R0) {
-    if (cam === "room_window") { pos = R0(2.2, 1.6, 0.6); look = R0(-0.6, 1.4, -2.6); fov = 58; }
+    if (cam === "room_window") { pos = room.owner === "me" && b.monster ? R0(1.2, 1.55, -0.2) : R0(2.2, 1.6, 0.6); look = room.owner === "me" && b.monster ? R0(-0.1, 1.75, -3) : R0(-0.6, 1.4, -2.6); fov = 58; } // the eye behind the sock: the window big in frame
     else if (cam === "room_wide") { pos = room.owner === "hollis" ? R0(-0.6, 1.6, 2.6) : R0(0.5, 2.1, 3.4 - 0.4 * k); look = room.owner === "hollis" ? R0(0.9, 1.1, 0.0) : R0(-0.2, 1.1, -1.4); fov = room.owner === "hollis" ? 55 : 64; }
     else if (cam === "room_me") { pos = R0(-0.4, 1.5, 0.6); look = R0(-1.1, 1.2, -2.3); fov = 58; }
-    else if (cam === "room_door") { pos = room.owner === "me" ? R0(2.2, 1.55, 2.8) : R0(2.6, 1.6, 2.2); look = room.owner === "me" ? R0(-0.2, 1.2, -2.2) : R0(-1.4, 1.3, 0.0); fov = room.owner === "me" ? 58 : 66; }
+    else if (cam === "room_door") { pos = room.owner === "me" ? R0(2.8, 1.5, 2.6) : R0(2.6, 1.6, 2.2); look = room.owner === "me" ? R0(0.6, 1.35, -0.6) : R0(-1.4, 1.3, 0.0); fov = room.owner === "me" ? 55 : 66; }
+    else if (cam === "pov_eye") { pos = R0(0.15, 2.2, -2.75); look = R0(0.15, 1.15, -0.6); fov = 62; } // from the eye at the window: the faces tipped up at it
+    else if (cam === "window_in") { pos = R0(0.5, 1.7, -0.6); look = R0(0, 1.85, -3); fov = 50; } // the window from inside: the eye fills it
     else if (cam === "room_side") { pos = R0(1.6, 1.6, -2.3); look = R0(-1.0, 1.5, -2.75); fov = 56; }
     else if (cam === "peek:me") { pos = R0(1.2, 1.25, -2.4); look = R0(-0.35, 1.2, -2.8); fov = 46; }
     else if (cam === "cat_stare") { pos = R0(2.6, 0.95, 1.4); look = R0(1.0, 0.9, -0.4); fov = 54; } // over the cat onto Nell's face
@@ -428,6 +432,7 @@ function boardShot(S, { shot, lt, dur, camera, people, monster, animateMonster, 
     else if (cam === "huddle_up") { pos = R0(1.8, 0.9, 1.4); look = R0(-0.1, 1.7, -2.6); fov = 60; } // low at the side: their faces tipped up, the eye filling the window behind them
     else if (/^face:/.test(cam)) { const p = where[cam.slice(5)]; if (p) { const f = V(Math.sin(p.yaw), 0, Math.cos(p.yaw)); pos = p.head.clone().addScaledVector(f, 2.3 - 0.15 * k).add(V(0, 0.02, 0)); look = p.head.clone(); fov = 40; } }
   }
+  S.camFill.position.copy(pos).add(V(0, 0.4, 0)); S.camFill.intensity = room && night ? (cam === "pov_eye" ? 9 : 4) : 0; S.camFill.color.set(cam === "pov_eye" ? "#e8f0ff" : "#fff1dc");
   camera.position.copy(pos); camera.fov = fov; camera.near = 0.05; camera.far = 3000; camera.updateProjectionMatrix();
   camera.up.set(0, 1, 0); camera.lookAt(look); camera.updateMatrixWorld();
   S.spots.center.copy(look).setY(0);

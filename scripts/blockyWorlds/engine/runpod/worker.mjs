@@ -43,6 +43,8 @@ import { useGpu, useSoftware } from "./gpu.mjs";
 import { concat, renderParallel } from "../render.mjs";
 import { stillsJob, objectStillsJob } from "./stillsRole.mjs";
 import { simpleStillsJob } from "./simpleRole.mjs"; // 2026-11-10 simple-style TEST page (page/simple/), stills only
+import { applyStoryboard, storyboardChecks } from "../lib/storyboard.js"; // STORYBOARD (2026-11-11): job.prepare.storyboard
+import { paramsFromPrompts } from "../lib/shotPrompts.js";
 
 const ENGINE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const FF = process.env.FFMPEG ?? "ffmpeg";
@@ -337,6 +339,16 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
     const prodFile = path.join(dir, "production.json");
     fs.writeFileSync(prodFile, JSON.stringify({ provider: direction.provider, model: direction.model, fellBack: direction.fellBack, costUsd: direction.costUsd, ms: direction.ms, problems: direction.problems, production: direction.production, refined: tl.production ?? null, gaps: direction.match.gaps, summary: direction.match.summary }));
     if (p.out?.production) await put(p.out.production, prodFile, "application/json").catch((e) => console.log(`production.json upload: ${e.message}`)); // bookkeeping never fails a run
+  }
+  // STORYBOARD (owner 2026-11-11): job.prepare.storyboard = { board (lib/storyboards/*.js data), prompts (the shot prompt
+  // pairs) }: the storyboard drives the scene list + the shots; the prompts give each board shot its face changes and
+  // action starts; its hard checks (the rule, every action verb animated, the places) stop the run on any problem
+  if (p.storyboard?.board) {
+    tl = applyStoryboard(tl, p.storyboard.board);
+    if (Array.isArray(p.storyboard.prompts)) tl = paramsFromPrompts(tl, p.storyboard.prompts).tl;
+    const sc = storyboardChecks(tl, p.storyboard.board), bad = Object.entries(sc).flatMap(([k, v]) => v.map((m) => `${k}: ${m}`));
+    console.log(`storyboard ${p.storyboard.board.id}: ${tl.shots.length} shots (${tl.shots.filter((s) => s.board).length} storyboard); checks ${bad.length}`);
+    if (bad.length) throw Object.assign(new Error(`the storyboard checks fail: ${bad.slice(0, 12).join("; ")}`), { code: "STORYBOARD_CHECKS" });
   }
   tl.audio = { voice: "voice.wav", music: "music.wav" };
   const built = await lap("build", () => builder.buildFor(tl, { plan, kit }));

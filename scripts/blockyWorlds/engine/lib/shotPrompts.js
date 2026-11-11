@@ -143,6 +143,62 @@ export function paramsFromPrompts(tl0, prompts) {
   return { tl, log };
 }
 
+// ------------------------------------------------------------------------------------------------ free enrichment
+// (no paid call) the facts the engine KNOWS replace what the writer guessed, and thin beats get their missing HOW
+const VERB_BEAT = { "look out": "looks out past the curtain edge with one eye, slowly, the curtain trembling in the fingers", glowed: "every window glows white, one after another, quickly, the light spilling onto the empty street", glows: "the window glows white in 0.3 s, the light flooding the pane" };
+const QUICK = /\b(slap|snap|jerk|flinch|duck|yank|rip|tear|sneez|blink|slam|grab|bang|hit|nail|jump|pop|flick|twitch|spin)/i;
+const HANDS = /\b(pull|push|grab|hold|slap|pat|wave|point|press|lift|scoop|smear|tug|tape|hammer|nail|stack|set|pick|reach|cover|wipe|knock|tap)/i;
+const LOOKS = /\b(look|stare|peek|gaze|glance|watch|peer|eye)/i;
+export function enrichPrompts(prompts0, tl) {
+  const prompts = JSON.parse(JSON.stringify(prompts0)), byId = new Map(prompts.map((p) => [p.id, p])), log = [];
+  // 1. a narration verb with no timed action: the beat from the template, at the matching action's start
+  for (const [n, l] of (tl.lines ?? []).entries()) {
+    const ids = tl.shots.map((s, i) => [s, i]).filter(([s]) => s.line === n).map(([, i]) => i);
+    const text = ids.flatMap((i) => (byId.get(i)?.video ?? []).map((a) => a.do)).join(" | ");
+    for (const v of verbsOf(l.text)) {
+      if (verbRe(v).test(text)) continue;
+      const beat = VERB_BEAT[v.verb.toLowerCase()]; if (!beat) continue;
+      const host = ids.map((i) => [i, tl.shots[i]]).find(([, s]) => (s.board?.acts ?? []).some((a) => v.keys.includes(a.k))) ?? [ids[0], tl.shots[ids[0]]];
+      const act = (host[1].board?.acts ?? []).find((a) => v.keys.includes(a.k));
+      const p = byId.get(host[0]); if (!p) continue;
+      p.video = [...(p.video ?? []), { t: act?.at ?? 0, who: act?.who ?? (v.keys.some((k) => /windows/.test(k)) ? "windows" : "town1"), do: beat }].sort((a, b) => a.t - b.t);
+      log.push(`shot ${host[0]}: + "${beat.slice(0, 50)}..." (line ${n} "${v.verb}")`);
+    }
+  }
+  // 2. the monster and the street from the shot's facts: where the Peeker is (an arrival walks in from the street; a shot
+  //    that does not show it holds the state of the shot after it in the scene, else the one before), who is outside
+  //    (the scene's street: the most seen in it, empty < hero_only < people; "outside" = who stands outside in frame)
+  const RANK = ["empty", "hero_only", "people"];
+  const facts = tl.shots.map((s, i) => {
+    const b = s.board, m = b ? b.monster : s.monsterState;
+    const arrive = (b?.acts ?? []).some((a) => a.k === "arrive:monster"), back = (b?.acts ?? []).some((a) => a.k === "back_away:monster");
+    const where = !m ? null : b ? (/^(window|roomwindow):/.test(m.where) ? "at_window" : m.where === "end" ? "street_end" : "in_street") : "in_street";
+    const out = b ? b.people.filter((x) => !/^(window|room):/.test(x.where)).map((x) => x.id) : s.set === "street" ? (s.actors ?? []).map((a) => a.id) : [];
+    return { i, scene: s.scene, mon: where ? { start: arrive ? "in_street" : where, end: back ? "backing_away" : where } : null, out, street: !out.length ? 0 : out.every((x) => x === "me") ? 1 : 2 };
+  });
+  const sceneStreet = {}; for (const f of facts) sceneStreet[f.scene] = Math.max(sceneStreet[f.scene] ?? 0, f.street);
+  for (const f of facts) {
+    const p = byId.get(f.i); if (!p) continue;
+    p.start ??= {}; p.end ??= {}; p.outside = f.out;
+    p.start.street = p.end.street = RANK[sceneStreet[f.scene]];
+    let mon = f.mon;
+    if (!mon) { const next = facts.slice(f.i + 1).find((x) => x.scene === f.scene && x.mon); const prev = [...facts.slice(0, f.i)].reverse().find((x) => x.scene === f.scene && x.mon); const v = next ? next.mon.start : prev ? prev.mon.end : null; if (v) mon = { start: v, end: v }; }
+    if (mon) { p.start.monster = mon.start; p.end.monster = mon.end; }
+  }
+  // inside a scene the start state is the end state of the shot before (the other keys: what the writer handed over)
+  for (let i = 1; i < tl.shots.length; i++) { const a = byId.get(i - 1), b = byId.get(i); if (a && b && tl.shots[i].scene === tl.shots[i - 1].scene) for (const k of Object.keys(a.end ?? {})) if (k !== "monster" && k !== "street" && b.start) b.start[k] = a.end[k]; }
+  // 3. thin beats: the missing manner (a speed word) and, still thin, the missing where (the hand / the eyes)
+  for (const p of prompts) for (const a of p.video ?? []) {
+    const d = String(a.do ?? ""), part = HOW_PART.test(d), how = HOW_SPEED.test(d) || HOW_MANNER.test(d), react = HOW_REACT.test(d);
+    if (part + how + react >= 2) continue;
+    let add = "";
+    if (!how) add += QUICK.test(d) ? ", quickly" : ", slowly";
+    if (!part && !react) add += HANDS.test(d) ? " with the right hand" : LOOKS.test(d) ? ", eyes wide" : a.who === "monster" ? ", its huge eye forward" : " toward the window";
+    a.do = d + add; log.push(`shot ${p.id}: "${d.slice(0, 40)}" +"${add}"`);
+  }
+  return { prompts, log };
+}
+
 /** the complete top-level objects of a JSON array text (a reply cut off at max_tokens keeps its finished shots) */
 export function completeObjects(text) {
   const s = String(text ?? "").trim();
