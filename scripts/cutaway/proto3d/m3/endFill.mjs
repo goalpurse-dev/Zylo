@@ -12,8 +12,8 @@ for (let i = 0; i < argv.length; i++) if (argv[i].startsWith("--")) { const k = 
 const MIN = Number(a.min ?? 0.4), only = a.only ? String(a.only).split(",") : null;
 const imp = (f) => import(pathToFileURL(path.join(M2, f)).href);
 const { compile } = await imp("compile.mjs"), { draftWords } = await imp("plan.js"), { previewTimes } = await imp("checks.mjs");
-const { cameraAt, projectBox } = await imp("director.js"), { focusOf, union } = await imp("focus.js"), { layoutRules } = await imp("layoutRules.js");
-const { expandModels } = await imp("recipes.js");
+const { cameraAt, projectBox, finishedBuildParts } = await imp("director.js"), { focusOf, union } = await imp("focus.js"), { layoutRules } = await imp("layoutRules.js");
+const { expandModels } = await imp("recipes.js"), { subjectBox } = await imp("framing.js");
 
 const share = (k, b) => { if (!b) return null; const r = projectBox(k.pos, k.tgt, b); if (r.behind) return 0; return Math.max(0, Math.min(1, r.x1) - Math.max(0, r.x0)); };
 const DIR = path.join(here, "sweep", "plans"), rows = [];
@@ -27,8 +27,8 @@ for (const f of fs.readdirSync(DIR).filter((x) => x.endsWith(".json"))) {
     const w = draftWords(S), tl = compile(L, w, w.at(-1).e + 0.1, { roles }), cut = L.world?.cut;
     const box = (id) => { const p = L.parts.find((q) => q.id === id); try { return p ? focusOf(p, cut) : null; } catch { return null; } };
     const hookP = String(L.beats?.[0]?.shows?.p ?? "").split(".")[0];
-    const mains = L.parts.filter((p) => p.main).map((p) => box(p.id)).filter(Boolean);
-    const build = mains.length ? union(mains) : box(hookP);
+    const mains = finishedBuildParts(L).map((p) => box(p.id)).filter(Boolean);
+    const build = mains.length ? union(mains) : subjectBox(L);
     const pt = previewTimes(tl, L), hookTs = pt.find((p) => p.role === "hook")?.ts ?? [], endTs = [...(pt.find((p) => p.role === "congrats")?.ts ?? []), tl.marks.lengthEnd - 0.05];
     const at = (t) => cameraAt(tl.camera.end, t);
     const open = Math.min(...hookTs.map((t) => share(at(t), box(hookP) ?? build) ?? 1));

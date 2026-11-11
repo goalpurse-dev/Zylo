@@ -314,7 +314,11 @@ export async function runTopic({ library = [], topic, out, proto, ff, lengthSec 
       const toReword = still.filter((f) => f.role !== "congrats");
       if (toReword.length) {
         const before = { voice, words, roles }, oldSentences = plan.script.sentences;
-        const rw = await rewordBeats({ apiKey, topic, script: plan.script, layout, failing: toReword, log, cacheDir });
+        // (a reword the spending cap refuses: the lines are dropped below instead, the video goes on; the real water tower
+        // run of 2026-11-11 stopped here with no video after its cap refused a $0.04 reword)
+        let rw = { changed: [], costUsd: 0, script: plan.script };
+        try { rw = await rewordBeats({ apiKey, topic, script: plan.script, layout, failing: toReword, log, cacheDir }); }
+        catch (e) { if (e.code !== "BUDGET" && !/REPLAY_PENDING/.test(String(e.message ?? e))) throw e; visionReport.salvage.rewordSkipped = String(e.message).slice(0, 160); }
         extraUsd += rw.costUsd; reworded = rw.changed;
         if (reworded.length) {
           plan.script = rw.script;

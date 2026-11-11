@@ -222,9 +222,30 @@ export function signBlocked(L) {
  * it would stand inside something (under a car wash canopy, whose roof hid its first line),
  * it moves to the nearest free spot beside it (right first; in the home view if one is free), on the ground.
  */
+/**
+ * The finished build a custom video closes on (the owner's rule of 2026-11-11: the opening and closing frames show the
+ * build at 40% or more): the part the last "This is a…" line names (an outline read as the part it traces), else the
+ * main part (never a dig, which is the cut), else the hook's object. The real water tower run marked the well's dig as
+ * main, named the tower through its outline, and ended on the dig with the tower out of frame.
+ */
+export function finishedBuildParts(layout) {
+  const parts = layout.parts ?? [], beats = layout.beats ?? [];
+  const pid = (b) => String(b?.shows?.p ?? "").split(".")[0];
+  const NOT_BUILD = ["token", "person", "hand", "fx", "rain", "light", "arrows", "outline", "counter", "sign", "dig"];
+  const pick = (id) => parts.filter((p) => p.id === id && !NOT_BUILD.includes(p.kind));
+  const nameP = pid([...beats].reverse().find((b) => /^name[23]?$/.test(b.s)));
+  const np = parts.find((q) => q.id === nameP), named = np?.kind === "outline" ? String(np.params?.of ?? "") : nameP;
+  if (pick(named).length) return pick(named);
+  const mains = parts.filter((p) => p.main && !NOT_BUILD.includes(p.kind));
+  return mains.length ? mains : pick(pid(beats[0]));
+}
+
 export function placeSign(L, home, project) {
   const sign = L.parts.find((p) => p.kind === "sign"); if (!sign?.params?.at) return { layout: L, moved: false };
-  const cut = cutOf(L), subj = subjectBox(L), sr = project(home.pos, home.tgt, subj);
+  // (a custom plan: beside the finished build it closes on, not the setting's subject box: the water tower's card stood
+  // by the well's dig, out of the closing frame, 2026-11-11)
+  const fb = L.codeShots ? finishedBuildParts(L).map((p) => { try { return focusOf(p, cutOf(L)); } catch { return null; } }).filter(Boolean) : [];
+  const cut = cutOf(L), subj = fb.length ? union(fb) : subjectBox(L), sr = project(home.pos, home.tgt, subj);
   const cover = (q) => { const r = project(home.pos, home.tgt, focusOf(q, cut)); const ix = Math.max(0, Math.min(r.x1, sr.x1) - Math.max(r.x0, sr.x0)), iy = Math.max(0, Math.min(r.y1, sr.y1) - Math.max(r.y0, sr.y0)); return { share: (ix * iy) / Math.max(1e-6, sr.w * sr.h), inFrame: !r.behind && r.x0 > 0.02 && r.x1 < 0.98, r }; };
   const others = signObstacles(L, sign), hits = (b) => others.some((o) => b.min[0] < o.max[0] && b.max[0] > o.min[0] && b.min[2] < o.max[2] && b.max[2] > o.min[2] && b.max[1] > o.min[1] + 0.2 && b.min[1] < o.max[1]);
   // seen from the camera: nothing of the setting between the home view and the board (a spot behind the bay's back wall

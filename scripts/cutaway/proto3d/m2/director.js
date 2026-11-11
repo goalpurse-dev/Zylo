@@ -9,7 +9,8 @@
 import { boxCenter, focusOf, focusOfId, union } from "./focus.js";
 import { reportBug, soft } from "./bookkeeping.js";
 import { rigBox } from "./rig.js";
-import { LENS, CAMERA_LIMITS, measureKey, settingBoxes, subjectBox, turnBetween } from "./framing.js";
+import { LENS, CAMERA_LIMITS, finishedBuildParts, measureKey, settingBoxes, subjectBox, turnBetween } from "./framing.js";
+export { finishedBuildParts };
 import { RULES, SKIP_ROLES, cameraRulesOn, fillMet, fillOf, flowPlaces, lineSubject, sameView } from "./cameraRules.js";
 
 export { LENS };
@@ -325,9 +326,7 @@ export function directCamera(layout, shots, marks) {
   };
   // (no part marked main: the hook's own object, rule 4, the thing that comes back finished at the end; without it a plan
   // with no main part framed the world's cut, indoors the whole room)
-  const hookP = String((layout.beats ?? [])[0]?.shows?.p ?? "").split(".")[0];
-  const mains0 = rules ? (layout.parts ?? []).filter((p) => p.main) : [];
-  const mains = mains0.length ? mains0 : rules ? (layout.parts ?? []).filter((p) => p.id === hookP && !["token", "person", "hand", "fx", "rain", "light"].includes(p.kind)) : [];
+  const mains = rules ? finishedBuildParts(layout) : [];
   const subjEnd = mains.length ? union(mains.map((p) => (p.kind === "rig" ? rigBox(p.params ?? {}, { hide: endHidden(p) }) : (() => { try { return focusOf(p, cut); } catch { return null; } })())).filter(Boolean)) : null;
   const build = union([subjEnd ?? subjectBox(layout), ...added.map((p) => { try { return focusOf(p, cut); } catch { return null; } }).filter(Boolean)]);
   // the home view, or (when the finished build reaches past it) a view of the whole build from the home angle
@@ -658,7 +657,7 @@ export function directCamera(layout, shots, marks) {
     for (const list of [end, noend]) list.forEach((k, i) => {
       if (k[0] <= tHookEnd + 1e-3 && hookBox && share(k[1], k[2], hookBox) < MIN_FILL) { list[i] = refit(k, hookBox); notes.push(`opening at ${k[0].toFixed(2)} s: framed closer, the hook's object fills ${Math.round(AIM * 100)}% (it was under ${MIN_FILL * 100}%)`); return; }
       // (the main build itself, not the union with what the finish adds: a rain barrel framed with its new bushes was 5% wide)
-      const B = subjEnd ?? build;
+      const B = subjEnd ?? subjectBox(layout);
       if (k[0] >= tClose - 1e-3 && share(k[1], k[2], B) < MIN_FILL) {
         // the end card: frame the build and the card together at the widest that keeps the build at 40%
         if (sb && list === end && k[0] > marks.signPop) {

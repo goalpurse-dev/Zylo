@@ -212,6 +212,23 @@ export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
   // complete by that line's end, so the line's own frames show it; its 1 s ramp ran on into the next line and the pool's
   // mud and algae never showed in their own line (the owner, 2026-11-11: dirty water must clearly read as dirty, then
   // visibly clear). Custom plans only; at least 0.3 s, never moved earlier than its word
+  // the calm end (the planner's rule "by Congratulations the problem is gone", in code): a crack still drawn, or an effect
+  // still running, fades out as the finish line starts. The real water tower run ended with the cracked legs still black
+  // after the braces fixed them, 2026-11-11. Custom plans only
+  if (layout.approved !== true) soft("calm end", () => {
+    const endS = sentences.find((x) => x.role === "finish") ?? sentences.find((x) => x.role === "congrats");
+    if (!endS) return;
+    const valueAt = (tr, t) => { let v = tr.base ?? 0; for (const r of tr.ramps ?? []) v += t >= r.t1 ? r.amp : t > r.t0 ? r.amp * (t - r.t0) / Math.max(0.01, r.t1 - r.t0) : 0; return v; };
+    for (const p of layout.parts) {
+      if (p.kind !== "fx") continue;
+      const chans = p.params?.type === "crack" ? ["go", "on"] : ["on"];
+      for (const ch of chans) {
+        const tr = tracks[`${p.id}.${ch}`]; if (!tr) continue;
+        const v = valueAt(tr, endS.t0 + 0.05);
+        if (v > 0.05) tr.ramps.push({ t0: +endS.t0.toFixed(4), t1: +(endS.t0 + 0.6).toFixed(4), amp: -v, e: "inOut", auto: true });
+      }
+    }
+  }, null);
   if (layout.approved !== true) for (const [key, tr] of Object.entries(tracks)) {
     if (!/\.(dirty|clean|clear|flood|fill|freeze|murk)$/.test(key)) continue;
     for (const r of tr.ramps ?? []) {
