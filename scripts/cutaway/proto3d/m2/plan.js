@@ -4,8 +4,8 @@
 import { expandModels } from "./recipes.js";
 import { MOODS } from "./moods.js";
 import { KIND_CHANNELS } from "./parts.js";
-import { homeView, projectBox, SHOTS } from "./director.js";
-import { liftToFloor, placeLifeProps, placeSign } from "./framing.js";
+import { frameBox, homeView, projectBox, SHOTS } from "./director.js";
+import { liftToFloor, placeLifeProps, placeSign, subjectBox } from "./framing.js";
 import { layoutRules } from "./layoutRules.js";
 import { soft } from "./bookkeeping.js";
 import { PROP_NAMES } from "./clarityParts.js";
@@ -109,7 +109,15 @@ export function layoutFromScene(scene, { key, title, roles }) {
   const placed = soft("side-story props", () => placeLifeProps(raw, homeView(raw), projectBox), { layout: raw, moved: [] });
   // the setting rules (floor, haul, trees), then the readability rules (layoutRules.js), then the end sign
   const ruled = layoutRules(liftToFloor(placed.layout)).layout;
-  const signed = soft("the end sign", () => placeSign(ruled, homeView(ruled), projectBox), { layout: ruled });
+  // (a planned layout's card is placed for the end view of the finished build, not the setting's wide home view: tested from
+  // the home view, every spot near the re-planned roof and microwave counted as hidden, the card went 8-10 m off, and the
+  // closing line pulled back to hold it, 2026-11-11)
+  const endView = (L) => { const h = homeView(L); if (!L.codeShots) return h; const f = frameBox(subjectBox(L), { view: [h.pos[0] - h.tgt[0], h.pos[1] - h.tgt[1], h.pos[2] - h.tgt[2]], width: 0.6, zone: "center", minField: 0 }); return { pos: f.pos, tgt: f.tgt }; };
+  // (indoors a planned layout's card is the small board (0.6): at full size it was 5.6 m wide beside a 2 m microwave, and
+  // the end view that held it left the machine small, 2026-11-11)
+  const indoor = ["room", "kitchen", "workshop", "garage"].includes(ruled.world?.backdrop?.type);
+  const small = ruled.codeShots && indoor ? { ...ruled, parts: ruled.parts.map((p) => (p.kind === "sign" && (p.params?.scale ?? 1.5) > 0.7 ? { ...p, params: { ...p.params, scale: 0.6 } } : p)) } : ruled;
+  const signed = soft("the end sign", () => placeSign(small, endView(small), projectBox), { layout: small });
   return { layout: signed.layout, problems, moved: placed.moved, rewrites };
 }
 

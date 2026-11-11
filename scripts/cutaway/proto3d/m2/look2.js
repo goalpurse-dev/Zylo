@@ -31,8 +31,10 @@ export const POST2 = Object.freeze({
 // depth of field: the background blur (in pixels at 1080 wide) of a detail shot; none from this field width (metres
 // across the frame at the focus distance) up, all of it at and below DOF_FULL (the director's narrowest field is 4 m)
 export const DOF = Object.freeze({ maxPx: 11, full: 5, none: 13, deadZone: 0.1, taps: 20 });
-// motion blur: a 180-degree shutter (half the frame's move), at most 36 px, off under 1.2 px of move at the frame's corners
-export const MBLUR = Object.freeze({ shutter: 0.5, maxPx: 36, minPx: 1.2, taps: 14, fps: 30 });
+// motion blur: a 120-degree shutter (a third of the frame's move), at most 14 px, off under 1.2 px of move at the frame's
+// corners (it was 180 degrees and 36 px: the re-planned storm drain's travelling lines smeared past reading, and the picture
+// checker judges single frames, 2026-11-11)
+export const MBLUR = Object.freeze({ shutter: 0.33, maxPx: 14, minPx: 1.2, taps: 14, fps: 30 });
 // haze: starts this far behind the focus point (and never nearer than 1.7x the focus distance), a 1/e distance of FAR
 export const HAZE = Object.freeze({ behind: 25, mult: 1.7, far: 110 });
 
@@ -211,6 +213,9 @@ export function addGrade({ THREE, ShaderPass, composer, mood, W, H }) {
         vec4 c = texture2D(tDiffuse, vUv);
         float l = dot(c.rgb, vec3(0.2126, 0.7152, 0.0722));
         c.rgb = mix(vec3(l), c.rgb, sat * (1.0 - 0.3 * storm));
+        // a storm stays readable: the shadows lift as the sun dims (the re-planned storm drain rains through all 25 lines
+        // and its cut went near black; the competitor's rain keeps a bright, lit cut, 2026-11-11)
+        c.rgb = pow(max(c.rgb, vec3(0.0)), vec3(1.0 / (1.0 + 0.5 * storm)));
         vec3 s = c.rgb * c.rgb * (3.0 - 2.0 * c.rgb);
         c.rgb = mix(c.rgb, s, curve);
         float hi = smoothstep(0.45, 0.9, l), lo = 1.0 - smoothstep(0.05, 0.45, l);

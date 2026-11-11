@@ -18,7 +18,9 @@ import { span, eOut, eInOut, eBack, clamp01 } from "./verbs.js";
 // Band colours: each texture divided by its own average and times the wanted colour (linear), so the texture only
 // adds grain: sod #3b2a1e, loam #5c4029, gravel #6e665c, clay #7a5236, deep #4e3a2a, wet sand #8a7a62 (under the
 // groundwater film); the bedrock stays. Band depths put the gravel at about 2.5 m, inside a typical 3-6 m cut.
-export const SOIL_BANDS_REAL = '{ sod: ["roots", [0.25, 0.203, 0.236]], top: ["brown_mud_dry", [0.605, 0.488, 0.493]], deep: ["brown_mud_rocks_01", [0.929, 0.711, 0.674]], clay: ["excavated_soil_wall", [1.272, 1.156, 1.844]], grav: ["brown_mud_rocks_01", [1.856, 2.178, 3.148]], water: ["gravelly_sand", [0.867, 1.224, 1.745]], rock: ["dark_rock", "#c9c9cf"] }';
+// (about a third lighter and a little warmer than the first version: the re-planned storm drain's close-ups under the
+// street were near black, the competitor's cut is a warm lit mid-brown, 2026-11-11)
+export const SOIL_BANDS_REAL = '{ sod: ["roots", [0.34, 0.275, 0.29]], top: ["brown_mud_dry", [0.83, 0.66, 0.6]], deep: ["brown_mud_rocks_01", [1.25, 0.95, 0.84]], clay: ["excavated_soil_wall", [1.45, 1.3, 1.95]], grav: ["brown_mud_rocks_01", [1.856, 2.178, 3.148]], water: ["gravelly_sand", [0.867, 1.224, 1.745]], rock: ["dark_rock", "#c9c9cf"] }';
 const OLD_BANDS = '{ sod: ["roots", "#ffffff"], top: ["brown_mud_dry", R === 1 ? "#ffd2a8" : "#ffffff"], deep: ["excavated_soil_wall", R === 1 ? "#ffc89a" : "#ffffff"], clay: ["excavated_soil_wall", "#b5b2bb"], grav: ["gravel", "#e6dccb"], water: ["brown_mud_rocks_01", "#7fb2ff"], rock: ["dark_rock", "#c9c9cf"] }';
 const OLD_CHAIN = [
   "      vec3 c = s_rock;",

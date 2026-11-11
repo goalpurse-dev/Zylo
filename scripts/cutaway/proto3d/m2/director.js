@@ -296,11 +296,14 @@ export function directCamera(layout, shots, marks) {
   // the travel stops between two keys along layout.story.flow (rule 12: the camera follows what moves, roof -> gutter ->
   // downspout -> drain), at most two, each a view of that place from between the two keys' directions
   const places = rules ? flowPlaces(layout) : [];
-  const distTo = (p, b) => Math.hypot(...p.map((v, i) => Math.max(b.min[i] - v, 0, v - b.max[i])));
+  // (to the place's centre, not its box: a camera target inside a wide flood box counted as at that place, and the re-planned
+  // storm drain toured back across the whole street inside one line, leaving the flap and the pump out of frame, 2026-11-11)
+  const distTo = (p, b) => Math.hypot(...p.map((v, i) => v - (b.min[i] + b.max[i]) / 2));
   const nearest = (p) => places.reduce((best, q, i) => (distTo(p, q.box) < distTo(p, places[best].box) ? i : best), 0);
   const stopsBetween = (a, b) => {
     if (places.length < 3) return [];
-    const i = nearest(a.tgt), j = nearest(b.tgt); if (Math.abs(i - j) < 2) return [];
+    // (forward along the flow only: a jump back to an earlier place goes there directly, never a tour back up the path)
+    const i = nearest(a.tgt), j = nearest(b.tgt); if (j - i < 2) return [];
     const mid = []; for (let x = i + Math.sign(j - i); x !== j; x += Math.sign(j - i)) mid.push(places[x]);
     const pick = mid.length <= 2 ? mid : [mid[Math.floor(mid.length / 3)], mid[Math.floor((2 * mid.length) / 3)]];
     const da = sub(a.pos, a.tgt), db = sub(b.pos, b.tgt), la = Math.hypot(...da), lb = Math.hypot(...db);
@@ -312,7 +315,21 @@ export function directCamera(layout, shots, marks) {
   // the whole finished build: the subject and everything the "Add ..." line brought (a canopy at the far end of the bay)
   const finBeat = (layout.beats ?? []).find((b) => b.s === "finish");
   const added = (finBeat?.do ?? []).map((a) => parts.get(a.p)).filter((p) => p && !["flow", "sign", "light", "rain"].includes(p.kind) && !/hide|stop|refill/.test(String((finBeat.do.find((a) => a.p === p.id) ?? {}).v)));
-  const build = union([subjectBox(layout), ...added.map((p) => { try { return focusOf(p, cut); } catch { return null; } }).filter(Boolean)]);
+  // (custom plans: the main part as it stands at the end, without the pieces it took away again: the re-planned roof's
+  // flat board, gone after its first problem, still sized the end view, and the finished roof ended a speck on the lawn,
+  // 2026-11-11. A piece whose appear move was last played "...Back" is gone; one never played appears with its part)
+  const endHidden = (p) => {
+    const last = new Map();
+    for (const b of layout.beats ?? []) for (const a of b.do ?? []) if (a.p === p.id && a.v) last.set(String(a.v).replace(/Back$/, ""), /Back$/.test(a.v));
+    return (p.params?.nodes ?? []).filter((n) => (n.moves ?? []).some((m) => m.type === "appear" && last.get(m.name) === true)).map((n) => n.id);
+  };
+  // (no part marked main: the hook's own object, rule 4, the thing that comes back finished at the end; without it a plan
+  // with no main part framed the world's cut, indoors the whole room)
+  const hookP = String((layout.beats ?? [])[0]?.shows?.p ?? "").split(".")[0];
+  const mains0 = rules ? (layout.parts ?? []).filter((p) => p.main) : [];
+  const mains = mains0.length ? mains0 : rules ? (layout.parts ?? []).filter((p) => p.id === hookP && !["token", "person", "hand", "fx", "rain", "light"].includes(p.kind)) : [];
+  const subjEnd = mains.length ? union(mains.map((p) => (p.kind === "rig" ? rigBox(p.params ?? {}, { hide: endHidden(p) }) : (() => { try { return focusOf(p, cut); } catch { return null; } })())).filter(Boolean)) : null;
+  const build = union([subjEnd ?? subjectBox(layout), ...added.map((p) => { try { return focusOf(p, cut); } catch { return null; } }).filter(Boolean)]);
   // the home view, or (when the finished build reaches past it) a view of the whole build from the home angle
   const holds = (k) => { const r = projectBox(k.pos, k.tgt, build); return !r.behind && r.x0 >= 0.03 && r.x1 <= 0.97; };
   // (a planned layout, whose shots the code frames: the finished build itself fills about 80% of the width at the end,
@@ -421,7 +438,9 @@ export function directCamera(layout, shots, marks) {
       frames.push({ t: s.t, ids: [].concat(s.focus ?? "(box)"), hero: false, rect: r, zone: "rhythm", rhythm: s.rhythm, measure: measureKey(layout, k.pos, k.tgt), anchored: null, ok: true, why: [] });
     }
     // (the "Add ..." line's home shot: the whole build, so the things it adds are seen arriving)
-    else if (s.focus === "home") k = s.scale ? scaleView(home, s.scale) : s.at?.s === "finish" ? liftSoil(layout, homeAll, build) : home;
+    // (custom plans: the closing line too frames the finished build, not the room or the yard: every re-planned appliance
+    // ended on the whole kitchen with the machine small at one side, 2026-11-11; rule 4, the hook's object back and working)
+    else if (s.focus === "home") k = s.scale ? scaleView(home, s.scale) : s.at?.s === "finish" || (rules && s.at?.s === "congrats") ? liftSoil(layout, homeAll, build) : home;
     else {
       let ids = s.box ? ["(box)"] : [].concat(s.focus), boxes = s.box ? [s.box] : ids.map((id) => focusOfId(parts, id, cut));
       // (a part with no box of its own, a wet band or a flow, is left out of the shot; the shot keeps the rest: the whole
@@ -606,11 +625,19 @@ export function directCamera(layout, shots, marks) {
       notes.push("the end card could not be held clear of the frame's edges");
       return k;
     };
-    toward = holdSign(toward); back = holdSign(back);
+    // (custom plans: the closing line frames the finished build alone, the hook's object back and working (rule 4); only the
+    // push after the voice, when the card pops, holds the card. A card placed far off pulled the re-planned roof's closing
+    // line back to a speck on the lawn, 2026-11-11)
+    toward = rules && clear(back) ? scaleView(back, 0.97) : holdSign(toward); back = rules ? back : holdSign(back);
   }
   const base = keys.slice();
   if (marks.signPop + 0.1 - base.at(-1)[0] < 0.05) base.pop();
-  const end = [...base, [+(marks.signPop + 0.1).toFixed(4), back.pos, back.tgt], [marks.lengthEnd, toward.pos, toward.tgt]];
+  // (custom plans: the build alone holds until 1 s before the card pops, then the camera arrives on the card's view as it
+  // pops, so the card is whole in the frame from its first frame; 2026-11-11)
+  const tHold = rules ? Math.max((base.at(-1)?.[0] ?? 0) + 0.3, marks.signPop - 1.0) : null;
+  const end = rules && tHold < marks.signPop - 0.2
+    ? [...base, [+tHold.toFixed(4), back.pos, back.tgt], [+(marks.signPop + 0.1).toFixed(4), toward.pos, toward.tgt], [marks.lengthEnd, toward.pos, toward.tgt]]
+    : [...base, [+(marks.signPop + 0.1).toFixed(4), back.pos, back.tgt], [marks.lengthEnd, toward.pos, toward.tgt]];
   const nb = keys.slice(); if (marks.lengthNoEnd - nb.at(-1)[0] < 0.05) nb.pop();
   const far = scaleView(home, 1.25);
   const noend = [...nb, [marks.lengthNoEnd, far.pos, far.tgt]];

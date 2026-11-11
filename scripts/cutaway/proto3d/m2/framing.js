@@ -244,7 +244,10 @@ export function placeSign(L, home, project) {
   const cands = [], dxs = Array.from({ length: 33 }, (_, i) => (i === 0 ? 0 : (i % 2 ? 1 : -1) * Math.ceil(i / 2)));
   // (indoors a smaller board too, so it fits under the ceiling beside the appliance)
   const indoor = ["room", "kitchen", "workshop", "carwash", "garage"].includes(L.world?.backdrop?.type);
-  for (const scale of [...new Set([sign.params.scale ?? 1.5, 1.0, ...(indoor ? [0.7, 0.55] : [])])]) for (const dx of dxs) for (const dz of [0, -2, -4, -6]) cands.push({ at: [subj.max[0] + 2 + dx, y0, Math.min(z0, -1) + dz], scale });
+  for (const scale of [...new Set([sign.params.scale ?? 1.5, 1.0, ...(indoor ? [0.7, 0.55] : [])])]) for (const dx of dxs) for (const dz of [0, -2, -4, -6]) cands.push({ at: [L.codeShots && dx < 0 ? subj.min[0] - 2 + dx : subj.max[0] + 2 + dx, y0, (L.codeShots ? Math.min(-1, (subj.min[2] + subj.max[2]) / 2) : Math.min(z0, -1)) + dz], scale });
+  // (a planned layout tries the build's left side too, mirrored, and at the build's own depth: "left" spots slid across the
+  // build itself, and every spot started at the card's old depth, behind the yard's house and trees, so the re-planned
+  // roof's card went 10 m off to the right, 2026-11-11; premade keeps its spots)
   // first a spot inside the home view; else the free spot nearest the build (the end views frame the sign with it)
   for (const need of [true, false]) {
     const ok = cands.map(({ at, scale }) => ({ ...sign, params: { ...sign.params, at, scale } })).filter((q) => { const c = cover(q); return c.share <= 0.1 && (c.inFrame || !need) && !hits(focusOf(q, cut)) && seen(focusOf(q, cut)); });

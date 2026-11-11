@@ -211,7 +211,13 @@ export function fillGaps(layout, tracks, sentences, gaps) {
     if (layout.approved === true) { layout.parts.push({ id, kind: "fx", params: { type: "motes", at, size: Math.max(size, 1) } }); tracks[`${id}.go`] = { base: 0, ramps: [] }; on(`${id}.on`); notes.push(`still ${a.toFixed(1)}-${b.toFixed(1)} s: specks (premade, as approved)`); return; }
     if (mode.startsWith("ripple:")) { const w = mode.slice(7); on(`${w}.flow`); notes.push(`still ${a.toFixed(1)}-${b.toFixed(1)} s: the water ripples (${w})`); return; }
     if (mode === "dust") { layout.parts.push({ id, kind: "fx", params: { type: "motes", at, size: Math.min(size, 0.7) } }); tracks[`${id}.go`] = { base: 0, ramps: [] }; }
-    else layout.parts.push({ id, kind: "ambient", params: { mode, target: String(beat.shows?.p ?? layout.parts.find((p) => p.main)?.id ?? "").split(".")[0] || null, at, size } });
+    // (a hum trembles a machine: a line about the recurring token, a person or a hand hums the machine instead; the
+    // re-planned fridge's hum targeted its bottle token and never animated, 2026-11-11)
+    else {
+      const own = layout.parts.find((p) => p.id === String(beat.shows?.p ?? "").split(".")[0]);
+      const target = own && !["token", "person", "hand"].includes(own.kind) ? own.id : (layout.parts.find((p) => p.main) ?? layout.parts.find((p) => p.kind === "rig"))?.id ?? null;
+      layout.parts.push({ id, kind: "ambient", params: { mode, target, at, size } });
+    }
     on(`${id}.on`);
     notes.push(`still ${a.toFixed(1)}-${b.toFixed(1)} s: ${mode} round ${beat.shows?.p ?? "the build"}`);
   });

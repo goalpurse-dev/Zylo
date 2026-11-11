@@ -205,6 +205,9 @@ export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
     const sen = layout.hold && c.a?.s && holdable(layout.parts.find((p) => p.id === c.p), c.c) ? sentences.find((x) => x.role === c.a.s) : null;
     (tracks[key] ??= { base: 0, ramps: [] }).ramps.push(...(sen ? holdRamps(r, sen) : [r]));
   }, null);
+  // a designed part (rig) that no beat ever shows is in the world from the first frame (a re-planned washing machine whose
+  // plan never said "show" rendered an empty laundry room, 2026-11-11; plant early, rule 6). Custom plans only
+  if (layout.approved !== true) for (const p of layout.parts) if (p.kind === "rig" && !tracks[`${p.id}.pop`]?.ramps?.length && !(p.base && "pop" in p.base)) tracks[`${p.id}.pop`] = { base: 1, ramps: [] };
   // a switch is on or off (a lamp, a signal's cycle): in time order, an "on" while on or an "off" while off does nothing
   // (the steps add up: two "red"s made red 2, and the next "green" left it lit)
   // (in a planned layout a water level is kept between empty and full the same way: a trickle then a full drain left it
