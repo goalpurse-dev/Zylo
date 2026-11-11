@@ -77,7 +77,7 @@ if (!fs.existsSync(path.join(out, "timeline.json"))) {
   const s = await rp.wait(id, { maxSec: 900, pollMs: 4000 });
   const b = billed(s);
   logSpend(out, `Blocky Worlds #2 video prepare ${id} (${s.status})`, b);
-  const run = 1 + Object.keys(costs).filter((k) => /^runpod_prepare_rund+$/.test(k)).length; // every run ADDS its own entries (never overwrites)
+  const run = 1 + Object.keys(costs).filter((k) => /^runpod_prepare_run\d+$/.test(k)).length; // every run ADDS its own entries (never overwrites)
   costs[`runpod_prepare_run${run}`] = b.usd;
   const o = s.output ?? {};
   fs.writeFileSync(path.join(out, "prepare-result.json"), JSON.stringify({ status: s.status, error: s.error ?? null, output: o }, null, 1));
