@@ -1,6 +1,6 @@
 {
- "model": "claude-sonnet-5-5 + free fixes",
- "costUsd": 0.2412,
+ "model": "claude-sonnet-5-5 (+ shots 10-19 HOW rewrite) + free fixes",
+ "costUsd": 0.262984,
  "prompts": [
   {
    "id": 0,
@@ -572,12 +572,12 @@
     {
      "t": 0.45,
      "who": "me",
-     "do": "points at the hole in the sock, slowly with the right hand"
+     "do": "presses her right eye to the small hole in the sock taped on the window, slowly, the striped sock wrinkling against the glass"
     },
     {
      "t": 1.09,
      "who": "me",
-     "do": "peeks through the hole, slowly, eyes wide"
+     "do": "rests both hands on the sill and leans 5 cm closer to the hole, slowly, her smirk growing"
     }
    ],
    "faces": [
@@ -608,7 +608,8 @@
     "monster": "absent",
     "street": "empty"
    },
-   "outside": []
+   "outside": [],
+   "repaired": true
   },
   {
    "id": 11,
@@ -617,17 +618,17 @@
     {
      "t": 0.35,
      "who": "me",
-     "do": "stares at the cat, slowly, eyes wide"
+     "do": "stares straight at the cat from a short distance, slowly, eyes wide without blinking, and the cat freezes"
     },
     {
      "t": 1.56,
      "who": "cat",
-     "do": "looks away, slowly"
+     "do": "turns its head away to the side, slowly, ears drooping"
     },
     {
      "t": 2.03,
      "who": "me",
-     "do": "keeps staring at the cat, slowly"
+     "do": "leans her head closer, slowly, still staring unblinking at the cat while her chin lifts proudly"
     }
    ],
    "faces": [
@@ -658,26 +659,32 @@
     "monster": "absent",
     "street": "empty"
    },
-   "outside": []
+   "outside": [],
+   "repaired": true
   },
   {
    "id": 12,
    "image": "Medium shot toward Nell's bedroom door at night, Grandpa Wim stands in the doorway smiling, Nell at the window peeking through the sock hole, smirking, 35mm.",
    "video": [
     {
+     "t": 0,
+     "who": "wim",
+     "do": "steps into the room from the right, quickly, catching her mid-peek, his eyebrows lifting"
+    },
+    {
      "t": 0.2,
      "who": "me",
-     "do": "peeks through the sock hole, slowly, eyes wide"
+     "do": "keeps her right eye pressed to the hole in the taped sock, slowly, her smirk widening"
     },
     {
      "t": 0.59,
      "who": "wim",
-     "do": "catches her, pointing at her, slowly with the right hand"
+     "do": "points his right index finger at her from the door, slowly, and her smirk freezes"
     },
     {
      "t": 1.67,
      "who": "wim",
-     "do": "waves off a scolding with his hand, slowly"
+     "do": "waves his right hand side to side in a relaxed brush-off, slowly, grinning, and Nell relaxes her shoulders"
     }
    ],
    "faces": [
@@ -714,7 +721,8 @@
     "monster": "absent",
     "street": "empty"
    },
-   "outside": []
+   "outside": [],
+   "repaired": true
   },
   {
    "id": 13,
@@ -723,17 +731,17 @@
     {
      "t": 0.13,
      "who": "wim",
-     "do": "talks to Nell, slowly toward the window"
+     "do": "turns his head toward the window and talks to Nell, slowly, with a smirk and a raised eyebrow"
     },
     {
      "t": 1.08,
      "who": "wim",
-     "do": "points at rude things, slowly with the right hand"
+     "do": "points his right index finger firmly at the window, slowly, and the glass seems to shudder"
     },
     {
      "t": 2.79,
      "who": "wim",
-     "do": "winks, slowly toward the window"
+     "do": "winks one eye at Nell, slowly, tapping the side of his nose with his left hand"
     }
    ],
    "faces": [
@@ -764,7 +772,8 @@
     "monster": "absent",
     "street": "empty"
    },
-   "outside": []
+   "outside": [],
+   "repaired": true
   },
   {
    "id": 14,
@@ -773,17 +782,17 @@
     {
      "t": 0.2,
      "who": "wind",
-     "do": "howls down the street, slowly"
+     "do": "howls down the dark street from left to right, slowly building, and the house curtains flutter"
     },
     {
      "t": 1.03,
      "who": "wind",
-     "do": "rips curtains off every window, quickly"
+     "do": "rips curtains off every window along the street, quickly, rods bending"
     },
     {
      "t": 1.44,
      "who": "curtains",
-     "do": "tear free from every house, quickly toward the window"
+     "do": "tear free from every house, quickly, whipping up and away through the air"
     }
    ],
    "camera": "static wide, slight shake",
@@ -806,7 +815,8 @@
     "monster": "absent",
     "street": "empty"
    },
-   "outside": []
+   "outside": [],
+   "repaired": true
   },
   {
    "id": 15,
@@ -815,12 +825,12 @@
     {
      "t": 0.17,
      "who": "curtains",
-     "do": "fly up over the roofs"
+     "do": "fly up over the roofs, quickly, trailing tails like kites as the bare windows below stand empty"
     },
     {
      "t": 0.42,
      "who": "curtains",
-     "do": "fly away into the sky"
+     "do": "sail away high into the night sky, slowly shrinking to small specks, and the wind keeps whistling"
     }
    ],
    "camera": "low tilt up, slow",
@@ -843,7 +853,8 @@
     "monster": "absent",
     "street": "empty"
    },
-   "outside": []
+   "outside": [],
+   "repaired": true
   },
   {
    "id": 16,
@@ -852,17 +863,17 @@
     {
      "t": 0.2,
      "who": "town1",
-     "do": "looks up from the window, slowly"
+     "do": "tilts head up at the bare window, slowly, mouth open in shock, and his hands grip the sill"
     },
     {
      "t": 0.3,
      "who": "town2",
-     "do": "looks up from the window, slowly"
+     "do": "looks up from her window, slowly, eyes wide, and her hand rises to her cheek"
     },
     {
      "t": 0.5,
      "who": "dottie",
-     "do": "looks up from the window, slowly"
+     "do": "lifts her sad face toward the sky from her window, slowly, shoulders sagging, and her lip trembles"
     }
    ],
    "faces": [
@@ -905,7 +916,8 @@
     "monster": "absent",
     "street": "empty"
    },
-   "outside": []
+   "outside": [],
+   "repaired": true
   },
   {
    "id": 17,
@@ -914,12 +926,12 @@
     {
      "t": 0.62,
      "who": "hollis",
-     "do": "grabs boards from the pile, quickly with the right hand"
+     "do": "grabs a stack of boards from the pile with his right hand, quickly, scowling, and the pile wobbles"
     },
     {
      "t": 1.39,
      "who": "hollis",
-     "do": "grabs the hammer, quickly with the right hand"
+     "do": "snatches the hammer from the table with his right hand, quickly, and raises it over his shoulder with an angry grunt"
     }
    ],
    "faces": [
@@ -950,7 +962,8 @@
     "monster": "at_window",
     "street": "empty"
    },
-   "outside": []
+   "outside": [],
+   "repaired": true
   },
   {
    "id": 18,
@@ -959,17 +972,17 @@
     {
      "t": 0.19,
      "who": "hollis",
-     "do": "nails a board over the painting, quickly"
+     "do": "nails a board across the painting of the boat with the hammer in his right hand, quickly, and the wall shakes"
     },
     {
      "t": 0.9,
      "who": "hollis",
-     "do": "nails another board, quickly with the right hand"
+     "do": "hammers a second board neatly parallel to the first, quickly, nails in a straight line, and dust falls"
     },
     {
      "t": 1.77,
      "who": "hollis",
-     "do": "steps back from the boarded painting, slowly"
+     "do": "steps back one pace from the boarded painting, slowly, and nods with his hammer lowered at his side"
     }
    ],
    "camera": "static medium, slow push-in",
@@ -992,7 +1005,8 @@
     "monster": "at_window",
     "street": "empty"
    },
-   "outside": []
+   "outside": [],
+   "repaired": true
   },
   {
    "id": 19,
@@ -1001,17 +1015,17 @@
     {
      "t": 0.2,
      "who": "hollis",
-     "do": "nails the last board, quickly with the right hand"
+     "do": "hammers the last board with his right hand, quickly, and smiles with satisfaction as the painting is covered"
     },
     {
      "t": 1.34,
      "who": "monster",
-     "do": "presses its eye on the window, slowly"
+     "do": "presses its giant eye against the real window behind him, slowly, and the glass bulges"
     },
     {
      "t": 2.44,
      "who": "window",
-     "do": "glows white behind him"
+     "do": "glows white behind him, slowly brightening, and his shadow stretches across the floor"
     }
    ],
    "faces": [
@@ -1048,7 +1062,8 @@
     "monster": "at_window",
     "street": "empty"
    },
-   "outside": []
+   "outside": [],
+   "repaired": true
   },
   {
    "id": 20,
