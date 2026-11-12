@@ -2,19 +2,26 @@
 export const BLOCKY_WORLDS_NAME = "Blocky Worlds";
 export const BLOCKY_WORLDS_PATH = "/workspace/blocky-worlds";
 
-/**
- * The page's build switch: OFF until launch (only testers, BLOCKY_WORLDS_TEST_USERS on the server, see the page through
- * the API's access action). VITE_BLOCKY_WORLDS_ENABLED=true (then a new production build) opens it for everyone.
- * The server's twin is the BLOCKY_WORLDS_ENABLED secret of blocky-worlds-api.
+/*
+ * Who sees Blocky Worlds is decided by the SERVER only (owner, 2026-11-12): blocky-worlds-api's `access` action, under
+ * its BLOCKY_WORLDS_ACCESS secret (owner | allowlist | everyone; supabase/functions/_shared/blockyWorlds/gate.js).
+ * There is no build switch and no email in this code: the menu, the bottom nav, the tool shelf, pinned tools and the
+ * route all follow the one answer below, and it FAILS CLOSED: while the answer is loading, or the call failed, or the
+ * reply is anything but { visible: true }, nothing shows and the route sends the visitor home.
  */
-export function blockyWorldsEnabled(env = {}) {
-  return String(env.VITE_BLOCKY_WORLDS_ENABLED ?? "").trim().toLowerCase() === "true";
-}
-export const BLOCKY_WORLDS_ENABLED = blockyWorldsEnabled(import.meta.env ?? {});
 
-/**
- * In the tool shelf and the bottom nav: on localhost (`npm run dev`, where the page runs in free mock mode) or when the
- * build switch is on. A production build (the live site, Vercel previews) has import.meta.env.DEV false, so it stays
- * hidden there until launch.
- */
-export const BLOCKY_WORLDS_VISIBLE = BLOCKY_WORLDS_ENABLED || Boolean(import.meta.env?.DEV);
+/** "loading" (not asked yet / in flight) | "allowed" | "denied" (closed, or the call failed) */
+export function accessStatusFrom(reply) {
+  if (reply === undefined) return "loading";
+  return reply && typeof reply === "object" && reply.visible === true ? "allowed" : "denied";
+}
+
+/** In the tool shelf, the menus and the pinned tools: only on a confirmed "allowed". */
+export const showBlockyWorlds = (status) => status === "allowed";
+
+/** The route: "show" the page, "wait" (render nothing Blocky Worlds), or "redirect" home. */
+export function blockyWorldsRoute(status) {
+  if (status === "allowed") return "show";
+  if (status === "loading") return "wait";
+  return "redirect";
+}

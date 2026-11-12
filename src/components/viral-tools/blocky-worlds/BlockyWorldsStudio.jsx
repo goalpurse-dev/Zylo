@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { Boxes, ChevronLeft, FlaskConical } from "lucide-react";
-import { BLOCKY_WORLDS_ENABLED } from "../../../data/blockyWorlds";
 import useIsDesktop from "../cutaway-explainer/hooks/useIsDesktop";
 import { DEV_MOCK } from "./api/blockyWorldsApi";
 import useBlockyWorlds from "./hooks/useBlockyWorlds";
@@ -83,11 +82,11 @@ export default function BlockyWorldsStudio({ access: pageAccess, onSignUp, onUpg
   const stepKey = flow.draft ? `script-${flow.draft.id}` : "story";
   useEffect(() => { mobileScroll.current?.scrollTo?.(0, 0); }, [stepKey, panel]);
 
-  // the template is behind its own switch: wait for the server's answer. A production build hidden from this visitor
-  // sends them home; anywhere else (localhost, or the build switch on) the page says why instead of redirecting.
+  // the template is behind the server's switch (BLOCKY_WORLDS_ACCESS; the route's BlockyWorldsGate asked first): wait
+  // for the answer. Any build hidden from this visitor sends them home; only localhost says why instead of redirecting.
   if (!flow.access) return <div className="grid h-full w-full place-items-center bg-[#0B0D0F]" aria-busy="true" aria-label="Loading"><span className="h-10 w-10 animate-pulse rounded-full bg-lime-300/20" /></div>;
   if (!flow.access.visible) {
-    if (!import.meta.env.DEV && !BLOCKY_WORLDS_ENABLED) return <Navigate to="/" replace />;
+    if (!import.meta.env.DEV) return <Navigate to="/" replace />;
     return <Closed access={flow.access} signedOut={pageAccess === "guest"} onSignUp={onSignUp} />;
   }
 

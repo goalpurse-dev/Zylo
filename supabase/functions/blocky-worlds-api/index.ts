@@ -3,8 +3,11 @@
 // _shared/blockyWorlds/contract.js. The flow: idea -> script -> settings -> generate -> result.
 //
 // Switches (function secrets):
-//   BLOCKY_WORLDS_ENABLED=true       the template for everyone (otherwise only BLOCKY_WORLDS_TEST_USERS and the owner
-//                                    (ADMIN_EMAILS), in test mode: their runs are env "test")
+//   BLOCKY_WORLDS_ACCESS=owner|allowlist|everyone   who may see and use the template at all (_shared/blockyWorlds/gate.js).
+//                                    Default (unset or unknown) owner: only ADMIN_EMAILS; allowlist adds
+//                                    BLOCKY_WORLDS_TEST_USERS; everyone is launch. Until everyone, the owner's and
+//                                    testers' runs are env "test". Everyone else gets OFF on every action and a bare
+//                                    { visible: false } from `access`. (BLOCKY_WORLDS_ENABLED is retired: it opens nothing.)
 //   BLOCKY_WORLDS_LLM=mock           ideas and scripts from examples.js: no Anthropic call, no cost (the free flow test)
 //   BLOCKY_WORLDS_PAID_CALLS=off     a hard off switch for every paid call
 //   BLOCKY_WORLDS_HYBRID=off         a typed topic's script back on the old beats -> script path (default: the hybrid
@@ -21,10 +24,11 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { cors, err, ok } from "../shared/cors.ts";
-import { adminEmailList, isAdmin } from "../_shared/contentMachine/adminGuard.js";
+import { adminEmailList } from "../_shared/contentMachine/adminGuard.js";
 import { ERRORS, FAILED_MESSAGE, failReason } from "../_shared/blockyWorlds/contract.js";
 import { DEFAULT_LENGTH, LENGTHS, NARRATOR } from "../_shared/blockyWorlds/config.js";
 import { canGenerate, canRemoveEndCard, canWrite, endCardFor } from "../_shared/blockyWorlds/access.js";
+import { accessModeFrom, closedReply, guestAllowed, viewerAccess } from "../_shared/blockyWorlds/gate.js";
 import { costBasisUsd, PRICES, toolKey } from "../_shared/blockyWorlds/pricing.js";
 import { DEFAULT_SETTINGS, decide, WRITING } from "../_shared/blockyWorlds/guard.js";
 import { MOODS } from "../_shared/blockyWorlds/formulas.js";
@@ -46,7 +50,9 @@ const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const ANTHROPIC_KEY = Deno.env.get("ANTHROPIC_API_KEY") ?? "";
 const flag = (k: string) => (Deno.env.get(k) ?? "").trim().toLowerCase();
-const ENABLED = flag("BLOCKY_WORLDS_ENABLED") === "true";
+// THE switch (gate.js): owner (default, fail-closed) | allowlist | everyone
+const ACCESS = accessModeFrom(Deno.env.get("BLOCKY_WORLDS_ACCESS"));
+const OPEN = ACCESS === "everyone";
 const TESTERS = adminEmailList(Deno.env.get("BLOCKY_WORLDS_TEST_USERS"));
 const OWNERS = adminEmailList(Deno.env.get("ADMIN_EMAILS"));
 const PAID_OFF = flag("BLOCKY_WORLDS_PAID_CALLS") === "off";
@@ -84,16 +90,17 @@ async function whoIs(req: Request) {
   const user = data.user;
   const { data: profile } = await admin.from("profiles").select("plan_code").eq("id", user.id).single();
   const plan = String(profile?.plan_code ?? "free").toLowerCase();
-  const owner = isAdmin(user, OWNERS);
-  // the owner always tests like a tester (BLOCKY_WORLDS_TEST_USERS may be empty): sees the template, dryRun, runs env "test"
-  return { user, plan, tester: owner || isAdmin(user, TESTERS), owner };
+  // the owner always tests like a tester (BLOCKY_WORLDS_TEST_USERS may be empty): sees the template, dryRun, runs env
+  // "test"; testers count only while the switch is allowlist or everyone
+  const { owner, tester, allowed } = viewerAccess({ mode: ACCESS, user, owners: OWNERS, testers: TESTERS });
+  return { user, plan, tester, owner, allowed };
 }
-/** signed in, and the template is on for them */
+/** signed in, and the template is open to them (BLOCKY_WORLDS_ACCESS): refused before anything is read or charged */
 async function requireUser(req: Request, trace: Trace) {
   const who = await whoIs(req);
   if (!who) throw new ApiError("SIGN_IN");
   trace.owner = who.owner;
-  if (!ENABLED && !who.tester && !who.owner) throw new ApiError("OFF");
+  if (!who.allowed) throw new ApiError("OFF");
   return who;
 }
 /** may write scripts (and generate): a paid plan, the same rule for testers; the owner always (their test runs) */
@@ -217,15 +224,16 @@ async function handle(req: Request, trace: Trace) {
 
   if (action === "access") {
     const who = await whoIs(req);
-    // the owner (ADMIN_EMAILS) always sees it, even with BLOCKY_WORLDS_TEST_USERS empty
-    const visible = ENABLED || Boolean(who?.tester) || Boolean(who?.owner);
+    // the owner (ADMIN_EMAILS) always sees it; anyone else only as BLOCKY_WORLDS_ACCESS allows. Closed = a bare reply.
+    const visible = who ? who.allowed : guestAllowed(ACCESS);
+    if (!visible) return closedReply(Boolean(who));
     let ideaBatchesLeft = null;
     if (who && visible) {
       const { data } = await admin.rpc("blocky_worlds_guard", { p_user: who.user.id });
       ideaBatchesLeft = Math.max(0, ideaBatchesFor(who.plan) - Number(data?.user_ideas_today ?? 0));
     }
     return {
-      enabled: ENABLED, signedIn: Boolean(who), plan: who?.plan ?? null, owner: Boolean(who?.owner), tester: Boolean(who?.tester),
+      enabled: OPEN, signedIn: Boolean(who), plan: who?.plan ?? null, owner: Boolean(who?.owner), tester: Boolean(who?.tester),
       visible, canWrite: Boolean(who && visible && writerOk(who)), canGenerate: Boolean(who && visible && (who.owner || canGenerate(who.plan)) && RENDERER),
       canRemoveWatermark: Boolean(who && canRemoveEndCard(who.plan)), mock: PROVIDER === "mock", renderer: Boolean(RENDERER),
       lengths: LENGTHS, defaultLength: DEFAULT_LENGTH, prices: PRICES, narrator: { name: NARRATOR.voiceName },
@@ -506,7 +514,7 @@ async function handle(req: Request, trace: Trace) {
     const script = { title: d.title, lines: d.lines };
     const { data: run, error } = await admin.rpc("blocky_worlds_start_run", {
       p_user: who.user.id, p_draft: d.id, p_title: d.title, p_length: lengthSec, p_lines: d.lines, p_narration: narrationOf(script), p_post: d.post,
-      p_narrator: NARRATOR, p_end_card: endCard, p_credits: credits, p_env: (who.tester || who.owner) && !ENABLED ? "test" : "prod",
+      p_narrator: NARRATOR, p_end_card: endCard, p_credits: credits, p_env: (who.tester || who.owner) && !OPEN ? "test" : "prod",
     });
     if (error || !run) {
       if (/INSUFFICIENT_CREDITS/.test(error?.message ?? "")) throw new ApiError("CREDITS", `You need ${credits} credits for this video.`, { credits });

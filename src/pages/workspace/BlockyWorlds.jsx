@@ -17,8 +17,8 @@ const DEV_AS = DEV_MOCK ? new URLSearchParams(window.location.search).get("as") 
 /**
  * Blocky Worlds: "In this world..." story videos. Everyone the page is open to can browse ideas; writing scripts and
  * making videos need a paid plan (the server enforces the same rule: _shared/blockyWorlds/access.js). The page is
- * behind its own switch until launch (data/blockyWorlds.js); the studio sends visitors away when the server says the
- * template isn't open to them.
+ * behind the server's switch until launch (BLOCKY_WORLDS_ACCESS, data/blockyWorlds.js): the route's BlockyWorldsGate and
+ * the studio send visitors away when the server says the template isn't open to them.
  */
 export default function BlockyWorlds() {
   const { user, loading: authLoading } = useAuth();

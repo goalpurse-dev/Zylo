@@ -25,6 +25,7 @@ import LongFormScriptReadyNotifier from "./components/LongFormScriptReadyNotifie
 import { BLOCKY_STORIES_PATH } from "./data/blockyStories";
 import { CUTAWAY_PATH } from "./data/cutawayExplainer";
 import { BLOCKY_WORLDS_PATH } from "./data/blockyWorlds";
+import BlockyWorldsGate from "./components/viral-tools/blocky-worlds/BlockyWorldsGate";
 
 // pages…
 //import Home from "./pages/Home";
@@ -807,7 +808,8 @@ return (
   <Route path="/workspace/ai-fruit-story" element={<AIFruitStory />} />
   <Route path={BLOCKY_STORIES_PATH} element={<BlockyStories />} />
   <Route path={CUTAWAY_PATH} element={<CutawayExplainer />} />
-  <Route path={BLOCKY_WORLDS_PATH} element={<BlockyWorlds />} />
+  {/* Blocky Worlds: the server decides who may see it (BLOCKY_WORLDS_ACCESS); everyone else is sent home */}
+  <Route path={BLOCKY_WORLDS_PATH} element={<BlockyWorldsGate><BlockyWorlds /></BlockyWorldsGate>} />
   <Route path="/workspace/face-asmr" element={<FaceAsmrPage />} />
   <Route path="/workspace/skeleton-shorts" element={<SkeletonShorts />} />
   <Route path="/workspace/micro-camera-animal" element={<MicroCameraAnimalPage />} />

@@ -9,8 +9,9 @@ import { getWorkspaceRouteSeoPolicy } from "../../data/routeSeoPolicy.js";
 import { PUBLISH_SUITE_RELEASED } from "../../data/unreleasedFeatures.js";
 import { BLOCKY_STORIES_FLAG, BLOCKY_STORIES_NAME, BLOCKY_STORIES_PATH, BLOCKY_STORIES_THUMBNAIL } from "../../data/blockyStories";
 import { CUTAWAY_ENABLED, CUTAWAY_NAME, CUTAWAY_PATH } from "../../data/cutawayExplainer";
-import { BLOCKY_WORLDS_NAME, BLOCKY_WORLDS_PATH, BLOCKY_WORLDS_VISIBLE } from "../../data/blockyWorlds";
+import { BLOCKY_WORLDS_NAME, BLOCKY_WORLDS_PATH, showBlockyWorlds } from "../../data/blockyWorlds";
 import useCutawayAccess from "../viral-tools/cutaway-explainer/api/cutawayAccess";
+import useBlockyWorldsAccess from "../viral-tools/blocky-worlds/api/blockyWorldsAccess";
 import { useAuth } from "../../context/AuthContext";
 import { useFeatureFlag } from "../../lib/featureFlags";
 
@@ -139,7 +140,9 @@ export const FLAGGED_CREATE_TOOLS = [
     after: "cartoon-drive-by",
   },
   {
-    // Blocky Worlds: localhost only (free mock mode) until launch; hidden in every production build
+    // Blocky Worlds: never on by build; shown only when the server's `access` answer says this visitor may see it
+    // (BLOCKY_WORLDS_ACCESS: owner by default). Loading or a failed call = hidden. `enabled: false` keeps a pinned
+    // Blocky Worlds hidden too (toolshell's pinned filter).
     id: "blocky-worlds",
     label: BLOCKY_WORLDS_NAME,
     sublabel: "",
@@ -147,7 +150,7 @@ export const FLAGGED_CREATE_TOOLS = [
     preview: "/blocky-worlds/hero.jpg",
     previewPosition: "object-top",
     color: "#bef264",
-    enabled: BLOCKY_WORLDS_VISIBLE,
+    enabled: false,
     after: "ai-fruit-story",
   },
 ].map((tool) => ({
@@ -440,7 +443,9 @@ export function useShortFormTools() {
   const blocky = useFeatureFlag(BLOCKY_STORIES_FLAG, auth?.user?.id);
   // Cutaway while it is off for customers: shown to a tester (the cutaway-api `access` action, once per session)
   const cutaway = useCutawayAccess();
-  return useMemo(() => shortFormTools({ [BLOCKY_STORIES_FLAG]: blocky.enabled, "cutaway-explainer": cutaway.tester }), [blocky.enabled, cutaway.tester]);
+  // Blocky Worlds: the server's answer only (fails closed: loading / error = not in the list)
+  const worlds = showBlockyWorlds(useBlockyWorldsAccess());
+  return useMemo(() => shortFormTools({ [BLOCKY_STORIES_FLAG]: blocky.enabled, "cutaway-explainer": cutaway.tester, "blocky-worlds": worlds }), [blocky.enabled, cutaway.tester, worlds]);
 }
 
 /* ─── Desktop Create panel ────────────────────────────────────────────────── */
