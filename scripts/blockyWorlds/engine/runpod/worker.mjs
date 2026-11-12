@@ -311,7 +311,7 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
     spend.directorUsd += r.costUsd; spend.plannedDirectorUsd += r.costUsd;
     console.log(`storyboard: ${r.board.lines.length} lines, ${r.fellBack.length} on the engine planner (${r.ms} ms, $${r.costUsd})`);
     return r.board;
-  }).catch((e) => { throw e.code ? e : coded("STORYBOARD_FAILED", String(e.message ?? e).slice(0, 300)); }) : null;
+  }).catch((e) => { if (Number(e?.costUsd) > 0) { spend.directorUsd += Number(e.costUsd); spend.plannedDirectorUsd += Number(e.costUsd); } const c = e.code ? e : coded("STORYBOARD_FAILED", String(e.message ?? e).slice(0, 300)); c.storyboard = true; throw c; }) : null;
   boarding?.catch(() => {}); // awaited below (an early rejection must not be unhandled)
   try {
   // 1. the voice: the run's earlier take, or one new paid take uploaded at once
@@ -327,6 +327,7 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
     [v] = await Promise.all([lap("voice", async () => { if (boarding && p.storyboard?.voiceAfter) await boarding; return voice({ lines: script.lines, outDir: dir, apiKey: process.env.ELEVENLABS_KEY ?? null }); }), /* voiceAfter: no paid take before the storyboard is written (render.js switch) */ lap("director", () => directing), ...(boarding ? [lap("storyboard", () => boarding)] : [])]); // the storyboard is written while the voice is made
   } catch (e) {
     const m = String(e.message ?? e);
+    if (e?.storyboard) throw e; // the storyboard's own failure (KIT_UNSUPPORTED, STORYBOARD_FAILED): not the voice's
     throw coded(/VOICE_CONFIG/.test(m) ? "VOICE_CONFIG" : /quota|credits|payment|insufficient|\b40[12]\b/i.test(m) ? "PROVIDER_BALANCE" : /different script/.test(m) ? "BAD_JOB" : "VOICE_FAILED", m.slice(0, 600));
   } finally {
     // a take that was bought is kept even if the trim after it failed: a retry gets it back instead of paying again

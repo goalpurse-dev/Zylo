@@ -135,6 +135,6 @@ export async function directStoryboard({ apiKey, script, cast, scenes, title = "
   for (const n of fellBack) { board.lines = board.lines.filter((l) => l.line !== n); board.lines.push({ line: n, keep: true, fallback: problems.filter((p) => p.line === n).map((p) => p.problem) }); }
   board.lines.sort((a, b) => a.line - b.line);
   // maxFallback: how many lines may go to the old planner (the server's BLOCKY_WORLDS_BOARD_ONLY sends 0: board only); default half
-  if (fellBack.length > (Number.isFinite(maxFallback) ? maxFallback : lines.length / 2)) throw Object.assign(new Error(`the board kit can't show ${fellBack.length} of ${lines.length} lines`), { code: "KIT_UNSUPPORTED", costUsd });
+  if (fellBack.length > (Number.isFinite(maxFallback) ? maxFallback : lines.length / 2)) throw Object.assign(new Error(`the board kit can't show ${fellBack.length} of ${lines.length} lines: ${fellBack.slice(0, 6).map((n) => `#${n + 1} (${(problems.find((p) => p.line === n)?.problem ?? "no storyboard").slice(0, 80)})`).join("; ")}`), { code: "KIT_UNSUPPORTED", costUsd, fellBack });
   return { board, costUsd: +costUsd.toFixed(6), ms: Date.now() - t0, fellBack, problems };
 }
