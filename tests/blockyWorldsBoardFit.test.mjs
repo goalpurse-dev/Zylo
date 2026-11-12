@@ -168,3 +168,20 @@ test("the kit as writer rules: every place, look, animal and weather named; the 
   assert.match(note, /Keep the rule/);
   assert.match(note, /cave, dragon/);
 });
+
+// ---------------------------------------------------------------- step 2: the library filter (computed at read time)
+test("library filter: in launch mode the picker only ever chooses ideas the board kit can film", async () => {
+  const { pickForUser } = await import("../supabase/functions/_shared/blockyWorlds/library.js");
+  const rows = LIBRARY.map((r, i) => ({ id: r.id, idea: r.idea, formula: r.idea.formula, mood: r.idea.mood, rank: 100 - i }));
+  for (const mood of [null, "funny", "horror", "wholesome", "epic"]) {
+    const chosen = pickForUser(fittingOnly(rows), 6, mood);
+    assert.ok(chosen.every((c) => kitFit(c.idea).fit), String(mood));
+    if (!mood) assert.equal(chosen.length, 6);
+  }
+  // the endpoint: more candidates in launch mode, filtered before pickForUser; the page learns the mode + the kit list
+  const src = readFileSync(new URL("../supabase/functions/blocky-worlds-api/index.ts", import.meta.url), "utf8");
+  assert.match(src, /const LIBRARY_LIMIT = LAUNCH_BOARD \? 200 : 60;/);
+  assert.match(src, /p_limit: LIBRARY_LIMIT/);
+  assert.match(src, /pickForUser\(LAUNCH_BOARD \? fittingOnly\(cands \?\? \[\]\) : cands \?\? \[\], IDEAS_PER_BATCH, mood\)/);
+  assert.match(src, /launch: LAUNCH_BOARD \? "board" : "off", film: LAUNCH_BOARD \? canFilm\(\) : null/);
+});

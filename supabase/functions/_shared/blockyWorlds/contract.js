@@ -21,7 +21,9 @@
 //   remove       { runId }                            -> { ok: true }
 //
 // Access: { enabled, signedIn, plan, canGenerate, canWrite, owner, tester, mock, renderer, lengths, defaultLength,
-//           prices: { [lengthSec]: credits }, narrator: { name }, moods: [{ id, label }], ideaBatchesLeft }
+//           prices: { [lengthSec]: credits }, narrator: { name }, moods: [{ id, label }], ideaBatchesLeft,
+//           launch ("board" | "off": the board-only launch mode), film ([{ id, label, what }] "What we can film", from the
+//           kit list, or null) }
 // IdeaCard: { id, opener, title, premise, teaser, mood, moodLabel, setting }
 // Draft: { id, source ("idea"|"topic"|"own"), ideaId, title, lengthSec, lines: [{ part, text }], post, credits,
 //          check: { problems[], warnings[], words, seconds, spots: [{ problem, part, lines[], fix }] }, ready (no problems),

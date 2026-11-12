@@ -16,6 +16,7 @@ import { EXAMPLE_IDEAS } from "../../../../../supabase/functions/_shared/blockyW
 import { problemSpots } from "../../../../../supabase/functions/_shared/blockyWorlds/protocol.js";
 import { failReason } from "../../../../../supabase/functions/_shared/blockyWorlds/contract.js";
 import { errorFromReply } from "../api/blockyWorldsApi";
+import { canFilm, fittingOnly } from "../../../../../supabase/functions/_shared/blockyWorlds/boardFit.js";
 // the judged library's live ideas (scripts/blockyWorlds/devFixture.mjs), so localhost shows the real, varied ideas
 import LIBRARY from "./libraryFixture.json";
 
@@ -24,6 +25,9 @@ const Q = new URLSearchParams(window.location.search);
 const AS = Q.get("as") ?? "starter", RENDERER = Q.get("renderer") !== "0";
 const BLOCKED = Q.get("blocked") === "1", FAIL = Q.get("fail");
 const QUEUE = Math.max(0, Math.min(9, Number(Q.get("queue")) || 0)), LATE = Q.get("eta") === "late";
+// the board-only launch mode (the server's BLOCKY_WORLDS_LAUNCH=board), on by default here so localhost shows what launch
+// customers see: only library ideas the board kit can film, "What we can film", "Move it to our town". &launch=off: as before
+const LAUNCH = Q.get("launch") !== "off";
 const PLACE_S = 8, PLACE_ETA = 90;
 // the mock script is the example script, whose planted object is this card's (Grandpa's whistle): the real checks run on it
 const PROTO = EXAMPLE_IDEAS[0];
@@ -35,7 +39,7 @@ const state = { ideas: new Map(), drafts: new Map(), runs: [], seed: 0, served: 
 
 /** The next library ideas this visitor hasn't seen, best first with a little shuffle (like the server's pickForUser). */
 function libraryBatch(mood) {
-  const fresh = LIBRARY.filter((r) => !state.served.has(r.id) && (!mood || r.idea.mood === mood));
+  const fresh = (LAUNCH ? fittingOnly(LIBRARY) : LIBRARY).filter((r) => !state.served.has(r.id) && (!mood || r.idea.mood === mood));
   const picked = fresh.map((r, i) => ({ r, k: i + Math.random() * 12 })).sort((a, b) => a.k - b.k).slice(0, IDEAS_PER_BATCH).map((x) => x.r);
   picked.forEach((r) => state.served.add(r.id));
   return picked.map((r) => r.idea);
@@ -72,7 +76,7 @@ const runView = (r) => {
 
 export async function devCall(action, body) {
   await wait(action === "writeScript" || action === "rewrite" ? 900 : 350);
-  if (action === "access") return { enabled: false, signedIn: AS !== "guest", plan: AS === "guest" ? null : AS, owner: AS === "owner", tester: true, visible: true, canWrite: PAID, canGenerate: PAID && RENDERER, canRemoveWatermark: AS === "pro" || AS === "generative", mock: true, renderer: RENDERER, lengths: LENGTHS, defaultLength: DEFAULT_LENGTH, prices: PRICES, narrator: { name: NARRATOR.voiceName }, moods: Object.entries(MOODS).map(([k, m]) => ({ id: k, label: m.label })), ideaBatchesLeft: PAID ? 20 : 3 };
+  if (action === "access") return { enabled: false, signedIn: AS !== "guest", plan: AS === "guest" ? null : AS, owner: AS === "owner", tester: true, visible: true, canWrite: PAID, canGenerate: PAID && RENDERER, canRemoveWatermark: AS === "pro" || AS === "generative", mock: true, renderer: RENDERER, lengths: LENGTHS, defaultLength: DEFAULT_LENGTH, prices: PRICES, narrator: { name: NARRATOR.voiceName }, moods: Object.entries(MOODS).map(([k, m]) => ({ id: k, label: m.label })), ideaBatchesLeft: PAID ? 20 : 3, launch: LAUNCH ? "board" : "off", film: LAUNCH ? canFilm() : null };
   if (AS === "guest") fail("SIGN_IN");
   if (action === "ideas" || action === "topicIdeas") {
     // the library first (like the server); once a mood's library is used up, the mock writer, as the live writer would

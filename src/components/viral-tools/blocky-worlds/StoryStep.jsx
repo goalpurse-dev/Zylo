@@ -2,14 +2,17 @@ import { useEffect, useRef } from "react";
 import { ArrowUp, ChevronRight, FileText, Loader2, RefreshCw } from "lucide-react";
 import { EXAMPLE_IDEAS } from "../../../../supabase/functions/_shared/blockyWorlds/examples.js";
 import { cardOf } from "../../../../supabase/functions/_shared/blockyWorlds/ideas.js";
+import { kitFit } from "../../../../supabase/functions/_shared/blockyWorlds/boardFit.js";
 import { ErrorBanner, FOCUS, SectionLabel, cx } from "../../ui/zyvo";
 import { ActionBar, ActionButton, StepBody } from "./StepShell";
 import { worldArt } from "./worldArt";
 import "./blockyWorlds.css";
 
 const QUICK_TOPICS = ["my cat", "homework", "the school bus", "a haunted pool"];
-// signed out: our own sample cards, so the page is never empty (tapping one asks to sign up)
+// signed out: our own sample cards, so the page is never empty (tapping one asks to sign up); in the board-only launch
+// mode only the ones the board kit can film (boardFit.js, the same check as the library filter)
 const SAMPLE_CARDS = EXAMPLE_IDEAS.map((idea, i) => cardOf(idea, `sample-${i}`));
+const BOARD_SAMPLE_CARDS = EXAMPLE_IDEAS.map((idea, i) => (kitFit(idea).fit ? cardOf(idea, `sample-${i}`) : null)).filter(Boolean);
 
 /**
  * Step 1 (the Cartoon Drive By layout: one calm panel, the action pinned at the bottom): the headline, the prompt bar,
@@ -129,7 +132,8 @@ function MoodChips({ flow }) {
 function Ideas({ flow, onGate, onPeek, selected, onSelect }) {
   const signedIn = Boolean(flow.access?.signedIn);
   const { ideas } = flow;
-  const items = signedIn ? flow.shownIdeas : SAMPLE_CARDS.filter((i) => !flow.mood || i.mood === flow.mood);
+  const samples = flow.access?.launch === "board" ? BOARD_SAMPLE_CARDS : SAMPLE_CARDS;
+  const items = signedIn ? flow.shownIdeas : samples.filter((i) => !flow.mood || i.mood === flow.mood);
   const loading = ideas.status === "loading";
   const more = () => onGate(() => flow.askIdeas({ more: true }));
 

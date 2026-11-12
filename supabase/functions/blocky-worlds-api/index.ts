@@ -38,6 +38,7 @@ import { APP_HYBRID, callLogLines, hybridCard, hybridChecksRow, hybridBeats, run
 import { openerKey, pickForUser } from "../_shared/blockyWorlds/library.js";
 import { cardProblems, problemSpots } from "../_shared/blockyWorlds/protocol.js";
 import { queueInfo, renderConfigured, renderRuntime } from "../_shared/blockyWorlds/renderSupabase.ts";
+import { boardOnlyFrom, canFilm, fittingOnly, launchModeFrom } from "../_shared/blockyWorlds/boardFit.js";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -55,6 +56,15 @@ const CACHE_TTL: string = (CACHE_TTLS as readonly string[]).includes(flag("BLOCK
 // on only when it says runpod AND everything a run needs is configured: a half-configured renderer never charges anyone
 const RENDERER = (Deno.env.get("BLOCKY_WORLDS_RENDERER") ?? "").trim() === "runpod" && renderConfigured() ? "runpod" : "";
 const BUCKET = "blocky-worlds-renders";
+// BOARD-ONLY LAUNCH MODE (owner, 2026-11-12; _shared/blockyWorlds/boardFit.js): BLOCKY_WORLDS_LAUNCH=board shows only
+// library ideas the board kit can film, gives the writers the kit as hard rules and checks every script against the kit
+// before the charge; BLOCKY_WORLDS_BOARD_ONLY=on adds the strict render (no old-planner lines: a miss is refunded) and
+// implies launch mode. Both off by default; a secret change switches them (no code deploy).
+const envGet = (k: string) => Deno.env.get(k) ?? "";
+const LAUNCH_BOARD = launchModeFrom(envGet);
+const BOARD_ONLY = boardOnlyFrom(envGet);
+/** the library rows the picker may show: in launch mode only those the board kit can film (computed at read time) */
+const LIBRARY_LIMIT = LAUNCH_BOARD ? 200 : 60;
 
 const admin = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
 
@@ -214,6 +224,8 @@ async function handle(req: Request, trace: Trace) {
       canRemoveWatermark: Boolean(who && canRemoveEndCard(who.plan)), mock: PROVIDER === "mock", renderer: Boolean(RENDERER),
       lengths: LENGTHS, defaultLength: DEFAULT_LENGTH, prices: PRICES, narrator: { name: NARRATOR.voiceName },
       moods: Object.entries(MOODS).map(([id, m]: any) => ({ id, label: m.label })), ideaBatchesLeft,
+      // launch mode: the page shows "What we can film" (generated from the kit list) and "Move it to our town"
+      launch: LAUNCH_BOARD ? "board" : "off", film: LAUNCH_BOARD ? canFilm() : null,
     };
   }
 
@@ -227,9 +239,11 @@ async function handle(req: Request, trace: Trace) {
       // the judged library: only ideas this user hasn't seen, mixed across formulas and moods; no call, no daily limit
       trace.step = "library";
       const mood = moodOf(body?.mood);
-      const { data: cands, error: cErr } = await admin.rpc("blocky_worlds_library_candidates", { p_user: who.user.id, p_mood: mood, p_limit: 60 });
+      // launch mode: more candidates (the filter drops most of them), then only the ones the board kit can film; the
+      // hidden rows keep their stats and come back when the filter is lifted (nothing stored, nothing retired)
+      const { data: cands, error: cErr } = await admin.rpc("blocky_worlds_library_candidates", { p_user: who.user.id, p_mood: mood, p_limit: LIBRARY_LIMIT });
       if (cErr) console.error("[blocky-worlds-api] library:", cErr.message);
-      const chosen = pickForUser(cands ?? [], IDEAS_PER_BATCH, mood);
+      const chosen = pickForUser(LAUNCH_BOARD ? fittingOnly(cands ?? []) : cands ?? [], IDEAS_PER_BATCH, mood);
       if (chosen.length >= IDEAS_PER_BATCH) {
         const { data: rows, error } = await admin.from("blocky_worlds_ideas").insert(chosen.map((c: any) => ({ user_id: who.user.id, source: "library", library_id: c.id, idea: c.idea }))).select("id, idea");
         if (error) throw new ApiError("SERVER", undefined, {}, error.message);
