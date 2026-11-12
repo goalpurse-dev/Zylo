@@ -57,6 +57,18 @@ export function exampleText() {
 // ------------------------------------------------------------------------------------------------ validation (free)
 const tok = (s) => String(s).split(/\s+/).filter(Boolean), norm = (w) => String(w).toLowerCase().replace(/[^a-z0-9']/g, "");
 const CAM_RE = { street: /^(town_wide|street_wide|street_end|street_back|sky_up|eye_close|houses:[a-z0-9_]+(:[a-z0-9_]+)+|front:[a-z0-9_]+)$/, house: /^(house|front|cat|arrive):[a-z0-9_]+$|^window:[a-z0-9_]+:[0-3]$/, place: /^(place_wide|place_medium|face:[a-z0-9_]+)$/, room: /^(room_wide|room_window|room_door|room_side|peek:me|cat_stare|bed_top|painting|behind_window|huddle_up|pov_eye|window_in|face:[a-z0-9_]+|room_me)$/ };
+/** a camera the shot's place can't use (a street camera on a park shot) -> that place's own wide camera; free, before
+ *  every validation (the director's place is right, only its camera word is from the wrong set) -> how many it swapped */
+export function fixCameras(board) {
+  let n = 0;
+  for (const b of board.lines ?? []) for (const s of Array.isArray(b.shots) ? b.shots : []) {
+    const [kind, owner] = String(s.loc ?? "").split(":");
+    if (!CAM_RE[kind] || CAM_RE[kind].test(String(s.cam))) continue;
+    const to = kind === "street" ? "street_wide" : kind === "house" ? `front:${owner}` : kind === "place" ? "place_wide" : "room_wide";
+    s.camFixed = s.cam; s.cam = to; n++;
+  }
+  return n;
+}
 export function validateStoryboard(board, { lines, cast }) {
   const out = [], homes = board.bible?.homes ?? {}, isOwner = (o) => o in homes;
   const P = (n, m) => out.push({ line: n, problem: m });
@@ -125,12 +137,12 @@ export async function directStoryboard({ apiKey, script, cast, scenes, title = "
   const board = { id: "auto", title, bible, kit: {}, lines: parts.flatMap((p) => (Array.isArray(p.data) ? p.data : [])) };
   log(`storyboard scenes: ${groups.length} calls in parallel, ${board.lines.length} lines (${Math.max(...parts.map((p) => p.ms ?? 0))} ms)`);
   // 3. validation + one repair of the failing lines, then the engine fallback
-  let problems = validateStoryboard(board, { lines, cast });
+  fixCameras(board); let problems = validateStoryboard(board, { lines, cast });
   if (problems.length) {
     const bad = [...new Set(problems.map((p) => p.line))];
     const rep = spend(await call({ apiKey, fetchFn, maxTokens: 450 * bad.length + 300, system: SHOT_SYSTEM, content: ask(bad, ` Fix these problems (use ONLY the kit vocabulary; a line the kit can't show is {"line":n,"keep":true}): ${JSON.stringify(problems)}`) }).catch((e) => ({ data: null, costUsd: e.costUsd ?? 0 })));
     for (const e of Array.isArray(rep.data) ? rep.data : []) { board.lines = board.lines.filter((l) => l.line !== e.line); board.lines.push(e); }
-    problems = validateStoryboard(board, { lines, cast });
+    fixCameras(board); problems = validateStoryboard(board, { lines, cast });
   }
   // THE LINE REPAIR (owner: every problem = a check + an auto-fix, a clean failure only if unfixable): the lines still
   // unfilmable are REWORDED to kit things (one cheap call, lines only), re-checked (kitCheck + the director again for just
@@ -145,7 +157,7 @@ export async function directStoryboard({ apiKey, script, cast, scenes, title = "
       const ids = fixed.map((x) => x.line), numbered2 = lines.map((t, i) => `#${i} ${t}`).join("\n");
       const again = spend(await call({ apiKey, fetchFn, maxTokens: 450 * ids.length + 300, system: SHOT_SYSTEM, content: [{ type: "text", text: prefix }, { type: "text", text: `These lines were REWORDED so the kit can film them (use the new text):\n${ids.map((n) => `#${n} ${lines[n]}`).join("\n")}\nWrite the storyboard entries for lines ${ids.join(", ")} only. The whole story now:\n${numbered2}` }] }).catch((e) => ({ data: null, costUsd: e.costUsd ?? 0 })));
       for (const e of Array.isArray(again.data) ? again.data : []) { if (!ids.includes(e.line)) continue; board.lines = board.lines.filter((l) => l.line !== e.line); board.lines.push(e); }
-      problems = validateStoryboard(board, { lines, cast });
+      fixCameras(board); problems = validateStoryboard(board, { lines, cast });
       log(`storyboard repair: ${fixed.length} of ${bad.length} line(s) reworded to kit things; ${new Set(problems.map((p) => p.line)).size} still unfilmable`);
     }
   }

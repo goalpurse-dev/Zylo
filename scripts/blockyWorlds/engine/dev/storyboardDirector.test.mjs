@@ -71,3 +71,9 @@ test("the free replay: the Pigeon Mayor's unfilmable lines are reworded to kit t
 test("over its cap: the error carries the spend (the worker books it; shakedown 4 lost ~$0.12)", async () => {
   await assert.rejects(directStoryboard({ apiKey: "x", script, cast, scenes, capUsd: 0.0000001, fetchFn: mock({}).fetchFn }), (e) => e.code === "STORYBOARD_FAILED" && e.costUsd > 0 && /spent \$/.test(e.message));
 });
+test("fixCameras: a street camera on a park shot becomes the place's wide camera before validation (shakedown 4 retry)", async () => {
+  const { fixCameras } = await import("../lib/storyboardDirector.js");
+  const board = { lines: [{ line: 0, shots: [{ loc: "place:park", cam: "street_wide" }, { loc: "street", cam: "place_wide" }, { loc: "place:park", cam: "face:me" }] }] };
+  assert.equal(fixCameras(board), 2);
+  assert.deepEqual(board.lines[0].shots.map((s) => s.cam), ["place_wide", "street_wide", "face:me"]);
+});
