@@ -15,6 +15,7 @@ import { judgePrompt, judgeReasons, judgeSchema, judgeScriptPrompt, JUDGE_SYSTEM
 import { pickRecipe } from "./recipes.js";
 import { ANGLES, BROAD_SCRIPT_SYSTEM, broadScriptSchema, examplesBlock, PLAN_SYSTEM, planPrompt, planSchema } from "./broad.js";
 import { skeletonProblems } from "./skeleton.js";
+import { buttonFallback } from "./formula.js";
 import { HYBRID_LINES_SYSTEM, HYBRID_PLAN_SYSTEM, hybridLinesSystem, hybridPlanSystem, hybridChecks, hybridLinesPrompt, hybridLinesSchema, hybridPlanPrompt, hybridPlanSchema, planCard, planNotes, withParts } from "./hybrid.js";
 import { beatBudgets, plantedShare } from "./beatSheet.js";
 import { copyProblems, copyReasons } from "./antiCopy.js";
@@ -454,7 +455,9 @@ export async function fixPart({ apiKey = "", provider = "anthropic", script, ind
       ? mockFixPart({ script, indexes: span, reasons: why, card })
       : await callJson({ apiKey, model: MODELS.opener, system: PART_FIX_SYSTEM, user: partFixPrompt({ script, indexes: span, reasons: why, card }), schema: partFixSchema(), effort: "low", maxTokens: 4000, timeoutMs: 90_000 });
     costUsd += reply.costUsd;
-    const fresh = (Array.isArray(reply.data?.lines) ? reply.data.lines : []).map((t) => paceClean(t)).filter((t) => t && t !== ".").slice(0, span.length + 6);
+    let fresh = (Array.isArray(reply.data?.lines) ? reply.data.lines : []).map((t) => paceClean(t)).filter((t) => t && t !== ".").slice(0, span.length + 6);
+    // the free fallback (formula.js): when the span ends the script and the model's last line is too long for the button, split off its last short sentence
+    if (to === script.lines.length - 1 && fresh.length) fresh = buttonFallback(fresh, [script.lines[0].text, script.lines[1]?.text, script.lines[2]?.text]);
     if (!fresh.length) { why = [...reasons, "Return the replacement lines (at least one)."]; continue; }
     const lines = [...script.lines.slice(0, from), ...fresh.map((text) => ({ part, text })), ...script.lines.slice(to + 1)];
     if (from === 0) { const fixed = fixOpener(lines[0].text); if (fixed) lines[0] = { ...lines[0], text: fixed }; }

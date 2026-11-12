@@ -340,6 +340,7 @@ export function partFixPrompt({ script, indexes, reasons, card = null }) {
     ...(card?.topic && topicBlock(card.topic) ? [topicBlock(card.topic)] : []),
     ...(card ? [`THE IDEA: planted object: ${card.prop ?? "-"} | twist: ${card.twist ?? "-"} | closer to aim for: ${card.closer ?? "-"}`] : []),
     `WHY THEY FAILED (fix every one):\n${reasons.map((r) => `- ${r}`).join("\n")}`,
+    ...(set.has(script.lines.length - 1) && script.lines.length > 4 ? [`THE LAST LINE IS THE BUTTON: it must be 2 to 6 words, nothing more (a short fragment, not a sentence with a clause), and it must call back the rule ("${script.lines[0].text.slice(0, 80)}") or the hook ("${(script.lines[1]?.text ?? "").slice(0, 80)}") by reusing one of its words or pictures. Write the lines before it as needed, and end with the button as its own line.`] : []),
     `Replace lines ${indexes.map((i) => i + 1).join(", ")} (${indexes.reduce((a, i) => a + wordCount(script.lines[i]?.text), 0)} words now).`,
   ].join("\n\n");
 }

@@ -27,7 +27,7 @@ import { skeletonProblems } from "./skeleton.js";
 import { mentions, ruleMissing, topicBlock, topicElements, topicProblems } from "./topic.js";
 import { blockedWordsRule } from "./safety.js";
 import { targetWords } from "./config.js";
-import { formulaProblems } from "./formula.js";
+import { buttonProblems, formulaProblems } from "./formula.js";
 import { BOARD_KIT } from "./boardKit.js";
 import { boardFitProblems, kitBlock, swapHint } from "./boardFit.js";
 
@@ -355,7 +355,9 @@ export function hybridChecks({ script, skeleton = {}, card, examples = [], lengt
   // the board-only launch mode: what the board kit can't film blocks (a must-have miss; boardFit.js on kitCheck.js); a
   // one-off mention is a note
   const kit = board ? boardFitProblems(script, card) : { problems: [], warnings: [] };
-  const hard = [...base.problems.filter((p) => HARD_SCRIPT.test(p) && !slightlyShort(p)), ...copyReasons(copy), ...(lost ? [lost] : []), ...kit.problems];
+  // the button (formula.js) is HARD for a beat-sheet draft: the last line is 2 to 6 words and calls back the rule or the hook
+  const button = beatDraft(script, skeleton, card) ? buttonProblems(script) : [];
+  const hard = [...base.problems.filter((p) => HARD_SCRIPT.test(p) && !slightlyShort(p)), ...copyReasons(copy), ...(lost ? [lost] : []), ...kit.problems, ...button];
   const advisory = [
     ...kit.warnings,
     ...flagged,
@@ -367,7 +369,7 @@ export function hybridChecks({ script, skeleton = {}, card, examples = [], lengt
     // the story formula (formula.js): the hook, the places, the "But" pivot, the escalation, "Then I noticed", the button
     ...formulaProblems(script, lengthSec),
   ];
-  return { hard, advisory: [...new Set(advisory)], copy, words: base.words, seconds: base.seconds };
+  return { hard, advisory: [...new Set(advisory)].filter((x) => !hard.includes(x)), copy, words: base.words, seconds: base.seconds };
 }
 
 export { BEATS, BEAT_IDS, BEAT_PART };

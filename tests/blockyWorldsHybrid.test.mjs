@@ -88,7 +88,7 @@ const SCRIPT = {
       "I heard water. Underground water.", "It was rushing under the hill like a bathtub.", "I'm the lowest kid in town.",
       "So I'm the only one who could reach the drain.", "I crawled under our house and pulled the old plug.",
       "Glug! The water drained out with a giant burp.", "The hill stopped sliding.", "Every house stayed tied and safe.", "Nobody floated away. Nobody sank.", "The whole street cheered for the mud."),
-    ...B("callback", "Now everyone visits the lowest house to listen.", "Now Mrs. Quibble tiptoes down to us."),
+    ...B("callback", "Now everyone visits the lowest house to listen.", "Now Quibble tiptoes on the ground."),
   ],
   post: { title: "t", description: "d", hashtags: ["#a"] },
 };
@@ -329,8 +329,8 @@ test("length v2: budgets sized to the aim (middle of the band), 9-word lines, th
     globalThis.fetch = async (_u, init) => { const b = JSON.parse(init.body); const data = b.model === "claude-opus-5-5" ? PLAN : /verdicts/.test(JSON.stringify(b.output_config)) ? { verdicts: [{ scores: Object.fromEntries(RUBRIC.map((c) => [c.id, 4])), safe: true, better: "x" }] } : { title: "t", lines, post: SCRIPT.post, map: MAP }; return { ok: true, json: async () => ({ model: b.model, usage: { input_tokens: 10, output_tokens: 10 }, stop_reason: "end_turn", content: [{ type: "text", text: JSON.stringify(data) }] }) }; };
     try { return { result: await writeHybrid({ apiKey: "x", topic: TOPIC, lengthSec: 90, judge: false }) }; } finally { globalThis.fetch = real; }
   })();
-  assert.equal(r.draftWords, 367);
-  assert.deepEqual(r.selfCount, { stated: 367 + SCRIPT.lines.length, real: 367 });
+  assert.equal(r.draftWords, 366);
+  assert.deepEqual(r.selfCount, { stated: 366 + SCRIPT.lines.length, real: 366 });
   assert.ok(r.script.lines.every((l) => !("words" in l)));
 });
 
@@ -398,7 +398,8 @@ test("writeHybrid: a hard failure gets exactly ONE cheap fix (low effort), even 
   const calls = [];
   const short = { ...clone(SCRIPT), lines: SCRIPT.lines.slice(0, 20) };
   const r = await writeHybrid({ topic: TOPIC, lengthSec: 90, steps: fakes([short, short], calls) });
-  assert.deepEqual(calls, ["plan", "lines", `fix:${HYBRID.fix.effort}:1`, "judge:true"]);
+  // 3 hard notes: too short, and the cut-off last line is no 2-6 word button that calls back the rule or the hook
+  assert.deepEqual(calls, ["plan", "lines", `fix:${HYBRID.fix.effort}:3`, "judge:true"]);
   assert.equal(r.fixed, false);
   assert.ok(r.firstHard.some((x) => /^Too short/.test(x)));
   const calls2 = [];

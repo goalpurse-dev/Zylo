@@ -145,9 +145,78 @@ export function formulaProblems(script, lengthSec = 90) {
   // 5. "Then I noticed something": a win from the town's own rule, late
   if (noticedAt < 0 && !lines.some((l, i) => /\bnoticed something\b/i.test(l.text) && pct(i) > 45)) bad('there is no "Then I noticed something." line where the narrator wins with the town\'s own rule.');
 
-  // 6. the button: 2 to 6 words
-  const [bLo, bHi] = FORMULA.buttonWords, bw = counts[n - 1];
-  if (bw < bLo || bw > bHi) bad(`the last line is a ${bw}-word line; the button should be ${bLo} to ${bHi} words that reopen the loop.`, [n - 1]);
+  // 6. the button: 2 to 6 words that call back the rule or the hook
+  out.push(...buttonProblems(script));
+  // 7. a sound should fit the thing that makes it ("blew her whistle. Beep!" is a whistle with a beep)
+  out.push(...soundObjectProblems(script));
+  return out;
+}
+
+const STOP = new Set("this that with from have then they them their there were what when where into just like very over only also still even ever your about after".split(" "));
+const stem = (w) => w.replace(/(?:ing|ed|es|s)$/, "");
+const keyWords = (t) => new Set(String(t ?? "").toLowerCase().split(/[^a-z]+/).filter((w) => w.length >= 3 && !STOP.has(w)).map(stem).filter((w) => w.length >= 3));
+/** The hook line index (line 2 or 3: first person, ends with "!"), else 1. */
+const hookIndex = (lines) => { const i = [1, 2].find((k) => k < lines.length && FIRST_PERSON.test(lines[k].text) && /!["']?$/.test(lines[k].text.trim())); return i ?? 1; };
+
+/**
+ * The BUTTON checks (HARD in the hybrid writer, hybrid.js): the last line is 2 to 6 words AND calls back the rule (line 1)
+ * or the hook (a content word of either comes back). Notes start with FORMULA_PREFIX and name the line.
+ */
+export function buttonProblems(script) {
+  const lines = script?.lines ?? [];
+  if (lines.length < 4) return [];
+  const n = lines.length, [lo, hi] = FORMULA.buttonWords, last = lines[n - 1].text, w = wordCount(last);
+  const out = [];
+  const rule = lines[0].text, hook = lines[hookIndex(lines)]?.text ?? "";
+  if (w < lo || w > hi) out.push(`${FORMULA_PREFIX} the last line is a ${w}-word line; the button must be ${lo} to ${hi} words that reopen the loop and call back the rule ("${rule.slice(0, 60)}") or the hook ("${hook.slice(0, 60)}"). ${lineTag([n - 1])}`);
+  const target = new Set([...keyWords(rule), ...keyWords(hook)]);
+  if (![...keyWords(last)].some((k) => target.has(k))) out.push(`${FORMULA_PREFIX} the button does not call back the rule or the hook: reuse a word or picture from "${rule.slice(0, 60)}" or "${hook.slice(0, 60)}". ${lineTag([n - 1])}`);
+  return out;
+}
+
+/**
+ * The free fallback when a rewrite misses the length: if the final line is too long, split off its LAST short sentence
+ * (2 to 6 words) as the button, preferring the last one that calls back the rule or the hook. texts: the lines' texts to
+ * work on; context: the script's first lines' texts (rule, hook). Returns the new texts (the same when nothing fits).
+ */
+export function buttonFallback(texts, context = texts) {
+  const list = [...texts];
+  const last = list.at(-1);
+  if (last === undefined || wordCount(last) <= FORMULA.buttonWords[1]) return list;
+  const [lo, hi] = FORMULA.buttonWords;
+  const parts = String(last).match(/[^.!?]+[.!?]+["']?|[^.!?]+$/g)?.map((s) => s.trim()).filter(Boolean) ?? [];
+  if (parts.length < 2) return list;
+  const target = new Set([...keyWords(context[0]), ...keyWords(context[1]), ...keyWords(context[2])]);
+  const ok = (s) => wordCount(s) >= lo && wordCount(s) <= hi;
+  const echoing = parts.map((s, i) => ({ s, i })).filter((x) => ok(x.s) && [...keyWords(x.s)].some((k) => target.has(k)));
+  const pick = echoing.at(-1) ?? parts.map((s, i) => ({ s, i })).filter((x) => ok(x.s)).at(-1);
+  if (!pick) return list;
+  const rest = parts.filter((_, i) => i !== pick.i).join(" ");
+  list.pop();
+  if (rest) list.push(rest);
+  list.push(pick.s);
+  return list;
+}
+
+/** What each thing can sound like: sounds that do NOT fit it (deny lists, kept small; our library has no whistle). */
+export const OBJECT_SOUNDS = Object.freeze([
+  { object: /\b(whistles?|whistled|whistling)\b/i, name: "whistle", deny: ["beep", "buzz", "ding", "click", "tap", "zap", "boing", "fizz"] },
+  { object: /\bdoors?\b/i, name: "door", deny: ["splash", "ding", "zap", "beep", "twang", "fizz", "boing"] },
+  { object: /\b(glass|windows?|panes?|mirrors?)\b/i, name: "glass", deny: ["beep", "buzz", "twang", "zap", "plop", "fizz", "boing", "whoosh"] },
+  { object: /\b(water|puddles?|ponds?|rivers?|lakes?|rain)\b/i, name: "water", deny: ["knock", "slam", "click", "beep", "buzz", "bonk", "twang"] },
+]);
+/** A sound word next to a thing it doesn't fit (same line, or the line before): notes for Fix it, or drop the sound word. */
+export function soundObjectProblems(script) {
+  const lines = script?.lines ?? [], out = [];
+  lines.forEach((l, i) => {
+    const tags = sfxTags(l.text);
+    if (!tags.length) return;
+    const around = `${lines[i - 1]?.text ?? ""} ${l.text}`;
+    for (const o of OBJECT_SOUNDS) {
+      const clash = tags.filter((t) => o.deny.includes(t));
+      if (clash.length && o.object.test(around)) out.push(`${FORMULA_PREFIX} the sound "${[...new Set(clash)].join(", ")}" does not fit the ${o.name} in this scene; use a sound that fits what happens, or take the sound word out. ${lineTag([i])}`);
+    }
+  });
   return out;
 }
 
