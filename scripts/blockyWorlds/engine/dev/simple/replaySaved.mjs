@@ -39,7 +39,8 @@ const kept = board.lines.filter((l) => l.keep && !l.fallback).map((l) => l.line)
 console.log(`saved board: ${board.lines.length} lines; restored ${restored}; rebuilt (labelled, not the director's own): ${rebuilt.join(", ") || "-"}; camera fixes ${camFixes}`);
 console.log(`validation: ${problems.length} problem(s)${problems.length ? ": " + problems.slice(0, 6).map((p) => `#${p.line + 1} ${p.problem}`).join("; ") : ""}`);
 console.log(`kept for the old planner: ${kept.length} line(s) ${kept.map((n) => `#${n + 1}`).join(" ")}${boardOnly && kept.length ? " -> board-only: these go to the repair (a paid call) and fail the run if still kept" : ""}`);
-const tl = applyStoryboard(planned, board);
+const invalid = new Set(problems.map((p) => p.line)); // lines that fail the validation are kept out of the engine run (as the director s check does)
+const tl = applyStoryboard(planned, { ...board, lines: board.lines.map((l) => (invalid.has(l.line) ? { line: l.line, keep: true } : l)) });
 const checks = { ...storyboardChecks(tl, board), timeline: checkTimeline(tl).filter((p) => !/unknown built asset/.test(p)), visuals: checkVisuals(tl, script), subjects: checkSubjects(tl), production: checkProduction(tl) };
 console.log(`engine checks (estimated timing, kept lines on the old planner): ${Object.entries(checks).map(([k, v]) => `${k} ${v.length}`).join(", ")}`);
 for (const [k, v] of Object.entries(checks)) for (const p of v.slice(0, Number(arg("show", 6)))) console.log(`  ${k}: ${typeof p === "string" ? p : JSON.stringify(p)}`);

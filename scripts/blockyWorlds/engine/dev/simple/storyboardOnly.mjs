@@ -40,13 +40,14 @@ const { kitCheck } = await import(pathToFileURL(path.join(SHARED, "kitCheck.js")
 const prevRun = argv.includes("--reuse") && fs.existsSync(path.join(out, "results.json")) ? JSON.parse(fs.readFileSync(path.join(out, "run.json"), "utf8")) : null;
 let script;
 if (prevRun) { script = JSON.parse(fs.readFileSync(path.join(out, "results.json"), "utf8")).results[0].script; C.script = prevRun.usd.script; T.script = prevRun.seconds.script; }
-else { const meter = LLM.moneyMeter(Math.min(0.12, CAP)); const w = await step("script", () => LLM.writeScript({ apiKey, idea: card, lengthSec: 90, meter, maxTokens: 8000, board: true })); C.script = +meter.spent.toFixed(5); script = w.script; }
+else { const meter = LLM.moneyMeter(Math.min(0.2, CAP)); /* a worst-case gate: the write costs ~$0.05 */ const w = await step("script", () => LLM.writeScript({ apiKey, idea: card, lengthSec: 90, meter, maxTokens: 8000, board: true })); C.script = +meter.spent.toFixed(5); script = w.script; }
 fs.writeFileSync(path.join(out, "results.json"), JSON.stringify({ results: [{ script, card }] }, null, 1));
 const formula = formulaProblems(script, 90), kc = kitCheck(script, { card, boardOnly: true });
 say(`script "${script.title}": ${script.lines.length} lines, ${script.lines.reduce((a, l) => a + l.text.split(/\s+/).length, 0)} words ($${C.script}); formula ${formula.length} problem(s); kitCheck(board-only) ${kc.ok ? "ok" : kc.missing.map((m) => m.word).join(", ")}`);
 for (const f of formula) say(`  formula: ${f.slice(0, 200)}`);
 save({ formula, kitCheck: { ok: kc.ok, missing: kc.missing.map((m) => m.word), warnings: kc.warnings.map((m) => m.word) } });
-if (!kc.ok) { say("STOP: the early kit check fails (the worker stops here too, before anything else is paid)"); process.exit(1); }
+if (!kc.ok && !argv.includes("--past-early-kit")) { say("STOP: the early kit check fails (the worker stops here too, before anything else is paid)"); process.exit(1); }
+if (!kc.ok) say("TEST ONLY (--past-early-kit): the worker would stop here; the storyboard runs anyway to measure it (its rewording may move those lines into the kit)");
 
 // 2. the scene list (autoRun's call)
 const direction = await directStory({ script, idea: card, provider: "mock" });

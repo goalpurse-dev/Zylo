@@ -40,6 +40,7 @@ export const PROPS = Object.freeze({
   cake: (g) => { cyl(g, 0.16, 0.16, 0.12, [0, 0.06, 0], mat("#f6d7b0")); cyl(g, 0.165, 0.165, 0.03, [0, 0.12, 0], mat(C.pink)); cyl(g, 0.01, 0.01, 0.06, [0, 0.16, 0], glowM(C.yellow)); },
   cookie: (g) => { cyl(g, 0.06, 0.06, 0.015, [0, 0.008, 0], mat("#c98a4a")); },
   sandwich: (g) => { box(g, [0.14, 0.02, 0.14], [0, 0.01, 0], mat("#f0d6a0")); box(g, [0.14, 0.015, 0.14], [0, 0.028, 0], mat(C.green)); box(g, [0.14, 0.02, 0.14], [0, 0.045, 0], mat("#f0d6a0")); },
+  carrot: (g) => { cyl(g, 0.03, 0.005, 0.18, [0, 0.03, 0], mat(C.orange ?? "#f08a2c")).rotation.z = Math.PI / 2; for (let i = 0; i < 3; i++) box(g, [0.01, 0.06, 0.01], [0.1, 0.05, (i - 1) * 0.015], mat(C.green)).rotation.z = 0.3 * (i - 1); },
   apple: (g) => { ball(g, 0.06, [0, 0.06, 0], mat(C.red)); box(g, [0.01, 0.03, 0.01], [0, 0.12, 0], mat(C.brown)); },
   egg: (g) => { ball(g, 0.04, [0, 0.05, 0], mat(C.white), { sy: 1.3 }); },
   pumpkin: (g) => { ball(g, 0.2, [0, 0.16, 0], mat(C.orange), { sy: 0.8 }); box(g, [0.03, 0.06, 0.03], [0, 0.34, 0], mat(C.green)); },
