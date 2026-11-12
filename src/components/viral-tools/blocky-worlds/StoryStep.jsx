@@ -2,7 +2,8 @@ import { useEffect, useRef } from "react";
 import { ArrowUp, ChevronRight, FileText, Loader2, RefreshCw } from "lucide-react";
 import { EXAMPLE_IDEAS } from "../../../../supabase/functions/_shared/blockyWorlds/examples.js";
 import { cardOf } from "../../../../supabase/functions/_shared/blockyWorlds/ideas.js";
-import { kitFit } from "../../../../supabase/functions/_shared/blockyWorlds/boardFit.js";
+import { fittingWithSwap } from "../../../../supabase/functions/_shared/blockyWorlds/boardFit.js";
+import { BOARD_SAMPLE_IDEAS } from "./boardSamples";
 import { ErrorBanner, FOCUS, SectionLabel, cx } from "../../ui/zyvo";
 import { ActionBar, ActionButton, StepBody } from "./StepShell";
 import { worldArt } from "./worldArt";
@@ -12,7 +13,11 @@ const QUICK_TOPICS = ["my cat", "homework", "the school bus", "a haunted pool"];
 // signed out: our own sample cards, so the page is never empty (tapping one asks to sign up); in the board-only launch
 // mode only the ones the board kit can film (boardFit.js, the same check as the library filter)
 const SAMPLE_CARDS = EXAMPLE_IDEAS.map((idea, i) => cardOf(idea, `sample-${i}`));
-const BOARD_SAMPLE_CARDS = EXAMPLE_IDEAS.map((idea, i) => (kitFit(idea).fit ? cardOf(idea, `sample-${i}`) : null)).filter(Boolean);
+// (only 2 of the 6 examples fit, so six judged live library ideas that fit come first: boardSamples.js)
+const BOARD_SAMPLE_CARDS = [
+  ...BOARD_SAMPLE_IDEAS.map((idea, i) => cardOf(idea, `board-sample-${i}`)),
+  ...fittingWithSwap(EXAMPLE_IDEAS).map((idea, i) => cardOf(idea, `sample-fit-${i}`)),
+];
 
 /**
  * Step 1 (the Cartoon Drive By layout: one calm panel, the action pinned at the bottom): the headline, the prompt bar,

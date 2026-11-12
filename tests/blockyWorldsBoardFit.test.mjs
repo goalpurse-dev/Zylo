@@ -182,7 +182,8 @@ test("library filter: in launch mode the picker only ever chooses ideas the boar
   const src = readFileSync(new URL("../supabase/functions/blocky-worlds-api/index.ts", import.meta.url), "utf8");
   assert.match(src, /const LIBRARY_LIMIT = LAUNCH_BOARD \? 200 : 60;/);
   assert.match(src, /p_limit: LIBRARY_LIMIT/);
-  assert.match(src, /pickForUser\(LAUNCH_BOARD \? fittingOnly\(cands \?\? \[\]\) : cands \?\? \[\], IDEAS_PER_BATCH, mood\)/);
+  // (since the planted-object swap: fittingWithSwap, tests/blockyWorldsBoardSwap.test.mjs)
+  assert.match(src, /pickForUser\(LAUNCH_BOARD \? fittingWithSwap\(cands \?\? \[\]\) : cands \?\? \[\], IDEAS_PER_BATCH, mood\)/);
   assert.match(src, /launch: LAUNCH_BOARD \? "board" : "off", film: LAUNCH_BOARD \? canFilm\(\) : null/);
 });
 

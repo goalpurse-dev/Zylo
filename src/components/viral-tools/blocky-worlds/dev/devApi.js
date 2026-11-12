@@ -16,7 +16,7 @@ import { EXAMPLE_IDEAS } from "../../../../../supabase/functions/_shared/blockyW
 import { problemSpots } from "../../../../../supabase/functions/_shared/blockyWorlds/protocol.js";
 import { failReason } from "../../../../../supabase/functions/_shared/blockyWorlds/contract.js";
 import { errorFromReply } from "../api/blockyWorldsApi";
-import { canFilm, fittingOnly } from "../../../../../supabase/functions/_shared/blockyWorlds/boardFit.js";
+import { canFilm, fittingWithSwap } from "../../../../../supabase/functions/_shared/blockyWorlds/boardFit.js";
 // the judged library's live ideas (scripts/blockyWorlds/devFixture.mjs), so localhost shows the real, varied ideas
 import LIBRARY from "./libraryFixture.json";
 
@@ -39,7 +39,7 @@ const state = { ideas: new Map(), drafts: new Map(), runs: [], seed: 0, served: 
 
 /** The next library ideas this visitor hasn't seen, best first with a little shuffle (like the server's pickForUser). */
 function libraryBatch(mood) {
-  const fresh = (LAUNCH ? fittingOnly(LIBRARY) : LIBRARY).filter((r) => !state.served.has(r.id) && (!mood || r.idea.mood === mood));
+  const fresh = (LAUNCH ? fittingWithSwap(LIBRARY) : LIBRARY).filter((r) => !state.served.has(r.id) && (!mood || r.idea.mood === mood));
   const picked = fresh.map((r, i) => ({ r, k: i + Math.random() * 12 })).sort((a, b) => a.k - b.k).slice(0, IDEAS_PER_BATCH).map((x) => x.r);
   picked.forEach((r) => state.served.add(r.id));
   return picked.map((r) => r.idea);
@@ -104,6 +104,8 @@ export async function devCall(action, body) {
     // needs a bus -> Fix it): a first write only; Move it / a rewrite comes back clean, like a good real rewrite
     if (LAUNCH && KIT_SIM && !prev && !d.blocked) {
       const i = KIT_SIM === "premise" ? 0 : Math.max(1, d.lines.findIndex((l) => l.part === "tour"));
+      // the sample script's own water tower can't be filmed either: it moves to a porch, so only the simulated miss shows
+      d.lines = d.lines.map((l) => ({ ...l, text: l.text.replace(/water towers?/gi, "old porch") }));
       d.lines = d.lines.map((l, k) => (k !== i ? l : { ...l, text: KIT_SIM === "premise" ? "In this town, we all live in a cave under the hill." : "Every morning the school bus honks twice." }));
       if (KIT_SIM === "line") d.lines = [...d.lines, { part: d.lines.at(-1).part, text: "And the school bus honked one last time." }];
       d.kitSim = KIT_SIM;

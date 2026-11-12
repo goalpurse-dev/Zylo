@@ -38,7 +38,7 @@ import { APP_HYBRID, callLogLines, hybridCard, hybridChecksRow, hybridBeats, run
 import { openerKey, pickForUser } from "../_shared/blockyWorlds/library.js";
 import { cardProblems, problemSpots } from "../_shared/blockyWorlds/protocol.js";
 import { queueInfo, renderConfigured, renderRuntime } from "../_shared/blockyWorlds/renderSupabase.ts";
-import { canFilm, canFilmLine, fittingOnly, launchModeFrom, moveNote } from "../_shared/blockyWorlds/boardFit.js";
+import { canFilm, canFilmLine, fittingWithSwap, launchModeFrom, moveNote } from "../_shared/blockyWorlds/boardFit.js";
 import { boardOnlyBlocked, productionSettings, stageOf } from "../_shared/blockyWorlds/render.js";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -249,7 +249,7 @@ async function handle(req: Request, trace: Trace) {
       // hidden rows keep their stats and come back when the filter is lifted (nothing stored, nothing retired)
       const { data: cands, error: cErr } = await admin.rpc("blocky_worlds_library_candidates", { p_user: who.user.id, p_mood: mood, p_limit: LIBRARY_LIMIT });
       if (cErr) console.error("[blocky-worlds-api] library:", cErr.message);
-      const chosen = pickForUser(LAUNCH_BOARD ? fittingOnly(cands ?? []) : cands ?? [], IDEAS_PER_BATCH, mood);
+      const chosen = pickForUser(LAUNCH_BOARD ? fittingWithSwap(cands ?? []) : cands ?? [], IDEAS_PER_BATCH, mood);
       if (chosen.length >= IDEAS_PER_BATCH) {
         const { data: rows, error } = await admin.from("blocky_worlds_ideas").insert(chosen.map((c: any) => ({ user_id: who.user.id, source: "library", library_id: c.id, idea: c.idea }))).select("id, idea");
         if (error) throw new ApiError("SERVER", undefined, {}, error.message);

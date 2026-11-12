@@ -1,13 +1,9 @@
 // Blocky Worlds BOARD-ONLY LAUNCH MODE (owner, 2026-11-12): "does this idea / script fit what the board kit can film?"
-// One server-side helper on top of the kit manifest (boardKit.js) and the engine side's early check (kitCheck.js); both are
-// owned by the engine side: this file only READS them and adds what they don't cover. Pure:
-// no I/O, no calls, free. Used by the idea picker (the library filter), the writers (the kit as hard constraints), the
-// script checks (boardFitProblems, before anything is charged) and the page ("What we can film").
-//
-// The manifest lists WHAT the kit can show (places, the 5 monster looks on one tall body, animals, weather, crowds,
-// actions, notYet). The WORDS that signal each thing in a script are this file's lexicon (an adapter: the manifest has
-// no word lists yet). When the kit grows, the manifest changes and this file follows it automatically for everything
-// listed by id (a new place id, animal, weather or monster look); a brand-new KIND of thing needs its words here.
+// The launch mode on top of the kit manifest (boardKit.js) and THE kit check (kitCheck.js v2: the one check for the server
+// and the worker, with the lexicon, scanText, the must-have rule and the premise rule). Both are owned by the engine side:
+// this file only READS them. What lives here: the idea fit (kitFit: core vs detail, the setting, the planted object), the
+// free planted-object swap, the check problems in the page's words (boardFitProblems), the creature-look notes, "What we
+// can film", the kit as hard rules for the writers and the "Move it to our town" note. Pure: no I/O, no calls, free.
 //
 // Switches (function secrets, read by the endpoint and passed in):
 //   BLOCKY_WORLDS_LAUNCH=board       the picker shows only fitting ideas, the writers get the kit as hard rules, every
@@ -16,7 +12,9 @@
 //                                    any line the board can't film fails as KIT_UNSUPPORTED and is refunded). Implies
 //                                    launch mode (a strict render without the pre-charge check would refund far too often).
 import { BOARD_KIT } from "./boardKit.js";
-import { kitCheck, kitHas, NOT_IN_KIT } from "./kitCheck.js";
+import { kitCheck, kitHas, kitView, NO_VARIANT, PREMISE_SHARE, scanText, singular, VARIANT_CUES } from "./kitCheck.js";
+// (re-exported: the writers, the page and the tests read them from here)
+export { kitView, NO_VARIANT, PREMISE_SHARE, scanText, VARIANT_CUES };
 
 /** A line the video can't show (fix "part": Fix it rewrites only that part). */
 export const BOARD_PREFIX = "The video can't show";
@@ -28,43 +26,6 @@ const on = (v) => ["on", "true", "1", "yes", "board"].includes(String(v ?? "").t
 export const boardOnlyFrom = (get = () => "") => on(get("BLOCKY_WORLDS_BOARD_ONLY"));
 /** Launch mode (the picker filter, the steering, the pre-charge check): BLOCKY_WORLDS_LAUNCH=board, or BOARD_ONLY on. */
 export const launchModeFrom = (get = () => "") => String(get("BLOCKY_WORLDS_LAUNCH") ?? "").trim().toLowerCase() === "board" || boardOnlyFrom(get);
-
-// ---------------------------------------------------------------- the kit, as the server reads it
-/** Short names for the page and the prompts; an id the kit adds later is shown by its id ("town_day" -> "town day"). */
-const PLACE_LABELS = Object.freeze({ street: "streets", room: "inside houses", park: "a park / town square", woods: "the woods", school: "a school classroom", shop: "a shop" });
-const placeLabel = (id) => PLACE_LABELS[id] ?? String(id).replace(/_/g, " ");
-const CREATURE_LABELS = Object.freeze({ peeker: "one huge eye", shadow: "a faceless shadow", grin: "a wide grin", hat: "a tall hat", many_eyes: "many eyes" });
-/**
- * Things the board shows besides the props kit: the props its ACTIONS use (grab:boards, nail:boards, pull:sock, huddle:blanket,
- * smear:batter, stack:bricks, the curtains; the hammer of nail:boards) and the room's furniture (the room place's "what").
- * ADAPTER: boardKit.js lists these inside actions / the room's text, not as props; they count as filmable things here.
- */
-const ACTION_PROPS = Object.freeze(["hammer", "boards", "brick", "bricks", "curtains", "blanket", "sock", "socks", "batter", "bowl", "window"]);
-const ROOM_THINGS = (kit) => String((kit.places ?? []).find((p) => p.id === "room")?.what ?? "").replace(/^[^(]*\(|\)[^)]*$/g, "").replace(/^[^:]*:/, "").split(/,\s*/).map((s) => s.trim()).filter((s) => /^[a-z ]{2,20}$/.test(s));
-
-/** The kit in one shape (props normalised, labels added). Pure; the same kit always gives the same view. */
-export function kitView(kit = BOARD_KIT) {
-  const fromKit = Array.isArray(kit.props) && kit.props.length
-    ? kit.props.map((p) => (typeof p === "string" ? { id: p, what: p, words: [p] } : { id: String(p.id), what: String(p.what ?? p.id), words: [p.id, ...(Array.isArray(p.aliases) ? p.aliases : []), ...(Array.isArray(p.words) ? p.words : [])].map(String) }))
-    : [];
-  const extra = [...ACTION_PROPS, ...ROOM_THINGS(kit)].filter((w, i, a) => a.indexOf(w) === i && !fromKit.some((p) => p.words.includes(w)) && !(kit.animals ?? []).includes(w)).map((w) => ({ id: w, what: w, words: [w], fromActions: true }));
-  const props = [...fromKit, ...extra];
-  return {
-    version: kit.version ?? 0,
-    places: (kit.places ?? []).map((p) => ({ id: p.id, what: p.what, outdoor: Boolean(p.outdoor), label: placeLabel(p.id) })),
-    creatures: (kit.creatures ?? []).map((c) => ({ id: c.id, what: c.what, signature: c.signature ?? "", label: CREATURE_LABELS[c.id] ?? c.what })),
-    creatureMoves: kit.creatureMoves ?? "",
-    animals: [...(kit.animals ?? [])],
-    weather: [...(kit.weather ?? [])],
-    crowds: kit.crowds ?? "",
-    // owner, 2026-11-12: crowds by day only (a night-rule story shows a few named people at night); a kit that can light
-    // a crowd at night says crowdsAtNight: true
-    crowdsAtNight: Boolean(kit.crowdsAtNight),
-    props, propsFromKit: fromKit.length > 0,
-    actions: [...(kit.actions ?? [])],
-    notYet: [...(kit.notYet ?? [])],
-  };
-}
 
 const list = (xs, last = "and") => (xs.length <= 1 ? xs.join("") : `${xs.slice(0, -1).join(", ")} ${last} ${xs.at(-1)}`);
 const MONSTER = (v) => `${v.creatures.length} monster looks`;
@@ -85,113 +46,7 @@ export function canFilm(kit = BOARD_KIT) {
 export const canFilmLine = (kit = BOARD_KIT) => list(canFilm(kit).map((x) => x.label));
 const placesLine = (v) => list(v.places.map((p) => p.label), "or");
 
-// ---------------------------------------------------------------- the lexicon (this file's adapter)
-const W = (src) => new RegExp(`\\b(?:${src})\\b`, "gi");
-/** Words of each place id the kit may list (when the kit lists the id, its words are fine; otherwise they are a miss). */
-const PLACE_WORDS = Object.freeze({
-  street: "streets?|sidewalks?|porch(?:es)?|curbs?|driveways?|front (?:yard|lawn|door|step)s?|lawns?|mailbox(?:es)?|neighbou?rhood",
-  room: "bedrooms?|kitchens?|living room|closets?|attic|basement|bathroom|hallway at home|under (?:the|my) bed",
-  park: "park|town square|the square|benches|bench|pond",
-  woods: "woods|forest|trees",
-  school: "school|classrooms?|teachers?|desks?|chalkboard|blackboard",
-  shop: "shops?|stores?|bakery|counter|shelves|till",
-});
-/** Places the kit has no id for: always a miss (unless a later kit lists the id named on the left). */
-const UNSUPPORTED_PLACES = Object.freeze({
-  cave: "caves?|caverns?|(?:the|a|old|deep) mine|mine (?:tunnels?|shafts?|carts?)|tunnels?|underground (?:town|city)|underground",
-  canyon: "canyons?|cliffs?|cliff-?top|gorge|rope bridges?",
-  farm: "farms?|barns?|barnyard|haystacks?|cornfields?|pasture|windmill|scarecrows?",
-  castle: "castles?|drawbridge|moat|throne room|dungeon|clock towers?|bell towers?|water towers?|watchtowers?",
-  underwater: "underwater|under the sea|ocean|seabed|sea floor|reef|portholes?|submarine",
-  beach: "beach|seaside|shore|island|lake|river|sea",
-  space: "outer space|in space|space station|on the moon|planets?|mars",
-  city: "city|downtown|skyscrapers?|airport|train station|subway",
-  wild: "desert|jungle|glacier|mountains?|mountaintop|volcano(?:es)?|swamp|junkyard|zoo|circus|hospital|museum|library|stadium|arena|playground|cafeteria|gym|auditorium",
-  building: "carnivals?|fairground|funfair|amusement park|theme park|lighthouses?|factory|factories|malls?|swimming pool|town pool|the pool|cinema|movie theat(?:er|re)|restaurants?|prisons?|jail|hotels?|church(?:es)?|harbou?r|docks?|pier|bridges?",
-});
-/** A whole town inside or on a giant thing (a world kind the kit doesn't have yet). */
-const GIANT_WORLD = /\b(?:live|lives|living|town|built)\s+(?:inside|in|on(?: the back of)?)\s+(?:a|an|one|the|our)\s+(?:giant|huge|enormous|massive|hollow|gigantic)\s+[a-z-]+|\binside (?:a|an|one|the) (?:giant|huge|enormous|gigantic) [a-z-]+|\b(?:town|school|house|street|world) (?:is )?(?:built )?(?:inside|on the back of) (?:a|an|the|one) [a-z-]+|\bon (?:a|an|the) [a-z-]+ that (?:walks|swims|flies|moves)\b/gi;
-/** The engine's monster-variant words (engine lib/storyboard.js VARIANT_CUES; the test keeps the two in step). */
-export const VARIANT_CUES = Object.freeze({
-  peeker: /\b(one|single|giant|huge|big|glowing)\s+eye\b|\beyes? (presses|pressed|filled|blinked|stared|twitched)\b|\beyelid\b/i,
-  shadow: /\b(shadow|faceless|no face|dark shape|shape in the dark)\b/i,
-  grin: /\b(grin|grins|grinning|smile|smiling|teeth)\b/i,
-  hat: /\b(top hat|tall hat|its hat|his hat)\b/i,
-  many_eyes: /\b(many|hundred|dozen|six|seven|eight|so many) eyes\b/i,
-});
-/** Creature words no monster look can show (engine lib/storyboard.js NO_VARIANT): a miss in a story with a creature. */
-export const NO_VARIANT = /\b(tentacles?|wings|slime|slimy|eight legs|spider|invisible|swims|flying (thing|monster))\b/i;
-/** Creatures that are not the tall body (fantasy bodies): a miss. */
-const FANTASY = "mumm(?:y|ys|ies)|dragons?|yetis?|trolls?|goblins?|ogres?|worms?|serpents?|snakes?|mermaids?|unicorns?|robots?|aliens?|ghosts?|vampires?|werewol(?:f|ves)|zombies?|fairies|fairy|gnomes?|elves|elf|pixies?|krakens?|sea monsters?|dinosaurs?|t-rex|mummy|mummies|skeletons?|genies?|giant squid|beetles?|bugs?";
-/** Generic words that mean the story has a creature (the tall body stands in). */
-const CREATURE_WORDS = /\b(monsters?|creatures?|tall figure|something tall|beast|presence)\b/i;
-/** Animal synonyms the kit's animals cover (left: what a script says; right: the kit's animal). */
-const ANIMAL_SYNONYMS = Object.freeze({ puppy: "dog", puppies: "dog", pup: "dog", kitten: "cat", kitty: "cat", bunny: "rabbit", bunnies: "rabbit", pigeon: "bird", crow: "bird", raven: "bird", parrot: "bird", seagull: "bird", sparrow: "bird", robin: "bird", eagle: "bird", hawk: "bird", goose: "bird", geese: "bird", hen: "chicken", rooster: "chicken", chick: "chicken", calf: "cow", lamb: "sheep", piglet: "pig", fawn: "deer", toad: "frog", rat: "mouse", mice: "mouse", tortoise: "turtle", wolves: "wolf", foxes: "fox", sheep: "sheep" });
-/** Animals with no model yet (a miss when the kit doesn't list them). */
-const OTHER_ANIMALS = "moles|whales?|sharks?|squids?|octop(?:us|uses|i|uss)|jellyfish|crabs?|lobsters?|fish|goldfish|horses?|ponies|pony|donkeys?|camels?|elephants?|giraffes?|lions?|tigers?|monkeys?|apes?|gorillas?|zebras?|hippos?|rhinos?|kangaroos?|pandas?|penguins?|walrus(?:es)?|dolphins?|moose|squirrels?|raccoons?|hedgehogs?|beavers?|bats|moths?|butterfl(?:y|ies)|bees?|ants?|lizards?|crocodiles?|alligators?|snails?|slugs?|hamsters?|guinea pigs?|ferrets?|llamas?|alpacas?|ostrich(?:es)?|flamingos?|peacocks?|bears?";
-/** Weather the kit lists is fine; these never are (yet). */
-const OTHER_WEATHER = Object.freeze({
-  fog: "fog|foggy|mist|misty",
-  storm: "storms?|stormy|thunder(?:storm)?s?|lightning|tornado(?:es)?|hurricanes?|hail|blizzards?|floods?|flooded|flooding|earthquakes?|erupt(?:s|ed|ion)?",
-  snow_ground: "snowm[ae]ns?|snowdrifts?|snow-covered|snowbanks?|igloos?|sleds?|sledding|frozen lake|icicles?",
-});
-/** Weather words for the kit's weather ids (rain / snow / wind), to tag them. */
-const WEATHER_WORDS = Object.freeze({ rain: "rain|rains|raining|rained|rainy|drizzle", snow: "snow|snows|snowing|snowed|snowy|snowflakes?", wind: "wind|winds|windy|breeze|gusts?" });
-const VEHICLES = "cars?|bus(?:es)?|school bus|trucks?|vans?|taxis?|train|the trains|trams?|tractors?|planes?|airplanes?|jets?|helicopters?|boats?|ships?|submarines?|rockets?|spaceships?|ufos?|hot air balloons?|blimps?|motorcycles?|scooters?|bicycles?|bikes?(?! helmet)|sleighs?";
-const SKY = "meteors?|comets?|asteroids?|eclipse|aurora|northern lights|rainbows?|the sky (?:turns?|turned|cracks?|cracked|opens?|opened|falls?|fell)|the (?:moon|sun) (?:is made of|was made of|falls?|fell|crash(?:es|ed)?|cracks?|cracked|vanish(?:es|ed)|disappear(?:s|ed)|catch(?:es)? fire|melts?|melted)|shooting stars?|stars fall|falling stars?|(?:snows?|snowed|rains?|rained|falls?|fell) upwards?|upside[- ]down";
-/** Actions the board can't animate (its actions are in the kit: walk, run, wave, cheer, look up, ...). */
-const ACTIONS_NOT = "rid(?:e|es|ing)|rode|swim(?:s|ming)?|swam|dig(?:s|ging)?|dug|we mine";
-const FLIGHT = /\b(?:float(?:s|ed|ing)?|flew|flies|fly|flying|lifted|levitat\w*|hover(?:s|ed|ing)?)\b[^.!?]{0,24}?\b(?:up|away|into the (?:sky|air|clouds)|off the ground|over the (?:town|roofs|rooftops|houses|street))\b/gi;
-const FLIGHT_OK = /\b(birds?|owls?|ducks?|pigeons?|crows?|curtains?|hat|hats|blankets?|leaves|paper|kites?|balloons?|sparks?|dust)\b/i;
-const TRANSFORM = /\b(?:turn(?:s|ed|ing)? into\b|transform(?:s|ed)?|shr[iu]nk|shrank|shrinks|grew to the size of|grows to the size of|melt(?:s|ed)? into|turn(?:s|ed)? to stone|turn(?:s|ed)? invisible|catch(?:es|ing)? fire|caught fire|on fire|explod(?:e|es|ed|ing)|explosions?|burst(?:s)? into|vanish(?:es|ed)?|lava)/gi;
-const CROWD = /\b(?:crowds?|mobs?|parades?|townsfolk|the whole (?:town|street|school|class|neighbou?rhood)|(?:everyone|everybody|all the (?:kids|neighbou?rs|grown-?ups|adults|people|families))\s+(?:gathered|came out|ran|cheered|screamed|lined up|stood|waited|marched|danced|watched|stared|crowded|rushed|showed up|was there|were there))\b/gi;
-const NIGHT = /\b(night|nights|tonight|midnight|after dark|moonlight|moonlit|bedtime|nightfall|sundown)\b/i;
-
 const lower = (s) => String(s ?? "").toLowerCase();
-const hitsOf = (re, text) => [...String(text ?? "").matchAll(re)].map((m) => m[0]);
-
-/**
- * Everything the kit can't show in one piece of text, plus what it uses: { needs: [{ kind, value, word }], tags }.
- * kinds: place, world, creature, creature_look, animal, weather, vehicle, sky, flight, transform, crowd_night.
- * opts.creature: the story has a creature (the look words are checked); detected from the text when not given.
- */
-export function scanText(text, kit = BOARD_KIT, opts = {}) {
-  const v = kitView(kit), t = String(text ?? ""), needs = [];
-  const placeIds = new Set(v.places.map((p) => p.id));
-  const tags = { places: [], creature: null, looks: [], animals: [], weather: [], crowd: false, night: NIGHT.test(t) };
-  const need = (kind, value, word) => { if (!needs.some((n) => n.kind === kind && lower(n.word) === lower(word))) needs.push({ kind, value, word }); };
-  for (const [id, src] of Object.entries(PLACE_WORDS)) if (hitsOf(W(src), t).length) (placeIds.has(id) ? tags.places : null)?.push(id);
-  for (const [id, src] of Object.entries(PLACE_WORDS)) if (!placeIds.has(id)) for (const w of hitsOf(W(src), t)) need("place", id, w);
-  for (const [id, src] of Object.entries(UNSUPPORTED_PLACES)) if (!placeIds.has(id)) for (const w of hitsOf(W(src), t)) need("place", id, w);
-  for (const w of hitsOf(GIANT_WORLD, t)) need("world", "inside_giant", w);
-  // the creature: the tall body in one of the kit's looks
-  const looks = v.creatures.map((c) => c.id).filter((id) => VARIANT_CUES[id]?.test(t));
-  const fantasy = hitsOf(W(FANTASY), t);
-  const hasCreature = opts.creature ?? (looks.length > 0 || CREATURE_WORDS.test(t) || fantasy.length > 0);
-  if (hasCreature) { tags.creature = looks[0] ?? "any"; tags.looks = looks; }
-  for (const w of fantasy) need("creature", "fantasy", w);
-  if (hasCreature && v.creatures.length) { const m = t.match(NO_VARIANT); if (m) need("creature_look", "none", m[0]); }
-  // animals: the kit's, their synonyms, and everything else
-  const kitAnimals = new Set(v.animals.map(lower));
-  const animalRe = W([...v.animals.map((a) => `${a}s?`), ...Object.keys(ANIMAL_SYNONYMS)].join("|"));
-  for (const w of hitsOf(animalRe, t)) { const base = ANIMAL_SYNONYMS[lower(w)] ?? lower(w).replace(/s$/, ""); if (kitAnimals.has(base) && !tags.animals.includes(base)) tags.animals.push(base); }
-  for (const w of hitsOf(W(OTHER_ANIMALS), t)) { const base = lower(w).replace(/(es|s)$/, ""); if (!kitAnimals.has(base) && !kitAnimals.has(lower(w))) need("animal", base, w); }
-  // weather
-  for (const [id, src] of Object.entries(WEATHER_WORDS)) if (hitsOf(W(src), t).length) (v.weather.includes(id) ? tags.weather.push(id) : need("weather", id, hitsOf(W(src), t)[0]));
-  for (const [id, src] of Object.entries(OTHER_WEATHER)) if (!v.weather.includes(id)) for (const w of hitsOf(W(src), t)) need("weather", id, w);
-  // vehicles, the sky, flight, transformations
-  for (const w of hitsOf(W(VEHICLES), t)) need("vehicle", "vehicle", w);
-  for (const w of hitsOf(W(SKY), t)) need("sky", "sky", w);
-  for (const s of t.split(/(?<=[.!?])\s+/)) { if (FLIGHT_OK.test(s)) continue; for (const w of hitsOf(FLIGHT, s)) need("flight", "flight", w); }
-  for (const w of hitsOf(TRANSFORM, t)) need("transform", "transform", w);
-  for (const w of hitsOf(W(ACTIONS_NOT), t)) need("action", "action", w);
-  // crowds: by day only (per sentence: a crowd and the night in the same sentence)
-  for (const s of t.split(/(?<=[.!?])\s+/)) {
-    const c = hitsOf(CROWD, s);
-    if (c.length) { tags.crowd = true; if (!v.crowdsAtNight && NIGHT.test(s)) need("crowd_night", "crowd", c[0]); }
-  }
-  return { needs, tags };
-}
 
 /**
  * What an idea card says. CORE: the world and the story's spine (a miss here means the idea can't be filmed). DETAIL: the
@@ -218,29 +73,15 @@ export function propFilmable(prop, kit = BOARD_KIT) {
   return kitView(kit).props.some((x) => x.words.some((w) => w && new RegExp(`\\b${esc(lower(w).replace(/_/g, " "))}(?:e?s)?\\b`).test(p)));
 }
 
-// ---------------------------------------------------------------- on top of the engine side's kitCheck.js
-// kitCheck (the engine side's early check: vehicles, places, creatures and props NOT in the kit, a must-have rule) is THE
-// check; this file adds only what it doesn't cover (weather, crowds at night, the monster looks, other animals, a town
-// inside a giant thing, the sky, flying, transformations, actions the board can't animate) with the SAME must-have rule.
-const KIT_CHECK_WORDS = new Set(Object.values(NOT_IN_KIT).flat().map(lower));
-const singular = (w) => w.replace(/(?:es|s)$/, "");
-/** A word kitCheck itself judges (its NOT_IN_KIT list, with its own plural rule: one trailing "s"). */
-const judgedByKitCheck = (word) => { const w = lower(word).trim(); return KIT_CHECK_WORDS.has(w) || KIT_CHECK_WORDS.has(w.replace(/s$/, "")); };
-/** A word kitCheck judges, or a single word the kit has (kitHas): never an extra miss. */
-const coveredByKitCheck = (word) => judgedByKitCheck(word) || (!/\s/.test(lower(word).trim()) && kitHas(lower(word).trim()) != null);
 /**
- * kitCheck's must-have misses, as this file uses them. Two adapters: kitCheck strips one trailing "s" from every word, so
- * "bus" comes back as "bu" (the word is put back from its NOT_IN_KIT list); and kitCheck always judges the real kit, so
- * for another kit (a what-if: a kit that grew a cave) a word that kit lists as a place, animal or prop is not a miss.
+ * The misses kitCheck finds in one text (every hit counts: an idea's text is one "line", all must-have). kit: kitCheck
+ * judges the real kit; for a what-if kit (a test: a kit that grew a cave) a word that kit lists is not a miss.
  */
-function kitCheckMisses(scriptOrLines, kit = BOARD_KIT) {
-  const v = kitView(kit);
-  const listed = new Set([...v.places.map((p) => p.id), ...v.animals, ...v.props.flatMap((p) => p.words)].map(lower));
-  return kitCheck(scriptOrLines).missing
-    .map((m) => ({ ...m, word: KIT_CHECK_WORDS.has(m.word) ? m.word : KIT_CHECK_WORDS.has(`${m.word}s`) ? `${m.word}s` : m.word }))
-    .filter((m) => kit === BOARD_KIT || !listed.has(m.word));
+function kitMisses(text, kit = BOARD_KIT) {
+  const v = kitView(kit), listed = new Set([...v.places.map((p) => p.id), ...v.animals, ...v.props.flatMap((p) => p.words)].map(lower));
+  return kitCheck([text], { kit }).missing.filter((m) => kit === BOARD_KIT || !listed.has(m.word)).map((m) => ({ kind: m.kind, value: m.kind, word: m.word }));
 }
-/** kitCheck's must-have rule (kitCheck.js): named in lines 0-1, in the last two lines, or in two lines. */
+/** kitCheck's must-have rule (kitCheck.js MUST), for the planted object (its home is here): lines 0-1, the last two, or two lines. */
 const mustHave = (lines, count) => lines.length >= 2 || lines.some((i) => i <= 1 || i >= count - 2);
 
 /** The thing a planted-object phrase names ("A roll of masking tape" -> "tape", "A paper sign reading ASK FIRST" -> "sign"). */
@@ -249,6 +90,100 @@ export function propHead(prop) {
   const words = propCore(prop).replace(/[^A-Za-z' -]/g, " ").trim().split(/\s+/).filter(Boolean);
   const w = lower(words.at(-1) ?? "").replace(/'s$/, "");
   return w.length >= 3 ? w : null;
+}
+
+// ---------------------------------------------------------------- the planted-object swap (free, deterministic)
+/**
+ * When an idea's planted object isn't a kit prop, the closest kit prop that keeps its story job: a word map by category.
+ * Each category lists the kit props it may become, in order (the first the kit has wins). Words are singular.
+ */
+export const SWAP_CATEGORIES = Object.freeze([
+  { id: "bread", job: "food you hand over or carry", words: ["bread", "bagel", "toast", "roll", "bun", "muffin", "pancake", "waffle", "cracker", "crumb", "crust", "biscuit", "pretzel", "dumpling"], to: ["cookie", "cake", "sandwich"] },
+  { id: "sweet", job: "a treat", words: ["pie", "pastry", "tart", "donut", "doughnut", "pudding", "jelly", "jam", "honey", "sugar", "gum", "marshmallow", "popsicle", "icecream", "sprinkle", "frosting", "cocoa", "syrup"], to: ["candy", "cake", "cookie"] },
+  { id: "produce", job: "something from the garden or kitchen", words: ["potato", "carrot", "turnip", "onion", "berry", "pear", "orange", "lemon", "grape", "nut", "acorn", "seed", "bean", "pea", "corn", "radish", "cabbage", "garlic", "pickle"], to: ["apple", "egg"] },
+  { id: "sneezy", job: "something that makes you sneeze or smells strong", words: ["pepper", "salt", "spice", "herb", "pollen", "dust", "powder", "perfume", "shaker"], to: ["flower"] },
+  { id: "furniture", job: "something to stand or sit on", words: ["stool", "chair", "step", "bench", "footstool", "cushion", "pillow", "crate"], to: ["table", "box", "sofa"] },
+  { id: "drawing", job: "something to draw or write with", words: ["chalk", "paint", "paintbrush", "marker", "pen", "quill", "charcoal"], to: ["crayon", "pencil"] },
+  { id: "meal", job: "a meal", words: ["cheese", "rind", "sausage", "meat", "ham", "lunchbox", "soup", "stew", "porridge", "broth", "noodle", "spaghetti"], to: ["sandwich", "bowl"] },
+  { id: "drink", job: "a drink", words: ["milk", "tea", "juice", "lemonade", "water", "coffee", "thermos", "flask", "canteen", "cocoa powder", "hot cocoa"], to: ["cup", "mug", "bottle"] },
+  { id: "utensil", job: "something to eat or serve with", words: ["ladle", "whisk", "spatula", "chopstick", "scoop"], to: ["spoon"] },
+  { id: "treasure", job: "a small treasure or token", words: ["ribbon", "medal", "badge", "pin", "button", "marble", "gem", "jewel", "ring", "necklace", "bracelet", "token", "stamp", "sticker", "star", "charm", "locket", "pebble", "shell", "ticket"], to: ["coin", "key", "crown", "trophy"] },
+  { id: "toy", job: "a toy", words: ["rollerskate", "yoyo", "yo-yo", "top", "puzzle", "dice", "die", "card", "figurine", "block", "rattle", "slinky", "abacus", "jump rope", "rubber duck", "spinner", "whirligig"], to: ["toy", "ball", "teddy", "doll"] },
+  { id: "feet", job: "something you wear on your feet or hands", words: ["shoe", "sneaker", "boot", "slipper", "sandal", "skate", "mitten", "mitt", "glove"], to: ["sock"] },
+  { id: "head", job: "something you wear on your head or face", words: ["hat", "cap", "beanie", "helmet", "glass", "glasses", "goggle", "earmuff", "headband"], to: ["mask", "crown"] },
+  { id: "wrap", job: "something you wrap up in", words: ["scarf", "raincoat", "coat", "jacket", "sweater", "handkerchief", "bandana", "pajama", "towel", "cape", "quilt"], to: ["blanket"] },
+  { id: "paper", job: "something written or drawn", words: ["paper", "sheet", "scroll", "rulebook", "contract", "tag", "label", "sign", "list", "page", "drawing", "poster", "flag", "law", "receipt", "certificate", "diploma", "permission slip", "slip", "card"], to: ["note", "letter", "book"] },
+  { id: "light", job: "a light", words: ["bulb", "lightbulb", "match", "glowstick", "nightlight", "lamp", "torch", "firefly"], to: ["lantern", "flashlight"] },
+  { id: "sound", job: "something that makes a sound", words: ["horn", "trumpet", "harmonica", "rattle", "chime", "buzzer", "shaker", "squeaker", "alarm"], to: ["whistle", "bell", "kazoo", "drum"] },
+  { id: "container", job: "something that holds things", words: ["pot", "pan", "tin", "can", "kettle", "tray", "pail", "crate", "sack", "pouch", "purse", "wallet", "envelope", "mailbox", "jug", "pitcher", "teapot", "lunch bag", "wheelbarrow"], to: ["bucket", "box", "jar", "bowl", "basket", "bag"] },
+  { id: "cleaning", job: "something to clean or splash with", words: ["duster", "polish", "rag", "sponge", "brush", "hose", "mop"], to: ["broom", "bucket"] },
+  { id: "tool", job: "a tool that bangs or digs", words: ["wrench", "saw", "nail", "screwdriver", "mallet", "trowel", "rake", "pickaxe"], to: ["hammer", "shovel", "stick"] },
+]);
+const MASS_NOUNS = new Set(["toast", "bread", "cheese", "soup", "chalk", "mud", "pepper", "salt", "paper", "cocoa", "yarn", "powder", "polish", "jam", "honey", "sugar", "gum", "tape", "string", "pie", "cake", "candy", "rind", "crumb"]);
+const SWAP_MODIFIERS = "masking|sewing|pencil|roller|step|rule|streetlight|soup|tin|cocoa|cotton|garden|pocket|rubber|jump|leg|arm|hair|shoe|snow|toy|tea|lunch|alarm|paper|kitchen|bath|rain|sun|night|bed";
+const MEASURES = "slice|slices|piece|pieces|loaf|loaves|bowl|bowls|cup|cups|jar|jars|bag|bags|roll|rolls|stub|stubs|box|boxes|tin|tins|bit|bits|lump|lumps|ball|balls|handful|spool|coil|scrap|scraps|sheet|sheets|bottle|bottles|pinch|scoop";
+/** kitCheck's singular (a real one: buses -> bus, glasses -> glass), plus "-oes" nouns (potatoes -> potato) for the swap. */
+const singularOf = (w) => (/oes$/.test(w) && !/(?:shoes|toes)$/.test(w) ? w.slice(0, -2) : singular(w));
+/**
+ * The swap for one planted object, or null (already filmable, or no category knows it): { from, to, category, job }.
+ * The words of the object are read from the last to the first ("a pencil stub" is a pencil; "a stub of chalk" is chalk).
+ */
+export function propSwap(prop, kit = BOARD_KIT) {
+  if (!prop || propFilmable(prop, kit)) return null;
+  const v = kitView(kit), has = (id) => v.props.some((p) => p.id === id || p.words.includes(id));
+  const core = lower(propCore(prop)).replace(/[^a-z' -]/g, " ");
+  const words = core.split(/\s+/).filter(Boolean).map((w) => w.replace(/'s$/, ""));
+  if (!words.length) return null;
+  // 1. the thing itself (the last word, or its two-word name: "cocoa powder"), by its job
+  const w = singularOf(words.at(-1)), pair = words.length > 1 ? `${singularOf(words.at(-2))} ${w}` : null;
+  const cat = (pair && SWAP_CATEGORIES.find((c) => c.words.includes(pair))) || SWAP_CATEGORIES.find((c) => c.words.includes(w));
+  const to = cat?.to.find(has);
+  if (to) return { from: words.at(-1), to, category: cat.id, job: cat.job };
+  // 2. else a kit prop named in the phrase is the thing ("a tiny pencil sharpener" -> a pencil, "a bucket of mud" -> a bucket)
+  for (let i = words.length - 2; i >= 0; i--) if (has(singularOf(words[i]))) return { from: words.at(-1), to: singularOf(words[i]), category: "kit", job: "the same thing" };
+  return null;
+}
+/**
+ * An idea with its planted object swapped into the kit (deterministic, free): the prop becomes the kit prop, and every
+ * card field that names the old thing names the new one ("one slice of toast" -> "one cookie"). The card says what moved
+ * (idea.swap) for the writers. Returns the idea unchanged when nothing needs or can be swapped.
+ */
+export function swapIdea(idea, kit = BOARD_KIT) {
+  const s = propSwap(idea?.prop, kit);
+  if (!s) return idea;
+  const plural = s.category !== "kit" && singularOf(lower(s.from)) !== lower(s.from) && !/^(glasses|braces|scissors|goggles|pajamas|earmuffs)$/i.test(s.from), to = plural && !/s$/.test(s.to) ? `${s.to}s` : s.to;
+  // a kit prop inside the phrase: only "<kit prop> (of) ... <thing>" becomes the kit prop ("bucket of mud" -> "bucket"; a
+  // bare "mud" elsewhere stays: it may be the story's own mud). Otherwise the thing itself, with its measure ("slice of").
+  const fromRe = s.category === "kit"
+    ? new RegExp(`\\b()${esc(s.to)}s?\\s+(?:of\\s+)?(?:[a-z-]+\\s+)?${esc(singularOf(lower(s.from)))}(?:e?s)?\\b`, "gi")
+    : new RegExp(`\\b(?:(?:${MEASURES})\\s+of\\s+)?((?:[a-z-]+\\s+){0,2}?)${esc(singularOf(lower(s.from)))}(?:e?s)?\\b`, "gi");
+  // a noun that only said what kind of thing it was goes with it ("masking tape", "roller skates", "step stool")
+  const dropMod = (adj) => String(adj ?? "").replace(new RegExp(`\\b(?:${SWAP_MODIFIERS})\\s+$`, "i"), "");
+  // a mass noun with no measure reads as many ("we leave toast on the curb" -> "we leave cookies on the curb"), unless it
+  // names a kind of something ("a chalk circle" -> "a crayon circle")
+  const mass = !plural && MASS_NOUNS.has(singularOf(lower(s.from))) && s.category !== "kit";
+  const many = (m, offset, str) => mass && !new RegExp(`^(?:${MEASURES})\\s+of\\b`, "i").test(m) && !/^\s+(?!(?:on|in|at|to|for|from|with|and|or|by|the|a|is|was|are|were|that|every|each|into|onto|under|over|tonight|again)\b)[a-z]+/i.test(str.slice(offset + m.length));
+  const swapText = (t) => String(t ?? "").replace(fromRe, (m, adj, offset, str) => `${dropMod(adj)}${many(m, offset, str) && !/s$/.test(to) ? `${to}s` : to}`).replace(new RegExp(`\\b(${esc(to)})(?:\\s+of)?\\s+\\1\\b`, "gi"), "$1");
+  const out = { ...idea };
+  for (const k of ["opener", "title", "premise", "price", "narrator", "twist", "teaser", "closer"]) if (out[k]) out[k] = swapText(out[k]);
+  if (Array.isArray(out.examples)) out.examples = out.examples.map(swapText);
+  out.prop = swapText(idea.prop);
+  if (!propFilmable(out.prop, kit)) out.prop = `${plural ? "some" : /^[aeiou]/.test(to) ? "an" : "a"} ${to}`;
+  out.swap = { from: String(idea.prop), to: out.prop, category: s.category, job: s.job };
+  return out;
+}
+/** The writers' hint for a swapped planted object (the plan writer and the library script writer get it). */
+export const swapHint = (swap) => `Planted object, moved into the kit we can film: ${swap.to} (the idea had ${swap.from}). Use it for the same job (${swap.job}); never name the old thing.`;
+/** Rows (or bare ideas) that fit the kit, swapping the planted object where that makes them fit; the rest dropped. */
+export function fittingWithSwap(rows, kit = BOARD_KIT) {
+  const out = [];
+  for (const r of rows ?? []) {
+    const idea = r?.idea ?? r;
+    if (kitFit(idea, kit).fit) { out.push(r); continue; }
+    const swapped = swapIdea(idea, kit);
+    if (swapped !== idea && kitFit(swapped, kit).fit) out.push(r?.idea ? { ...r, idea: swapped } : swapped);
+  }
+  return out;
 }
 
 /**
@@ -265,12 +200,7 @@ export function kitFit(ideaOrText, kit = BOARD_KIT) {
   }
   const idea = typeof ideaOrText === "string" ? { premise: ideaOrText } : ideaOrText ?? {};
   const all = scanText(`${coreText(idea)}\n${detailText(idea)}`, kit);
-  // kitCheck on one line = every hit counts (an idea's core is all "must-have"); then this file's extras on top
-  const misses = (text) => [
-    ...kitCheckMisses([text], kit).map((m) => ({ kind: m.kind, value: m.kind, word: m.word })),
-    ...scanText(text, kit, { creature: all.tags.creature != null }).needs.filter((n) => !coveredByKitCheck(n.word)),
-  ];
-  const core = misses(coreText(idea)), detail = misses(detailText(idea));
+  const core = kitMisses(coreText(idea), kit), detail = kitMisses(detailText(idea), kit);
   const placeIds = new Set(v.places.map((p) => p.id));
   for (const [re, id] of SETTING_NEEDS) if (re.test(idea.setting ?? "") && !placeIds.has(id)) core.push({ kind: id === "inside_giant" ? "world" : "place", value: id, word: idea.setting });
   if (idea.prop && !propFilmable(idea.prop, kit)) core.push({ kind: "prop", value: "prop", word: idea.prop });
@@ -302,42 +232,38 @@ const WHY = {
 };
 /** The kinds that make a miss in the first line a whole-premise miss (the world itself, not one line's detail). */
 const PREMISE_KINDS = new Set(["place", "world", "creature"]);
-/** More than this share of the lines missing: the story itself is somewhere else (a premise miss). */
-export const PREMISE_SHARE = 0.34;
 
 /**
- * Every thing a script needs that the board kit can't film, as check problems (free; same words in, same problems out).
- * The engine side's kitCheck(script) is the base (its NOT_IN_KIT words and its must-have rule); this file adds the kinds it
- * doesn't cover (scanText) and the card's planted object, with the same must-have rule. card: the idea card (its creature
- * words count for the whole story). Returns { problems, warnings, premise, missing: [{ word, kind, lines, source }] }:
- *   - a must-have miss: `The video can't show "<word>" (line N[, M]): <why>.` (problemSpots -> that line's part, Fix it)
- *   - a whole-premise miss (a place, world or creature miss in the opener lines 0-1, or misses in more than PREMISE_SHARE
- *     of the lines): ONE problem that starts with PREMISE_PREFIX (problemSpots -> fix "move": "Move it to our town")
+ * Every thing a script needs that the board kit can't film, as check problems in the page's words (free; the same words in,
+ * the same problems out). kitCheck(script, { card }) decides (its must-have rule and its premise rule); this file adds the
+ * card's planted object (the swap's home) with the same rule, and the creature-look notes. Returns { problems, warnings,
+ * premise, missing: [{ word, kind, lines, source }] }:
+ *   - a must-have miss: `The video can't show "<word>" (line N): <why>.`, ONE PROBLEM PER PART it is in (Fix it rewrites one
+ *     part at a time: a word in the tour and in the climax is two Fix its, each one lowers the count)
+ *   - a whole-premise miss: ONE problem that starts with PREMISE_PREFIX (problemSpots -> fix "move": "Move it to our town")
  *   - a mention that is not a must-have (once, mid-story): a warning only (the advisory notes), never a block
  */
 export function boardFitProblems(script, card = null, kit = BOARD_KIT) {
   const v = kitView(kit), lines = script?.lines ?? [], n = lines.length;
-  const entries = new Map();
-  const add = (kind, word, i, source) => { const k = lower(singular(lower(word).trim())) || lower(word); const e = entries.get(k) ?? { word: lower(word).trim(), kind, lines: [], source }; if (!e.lines.includes(i)) e.lines.push(i); entries.set(k, e); };
-  // 1. the engine side's check (only its must-have misses come back)
-  for (const m of kitCheckMisses(script, kit)) for (const i of m.lines) add(m.kind, m.word, i, "kitCheck");
-  // 2. what it doesn't cover
-  const all = lines.map((l) => l.text).join("\n") + "\n" + [card?.premise, card?.opener].filter(Boolean).join("\n");
-  const creature = scanText(all, kit).tags.creature != null;
-  // (a word kitCheck judges but didn't return is a mention it decided is not a must-have: a warning only)
-  lines.forEach((l, i) => { for (const x of scanText(l.text, kit, { creature }).needs) if (judgedByKitCheck(x.word)) add(x.kind, x.word, i, "seen"); else if (!coveredByKitCheck(x.word)) add(x.kind, x.word, i, "boardFit"); });
-  // 3. the card's planted object (a library idea's or a pasted script's card) must be filmable: the lines that name it
+  const kc = kitCheck(script, { card, kit });
+  const listed = new Set([...v.places.map((p) => p.id), ...v.animals, ...v.props.flatMap((p) => p.words)].map(lower));
+  const keep = (e) => kit === BOARD_KIT || !listed.has(e.word);
+  const missing = kc.missing.filter(keep).map((e) => ({ ...e, source: "kitCheck" })), warned = kc.warnings.filter(keep);
+  // the card's planted object (a library idea's or a pasted script's card) must be filmable: the lines that name it
   const head = card?.prop && !propFilmable(card.prop, kit) ? propHead(card.prop) : null;
-  if (head && !coveredByKitCheck(head)) lines.forEach((l, i) => { if (new RegExp(`\\b${esc(head)}(?:e?s)?\\b`, "i").test(l.text)) add("prop", head, i, "card"); });
-  const missing = [], warnings = [];
-  for (const e of entries.values()) { e.lines.sort((a, b) => a - b); (e.source === "kitCheck" || (e.source !== "seen" && mustHave(e.lines, n)) ? missing : warnings).push(e); }
+  if (head && !missing.some((e) => e.word === singular(head))) {
+    const at = lines.map((l, i) => (new RegExp(`\\b${esc(head)}(?:e?s)?\\b`, "i").test(l.text) ? i : -1)).filter((i) => i >= 0);
+    if (at.length) (mustHave(at, n) ? missing : warned).push({ word: head, kind: "prop", lines: at, source: "card" });
+  }
   const badLines = new Set(missing.flatMap((e) => e.lines));
   const opener = missing.filter((e) => PREMISE_KINDS.has(e.kind) && e.lines.some((i) => i <= 1));
-  const premise = n > 0 && (opener.length > 0 || badLines.size / n > PREMISE_SHARE);
+  const premise = n > 0 && (kc.premise || opener.length > 0 || badLines.size / n > PREMISE_SHARE);
   const why = (e) => WHY[e.kind]?.(v) ?? "it isn't in our block world yet";
-  const at = (e) => (e.lines.length === 1 ? `line ${e.lines[0] + 1}` : `lines ${list(e.lines.slice(0, 4).map((i) => String(i + 1)))}`);
-  const warn = warnings.map((e) => `Our block world can't show "${e.word}" (${at(e)}): ${why(e)}. It's only mentioned once, so that shot shows the closest thing we have.`);
+  const at = (ls) => (ls.length === 1 ? `line ${ls[0] + 1}` : `lines ${list(ls.slice(0, 4).map((i) => String(i + 1)))}`);
+  const warn = warned.map((e) => `Our block world can't show "${e.word}" (${at(e.lines)}): ${why(e)}. It's only mentioned once, so that shot shows the closest thing we have.`);
   // the creature must be described as the look the video draws (the engine's creatureCheck: the words pick the look)
+  const all = lines.map((l) => l.text).join("\n") + "\n" + [card?.premise, card?.opener].filter(Boolean).join("\n");
+  const creature = scanText(all, kit).tags.creature != null;
   const t = lines.map((l) => l.text).join("\n"), looks = v.creatures.map((c) => c.id).filter((id) => VARIANT_CUES[id]?.test(t));
   const planned = card?.world?.creature_look && card.world.creature_look !== "none" ? card.world.creature_look : null;
   const label = (id) => v.creatures.find((c) => c.id === id)?.label ?? id;
@@ -350,7 +276,13 @@ export function boardFitProblems(script, card = null, kit = BOARD_KIT) {
     const words = [...new Set((opener.length ? opener : missing).map((e) => e.word))].slice(0, 4).map((w) => `"${w}"`);
     return { premise: true, problems: [`${PREMISE_PREFIX} (${list(words)}). "Move it to our town" keeps your rule and films it on ${placesLine(v)}.`], warnings: warn, missing };
   }
-  return { premise: false, problems: missing.map((e) => `${BOARD_PREFIX} "${e.word}" (${at(e)}): ${why(e)}.`), warnings: warn, missing };
+  // one problem per part: the lines of each part the word is in
+  const partOf = (i) => lines[i]?.part ?? "own";
+  const problems = missing.flatMap((e) => {
+    const parts = [...new Set(e.lines.map(partOf))];
+    return parts.map((p) => `${BOARD_PREFIX} "${e.word}" (${at(e.lines.filter((i) => partOf(i) === p))}): ${why(e)}.`);
+  });
+  return { premise: false, problems, warnings: warn, missing };
 }
 /** The lines a board problem is about (0-based), [] for anything else. */
 export function boardProblemLines(p) {

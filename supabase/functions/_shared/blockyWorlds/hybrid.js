@@ -28,7 +28,7 @@ import { mentions, ruleMissing, topicBlock, topicElements, topicProblems } from 
 import { blockedWordsRule } from "./safety.js";
 import { targetWords } from "./config.js";
 import { BOARD_KIT } from "./boardKit.js";
-import { boardFitProblems, kitBlock } from "./boardFit.js";
+import { boardFitProblems, kitBlock, swapHint } from "./boardFit.js";
 
 /**
  * Every word the safety check throws out (safety.js: famous names, a game platform's terms, gore), named in BOTH system
@@ -167,7 +167,9 @@ export function hybridPlanPrompt({ topic, recipe = null, lengthSec, note = "", i
 export function pickedIdeaBlock(idea) {
   if (!idea?.opener) return "";
   const rows = [["Opener", idea.opener], ["Premise", idea.premise], ["Price", idea.price], ["Narrator", idea.narrator], ["Planted object", idea.prop], ["Twist", idea.twist], ["Closer", idea.closer], ["Setting", idea.setting]].filter(([, v]) => v);
-  return `THE IDEA THE USER PICKED (build the plan on it: keep its world and narrator unless one breaks a rule; fit it to the beat sheet; you plan everything it leaves open):\n${rows.map(([k, v]) => `- ${k}: ${String(v).slice(0, 300)}`).join("\n")}`;
+  // the board-only launch mode's planted-object swap (boardFit.js swapIdea): the kit thing that keeps the object's job
+  const swap = idea.swap ? `\n- ${swapHint(idea.swap)}` : "";
+  return `THE IDEA THE USER PICKED (build the plan on it: keep its world and narrator unless one breaks a rule; fit it to the beat sheet; you plan everything it leaves open):\n${rows.map(([k, v]) => `- ${k}: ${String(v).slice(0, 300)}`).join("\n")}${swap}`;
 }
 
 /** Whether a plan is a beat-sheet plan (2026-11-10) or an older 7-part one (a saved draft's). */

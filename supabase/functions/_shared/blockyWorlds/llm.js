@@ -7,7 +7,7 @@
 import { MODELS, targetWords } from "./config.js";
 import { EXAMPLE_IDEAS, EXAMPLE_SCRIPT } from "./examples.js";
 import { batchPrompt, ideasSchema, ideasSystem, IDEAS_SYSTEM, REVISE_SYSTEM, revisePrompt, slotsPrompt, topicPrompt, usableIdeas, normalizeIdea } from "./ideas.js";
-import { BOARD_PREFIX, boardFitProblems, canFilmLine, fittingOnly, kitBlock, kitFit } from "./boardFit.js";
+import { BOARD_PREFIX, boardFitProblems, canFilmLine, fittingWithSwap, kitBlock, kitFit, swapHint, swapIdea } from "./boardFit.js";
 import { BOARD_KIT } from "./boardKit.js";
 import { checkScript, normalizeScript, OPENER_SYSTEM, PART_FIX_SYSTEM, partFixPrompt, partFixSchema, openerOk, openerPrompt, openerSchema, paceClean, PART_IDS, partBudgets, scriptPrompt, scriptSchema, SCRIPT_SYSTEM, trimScript } from "./script.js";
 import { fixOpener, hasOpener } from "./opener.js";
@@ -213,7 +213,7 @@ export async function writeIdeas({ apiKey = "", provider = "anthropic", seed = 0
     : await callJson({ apiKey, model: MODELS.ideas, system: ideasSystem({ board }), user: text, schema: ideasSchema(), effort: "low" });
   const ideas = usableIdeas(reply.data, slots, provider === "mock" ? [] : avoid);
   // the board-only launch mode: only ideas the board kit can film (the mock's samples are kept: the free flow test)
-  return { ideas: board && provider !== "mock" ? fittingOnly(ideas) : ideas, costUsd: reply.costUsd };
+  return { ideas: board && provider !== "mock" ? fittingWithSwap(ideas) : ideas, costUsd: reply.costUsd };
 }
 
 /**
@@ -230,7 +230,7 @@ export async function writeTopicIdeas({ apiKey = "", provider = "anthropic", top
   // the board-only launch mode: only worlds the board kit can film; none left -> what the topic needs (the page says it)
   let unfit = null;
   if (board && provider !== "mock") {
-    const fits = ideas.map((idea) => ({ idea, fit: kitFit(idea) }));
+    const fits = ideas.map((i) => { const fit = kitFit(i); const swapped = fit.fit ? i : swapIdea(i); return swapped !== i && kitFit(swapped).fit ? { idea: swapped, fit: { fit: true, need: [] } } : { idea: i, fit }; });
     unfit = fits.some((x) => x.fit.fit) ? null : { needs: [...new Set(fits.flatMap((x) => x.fit.need.flatMap((n) => n.words.map((w) => String(w).toLowerCase()))))].slice(0, 4), canFilm: canFilmLine() };
     ideas = fits.filter((x) => x.fit.fit).map((x) => x.idea);
   }
@@ -365,7 +365,7 @@ export function trimForLength(script, lengthSec, card = null, { board = false } 
  */
 export async function writeScript({ apiKey = "", provider = "anthropic", idea, lengthSec, previous = null, note = "", beats = null, failed = [], meter = null, maxTokens = 16000, board = false }) {
   // the board-only launch mode: the kit as hard rules for the writer, and the kit checks with the others
-  const opts = { board }, baseNote = board ? [note, kitBlock(BOARD_KIT, "lines")].filter(Boolean).join("\n\n") : note;
+  const opts = { board }, baseNote = board ? [note, kitBlock(BOARD_KIT, "lines"), idea?.swap ? swapHint(idea.swap) : ""].filter(Boolean).join("\n\n") : note;
   let costUsd = 0, attempts = 0, script = null, check = null, prev = previous, extra = baseNote, trimmed = [];
   for (let round = 1; round <= 2; round++) {
     attempts++;
