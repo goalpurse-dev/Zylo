@@ -7,11 +7,14 @@
 //
 // Switches (function secrets, read by the endpoint and passed in):
 //   BLOCKY_WORLDS_LAUNCH=board       the picker shows only fitting ideas, the writers get the kit as hard rules, every
-//                                    script is checked against the kit before the charge
+//                                    script is checked against the kit before the charge. ON BY DEFAULT since 2026-11-12
+//                                    (owner: the product launches in board mode and every writing path must know the kit);
+//                                    BLOCKY_WORLDS_LAUNCH=off is the only way to switch it off (a dev escape hatch).
 //   BLOCKY_WORLDS_BOARD_ONLY=on      the render has no old-planner fallback (render.js: job.prepare.storyboard.maxFallback 0;
 //                                    any line the board can't film fails as KIT_UNSUPPORTED and is refunded). Implies
 //                                    launch mode (a strict render without the pre-charge check would refund far too often).
 import { BOARD_KIT } from "./boardKit.js";
+import { SOUND_ALLOWED } from "./soundLibrary.js";
 import { kitCheck, kitHas, kitView, NO_VARIANT, PREMISE_SHARE, scanText, singular, VARIANT_CUES } from "./kitCheck.js";
 // (re-exported: the writers, the page and the tests read them from here)
 export { kitView, NO_VARIANT, PREMISE_SHARE, scanText, VARIANT_CUES };
@@ -25,7 +28,10 @@ const on = (v) => ["on", "true", "1", "yes", "board"].includes(String(v ?? "").t
 /** BLOCKY_WORLDS_BOARD_ONLY: the strict render (no old-planner lines). get: (name) => string */
 export const boardOnlyFrom = (get = () => "") => on(get("BLOCKY_WORLDS_BOARD_ONLY"));
 /** Launch mode (the picker filter, the steering, the pre-charge check): BLOCKY_WORLDS_LAUNCH=board, or BOARD_ONLY on. */
-export const launchModeFrom = (get = () => "") => String(get("BLOCKY_WORLDS_LAUNCH") ?? "").trim().toLowerCase() === "board" || boardOnlyFrom(get);
+export const launchModeFrom = (get = () => "") => {
+  const v = String(get("BLOCKY_WORLDS_LAUNCH") ?? "").trim().toLowerCase();
+  return boardOnlyFrom(get) || !["off", "0", "false", "no"].includes(v);
+};
 
 const list = (xs, last = "and") => (xs.length <= 1 ? xs.join("") : `${xs.slice(0, -1).join(", ")} ${last} ${xs.at(-1)}`);
 const MONSTER = (v) => `${v.creatures.length} monster looks`;
@@ -306,6 +312,7 @@ export function kitBlock(kit = BOARD_KIT, who = "plan") {
     v.weather.length ? `- WEATHER (only these): ${list(v.weather)} (falling snow; never snow on the ground, a snowman, fog or a storm).` : "",
     v.crowds ? `- CROWDS: ${v.crowds}.${v.crowdsAtNight ? "" : " Crowds by DAY only: at night, show two or three named people, never a crowd."}` : "",
     `- PROPS held or set down (only these): ${list(v.props.map((p) => p.what))}.`,
+    who === "ideas" ? "" : `- SOUND WORDS (only these, the ones we have a sound for; any other is flagged): ${SOUND_ALLOWED.join(", ")}.`,
     v.notYet.length ? `- NOT YET (never write these): ${v.notYet.join("; ")}; flying or floating away, sky events, things turning into other things.` : "",
   ];
   const tail = {

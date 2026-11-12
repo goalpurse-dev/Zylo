@@ -15,12 +15,14 @@ const LIBRARY = JSON.parse(readFileSync(new URL("../src/components/viral-tools/b
 const S = (...texts) => ({ title: "t", lines: texts.map((text) => ({ part: "own", text })) });
 const filler = (n) => Array.from({ length: n }, (_, i) => `Mrs. Pell waved at me ${i + 1} times.`);
 
-test("switches: launch mode from BLOCKY_WORLDS_LAUNCH=board or BOARD_ONLY on; both off by default", () => {
+test("switches: launch mode is ON by default (2026-11-12), only BLOCKY_WORLDS_LAUNCH=off switches it off; BOARD_ONLY is off by default", () => {
   const env = (o) => (k) => o[k] ?? "";
-  assert.equal(launchModeFrom(env({})), false);
+  assert.equal(launchModeFrom(env({})), true);
+  assert.equal(launchModeFrom(env({ BLOCKY_WORLDS_LAUNCH: "typo" })), true, "a typo never switches the kit off");
   assert.equal(boardOnlyFrom(env({})), false);
   assert.equal(launchModeFrom(env({ BLOCKY_WORLDS_LAUNCH: "board" })), true);
   assert.equal(launchModeFrom(env({ BLOCKY_WORLDS_LAUNCH: "off" })), false);
+  assert.equal(launchModeFrom(env({ BLOCKY_WORLDS_LAUNCH: " OFF " })), false);
   assert.equal(boardOnlyFrom(env({ BLOCKY_WORLDS_BOARD_ONLY: "on" })), true);
   assert.equal(launchModeFrom(env({ BLOCKY_WORLDS_BOARD_ONLY: "on" })), true, "a strict render implies the pre-charge check");
   assert.equal(boardOnlyFrom(env({ BLOCKY_WORLDS_BOARD_ONLY: "maybe" })), false);

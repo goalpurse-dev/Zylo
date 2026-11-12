@@ -176,13 +176,12 @@ import { mapNearSounds } from "../supabase/functions/_shared/blockyWorlds/sfxTag
 test("sound library: the server list mirrors the engine's SOUND_SFX (only the sounds being added may differ)", async () => {
   const { SOUND_SFX } = await import("../scripts/blockyWorlds/engine/lib/audioPlan.js");
   const engine = Object.keys(SOUND_SFX);
-  const BEING_ADDED = ["beep", "buzz", "hiss", "fizz", "boing", "squeak", "poof"]; // delete a word here once the engine has it
+  const BEING_ADDED = []; // delete a word here once the engine has it
   for (const w of engine) assert.ok(SOUND_ALLOWED.includes(w), `the engine has a sound for "${w}": add it to soundLibrary.js SOUND_ALLOWED`);
   for (const w of SOUND_ALLOWED) assert.ok(engine.includes(w) || BEING_ADDED.includes(w), `"${w}" is allowed but the engine has no sound for it`);
   assert.equal(new Set(SOUND_ALLOWED).size, SOUND_ALLOWED.length);
   for (const [from, to] of Object.entries(SOUND_NEAR)) assert.ok(SOUND_ALLOWED.includes(to), `${from} -> ${to} must land on an allowed sound`);
-  // the animal and eating sounds wait for the owner's OK
-  for (const w of ["meow", "woof", "moo", "quack", "oink", "ribbit", "gulp", "munch", "slurp"]) assert.ok(!SOUND_ALLOWED.includes(w), w);
+  assert.equal(SOUND_ALLOWED.length, engine.length);
 });
 
 test("sound library: near-misses are mapped, other off-list sound words are flagged for Fix it, the prompt lists the allowed words", () => {
@@ -190,14 +189,11 @@ test("sound library: near-misses are mapped, other off-list sound words are flag
   assert.equal(mapNearSounds("Thunk. Thunk."), "Thud. Thud.");
   assert.equal(mapNearSounds("I thought bam was a funny word."), "I thought bam was a funny word.", "long sentences are left alone");
   assert.deepEqual(normalizeScript({ lines: [{ part: "tour", text: "Bam! Whiz!" }] }).lines[0].sfx, ["bang", "whoosh"]);
-  const withMeow = edit((l) => { l[13].text = "Mr. Fitch bolted his garage. Meow!"; });
-  const p = text(withMeow, /no sound in our library/);
-  assert.equal(p.length, 1);
-  assert.match(p[0], /meow/);
-  assert.match(p[0], /\(line 14\)$/);
-  assert.equal(problemSpots(withMeow, p)[0].fix, "part");
+  // every sound word the tagger recognises is in the library now, so the off-list flag is dormant until a recognised word is
+  // left out of SOUND_ALLOWED (the flag itself is exercised by the whistle test below and by removing a word)
+  for (const w of SOUND_WORDS) assert.ok(SOUND_ALLOWED.includes(w), `recognised but no sound: ${w}`);
   for (const w of SOUND_ALLOWED) assert.ok(FORMULA_TEXT.includes(w), w);
-  assert.ok(!FORMULA_TEXT.includes("slurp"));
+  
 });
 
 // ---------- the callback button is hard, with a free fallback; sounds fit their objects; kitCheck sees escalation props ----------
@@ -257,4 +253,41 @@ test("kitCheck is consulted for escalation lines: a prop the block world lacks, 
   const sword = edit((l) => { l[19].text = "A hundred swords hung on the wall."; });
   const c = hybridChecks({ script: sword, skeleton: {}, card: null, examples: [], lengthSec: 90, board: true });
   assert.ok([...c.hard, ...c.advisory].some((x) => /sword/i.test(x) && /can't show/.test(x)), JSON.stringify([...c.hard, ...c.advisory].filter((x) => /sword/i.test(x))));
+});
+
+// ---------- the kit list in every writing path (owner, 2026-11-12) ----------
+import { readFileSync as readSrc } from "node:fs";
+import { kitBlock, launchModeFrom } from "../supabase/functions/_shared/blockyWorlds/boardFit.js";
+import { BOARD_KIT } from "../supabase/functions/_shared/blockyWorlds/boardKit.js";
+
+test("kit list: launch (kit) mode is on by default; plan, lines and Fix it get the full kit incl. sound words; ideas get it without sounds", async () => {
+  assert.equal(launchModeFrom(() => ""), true);
+  for (const who of ["plan", "lines"]) {
+    const b = kitBlock(BOARD_KIT, who);
+    for (const w of SOUND_ALLOWED) assert.ok(b.includes(w), `${who}: ${w}`);
+    for (const a of BOARD_KIT.animals) assert.ok(b.includes(a), `${who}: ${a}`);
+    for (const c of BOARD_KIT.creatures) assert.ok(b.includes(c.id), `${who}: ${c.id}`);
+    for (const p of BOARD_KIT.places) assert.ok(b.includes(p.id) || b.toLowerCase().includes(p.id), `${who}: ${p.id}`);
+    for (const w of BOARD_KIT.weather) assert.ok(b.includes(w), `${who}: ${w}`);
+    assert.match(b, /PROPS held or set down/);
+  }
+  assert.doesNotMatch(kitBlock(BOARD_KIT, "ideas"), /SOUND WORDS/);
+  // Fix it (fixPart) sends the kit in its system prompt when board is on, and not when it is off
+  const sent = [];
+  const real = globalThis.fetch;
+  globalThis.fetch = async (_u, init) => { sent.push(JSON.parse(init.body)); return new Response(JSON.stringify({ model: "claude-haiku-5-5", stop_reason: "end_turn", usage: { input_tokens: 1, output_tokens: 1 }, content: [{ type: "text", text: JSON.stringify({ lines: ["Still knocking."] }) }] }), { status: 200, headers: { "content-type": "application/json" } }); };
+  try {
+    for (const board of [true, false]) await fixPart({ apiKey: "k", script: clone(SCRIPT), indexes: [32], reasons: ["x"], card: null, lengthSec: 90, board });
+  } finally { globalThis.fetch = real; }
+  const sys = (b) => JSON.stringify(b.system);
+  assert.match(sys(sent[0]), /THE WORLD WE CAN FILM/);
+  assert.match(sys(sent[0]), /SOUND WORDS/);
+  assert.doesNotMatch(sys(sent[sent.length - 1]), /THE WORLD WE CAN FILM/);
+  // the API passes the launch flag to every writer call
+  const api = readSrc(new URL("../supabase/functions/blocky-worlds-api/index.ts", import.meta.url), "utf8");
+  for (const call of ["writeTopicIdeas(", "writeIdeas(", "fixPart(", "writeHybrid(", "rewriteHybrid(", "writeScript("]) {
+    const at = []; for (let i = api.indexOf(call); i >= 0; i = api.indexOf(call, i + 1)) at.push(i);
+    assert.ok(at.length, call);
+    for (const i of at) assert.match(api.slice(i, i + 700).split("\n")[0], /board: LAUNCH_BOARD/, `${call} gets board: LAUNCH_BOARD`);
+  }
 });

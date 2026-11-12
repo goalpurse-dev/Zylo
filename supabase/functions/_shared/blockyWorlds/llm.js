@@ -453,7 +453,7 @@ export async function fixPart({ apiKey = "", provider = "anthropic", script, ind
     attempts++;
     const reply = provider === "mock"
       ? mockFixPart({ script, indexes: span, reasons: why, card })
-      : await callJson({ apiKey, model: MODELS.opener, system: PART_FIX_SYSTEM, user: partFixPrompt({ script, indexes: span, reasons: why, card }), schema: partFixSchema(), effort: "low", maxTokens: 4000, timeoutMs: 90_000 });
+      : await callJson({ apiKey, model: MODELS.opener, system: board ? `${PART_FIX_SYSTEM}\n\n${kitBlock(BOARD_KIT, "lines")}` : PART_FIX_SYSTEM, user: partFixPrompt({ script, indexes: span, reasons: why, card }), schema: partFixSchema(), effort: "low", maxTokens: 4000, timeoutMs: 90_000 });
     costUsd += reply.costUsd;
     let fresh = (Array.isArray(reply.data?.lines) ? reply.data.lines : []).map((t) => paceClean(t)).filter((t) => t && t !== ".").slice(0, span.length + 6);
     // the free fallback (formula.js): when the span ends the script and the model's last line is too long for the button, split off its last short sentence
