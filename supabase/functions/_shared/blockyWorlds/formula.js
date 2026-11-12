@@ -17,6 +17,7 @@
 import { wordCount } from "./script.js";
 import { PACE } from "./config.js";
 import { sfxTags } from "./sfxTags.js";
+import { SOUND_ALLOWED } from "./soundLibrary.js";
 
 export const FORMULA_PREFIX = "Formula:";
 export const FORMULA = Object.freeze({
@@ -36,7 +37,7 @@ export const FORMULA_TEXT = `THE STORY FORMULA (every script follows it; free ch
 - Line 2 is the RESULT-FIRST HOOK, inside the first 5 seconds: the craziest consequence the narrator is in RIGHT NOW, first person, 5 to 12 words, ending on the most visual word and an exclamation mark ("And I just sneezed in the cockpit of a flying plane!"). It must be something our blocky world can film, and it opens a question the viewer wants answered. Never a summary, never a question.
 - Then 2 or 3 VIGNETTES of the rule, each in its OWN place (a kitchen, the school, the bus stop...) with its own named neighbour and one quick joke. About 70 words in the first 15 seconds in all.
 - Then the "But..." PIVOT, a line that starts with "But" and puts the narrator in the worst case of the rule, WITH A NUMBER ("But I had ten minutes and four hundred stairs.").
-- Then the ESCALATION: it doubles every 8 to 12 seconds (one, ten, a hundred; two, four, eight). Sentences of 3 to 10 words. Hits get a SOUND WORD as its own short fragment of at most three words ("Boom!", "Knock. Knock.", "Crash, bang, thud!"), at least one every 12 seconds; the engine puts an effect on every one. Use plain sound words: ${"boom, bang, crash, whoosh, splat, thud, bonk, poof, pop, snap, creak, knock, slam, squeak, rumble, buzz, beep, ding, click, plop, gulp"}.
+- Then the ESCALATION: it doubles every 8 to 12 seconds (one, ten, a hundred; two, four, eight). Sentences of 3 to 10 words. Hits get a SOUND WORD as its own short fragment of at most three words ("Boom!", "Knock. Knock.", "Crash, bang, thud!"), at least one every 12 seconds; the engine puts an effect on every one. Use ONLY these sound words, the ones we have a sound for (any other sound word is flagged): ${SOUND_ALLOWED.join(", ")}.
 - Then a line that says "Then I noticed something." and the narrator WINS using the town's OWN rule (and the ally's planted line), no new magic.
 - The LAST line is a BUTTON of 2 to 6 words that reopens the loop (a callback to something earlier, with a new twist on it).`;
 
@@ -128,7 +129,7 @@ export function formulaProblems(script, lengthSec = 90) {
     if (longOnes.length) bad(`the escalation needs short sentences of ${FORMULA.escalationMin} to ${FORMULA.escalationMax} words; these run long.`, longOnes.slice(0, 6));
     const escSecs = secs(esc.reduce((a, i) => a + counts[i], 0));
     const need = Math.max(2, Math.floor(escSecs / FORMULA.doubleEverySec));
-    const have = esc.reduce((a, i) => a + sfxTags(lines[i].text).length, 0);
+    const have = esc.reduce((a, i) => a + sfxTags(lines[i].text).filter((w) => SOUND_ALLOWED.includes(w)).length, 0);
     if (have < need) bad(`the escalation has ${have} sound word${have === 1 ? "" : "s"} (Boom! Whoosh! Crash!) in ${fmt(escSecs)} s; it needs at least ${need}, each as its own short fragment so the engine can put a sound effect on it.`, esc.slice(0, 6));
     const nums = esc.map((i) => ({ i, v: biggestNumber(lines[i].text) })).filter((x) => x.v > 0);
     if (nums.length >= 3) {
@@ -136,6 +137,10 @@ export function formulaProblems(script, lengthSec = 90) {
       if (last < first * 2) bad("the numbers in the escalation do not grow; it should double every 8 to 12 seconds (one, ten, a hundred).", nums.map((x) => x.i).slice(0, 6));
     } else if (nums.length < 1) bad("the escalation names no numbers; the situation should visibly double (two, then ten, then a hundred).", esc.slice(0, 6));
   }
+
+  // 4b. every sound word must be one we have a sound for (close cousins were mapped already, normalizeScript)
+  const offList = lines.map((l, i) => ({ i, bad: sfxTags(l.text).filter((w) => !SOUND_ALLOWED.includes(w)) })).filter((x) => x.bad.length);
+  if (offList.length) bad(`these sound words have no sound in our library: ${[...new Set(offList.flatMap((x) => x.bad))].join(", ")}. Use only ${SOUND_ALLOWED.join(", ")}, or take the sound word out.`, offList.map((x) => x.i).slice(0, 6));
 
   // 5. "Then I noticed something": a win from the town's own rule, late
   if (noticedAt < 0 && !lines.some((l, i) => /\bnoticed something\b/i.test(l.text) && pct(i) > 45)) bad('there is no "Then I noticed something." line where the narrator wins with the town\'s own rule.');

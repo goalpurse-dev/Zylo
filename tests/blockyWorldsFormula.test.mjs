@@ -166,3 +166,34 @@ test("result screen: a small tip names the TikTok sound 'Numbers' by TEMPOREX", 
   const panel = readFileSync(new URL("../src/components/viral-tools/blocky-worlds/ResultPanel.jsx", import.meta.url), "utf8");
   assert.match(panel, /data-testid="bw-sound-tip">Tip: add &lsquo;Numbers&rsquo; by TEMPOREX in TikTok when you post\.<\/p>/);
 });
+
+// ---------- the sound library: the writer may only use sound words we have a sound for ----------
+import { SOUND_ALLOWED, SOUND_NEAR } from "../supabase/functions/_shared/blockyWorlds/soundLibrary.js";
+import { mapNearSounds } from "../supabase/functions/_shared/blockyWorlds/sfxTags.js";
+
+test("sound library: the server list mirrors the engine's SOUND_SFX (only the sounds being added may differ)", async () => {
+  const { SOUND_SFX } = await import("../scripts/blockyWorlds/engine/lib/audioPlan.js");
+  const engine = Object.keys(SOUND_SFX);
+  const BEING_ADDED = ["beep", "buzz", "hiss", "fizz", "boing", "squeak", "poof"]; // delete a word here once the engine has it
+  for (const w of engine) assert.ok(SOUND_ALLOWED.includes(w), `the engine has a sound for "${w}": add it to soundLibrary.js SOUND_ALLOWED`);
+  for (const w of SOUND_ALLOWED) assert.ok(engine.includes(w) || BEING_ADDED.includes(w), `"${w}" is allowed but the engine has no sound for it`);
+  assert.equal(new Set(SOUND_ALLOWED).size, SOUND_ALLOWED.length);
+  for (const [from, to] of Object.entries(SOUND_NEAR)) assert.ok(SOUND_ALLOWED.includes(to), `${from} -> ${to} must land on an allowed sound`);
+  // the animal and eating sounds wait for the owner's OK
+  for (const w of ["meow", "woof", "moo", "quack", "oink", "ribbit", "gulp", "munch", "slurp"]) assert.ok(!SOUND_ALLOWED.includes(w), w);
+});
+
+test("sound library: near-misses are mapped, other off-list sound words are flagged for Fix it, the prompt lists the allowed words", () => {
+  assert.equal(mapNearSounds("Bam! The door flew open."), "Bang! The door flew open.");
+  assert.equal(mapNearSounds("Thunk. Thunk."), "Thud. Thud.");
+  assert.equal(mapNearSounds("I thought bam was a funny word."), "I thought bam was a funny word.", "long sentences are left alone");
+  assert.deepEqual(normalizeScript({ lines: [{ part: "tour", text: "Bam! Whiz!" }] }).lines[0].sfx, ["bang", "whoosh"]);
+  const withMeow = edit((l) => { l[13].text = "Mr. Fitch bolted his garage. Meow!"; });
+  const p = text(withMeow, /no sound in our library/);
+  assert.equal(p.length, 1);
+  assert.match(p[0], /meow/);
+  assert.match(p[0], /\(line 14\)$/);
+  assert.equal(problemSpots(withMeow, p)[0].fix, "part");
+  for (const w of SOUND_ALLOWED) assert.ok(FORMULA_TEXT.includes(w), w);
+  assert.ok(!FORMULA_TEXT.includes("slurp"));
+});

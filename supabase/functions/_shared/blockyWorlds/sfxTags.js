@@ -16,7 +16,26 @@ export const SOUND_WORDS = Object.freeze([
   "creak", "knock", "tap", "slam", "squeak", "scratch", "rumble", "hiss", "buzz", "beep", "ding", "click", "clunk", "clang", "twang", "plop",
   "drip", "gulp", "munch", "slurp", "ribbit", "meow", "woof", "moo", "quack", "oink", "achoo", "choo", "boing", "whack", "zap", "fizz", "pow", "kaboom",
 ]);
-const SET = new Set(SOUND_WORDS);
+import { SOUND_NEAR, SOUND_ALLOWED } from "./soundLibrary.js";
+// every word we recognise as a sound: the writer's list, the close cousins and everything we have a sound for
+const SET = new Set([...SOUND_WORDS, ...Object.keys(SOUND_NEAR), ...SOUND_ALLOWED]);
+
+/**
+ * The free auto-fix: a close cousin of a sound we have becomes that sound ("Bam!" -> "Bang!"), in short fragments only
+ * (the same fragments sfxTags reads). Words with no cousin on the list are left for the formula check to flag.
+ */
+export function mapNearSounds(text) {
+  return String(text ?? "").split(/(?<=[.!?])\s+/).map((sentence) => {
+    const toks = sentence.split(/[\s,]+/).filter(Boolean);
+    if (!toks.length || toks.length > 3) return sentence;
+    return sentence.replace(/[A-Za-z]+/g, (w) => {
+      const lw = w.toLowerCase();
+      const to = SOUND_NEAR[lw] ?? SOUND_NEAR[lw.replace(/(.)\1{2,}/g, "$1$1")] ?? SOUND_NEAR[lw.replace(/(.)\1+/g, "$1")];
+      if (!to || !SOUND_ALLOWED.includes(to)) return w;
+      return w[0] === w[0].toUpperCase() ? to[0].toUpperCase() + to.slice(1) : to;
+    });
+  }).join(" ");
+}
 
 /** A token as a sound word: lowercase letters, stretched letters squeezed ("creeeak" -> "creak"), a trailing "s" kept off. */
 function soundOf(tok) {
