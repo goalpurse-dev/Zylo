@@ -43,7 +43,7 @@ import { useGpu, useSoftware } from "./gpu.mjs";
 import { concat, renderParallel } from "../render.mjs";
 import { stillsJob, objectStillsJob } from "./stillsRole.mjs";
 import { simpleStillsJob } from "./simpleRole.mjs"; // 2026-11-10 simple-style TEST page (page/simple/), stills only
-import { applyStoryboard, storyboardChecks } from "../lib/storyboard.js"; // STORYBOARD (2026-11-11): job.prepare.storyboard
+import { applyStoryboard, storyboardChecks, preVoiceProblems } from "../lib/storyboard.js"; // STORYBOARD (2026-11-11): job.prepare.storyboard
 import { paramsFromPrompts, writePromptsByScene, enrichPrompts, checkPrompts } from "../lib/shotPrompts.js";
 import { directStoryboard } from "../lib/storyboardDirector.js";
 import { kitCheck, kitHas } from "../../../../supabase/functions/_shared/blockyWorlds/kitCheck.js"; // the early kit check // the automatic storyboard (job.prepare.storyboard.auto)
@@ -312,7 +312,9 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
     if (!process.env.ANTHROPIC_KEY) throw coded("NOT_CONFIGURED", "no Anthropic key for the storyboard director");
     await post("progress", { stage: "storyboard", pct: 4 });
     const r = await directStoryboard({ apiKey: process.env.ANTHROPIC_KEY, script, cast: early.cast ?? {}, scenes: early.scenes ?? p.scenes ?? null, title: script.title ?? "", capUsd: Number(p.storyboard.capUsd) || 0.25, maxFallback: Number.isFinite(Number(p.storyboard.maxFallback)) && p.storyboard.maxFallback !== null ? Number(p.storyboard.maxFallback) : null, log: (m) => console.log(m),
-      kitCheckFn: (ls) => kitCheck(ls, { boardOnly: p.storyboard.maxFallback === 0 }), onLinesFinal: (L, rw) => { if (rw.length) { script.lines = script.lines.map((l, i) => ({ ...l, text: L[i] })); console.log(`storyboard: ${rw.length} line(s) reworded before the voice: ${rw.map((x) => `#${x.line + 1}`).join(", ")}`); } linesFinal(rw); } });
+      kitCheckFn: (ls) => kitCheck(ls, { boardOnly: p.storyboard.maxFallback === 0 }),
+      // every final check BEFORE the voice (estimated timing): failures go back to the director's repair (owner, 2026-11-12)
+      engineCheckFn: (board, L) => preVoiceProblems({ plan, script, lines: L, board, planArgs: { idea: p.idea ?? {}, lengthSec: p.lengthSec ?? null, direction: d, exists, criticalMode: "report", library: libraryFind, scenes: p.scenes ?? null } }), onLinesFinal: (L, rw) => { if (rw.length) { script.lines = script.lines.map((l, i) => ({ ...l, text: L[i] })); console.log(`storyboard: ${rw.length} line(s) reworded before the voice: ${rw.map((x) => `#${x.line + 1}`).join(", ")}`); } linesFinal(rw); } });
     await saveBoard({ board: r.board, problems: r.problems, rewrites: r.rewrites, lines: r.lines, fellBack: r.fellBack });
     spend.directorUsd += r.costUsd; spend.plannedDirectorUsd += r.costUsd;
     console.log(`storyboard: ${r.board.lines.length} lines, ${r.fellBack.length} on the engine planner (${r.ms} ms, $${r.costUsd})`);

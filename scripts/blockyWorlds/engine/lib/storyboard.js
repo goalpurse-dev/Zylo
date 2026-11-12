@@ -121,6 +121,28 @@ export function boardHas(s, what) {
 
 // the camera type of a board camera preset (the planner's variety + framing checks read it)
 const CAM_TYPE = [[/^(face|eye_close|peek|window_in)/, "closeup"], [/^(cat)/, "low"], [/^(town_wide|street_wide|street_back|house:|arrive:|front:)/, "wide"], [/^(street_end|sky_up|pov_window|pov_eye)/, "low"], [/^(room_window|behind_window)/, "over_shoulder"], [/^(room_wide)/, "wide"]];
+// ------------------------------------------------------------------------------------------------ pre-voice checks
+// every final check of a board on a planned timeline (estimated word timing before the voice, the real timing after), as
+// per-line problems the storyboard director can repair: [{ line, problem }]. Timing-only problems (a cut under 0.5 s,
+// the same camera 3 times) are left to the cut pass and the after-voice run; problems no line owns are not returned.
+const TIMING_ONLY = /shorter than 0\.5 s|same camera 3 times|unknown expr/;
+export function lineProblems(tl, checks) {
+  const out = [], put = (line, problem) => { if (Number.isInteger(line) && line >= 0 && !TIMING_ONLY.test(problem) && !out.some((x) => x.line === line && x.problem === problem)) out.push({ line, problem }); };
+  for (const [kind, list] of Object.entries(checks)) for (const p of list ?? []) {
+    if (typeof p === "string") { const m = p.match(/\bline (\d+)/), s = p.match(/\bshot (\d+)/); put(m ? Number(m[1]) : s ? tl.shots?.[Number(s[1])]?.line : null, `${kind}: ${p}`); }
+    else if (p && typeof p === "object") put(Number.isInteger(p.line) ? p.line : tl.shots?.[p.shot]?.line, `${kind}: ${p.problem ?? (p.missing ? `missing on screen: ${p.missing.map((m) => m.name ?? m).join(", ")}` : JSON.stringify(p).slice(0, 160))}`);
+  }
+  return out;
+}
+/** the pre-voice run: the script with the board's current lines, planned with estimated timing (plan: the plan.mjs module) */
+export function preVoiceProblems({ plan, script, lines, board, planArgs = {} }) {
+  const s2 = { ...script, lines: script.lines.map((l, i) => ({ ...l, text: lines[i] ?? l.text })) };
+  const tl0 = plan.planVideo({ ...planArgs, script: s2, words: plan.estimateWords ? plan.estimateWords(s2) : null });
+  const tl = applyStoryboard(tl0, board);
+  const checks = { ...storyboardChecks(tl, board), timeline: plan.checkTimeline(tl).filter((p) => !/unknown built asset/.test(p)), visuals: plan.checkVisuals(tl, s2), subjects: plan.checkSubjects(tl), production: plan.checkProduction(tl) };
+  return lineProblems(tl, checks);
+}
+
 // ------------------------------------------------------------------------------------------------ the cut pass
 export const PACE = Object.freeze({ firstCutSec: 0.6, earlySec: 15, earlyMaxShot: 1.1, maxShot: 1.35, minShot: 0.5 });
 export const SHOCK = /^(suddenly|boom|bang|crash|kaboom|smash|snap|snapped|gasped|screamed|shrieked|froze|exploded|landed|snatched|grabbed|slammed|blinked|glared|stared|vanished|disappeared|wham|thud|pop|boop|aah+|no+)\b/i;

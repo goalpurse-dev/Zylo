@@ -93,3 +93,22 @@ test("board-only: a line the director KEPT for the old planner is a problem (rep
   const fixed = await directStoryboard({ apiKey: "x", script, cast, scenes, maxFallback: 0, fetchFn: keepMock(true) });
   assert.ok(!fixed.board.lines.find((l) => l.line === 3).keep);
 });
+test("every final check before the voice: an engine-check failure goes back to the director's repair (re-plan), and a clean fail if it stays", async () => {
+  let repairs = 0;
+  const fetchFn = async (url, init) => {
+    const b = JSON.parse(init.body);
+    if (b.max_tokens === 1) return reply([]);
+    if (/WORLD BIBLE of a vertical/.test(b.system)) return reply({ homes: K.bible.homes, houses: K.bible.houses, events: K.bible.events, rule: K.bible.rule });
+    if (/You fix single narration lines/.test(b.system)) return reply([]);
+    const ask = b.messages[0].content.at(-1).text, ids = ask.match(/lines ([\d, ]+) only/)[1].split(",").map(Number);
+    if (/Fix these problems/.test(ask)) { repairs++; assert.match(ask, /final check: subjects: Pip not on screen/); }
+    return reply(ids.map((n) => { const e = JSON.parse(JSON.stringify(K.lines.find((l) => l.line === n))); if (e.keep) { const z = JSON.parse(JSON.stringify(K.lines.find((l) => l.line === 0))); return { ...z, line: n, shots: z.shots.slice(0, 1) }; } return e; }));
+  };
+  // the engine check fails line 5 until the director has re-planned it once
+  let seen = 0;
+  const engineCheckFn = async () => (seen++ === 0 ? [{ line: 5, problem: "subjects: Pip not on screen" }] : []);
+  const ok = await directStoryboard({ apiKey: "x", script, cast, scenes, maxFallback: 0, fetchFn, engineCheckFn });
+  assert.equal(repairs, 1); assert.equal(ok.fellBack.length, 0);
+  // a failure that stays: the run fails cleanly (no voice is bought: onLinesFinal gets the lines, the throw follows)
+  await assert.rejects(directStoryboard({ apiKey: "x", script, cast, scenes, maxFallback: 0, fetchFn, engineCheckFn: async () => [{ line: 5, problem: "subjects: Pip not on screen" }] }), (e) => e.code === "KIT_UNSUPPORTED" && /final check/.test(JSON.stringify(e.problems)));
+});

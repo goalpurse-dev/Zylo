@@ -51,7 +51,7 @@ function vocabText() {
 export function exampleText() {
   const ex = KID_NEVER_BLINKS, lines = ex.exampleLines ?? [];
   const body = ex.lines.filter((l) => !l.keep || l.replace).map((l) => JSON.stringify({ line: l.line, ...(lines[l.line] ? { text: lines[l.line] } : {}), place: l.place, shots: l.shots ?? undefined, keep: l.keep || undefined, replace: l.replace || undefined }));
-  return `THE OWNER'S EXAMPLE ("${ex.title}"; world bible ${JSON.stringify({ homes: ex.bible.homes, houses: ex.bible.houses, events: ex.bible.events, rule: ex.bible.rule })}):\n${body.join("\n")}`;
+  return `THE OWNER'S EXAMPLE OF TARGET QUALITY ("${ex.title}"): every person, place, animal and thing a line names is ON SCREEN in that line's shots, the camera on who the line is about. It is an example of QUALITY only: never reuse its names, houses, props, actions or events unless THIS story has them. World bible ${JSON.stringify({ homes: ex.bible.homes, houses: ex.bible.houses, events: ex.bible.events, rule: ex.bible.rule })}):\n${body.join("\n")}`;
 }
 
 // ------------------------------------------------------------------------------------------------ validation (free)
@@ -69,9 +69,13 @@ export function fixCameras(board) {
   }
   return n;
 }
+// #2's signature actions: a shot may use one only when the story has one of its words (else it is copied from the example)
+const SIGNATURE = Object.freeze({ "peek:sock": ["sock", "peek", "peeks", "hole"], "pull:sock": ["sock"], "lick:glass": ["lick", "licks", "licked", "tongue", "glass"], "rip:curtains": ["curtain", "curtains", "rip", "ripped"], "bulge:curtains": ["curtain", "curtains"], "fly:curtains": ["curtain", "curtains", "kite", "kites"], "smear:batter": ["batter", "pancake", "pancakes"], "nail:boards": ["board", "boards", "nail", "nailed", "hammer"], "grab:boards": ["board", "boards", "hammer"], "stack:bricks": ["brick", "bricks", "wall"], "poke_out:cat": ["cat"], "huddle:blanket": ["blanket", "huddle", "huddled"], "blow_off:blanket": ["blanket"] });
 export function validateStoryboard(board, { lines, cast }) {
   const out = [], homes = board.bible?.homes ?? {}, isOwner = (o) => o in homes;
   const P = (n, m) => out.push({ line: n, problem: m });
+  { const story = new Set(lines.flatMap((t) => tok(t).map(norm))), has = (x) => story.has(x) || story.has(`${x}ing`) || story.has(`${x}s`) || story.has(`${x}ed`);
+    for (const b of board.lines ?? []) for (const s of b.shots ?? []) for (const a of s.acts ?? []) if (SIGNATURE[a.k] && !SIGNATURE[a.k].some(has)) P(b.line, `action "${a.k}" is copied from the example: nothing in this story has it`); } // a later line may continue an action; a story without the thing at all copied it
   for (const [n, text] of lines.entries()) {
     const b = (board.lines ?? []).find((x) => x.line === n);
     if (!b) { P(n, "no entry"); continue; }
@@ -116,7 +120,7 @@ async function call({ apiKey, system, content, maxTokens, fetchFn }) {
 
 /** the whole automatic storyboard: bible, then every scene in parallel, validation, one repair, the engine fallback */
 export const REWRITE_SYSTEM = `You fix single narration lines of a short kid's story video so a FIXED 3D kit can film them. Each line you get could not be filmed for the reason given. Rewrite ONLY its wording so every thing, place, creature and action in it is one the kit has, keeping the story's meaning, the narrator's voice, the facts later lines rely on, and about the same length (never longer than 16 words). Change as little as possible. Output ONLY a compact JSON array [{"line":n,"text":"..."}].`;
-export async function directStoryboard({ apiKey, script, cast, scenes, title = "", fetchFn = fetch, log = () => {}, capUsd = 0.25, maxFallback = null, onLinesFinal = () => {}, kitCheckFn = null }) {
+export async function directStoryboard({ apiKey, script, cast, scenes, title = "", fetchFn = fetch, log = () => {}, capUsd = 0.25, maxFallback = null, onLinesFinal = () => {}, kitCheckFn = null, engineCheckFn = null }) {
   const t0 = Date.now(), lines = script.lines.map((l) => String(l.text ?? l)), rewrites = [];
   const castText = Object.entries(cast).map(([id, c]) => `${id}: ${c.name} (${c.role})`).join("; ");
   const numbered = lines.map((t, i) => `#${i} ${t}`).join("\n");
@@ -141,13 +145,26 @@ export async function directStoryboard({ apiKey, script, cast, scenes, title = "
   // 16 of 43 lines that way: in board-only mode they would have been old-planner shots); it goes through the repair and
   // the rewording like any other, and fails the run only if it still can not be filmed. The camera fix runs first, free.
   const boardOnly = maxFallback === 0;
-  const check = () => { fixCameras(board); const p = validateStoryboard(board, { lines, cast }); if (boardOnly) for (const b of board.lines) if (b.keep && !b.fallback) p.push({ line: b.line, problem: "kept for the old planner, but this video is board-only: film it with the kit (a line with nothing to show = a face close-up of who speaks or who it is about)" }); return p; };
-  let problems = check();
+  // EVERY FINAL CHECK BEFORE THE VOICE (engineCheckFn: the engine's checks on estimated timing, lib/storyboard.js
+  // preVoiceProblems): their per-line failures ("Pip not on screen in line 12") join the problems, so the repair re-plans
+  // the line, the rewording rewords it, and only what stays fails the run (the voice is never bought for it)
+  let engineChecked = 0;
+  const check = async () => {
+    fixCameras(board); const p = validateStoryboard(board, { lines, cast });
+    if (boardOnly) for (const b of board.lines) if (b.keep && !b.fallback) p.push({ line: b.line, problem: "kept for the old planner, but this video is board-only: film it with the kit (a line with nothing to show = a face close-up of who speaks or who it is about)" });
+    if (engineCheckFn) {
+      const bad = new Set(p.map((x) => x.line)), tmp = { ...board, lines: board.lines.map((l) => (bad.has(l.line) ? { line: l.line, keep: true } : l)) };
+      try { for (const e of await engineCheckFn(tmp, lines.slice())) if (!bad.has(e.line)) p.push({ line: e.line, problem: `final check: ${e.problem}` }); engineChecked++; }
+      catch (err) { log(`pre-voice checks could not run: ${String(err?.message ?? err).slice(0, 160)}`); }
+    }
+    return p;
+  };
+  let problems = await check();
   if (problems.length) {
     const bad = [...new Set(problems.map((p) => p.line))];
-    const rep = spend(await call({ apiKey, fetchFn, maxTokens: 450 * bad.length + 300, system: SHOT_SYSTEM, content: ask(bad, ` Fix these problems (use ONLY the kit vocabulary; a line the kit can't show is {"line":n,"keep":true}): ${JSON.stringify(problems)}`) }).catch((e) => ({ data: null, costUsd: e.costUsd ?? 0 })));
+    const rep = spend(await call({ apiKey, fetchFn, maxTokens: 450 * bad.length + 300, system: SHOT_SYSTEM, content: ask(bad, ` Fix these problems (use ONLY the kit vocabulary; a line the kit can't show is {"line":n,"keep":true}; a "final check" problem means a person / place / thing the line names is not on screen in its shots: put it there): ${JSON.stringify(problems.slice(0, 60))}`) }).catch((e) => ({ data: null, costUsd: e.costUsd ?? 0 })));
     for (const e of Array.isArray(rep.data) ? rep.data : []) { board.lines = board.lines.filter((l) => l.line !== e.line); board.lines.push(e); }
-    problems = check();
+    problems = await check();
   }
   // THE LINE REPAIR (owner: every problem = a check + an auto-fix, a clean failure only if unfixable): the lines still
   // unfilmable are REWORDED to kit things (one cheap call, lines only), re-checked (kitCheck + the director again for just
@@ -162,15 +179,16 @@ export async function directStoryboard({ apiKey, script, cast, scenes, title = "
       const ids = fixed.map((x) => x.line), numbered2 = lines.map((t, i) => `#${i} ${t}`).join("\n");
       const again = spend(await call({ apiKey, fetchFn, maxTokens: 450 * ids.length + 300, system: SHOT_SYSTEM, content: [{ type: "text", text: prefix }, { type: "text", text: `These lines were REWORDED so the kit can film them (use the new text):\n${ids.map((n) => `#${n} ${lines[n]}`).join("\n")}\nWrite the storyboard entries for lines ${ids.join(", ")} only. The whole story now:\n${numbered2}` }] }).catch((e) => ({ data: null, costUsd: e.costUsd ?? 0 })));
       for (const e of Array.isArray(again.data) ? again.data : []) { if (!ids.includes(e.line)) continue; board.lines = board.lines.filter((l) => l.line !== e.line); board.lines.push(e); }
-      problems = check();
+      problems = await check();
       log(`storyboard repair: ${fixed.length} of ${bad.length} line(s) reworded to kit things; ${new Set(problems.map((p) => p.line)).size} still unfilmable`);
     }
   }
-  onLinesFinal(lines.slice(), rewrites); // the voice can be made now (the final wording)
+  if (engineCheckFn) log(`pre-voice checks: ${engineChecked} run(s); ${new Set(problems.filter((p) => /^final check/.test(p.problem)).map((p) => p.line)).size} line(s) still failing them`);
   const fellBack = [...new Set(problems.map((p) => p.line))];
   for (const n of fellBack) { const was = board.lines.find((l) => l.line === n && !l.keep) ?? null; board.lines = board.lines.filter((l) => l.line !== n); board.lines.push({ line: n, keep: true, fallback: problems.filter((p) => p.line === n).map((p) => p.problem), ...(was ? { was } : {}) }); } /* was: the director's own entry, kept for the free replay */
   board.lines.sort((a, b) => a.line - b.line);
   // maxFallback: how many lines may go to the old planner (the server's BLOCKY_WORLDS_BOARD_ONLY sends 0: board only); default half
   if (fellBack.length > (Number.isFinite(maxFallback) ? maxFallback : lines.length / 2)) throw Object.assign(new Error(`the board kit can't show ${fellBack.length} of ${lines.length} lines: ${fellBack.slice(0, 6).map((n) => `#${n + 1} (${(problems.find((p) => p.line === n)?.problem ?? "no storyboard").slice(0, 80)})`).join("; ")}`), { code: "KIT_UNSUPPORTED", costUsd, fellBack, board, problems, rewrites });
+  onLinesFinal(lines.slice(), rewrites); // the voice can be made now (the final wording): only AFTER the fail check, so a storyboard that fails never buys a take, voice-after or not
   return { board, costUsd: +costUsd.toFixed(6), ms: Date.now() - t0, fellBack, problems, rewrites, lines };
 }
