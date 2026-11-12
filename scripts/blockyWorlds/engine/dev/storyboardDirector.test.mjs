@@ -47,3 +47,7 @@ test("an unusable bible is a clean STORYBOARD_FAILED (refunded by the server)", 
   const fetchFn = async () => reply({ nope: true });
   await assert.rejects(directStoryboard({ apiKey: "x", script, cast, scenes, fetchFn }), (e) => e.code === "STORYBOARD_FAILED");
 });
+
+test("maxFallback 0 (BOARD_ONLY): one line the kit can't show is a clean KIT_UNSUPPORTED", async () => {
+  await assert.rejects(directStoryboard({ apiKey: "x", script, cast, scenes, maxFallback: 0, fetchFn: mock({ breakLine: 5, repairFixes: false }).fetchFn }), (e) => e.code === "KIT_UNSUPPORTED");
+});

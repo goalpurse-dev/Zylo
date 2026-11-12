@@ -307,7 +307,7 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
     const early = plan.planVideo({ script, words: plan.estimateWords ? plan.estimateWords(script) : null, idea: p.idea ?? {}, lengthSec: p.lengthSec ?? null, direction: d, exists, criticalMode: "report", library: libraryFind, scenes: p.scenes ?? null });
     if (!process.env.ANTHROPIC_KEY) throw coded("NOT_CONFIGURED", "no Anthropic key for the storyboard director");
     await post("progress", { stage: "storyboard", pct: 4 });
-    const r = await directStoryboard({ apiKey: process.env.ANTHROPIC_KEY, script, cast: early.cast ?? {}, scenes: early.scenes ?? p.scenes ?? null, title: script.title ?? "", capUsd: Number(p.storyboard.capUsd) || 0.25, log: (m) => console.log(m) });
+    const r = await directStoryboard({ apiKey: process.env.ANTHROPIC_KEY, script, cast: early.cast ?? {}, scenes: early.scenes ?? p.scenes ?? null, title: script.title ?? "", capUsd: Number(p.storyboard.capUsd) || 0.25, maxFallback: Number.isFinite(Number(p.storyboard.maxFallback)) && p.storyboard.maxFallback !== null ? Number(p.storyboard.maxFallback) : null, log: (m) => console.log(m) });
     spend.directorUsd += r.costUsd; spend.plannedDirectorUsd += r.costUsd;
     console.log(`storyboard: ${r.board.lines.length} lines, ${r.fellBack.length} on the engine planner (${r.ms} ms, $${r.costUsd})`);
     return r.board;

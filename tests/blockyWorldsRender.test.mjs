@@ -22,19 +22,21 @@ function timeline(sec = 90, { set = null } = {}) {
 }
 
 // ---------------------------------------------------------------- the chunk split
-test("chunks: a 90 s video is 8 chunks of ~270 frames, contiguous, covering every frame, cut at shot boundaries", () => {
+test("chunks: a 90 s video is 6 chunks (capped at the endpoint's workers, no second wave), contiguous, covering every frame, cut at shot boundaries", () => {
   const tl = timeline(90), N = 90 * 24, plan = chunkPlan(tl);
-  assert.equal(plan.length, 8);
+  assert.equal(plan.length, Math.min(8, RENDER.workers));
+  const K = plan.length;
   assert.deepEqual(chunkProblems(plan, N), []);
-  const cuts = tl.shots.map((s) => Math.round(s.start * 24)), win = (N / 8) * RENDER.snapShare;
+  const cuts = tl.shots.map((s) => Math.round(s.start * 24)), win = (N / K) * RENDER.snapShare;
   for (const c of plan.slice(1)) {
-    const ideal = Math.round((N * c.index) / 8);
+    const ideal = Math.round((N * c.index) / K);
     if (cuts.some((x) => Math.abs(x - ideal) <= win)) assert.ok(cuts.includes(c.from), `chunk ${c.index} starts on the nearby shot cut (${c.from})`);
     else assert.equal(c.from, ideal);
   }
-  for (const c of plan) assert.ok(Math.abs(c.to - c.from - N / 8) <= N / 8 * 0.13, `chunk ${c.index} is ${c.to - c.from} frames`);
+  for (const c of plan) assert.ok(Math.abs(c.to - c.from - N / K) <= N / K * 0.13, `chunk ${c.index} is ${c.to - c.from} frames`);
   assert.equal(chunkPlan(timeline(60)).length, 6);
-  assert.equal(chunkPlan(timeline(120)).length, 11);
+  // 2 min: the workers cap (6); the upload-size rule may add a chunk or two (a chunk over chunkBytesTarget never ships)
+  { const n = chunkPlan(timeline(120)).length; assert.ok(n >= RENDER.workers && n <= RENDER.workers + 2, `${n} chunks`); }
   // the slider's ends (30 s to 3 min): every frame covered, the chunk count inside [minChunks, maxChunks], and a
   // 3 min chunk still renders well inside its run timeout
   for (const s of [30, 180]) {
@@ -44,7 +46,8 @@ test("chunks: a 90 s video is 8 chunks of ~270 frames, contiguous, covering ever
     for (const c of p) assert.ok((c.to - c.from) * 0.1 + 60 < RENDER.runSec.chunk, `${s} s chunk ${c.index}: ${c.to - c.from} frames`);
   }
   assert.equal(chunkPlan(timeline(30)).length, 3);
-  assert.equal(chunkPlan(timeline(180)).length, 12);
+  // 3 min: the workers cap, raised only by the upload-size rule (a 3 min chunk over chunkBytesTarget would not ship)
+  { const n = chunkPlan(timeline(180)).length; assert.ok(n >= RENDER.workers && n <= RENDER.maxChunks, `${n} chunks`); }
 });
 
 test("chunks: the expected size raises the count until every chunk fits the upload limit", () => {
@@ -438,7 +441,8 @@ test("worker: prepare stops on a visual miss before the timeline is uploaded; th
   assert.ok(storage.exists("v/voice.mp3") && storage.exists("v/take.json"), "the paid take is kept");
   assert.ok(storage.exists("visual-check.json"), "the report is up for the owner");
   assert.ok(!storage.exists("timeline.json"), "no timeline: nothing can render");
-  assert.deepEqual(events.map((e) => e[0]), ["progress", "voiced", "progress"]);
+  // voice, the take bought, plan, then the still gate's stage (the progress screen, 2026-11-12) before the checks stop it
+  assert.deepEqual(events.map((e) => [e[0], e[1]?.stage ?? null]), [["progress", "voice"], ["voiced", null], ["progress", "plan"], ["progress", "stills"]]);
   assert.equal(JSON.parse(await storage.readText("visual-check.json")).passed, false);
   fs.rmSync(root, { recursive: true, force: true }); fs.rmSync(dir, { recursive: true, force: true });
 });

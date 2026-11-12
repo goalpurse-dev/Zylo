@@ -103,7 +103,7 @@ async function call({ apiKey, system, content, maxTokens, fetchFn }) {
 }
 
 /** the whole automatic storyboard: bible, then every scene in parallel, validation, one repair, the engine fallback */
-export async function directStoryboard({ apiKey, script, cast, scenes, title = "", fetchFn = fetch, log = () => {}, capUsd = 0.25 }) {
+export async function directStoryboard({ apiKey, script, cast, scenes, title = "", fetchFn = fetch, log = () => {}, capUsd = 0.25, maxFallback = null }) {
   const t0 = Date.now(), lines = script.lines.map((l) => String(l.text ?? l));
   const castText = Object.entries(cast).map(([id, c]) => `${id}: ${c.name} (${c.role})`).join("; ");
   const numbered = lines.map((t, i) => `#${i} ${t}`).join("\n");
@@ -134,6 +134,7 @@ export async function directStoryboard({ apiKey, script, cast, scenes, title = "
   const fellBack = [...new Set(problems.map((p) => p.line))];
   for (const n of fellBack) { board.lines = board.lines.filter((l) => l.line !== n); board.lines.push({ line: n, keep: true, fallback: problems.filter((p) => p.line === n).map((p) => p.problem) }); }
   board.lines.sort((a, b) => a.line - b.line);
-  if (fellBack.length > lines.length / 2) throw Object.assign(new Error(`the board kit can't show ${fellBack.length} of ${lines.length} lines`), { code: "KIT_UNSUPPORTED", costUsd });
+  // maxFallback: how many lines may go to the old planner (the server's BLOCKY_WORLDS_BOARD_ONLY sends 0: board only); default half
+  if (fellBack.length > (Number.isFinite(maxFallback) ? maxFallback : lines.length / 2)) throw Object.assign(new Error(`the board kit can't show ${fellBack.length} of ${lines.length} lines`), { code: "KIT_UNSUPPORTED", costUsd });
   return { board, costUsd: +costUsd.toFixed(6), ms: Date.now() - t0, fellBack, problems };
 }

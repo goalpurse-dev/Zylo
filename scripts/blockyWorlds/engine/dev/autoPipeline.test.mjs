@@ -89,3 +89,11 @@ test("render chunks never outnumber the endpoint's workers", async () => {
   const tl = { fps: 24, duration: 93.4, width: 1080, height: 1920, shots: [{ start: 0, end: 93.4 }] };
   const plan = chunkPlan(tl); assert.ok(Array.isArray(plan) && plan.length > 1 && plan.length <= RENDER.workers, `${plan.length} chunks`);
 });
+
+test("kitCheck v2: real singulars, ambiguous words only in context, boardFit's kinds in one check", async () => {
+  const { kitCheck, singular } = await import("../../../../supabase/functions/_shared/blockyWorlds/kitCheck.js");
+  assert.deepEqual(["bus", "buses", "glasses", "berries", "leaves", "boxes"].map(singular), ["bus", "bus", "glass", "berry", "leaf", "box"]);
+  assert.equal(kitCheck(["I put on my bike helmet.", "There was no parking space.", "Mom opened the chest of drawers."]).ok, true);
+  const r = kitCheck(["We took the bus to school.", "The bus was late.", "Fog rolled in."]);
+  assert.equal(r.ok, false); assert.equal(r.missing.find((m) => m.kind === "vehicle").word, "bus");
+});
