@@ -45,7 +45,8 @@ import { stillsJob, objectStillsJob } from "./stillsRole.mjs";
 import { simpleStillsJob } from "./simpleRole.mjs"; // 2026-11-10 simple-style TEST page (page/simple/), stills only
 import { applyStoryboard, storyboardChecks } from "../lib/storyboard.js"; // STORYBOARD (2026-11-11): job.prepare.storyboard
 import { paramsFromPrompts, writePromptsByScene, enrichPrompts, checkPrompts } from "../lib/shotPrompts.js";
-import { directStoryboard } from "../lib/storyboardDirector.js"; // the automatic storyboard (job.prepare.storyboard.auto)
+import { directStoryboard } from "../lib/storyboardDirector.js";
+import { kitCheck, kitHas } from "../../../../supabase/functions/_shared/blockyWorlds/kitCheck.js"; // the early kit check // the automatic storyboard (job.prepare.storyboard.auto)
 
 const ENGINE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const FF = process.env.FFMPEG ?? "ffmpeg";
@@ -299,6 +300,9 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
   }).catch((e) => ({ items: [], wanted: [], built: {}, unbuilt: [], report: null, error: String(e?.message ?? e).slice(0, 200) }));
   // THE AUTOMATIC STORYBOARD (job.prepare.storyboard = { auto: true }, 2026-11-12): the AI director writes the storyboard
   // (lib/storyboardDirector.js: the bible, then every scene in parallel) WHILE the voice is made; its spend is the director's
+  // THE EARLY KIT CHECK (2026-11-12): a story that leans on a thing the board kit can't show stops HERE, before the voice is
+  // bought (the server runs the same check before the charge: _shared/blockyWorlds/kitCheck.js, "Fix it")
+  if (p.storyboard?.auto) { const kc = kitCheck(script); if (!kc.ok) throw coded("KIT_UNSUPPORTED", `the story needs ${kc.missing.map((m) => `"${m.word}" (${m.kind})`).join(", ")}, which our board kit can't film yet`); }
   const boarding = p.storyboard?.auto ? directing.then(async (d) => {
     const early = plan.planVideo({ script, words: plan.estimateWords ? plan.estimateWords(script) : null, idea: p.idea ?? {}, lengthSec: p.lengthSec ?? null, direction: d, exists, criticalMode: "report", library: libraryFind, scenes: p.scenes ?? null });
     if (!process.env.ANTHROPIC_KEY) throw coded("NOT_CONFIGURED", "no Anthropic key for the storyboard director");
@@ -343,7 +347,10 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
   // the plan with the critical items' results; one still unresolved REJECTS it: CRITICAL_UNBUILT (no retry, refunded)
   let tl;
   try {
-    tl = await lap("plan", () => plan.planVideo({ script, words: v.words, idea: p.idea ?? {}, lengthSec: p.lengthSec ?? null, direction, exists, built: crit.built, library: libraryFind, criticalMode: criticalStrict(direction) ? "reject" : "report", scenes: p.scenes ?? null }));
+    tl = await lap("plan", () => plan.planVideo({ script, words: v.words, idea: p.idea ?? {}, lengthSec: p.lengthSec ?? null, direction, exists, built: crit.built, library: libraryFind, criticalMode: criticalStrict(direction) && !p.storyboard ? "reject" : "report", scenes: p.scenes ?? null }));
+    // a STORYBOARD run: the board kit (props, animals, places, creatures) shows the critical things the engine kit lacks;
+    // only a thing NEITHER can show stops the run (CRITICAL_UNBUILT, refunded)
+    if (p.storyboard && criticalStrict(direction)) { const left = (tl.critical?.unresolved ?? []).filter((x) => !kitHas(x.name)); if (left.length) throw coded("CRITICAL_UNBUILT", `couldn't build the story's ${left.length} critical item(s): ${left.map((x) => `"${x.name}"`).join(", ")} — not in the board kit`); }
   } catch (e) {
     if (e.critical) throw criticalUnbuilt(e.critical, crit);
     throw e;

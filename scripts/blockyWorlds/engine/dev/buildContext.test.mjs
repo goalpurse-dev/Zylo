@@ -17,7 +17,7 @@ test("the code graph reaches every module the worker loads (the dynamic ones too
   for (const f of ["audio/mix.mjs", "audio/sfx.mjs", "audio/sfxEpic.mjs", "audio/backrooms.mjs", "lib/sfx.js", "plan.mjs", "render.mjs", "voice/eleven.mjs",
     "lib/director/index.js", "lib/builder/index.js", "lib/builder/cache.js", "lib/builder/apply.js", "lib/builder/still.mjs", "lib/builder/design.js", "lib/builder/vision.js", "page/kit/objects.js"]) assert.ok(g.engine.includes(f), f);
   assert.ok(!g.engine.some((f) => /Build\.mjs$|^dev\//.test(f)), "no build scripts / dev tools");
-  assert.deepEqual(g.shared, ["boardKit.js", "config.js", "voice.js"]); // boardKit.js: the kit manifest (lib/storyboardDirector.js)
+  assert.deepEqual(g.shared, ["boardKit.js", "config.js", "kitCheck.js", "voice.js"]); // boardKit.js: the kit manifest (lib/storyboardDirector.js)
 });
 
 test("buildContext: every module loads from the context in the image's layout; a missing one stops it", () => {

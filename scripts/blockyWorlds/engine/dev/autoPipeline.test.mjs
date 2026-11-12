@@ -72,3 +72,20 @@ test("the voice-failure metric and its switch", async () => {
   assert.equal(prepareProduction(productionSettings((k) => env[k])).storyboard.voiceAfter, true);
   assert.equal(prepareProduction(productionSettings((k) => ({ BLOCKY_WORLDS_STORYBOARD: "auto" })[k])).storyboard.voiceAfter, undefined);
 });
+
+test("the props kit: the manifest's props are exactly the engine's, the early kit check passes kit stories and stops the rest", async () => {
+  const { BOARD_KIT } = await import("../../../../supabase/functions/_shared/blockyWorlds/boardKit.js");
+  const { PROPS } = await import("../page/simple/boardProps.js").catch(() => ({ PROPS: null }));
+  if (PROPS) assert.deepEqual(BOARD_KIT.props.map((p) => p.id).sort(), Object.keys(PROPS).sort());
+  const { kitCheck, kitHas } = await import("../../../../supabase/functions/_shared/blockyWorlds/kitCheck.js");
+  assert.equal(kitHas("saucer of milk"), "saucer"); assert.equal(kitHas("plastic kazoo"), "kazoo"); assert.equal(kitHas("a dragon"), null);
+  assert.equal(kitCheck(["Nobody whistles after sunset.", "We leave a saucer of milk.", "Mr. Plunk blew his kazoo."]).ok, true);
+  const bad = kitCheck(["In our town a dragon lives on the hill.", "Nobody goes near the dragon.", "One day I did."]);
+  assert.equal(bad.ok, false); assert.equal(bad.missing[0].word, "dragon");
+});
+
+test("render chunks never outnumber the endpoint's workers", async () => {
+  const { chunkPlan, RENDER } = await import("../../../../supabase/functions/_shared/blockyWorlds/render.js");
+  const tl = { fps: 24, duration: 93.4, width: 1080, height: 1920, shots: [{ start: 0, end: 93.4 }] };
+  const plan = chunkPlan(tl); assert.ok(Array.isArray(plan) && plan.length > 1 && plan.length <= RENDER.workers, `${plan.length} chunks`);
+});

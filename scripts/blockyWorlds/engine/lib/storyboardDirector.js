@@ -25,6 +25,7 @@ export const BOARD = Object.freeze({
   covers: ["curtained", "bulging", "thin", "sock", "bare", "smeared"],
   roomProps: ["bed", "shelf", "rug", "cat", "painting", "boards", "bricks", "counter", "bowl", "sofa", "lamp", "table", "nightstand"],
   lights: ["dusk", "night", "day"],
+  props: BOARD_KIT.props.map((p) => p.id),
   places: BOARD_KIT.places.filter((p) => !["street", "room"].includes(p.id)).map((p) => p.id),
   weather: BOARD_KIT.weather.filter((w) => w !== "wind"),
   animals: [...BOARD_KIT.animals],
@@ -44,7 +45,7 @@ Format per line (compact JSON): {"line":n,"place":"street"|"home:<owner>"|"place
 Output ONLY a compact JSON array of line entries for the lines asked.`;
 
 function vocabText() {
-  return `KIT VOCABULARY:\nplaces: ${BOARD.locs.join(" | ")}\ncameras: street ${BOARD.cams.street.join(", ")}; at a house ${BOARD.cams.house.join(", ")}; in a room ${BOARD.cams.room.join(", ")}\npeople where: ${BOARD.where.join(", ")}\nplaces: ${BOARD.places.join(", ")}; animals: ${BOARD.animals.join(", ")}; weather: ${BOARD.weather.join(", ")}\nmonster where: ${BOARD.monsterWhere.join(", ")}; eye: ${BOARD.eyes.join(", ")}\nposes: ${BOARD.poses.join(", ")}\nfaces: ${BOARD.faces.join(", ")}\nACTIONS (key: what we see):\n${Object.entries(BOARD_ACTIONS).map(([k, v]) => `${k}: ${v}`).join("\n")}`;
+  return `KIT VOCABULARY:\nplaces: ${BOARD.locs.join(" | ")}\ncameras: street ${BOARD.cams.street.join(", ")}; at a house ${BOARD.cams.house.join(", ")}; in a room ${BOARD.cams.room.join(", ")}\npeople where: ${BOARD.where.join(", ")}\nplaces: ${BOARD.places.join(", ")}; animals: ${BOARD.animals.join(", ")}; weather: ${BOARD.weather.join(", ")}\nprops (in a hand: people[].hold; set down: shot.props [{name, where: table | ground | place:<mark> | street:<n>}]): ${BOARD.props.join(", ")}\nmonster where: ${BOARD.monsterWhere.join(", ")}; eye: ${BOARD.eyes.join(", ")}\nposes: ${BOARD.poses.join(", ")}\nfaces: ${BOARD.faces.join(", ")}\nACTIONS (key: what we see):\n${Object.entries(BOARD_ACTIONS).map(([k, v]) => `${k}: ${v}`).join("\n")}`;
 }
 /** the few-shot: #2's storyboard (its lines with their text) */
 export function exampleText() {
@@ -73,6 +74,7 @@ export function validateStoryboard(board, { lines, cast }) {
       if (!BOARD.lights.includes(s.light ?? "night")) P(n, `shot ${i}: light "${s.light}"`);
       if (s.weather && !BOARD.weather.includes(s.weather)) P(n, `shot ${i}: weather "${s.weather}"`);
       for (const a of s.animals ?? []) if (!BOARD.animals.includes(a.species)) P(n, `shot ${i}: animal "${a.species}" not in the kit`);
+      for (const pr of [...(s.props ?? []).map((x) => x.name), ...(s.people ?? []).map((x) => x.hold).filter(Boolean)]) if (!BOARD.props.includes(pr) && !["hammer", "boards", "brick"].includes(pr)) P(n, `shot ${i}: prop "${pr}" not in the props kit`);
       for (const p of s.people ?? []) {
         if (!cast[p.id]) P(n, `shot ${i}: unknown person "${p.id}"`);
         const w = String(p.where);

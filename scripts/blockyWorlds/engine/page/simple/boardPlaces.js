@@ -60,7 +60,7 @@ export function buildPlace(name, parent, tl) {
     cam(cam, { where = {}, people = [], k = 0 } = {}) {
       const c = spots.center, first = people.map((p) => where[p.id]).find(Boolean);
       if (cam === "place_medium" && first) { const f = V(Math.sin(first.yaw), 0, Math.cos(first.yaw)); return { pos: first.head.clone().addScaledVector(f, 3.2 - 0.3 * k).add(V(0.4, 0.1, 0)), look: first.head.clone().add(V(0, -0.35, 0)), fov: 48 }; }
-      const back = INDOOR[name] ? 5.5 : 9;
+      const back = name === "shop" ? 3.3 : INDOOR[name] ? 5.5 : 9; // the shop's window is at z 3.95: the camera stays inside it
       return { pos: c.clone().add(V(0.6, INDOOR[name] ? 1.9 : 2.6, back - 0.6 * k)), look: c.clone().add(V(0, 1.2, -2)), fov: INDOOR[name] ? 62 : 56 };
     },
   };
@@ -69,21 +69,23 @@ export function buildPlace(name, parent, tl) {
 // ------------------------------------------------------------------------------------------------ weather
 /** rain (streaks) or snow (flakes) in a box round the camera, deterministic in t */
 export function makeWeather(parent) {
-  const N = 900, geo = new THREE.BoxGeometry(1, 1, 1);
-  const rain = new THREE.InstancedMesh(geo, new THREE.MeshBasicMaterial({ color: "#cfe3ff", transparent: true, opacity: 0.55 }), N);
+  const N = 1600, geo = new THREE.BoxGeometry(1, 1, 1);
+  const rain = new THREE.InstancedMesh(geo, new THREE.MeshBasicMaterial({ color: "#e6f0ff", transparent: true, opacity: 0.6 }), N);
   const snow = new THREE.InstancedMesh(geo, new THREE.MeshBasicMaterial({ color: "#ffffff" }), N);
   rain.frustumCulled = snow.frustumCulled = false; parent.add(rain); parent.add(snow); rain.visible = snow.visible = false;
   const R = seeded(77), seeds = Array.from({ length: N }, () => [R(), R(), R()]), m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), p = new THREE.Vector3();
   return {
-    update(kind, t, camera) {
+    update(kind, t, camera, night = false) {
+      rain.material.color.set(night ? "#e6f0ff" : "#5d7ea8"); // day rain: darker streaks against the bright sky
       rain.visible = kind === "rain"; snow.visible = kind === "snow";
       const mesh = kind === "rain" ? rain : kind === "snow" ? snow : null; if (!mesh) return;
       const c = camera.position, d = camera.getWorldDirection(new THREE.Vector3()).setY(0).normalize();
       for (let i = 0; i < N; i++) {
         const [a, b, e] = seeds[i], speed = kind === "rain" ? 14 : 1.4, h = 12;
         const y = h - (((t * speed + e * h) % h) + h) % h;
-        p.set(c.x + d.x * 7 + (a - 0.5) * 18 + (kind === "snow" ? 0.4 * Math.sin(t * 1.3 + i) : 0), c.y - 4 + y, c.z + d.z * 7 + (b - 0.5) * 18);
-        s.set(kind === "rain" ? 0.02 : 0.07, kind === "rain" ? 0.5 : 0.07, kind === "rain" ? 0.02 : 0.07);
+        const r = 3 + a * 9, ang = (b - 0.5) * 1.6; // 3-12 m in front of the lens, across the view (a flake at the lens filled the frame)
+        p.set(c.x + d.x * r * Math.cos(ang) - d.z * r * Math.sin(ang) + 0 * (a - 0.5) * 12 + (kind === "snow" ? 0.4 * Math.sin(t * 1.3 + i) : 0), c.y - 4 + y, c.z + d.z * r * Math.cos(ang) + d.x * r * Math.sin(ang));
+        s.set(kind === "rain" ? 0.02 : 0.08, kind === "rain" ? 0.6 : 0.08, kind === "rain" ? 0.02 : 0.08);
         m.compose(p, q, s); mesh.setMatrixAt(i, m);
       }
       mesh.instanceMatrix.needsUpdate = true;

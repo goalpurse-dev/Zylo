@@ -9,7 +9,8 @@ import { mat, box, rbox, ball, cyl, canvasTex, seeded } from "./common.js";
 import { makeSky, cloudTree } from "./town.js";
 import { kneelBend } from "./monsters.js";
 import { BOARD_ACTIONS } from "/lib/boardActions.js";
-import { buildPlace, makeWeather, placeAnimals } from "./boardPlaces.js"; // the kit expansion (school, woods, park, shop; rain, snow; animals)
+import { buildPlace, makeWeather, placeAnimals } from "./boardPlaces.js";
+import { PROPS, makeProp } from "./boardProps.js"; // the props kit (boardKit.js BOARD_KIT.props) // the kit expansion (school, woods, park, shop; rain, snow; animals)
 
 const HZ = -7, HX0 = -45, HDX = 15, HW = 9, FL = 3.2;            // house fronts at z = HZ, x = HX0 + i * HDX
 const WIN = [[-2.4, 0.9], [2.4, 0.9], [-2.4, 4.1], [2.4, 4.1]];  // window [x, sill y] (0, 1 ground; 2, 3 upstairs)
@@ -343,6 +344,7 @@ function boardShot(S, { shot, lt, dur, camera, people, monster, animateMonster, 
     if (J && has("cover:eyes")) { J.sh[0].rotation.set(-2.5, 0, 0.35); J.sh[1].rotation.set(-2.5, 0, -0.35); J.el[0].rotation.set(-1.3, 0, 0); J.el[1].rotation.set(-1.3, 0, 0); }
     if (J && has("look_up") && pose === "look_up") J.head.rotation.x = -0.55;
     if (J && has("stare:cat") && p.id === acts.get("stare:cat").who) { J.head.rotation.x = 0.15; }
+    if (J && p.hold && (PROPS[p.hold] || ["hammer", "boards", "brick"].includes(p.hold))) { J.sh[1].rotation.x = Math.min(J.sh[1].rotation.x, -0.55); hold(S, J.hand[1], p.hold); }
     o.updateMatrixWorld(true);
     where[p.id] = { pos, head: pos.clone().setY(pos.y + P.headC), yaw, P };
   }
@@ -419,6 +421,16 @@ function boardShot(S, { shot, lt, dur, camera, people, monster, animateMonster, 
     M.updateMatrixWorld(true);
   }
 
+  // ---- props set down (b.props: [{ name, where }])
+  for (const [i, pr] of (b.props ?? []).entries()) {
+    const g = makeProp(pr.name); if (!g) continue;
+    const w = String(pr.where ?? "");
+    let pos;
+    if ((w === "table" || w === "counter") && room) { const t = room.props.table ?? room.props.bowl; pos = t ? t.getWorldPosition(V(0, 0, 0)).setY(0.76 + (room.props.table ? 0 : 0.2)) : room.g.localToWorld(V(0.6, 0.76, -0.4)); pos.x += 0.25 * i; }
+    else if (w === "ground" && b.people[0] && where[b.people[0].id]) pos = where[b.people[0].id].pos.clone().add(V(0.45 + 0.3 * i, 0, 0.35));
+    else pos = markPos(S, b, place, w, i);
+    g.position.copy(pos); root(S).add(g); S.held.push(g);
+  }
   // ---- animals + weather (the kit expansion)
   if (b.animals?.length) placeAnimals(root(S), b.animals.map((a, i) => ({ ...a, pos: markPos(S, b, place, a.where, i), yaw: a.yaw ?? 0 })), lt); else placeAnimals(root(S), [], lt);
   // ---- the camera
@@ -427,6 +439,7 @@ function boardShot(S, { shot, lt, dur, camera, people, monster, animateMonster, 
   const k = ease(lt / Math.max(1, dur));
   if (cam === "town_wide") { pos = V(-66 + 4 * k, 15 - 1.5 * k, 20); look = V(-8, 1.5, -5); fov = 52; }
   else if (cam === "street_end") { pos = V(-40, 1.7, 1.2); look = V(62, 7, -0.5); fov = 30; }
+  else if (cam === "street_wide" && b.people.some((p) => /^street:\d$/.test(p.where))) { const n = Number(b.people.find((p) => /^street:\d$/.test(p.where)).where.slice(7)), x = -44 + n * 9 + 0.8; pos = V(x + 2.5, 2.0, 10.5 - 0.6 * k); look = V(x, 1.4, 1.6); fov = 50; }
   else if (cam === "street_wide") { pos = has("rip:curtains") ? V(-36 + 2 * k, 2.6, 5.5) : V(-56 + 3 * k, 3.4, 6.2); look = has("rip:curtains") ? V(-20, 4.2, -7) : V(-4, 3.4, -7); fov = 52; if (mon) { look = V(mon.position.x - 6, 5.5, -4); pos = V(mon.position.x - 30.5, 2.2, 7.5); } }
   else if (cam === "sky_up") { pos = V(5, 1.6, 7.5); look = V(9, 8.5, -8); fov = 66; } // the rooftops at the bottom, the kites above
   else if (cam === "street_back") { pos = V(-18, 1.8, 1.8); look = V(40, 5.5, -0.5); fov = 44; }
@@ -455,10 +468,10 @@ function boardShot(S, { shot, lt, dur, camera, people, monster, animateMonster, 
     else if (cam === "huddle_up") { pos = R0(1.8, 0.9, 1.4); look = R0(-0.1, 1.7, -2.6); fov = 60; } // low at the side: their faces tipped up, the eye filling the window behind them
     else if (/^face:/.test(cam)) { const p = where[cam.slice(5)]; if (p) { const f = V(Math.sin(p.yaw), 0, Math.cos(p.yaw)); pos = p.head.clone().addScaledVector(f, 2.3 - 0.15 * k).add(V(0, 0.02, 0)); look = p.head.clone(); fov = 40; } }
   }
-  S.weather.update(b.weather ?? (b.acts.some((a) => a.k === "rain:falls") ? "rain" : b.acts.some((a) => a.k === "snow:falls") ? "snow" : null), lt, camera);
-  S.camFill.position.copy(pos).add(V(0, 0.4, 0)); S.camFill.intensity = (room || place?.indoor) && night ? (cam === "pov_eye" ? 9 : 4) : 0; S.camFill.color.set(cam === "pov_eye" ? "#e8f0ff" : "#fff1dc");
+  S.camFill.position.copy(pos).add(V(0, 0.4, 0)); S.camFill.intensity = (room || place) && night ? (cam === "pov_eye" ? 9 : 4) : 0; S.camFill.color.set(cam === "pov_eye" ? "#e8f0ff" : "#fff1dc");
   camera.position.copy(pos); camera.fov = fov; camera.near = 0.05; camera.far = 3000; camera.updateProjectionMatrix();
   camera.up.set(0, 1, 0); camera.lookAt(look); camera.updateMatrixWorld();
+  S.weather.update(b.weather ?? (b.acts.some((a) => a.k === "rain:falls") ? "rain" : b.acts.some((a) => a.k === "snow:falls") ? "snow" : null), lt, camera, night); // after the camera is placed (it rains round the lens)
   // faceLens (the still gate's re-plan, lib/vision/gatePass.js boardAlternatives): the person turns to the lens
   for (const p of b.people) if (p.faceLens && where[p.id] && !(p.where === "room:bed" && p.awake)) { const o = people[p.id].obj; o.rotation.y = Math.atan2(pos.x - o.position.x, pos.z - o.position.z); o.updateMatrixWorld(true); }
   S.spots.center.copy(look).setY(0);
@@ -472,6 +485,7 @@ function hold(S, hand, what) {
   if (what === "boards") { for (let i = 0; i < 3; i++) box(g, [1.4, 0.06, 0.2], [0.5, -0.1 - i * 0.07, 0.1], mat("#c9935a")); }
   if (what === "bowl") { cyl(g, 0.16, 0.1, 0.12, [0, -0.1, 0.08], mat("#4fa3d9")); ball(g, 0.13, [0, -0.06, 0.08], mat("#f3d58a", { rough: 0.5 }), { sy: 0.4 }); }
   if (what === "brick") box(g, [0.36, 0.18, 0.2], [0, -0.12, 0.1], mat("#b5492f"));
+  if (PROPS[what] && !["bowl"].includes(what)) { const p = makeProp(what); p.position.set(0, -0.16, 0.06); p.rotation.x = -Math.PI / 2; g.add(p); } // the props kit: held in the hand
   g.scale.setScalar(1 / Math.max(0.2, hand.getWorldScale(V(0, 0, 0)).x));
   return g;
 }

@@ -69,7 +69,8 @@ export function chunkRunSec(frames, cfg = RENDER) {
  */
 export function chooseChunkCount({ frames, activeRuns = 1, health = null, cfg = RENDER } = {}) {
   const W = Math.max(1, Number(cfg.workers) || 6);
-  const fastK = Math.min(cfg.maxChunks, Math.max(cfg.minChunks, Math.ceil(frames / cfg.framesPerChunk)));
+  // never more chunks than the endpoint has workers (2026-11-12: the account's 10 workers are shared with Cutaway, ours is 6): no second wave
+  const fastK = Math.min(cfg.maxChunks, Number(cfg.workers) || cfg.maxChunks, Math.max(cfg.minChunks, Math.ceil(frames / cfg.framesPerChunk)));
   const kMin = chunkMinCount(frames, cfg);
   const kMax = Math.max(kMin, Math.min(W, cfg.maxChunks, fastK));
   const n = Math.max(1, Math.floor(Number(activeRuns) || 1));
@@ -163,7 +164,8 @@ export function chunkPlan(tl, { cfg = RENDER, limitFrames = null, k: forceK = nu
   };
   if (forceK) return build(Math.max(1, Math.min(forceK, N)));
   // target: the queue-aware count (chooseChunkCount); its size check uses bytesTarget (RENDER.queueBytesTarget)
-  let K = target ? Math.min(cfg.maxChunks, Math.max(1, Math.round(target))) : Math.min(cfg.maxChunks, Math.max(cfg.minChunks, Math.ceil(N / cfg.framesPerChunk)));
+  const kMax = Math.min(cfg.maxChunks, Number(cfg.workers) || cfg.maxChunks); // never a second wave of chunks
+  let K = target ? Math.min(kMax, Math.max(1, Math.round(target))) : Math.min(kMax, Math.max(cfg.minChunks, Math.ceil(N / cfg.framesPerChunk)));
   const maxBytes = bytesTarget ?? cfg.chunkBytesTarget;
   K = Math.min(K, N);
   let plan = build(K);

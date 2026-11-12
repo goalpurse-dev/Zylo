@@ -10,6 +10,8 @@
 //     checkBoard(tl, board)    every line covered, every key / place / person known
 import { BOARD_ACTIONS, verbsOf, actsOfEngineShot } from "./boardActions.js";
 import { housesAt as sceneHousesAt, sceneOf } from "./scenes.js";
+import { BOARD_KIT } from "../../../../supabase/functions/_shared/blockyWorlds/boardKit.js";
+const PROP_ALIASES = Object.fromEntries((BOARD_KIT.props ?? []).map((p) => [p.id, p.aliases ?? []])); // the props kit's words (a held "saucer" shows "saucer of milk")
 
 const r3 = (x) => Math.round(x * 1000) / 1000;
 const tok = (s) => String(s).split(/\s+/).filter(Boolean);
@@ -126,6 +128,7 @@ function showsOf(b) {
   const PLACE_WORDS = { school: ["school", "classroom", "class", "desk", "desks", "teacher"], woods: ["woods", "forest", "trees", "tree", "path"], park: ["park", "trees", "bench", "pond", "grass", "square"], shop: ["shop", "store", "counter", "shelves", "till"] };
   if (/^place:/.test(b.loc)) for (const w of PLACE_WORDS[b.loc.slice(6)] ?? []) out.add(w);
   for (const a of b.animals ?? []) [a.species, `${a.species}s`].forEach((w) => out.add(w));
+  for (const pr of [...(b.props ?? []).map((x) => x.name), ...(b.people ?? []).map((x) => x.hold).filter(Boolean)]) { out.add(pr); out.add(`${pr}s`); for (const a of PROP_ALIASES[pr] ?? []) out.add(a); }
   if (b.weather) [b.weather, `${b.weather}y`].forEach((w) => out.add(w));
   for (const a of b.acts) for (const w of ACT_SHOWS[a.k] ?? []) out.add(w);
   for (const h of housesInView(b)) { const c = houseOf(b.houses, h)?.cover; if (c && c !== "bare") (c === "sock" ? ["sock", "hole"] : ["curtains", "curtain"]).forEach((w) => out.add(w)); if (houseOf(b.houses, h)?.bricks) ["bricks", "wall"].forEach((w) => out.add(w)); }
