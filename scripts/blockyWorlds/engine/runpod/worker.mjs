@@ -44,7 +44,8 @@ import { concat, renderParallel } from "../render.mjs";
 import { stillsJob, objectStillsJob } from "./stillsRole.mjs";
 import { simpleStillsJob } from "./simpleRole.mjs"; // 2026-11-10 simple-style TEST page (page/simple/), stills only
 import { applyStoryboard, storyboardChecks } from "../lib/storyboard.js"; // STORYBOARD (2026-11-11): job.prepare.storyboard
-import { paramsFromPrompts } from "../lib/shotPrompts.js";
+import { paramsFromPrompts, writePromptsByScene, enrichPrompts, checkPrompts } from "../lib/shotPrompts.js";
+import { directStoryboard } from "../lib/storyboardDirector.js"; // the automatic storyboard (job.prepare.storyboard.auto)
 
 const ENGINE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const FF = process.env.FFMPEG ?? "ffmpeg";
@@ -296,6 +297,18 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
     } else console.log(`critical: not built: ${c.unbuilt.map((x) => `"${x.name}" (${x.reason})`).join("; ")}`);
     return c;
   }).catch((e) => ({ items: [], wanted: [], built: {}, unbuilt: [], report: null, error: String(e?.message ?? e).slice(0, 200) }));
+  // THE AUTOMATIC STORYBOARD (job.prepare.storyboard = { auto: true }, 2026-11-12): the AI director writes the storyboard
+  // (lib/storyboardDirector.js: the bible, then every scene in parallel) WHILE the voice is made; its spend is the director's
+  const boarding = p.storyboard?.auto ? directing.then(async (d) => {
+    const early = plan.planVideo({ script, words: plan.estimateWords ? plan.estimateWords(script) : null, idea: p.idea ?? {}, lengthSec: p.lengthSec ?? null, direction: d, exists, criticalMode: "report", library: libraryFind, scenes: p.scenes ?? null });
+    if (!process.env.ANTHROPIC_KEY) throw coded("NOT_CONFIGURED", "no Anthropic key for the storyboard director");
+    await post("progress", { stage: "storyboard", pct: 4 });
+    const r = await directStoryboard({ apiKey: process.env.ANTHROPIC_KEY, script, cast: early.cast ?? {}, scenes: early.scenes ?? p.scenes ?? null, title: script.title ?? "", capUsd: Number(p.storyboard.capUsd) || 0.25, log: (m) => console.log(m) });
+    spend.directorUsd += r.costUsd; spend.plannedDirectorUsd += r.costUsd;
+    console.log(`storyboard: ${r.board.lines.length} lines, ${r.fellBack.length} on the engine planner (${r.ms} ms, $${r.costUsd})`);
+    return r.board;
+  }).catch((e) => { throw e.code ? e : coded("STORYBOARD_FAILED", String(e.message ?? e).slice(0, 300)); }) : null;
+  boarding?.catch(() => {}); // awaited below (an early rejection must not be unhandled)
   try {
   // 1. the voice: the run's earlier take, or one new paid take uploaded at once
   await post("progress", { stage: "voice", pct: 2 });
@@ -307,7 +320,7 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
   const voice = voiceFn ?? (await import(pathToFileURL(path.join(ENGINE, "voice", "eleven.mjs")).href)).elevenVoice;
   let v = null;
   try {
-    [v] = await Promise.all([lap("voice", () => voice({ lines: script.lines, outDir: dir, apiKey: process.env.ELEVENLABS_KEY ?? null })), lap("director", () => directing)]);
+    [v] = await Promise.all([lap("voice", () => voice({ lines: script.lines, outDir: dir, apiKey: process.env.ELEVENLABS_KEY ?? null })), lap("director", () => directing), ...(boarding ? [lap("storyboard", () => boarding)] : [])]); // the storyboard is written while the voice is made
   } catch (e) {
     const m = String(e.message ?? e);
     throw coded(/VOICE_CONFIG/.test(m) ? "VOICE_CONFIG" : /quota|credits|payment|insufficient|\b40[12]\b/i.test(m) ? "PROVIDER_BALANCE" : /different script/.test(m) ? "BAD_JOB" : "VOICE_FAILED", m.slice(0, 600));
@@ -343,7 +356,20 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
   // STORYBOARD (owner 2026-11-11): job.prepare.storyboard = { board (lib/storyboards/*.js data), prompts (the shot prompt
   // pairs) }: the storyboard drives the scene list + the shots; the prompts give each board shot its face changes and
   // action starts; its hard checks (the rule, every action verb animated, the places) stop the run on any problem
+  if (p.storyboard?.auto) {
+    p.storyboard.board = await boarding; // written while the voice was made
+    await post("progress", { stage: "prompts", pct: 9 });
+    const board0 = p.storyboard.board;
+    const tl0 = applyStoryboard(tl, board0);
+    // every scene's shot prompts in parallel, then the free fixes (verbs as timed actions, the state from the facts, HOW)
+    const w = await writePromptsByScene({ apiKey: process.env.ANTHROPIC_KEY, tl: tl0, board: board0, capUsd: Number(p.storyboard.promptsCapUsd) || 0.3, log: (m) => console.log(m) }).catch((e) => { throw coded(e.code === "PROMPTS_CAP" ? "STORYBOARD_FAILED" : "STORYBOARD_FAILED", `shot prompts: ${String(e.message).slice(0, 200)}`); });
+    spend.directorUsd += w.costUsd; spend.plannedDirectorUsd += w.costUsd;
+    p.storyboard.prompts = enrichPrompts(w.data, tl0).prompts;
+    const pc = checkPrompts(p.storyboard.prompts, tl0, board0);
+    console.log(`shot prompts: ${p.storyboard.prompts.length}/${tl0.shots.length} shots; checks ${Object.entries(pc).map(([k, v]) => `${k} ${v.length}`).join(", ")}`);
+  }
   if (p.storyboard?.board) {
+    await post("progress", { stage: "checks", pct: 10 });
     tl = applyStoryboard(tl, p.storyboard.board);
     if (Array.isArray(p.storyboard.prompts)) tl = paramsFromPrompts(tl, p.storyboard.prompts).tl;
     const sc = storyboardChecks(tl, p.storyboard.board), bad = Object.entries(sc).flatMap(([k, v]) => v.map((m) => `${k}: ${m}`));
@@ -372,6 +398,7 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
   try {
     if (gateOn && reviewStills) {
       const { gateShots } = await import(pathToFileURL(path.join(ENGINE, "lib", "vision", "gatePass.js")).href);
+      await post("progress", { stage: "stills", pct: 11 });
       gate = await lap("stillGate", () => gateShots({ tl, stills: () => reviewStills.get(), cache: reviewStills.gateCache, check: V.checksFor(plan, script, kit, kitProblems), until: gateUntil, rounds: Math.max(0, Math.min(3, Number(p.stillGate?.rounds ?? 2))), log: (m) => console.log(`gate: ${m}`) }));
     }
   } catch (e) { console.log(`gate: skipped (${String(e.message).slice(0, 160)})`); }
@@ -430,7 +457,7 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
 async function resumePrepare(job, dir, post, { voiceFn, script, mp3, takeJson, timing, lap }) {
   const p = job.prepare;
   if (!p.voice?.get) throw coded("BAD_JOB", "a resumed prepare needs the run's stored take");
-  await post("progress", { stage: "mix", pct: 10 });
+  await post("progress", { stage: "mix", pct: 12 });
   const tlPath = path.join(dir, "timeline.json");
   try { await get(p.resume.timeline, tlPath); } catch (e) { throw coded("BAD_JOB", `the planned timeline could not be downloaded: ${e.message}`); }
   const tl = JSON.parse(fs.readFileSync(tlPath, "utf8"));

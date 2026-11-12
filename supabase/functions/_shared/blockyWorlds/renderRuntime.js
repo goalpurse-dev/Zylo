@@ -83,6 +83,7 @@ export function makeRuntime({ db, storage, runpod, secret, callbackUrl, cfg = RE
         ...base,
         prepare: {
           director: { ...prod.director, ...(stored ? { stored } : {}) }, builder: prod.builder, review: prod.review, limits: prod.limits,
+          ...(prod.storyboard ? { storyboard: prod.storyboard } : {}), // the automatic storyboard (render.js productionSettings BLOCKY_WORLDS_STORYBOARD)
           ...(resume?.timeline ? { resume } : {}),
           script: { title: run.title, lines: run.lines }, idea: run.card ?? {}, lengthSec: run.length_sec, music: cfg.music, sfx: true,
           // the paid take is bought once: a retry gets it back (render.js onJobEvent "voiced" sets voice_ready)

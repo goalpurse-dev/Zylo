@@ -70,7 +70,7 @@ export const FAILED_MESSAGE = "We couldn't make this video. It's not your fault,
  */
 const FAIL_KINDS = Object.freeze({
   busy: ["NO_GPU", "QUEUE_TIMEOUT"],
-  story: ["VISUAL_CHECK", "SUBJECT_CHECK", "PRODUCTION_CHECK", "KIT_MISSING", "PLAN_FAILED", "TIMELINE_INVALID"],
+  story: ["VISUAL_CHECK", "SUBJECT_CHECK", "PRODUCTION_CHECK", "KIT_MISSING", "PLAN_FAILED", "TIMELINE_INVALID", "STORYBOARD_FAILED", "STORYBOARD_CHECKS", "KIT_UNSUPPORTED"],
   paused: ["NOT_CONFIGURED", "VOICE_CONFIG", "PROVIDER_BALANCE"],
 });
 export const FAIL_TEXT = Object.freeze({

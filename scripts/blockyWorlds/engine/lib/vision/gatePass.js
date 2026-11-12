@@ -72,7 +72,27 @@ const sameAs = (s, patch) => Object.entries(patch).every(([k, v]) => (v === null
  * in the order action -> reaction -> world wide; a patch equal to the current framing is left out. patch values of
  * null delete the field (camMove: a still framing).
  */
+// STORYBOARD shots (lib/storyboard.js, page/simple/board.js): the re-plan ladder of the board's own cameras. First the
+// same camera with every face turned to the lens (faces_hidden / a back-of-head), then the place's safer cameras (a
+// window -> the whole house -> the street; a room close-up -> the room wide -> its window)
+const BOARD_LADDER = [
+  [/^window:([a-z0-9_]+):\d$/, (m) => [`front:${m[1]}`, `house:${m[1]}`, "street_wide"]],
+  [/^(cat|arrive):([a-z0-9_]+)$/, (m) => [`house:${m[2]}`, `front:${m[2]}`, "street_wide"]],
+  [/^(house|front):([a-z0-9_]+)$/, (m) => [m[1] === "house" ? `front:${m[2]}` : `house:${m[2]}`, "street_wide"]],
+  [/^(houses:.*|street_end|street_back|sky_up|eye_close)$/, () => ["street_wide", "town_wide"]],
+  [/^(street_wide|town_wide)$/, (m) => [m[1] === "town_wide" ? "street_wide" : "town_wide"]],
+  [/^(face:.*|peek:me|cat_stare|pov_eye|window_in|huddle_up|painting|behind_window|room_side|room_door|bed_top|room_me)$/, () => ["room_wide", "room_window"]],
+  [/^(room_wide|room_window)$/, (m) => [m[1] === "room_wide" ? "room_window" : "room_wide", "room_door"]],
+];
+export function boardAlternatives(s) {
+  const b = s.board, out = [];
+  if ((b.people ?? []).length && !(b.people ?? []).every((p) => p.faceLens)) out.push({ how: "faces", patch: { board: { ...b, people: b.people.map((p) => ({ ...p, faceLens: true })) } } });
+  const lad = BOARD_LADDER.find(([re]) => re.test(String(b.cam)));
+  for (const cam of lad ? lad[1](String(b.cam).match(lad[0])) : []) out.push({ how: "board", patch: { board: { ...b, cam, people: (b.people ?? []).map((p) => ({ ...p, faceLens: true })) } } });
+  return out;
+}
 export function alternatives(s) {
+  if (s.board) return boardAlternatives(s);
   const who = subjectActor(s), ids = (s.actors ?? []).map((a) => a.id);
   const other = ids.find((id) => id !== who) ?? who;
   const f = String(s.focus ?? ""), epic = EPIC_CAMS.has(s.camera) || /^(giant:|crowd)/.test(f) || f === "world";
@@ -105,6 +125,7 @@ export function alternatives(s) {
 
 /** the last resort: the framing of the nearest shot on the same set that passed (a wide / establish first) */
 export function borrowedFraming(tl, i, passed) {
+  if (tl.shots[i]?.board) return null; // a storyboard shot has its own ladder (boardAlternatives)
   const s = tl.shots[i], ids = (s.actors ?? []).map((a) => a.id);
   const cands = [...passed].filter((j) => j !== i && tl.shots[j] && tl.shots[j].set === s.set && tl.shots[j].camera !== "insert");
   if (!cands.length) return null;

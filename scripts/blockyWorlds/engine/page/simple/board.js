@@ -443,6 +443,8 @@ function boardShot(S, { shot, lt, dur, camera, people, monster, animateMonster, 
   S.camFill.position.copy(pos).add(V(0, 0.4, 0)); S.camFill.intensity = room && night ? (cam === "pov_eye" ? 9 : 4) : 0; S.camFill.color.set(cam === "pov_eye" ? "#e8f0ff" : "#fff1dc");
   camera.position.copy(pos); camera.fov = fov; camera.near = 0.05; camera.far = 3000; camera.updateProjectionMatrix();
   camera.up.set(0, 1, 0); camera.lookAt(look); camera.updateMatrixWorld();
+  // faceLens (the still gate's re-plan, lib/vision/gatePass.js boardAlternatives): the person turns to the lens
+  for (const p of b.people) if (p.faceLens && where[p.id] && !(p.where === "room:bed" && p.awake)) { const o = people[p.id].obj; o.rotation.y = Math.atan2(pos.x - o.position.x, pos.z - o.position.z); o.updateMatrixWorld(true); }
   S.spots.center.copy(look).setY(0);
   return { focus: pos.distanceTo(look) };
 }

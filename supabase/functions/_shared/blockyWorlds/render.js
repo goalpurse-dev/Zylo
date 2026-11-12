@@ -91,11 +91,29 @@ export const ROLES = Object.freeze(["prepare", "chunk", "finish"]);
 // (CRITICAL_UNBUILT: the builder couldn't make a story-critical thing before the plan; worker.mjs criticalUnbuilt)
 // (STILL_GATE, 2026-11-09: a shot still blank / wall / sky-only / camera-inside after every re-plan; the same plan would
 // fail the same way: worker.mjs stillGateFailure)
-export const NO_RETRY = new Set(["VISUAL_CHECK", "SUBJECT_CHECK", "PRODUCTION_CHECK", "PLAN_FAILED", "CRITICAL_UNBUILT", "STILL_GATE", "KIT_MISSING", "TIMELINE_INVALID", "VOICE_CONFIG", "PROVIDER_BALANCE", "BAD_JOB", "NOT_CONFIGURED"]);
+// (STORYBOARD_FAILED / STORYBOARD_CHECKS / KIT_UNSUPPORTED, 2026-11-12: the automatic storyboard could not be written, failed
+// its hard checks (the rule, the verbs, the places) or needs things the board kit cannot show: the same story fails the same way)
+export const NO_RETRY = new Set(["STORYBOARD_FAILED", "STORYBOARD_CHECKS", "KIT_UNSUPPORTED", "VISUAL_CHECK", "SUBJECT_CHECK", "PRODUCTION_CHECK", "PLAN_FAILED", "CRITICAL_UNBUILT", "STILL_GATE", "KIT_MISSING", "TIMELINE_INVALID", "VOICE_CONFIG", "PROVIDER_BALANCE", "BAD_JOB", "NOT_CONFIGURED"]);
 // a worker that can't run the job (no graphics; an older image than the job needs: worker.mjs staleBuild) is retired by
 // handler.py and the piece is retried elsewhere: these tries don't count as failed ones (noGpuRetries caps them)
 const NO_GPU = new Set(["NO_GPU", "STALE_WORKER"]);
 const ORDER = ["queued", "voice", "plan", "render", "done"];
+// THE PROGRESS STAGES (2026-11-12, the launch progress screen): the prepare job's stages (runpod/worker.mjs post("progress"))
+// and the run's % at each; the chunks then take 15 -> 95, the finish 95 -> 100. The run's status stays one of ORDER.
+export const STAGES = Object.freeze([
+  { stage: "queued", label: "Waiting for a video machine", pct: 0 },
+  { stage: "voice", label: "Recording the narration", pct: 3 },
+  { stage: "storyboard", label: "Writing the storyboard", pct: 5 },
+  { stage: "plan", label: "Planning every shot", pct: 7 },
+  { stage: "prompts", label: "Directing each shot", pct: 9 },
+  { stage: "checks", label: "Checking the story on screen", pct: 11 },
+  { stage: "stills", label: "Test-shooting every frame", pct: 13 },
+  { stage: "mix", label: "Mixing music and sound", pct: 15 },
+  { stage: "render", label: "Rendering the video", pct: 15 },
+  { stage: "finish", label: "Finishing up", pct: 95 },
+]);
+const STAGE_PCT = Object.fromEntries(STAGES.map((x) => [x.stage, x.pct]));
+const PLAN_STAGES = new Set(["storyboard", "plan", "prompts", "checks", "stills", "mix"]);
 const iso = (ms) => new Date(ms).toISOString();
 const ms = (t) => (t == null ? null : typeof t === "number" ? t : Date.parse(t));
 
@@ -232,7 +250,10 @@ export function productionSettings(get = () => "") {
   const review = ["off", "mock", "haiku", "sonnet"].includes(v("BLOCKY_WORLDS_REVIEW")) ? v("BLOCKY_WORLDS_REVIEW") : PRODUCTION_DEFAULTS.review;
   const rraw = v("BLOCKY_WORLDS_REVIEW_MAX_USD"), rn = rraw === "" ? NaN : Number(rraw);
   const reviewMaxUsd = Number.isFinite(rn) && rn >= 0 ? Math.min(REVIEW_MAX_USD_CEILING, rn) : PRODUCTION_DEFAULTS.reviewMaxUsd;
-  return { director, builder, builderMaxUsd, review, reviewMaxUsd };
+  // THE AUTOMATIC STORYBOARD (2026-11-12): "auto" = the director writes a storyboard + every shot's prompts (runpod/worker.mjs);
+  // off until the owner switches the launch on (secret BLOCKY_WORLDS_STORYBOARD=auto)
+  const storyboard = v("BLOCKY_WORLDS_STORYBOARD") === "auto" ? "auto" : "off";
+  return { director, builder, builderMaxUsd, review, reviewMaxUsd, storyboard };
 }
 export const REVIEW_MODELS = Object.freeze({ haiku: "claude-haiku-5-5", sonnet: "claude-sonnet-5-5" });
 /** job.prepare.review for the worker (engine lib/vision/index.js judgeFromConfig) */
@@ -274,7 +295,7 @@ export function prepareProduction(s = PRODUCTION_DEFAULTS, { attempt = 1, librar
   const left = +Math.max(0, (Number(s.builderMaxUsd) || 0) - (attempt > 1 ? Math.max(0, Number(builderSpentUsd) || 0) : 0)).toFixed(5);
   const designs = s.builder === "on" && left >= (attempt > 1 ? BUILDER_MIN_LEFT_USD : 1e-9);
   const builder = { provider: designs ? "anthropic" : "off", library: s.builder === "on" ? library : [], budget: { maxUsd: designs ? left : 0 } };
-  return { director, builder, review: prepareReview(s), limits: { ...aiCeilingUsd(s), prepareSec: RENDER.runSec.prepare } };
+  return { director, builder, review: prepareReview(s), limits: { ...aiCeilingUsd(s), prepareSec: RENDER.runSec.prepare }, ...(s.storyboard === "auto" ? { storyboard: { auto: true, capUsd: 0.25, promptsCapUsd: 0.3 } } : {}) };
 }
 
 /** what the earlier prepare tries of a run spent on the builder (their job rows: the done output's or the failed
@@ -547,9 +568,9 @@ export function reconcile(run, jobsIn, now = Date.now(), cfg = RENDER) {
 
   // 5. what the page shows (only ever forward)
   const stage = P.at(-1)?.stage;
-  const want = chunks?.length ? "render" : stage === "plan" || stage === "mix" ? "plan" : stage === "voice" ? "voice" : "queued";
+  const want = chunks?.length ? "render" : PLAN_STAGES.has(stage) ? "plan" : stage === "voice" ? "voice" : "queued";
   const status = ORDER.indexOf(want) > ORDER.indexOf(run.status ?? "queued") ? want : run.status ?? "queued";
-  const pct = status === "render" ? Math.round(15 + (chunksDone ? 80 + (prepDone ? 2 : 0) : renderPct * 0.8)) : status === "plan" ? 12 : status === "voice" ? 5 : 0;
+  const pct = status === "render" ? Math.round(15 + (chunksDone ? 80 + (prepDone ? 2 : 0) : renderPct * 0.8)) : status === "plan" || status === "voice" ? STAGE_PCT[stage] ?? (status === "plan" ? 12 : 5) : 0;
   if (status !== run.status) Object.assign(out.run, { status, stage_at: iso(now) });
   if (pct > (Number(run.pct) || 0)) out.run.pct = Math.min(99, pct);
   return out;

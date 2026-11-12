@@ -199,6 +199,31 @@ export function enrichPrompts(prompts0, tl) {
   return { prompts, log };
 }
 
+/** THE FAST PATH (2026-11-12, the launch: 5-8 min a video): the shot prompts of every SCENE IN PARALLEL. One warm call
+ *  writes the shared request into the cache (max_tokens 1), then one call per scene reads it. The worst case is checked
+ *  against the cap before anything is sent. -> { data, costUsd, ms, parts, stop[] } */
+export async function writePromptsByScene({ apiKey, tl, board, capUsd = 0.3, perShot = 520, model = PROMPT_MODEL, fetchFn = fetch, log = () => {} }) {
+  const t0 = Date.now(), { system, user } = promptRequest(tl, board), P = MODEL_PRICE[model] ?? MODEL_PRICE[PROMPT_MODEL];
+  const groups = []; tl.shots.forEach((s, i) => { const g = groups.find((x) => x.scene === s.scene); if (g) g.ids.push(i); else groups.push({ scene: s.scene, ids: [i] }); });
+  const estIn = Math.ceil((system.length + user.length) / 2.0);
+  const worst = (estIn * P.write + groups.length * (estIn * P.read + 80 * P.in) + groups.reduce((a, g) => a + (perShot * g.ids.length + 200) * P.out, 0)) / 1e6;
+  if (worst > capUsd) throw Object.assign(new Error(`the shot prompts' worst case $${worst.toFixed(3)} is over the cap $${capUsd}`), { code: "PROMPTS_CAP" });
+  const send = async (ids, maxTokens) => {
+    const res = await fetchFn("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+      body: JSON.stringify({ model, max_tokens: maxTokens, system: [{ type: "text", text: system }], messages: [{ role: "user", content: [{ type: "text", text: user, cache_control: { type: "ephemeral" } }, { type: "text", text: `Write the prompt pairs for shot ids ${ids.join(", ")} only.` }] }], ...(model.includes("sonnet") ? { output_config: { effort: "low" } } : { thinking: { type: "disabled" } }) }),
+      signal: AbortSignal.timeout(240000) });
+    const body = await res.json().catch(() => null), c = costOf(body?.model ?? model, body?.usage);
+    if (!res.ok) throw Object.assign(new Error(`anthropic ${res.status} ${JSON.stringify(body?.error ?? body).slice(0, 200)}`), { costUsd: c });
+    const text = (body.content ?? []).filter((x) => x.type === "text").map((x) => x.text).join("").trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+    return { data: completeObjects(text), costUsd: c, stop: body.stop_reason };
+  };
+  const warm = await send([0], 1);
+  const parts = await Promise.all(groups.map((g) => send(g.ids, perShot * g.ids.length + 200).catch((e) => ({ data: [], costUsd: e.costUsd ?? 0, stop: `error: ${e.message}` }))));
+  const costUsd = +(warm.costUsd + parts.reduce((a, p) => a + p.costUsd, 0)).toFixed(6);
+  log(`shot prompts: ${groups.length} scenes in parallel, ${parts.reduce((a, p) => a + p.data.length, 0)} shots, $${costUsd}, ${Date.now() - t0} ms`);
+  return { data: parts.flatMap((p) => p.data), costUsd, ms: Date.now() - t0, parts: groups.length, stop: parts.map((p) => p.stop) };
+}
+
 /** the complete top-level objects of a JSON array text (a reply cut off at max_tokens keeps its finished shots) */
 export function completeObjects(text) {
   const s = String(text ?? "").trim();
