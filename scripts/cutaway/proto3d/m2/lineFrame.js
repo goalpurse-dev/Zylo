@@ -23,6 +23,7 @@ const mul = (a, k) => [a[0] * k, a[1] * k, a[2] * k];
 const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 const norm = (a) => mul(a, 1 / (Math.hypot(...a) || 1));
+const GAP = 0.08; // seconds between camera keys (kit/camera.js refuses under 0.05)
 const TV = Math.tan((LENS.vfov * Math.PI) / 360), TH = TV * LENS.aspect;
 
 function basis(pos, tgt) { const f = norm(sub(tgt, pos)), r = norm(cross(f, [0, 1, 0])), u = cross(r, f); return { f, r, u }; }
@@ -190,14 +191,17 @@ export function lineFramePass(layout, camera, { sentences, tracks, marks, frames
     for (const which of ["end", "noend"]) {
       const keys = camera[which]; if (!keys?.length) continue;
       const from = deps.cameraAt(keys, w0), to = deps.cameraAt(keys, w1);
-      const kept = keys.filter((k) => k[0] < w0 - 0.02 || k[0] > w1 + 0.02);
+      const kept = keys.filter((k) => k[0] < w0 - GAP || k[0] > w1 + 0.05 + GAP);
       const add = [[+w0.toFixed(4), from.pos, from.tgt], [+land.toFixed(4), K.pos, K.tgt]];
       if (K2) add.push([+((land + w1) / 2 + 0.3).toFixed(4), K2.pos, K2.tgt]);
       const last = K2 ?? K, creep = { pos: last.pos.map((v, i) => +(last.tgt[i] + (v - last.tgt[i]) * 0.95).toFixed(3)), tgt: last.tgt };
       add.push([+w1.toFixed(4), creep.pos, creep.tgt]);
       // (a key list past w1 keeps going from where it was: nothing after the window moves)
-      if (!kept.some((k) => k[0] > w1 + 0.02)) add.push([+(w1 + 0.05).toFixed(4), to.pos, to.tgt]);
-      camera[which] = [...kept, ...add].sort((a, b) => a[0] - b[0]).filter((k, i, a) => i === 0 || k[0] - a[i - 1][0] > 0.03);
+      if (!kept.some((k) => k[0] > w1)) add.push([+(w1 + 0.05 + GAP).toFixed(4), to.pos, to.tgt]);
+      // (the kit refuses keys under 0.05 s apart: a key stays only if it is GAP after the last one kept)
+      const out = [];
+      for (const k of [...kept, ...add].sort((p, q) => p[0] - q[0])) if (!out.length || k[0] - out.at(-1)[0] >= GAP) out.push(k);
+      camera[which] = out;
     }
     notes.push(`line frame: ${s.role} reframed on ${sb.id} (it had ${[...new Set(bad.flatMap((b) => b.is))].join(", ")})`);
   }
