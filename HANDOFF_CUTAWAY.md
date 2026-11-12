@@ -1,7 +1,28 @@
 # Cutaway handoff (written 2026-11-07, for a fresh session)
 
-**UPDATE 2026-11-12: after the real water tower run.** Everything is local on `cutaway-work`. Nothing has been pushed or
-deployed, and the production worker is still af43baaf.
+**LIVE 2026-11-12 evening (owner's go: "everything can go live").**
+- Branches levelled: cutaway-work + laptop-transfer + origin/main merged (ce688485; conflicts in cutaway-api, kitCheck,
+  topics, CutawayBuilder and cutawayKitStrict kept cutaway-work's newer kit check; main's 60 s default came along).
+  laptop-transfer, main and cutaway-work all at 0a01f604 and pushed; Vercel production built it (17:43 UTC).
+- Not merged (on purpose): `live-snapshot` (a copy of the live functions of 11-05, merging would roll code back);
+  `fix-long-form-scenes-400` (its leftover commit only adds 26 MB screenshots and an empty api/cutawayApi.js; everything
+  else is on laptop-transfer in a newer form; its email commits are on origin/email-sender-backup); `onboarding-copy`
+  (wording for "5 images + one free 10 s preview": waits on the owner); pushed branches email-sender-backup and
+  ops-health (their live parts were already copied in).
+- Crash sweep: the first full sweep (3840 variants) found 9 crashes "camera keys too close" in electricity_to_outlet and
+  swimming_pool: lineFramePass put keys 0.03 s apart. Fixed in 0a01f604 (keys at least 0.08 s apart). Re-run: **0 crashes
+  in 3840 variants (404 rendered), 0 in 21 replays.**
+- Tests on the merged branch: 2648/2688. Every failure also fails on its own branch before the merge; main itself fails
+  34 of them (old Long Form / 30 Days / Stickman assertions). New vs main: the 2 known Cutaway ones, 3 Blocky Worlds
+  (local reference files, a fixture count), blockySeparation (the tutorials link in Fruit's constants.js).
+- Deployed: cutaway-api, cutaway-callback, cutaway-watchdog (download + diff: identical to 0a01f604); new in them: the
+  60 s server default and grouped alerts. Worker image **564f720a** (= 0a01f604; template dhkj7kcnsy on endpoint
+  f66astc0vrus92; old workers cleared). Rollback to af43baaf: `node m3/runpodSetup.mjs --prod --env-keys --image
+  registry.fly.io/zyvo-cutaway-render-staging@sha256:af43baaf5cb71168ed03ef9a3086f89593547830a4d723d2f7e8492266feda28`
+- Categories unchanged: yard (kit world, always open), utilities and appliances open. Premade unchanged.
+- Still open: the Fly CPU fallback runs the image in the Supabase secret CUTAWAY_RENDER_IMAGE (owner sets it).
+
+**UPDATE 2026-11-12: after the real water tower run.** (Now live, see above.)
 
 **The real water tower run (2026-11-11).** "How a water tower works", 60 s, a new topic.
 - Page: https://claude.ai/artifact/KTR4irb7RRiNCuR8GdkfTc. Output: `<session scratchpad 49da1815>/watertower/`.
@@ -46,7 +67,8 @@ deployed, and the production worker is still af43baaf.
   - `m3/storyScore.mjs`: 29/40. It was 32; swimming pool, septic tank and chip factory now correctly fail the new rule 4 because their hooks open on a dig or settling sand. Next free step: re-plan those stand-ins.
   - Tests: 256/258, the 2 known old failures.
   - Premade: the 4 live premades build identically (parts, tracks, camera; `premadeCmp.mjs`).
-  - The crash sweep and the premade pixel compare were running at handoff: see the commit message of the last commit.
+  - Premade pixel compare: landfill, french drain, car wash, swimming pool, 80 frames each, none below 60 dB.
+  - Crash sweep: see LIVE above (9 crashes found and fixed, then 0/3840).
 - **Left by the line check:**
   - aquarium name/how (the filter seen past the canopy roof);
   - nuclear plant intake;
@@ -60,7 +82,7 @@ deployed, and the production worker is still af43baaf.
   - Dribble drops look like rice.
   - The long main pipe's macro shows only a piece of it.
   - The saved water tower plan's end card sits off the frame: its sign came from the old run.
-- **Waiting on the owner:** a deploy go (story rules, the look, these fixes, medium effort; a new worker image, see below). The real re-check is skipped until the owner asks.
+- **Deployed 2026-11-12 evening** (see LIVE above). The real re-check is skipped until the owner asks.
 
 **UPDATE 2026-11-11: the competitor round** (owner's 25 rules from 5 top competitor videos; commits 3f06de76, ab5cc3a1,
 e68e8746 on cutaway-work; nothing deployed; production worker is still af43baaf). Page: https://claude.ai/artifact/76B12rsq5DV1PrNeHEFr6q
@@ -134,7 +156,8 @@ The goal from the owner: take the 40-topic scoreboard to 40/40, mostly for free.
 - **Render folder (PROTO)**, passed as `--proto` to every tool. It holds node_modules and assets.
   - Path: `C:/Users/Huhta/AppData/Local/Temp/claude/c--Users-Public-Zylo/9fd93e59-a925-49a7-beab-dadbb576d507/scratchpad/proto`
   - Every render copies `m2/` and `kit/` into it (syncProto). **Never edit kit or m2 while a render or measurement is running**: it contaminates the run.
-- **Live production worker (since 2026-11-10 ~22:45 Finnish):** RunPod endpoint `f66astc0vrus92`, template `mr9nk3t357`.
+- **Live production worker since 2026-11-12 evening:** image `564f720a` = commit `0a01f604`, template `dhkj7kcnsy`, endpoint `f66astc0vrus92`. The lines below describe the previous worker (now the rollback).
+- **Previous production worker (2026-11-10 ~22:45 Finnish):** RunPod endpoint `f66astc0vrus92`, template `mr9nk3t357`.
   - Image `af43baaf` = commit `52040d39`: phase 1 + 2 (handbook, 1d facts flow, generators), the in-scene still-moment life, the six hook fixes, the dishwasher-run fixes. Premade proven unchanged (4 live premades built with the live and the new code: identical parts, tracks, camera; 320 frames every 0.5 s all above 60 dB).
   - The record is in `m3/production.json`.
   - Rollback to the previous worker (commit ccfaf425): `node m3/runpodSetup.mjs --prod --env-keys --image registry.fly.io/zyvo-cutaway-render-staging@sha256:7c4d61f2144a3cf5ed7b2909cc507d7d94bd6212f1d0c39a197e5cf92bb19f7d`
