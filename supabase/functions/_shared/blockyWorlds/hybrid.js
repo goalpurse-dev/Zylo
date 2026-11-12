@@ -27,6 +27,8 @@ import { skeletonProblems } from "./skeleton.js";
 import { mentions, ruleMissing, topicBlock, topicElements, topicProblems } from "./topic.js";
 import { blockedWordsRule } from "./safety.js";
 import { targetWords } from "./config.js";
+import { BOARD_KIT } from "./boardKit.js";
+import { boardFitProblems, kitBlock } from "./boardFit.js";
 
 /**
  * Every word the safety check throws out (safety.js: famous names, a game platform's terms, gore), named in BOTH system
@@ -105,10 +107,29 @@ ${TRAP_WORDS}
 
 Return only the JSON object.`;
 
-export function hybridPlanSchema() {
+/**
+ * The board-only launch mode (boardFit.js): the same prompts with the kit as HARD rules. The planner gets it right after the
+ * rule visual (the rule visual is what the storyboard must film); the line writer just before its answer. The text is the
+ * same every call for the same kit, so the cached prefix stays cached. Off: the constants above, byte for byte.
+ */
+export function hybridPlanSystem({ board = false } = {}) {
+  if (!board) return HYBRID_PLAN_SYSTEM;
+  return HYBRID_PLAN_SYSTEM.replace(`${RULE_VISUAL_TEXT}\n`, `${RULE_VISUAL_TEXT}\nThe rule visual must be filmable with the kit below: its parameter shown with the kit's places, props and actions.\n\n${kitBlock(BOARD_KIT, "plan")}\n\nWORLD AND MOVED: "world" lists the places, the creature look (one of ${BOARD_KIT.creatures.map((c) => c.id).join(", ")}, or "none"), the animals and the weather the story uses, all from the kit. "moved" says in one plain sentence what you changed from the user's idea to fit the kit ("" when nothing moved).\n`);
+}
+export function hybridLinesSystem({ board = false } = {}) {
+  if (!board) return HYBRID_LINES_SYSTEM;
+  return HYBRID_LINES_SYSTEM.replace(/\n\nReturn only the JSON object: /, `\n\n${kitBlock(BOARD_KIT, "lines")}\n\nReturn only the JSON object: `);
+}
+
+export function hybridPlanSchema({ board = false } = {}) {
   const s = { type: "string" };
   const obj = (props, req = Object.keys(props)) => ({ type: "object", additionalProperties: false, required: req, properties: props });
+  const world = board ? {
+    world: obj({ places: { type: "array", items: { type: "string", enum: BOARD_KIT.places.map((p) => p.id) } }, creature_look: { type: "string", enum: [...BOARD_KIT.creatures.map((c) => c.id), "none"] }, animals: { type: "array", items: s }, weather: { type: "array", items: s } }),
+    moved: s,
+  } : {};
   return obj({
+    ...world,
     title: s, premise: s, opener: s, price: s, teaser: s,
     rule_visual: obj({ parameter: s, description: s, neighbours: { type: "array", items: obj({ name: s, shows: s }) }, hero: s, opening_shot: s }),
     origin: s,
@@ -177,6 +198,8 @@ export function planCard(plan, topic) {
     flaw: String(p.hero?.flaw ?? "").trim(),
     neighbourNames: (p.neighbours ?? []).map((n) => String(n?.name ?? "").trim()).filter(Boolean),
     adults: (p.adults ?? []).map((a) => String(a?.who ?? "").trim()).filter(Boolean),
+    // launch mode: the kit world the plan chose and what it moved from the user's idea (shown to the user)
+    ...(p.world ? { world: p.world, moved: String(p.moved ?? "").trim() } : {}),
   };
 }
 function legacyPlanCard(p, topic) {
@@ -312,7 +335,7 @@ export const beatDraft = (script, map, card) => Boolean((script?.lines ?? []).so
  * Every free check of a hybrid draft, split: hard (blocks; the one fix call is only for these) and advisory (notes shown
  * with the script). skeleton: the writer's beat map. Returns { hard, advisory, copy, words, seconds }.
  */
-export function hybridChecks({ script, skeleton = {}, card, examples = [], lengthSec = 90 }) {
+export function hybridChecks({ script, skeleton = {}, card, examples = [], lengthSec = 90, board = false }) {
   const base = checkScript(script, lengthSec, "written");
   const copy = copyProblems({ script, twist: card?.twist || "", topic: card?.topic ?? "", examples });
   const lost = card?.topic ? premiseLost(card.topic, script) : null;
@@ -321,8 +344,12 @@ export function hybridChecks({ script, skeleton = {}, card, examples = [], lengt
   const { lo, hi } = lengthNumbers(lengthSec);
   const slightlyShort = (p) => /^Too short:/.test(p) && base.words >= Math.ceil(lo * (1 - SHORT_GRACE));
   const flagged = base.problems.filter(slightlyShort).map(() => `A bit short: ${base.words} words, the band is ${lo} to ${hi} (the video runs about ${base.seconds} s).`);
-  const hard = [...base.problems.filter((p) => HARD_SCRIPT.test(p) && !slightlyShort(p)), ...copyReasons(copy), ...(lost ? [lost] : [])];
+  // the board-only launch mode: what the board kit can't film blocks (a must-have miss; boardFit.js on kitCheck.js); a
+  // one-off mention is a note
+  const kit = board ? boardFitProblems(script, card) : { problems: [], warnings: [] };
+  const hard = [...base.problems.filter((p) => HARD_SCRIPT.test(p) && !slightlyShort(p)), ...copyReasons(copy), ...(lost ? [lost] : []), ...kit.problems];
   const advisory = [
+    ...kit.warnings,
     ...flagged,
     ...base.problems.filter((p) => !HARD_SCRIPT.test(p) && !PART_SHAPE.test(p)),
     ...(card?.topic && !lost ? topicProblems(card.topic, script) : []),

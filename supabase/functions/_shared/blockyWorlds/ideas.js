@@ -7,6 +7,8 @@ import { safetyProblems } from "./safety.js";
 import { EXAMPLE_IDEAS } from "./examples.js";
 import { REFERENCE_RULE } from "./references.js";
 import { conflictLines, topicElements } from "./topic.js";
+import { BOARD_KIT } from "./boardKit.js";
+import { kitBlock, kitView } from "./boardFit.js";
 
 export const IDEAS_PER_BATCH = 6;
 export const TOPIC_IDEAS = 3;
@@ -68,6 +70,19 @@ ${JSON.stringify(EXAMPLE_IDEAS[0])}
 
 Return only the JSON object.`;
 
+/**
+ * The idea writer's system prompt. board (the board-only launch mode, boardFit.js): the SETTINGS are the kit's places and
+ * the kit is given as hard rules (the same text every call: cacheable). Off: IDEAS_SYSTEM unchanged.
+ */
+export function ideasSystem({ board = false } = {}) {
+  if (!board) return IDEAS_SYSTEM;
+  return IDEAS_SYSTEM
+    .replace(/\nSETTINGS: [^\n]*\n/, `\nSETTINGS: ${kitView().places.map((p) => p.label).join("; ")} (the only places we can film).\n`)
+    .replace(/\n\nReturn only the JSON object\.$/, `\n\n${kitBlock(BOARD_KIT, "ideas")}\n\nReturn only the JSON object.`);
+}
+/** The topic prompt's extra line in launch mode: the kit wins over keeping an element the kit can't film. */
+export const BOARD_TOPIC_LINE = "- THE WORLD WE CAN FILM (in the system prompt) wins: an element of the user's idea that the kit can't film is MOVED into the kit (a cave becomes our street at night, a dragon the tall creature with one huge eye). Keep the user's rule, their hook and every element the kit CAN film.";
+
 /** One revision pass for ideas that just missed: each comes with the judge's note. */
 export const REVISE_SYSTEM = `${IDEAS_SYSTEM}
 
@@ -96,7 +111,7 @@ export function batchPrompt({ seed = 0, mood = null, avoid = [] } = {}) {
 }
 
 /** The user message for "Your topic": three world rules built from the topic, from three different formulas. */
-export function topicPrompt({ topic, mood = null, seed = 0, avoid = [] }) {
+export function topicPrompt({ topic, mood = null, seed = 0, avoid = [], board = false }) {
   const slots = slotsForBatch(seed + 101, TOPIC_IDEAS, mood);
   const els = topicElements(topic), labels = els.map((e) => e.label).join(", ");
   const setting = els.find((e) => e.setting);
@@ -108,7 +123,7 @@ export function topicPrompt({ topic, mood = null, seed = 0, avoid = [] }) {
 - The opener states the user's idea itself as the world's rule${setting ? `, naming ${setting.label} and the threat` : ""} (the shape: "In this town, we live inside X, and if Y ever ..."). Never swap it for a new invented gimmick (a mark on everyone's wrist, a sticker, a number over their head) that pushes the idea into the background.
 - The formula of each slot only shapes HOW the idea is told (who the exception is, what the price is). The price, the narrator's exception, the planted object and the twist all come from the user's idea, and the twist pays it off.${conflictLines(topic).length ? `\n${conflictLines(topic).join("\n")}\n- So the opener names the threat doing the conflict ("In this town, we live inside a giant turtle, and the big bad wolf's army is hunting it" shape), and the twist ENDS that conflict.` : ""}
 - The ideas differ in their angle on the SAME idea, not in their world. The usual rule against "we all live inside giant Z" reskins does not apply here: the user's own world is the point.
-- If the idea names a real game, film, brand or person, keep the idea behind it and drop the name.
+- If the idea names a real game, film, brand or person, keep the idea behind it and drop the name.${board ? `\n${BOARD_TOPIC_LINE}` : ""}
 One idea per slot, in this order:\n${slotText(slots)}` +
       (avoid.length ? `\n\nAlready used (never repeat these):\n${avoid.slice(0, 40).map((a) => `- ${a}`).join("\n")}` : ""),
   };

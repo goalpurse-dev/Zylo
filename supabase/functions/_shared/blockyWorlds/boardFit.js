@@ -337,6 +337,15 @@ export function boardFitProblems(script, card = null, kit = BOARD_KIT) {
   const why = (e) => WHY[e.kind]?.(v) ?? "it isn't in our block world yet";
   const at = (e) => (e.lines.length === 1 ? `line ${e.lines[0] + 1}` : `lines ${list(e.lines.slice(0, 4).map((i) => String(i + 1)))}`);
   const warn = warnings.map((e) => `Our block world can't show "${e.word}" (${at(e)}): ${why(e)}. It's only mentioned once, so that shot shows the closest thing we have.`);
+  // the creature must be described as the look the video draws (the engine's creatureCheck: the words pick the look)
+  const t = lines.map((l) => l.text).join("\n"), looks = v.creatures.map((c) => c.id).filter((id) => VARIANT_CUES[id]?.test(t));
+  const planned = card?.world?.creature_look && card.world.creature_look !== "none" ? card.world.creature_look : null;
+  const label = (id) => v.creatures.find((c) => c.id === id)?.label ?? id;
+  if ((creature || planned) && v.creatures.length) {
+    if (!looks.length) warn.push(`The creature is never described, so the video picks its look. Say what it looks like (${list(v.creatures.map((c) => c.label), "or")}) so it matches your story.`);
+    else if (looks.length > 1) warn.push(`The creature is described two ways (${list(looks.map(label))}); the video draws one: ${label(looks.includes(planned) ? planned : looks[0])}.`);
+    else if (planned && looks[0] !== planned) warn.push(`The plan gave the creature ${label(planned)}, but the lines describe ${label(looks[0])}; the video draws ${label(looks[0])}.`);
+  }
   if (premise) {
     const words = [...new Set((opener.length ? opener : missing).map((e) => e.word))].slice(0, 4).map((w) => `"${w}"`);
     return { premise: true, problems: [`${PREMISE_PREFIX} (${list(words)}). "Move it to our town" keeps your rule and films it on ${placesLine(v)}.`], warnings: warn, missing };

@@ -8,6 +8,7 @@ import { safetyProblems } from "./safety.js";
 import { PART_IDS, PARTS, partBudgets, wordCount } from "./script.js";
 import { contentWords } from "./library.js";
 import { conflictLines, TOPIC_PREFIX } from "./topic.js";
+import { BOARD_PREFIX, boardProblemLines, isPremiseProblem } from "./boardFit.js";
 
 // ---------- step 1: the idea card ----------
 export const CARD_FIELDS = Object.freeze(["opener", "title", "premise", "price", "examples", "narrator", "prop", "twist", "teaser", "closer", "formula", "twistType", "mood", "setting"]);
@@ -172,6 +173,15 @@ export function problemSpots(script, problems) {
       if (/the first line /.test(p) && lines.length) { const idx = partLines("rule"); return spot(p, lines[idx[0] ?? 0].part, idx.length ? idx : [0]); }
       if (/the climax never (involves|ends)/.test(p) && partLines("climax").length) return spot(p, "climax", partLines("climax"));
       return spot(p, null, [], "rewrite");
+    }
+    // the board-only launch mode (boardFit.js): a whole-premise miss -> "Move it to our town"; a line miss -> that line's
+    // part (Fix it rewrites the flagged lines of that part with the reason, which names the kit's alternatives)
+    if (isPremiseProblem(p)) return spot(p, null, [], "move");
+    if (p.startsWith(BOARD_PREFIX)) {
+      const idx = boardProblemLines(p).filter((i) => lines[i]);
+      if (!idx.length) return spot(p, null, [], "rewrite");
+      const part = lines[idx[0]].part;
+      return spot(p, part, idx.filter((i) => lines[i].part === part));
     }
     const word = p.match(/^Uses "([^"]+)"/)?.[1];
     if (word) {
