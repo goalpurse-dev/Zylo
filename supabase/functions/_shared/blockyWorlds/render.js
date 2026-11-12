@@ -115,6 +115,19 @@ export const STAGES = Object.freeze([
 ]);
 const STAGE_PCT = Object.fromEntries(STAGES.map((x) => [x.stage, x.pct]));
 const PLAN_STAGES = new Set(["storyboard", "plan", "prompts", "checks", "stills", "mix"]);
+/**
+ * The progress screen's stage (one of STAGES) of a run, from what the run row keeps: its status and its % (reconcile sets
+ * the % from STAGE_PCT while the prepare job reports its stages). Pure; null when the run is done or failed.
+ */
+export function stageOf(status, pct = 0) {
+  if (!status || status === "done" || status === "failed") return null;
+  if (status === "queued") return "queued";
+  const p = Number(pct) || 0;
+  if (status === "render") return p >= STAGE_PCT.finish ? "finish" : "render";
+  if (status === "voice") return "voice";
+  const prep = STAGES.filter((s) => PLAN_STAGES.has(s.stage) && s.pct <= p);
+  return prep.at(-1)?.stage ?? "storyboard";
+}
 const iso = (ms) => new Date(ms).toISOString();
 const ms = (t) => (t == null ? null : typeof t === "number" ? t : Date.parse(t));
 

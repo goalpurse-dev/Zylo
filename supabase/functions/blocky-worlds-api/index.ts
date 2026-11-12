@@ -39,7 +39,7 @@ import { openerKey, pickForUser } from "../_shared/blockyWorlds/library.js";
 import { cardProblems, problemSpots } from "../_shared/blockyWorlds/protocol.js";
 import { queueInfo, renderConfigured, renderRuntime } from "../_shared/blockyWorlds/renderSupabase.ts";
 import { canFilm, canFilmLine, fittingOnly, launchModeFrom, moveNote } from "../_shared/blockyWorlds/boardFit.js";
-import { boardOnlyBlocked, productionSettings } from "../_shared/blockyWorlds/render.js";
+import { boardOnlyBlocked, productionSettings, stageOf } from "../_shared/blockyWorlds/render.js";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -147,6 +147,8 @@ async function runView(r: any, { owner = false, queue = null }: { owner?: boolea
   return {
     id: r.id, draftId: r.draft_id, title: r.title, lengthSec: r.length_sec, credits: r.credits_charged, createdAt: r.created_at, doneAt: r.finished_at,
     status: r.status, stepAt: Date.parse(r.stage_at ?? r.created_at), pct: r.pct ?? 0, post: done ? r.post : null,
+    // the progress screen's stage (render.js STAGES: queued, voice, storyboard, plan, prompts, checks, stills, mix, render, finish)
+    stage: stageOf(r.status, r.pct ?? 0),
     // the shared line (renderQueue.js): place in line + seconds until it starts while waiting, seconds until ready;
     // etaAt = when they were computed (the page counts down between polls)
     queuePosition: working ? queue?.queuePosition ?? null : null, etaSec: working ? queue?.etaSec ?? null : null,

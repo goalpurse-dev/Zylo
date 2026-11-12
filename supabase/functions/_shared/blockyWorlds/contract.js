@@ -30,7 +30,9 @@
 //          writesLeft, updatedAt, notice? (a rewrite or fix that still has a problem says so here)
 //          spots: where each problem sits (protocol.js problemSpots); fix "opener" | "part" (fixPart) | "rewrite"
 // RunView: { id, draftId, title, lengthSec, credits, createdAt, doneAt, status, stepAt, pct, post, finalUrl,
-//            downloadUrl, poster, error, reason, failKind, refunded }
+//            downloadUrl, poster, error, reason, failKind, refunded, stage }
+//   stage: the progress screen's step (render.js STAGES / stageOf: queued, voice, storyboard, plan, prompts, checks,
+//   stills, mix, render, finish; null when done or failed); pct: the whole run's % (render 15 -> 95, finish -> 100)
 //   a failed run: reason = the plain-words why (failReason below), failKind "ours" | "busy" | "story" | "paused"
 //   start refuses a second run of a draft while one is being made (code LIMIT, extra runId): a retry can never charge twice
 //   status "queued" | "voice" | "plan" | "render" | "done" | "failed"

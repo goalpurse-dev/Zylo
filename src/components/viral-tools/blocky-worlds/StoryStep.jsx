@@ -90,7 +90,26 @@ function Hero({ flow, onContinue }) {
           <FileText className="h-3 w-3" aria-hidden="true" />{own ? "Back to ideas" : "Paste my own script"}
         </button>
       </div>
+      {flow.access?.film?.length > 0 && <CanFilm items={flow.access.film} />}
     </section>
+  );
+}
+
+/**
+ * The board-only launch mode: "What we can film", under the topic box. The list comes from the server (boardFit.js
+ * canFilm: generated from the kit manifest, never written here), so it grows with the kit. Hover / long-press: the detail.
+ */
+function CanFilm({ items }) {
+  return (
+    <div className="mt-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2.5" data-testid="bw-can-film">
+      <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/40">What we can film</p>
+      <ul className="mt-1.5 flex flex-wrap gap-1" aria-label="What we can film">
+        {items.map((x) => (
+          <li key={x.id} title={x.what} className="rounded-full border border-lime-300/15 bg-lime-300/[0.05] px-2 py-0.5 text-[10.5px] font-semibold text-lime-100/75">{x.label}</li>
+        ))}
+      </ul>
+      <p className="mt-1.5 text-[10.5px] leading-snug text-white/35">An idea that needs something else is moved into our town, keeping your rule.</p>
+    </div>
   );
 }
 

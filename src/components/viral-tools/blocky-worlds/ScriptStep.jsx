@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, ArrowLeft, Check, ChevronRight, Wand2, X } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Check, ChevronRight, Home, Wand2, X } from "lucide-react";
 import { FOCUS, PrimaryButton, Toggle, cx } from "../../ui/zyvo";
 import { PARTS } from "../../../../supabase/functions/_shared/blockyWorlds/script.js";
 import { problemSpots } from "../../../../supabase/functions/_shared/blockyWorlds/protocol.js";
@@ -69,7 +69,17 @@ export default function ScriptStep({ flow, onGenerate, notice, onBack, made = fa
             {loose.length > 0 && (
               <>
                 <ul className="mt-1 list-disc pl-4 text-[11.5px] leading-relaxed text-rose-100/85">{loose.map((x) => <li key={x.problem}>{x.problem}</li>)}</ul>
-                <PrimaryButton size="sm" variant="secondary" className="mt-2" busy={busy === "rewriting" ? "Rewriting" : undefined} disabled={Boolean(busy)} onClick={() => flow.rewrite("")}>Rewrite the script to fix it</PrimaryButton>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {/* the board-only launch mode: the story happens where the video can't go: moved into our town, rule and hook kept */}
+                  {loose.some((x) => x.fix === "move") && (
+                    <PrimaryButton size="sm" busy={busy === "moving" ? "Moving it" : undefined} disabled={Boolean(busy)} onClick={flow.moveToTown} data-testid="bw-move-to-town">
+                      <Home className="h-3.5 w-3.5" aria-hidden="true" />Move it to our town
+                    </PrimaryButton>
+                  )}
+                  {loose.some((x) => x.fix !== "move") && (
+                    <PrimaryButton size="sm" variant="secondary" busy={busy === "rewriting" ? "Rewriting" : undefined} disabled={Boolean(busy)} onClick={() => flow.rewrite("")}>Rewrite the script to fix it</PrimaryButton>
+                  )}
+                </div>
               </>
             )}
           </div>

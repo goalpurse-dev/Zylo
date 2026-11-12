@@ -1,7 +1,7 @@
 import { AlertTriangle, Check, Copy, Download, Music2, RotateCcw, ThumbsDown, ThumbsUp, Wand2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { FOCUS, cx } from "../../ui/zyvo";
-import { RUN_STEPS, STATUS_LABELS, clock, isWorking } from "./api/blockyWorldsApi";
+import { STAGES, STATUS_LABELS, clock, isWorking, runStage } from "./api/blockyWorldsApi";
 import LivePreview, { Clip, PreviewBoundary } from "./LivePreview";
 import { ActionButton, CreditMark } from "./StepShell";
 import { CLIPS, useReducedMotion } from "./clips";
@@ -48,14 +48,13 @@ const RING = 2 * Math.PI * 92;
 const SPARKS = Array.from({ length: 22 }, (_, i) => ({ a: `${(i * 360) / 22}deg`, d: `${110 + ((i * 37) % 90)}px`, size: 5 + (i % 4) * 2, delay: `${(i % 5) * 25}ms` }));
 const CONFETTI = Array.from({ length: 34 }, (_, i) => ({ left: `${(i * 29) % 100}%`, x: `${((i * 53) % 120) - 60}px`, r: `${((i * 97) % 720) - 360}deg`, c: ["#BEF264", "#FFD32A", "#FF6FB5", "#18B8A5", "#FF7A1A", "#FFFFFF"][i % 6], d: `${1.3 + ((i * 7) % 9) / 10}s`, delay: `${(i % 8) * 60}ms` }));
 
-/** How far along the whole run is, 0..1 (the render step is the long one). */
-function progressOf(run) {
-  const at = Math.max(0, RUN_STEPS.indexOf(run.status));
-  const within = run.status === "render" ? (run.pct ?? 0) / 100 : 0.5;
-  const weights = { queued: 0.05, voice: 0.15, plan: 0.15, render: 0.65 };
-  let p = 0;
-  RUN_STEPS.forEach((s, i) => { if (i < at) p += weights[s] ?? 0; });
-  return Math.min(0.98, p + (weights[run.status] ?? 0) * within);
+/**
+ * How far along the whole run is, 0..1: the server's % (render.js reconcile: the prepare stages 0-15, the chunks 15-95, the
+ * finish 95-100), never behind the stage it is at (render.js STAGES).
+ */
+function progressOf(run, stage) {
+  const floor = (STAGES.find((s) => s.stage === stage)?.pct ?? 0) / 100;
+  return Math.min(0.98, Math.max(floor, (Number(run.pct) || 0) / 100));
 }
 
 function Building({ run }) {
@@ -65,9 +64,11 @@ function Building({ run }) {
   const [seenAt, setSeenAt] = useState(() => Date.now());
   useEffect(() => { setSeenAt(Date.now()); }, [run.etaAt, run.etaSec, run.doneEtaSec, run.queuePosition]);
   const wait = waitInfo(run, Date.now(), seenAt);
-  const at = RUN_STEPS.indexOf(run.status);
-  const p = progressOf(run);
-  const line = wait.inLine ? wait.title : run.status === "render" ? BUILD_LINES[tick % BUILD_LINES.length] : STATUS_LABELS[run.status];
+  // the server's stages (render.js STAGES): where the run is, and every step before it ticked off
+  const stage = runStage(run);
+  const at = Math.max(0, STAGES.findIndex((s) => s.stage === stage));
+  const p = progressOf(run, stage);
+  const line = wait.inLine ? wait.title : stage === "render" ? BUILD_LINES[tick % BUILD_LINES.length] : STAGES[at]?.label ?? STATUS_LABELS[run.status];
   return (
     <div className="relative flex min-h-[560px] flex-col items-center justify-center overflow-hidden px-2 py-6 text-center" aria-live="polite">
       {/* our clips drifting behind, dimmed, like the onboarding's "coming to life" */}
@@ -98,11 +99,11 @@ function Building({ run }) {
       <p key={line} className="ob-enter relative mt-4 text-[21px] font-black leading-tight tracking-tight text-white" data-testid="bw-wait-title">{line}{wait.inLine ? "" : "…"}</p>
       {wait.inLine && <p className="relative mt-1 text-[15px] font-bold text-lime-200" data-testid="bw-wait-sub">{wait.sub}</p>}
       <p className="relative mt-1 max-w-[300px] truncate text-[13px] font-semibold text-lime-200">&ldquo;{run.title}&rdquo;</p>
-      <ol className="relative mt-5 flex flex-wrap justify-center gap-1.5">
-        {RUN_STEPS.map((s, i) => (
-          <li key={s} className={cx("flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-bold transition", i < at ? "border-lime-300/40 bg-lime-300/10 text-lime-200" : i === at ? "border-white/40 text-white" : "border-white/10 text-white/30")}>
+      <ol className="relative mt-5 flex max-w-[420px] flex-wrap justify-center gap-1.5" aria-label="Progress" data-testid="bw-stages">
+        {STAGES.map((s, i) => (
+          <li key={s.stage} aria-current={i === at ? "step" : undefined} className={cx("flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10.5px] font-bold transition", i < at ? "border-lime-300/40 bg-lime-300/10 text-lime-200" : i === at ? "border-white/40 text-white" : "border-white/10 text-white/30")}>
             {i < at ? <Check className="ob-check h-3 w-3" strokeWidth={3.5} aria-hidden="true" /> : <span className={cx("h-1.5 w-1.5 rounded-full", i === at ? "bg-lime-300" : "bg-white/25")} />}
-            {STATUS_LABELS[s]}
+            {s.label}
           </li>
         ))}
       </ol>
@@ -114,7 +115,6 @@ function Building({ run }) {
 
 function RunView({ run, onEvent, retry }) {
   const [thumb, setThumb] = useState(null);
-  const [copied, setCopied] = useState(false);
   const still = useReducedMotion();
   // the celebration only when we watched it finish (not when an old video is opened from the list)
   const sawWorking = useRef(isWorking(run));
@@ -130,7 +130,8 @@ function RunView({ run, onEvent, retry }) {
     return <FailedView run={run} {...retry} />;
   }
   const post = run.post ?? {};
-  const postText = [post.title, post.description, (post.hashtags ?? []).join(" ")].filter(Boolean).join("\n\n");
+  // the upload text, one Copy each (the title, the description and the hashtags go in different boxes when posting)
+  const postParts = [["title", "Title", post.title], ["description", "Description", post.description], ["hashtags", "Hashtags", (post.hashtags ?? []).join(" ")]].filter(([, , v]) => v);
   const vote = (kind) => { if (thumb) return; setThumb(kind); onEvent(kind); };
   return (
     <div className="relative mx-auto flex w-full max-w-[340px] flex-col gap-3">
@@ -153,18 +154,34 @@ function RunView({ run, onEvent, retry }) {
         <button type="button" aria-pressed={thumb === "thumb_down"} onClick={() => vote("thumb_down")} disabled={Boolean(thumb)} className={cx("bw-press grid w-12 place-items-center rounded-2xl border border-white/10 text-white/70", FOCUS, thumb === "thumb_down" && "ob-pick border-rose-300/50 text-rose-300")} aria-label="I don't like this story"><ThumbsDown className="h-4 w-4" /></button>
       </div>
       {thumb && <p className="ob-enter text-[11px] text-white/45">Thanks. This helps pick better ideas.</p>}
-      {postText && (
-        <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] p-3">
-          <div className="mb-1 flex items-center justify-between"><p className="text-[10.5px] font-black uppercase tracking-[0.12em] text-white/40">Upload text</p>
-            <button type="button" onClick={() => { navigator.clipboard?.writeText(postText); setCopied(true); }} className={cx("flex items-center gap-1 text-[10.5px] font-bold text-white/55 hover:text-lime-300", FOCUS)}>{copied ? <Check className="ob-check h-3 w-3" /> : <Copy className="h-3 w-3" />}{copied ? "Copied" : "Copy"}</button>
-          </div>
-          <p className="whitespace-pre-line text-[12px] leading-relaxed text-white/75">{postText}</p>
+      {postParts.length > 0 && (
+        <div className="flex flex-col gap-2 rounded-2xl border border-white/[0.07] bg-white/[0.03] p-3" data-testid="bw-upload-text">
+          <p className="text-[10.5px] font-black uppercase tracking-[0.12em] text-white/40">Upload text</p>
+          {postParts.map(([id, label, text]) => <CopyRow key={`${run.id}-${id}`} id={id} label={label} text={text} />)}
         </div>
       )}
       <p className="flex items-start gap-2 rounded-2xl border border-lime-300/15 bg-lime-300/[0.05] px-3 py-2.5 text-[11.5px] leading-relaxed text-white/70">
         <Music2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-lime-300" aria-hidden="true" />
         <span><b className="font-bold text-white/85">Tip:</b> for max reach, add a trending sound in TikTok when you post.</span>
       </p>
+    </div>
+  );
+}
+
+/** One piece of the upload text (title, description or hashtags) with its own Copy button. */
+function CopyRow({ id, label, text }) {
+  const [copied, setCopied] = useState(false);
+  useEffect(() => { if (!copied) return undefined; const t = setTimeout(() => setCopied(false), 1800); return () => clearTimeout(t); }, [copied]);
+  const copy = async () => { try { await navigator.clipboard?.writeText(text); setCopied(true); } catch { setCopied(false); } };
+  return (
+    <div className="rounded-xl border border-white/[0.05] bg-black/20 px-2.5 py-2">
+      <div className="mb-0.5 flex items-center justify-between gap-2">
+        <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-white/35">{label}</p>
+        <button type="button" onClick={copy} aria-label={`Copy the ${label.toLowerCase()}`} data-testid={`bw-copy-${id}`} className={cx("flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10.5px] font-bold text-white/55 hover:text-lime-300", FOCUS)}>
+          {copied ? <Check className="ob-check h-3 w-3" aria-hidden="true" /> : <Copy className="h-3 w-3" aria-hidden="true" />}{copied ? "Copied" : "Copy"}
+        </button>
+      </div>
+      <p className={cx("whitespace-pre-line text-[12px] leading-relaxed text-white/75", id === "title" && "font-bold text-white/85", id === "hashtags" && "text-lime-200/70")}>{text}</p>
     </div>
   );
 }

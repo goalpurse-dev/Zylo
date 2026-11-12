@@ -2,6 +2,7 @@
 // "server" mode: every build, and localhost by default. "dev" mode: local dev only (?mock=1), the whole flow in the browser
 // from the same mock steps the server's mock mode uses (dev/devApi.js); a production build never reaches it.
 import { ERRORS, FAILED_MESSAGE, STATUSES, STATUS_LABELS } from "../../../../../supabase/functions/_shared/blockyWorlds/contract.js";
+import { STAGES, stageOf } from "../../../../../supabase/functions/_shared/blockyWorlds/render.js";
 export { ERRORS, FAILED_MESSAGE, STATUSES, STATUS_LABELS };
 
 // localhost talks to the REAL server by default (owner, 2026-11-05); ?mock=1 runs the free in-browser mock instead (fake
@@ -67,6 +68,12 @@ export async function worldsCall(action, body = {}) {
 export const isWorking = (run) => Boolean(run) && !["done", "failed"].includes(run.status);
 /** The steps a run goes through, for the progress list. */
 export const RUN_STEPS = STATUSES.filter((s) => !["done", "failed"].includes(s));
+/**
+ * The server's progress stages (render.js STAGES: queued, voice, storyboard, plan, prompts, checks, stills, mix, render,
+ * finish) and a run's stage: the server sends run.stage; an older reply (or the mock) is read from its status and %.
+ */
+export { STAGES };
+export const runStage = (run) => (run ? run.stage ?? stageOf(run.status, run.pct ?? 0) : null);
 
 /** "1:30" */
 export const clock = (sec) => `${Math.floor(sec / 60)}:${String(Math.round(sec % 60)).padStart(2, "0")}`;

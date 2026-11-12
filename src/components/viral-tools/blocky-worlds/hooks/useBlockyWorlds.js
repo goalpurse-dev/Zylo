@@ -178,6 +178,17 @@ export default function useBlockyWorlds({ enabled = true } = {}) {
     return r;
   }, [attempt, draft, lengthSec]);
 
+  /**
+   * "Move it to our town" (the board-only launch mode): the story needs a world the video can't film, so it is written
+   * again inside the kit, keeping its rule and its hook (a normal rewrite: free, counts toward the daily script writes).
+   */
+  const moveToTown = useCallback(async () => {
+    if (!draft || busy) return { ok: false };
+    const r = await attempt("moving", () => worldsCall("rewrite", { draftId: draft.id, move: true, lengthSec }));
+    if (r.ok) { setDraft(r.value); setEdited(null); }
+    return r;
+  }, [attempt, draft, busy, lengthSec]);
+
   const fixOpener = useCallback(async () => {
     if (!draft) return { ok: false };
     const r = await attempt("fixing", () => worldsCall("fixOpener", { draftId: draft.id }));
@@ -232,7 +243,7 @@ export default function useBlockyWorlds({ enabled = true } = {}) {
   return {
     access, tab, setTab, mood, setMood, ideas, shownIdeas, askIdeas, topic, setTopic, topicIdeas, askTopic, ownText, setOwnText,
     lengthSec, setLengthSec, draft, lines: edited ?? draft?.lines ?? [], edited: Boolean(edited), editLine, saveEdits,
-    busy, pickedId, writeFromIdea, picked, pickIdea, continueStory, takes, tryTake, saveOwn, rewrite, fixOpener, fixPart, removeWatermark, setRemoveWatermark,
+    busy, pickedId, writeFromIdea, picked, pickIdea, continueStory, takes, tryTake, saveOwn, rewrite, moveToTown, fixOpener, fixPart, removeWatermark, setRemoveWatermark,
     run, recent, generate, retryRun, rewriteAndRetry, sendEvent, openRun, startOver,
   };
 }
