@@ -27,19 +27,22 @@ const LLM = await import(pathToFileURL(path.join(SHARED, "llm.js")).href);
 
 // 1. ideas from the topic + the script (the server's own calls, under a money meter)
 const meter = LLM.moneyMeter(SCRIPT_CAP);
-const results = await stage("script", async () => {
+// --reuse: a stopped attempt's script + scene list (their time and cost stay in stages.json; no second paid call)
+const prev = argv.includes("--reuse") && fs.existsSync(path.join(out, "stages.json")) ? JSON.parse(fs.readFileSync(path.join(out, "stages.json"), "utf8")) : null;
+if (prev) { Object.assign(T, { script: prev.seconds.script, scenes: prev.seconds.scenes }); Object.assign(C, { script: prev.usd.script, scenes: prev.usd.scenes, earlier_attempt: +(prev.total - prev.usd.script - prev.usd.scenes).toFixed(5) }); }
+const results = prev ? JSON.parse(fs.readFileSync(path.join(out, "results.json"), "utf8")) : await stage("script", async () => {
   // --card <file>: a library idea card (the customer picked it); else ideas from the topic
   const card = arg("card") ? JSON.parse(fs.readFileSync(arg("card"), "utf8")) : await (async () => { const ideas = await LLM.writeTopicIdeas({ apiKey, topic, meter }); return (ideas.cards ?? ideas.ideas ?? ideas.items ?? ideas)[0] ?? ideas; })();
   const w = await LLM.writeScript({ apiKey, idea: card, lengthSec: LEN, meter, maxTokens: 8000 });
   return { results: [{ script: w.script, card }], costUsd: meter.spent };
 });
-C.script = meter.spent;
+if (!prev) C.script = meter.spent;
 fs.writeFileSync(path.join(out, "results.json"), JSON.stringify(results, null, 1));
 const script = results.results[0].script;
 say(`script: "${script.title}" ${script.lines.length} lines ($${C.script}, ${T.script} s)`);
 
 // 2. the scene list (Sonnet) on the planner's cast and places
-const scenes = await stage("scenes", async () => {
+const scenes = prev ? JSON.parse(fs.readFileSync(path.join(out, "scenes.json"), "utf8")) : await stage("scenes", async () => {
   const { tl } = await planScript({ script, idea: results.results[0].card ?? {} });
   const cast = Object.keys(tl.world?.cast ?? tl.cast ?? {}).filter((c) => !/^town\d|^extra/.test(c));
   const places = [...new Set((tl.world?.spots ?? []).map((s) => s.place ?? s.id).filter(Boolean))].slice(0, 12);
@@ -52,8 +55,8 @@ fs.writeFileSync(path.join(out, "scenes.json"), JSON.stringify(scenes));
 say(`scenes: ${scenes.length} ($${C.scenes}, ${T.scenes} s)`);
 
 // 3. the video: the RunPod prepare with the automatic storyboard + the chunks (videoRun keeps its own costs.json)
-const left = +(CAP - C.script - C.scenes - Number(arg("spent", 0))).toFixed(3); // --spent: an earlier stopped attempt's spend
-const run = path.join(out, "video");
+const left = +(CAP - C.script - C.scenes - (C.earlier_attempt ?? 0) - Number(arg("spent", 0))).toFixed(3); // --spent: an earlier stopped attempt's spend
+const run = path.join(out, `video-${new Date().toISOString().slice(0, 19).replace(/[-:T]/g, "")}`); // its own storage folder (a shared "video" folder held another run's take: BAD_JOB)
 const r = await stage("video", async () => spawnSync(process.execPath, [path.join(ENGINE, "dev/simple/videoRun.mjs"), "--script", path.join(out, "results.json"), "--pick", "1", "--out", run, "--scenes", path.join(out, "scenes.json"),
   "--storyboard", "auto", "--storyboard-usd", "0.14", "--prompts-usd", "0.24", "--per-shot", "330", ...(arg("max-fallback") != null ? ["--max-fallback", arg("max-fallback")] : []), "--review-usd", String(arg("review-usd", 0.01)), "--builder-usd", "0", "--prepare-sec", "300", "--chunks", "6", "--max-chunk-sec", "110", "--cap", String(left), "--yes"], { cwd: ENGINE, encoding: "utf8", maxBuffer: 1 << 26 }));
 fs.writeFileSync(path.join(out, "videoRun.out"), `${r.stdout}\n${r.stderr}`);
