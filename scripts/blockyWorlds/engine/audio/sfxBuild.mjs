@@ -288,6 +288,21 @@ export const BUILD = {
   footsteps_walk: () => footsteps(["kenney_impact-sounds/Audio/footstep_concrete_000.ogg", "kenney_impact-sounds/Audio/footstep_concrete_001.ogg", "kenney_impact-sounds/Audio/footstep_concrete_002.ogg", "kenney_impact-sounds/Audio/footstep_concrete_003.ogg"], 0.5, 4),
   footsteps_run: () => footsteps(["kenney_rpg-audio/Audio/footstep00.ogg", "kenney_rpg-audio/Audio/footstep02.ogg", "kenney_rpg-audio/Audio/footstep05.ogg", "kenney_rpg-audio/Audio/footstep07.ogg"], 0.3, 4, 1.1),
 };
+// the writer's SOUND WORDS (2026-11-12): Kenney CC0 files, picked by name for each word
+Object.assign(BUILD, {
+  bonk: () => resample(kenney("kenney_impact-sounds/Audio/impactWood_light_003.ogg"), 0.8),
+  clunk: () => kenney("kenney_impact-sounds/Audio/impactWood_heavy_001.ogg"),
+  tap: () => kenney("kenney_impact-sounds/Audio/impactGeneric_light_000.ogg"),
+  splat: () => { const x = zeros(0.9); mixAt(x, kenney("kenney_sci-fi-sounds/Audio/slime_000.ogg"), 0, 1); mixAt(x, kenney("kenney_impact-sounds/Audio/impactSoft_heavy_000.ogg"), 0, 0.7); return x; },
+  snap: () => resample(kenney("kenney_impact-sounds/Audio/impactWood_light_004.ogg"), 1.35),
+  click: () => kenney("kenney_interface-sounds/Audio/click_001.ogg"),
+  ding: () => kenney("kenney_interface-sounds/Audio/glass_002.ogg"),
+  zap: () => kenney("kenney_sci-fi-sounds/Audio/laserRetro_000.ogg"),
+  twang: () => kenney("kenney_interface-sounds/Audio/pluck_001.ogg"),
+  scratch: () => kenney("kenney_interface-sounds/Audio/scratch_001.ogg"),
+  plop: () => kenney("kenney_interface-sounds/Audio/drop_001.ogg"),
+  drip: () => resample(kenney("kenney_interface-sounds/Audio/drop_002.ogg"), 1.4),
+});
 const LOOPS = new Set(["crowd_murmur", "footsteps_walk", "footsteps_run"]);
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

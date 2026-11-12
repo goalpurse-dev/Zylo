@@ -24,6 +24,8 @@ export const SFX_TIMING = {
   crowd_murmur: [3.6, 0, -10], crowd_cheer: [2.44, 0.2, -7], pop: [0.12, 0, -8], whistle: [1.4, 0, -6],
   knock: [0.53, 0, -4], crash: [0.6, 0, -5], door_creak: [1.51, 0, -5], door_slam: [0.6, 0, -4],
   footsteps_walk: [2.0, 0, -7], footsteps_run: [1.2, 0, -6],
+  // the writer's sound words (Kenney CC0, 2026-11-12)
+  bonk: [0.33, 0, -6], clunk: [0.31, 0, -6], tap: [0.14, 0, -6], splat: [0.51, 0, -6], snap: [0.19, 0, -6], click: [0.04, 0, -6], ding: [0.12, 0, -6], zap: [0.23, 0, -6], twang: [0.09, 0, -6], scratch: [0.12, 0, -6], plop: [0.11, 0, -6], drip: [0.13, 0, -6],
 };
 
 // EPIC stories (lib/epic.js): giants, armies and beats add their own candidates and sounds (audio/sfxEpic.mjs)

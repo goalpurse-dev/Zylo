@@ -34,6 +34,19 @@ export const SFX = {
   door_slam: { dur: 0.6, anchor: 0, gainDb: -4, quality: "good", ...KENNEY("RPG Audio"), source: "Kenney RPG Audio doorClose_4 + synth thump", what: "door slam" },
   footsteps_walk: { dur: 2.0, anchor: 0, gainDb: -7, quality: "good", loop: true, ...KENNEY("Impact Sounds"), what: "walking on concrete, 2 steps/s, loops" },
   footsteps_run: { dur: 1.2, anchor: 0, gainDb: -6, quality: "good", loop: true, ...KENNEY("RPG Audio"), what: "running, 3.3 steps/s, loops" },
+  // the writer's SOUND WORDS (2026-11-12): Kenney CC0 files (lib/audioPlan.js SOUND_SFX)
+  bonk: { dur: 0.33, anchor: 0, gainDb: -6, quality: "ok", ...KENNEY("Impact Sounds"), source: "Kenney Impact Sounds impactWood_light_003 pitched down (CC0, picked by name for the sound word)", what: "a hollow bonk" },
+  clunk: { dur: 0.31, anchor: 0, gainDb: -6, quality: "ok", ...KENNEY("Impact Sounds"), source: "Kenney Impact Sounds impactWood_heavy_001 (CC0, picked by name for the sound word)", what: "a heavy wooden clunk" },
+  tap: { dur: 0.14, anchor: 0, gainDb: -6, quality: "ok", ...KENNEY("Impact Sounds"), source: "Kenney Impact Sounds impactGeneric_light_000 (CC0, picked by name for the sound word)", what: "a light tap" },
+  splat: { dur: 0.51, anchor: 0, gainDb: -6, quality: "ok", ...KENNEY("Sci-fi Sounds + Impact Sounds"), source: "Kenney Sci-fi Sounds + Impact Sounds slime_000 + impactSoft_heavy_000 (CC0, picked by name for the sound word)", what: "a wet splat" },
+  snap: { dur: 0.19, anchor: 0, gainDb: -6, quality: "ok", ...KENNEY("Impact Sounds"), source: "Kenney Impact Sounds impactWood_light_004 pitched up (CC0, picked by name for the sound word)", what: "a quick snap" },
+  click: { dur: 0.04, anchor: 0, gainDb: -6, quality: "ok", ...KENNEY("Interface Sounds"), source: "Kenney Interface Sounds click_001 (CC0, picked by name for the sound word)", what: "a click" },
+  ding: { dur: 0.12, anchor: 0, gainDb: -6, quality: "ok", ...KENNEY("Interface Sounds"), source: "Kenney Interface Sounds glass_002 (CC0, picked by name for the sound word)", what: "a glassy ding" },
+  zap: { dur: 0.23, anchor: 0, gainDb: -6, quality: "ok", ...KENNEY("Sci-fi Sounds"), source: "Kenney Sci-fi Sounds laserRetro_000 (CC0, picked by name for the sound word)", what: "a retro zap" },
+  twang: { dur: 0.09, anchor: 0, gainDb: -6, quality: "ok", ...KENNEY("Interface Sounds"), source: "Kenney Interface Sounds pluck_001 (CC0, picked by name for the sound word)", what: "a plucked twang" },
+  scratch: { dur: 0.12, anchor: 0, gainDb: -6, quality: "ok", ...KENNEY("Interface Sounds"), source: "Kenney Interface Sounds scratch_001 (CC0, picked by name for the sound word)", what: "a scratch" },
+  plop: { dur: 0.11, anchor: 0, gainDb: -6, quality: "ok", ...KENNEY("Interface Sounds"), source: "Kenney Interface Sounds drop_001 (CC0, picked by name for the sound word)", what: "a plop" },
+  drip: { dur: 0.13, anchor: 0, gainDb: -6, quality: "ok", ...KENNEY("Interface Sounds"), source: "Kenney Interface Sounds drop_002 pitched up (CC0, picked by name for the sound word)", what: "a drip" },
 };
 export const SFX_NAMES = Object.keys(SFX);
 export const sfxPath = (name) => {

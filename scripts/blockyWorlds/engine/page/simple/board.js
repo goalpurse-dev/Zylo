@@ -426,8 +426,9 @@ function boardShot(S, { shot, lt, dur, camera, people, monster, animateMonster, 
   }
 
   // ---- props set down (b.props: [{ name, where }])
+  const placedProps = [];
   for (const [i, pr] of (b.props ?? []).entries()) {
-    const g = makeProp(pr.name); if (!g) continue;
+    const g = makeProp(pr.name); if (!g) continue; placedProps.push(g);
     const w = String(pr.where ?? "");
     let pos;
     if ((w === "table" || w === "counter") && room) { const t = room.props.table ?? room.props.bowl; pos = t ? t.getWorldPosition(V(0, 0, 0)).setY(0.76 + (room.props.table ? 0 : 0.2)) : room.g.localToWorld(V(0.6, 0.76, -0.4)); pos.x += 0.25 * i; }
@@ -479,16 +480,31 @@ function boardShot(S, { shot, lt, dur, camera, people, monster, animateMonster, 
   S.camFill.position.copy(pos).add(V(0, 0.4, 0)); S.camFill.intensity = (room || place) && night ? (cam === "pov_eye" ? 9 : 4) : 0; S.camFill.color.set(cam === "pov_eye" ? "#e8f0ff" : "#fff1dc");
   camera.position.copy(pos); camera.fov = fov; camera.near = 0.05; camera.far = 3000; camera.updateProjectionMatrix();
   // faces + signs in the UPPER half (the captions own the lower third): a close-up looks a little below the face
-  if (/^face:/.test(cam)) look.y -= 0.22;
+  // an animal perched on a head (a bird landing): the frame keeps it (no face shift, a gentler crash zoom, the look a bit up)
+  const perched = (b.animals ?? []).some((a) => /^on:/.test(String(a.where)));
+  if (/^face:/.test(cam) && !perched) look.y -= 0.22;
+  if (perched && (b.move === "crash" || /^face:/.test(cam))) look.y += 0.2;
   // NEVER A STILL FRAME, frame 0 mid-move: push (a slow dolly in, already 30 % along at frame 0), crash (a fast zoom on a
   // shock word), whip (a fast pan settling onto the subject at the cut)
   { const mv = b.move ?? "push", q = Math.min(1, 0.3 + ltCut / Math.max(0.3, durCut));
     if (mv === "push") pos.lerp(look, 0.07 * q);
-    if (mv === "crash") fov *= 1 - 0.36 * ease((ltCut - (b.moveAt ?? 0) + 0.04) / 0.22);
+    if (mv === "crash") fov *= 1 - (perched ? 0.2 : 0.36) * ease((ltCut - (b.moveAt ?? 0) + 0.04) / 0.22);
     camera.position.copy(pos); camera.fov = fov; camera.updateProjectionMatrix(); }
   camera.up.set(0, 1, 0); camera.lookAt(look);
   if ((b.move ?? "") === "whip") camera.rotateY(0.55 * (1 - ease(Math.min(1, (ltCut + 0.03) / 0.2))));
   camera.updateMatrixWorld();
+  // NO FOREGROUND WALL: a set-down prop nearer the lens than the subject with the lens inside or within 1.5 m of it, or
+  // covering half the frame (the fountain spout in the park crash zoom), is left out of this shot; a prop in the
+  // foreground of a wide shot (the fountain 5-6 m off) and props at or behind the subject always stay
+  { const dl = pos.distanceTo(look), bx = new THREE.Box3(), c = new THREE.Vector3(), fwd = camera.getWorldDirection(new THREE.Vector3());
+    for (const g of placedProps) {
+      bx.setFromObject(g); if (bx.isEmpty()) continue; bx.getCenter(c);
+      if (c.distanceTo(pos) > dl - 0.8 || c.clone().sub(pos).dot(fwd) <= 0) continue;
+      let x0 = 1, x1 = -1, y0 = 1, y1 = -1;
+      for (const cx of [bx.min.x, bx.max.x]) for (const cy of [bx.min.y, bx.max.y]) for (const cz of [bx.min.z, bx.max.z]) { const p = new THREE.Vector3(cx, cy, cz).project(camera); x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); y0 = Math.min(y0, p.y); y1 = Math.max(y1, p.y); }
+      const area = (Math.max(0, Math.min(1, x1) - Math.max(-1, x0)) * Math.max(0, Math.min(1, y1) - Math.max(-1, y0))) / 4;
+      if (bx.distanceToPoint(pos) < 1.5 || area > 0.5) g.visible = false; // the lens inside / right at it, or a wall of it
+    } }
   S.weather.update(b.weather ?? (b.acts.some((a) => a.k === "rain:falls") ? "rain" : b.acts.some((a) => a.k === "snow:falls") ? "snow" : null), lt, camera, night); // after the camera is placed (it rains round the lens)
   // faceLens (the still gate's re-plan, lib/vision/gatePass.js boardAlternatives): the person turns to the lens
   for (const p of b.people) if (p.faceLens && where[p.id] && !(p.where === "room:bed" && p.awake)) { const o = people[p.id].obj; o.rotation.y = Math.atan2(pos.x - o.position.x, pos.z - o.position.z); o.updateMatrixWorld(true); }
