@@ -4,7 +4,7 @@
 // refunds) in _shared/cutaway/orchestrate.js and runtime.ts.
 //
 //   access {}  quote {topic, lengthSec}  start {topic, lengthSec, removeWatermark}  status {runId}  list {}
-//   remove {runId}  approveLayout {runId, approve}  opsStatus {}  opsSetDailyCap {usd}  opsSetCustom {on}  opsSetBeta {on}
+//   remove {runId}  approveLayout {runId, approve}  opsStatus {}  opsMargin {}  opsSetDailyCap {usd}  opsSetCustom {on}  opsSetBeta {on}
 //   opsRetirePart {id}  (owner only)
 //
 // Who may generate: CUTAWAY_ENABLED=true for everyone with a paid plan (access.js); while it is off, only the emails in
@@ -16,6 +16,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { cors, err, ok } from "../shared/cors.ts";
 import { ERRORS } from "../_shared/cutaway/contract.js";
 import { LENGTHS, lengthsFor, PRICES } from "../_shared/cutaway/pricing.js";
+import { EARNED_PER_CREDIT, marginRows, TARGET_MULTIPLE, WINDOWS as MARGIN_WINDOWS } from "../_shared/cutaway/margin.js";
 import { canGenerate } from "../_shared/cutaway/access.js";
 import { canRemoveEndCard, endCardFor } from "../_shared/cutaway/endCard.js";
 import { cantBuildMessage, CATEGORIES, classifyTopic, kitCheck, normTopic, openCategories, PREMADE, premadeByKey } from "../_shared/cutaway/topics.js";
@@ -388,6 +389,17 @@ async function handle(req: Request, trace: Trace) {
   if (action === "opsRerunFailedPreview") {
     if (!who.owner) throw new ApiError("NOT_FOUND");
     return await rerunFailedPreview(String(body?.userId ?? ""));
+  }
+
+  // /admin/ops, the owner only, read-only: margin per video type over 7 and 30 days (margin.js)
+  if (action === "opsMargin") {
+    if (!who.owner) throw new ApiError("NOT_FOUND");
+    const since = new Date(Date.now() - Math.max(...MARGIN_WINDOWS) * 86400e3).toISOString();
+    const { data: runs, error } = await admin.from("cutaway_runs")
+      .select("status, kind, length_sec, free_preview, gift_finish, cost_usd, credits_charged, credits_refunded, created_at")
+      .eq("env", "prod").gte("created_at", since).limit(20000);
+    if (error) throw new ApiError("SERVER", undefined, {}, error.message);
+    return { rows: marginRows(runs ?? []), earnedPerCredit: EARNED_PER_CREDIT, target: TARGET_MULTIPLE };
   }
 
   // /admin/ops, the owner only: the emergency cap against the last 24 hours, and changing it

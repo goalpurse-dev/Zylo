@@ -207,10 +207,48 @@ function CutawayLists({ c, onChange }) {
   );
 }
 
+// Cutaway margin per video type (cutaway-api opsMargin, read-only; the numbers come from _shared/cutaway/margin.js).
+// True cost per finished video includes the runs that failed and were refunded. Red when a paid type earns under
+// 2x its true cost (or spent money with nothing finished). Nothing here changes a price.
+export function MarginCard({ m }) {
+  if (!m) return <Card title="Cutaway margin per video type" testid="ops-margin"><p className="text-[14px] text-white/60">Couldn't load the margin numbers.</p></Card>;
+  const types = [...new Set(m.rows.map((r) => r.type))];
+  const at = (type, days) => m.rows.find((r) => r.type === type && r.days === days);
+  const red = m.rows.filter((r) => r.paid && r.below);
+  const mult = (r) => (r?.multiple == null ? "–" : `${r.multiple.toFixed(2)}×`);
+  const cell = (r, paid) => {
+    if (!r) return <span className="text-white/35">no runs</span>;
+    return (
+      <div className={paid && r.below ? "text-red-200" : "text-white/80"}>
+        <div className="tabular-nums">{r.costPerFinished == null ? `$${Number(r.costUsd).toFixed(2)} spent, none finished` : `$${r.costPerFinished.toFixed(3)} per finished`}</div>
+        <div className="text-[11.5px] text-white/50">{r.finished} finished · {r.failed} failed{r.failedUsd ? ` ($${r.failedUsd.toFixed(2)})` : ""}</div>
+        {paid && r.creditsPerFinished != null && <div className="text-[11.5px] tabular-nums text-white/60">{r.creditsPerFinished} credits · margin {r.marginPct}% · {mult(r)}</div>}
+        {paid && r.creditsForTarget != null && <div className="text-[11.5px] tabular-nums text-white/45">2× needs {r.creditsForTarget} credits</div>}
+      </div>
+    );
+  };
+  return (
+    <Card title={`Cutaway margin per video type · target ${m.target}× our true cost`} tone={red.length ? "bad" : "plain"} testid="ops-margin">
+      {red.length > 0 && <p className="mb-3 rounded-lg border border-red-300/30 bg-red-400/10 px-3 py-2 text-[13px] text-red-100" data-testid="ops-margin-warning">Under {m.target}×: {[...new Set(red.map((r) => r.label))].join(", ")}.</p>}
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[560px] text-left text-[12.5px]">
+          <thead><tr className="text-white/45"><th className="py-1 pr-4 font-medium">Type</th><th className="py-1 pr-4 font-medium">Last 7 days</th><th className="py-1 pr-4 font-medium">Last 30 days</th></tr></thead>
+          <tbody>{types.map((type) => {
+            const r7 = at(type, 7), r30 = at(type, 30), paid = (r30 ?? r7)?.paid;
+            return <tr key={type} className="border-t border-white/[0.06] align-top" data-testid={`ops-margin-${type}`}><td className="py-2 pr-4 font-semibold text-white">{(r30 ?? r7)?.label}</td><td className="py-2 pr-4">{cell(r7, paid)}</td><td className="py-2 pr-4">{cell(r30, paid)}</td></tr>;
+          })}</tbody>
+        </table>
+      </div>
+      <p className="mt-3 text-[12px] text-white/45">A credit earns ${m.earnedPerCredit.usd} (€{m.earnedPerCredit.eur}); {m.earnedPerCredit.basis}; measured {m.earnedPerCredit.measuredAt}. True cost = everything spent on the type (planner, checks, voice, GPU, failed and refunded runs) ÷ finished videos. Free previews and gift finishes are what new users cost us; they carry no credits.</p>
+    </Card>
+  );
+}
+
 export default function Ops() {
   const [data, setData] = useState(null);
   const [blocky, setBlocky] = useState(null);
   const [cutaway, setCutaway] = useState(null);
+  const [marginData, setMarginData] = useState(null);
   const [state, setState] = useState("loading"); // loading | ok | denied | error
   const load = useCallback(async () => {
     const { data: d, error } = await supabase.functions.invoke("ops-status", { body: {} });
@@ -221,6 +259,8 @@ export default function Ops() {
     setBlocky(!blockyError && b?.ok ? b.data : null);
     const { data: c, error: cutawayError } = await supabase.functions.invoke("cutaway-api", { body: { action: "opsStatus" } });
     setCutaway(!cutawayError && c && !c.error ? c : null);
+    const { data: mg, error: marginError } = await supabase.functions.invoke("cutaway-api", { body: { action: "opsMargin" } });
+    setMarginData(!marginError && mg?.rows ? mg : null);
   }, []);
   useEffect(() => { document.title = "Ops | Zyvo"; load(); const t = setInterval(load, 30_000); return () => clearInterval(t); }, [load]);
 
@@ -255,6 +295,8 @@ export default function Ops() {
       <BlockyCard b={blocky} onChange={setBlocky} />
 
       <CutawayCard c={cutaway} onChange={setCutaway} />
+
+      <MarginCard m={marginData} />
 
       <Card title="Failures per hour · last 24 hours" testid="ops-failures">
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
