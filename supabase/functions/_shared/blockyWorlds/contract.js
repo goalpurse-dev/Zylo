@@ -91,6 +91,13 @@ export function failReason(code, message = null) {
     const list = items.length <= 1 ? items[0] ?? "" : `${items.slice(0, -1).join(", ")} and ${items.at(-1)}`;
     return { kind: "story", text: list ? `We couldn't build ${list} for your story.` : "We couldn't build something your story needs." };
   }
+  // KIT_UNSUPPORTED (board-only launch mode, 2026-11-12): the story needs a thing the board kit can't film; the worker's
+  // early kit check names them in quotes (worker.mjs: the story needs "bus" (vehicle), ...); the director's says how many lines
+  if (c === "KIT_UNSUPPORTED") {
+    const items = [...new Set([...String(message ?? "").matchAll(/"([^"]{1,40})"/g)].map((m) => m[1]))].slice(0, 3);
+    const list = items.length <= 1 ? items[0] ?? "" : `${items.slice(0, -1).join(", ")} and ${items.at(-1)}`;
+    return { kind: "story", text: list ? `Our block world can't film ${list} yet, so this story couldn't be made. Rewrite it without ${items.length > 1 ? "them" : "it"}, or pick an idea from the list.` : "Part of this story needs something our block world can't film yet. Rewrite it, or pick an idea from the list." };
+  }
   const kind = Object.keys(FAIL_KINDS).find((k) => FAIL_KINDS[k].includes(c)) ?? "ours";
   return { kind, text: FAIL_TEXT[kind] };
 }

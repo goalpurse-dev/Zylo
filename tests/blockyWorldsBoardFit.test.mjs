@@ -185,3 +185,53 @@ test("library filter: in launch mode the picker only ever chooses ideas the boar
   assert.match(src, /pickForUser\(LAUNCH_BOARD \? fittingOnly\(cands \?\? \[\]\) : cands \?\? \[\], IDEAS_PER_BATCH, mood\)/);
   assert.match(src, /launch: LAUNCH_BOARD \? "board" : "off", film: LAUNCH_BOARD \? canFilm\(\) : null/);
 });
+
+// ---------------------------------------------------------------- step 3: the board-only switch + the refund path
+test("board-only switch: off by default; on -> job.prepare.storyboard.maxFallback 0; without the auto storyboard start refuses", async () => {
+  const { productionSettings, prepareProduction, boardOnlyBlocked } = await import("../supabase/functions/_shared/blockyWorlds/render.js");
+  const env = (o) => (k) => o[k] ?? "";
+  assert.equal(productionSettings(env({})).boardOnly, false);
+  assert.equal(prepareProduction(productionSettings(env({ BLOCKY_WORLDS_STORYBOARD: "auto" }))).storyboard.maxFallback, undefined, "off: today's fallback");
+  const on = productionSettings(env({ BLOCKY_WORLDS_STORYBOARD: "auto", BLOCKY_WORLDS_BOARD_ONLY: "on" }));
+  assert.equal(on.boardOnly, true);
+  assert.equal(prepareProduction(on).storyboard.maxFallback, 0);
+  assert.equal(boardOnlyBlocked(on), false);
+  assert.equal(boardOnlyBlocked(productionSettings(env({ BLOCKY_WORLDS_BOARD_ONLY: "on" }))), true, "board-only with the storyboard off");
+  assert.equal(boardOnlyBlocked(productionSettings(env({}))), false);
+  const src = readFileSync(new URL("../supabase/functions/blocky-worlds-api/index.ts", import.meta.url), "utf8");
+  const guard = src.indexOf("boardOnlyBlocked(productionSettings(envGet))"), charge = src.indexOf('admin.rpc("blocky_worlds_start_run"');
+  assert.ok(guard > 0 && guard < charge, "the guard runs before the charge");
+});
+
+test("refund path end to end (free fakes): a KIT_UNSUPPORTED prepare fails once, no retry, nothing renders, refunded once", async () => {
+  const fs = await import("node:fs"), os = await import("node:os"), path = await import("node:path");
+  const { makeRuntime } = await import("../supabase/functions/_shared/blockyWorlds/renderRuntime.js");
+  const { NO_RETRY, productionSettings } = await import("../supabase/functions/_shared/blockyWorlds/render.js");
+  const { failReason } = await import("../supabase/functions/_shared/blockyWorlds/contract.js");
+  const { fileStorage, memoryDb, scriptedRunPod } = await import("../scripts/blockyWorlds/engine/dev/pipelineFakes.mjs");
+  assert.ok(NO_RETRY.has("KIT_UNSUPPORTED"));
+  let now = Date.parse("2026-11-12T10:00:00Z");
+  const db = memoryDb({ now: () => now }), root = fs.mkdtempSync(path.join(os.tmpdir(), "bw-board-")), runpod = scriptedRunPod();
+  runpod.configured = true;
+  const production = productionSettings((k) => ({ BLOCKY_WORLDS_STORYBOARD: "auto", BLOCKY_WORLDS_BOARD_ONLY: "on" })[k] ?? "");
+  const rt = makeRuntime({ db, storage: fileStorage(root), runpod, secret: "s".repeat(64), callbackUrl: "https://example.test/cb", now: () => now, log: () => {}, production });
+  const run = db.addRun({ lines: [{ part: "rule", text: "In this town, every kid rides the bus." }] });
+  try {
+    await rt.start(run.id);
+    const prep = runpod.last("prepare");
+    assert.equal(prep.job.prepare.storyboard.maxFallback, 0, "the job tells the worker: no old-planner line");
+    const ev = (event, data = {}) => rt.handleCallback({ body: { runId: prep.job.runId, jobId: prep.job.jobId, token: prep.job.callback.token, event, ...data } });
+    await ev("voiced", { costUsd: 0.12 });
+    await ev("failed", { code: "KIT_UNSUPPORTED", message: 'the story needs "bus" (vehicle), which our board kit can\'t film yet' });
+    const r = await db.getRun(run.id);
+    assert.deepEqual([r.status, r.error_code, Boolean(r.refunded_at)], ["failed", "KIT_UNSUPPORTED", true]);
+    now += 120_000;
+    await rt.sweep();
+    assert.equal(runpod.sent.length, 1, "never retried, no chunk sent");
+    assert.deepEqual(db.refunds, [run.id], "refunded exactly once");
+    const why = failReason(r.error_code, r.error_message);
+    assert.equal(why.kind, "story", "the page offers Rewrite and try again");
+    assert.match(why.text, /can't film bus yet/);
+    assert.match(failReason("KIT_UNSUPPORTED", "the board kit can't show 3 of 20 lines").text, /can't film yet/);
+  } finally { fs.rmSync(root, { recursive: true, force: true }); }
+});

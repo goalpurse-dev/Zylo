@@ -38,7 +38,8 @@ import { APP_HYBRID, callLogLines, hybridCard, hybridChecksRow, hybridBeats, run
 import { openerKey, pickForUser } from "../_shared/blockyWorlds/library.js";
 import { cardProblems, problemSpots } from "../_shared/blockyWorlds/protocol.js";
 import { queueInfo, renderConfigured, renderRuntime } from "../_shared/blockyWorlds/renderSupabase.ts";
-import { boardOnlyFrom, canFilm, fittingOnly, launchModeFrom } from "../_shared/blockyWorlds/boardFit.js";
+import { canFilm, fittingOnly, launchModeFrom } from "../_shared/blockyWorlds/boardFit.js";
+import { boardOnlyBlocked, productionSettings } from "../_shared/blockyWorlds/render.js";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -62,7 +63,6 @@ const BUCKET = "blocky-worlds-renders";
 // implies launch mode. Both off by default; a secret change switches them (no code deploy).
 const envGet = (k: string) => Deno.env.get(k) ?? "";
 const LAUNCH_BOARD = launchModeFrom(envGet);
-const BOARD_ONLY = boardOnlyFrom(envGet);
 /** the library rows the picker may show: in launch mode only those the board kit can film (computed at read time) */
 const LIBRARY_LIMIT = LAUNCH_BOARD ? 200 : 60;
 
@@ -455,6 +455,8 @@ async function handle(req: Request, trace: Trace) {
     if (checks.problems.length) throw new ApiError("NOT_READY", checks.problems[0], { problems: checks.problems });
     const dryRun = body?.dryRun === true && (who.tester || who.owner);
     if (!RENDERER && !dryRun) throw new ApiError("RENDER_OFF", undefined, {}, "BLOCKY_WORLDS_RENDERER is not runpod, or RunPod / the callback secret is not configured");
+    // board-only without the automatic storyboard would send every line to the old planner: refused before any charge
+    if (boardOnlyBlocked(productionSettings(envGet))) throw new ApiError("RENDER_OFF", undefined, {}, "BLOCKY_WORLDS_BOARD_ONLY is on but BLOCKY_WORLDS_STORYBOARD is not auto");
     trace.step = "cap check";
     await guardFor(who.user.id, costBasisUsd(lengthSec), "video");
     trace.step = "price";

@@ -458,10 +458,10 @@ const PROD_ON = Object.freeze({ director: "haiku", builder: "on", builderMaxUsd:
 const ASSET = { kind: "object", name: "ladder", name_key: "ladder", aliases: ["step ladder"], keys: ["ladder", "step ladder"], blueprint: { parts: [{ shape: "box" }] }, verdict: { ok: true, confidence: 0.9 }, model: "claude-sonnet-5-5", cost_usd: 0.11, status: "live", still_path: "object-ladder-1.jpg", id: "local-x", uses: 0 };
 
 test("production settings: the function secrets and their defaults (director mock, builder off, $0.60 a video)", () => {
-  assert.deepEqual(productionSettings(() => ""), { director: "mock", builder: "off", builderMaxUsd: 0.6, review: "haiku", reviewMaxUsd: 0.1 }, "the shot review is ON (haiku, $0.10) with no secret");
-  assert.deepEqual(productionSettings(() => undefined), { director: "mock", builder: "off", builderMaxUsd: 0.6, review: "haiku", reviewMaxUsd: 0.1 });
+  assert.deepEqual(productionSettings(() => ""), { director: "mock", builder: "off", builderMaxUsd: 0.6, review: "haiku", reviewMaxUsd: 0.1, storyboard: "off", voiceAfterStoryboard: false, boardOnly: false }, "the shot review is ON (haiku, $0.10) with no secret");
+  assert.deepEqual(productionSettings(() => undefined), { director: "mock", builder: "off", builderMaxUsd: 0.6, review: "haiku", reviewMaxUsd: 0.1, storyboard: "off", voiceAfterStoryboard: false, boardOnly: false });
   const env = (m) => (k) => m[k];
-  assert.deepEqual(productionSettings(env({ BLOCKY_WORLDS_DIRECTOR: " Haiku ", BLOCKY_WORLDS_BUILDER: "on", BLOCKY_WORLDS_BUILDER_MAX_USD: "0.4" })), { director: "haiku", builder: "on", builderMaxUsd: 0.4, review: "haiku", reviewMaxUsd: 0.1 });
+  assert.deepEqual(productionSettings(env({ BLOCKY_WORLDS_DIRECTOR: " Haiku ", BLOCKY_WORLDS_BUILDER: "on", BLOCKY_WORLDS_BUILDER_MAX_USD: "0.4" })), { director: "haiku", builder: "on", builderMaxUsd: 0.4, review: "haiku", reviewMaxUsd: 0.1, storyboard: "off", voiceAfterStoryboard: false, boardOnly: false });
   assert.equal(productionSettings(env({ BLOCKY_WORLDS_REVIEW: "OFF" })).review, "off", "the secret off turns the review off");
   assert.equal(productionSettings(env({ BLOCKY_WORLDS_REVIEW: "sonnet" })).review, "sonnet");
   assert.equal(productionSettings(env({ BLOCKY_WORLDS_REVIEW: "gpt" })).review, "haiku", "an unknown value keeps the default");

@@ -258,8 +258,14 @@ export function productionSettings(get = () => "") {
   // the voice waits for the storyboard (no paid take for a story the storyboard can't film): off by default (the voice is made
   // alongside, faster); switched on if the soft launch shows > ~5 % of runs failing after the voice (voiceFailureStats)
   const voiceAfterStoryboard = ["on", "true", "1"].includes(v("BLOCKY_WORLDS_VOICE_AFTER_STORYBOARD"));
-  return { director, builder, builderMaxUsd, review, reviewMaxUsd, storyboard, voiceAfterStoryboard };
+  // BOARD-ONLY (launch mode, 2026-11-12; boardFit.js): no old-planner line in the video. The storyboard may fall back on
+  // NO line (job.prepare.storyboard.maxFallback 0): a line the board can't film fails the run as KIT_UNSUPPORTED (NO_RETRY,
+  // refunded). Needs the automatic storyboard: with BLOCKY_WORLDS_STORYBOARD off, start refuses (boardOnlyBlocked).
+  const boardOnly = ["on", "true", "1", "yes"].includes(v("BLOCKY_WORLDS_BOARD_ONLY"));
+  return { director, builder, builderMaxUsd, review, reviewMaxUsd, storyboard, voiceAfterStoryboard, boardOnly };
 }
+/** Board-only is on but the automatic storyboard is off: every line would go to the old planner, so nothing may start. */
+export const boardOnlyBlocked = (s = PRODUCTION_DEFAULTS) => Boolean(s.boardOnly) && s.storyboard !== "auto";
 export const REVIEW_MODELS = Object.freeze({ haiku: "claude-haiku-5-5", sonnet: "claude-sonnet-5-5" });
 /** job.prepare.review for the worker (engine lib/vision/index.js judgeFromConfig) */
 export function prepareReview(s = PRODUCTION_DEFAULTS) {
@@ -300,7 +306,7 @@ export function prepareProduction(s = PRODUCTION_DEFAULTS, { attempt = 1, librar
   const left = +Math.max(0, (Number(s.builderMaxUsd) || 0) - (attempt > 1 ? Math.max(0, Number(builderSpentUsd) || 0) : 0)).toFixed(5);
   const designs = s.builder === "on" && left >= (attempt > 1 ? BUILDER_MIN_LEFT_USD : 1e-9);
   const builder = { provider: designs ? "anthropic" : "off", library: s.builder === "on" ? library : [], budget: { maxUsd: designs ? left : 0 } };
-  return { director, builder, review: prepareReview(s), limits: { ...aiCeilingUsd(s), prepareSec: RENDER.runSec.prepare }, ...(s.storyboard === "auto" ? { storyboard: { auto: true, capUsd: 0.25, promptsCapUsd: 0.3, ...(s.voiceAfterStoryboard ? { voiceAfter: true } : {}) } } : {}) };
+  return { director, builder, review: prepareReview(s), limits: { ...aiCeilingUsd(s), prepareSec: RENDER.runSec.prepare }, ...(s.storyboard === "auto" ? { storyboard: { auto: true, capUsd: 0.25, promptsCapUsd: 0.3, ...(s.voiceAfterStoryboard ? { voiceAfter: true } : {}), ...(s.boardOnly ? { maxFallback: 0 } : {}) } } : {}) };
 }
 
 /** what the earlier prepare tries of a run spent on the builder (their job rows: the done output's or the failed
