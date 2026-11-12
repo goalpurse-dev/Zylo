@@ -5,10 +5,10 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Glow from "../../components/workspace/Glow.jsx";
 import ZyvoSuiteCarousel from "../../components/workspace/ZyvoSuiteCarousel.jsx";
-import PublicGallery from "../../components/public-gallery/gallery.jsx";
-import { FeaturedTemplate, HOME_MAX_W, JumpBackInV2, LongFormSection, PathCards, PhoneTemplates, PhoneTools, SectionHeader, WhatsNewRow, suiteTemplates } from "../../components/home-v2/HomeV2Sections.jsx";
+import MadeWithZyvo from "../../components/home-v2/madeWithZyvo/MadeWithZyvo.jsx";
+import { FeaturedTemplate, HOME_MAX_W, JumpBackInV2, LongFormSection, PathCards, PhoneTemplates, PhoneTools, SectionHeader, TutorialsRow, WhatsNewRow, suiteTemplates } from "../../components/home-v2/HomeV2Sections.jsx";
 import { fetchShowcase } from "../../components/launch/launch";
-import { BLOCKY_TEMPLATE, HIDDEN_COMMUNITY_CATEGORIES } from "../../data/homeContent";
+import { BLOCKY_TEMPLATE } from "../../data/homeContent";
 import { BLOCKY_STORIES_FLAG, BLOCKY_STORIES_LAUNCHED } from "../../data/blockyStories";
 import { useFeatureFlag } from "../../lib/featureFlags";
 import { FREE_PLAN_LINE } from "../../data/freePlan.js";
@@ -49,9 +49,7 @@ export default function HomeV2() {
       <div className={`mx-auto w-full ${HOME_MAX_W}`}>
       <WhatsNewRow />
 
-      <LongFormSection />
-
-      {/* Short Form: the "short form suite" coverflow is the templates section */}
+      {/* Short Form: the "short form suite" coverflow is the templates section (owner, 2026-11-10: above Long Form) */}
       <div className="mt-12">
         {/* The coverflow keeps animating when hidden, so a phone drops it once it knows (the first render keeps its links for crawlers). */}
         {!phone && <div className="hidden md:block"><ZyvoSuiteCarousel title="short form suite" items={templates} subtitle="Short Form templates for TikTok, Reels & Shorts" /></div>}
@@ -63,20 +61,23 @@ export default function HomeV2() {
         </p>
       </div>
 
+      <LongFormSection />
+
       {/* Blocky Stories' own section, right above the featured template and built the same way (launched only). */}
       {blockyLive && <FeaturedTemplate template={BLOCKY_TEMPLATE} testId="featured-blocky" />}
 
       {/* Featured template (src/data/homeContent.js: FEATURED_TEMPLATE) */}
       <FeaturedTemplate />
 
+      {/* Tutorials, under the featured template (owner, 2026-11-10) */}
+      <TutorialsRow />
+
       {/* Hidden for users without projects */}
       <JumpBackInV2 />
 
+      {/* Made with Zyvo: the owner's own videos per template (src/data/communityShowcase.json) */}
       <div className="mt-12">
-        <div className="px-4 md:px-[50px]">
-          <SectionHeader title="Community creations" subtitle="Watch how people use Zyvo to make content that performs." />
-        </div>
-        <PublicGallery hideHeader dense longFormItems={longFormCreations} excludeCategories={HIDDEN_COMMUNITY_CATEGORIES} />
+        <MadeWithZyvo blocky={blockyLive} longFormItems={longFormCreations} />
       </div>
       {/* The brand as people search for it ("zyvoai"), once, in the page's own text. */}
       <p className="mt-12 px-4 text-center text-[12px] text-white/50 md:px-[50px]" data-testid="home-brand-line">Zyvo (ZyvoAI) · AI video generator for YouTube, TikTok and Reels</p>

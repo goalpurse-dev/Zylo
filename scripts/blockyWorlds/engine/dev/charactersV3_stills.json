@@ -1,0 +1,722 @@
+{
+ "version": 1,
+ "fps": 24,
+ "width": 540,
+ "height": 960,
+ "duration": 18,
+ "title": "CHARACTERS-V3 stills",
+ "cast": {
+  "c_knight": {
+   "role": "adult",
+   "name": "Sir Tom",
+   "seed": 101,
+   "gender": "m",
+   "look": {
+    "outfit": "knight",
+    "hair": "short",
+    "hairColor": "#6b3e1f"
+   }
+  },
+  "c_queen": {
+   "role": "adult",
+   "name": "Queen Ada",
+   "seed": 108,
+   "gender": "f",
+   "look": {
+    "outfit": "royal",
+    "hair": "long",
+    "hairColor": "#8b2e16"
+   }
+  },
+  "c_scientist": {
+   "role": "adult",
+   "name": "Dr. Nell",
+   "seed": 115,
+   "gender": "f",
+   "look": {
+    "outfit": "scientist",
+    "hair": "bob",
+    "hairColor": "#1b1410"
+   }
+  },
+  "c_caveman": {
+   "role": "adult",
+   "name": "Ug",
+   "seed": 122,
+   "gender": "m",
+   "look": {
+    "outfit": "caveman",
+    "hair": "messy",
+    "hairColor": "#3a2a1e",
+    "facial": "full"
+   }
+  },
+  "c_baker": {
+   "role": "adult",
+   "name": "Baker Bo",
+   "seed": 129,
+   "gender": "m",
+   "look": {
+    "outfit": "baker",
+    "hair": "sidePart",
+    "hairColor": "#d9a441"
+   }
+  },
+  "c_chef": {
+   "role": "adult",
+   "name": "Chef Lu",
+   "seed": 136,
+   "gender": "f",
+   "look": {
+    "outfit": "chef",
+    "hair": "bun",
+    "hairColor": "#2b1d14"
+   }
+  },
+  "c_kid_f": {
+   "role": "kid",
+   "name": "Pip",
+   "seed": 143,
+   "gender": "f",
+   "look": {
+    "outfit": "kid_casual",
+    "outfitVariant": "hoodie",
+    "hair": "pigtails",
+    "hairColor": "#c1652f"
+   }
+  },
+  "c_kid_m": {
+   "role": "kid",
+   "name": "Max",
+   "seed": 150,
+   "gender": "m",
+   "look": {
+    "outfit": "kid_casual",
+    "outfitVariant": "sporty",
+    "hair": "spiky",
+    "hairColor": "#3d7bd9"
+   }
+  },
+  "c_grandma": {
+   "role": "elder",
+   "name": "Granny Wren",
+   "seed": 157,
+   "gender": "f",
+   "look": {
+    "outfit": "grandma",
+    "hair": "bun",
+    "hairColor": "#d8d8d8"
+   }
+  },
+  "c_grandpa": {
+   "role": "elder",
+   "name": "Grandpa Joe",
+   "seed": 164,
+   "gender": "m",
+   "look": {
+    "outfit": "grandpa",
+    "hair": "receding",
+    "hairColor": "#bfbfbf",
+    "facial": "moustache"
+   }
+  },
+  "c_villain": {
+   "role": "adult",
+   "name": "Baron Vex",
+   "seed": 171,
+   "gender": "m",
+   "look": {
+    "outfit": "villain",
+    "hair": "slicked",
+    "hairColor": "#1b1410",
+    "facial": "goatee"
+   }
+  },
+  "c_farmer": {
+   "role": "adult",
+   "name": "Farmer Jo",
+   "seed": 178,
+   "gender": "f",
+   "look": {
+    "outfit": "farmer",
+    "hair": "braids",
+    "hairColor": "#e8c872"
+   }
+  }
+ },
+ "shots": [
+  {
+   "start": 0,
+   "end": 1,
+   "line": 0,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 5,
+   "camera": "closeup",
+   "focus": "c_knight",
+   "actors": [
+    {
+     "id": "c_knight",
+     "spot": "center",
+     "pose": "talk",
+     "expr": "determined",
+     "face": "determined",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "label": "close_c_knight"
+  },
+  {
+   "start": 1,
+   "end": 2,
+   "line": 1,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 6,
+   "camera": "closeup",
+   "focus": "c_queen",
+   "actors": [
+    {
+     "id": "c_queen",
+     "spot": "center",
+     "pose": "talk",
+     "expr": "proud",
+     "face": "proud",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "label": "close_c_queen"
+  },
+  {
+   "start": 2,
+   "end": 3,
+   "line": 2,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 7,
+   "camera": "closeup",
+   "focus": "c_scientist",
+   "actors": [
+    {
+     "id": "c_scientist",
+     "spot": "center",
+     "pose": "talk",
+     "expr": "curious",
+     "face": "curious",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "label": "close_c_scientist"
+  },
+  {
+   "start": 3,
+   "end": 4,
+   "line": 3,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 8,
+   "camera": "closeup",
+   "focus": "c_caveman",
+   "actors": [
+    {
+     "id": "c_caveman",
+     "spot": "center",
+     "pose": "talk",
+     "expr": "surprised",
+     "face": "surprised",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "label": "close_c_caveman"
+  },
+  {
+   "start": 4,
+   "end": 5,
+   "line": 4,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 9,
+   "camera": "closeup",
+   "focus": "c_baker",
+   "actors": [
+    {
+     "id": "c_baker",
+     "spot": "center",
+     "pose": "talk",
+     "expr": "happy",
+     "face": "happy",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "label": "close_c_baker"
+  },
+  {
+   "start": 5,
+   "end": 6,
+   "line": 5,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 10,
+   "camera": "closeup",
+   "focus": "c_chef",
+   "actors": [
+    {
+     "id": "c_chef",
+     "spot": "center",
+     "pose": "talk",
+     "expr": "laugh",
+     "face": "laugh",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "label": "close_c_chef"
+  },
+  {
+   "start": 6,
+   "end": 7,
+   "line": 6,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 11,
+   "camera": "closeup",
+   "focus": "c_kid_f",
+   "actors": [
+    {
+     "id": "c_kid_f",
+     "spot": "center",
+     "pose": "talk",
+     "expr": "excited",
+     "face": "excited",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "label": "close_c_kid_f"
+  },
+  {
+   "start": 7,
+   "end": 8,
+   "line": 7,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 12,
+   "camera": "closeup",
+   "focus": "c_kid_m",
+   "actors": [
+    {
+     "id": "c_kid_m",
+     "spot": "center",
+     "pose": "talk",
+     "expr": "scared",
+     "face": "scared",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "label": "close_c_kid_m"
+  },
+  {
+   "start": 8,
+   "end": 9,
+   "line": 8,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 13,
+   "camera": "closeup",
+   "focus": "c_grandma",
+   "actors": [
+    {
+     "id": "c_grandma",
+     "spot": "center",
+     "pose": "talk",
+     "expr": "calm",
+     "face": "calm",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "label": "close_c_grandma"
+  },
+  {
+   "start": 9,
+   "end": 10,
+   "line": 9,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 14,
+   "camera": "closeup",
+   "focus": "c_grandpa",
+   "actors": [
+    {
+     "id": "c_grandpa",
+     "spot": "center",
+     "pose": "talk",
+     "expr": "confused",
+     "face": "confused",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "label": "close_c_grandpa"
+  },
+  {
+   "start": 10,
+   "end": 11,
+   "line": 10,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 15,
+   "camera": "closeup",
+   "focus": "c_villain",
+   "actors": [
+    {
+     "id": "c_villain",
+     "spot": "center",
+     "pose": "talk",
+     "expr": "angry",
+     "face": "angry",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "label": "close_c_villain"
+  },
+  {
+   "start": 11,
+   "end": 12,
+   "line": 11,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 16,
+   "camera": "closeup",
+   "focus": "c_farmer",
+   "actors": [
+    {
+     "id": "c_farmer",
+     "spot": "center",
+     "pose": "talk",
+     "expr": "worried",
+     "face": "worried",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "label": "close_c_farmer"
+  },
+  {
+   "start": 12,
+   "end": 13,
+   "line": 12,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 17,
+   "camera": "medium",
+   "focus": "group",
+   "actors": [
+    {
+     "id": "c_knight",
+     "spot": "left",
+     "pose": "stand",
+     "expr": "happy",
+     "face": "determined",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_queen",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "happy",
+     "face": "proud",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_scientist",
+     "spot": "right",
+     "pose": "stand",
+     "expr": "happy",
+     "face": "curious",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "label": "medium_c_knight_c_queen_c_scientist"
+  },
+  {
+   "start": 13,
+   "end": 14,
+   "line": 13,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 18,
+   "camera": "medium",
+   "focus": "group",
+   "actors": [
+    {
+     "id": "c_caveman",
+     "spot": "left",
+     "pose": "stand",
+     "expr": "happy",
+     "face": "surprised",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_baker",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "happy",
+     "face": "happy",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_chef",
+     "spot": "right",
+     "pose": "stand",
+     "expr": "happy",
+     "face": "laugh",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "label": "medium_c_caveman_c_baker_c_chef"
+  },
+  {
+   "start": 14,
+   "end": 15,
+   "line": 14,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 19,
+   "camera": "medium",
+   "focus": "group",
+   "actors": [
+    {
+     "id": "c_kid_f",
+     "spot": "left",
+     "pose": "stand",
+     "expr": "happy",
+     "face": "excited",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_kid_m",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "happy",
+     "face": "scared",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_grandma",
+     "spot": "right",
+     "pose": "stand",
+     "expr": "happy",
+     "face": "calm",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "label": "medium_c_kid_f_c_kid_m_c_grandma"
+  },
+  {
+   "start": 15,
+   "end": 16,
+   "line": 15,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 20,
+   "camera": "medium",
+   "focus": "group",
+   "actors": [
+    {
+     "id": "c_grandpa",
+     "spot": "left",
+     "pose": "stand",
+     "expr": "happy",
+     "face": "confused",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_villain",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "happy",
+     "face": "angry",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_farmer",
+     "spot": "right",
+     "pose": "stand",
+     "expr": "happy",
+     "face": "worried",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "label": "medium_c_grandpa_c_villain_c_farmer"
+  },
+  {
+   "start": 16,
+   "end": 17,
+   "line": 16,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 21,
+   "camera": "medium",
+   "focus": "group",
+   "actors": [
+    {
+     "id": "c_kid_f",
+     "spot": "left",
+     "pose": "cheer",
+     "expr": "excited",
+     "face": "excited",
+     "facing": "camera",
+     "hold": null
+    },
+    {
+     "id": "c_baker",
+     "spot": "right",
+     "pose": "wave",
+     "expr": "happy",
+     "face": "happy",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "crowds": [
+    {
+     "kind": "townsfolk",
+     "count": 24,
+     "formation": "scatter",
+     "seed": 3,
+     "spot": "back",
+     "action": "cheer",
+     "facing": "camera"
+    }
+   ],
+   "label": "crowd_townsfolk_vs_cast"
+  },
+  {
+   "start": 17,
+   "end": 18,
+   "line": 17,
+   "part": "tour",
+   "set": "street",
+   "light": "day",
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 22,
+   "camera": "medium",
+   "focus": "c_knight",
+   "actors": [
+    {
+     "id": "c_knight",
+     "spot": "center",
+     "pose": "stand",
+     "expr": "determined",
+     "face": "determined",
+     "facing": "camera",
+     "hold": null
+    }
+   ],
+   "crowds": [
+    {
+     "kind": "knight",
+     "count": 24,
+     "formation": "block",
+     "seed": 4,
+     "spot": "back",
+     "action": "stand",
+     "facing": "camera",
+     "faction": "town"
+    }
+   ],
+   "label": "crowd_knights_vs_cast"
+  }
+ ],
+ "captions": []
+}

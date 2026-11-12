@@ -161,7 +161,7 @@ test("Rage hook v2 (owner, 2026-11-03): slam on frame 0, silence after Watch, th
   const R = JSON.parse(fs.readFileSync(new URL("../scripts/studio/recipes/rage_hook_long_form_weekend.json", import.meta.url), "utf8"));
   const sw = rageScripts({ ...R, yell: { ...R.yell, text: "I spent ALL WEEKEND fucking editing!", swear: "fucking", show: "f***ing" } });
   assert.equal(sw.censored.bleep.word, 4);
-  assert.deepEqual(rageRecipes().map((x) => x.key).sort(), ["rage_fruit_fyp", "rage_lf_weekend"], "only v2 recipes are presets");
+  assert.deepEqual(rageRecipes().map((x) => x.key).sort(), ["pain_blocky_save", "pain_cutaway_save", "rage_fruit_comment", "rage_fruit_fyp", "rage_fruit_share", "rage_lf_weekend", "unpopular_opinion_lf"], "only v2 recipes are presets");
 });
 
 test("the Rage hook preset: one click makes one job from a recipe the worker lists; nothing renders before the approval", async () => {
@@ -423,4 +423,65 @@ test("short-video scripts: a reused creation makes no time claim; one trigger; h
   assert.equal(titleHook("x"), "WAIT FOR|*THE ENDING*");
   // the measured creation keeps its clock
   assert.equal(makeScript({ variant: "V4" }, TEN_YEARS).timer.seconds, 230);
+});
+
+test("Rage hook v2: a pain opening (no yell, no slam), no time line, and a save or share ending", async () => {
+  const { rageScripts, rageTakes, loadRecipe } = await import("../scripts/studio/rageHook.mjs");
+  const pain = loadRecipe("pain_blocky_save"), { raw, censored } = rageScripts(pain);
+  assert.equal(censored, null);
+  assert.equal(raw.lines[0].expr, "sad");
+  assert.equal(raw.lines[0].shake, 0);
+  assert.equal(raw.energy?.slam ?? false, false);
+  assert.ok(!raw.lines.some((l) => l.role === "reveal" || l.role === "punch"), "no time or punchline when the recipe has none");
+  assert.deepEqual([raw.recipe.hook_type, raw.recipe.end_trigger, raw.recipe.length_bucket], ["pain", "save", "15-20"]);
+  assert.equal(new Set(raw.lines.map((l) => l.text)).size, raw.lines.length, "no repeated lines");
+  const takes = rageTakes(pain, raw);
+  assert.ok(takes[0].text.startsWith("[frustrated]") && !/!!!$/.test(takes[0].text), "said, not yelled");
+  const share = rageScripts(loadRecipe("rage_fruit_share")).raw;
+  assert.deepEqual([share.lines[0].expr, share.recipe.hook_type, share.recipe.end_trigger], ["angry", "rage_hook", "repost"]);
+  assert.match(share.lines.at(-1).text, /Send this to the friend/);
+  assert.equal(rageScripts(loadRecipe("rage_fruit_fyp")).raw.lines.filter((l) => l.role === "reveal").length, 1, "the first recipe keeps its time");
+});
+
+test("a hidden headline (rage / pain hooks) is never checked and follows line 1", async () => {
+  const { applyScriptEdits } = await import("../supabase/functions/_shared/contentMachine/scriptEdit.js");
+  const s = { title: "t", headline: { text: "x".repeat(90), hidden: true }, lines: [{ text: "x".repeat(90), key: [] }, { text: "Watch.", key: ["Watch."] }] };
+  const out = applyScriptEdits(s, { headline: "y".repeat(90), lines: [{ text: "Short new line one." }] });
+  assert.equal(out.headline.text, "Short new line one.");
+  assert.equal(out.headline.hidden, true);
+  assert.throws(() => applyScriptEdits({ ...s, headline: { text: "h" } }, { headline: "y".repeat(90) }), /over 80/, "a shown headline is still checked");
+});
+
+test("first vs latest: the first clip on a phone, the answer, a 1 s riser, the latest clip full screen on a bass hit", async () => {
+  const { rageScripts, rageTakes, loadRecipe } = await import("../scripts/studio/rageHook.mjs");
+  const R = loadRecipe("first_vs_latest"), { raw } = rageScripts(R);
+  assert.deepEqual(raw.lines.map((l) => l.who), ["creator", "creator", "zee"]);
+  assert.equal(raw.clips[0].frame, "phone");
+  assert.equal(raw.clips[1].fullscreen, true);
+  assert.deepEqual(raw.energy.reveal_clips, ["latest"]);
+  assert.ok(raw.lines[1].cues.some((c) => c.sfx === "riser:1.0"));
+  assert.match(raw.lines[2].text, /editing by hand/);
+  assert.ok(rageTakes(R, raw)[0].text.startsWith("[embarrassed]"));
+  assert.ok(!/\d/.test(raw.lines.map((l) => l.text).join(" ")), "no numbers spoken");
+});
+
+test("guess how long: no characters, the montage full screen from frame 0 with a ticking clock, a freeze, the real time on a flat clock", async () => {
+  const { rageScripts, rageTakes, loadRecipe } = await import("../scripts/studio/rageHook.mjs");
+  const R = loadRecipe("guess_how_long_fruit"), { raw } = rageScripts(R);
+  assert.equal(raw.lines.length, 1);
+  const c = raw.clips[0];
+  assert.deepEqual([c.at, c.fullscreen, c.freeze.secs], ["start", true, 0.5]);
+  assert.ok(c.sfx_at.some(([, k]) => k.startsWith("clock:")));
+  assert.equal(raw.lines[0].timer2d.seconds, 230);
+  assert.equal(rageTakes(R, raw).length, 1, "one voice line, no yell takes");
+});
+
+test("unpopular opinion: a confident opening (no slam), two steps, the creator asks the viewer back", async () => {
+  const { rageScripts, loadRecipe } = await import("../scripts/studio/rageHook.mjs");
+  const { raw } = rageScripts(loadRecipe("unpopular_opinion_lf"));
+  assert.equal(raw.lines[0].shake, 0);
+  assert.equal(raw.energy.slam, false);
+  assert.equal(raw.lines.filter((l) => l.screen).length, 2);
+  assert.equal(raw.lines.at(-1).who, "creator");
+  assert.equal(raw.recipe.hook_type, "unpopular_opinion");
 });

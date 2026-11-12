@@ -1,0 +1,34 @@
+{
+ "title": "The Bell Dogs",
+ "idea": {
+  "title": "The Bell Dogs",
+  "mood": "cozy",
+  "setting": "a small town where every dog wears a bell",
+  "opener": "In this town, every dog wears a bell.",
+  "premise": "Every dog in town wears a bell so nobody gets lost. My dog Biscuit loses his bell and gets lost.",
+  "narrator": "Mia, Biscuit's kid.",
+  "prop": "a little silver bell",
+  "twist": "Biscuit was not lost: he followed the sound of his own bell to bring it home.",
+  "closer": "In this town, every dog wears a bell. Biscuit wears two now."
+ },
+ "lines": [
+  { "part": "rule", "text": "In this town, every dog wears a bell." },
+  { "part": "tour", "text": "When a dog runs down the street, you hear it ring." },
+  { "part": "me", "text": "I'm Mia, and this is my dog Biscuit." },
+  { "part": "me", "text": "Biscuit is a little brown dog with a red collar." },
+  { "part": "me", "text": "His bell is the loudest one on our street." },
+  { "part": "problem", "text": "One morning, Biscuit came home without his bell." },
+  { "part": "problem", "text": "He sniffed the ground and barked at the gate." },
+  { "part": "problem", "text": "Then Biscuit ran away down the street." },
+  { "part": "search", "text": "I looked for him in the park." },
+  { "part": "search", "text": "I called his name by the fountain." },
+  { "part": "search", "text": "No bell. No Biscuit." },
+  { "part": "search", "text": "Then I heard a tiny ring from the woods." },
+  { "part": "found", "text": "Biscuit was sitting under a tree." },
+  { "part": "found", "text": "His bell was hanging from a low branch." },
+  { "part": "found", "text": "He barked at it, wagging his tail." },
+  { "part": "twist", "text": "He was never lost. He was finding his bell." },
+  { "part": "end", "text": "We walked home together, and the bell rang all the way." },
+  { "part": "closer", "text": "In this town, every dog wears a bell. Biscuit wears two now." }
+ ]
+}

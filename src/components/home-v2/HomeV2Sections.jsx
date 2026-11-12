@@ -7,6 +7,7 @@ import { ArrowRight, ChevronRight, Clapperboard, Sparkles } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
 import { useAuth } from "../../context/AuthContext";
 import { fetchShowcase, isLongFormNew, showcaseThumb, trackLaunch } from "../launch/launch";
+import { liveTutorials, tutorialThumb } from "../../lib/tutorials";
 import { NICHE_GROUPS } from "../../pages/workspace/long-form/niches";
 import CreatorRewardsModal from "../CreatorRewardsModal.jsx";
 import { CUTAWAY_PATH } from "../../data/cutawayExplainer";
@@ -258,21 +259,29 @@ function BannerCard({ art, title, sub, cta, onClick, href, to, testId, display =
 export function WhatsNewRow() {
   const { user } = useAuth();
   const [hunt, setHunt] = useState(null);
-  const [tutorial, setTutorial] = useState(null);
   const [rewardsOpen, setRewardsOpen] = useState(false);
   useEffect(() => {
     let live = true;
     fetchShowcase("home").then((rows) => live && setHunt(rows.find((r) => /hunt/i.test(r.title)) ?? rows[0] ?? null));
-    fetchShowcase("home", "tutorial").then((rows) => live && setTutorial(rows[0] ?? null));
     return () => { live = false; };
   }, []);
+  // the newest tutorial, from the one list (src/lib/tutorials.js)
+  const newest = liveTutorials()[0], tutorial = newest && { title: newest.title, youtube_url: newest.url, thumbnail_url: tutorialThumb(newest) };
   const cards = [
     <BannerCard key="lf" testId="wn-long-form" display="hidden md:block" art={<FanArt />} title="Long Form is here" sub="A full YouTube video from one idea" cta="Try it"
       to="/long-form" onClick={() => trackLaunch("try_long_form", { placement: "whats_new_row" })} />,
     hunt && <BannerCard key="yt" testId="wn-showcase" art={<LazyLoopVideo {...MADE_WITH_ZYVO_LOOP} className="absolute inset-0" />}
       title={`Made with Zyvo: ${hunt.title}`} cta="Watch on YouTube" href={hunt.youtube_url}
       onClick={() => trackLaunch("showcase_click", { placement: "whats_new_row", target: hunt.youtube_url, videoId: hunt.id })} />,
-    tutorial && <BannerCard key="tut" testId="wn-tutorial" art={<img src={showcaseThumb(tutorial)} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />}
+    // the thumbnail whole, in its own 16:9 shape on the right (never stretched or cropped to the card), a blurred copy
+    // behind it, and the words on a dark fade on the left
+    tutorial && <BannerCard key="tut" testId="wn-tutorial" art={(
+      <div className="absolute inset-0 overflow-hidden">
+        <img src={showcaseThumb(tutorial)} alt="" aria-hidden="true" loading="lazy" className="absolute inset-0 h-full w-full scale-125 object-cover opacity-35 blur-2xl" />
+        <img src={showcaseThumb(tutorial)} alt="" loading="lazy" className="absolute right-0 top-0 aspect-video h-full max-w-none object-cover transition duration-500 group-hover:scale-[1.03]" />
+        <div className="absolute inset-y-0 left-0 w-[75%] bg-gradient-to-r from-[#101312] via-[#101312]/85 to-transparent" />
+      </div>
+    )}
       title="Watch the tutorial" sub={tutorial.title} cta="Watch" href={tutorial.youtube_url}
       onClick={() => trackLaunch("tutorial_click", { placement: "whats_new_row", target: tutorial.youtube_url })} />,
     <BannerCard key="earn" testId="wn-earn" display="hidden min-[1920px]:block" art={<CreditsArt />} title="Earn free credits" sub="Post about Zyvo and earn credits for every view" cta="Learn more"
@@ -288,6 +297,38 @@ export function WhatsNewRow() {
         {cards}
       </div>
       {rewardsOpen && <CreatorRewardsModal onClose={() => { if (user) localStorage.setItem(`zyvo_creator_rewards_seen:${user.id}`, "1"); setRewardsOpen(false); }} />}
+    </section>
+  );
+}
+
+/* ─── Tutorials: every tutorial on the one list (src/lib/tutorials.js), newest first ── */
+const YT_ICON = (
+  <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0" aria-hidden="true"><path fill="#FF0033" d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8Z" /><path fill="#fff" d="m9.6 15.6 6.3-3.6-6.3-3.6v7.2Z" /></svg>
+);
+export function TutorialsRow() {
+  const list = liveTutorials();
+  if (!list.length) return null;
+  return (
+    <section className={`mt-10 w-full ${SECTION_X}`} data-testid="tutorials-row">
+      <SectionHeader title="Tutorials" subtitle="Step by step, from idea to finished video." />
+      {/* phones: a row you swipe; wider screens: a grid */}
+      <div className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] md:mx-0 md:grid md:grid-cols-3 md:gap-4 md:overflow-visible md:px-0 xl:grid-cols-4 [&::-webkit-scrollbar]:hidden">
+        {list.map((t) => (
+          <a key={t.url} href={t.url} target="_blank" rel="noopener noreferrer" data-testid="tutorial-tile"
+            onClick={() => trackLaunch("tutorial_click", { placement: "home_tutorials", target: t.url, tool: t.tool })}
+            className="group w-[78vw] max-w-[320px] shrink-0 snap-start overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] transition hover:border-white/20 hover:bg-white/[0.05] md:w-auto md:max-w-none">
+            <div className="relative aspect-video w-full overflow-hidden bg-white/[0.05]">
+              <img src={tutorialThumb(t)} alt="" loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]" />
+              <span className="absolute inset-0 grid place-items-center bg-black/15"><span className="grid h-11 w-11 place-items-center rounded-full bg-black/55 backdrop-blur-sm transition group-hover:scale-110"><svg viewBox="0 0 24 24" className="ml-0.5 h-5 w-5 fill-white" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg></span></span>
+            </div>
+            <div className="p-3">
+              <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-lime-300/80">{t.toolName}</p>
+              <p className="mt-1 line-clamp-2 text-[14px] font-semibold leading-snug text-white">{t.title}</p>
+              <p className="mt-2 flex items-center gap-1.5 text-[12.5px] font-semibold text-white/55 group-hover:text-white">{YT_ICON} Watch on YouTube</p>
+            </div>
+          </a>
+        ))}
+      </div>
     </section>
   );
 }

@@ -1,0 +1,818 @@
+{
+  "slug": "i-tried-viral-animated-videos",
+  "title": "I Tried Making Viral Animated Videos With AI (No Coding, No Editing)",
+  "title_options": [
+    "How to Make Viral Animated Explainer Videos With AI (Step by Step)",
+    "I Made a 9-Minute Animated YouTube Video Without Editing Anything"
+  ],
+  "tool": "long_form",
+  "link": "https://tryzyvo.com/long-form?utm_source=youtube&utm_medium=video&utm_campaign=i-tried-viral-animated-videos&utm_content=description",
+  "description": "I tried making the animated \"What if\" style videos that are everywhere on YouTube right now, without coding, editing or animating anything myself. Here is exactly how, step by step, including what took longest and what it can't do yet.",
+  "description_credits": [
+    "Example 1: \"What If Your Reaction Time Was 10x Faster?\" by Ifverse (https://www.youtube.com/watch?v=MroF1XmHOZw), shown for commentary. Not mine.",
+    "Example 2: \"What If Every Step Made You Twice as Big?\" by AFTER THE DOOR (https://www.youtube.com/watch?v=ylnTesFVoOo), shown for commentary. Not mine."
+  ],
+  "facts": [
+    {
+      "id": "ifverse",
+      "text": "\"What If Your Reaction Time Was 10x Faster?\" by Ifverse: 4,676,384 views",
+      "source": "its public YouTube page, checked 2026-11-03 (re-check the day before publishing)"
+    },
+    {
+      "id": "after_door",
+      "text": "\"What If Every Step Made You Twice as Big?\" by AFTER THE DOOR: 2,367,904 views",
+      "source": "its public YouTube page, checked 2026-11-03 (re-check the day before publishing)"
+    },
+    {
+      "id": "my_tiktok",
+      "text": "The owner's TikTok how-to: 304K views, 88.1% of its traffic from search",
+      "source": "the owner's own TikTok analytics (recorded on screen in rec02)"
+    },
+    {
+      "id": "lf_length",
+      "text": "Turn one idea into an 8–15 minute YouTube explainer",
+      "source": "Zyvo fact sheet lf_length"
+    },
+    {
+      "id": "lf_scenes",
+      "text": "About 150 scenes in a 10-minute video",
+      "source": "Zyvo fact sheet lf_scenes"
+    },
+    {
+      "id": "lf_styles",
+      "text": "6 visual styles for Long Form videos",
+      "source": "Zyvo fact sheet lf_styles"
+    },
+    {
+      "id": "lf_free_preview",
+      "text": "Try Long Form free: a title, an opening line and 3 sample scenes",
+      "source": "Zyvo fact sheet lf_free_preview"
+    },
+    {
+      "id": "paid",
+      "text": "A full video needs a paid plan (750, 1,600 or 3,200 credits a month); you see the credit cost before you start",
+      "source": "Zyvo fact sheet paid_credits + cost_upfront"
+    },
+    {
+      "id": "no_upload",
+      "text": "Zyvo does NOT upload to YouTube for you",
+      "source": "Zyvo fact sheet no_youtube_upload"
+    },
+    {
+      "id": "english_only",
+      "text": "Long Form is English only",
+      "source": "Zyvo fact sheet no_other_languages"
+    },
+    {
+      "id": "my_run",
+      "text": "How long this video took, from typing the idea to the finished file, and how many scenes it has",
+      "source": "the timer and the editor in the owner's own recordings (rec05, rec06): fill in before assembly"
+    }
+  ],
+  "chapters": [
+    {
+      "id": "result",
+      "name": "The result",
+      "beats": [
+        {
+          "id": "r1",
+          "say": "",
+          "show": {
+            "result": "result_full.mp4",
+            "from": 0,
+            "to": 6,
+            "record": "the finished video (download it from the editor)"
+          }
+        },
+        {
+          "id": "r2",
+          "say": "I just made a fully animated YouTube video, with a voice, a story and every scene drawn,",
+          "show": {
+            "card": {
+              "icon": "play",
+              "light": "a fully animated",
+              "bold": "YouTube video"
+            }
+          }
+        },
+        {
+          "id": "r3",
+          "say": "and I didn't write code, I didn't edit a single clip, and I can't animate.",
+          "show": {
+            "card": {
+              "icon": "no",
+              "light": "no coding,",
+              "bold": "no editing",
+              "flip": true
+            }
+          }
+        },
+        {
+          "id": "r4",
+          "say": "When you see it, you'll think it took days of work.",
+          "show": {
+            "card": {
+              "icon": "clock",
+              "light": "you'll think it took",
+              "bold": "days"
+            }
+          }
+        },
+        {
+          "id": "r5",
+          "say": "It didn't. Let me show you exactly how I did it.",
+          "show": {
+            "card": {
+              "icon": "check",
+              "light": "let me show you",
+              "bold": "exactly how",
+              "flip": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "proof",
+      "name": "Why these videos work",
+      "beats": [
+        {
+          "id": "p1",
+          "say": "If you've been on YouTube lately, you've seen these animated \"What if\" videos.",
+          "show": {
+            "card": {
+              "icon": "eye",
+              "light": "you've seen",
+              "bold": "\"What if\" videos"
+            }
+          }
+        },
+        {
+          "id": "p2",
+          "say": "This one by Ifverse has over four and a half million views.",
+          "facts": [
+            "ifverse"
+          ],
+          "show": {
+            "proof": {
+              "image": "assets/ifverse.jpg",
+              "value": 4676384,
+              "stat": "4.6M",
+              "unit": "views",
+              "title": "What If Your Reaction Time Was 10x Faster?",
+              "credit": "Ifverse on YouTube",
+              "checked": "Nov 3, 2026"
+            }
+          }
+        },
+        {
+          "id": "p3",
+          "say": "And this one by After the Door has over two point three million.",
+          "facts": [
+            "after_door"
+          ],
+          "show": {
+            "proof": {
+              "image": "assets/after_the_door.jpg",
+              "value": 2367904,
+              "stat": "2.3M",
+              "unit": "views",
+              "title": "What If Every Step Made You Twice as Big?",
+              "credit": "AFTER THE DOOR on YouTube",
+              "checked": "Nov 3, 2026"
+            }
+          }
+        },
+        {
+          "id": "p4",
+          "say": "Those aren't mine. But they show something important: people watch these all the way through, because each one is a question they actually want answered.",
+          "show": {
+            "card": {
+              "icon": "search",
+              "light": "a question people",
+              "bold": "want answered",
+              "flip": true
+            }
+          }
+        },
+        {
+          "id": "p5",
+          "say": "And I know how-to videos like this one get found. My last how-to on TikTok got over three hundred thousand views, and most of them came from people searching for it.",
+          "facts": [
+            "my_tiktok"
+          ],
+          "show": {
+            "rec": "rec02_my_tiktok_analytics.mp4",
+            "from": 0,
+            "to": 8,
+            "zoom": [
+              0,
+              0,
+              0.6,
+              0.6
+            ],
+            "record": "your TikTok analytics for the skeleton how-to: the 304K views, then the traffic source with 88% search"
+          }
+        },
+        {
+          "id": "p6",
+          "say": "So people clearly want to watch these. The hard part has always been making them.",
+          "show": {
+            "card": {
+              "icon": "chart",
+              "light": "the hard part:",
+              "bold": "making them"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "hard_way",
+      "name": "The hard way",
+      "beats": [
+        {
+          "id": "h1",
+          "say": "So how do people make these? The honest answer: it's a lot of work.",
+          "show": {
+            "card": {
+              "icon": "gear",
+              "light": "the honest answer:",
+              "bold": "a lot of work"
+            }
+          }
+        },
+        {
+          "id": "h2",
+          "say": "You write a script, record a voice, draw or find more than a hundred pictures, and then line every one of them up with the voice in an editor.",
+          "show": {
+            "card": {
+              "icon": "film",
+              "light": "script, voice, pictures,",
+              "bold": "then editing",
+              "flip": true
+            }
+          },
+          "facts": [
+            "lf_scenes"
+          ]
+        },
+        {
+          "id": "h3",
+          "say": "Editors like After Effects and CapCut are great at that. But for a ten minute video, that's days of work, and that's exactly where most people give up.",
+          "show": {
+            "card": {
+              "icon": "hourglass",
+              "light": "that's exactly where",
+              "bold": "people give up"
+            }
+          }
+        },
+        {
+          "id": "h4",
+          "say": "I wanted a way where I only bring the idea. So I tried Zyvo's Long Form tool, and here's the whole process.",
+          "show": {
+            "card": {
+              "icon": "sparkle",
+              "light": "I only bring",
+              "bold": "the idea",
+              "flip": true
+            }
+          }
+        },
+        {
+          "id": "h5",
+          "say": "If you want to follow along, the link is in the description. You can try a preview first: it makes a title, an opening line and three sample scenes before you pay anything.",
+          "facts": [
+            "lf_free_preview"
+          ],
+          "show": {
+            "card": {
+              "icon": "cloud",
+              "light": "link in the",
+              "bold": "description"
+            }
+          }
+        },
+        {
+          "id": "h6",
+          "say": "And if this ends up helping you, a like really does help this video reach more people.",
+          "show": {
+            "card": {
+              "icon": "check",
+              "light": "a like helps",
+              "bold": "a lot",
+              "flip": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "step1",
+      "name": "Step 1: Type your idea",
+      "beats": [
+        {
+          "id": "s1a",
+          "say": "Step one: type your idea.",
+          "show": {
+            "step": {
+              "n": 1,
+              "of": 5,
+              "title": [
+                "Type your idea",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "id": "s1b",
+          "say": "Open Zyvo and click Long Form on the left.",
+          "show": {
+            "rec": "rec03_open_long_form.mp4",
+            "from": 0,
+            "to": 5,
+            "record": "from the Zyvo home page, click Long Form in the sidebar"
+          }
+        },
+        {
+          "id": "s1c",
+          "say": "Now type what your video should be about. It doesn't need to be a perfect title. I'm going with: what if humans could breathe underwater?",
+          "show": {
+            "rec": "rec04_type_topic.mp4",
+            "from": 0,
+            "to": 9,
+            "zoom": [
+              0.3,
+              0.38,
+              0.55,
+              0.32
+            ],
+            "record": "Start with a topic: type \"What if humans could breathe underwater?\" slowly in the Video topic box"
+          }
+        },
+        {
+          "id": "s1d",
+          "say": "If you don't have an idea yet, Discover ideas suggests some for you.",
+          "show": {
+            "rec": "rec04_type_topic.mp4",
+            "from": 9,
+            "to": 13,
+            "zoom": [
+              0.55,
+              0.28,
+              0.35,
+              0.16
+            ],
+            "record": "hover over Discover ideas (don't click it)"
+          }
+        },
+        {
+          "id": "s1e",
+          "say": "It makes videos from eight to fifteen minutes. I'll leave the length on Auto and click Create Story Plan.",
+          "facts": [
+            "lf_length"
+          ],
+          "show": {
+            "rec": "rec04_type_topic.mp4",
+            "from": 13,
+            "to": 19,
+            "record": "show Target length on Auto, then click Create Story Plan"
+          }
+        }
+      ]
+    },
+    {
+      "id": "step2",
+      "name": "Step 2: Check the story",
+      "beats": [
+        {
+          "id": "s2a",
+          "say": "Step two: check the story.",
+          "show": {
+            "step": {
+              "n": 2,
+              "of": 5,
+              "title": [
+                "Check the story",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "id": "s2b",
+          "say": "A few seconds later you get a story plan: a title, the opening, and the chapters, written for this exact question.",
+          "show": {
+            "rec": "rec05_story_plan.mp4",
+            "from": 0,
+            "to": 9,
+            "record": "the Story step as it appears: scroll slowly through the title, the opening and the chapters"
+          }
+        },
+        {
+          "id": "s2c",
+          "say": "Read the opening line. This is the part that decides if people keep watching, so if it's not strong, change it here.",
+          "show": {
+            "rec": "rec05_story_plan.mp4",
+            "from": 9,
+            "to": 16,
+            "zoom": [
+              0.3,
+              0.25,
+              0.5,
+              0.3
+            ],
+            "record": "click into the opening line and change a word or two"
+          }
+        },
+        {
+          "id": "s2e",
+          "say": "Scroll through the chapters too. If the story wanders, this is the cheapest place to fix it, before a single picture is drawn.",
+          "show": {
+            "rec": "rec05_story_plan.mp4",
+            "from": 19,
+            "to": 27,
+            "record": "scroll back up through the chapters once more, slowly"
+          }
+        },
+        {
+          "id": "s2d",
+          "say": "When you're happy with it, go on to the look.",
+          "show": {
+            "rec": "rec05_story_plan.mp4",
+            "from": 16,
+            "to": 19,
+            "record": "click the button to the Look step"
+          }
+        }
+      ]
+    },
+    {
+      "id": "step3",
+      "name": "Step 3: Pick a look",
+      "beats": [
+        {
+          "id": "s3a",
+          "say": "Step three: pick a look.",
+          "show": {
+            "step": {
+              "n": 3,
+              "of": 5,
+              "title": [
+                "Pick a look",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "id": "s3b",
+          "say": "There are six visual styles. The bold cartoon one is the closest to the videos we just saw, so that's the one I'll use.",
+          "facts": [
+            "lf_styles"
+          ],
+          "show": {
+            "rec": "rec06_look.mp4",
+            "from": 0,
+            "to": 10,
+            "zoom": [
+              0.2,
+              0.25,
+              0.65,
+              0.55
+            ],
+            "record": "the Look step: hover over each of the 6 styles, then pick the bold cartoon one"
+          }
+        }
+      ]
+    },
+    {
+      "id": "step4",
+      "name": "Step 4: Generate",
+      "beats": [
+        {
+          "id": "s4a",
+          "say": "Step four: generate.",
+          "show": {
+            "step": {
+              "n": 4,
+              "of": 5,
+              "title": [
+                "Generate",
+                "the whole video"
+              ]
+            }
+          }
+        },
+        {
+          "id": "s4b",
+          "say": "Before it starts, it shows you exactly how many credits this video will cost. A full video needs a paid plan, so check this number first.",
+          "facts": [
+            "paid"
+          ],
+          "show": {
+            "rec": "rec07_generate.mp4",
+            "from": 0,
+            "to": 8,
+            "zoom": [
+              0.55,
+              0.6,
+              0.4,
+              0.3
+            ],
+            "record": "the Generate step with the credit cost visible, then click Generate"
+          }
+        },
+        {
+          "id": "s4c",
+          "say": "Now it writes the full script, records the voice and draws every scene, and you can watch it work through them.",
+          "show": {
+            "rec": "rec07_generate.mp4",
+            "from": 8,
+            "to": 18,
+            "record": "the progress screen while scenes appear (record a minute; the assembly uses the liveliest part)"
+          }
+        },
+        {
+          "id": "s4e",
+          "say": "You don't have to sit and watch. You can close the tab and come back when it's done.",
+          "show": {
+            "card": {
+              "icon": "hourglass",
+              "light": "close the tab,",
+              "bold": "come back later",
+              "flip": true
+            }
+          }
+        },
+        {
+          "id": "s4d",
+          "say": "I won't lie: this part takes a while. Mine took [MINUTES] minutes from the click to the finished video, so this is a good moment to grab a coffee.",
+          "facts": [
+            "my_run"
+          ],
+          "show": {
+            "rec": "rec07_generate.mp4",
+            "from": 18,
+            "to": 26,
+            "record": "keep a clock or timer visible on screen from the Generate click to the end (or note the start and end time)"
+          }
+        }
+      ]
+    },
+    {
+      "id": "step5",
+      "name": "Step 5: Fix any scene",
+      "beats": [
+        {
+          "id": "s5a",
+          "say": "Step five: fix any scene you don't like.",
+          "show": {
+            "step": {
+              "n": 5,
+              "of": 5,
+              "title": [
+                "Fix any scene",
+                "you don't like"
+              ]
+            }
+          }
+        },
+        {
+          "id": "s5b",
+          "say": "When it's done, every scene is in the editor. Mine has [SCENES] scenes; a ten minute video usually has about a hundred and fifty.",
+          "facts": [
+            "my_run",
+            "lf_scenes"
+          ],
+          "show": {
+            "rec": "rec08_editor.mp4",
+            "from": 0,
+            "to": 9,
+            "record": "the editor of the finished video: scroll the scene strip slowly so the scene count shows"
+          }
+        },
+        {
+          "id": "s5c",
+          "say": "Watch it through once. If a picture doesn't match what the voice says, open that scene and make it again, before you publish.",
+          "show": {
+            "rec": "rec08_editor.mp4",
+            "from": 9,
+            "to": 19,
+            "zoom": [
+              0.25,
+              0.2,
+              0.55,
+              0.5
+            ],
+            "record": "open one scene and redo its picture"
+          }
+        },
+        {
+          "id": "s5d",
+          "say": "Then download the video.",
+          "show": {
+            "rec": "rec08_editor.mp4",
+            "from": 19,
+            "to": 23,
+            "record": "click Download"
+          }
+        }
+      ]
+    },
+    {
+      "id": "final",
+      "name": "The finished video",
+      "beats": [
+        {
+          "id": "f1",
+          "say": "So here's what I got. No editing from me at all.",
+          "show": {
+            "card": {
+              "icon": "play",
+              "light": "here's what",
+              "bold": "I got"
+            }
+          }
+        },
+        {
+          "id": "f2",
+          "say": "",
+          "show": {
+            "result": "result_full.mp4",
+            "from": 6,
+            "to": 46,
+            "record": "the finished video (the same file as at the start)"
+          }
+        }
+      ]
+    },
+    {
+      "id": "again",
+      "name": "Doing it again",
+      "beats": [
+        {
+          "id": "a1",
+          "say": "And the second one is faster, because now you know the five steps.",
+          "show": {
+            "card": {
+              "icon": "rocket",
+              "light": "the second one is",
+              "bold": "faster"
+            }
+          }
+        },
+        {
+          "id": "a2",
+          "say": "Type an idea, check the story, pick the look, generate, and fix any scene you don't like.",
+          "show": {
+            "card": {
+              "icon": "check",
+              "light": "idea, story, look,",
+              "bold": "generate, fix",
+              "flip": true
+            }
+          }
+        },
+        {
+          "id": "a3",
+          "say": "That's the real change for me: my time goes into finding good ideas, not into editing timelines.",
+          "show": {
+            "card": {
+              "icon": "sparkle",
+              "light": "my time goes into",
+              "bold": "ideas"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "limits",
+      "name": "What it can't do (yet)",
+      "beats": [
+        {
+          "id": "l1",
+          "say": "Now, a few honest limits before you try it.",
+          "show": {
+            "card": {
+              "icon": "search",
+              "light": "a few",
+              "bold": "honest limits"
+            }
+          }
+        },
+        {
+          "id": "l2",
+          "say": "It's English only right now. And it doesn't upload to YouTube for you: you download the file and upload it yourself.",
+          "facts": [
+            "english_only",
+            "no_upload"
+          ],
+          "show": {
+            "card": {
+              "icon": "cloud",
+              "light": "you upload it",
+              "bold": "yourself",
+              "flip": true
+            }
+          }
+        },
+        {
+          "id": "l3",
+          "say": "And always watch it before you publish. The pictures are made by AI, so check that every scene matches what's being said.",
+          "show": {
+            "card": {
+              "icon": "eye",
+              "light": "watch it",
+              "bold": "before you publish"
+            }
+          }
+        },
+        {
+          "id": "l4",
+          "say": "If you could make one of these about anything, what would your first \"What if\" be? Tell me in the comments, and I might make the best one next.",
+          "show": {
+            "card": {
+              "icon": "sparkle",
+              "light": "your first",
+              "bold": "\"What if\"?",
+              "flip": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "outro",
+      "name": "Try it",
+      "beats": [
+        {
+          "id": "o1",
+          "say": "The link to Zyvo is in the description. Subscribe if you want to see what I try next.",
+          "show": {
+            "end": {
+              "site": "tryzyvo.com"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "thumbs": [
+    {
+      "image": "assets/thumb_frame.jpg",
+      "lines": [
+        [
+          "I MADE THIS",
+          "white",
+          120
+        ],
+        [
+          "WITH AI",
+          "lime",
+          140
+        ]
+      ],
+      "badge": "NO EDITING"
+    },
+    {
+      "image": "assets/thumb_frame.jpg",
+      "lines": [
+        [
+          "VIRAL",
+          "white",
+          150
+        ],
+        [
+          "ANIMATIONS",
+          "lime",
+          130
+        ]
+      ],
+      "badge": "NO CODING"
+    },
+    {
+      "image": "assets/thumb_frame.jpg",
+      "lines": [
+        [
+          "\"WHAT IF\"",
+          "yellow",
+          130
+        ],
+        [
+          "VIDEOS",
+          "white",
+          130
+        ],
+        [
+          "IN 5 STEPS",
+          "lime",
+          100
+        ]
+      ]
+    }
+  ]
+}

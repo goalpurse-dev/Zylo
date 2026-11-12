@@ -1,0 +1,969 @@
+{
+ "version": 1,
+ "id": "creature_town_attack",
+ "storyType": "creature_town_attack",
+ "name": "Town on a creature, under attack",
+ "what": "a town on or inside a giant creature, under threat",
+ "source": {
+  "video": "7701115575648455950",
+  "shots": 128,
+  "duration": 147.59,
+  "note": "internal only: camera + structure; never the story, characters, names or footage"
+ },
+ "aliases": [
+  "giant_reveal",
+  "creature_reveal",
+  "town_on_creature"
+ ],
+ "pace": {
+  "targetShot": 1.12,
+  "minShot": 0.8,
+  "maxShot": 2.2,
+  "maxPerLine": 4
+ },
+ "mix": {
+  "character": 0.39,
+  "insert": 0.21,
+  "world": 0.24,
+  "action": 0.16,
+  "crowdMax": 0.05
+ },
+ "beats": {
+  "rule": {
+   "mode": "flow",
+   "targetShot": 0.93,
+   "light": "day",
+   "slots": [
+    {
+     "role": "establish",
+     "share": 0.23,
+     "cam": {
+      "distance": "extreme_wide",
+      "height": "eye_level",
+      "move": "orbit",
+      "speed": "medium"
+     },
+     "subject": "creature",
+     "action": "walks",
+     "cutOn": "word",
+     "scale": [
+      "houses"
+     ]
+    },
+    {
+     "role": "reveal",
+     "share": 0.19,
+     "cam": {
+      "distance": "close",
+      "height": "eye_level",
+      "move": "orbit",
+      "speed": "medium"
+     },
+     "subject": "creature",
+     "scale": [
+      "houses"
+     ],
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "life",
+     "share": 0.14,
+     "cam": {
+      "distance": "extreme_wide",
+      "height": "aerial",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "town",
+     "scale": [
+      "houses"
+     ],
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "creature",
+     "share": 0.26,
+     "cam": {
+      "distance": "extreme_wide",
+      "height": "aerial",
+      "move": "push_in",
+      "speed": "medium"
+     },
+     "subject": "creature",
+     "scale": [
+      "houses"
+     ],
+     "action": "walks",
+     "cutOn": "word"
+    },
+    {
+     "role": "life",
+     "share": 0.18,
+     "cam": {
+      "distance": "extreme_wide",
+      "height": "aerial",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "town",
+     "scale": [
+      "houses"
+     ],
+     "action": "line",
+     "cutOn": "word"
+    }
+   ]
+  },
+  "tour": {
+   "mode": "per_line",
+   "targetShot": 1.07,
+   "light": "keep",
+   "slots": [
+    {
+     "role": "establish",
+     "share": 0.33,
+     "cam": {
+      "distance": "extreme_wide",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "medium"
+     },
+     "subject": "creature",
+     "action": "walks",
+     "cutOn": "word",
+     "scale": [
+      "houses"
+     ]
+    },
+    {
+     "role": "life",
+     "share": 0.33,
+     "cam": {
+      "distance": "medium",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "medium"
+     },
+     "subject": "neighbour",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "consequence",
+     "share": 0.33,
+     "cam": {
+      "distance": "wide",
+      "height": "high",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "place",
+     "action": "line",
+     "cutOn": "noun"
+    }
+   ]
+  },
+  "me": {
+   "mode": "flow",
+   "targetShot": 1.05,
+   "light": "day",
+   "slots": [
+    {
+     "role": "reveal",
+     "share": 0.15,
+     "cam": {
+      "distance": "medium",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "narrator",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "life",
+     "share": 0.09,
+     "cam": {
+      "distance": "extreme_wide",
+      "height": "aerial",
+      "move": "push_in",
+      "speed": "medium"
+     },
+     "subject": "creature",
+     "scale": [
+      "houses"
+     ],
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "character",
+     "share": 0.07,
+     "cam": {
+      "distance": "medium",
+      "height": "ground_low",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "narrator",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "scale",
+     "share": 0.08,
+     "cam": {
+      "distance": "medium",
+      "height": "eye_level",
+      "move": "orbit",
+      "speed": "medium"
+     },
+     "subject": "town",
+     "scale": [
+      "houses"
+     ],
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "scale",
+     "share": 0.06,
+     "cam": {
+      "distance": "extreme_wide",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "medium"
+     },
+     "subject": "town",
+     "scale": [
+      "houses"
+     ],
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "creature",
+     "share": 0.07,
+     "cam": {
+      "distance": "medium",
+      "height": "ground_low",
+      "move": "push_in",
+      "speed": "medium"
+     },
+     "subject": "creature",
+     "scale": [
+      "houses"
+     ],
+     "action": "walks",
+     "cutOn": "word"
+    },
+    {
+     "role": "creature",
+     "share": 0.12,
+     "cam": {
+      "distance": "medium",
+      "height": "ground_low",
+      "move": "track",
+      "speed": "medium"
+     },
+     "subject": "creature",
+     "scale": [
+      "houses"
+     ],
+     "action": "walks",
+     "cutOn": "word"
+    },
+    {
+     "role": "cause",
+     "share": 0.08,
+     "cam": {
+      "distance": "close",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "medium"
+     },
+     "subject": "creature",
+     "scale": [
+      "houses"
+     ],
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "creature",
+     "share": 0.07,
+     "cam": {
+      "distance": "close",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "creature",
+     "scale": [
+      "houses"
+     ],
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "life",
+     "share": 0.06,
+     "cam": {
+      "distance": "medium",
+      "height": "ground_low",
+      "move": "orbit",
+      "speed": "medium"
+     },
+     "subject": "creature",
+     "scale": [
+      "houses"
+     ],
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "creature",
+     "share": 0.1,
+     "cam": {
+      "distance": "extreme_wide",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "medium"
+     },
+     "subject": "creature",
+     "scale": [
+      "houses"
+     ],
+     "action": "walks",
+     "cutOn": "word"
+    },
+    {
+     "role": "creature",
+     "share": 0.04,
+     "cam": {
+      "distance": "close",
+      "height": "eye_level",
+      "move": "tilt_up",
+      "speed": "medium"
+     },
+     "subject": "creature",
+     "scale": [
+      "houses"
+     ],
+     "action": "line",
+     "cutOn": "word"
+    }
+   ]
+  },
+  "until": {
+   "mode": "flow",
+   "targetShot": 1.12,
+   "light": "keep",
+   "slots": [
+    {
+     "role": "reveal",
+     "share": 0.09,
+     "cam": {
+      "distance": "extreme_wide",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "creature",
+     "scale": [
+      "houses"
+     ],
+     "action": "walks",
+     "cutOn": "word"
+    },
+    {
+     "role": "threat",
+     "share": 0.1,
+     "cam": {
+      "distance": "close",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "medium"
+     },
+     "subject": "threat",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "reveal",
+     "share": 0.11,
+     "cam": {
+      "distance": "medium",
+      "height": "ground_low",
+      "move": "tilt_up",
+      "speed": "medium"
+     },
+     "subject": "threat",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "threat",
+     "share": 0.06,
+     "cam": {
+      "distance": "medium",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "threat",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "explain",
+     "share": 0.07,
+     "cam": {
+      "distance": "close",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "prop",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "scale",
+     "share": 0.08,
+     "cam": {
+      "distance": "close",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "medium"
+     },
+     "subject": "creature",
+     "scale": [
+      "houses"
+     ],
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "creature",
+     "share": 0.08,
+     "cam": {
+      "distance": "medium",
+      "height": "ground_low",
+      "move": "track",
+      "speed": "medium"
+     },
+     "subject": "threat",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "character",
+     "share": 0.07,
+     "cam": {
+      "distance": "extreme_wide",
+      "height": "aerial",
+      "move": "tilt_up",
+      "speed": "medium"
+     },
+     "subject": "narrator",
+     "scale": [
+      "creature"
+     ],
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "reveal",
+     "share": 0.11,
+     "cam": {
+      "distance": "medium",
+      "height": "ground_low",
+      "move": "push_in",
+      "speed": "medium"
+     },
+     "subject": "threat",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "threat",
+     "share": 0.11,
+     "cam": {
+      "distance": "medium",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "threat",
+     "action": "reacts_scared",
+     "cutOn": "word"
+    },
+    {
+     "role": "cause",
+     "share": 0.08,
+     "cam": {
+      "distance": "medium",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "medium"
+     },
+     "subject": "threat",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "humour",
+     "share": 0.05,
+     "cam": {
+      "distance": "medium",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "neighbour",
+     "action": "line",
+     "cutOn": "word"
+    }
+   ]
+  },
+  "discovery": {
+   "mode": "flow",
+   "targetShot": 1.2,
+   "light": "keep",
+   "slots": [
+    {
+     "role": "reveal",
+     "share": 0.11,
+     "cam": {
+      "distance": "close",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "medium"
+     },
+     "subject": "threat",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "cause",
+     "share": 0.09,
+     "cam": {
+      "distance": "close",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "threat",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "consequence",
+     "share": 0.05,
+     "cam": {
+      "distance": "extreme_wide",
+      "height": "aerial",
+      "move": "shake",
+      "speed": "fast"
+     },
+     "subject": "town",
+     "scale": [
+      "houses"
+     ],
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "consequence",
+     "share": 0.07,
+     "cam": {
+      "distance": "medium",
+      "height": "eye_level",
+      "move": "shake",
+      "speed": "fast"
+     },
+     "subject": "town",
+     "scale": [
+      "houses"
+     ],
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "cause",
+     "share": 0.1,
+     "cam": {
+      "distance": "extreme_wide",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "medium"
+     },
+     "subject": "creature",
+     "scale": [
+      "houses"
+     ],
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "cause",
+     "share": 0.09,
+     "cam": {
+      "distance": "medium",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "threat",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "cause",
+     "share": 0.05,
+     "cam": {
+      "distance": "extreme_wide",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "threat",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "humour",
+     "share": 0.06,
+     "cam": {
+      "distance": "medium",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "neighbour",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "cause",
+     "share": 0.16,
+     "cam": {
+      "distance": "medium",
+      "height": "ground_low",
+      "move": "tilt_up",
+      "speed": "medium"
+     },
+     "subject": "threat",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "explain",
+     "share": 0.08,
+     "cam": {
+      "distance": "medium",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "medium"
+     },
+     "subject": "threat",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "threat",
+     "share": 0.09,
+     "cam": {
+      "distance": "close",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "medium"
+     },
+     "subject": "threat",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "cause",
+     "share": 0.05,
+     "cam": {
+      "distance": "medium",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "threat",
+     "action": "line",
+     "cutOn": "word"
+    }
+   ]
+  },
+  "climax": {
+   "mode": "flow",
+   "targetShot": 1.17,
+   "light": "keep",
+   "slots": [
+    {
+     "role": "creature",
+     "share": 0.07,
+     "cam": {
+      "distance": "extreme_wide",
+      "height": "aerial",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "threat",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "reaction",
+     "share": 0.11,
+     "cam": {
+      "distance": "medium",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "medium"
+     },
+     "subject": "narrator",
+     "action": "reacts_scared",
+     "cutOn": "word"
+    },
+    {
+     "role": "establish",
+     "share": 0.12,
+     "cam": {
+      "distance": "wide",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "neighbour",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "chase",
+     "share": 0.07,
+     "cam": {
+      "distance": "extreme_wide",
+      "height": "aerial",
+      "move": "flyover",
+      "speed": "medium"
+     },
+     "subject": "narrator",
+     "scale": [
+      "creature"
+     ],
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "life",
+     "share": 0.08,
+     "cam": {
+      "distance": "medium",
+      "height": "ground_low",
+      "move": "tilt_up",
+      "speed": "medium"
+     },
+     "subject": "narrator",
+     "scale": [
+      "creature"
+     ],
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "reveal",
+     "share": 0.09,
+     "cam": {
+      "distance": "medium",
+      "height": "ground_low",
+      "move": "tilt_up",
+      "speed": "medium"
+     },
+     "subject": "creature",
+     "scale": [
+      "houses"
+     ],
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "reveal",
+     "share": 0.07,
+     "cam": {
+      "distance": "medium",
+      "height": "ground_low",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "threat",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "threat",
+     "share": 0.1,
+     "cam": {
+      "distance": "medium",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "threat",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "cause",
+     "share": 0.06,
+     "cam": {
+      "distance": "close",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "creature",
+     "scale": [
+      "houses"
+     ],
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "life",
+     "share": 0.1,
+     "cam": {
+      "distance": "medium",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "medium"
+     },
+     "subject": "threat",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "cause",
+     "share": 0.07,
+     "cam": {
+      "distance": "close",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "threat",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "cause",
+     "share": 0.06,
+     "cam": {
+      "distance": "medium",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "threat",
+     "action": "line",
+     "cutOn": "word"
+    }
+   ]
+  },
+  "closer": {
+   "mode": "flow",
+   "targetShot": 1.33,
+   "light": "warm",
+   "slots": [
+    {
+     "role": "cause",
+     "share": 0.25,
+     "cam": {
+      "distance": "extreme_wide",
+      "height": "aerial",
+      "move": "flyover",
+      "speed": "medium"
+     },
+     "subject": "threat",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "creature",
+     "share": 0.12,
+     "cam": {
+      "distance": "medium",
+      "height": "eye_level",
+      "move": "track",
+      "speed": "medium"
+     },
+     "subject": "threat",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "life",
+     "share": 0.09,
+     "cam": {
+      "distance": "extreme_wide",
+      "height": "aerial",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "crowd",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "character",
+     "share": 0.15,
+     "cam": {
+      "distance": "medium",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "narrator",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "humour",
+     "share": 0.1,
+     "cam": {
+      "distance": "wide",
+      "height": "eye_level",
+      "move": "push_in",
+      "speed": "slow"
+     },
+     "subject": "crowd",
+     "action": "line",
+     "cutOn": "word"
+    },
+    {
+     "role": "ending",
+     "share": 0.3,
+     "cam": {
+      "distance": "extreme_wide",
+      "height": "aerial",
+      "move": "pull_out",
+      "speed": "slow"
+     },
+     "subject": "creature",
+     "action": "line",
+     "cutOn": "word",
+     "scale": [
+      "houses"
+     ]
+    }
+   ]
+  }
+ }
+}

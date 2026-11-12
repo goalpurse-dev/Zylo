@@ -1,3 +1,4 @@
+import { openaiFetch } from "../openaiBackup.js";
 // deno-lint-ignore-file no-explicit-any
 // stickman/headlines.ts — the on-screen text pass (Phase 6c-polish).
 //
@@ -277,7 +278,7 @@ export function headlinePrompt(beats: PlanBeat[], want: number) {
 }
 
 async function askOnce(openaiKey: string, beats: PlanBeat[], want: number) {
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+  const res = await openaiFetch("https://api.openai.com/v1/chat/completions", {
     method: "POST", headers: { Authorization: `Bearer ${openaiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({ model: HEADLINE_MODEL, temperature: 0.2, messages: [{ role: "user", content: headlinePrompt(beats, want) }], response_format: { type: "json_schema", json_schema: { name: "headlines", strict: true, schema: SCHEMA } } }),
   });
@@ -323,7 +324,7 @@ export async function placementLook(openaiKey: string, imageUrl: string, callout
       "faces: every face/head (stick-figure circle heads, animal heads included). Be generous; [] if none.",
       callout ? `target: the box of the ${callout} — ONLY if it is clearly visible and unambiguous; otherwise [].` : "target: [].",
     ].join("\n");
-    const res = await fetch("https://api.openai.com/v1/chat/completions", { method: "POST", headers: { Authorization: `Bearer ${openaiKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ model: HEADLINE_MODEL, temperature: 0, messages: [{ role: "user", content: [{ type: "text", text: prompt }, { type: "image_url", image_url: { url: imageUrl, detail: "low" } }] }], response_format: { type: "json_schema", json_schema: { name: "look", strict: true, schema: LOOK_SCHEMA } } }) });
+    const res = await openaiFetch("https://api.openai.com/v1/chat/completions", { method: "POST", headers: { Authorization: `Bearer ${openaiKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ model: HEADLINE_MODEL, temperature: 0, messages: [{ role: "user", content: [{ type: "text", text: prompt }, { type: "image_url", image_url: { url: imageUrl, detail: "low" } }] }], response_format: { type: "json_schema", json_schema: { name: "look", strict: true, schema: LOOK_SCHEMA } } }) });
     const j: any = await res.json();
     if (!res.ok) return null;
     const out = JSON.parse(j.choices[0].message.content);

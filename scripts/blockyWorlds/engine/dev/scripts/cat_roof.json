@@ -1,0 +1,28 @@
+{
+ "title": "The Roof Cat",
+ "idea": {
+  "title": "The Roof Cat",
+  "mood": "cozy",
+  "setting": "a town where the cats live on the roofs",
+  "opener": "In this town, the cats sleep on the roofs.",
+  "premise": "Our cat Pepper climbs onto the roof and won't come down, until a pigeon shows her the way.",
+  "narrator": "Leo, Pepper's kid.",
+  "closer": "In this town, the cats sleep on the roofs. And Pepper sleeps on mine."
+ },
+ "lines": [
+  { "part": "rule", "text": "In this town, the cats sleep on the roofs." },
+  { "part": "me", "text": "I'm Leo, and my cat is called Pepper." },
+  { "part": "me", "text": "Pepper is a grey cat with white paws." },
+  { "part": "problem", "text": "One day, the cat climbed onto the roof." },
+  { "part": "problem", "text": "She sat on the very edge and meowed." },
+  { "part": "problem", "text": "I waved at her from the street." },
+  { "part": "problem", "text": "She would not come down." },
+  { "part": "help", "text": "A pigeon landed next to her on the roof." },
+  { "part": "help", "text": "The pigeon hopped along the edge." },
+  { "part": "help", "text": "Pepper followed the pigeon to the ladder." },
+  { "part": "help", "text": "She climbed down, one paw at a time." },
+  { "part": "end", "text": "Pepper jumped into my arms and purred." },
+  { "part": "end", "text": "The pigeon flew away over the street." },
+  { "part": "closer", "text": "In this town, the cats sleep on the roofs. And Pepper sleeps on mine." }
+ ]
+}

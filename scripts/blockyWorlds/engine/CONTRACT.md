@@ -1,0 +1,612 @@
+# Blocky Worlds video engine: the MVP contract
+
+> **PERMANENT RULE (owner, 2026-11-04): the scene always matches the narration.** Every line's key nouns, actions and
+> subject (who/what it is about) are visible in its shot. `checkVisuals` + `checkSubjects` (plan.mjs) enforce it before
+> any render and must never be weakened or bypassed. Missing things get added to the kit or shown by a clear fallback
+> (a picture card of that thing), never a random shot. Full text: `docs/blocky-worlds-protocol.md` (top).
+
+One complete 90 s video, end to end: script + word timings -> **timeline** -> three.js frames in headless Chrome -> mp4
+with one-word captions, voice and a music bed. Free to run locally. The same code later runs on a RunPod GPU in
+parallel chunks.
+
+Everything lives in `scripts/blockyWorlds/engine/`. Run from that folder. Its `package.json` has three@0.169.0,
+n8ao, postprocessing, puppeteer-core (already installed in `node_modules`). Assets (gitignored, already copied):
+- `assets/kenney/<kit>/<name>.glb`: Kenney CC0 kits `car, commercial, factory, furniture, roads, suburban, survival`
+- `assets/<texture>/...`: Poly Haven CC0 textures (asphalt_02, concrete_pavement, leafy_grass, painted_plaster_wall,
+  brick_wall_02, beige_wall_001, roof_09, grey_roof_01, laminate_floor_02, interior_tiles, gravel, brown_mud_dry,
+  coast_sand_01, dark_rock, roots, grass_path_2...) and `assets/hdri/`
+- `assets/ph/<model>/<model>.gltf`: Poly Haven CC0 models (street_lamp_01, fire_hydrant, metal_trash_can,
+  modular_street_seating, shrub_02, shrub_04, jacaranda_tree, planter_box_01) and `assets/ph/hdri/*.hdr`
+- `assets/LilitaOne-Regular.ttf`: the caption font
+
+The **locked look** is `scripts/blockyWorlds/look/scene.js` (read it first): A's realistic CC0 world, B's clothing
+(procedural fabric: stripes, plaid, dots, belts, soles, collars), simple faces drawn bigger, elbows and knees, the punchy
+grade (N8AO + UnrealBloom + the sat/contrast/warm ShaderPass), ACES tone mapping. Reference frame:
+`reference/blocky-worlds/look-frames/LOCKED_bus_stop.jpg`. Everything new must look like it belongs in that frame.
+Never anything from Roblox: no logos, names, UI, or its actual characters.
+
+## Frame rules
+- 1080 x 1920 (9:16), **24 fps**. Units: metres; y is up; people are about 1.6-1.8 m (kids ~1.2 m).
+- Deterministic: a frame depends only on (timeline, t). No `Math.random()` without a seed, no wall clock.
+  Use `rng(seed)` from `engine/lib/rng.js`.
+- Browser ES modules, import map as in `look/look.html`: `three`, `three/addons/`, `postprocessing`, `n8ao`.
+
+## The timeline (JSON) — produced by `plan.mjs`, consumed by `page/engine.js`
+```jsonc
+{
+  "version": 1, "fps": 24, "width": 1080, "height": 1920,
+  "duration": 94.6,                       // seconds (= voice length + 0.4 s tail)
+  "title": "The Listener",
+  "cast": {                               // every character that appears; specs for kit/people.js makePerson()
+    "me":   { "role": "kid", "name": "Pip", "seed": 3 },          // seed -> clothes/hair/skin, deterministic
+    "mom":  { "role": "adult", "name": "Mom", "seed": 8 },
+    "dobbs":{ "role": "adult", "name": "Mr. Dobbs", "seed": 21 }
+  },
+  "monster": { "type": "tall", "name": "The Listener", "glow": "#9be8ff" } ,   // or null; type "tall" | "furry"
+  "shots": [{
+    "start": 0.00, "end": 2.35,           // seconds; shots tile the whole duration, hard cuts
+    "line": 0, "part": "rule",            // script line index and part id
+    "set": "street",                      // "street" | "bedroom" | "school" | "woods"
+    "light": "day",                       // "day" | "night" | "warm"
+    "camera": "wide",                     // "wide" | "medium" | "closeup" | "low" | "over_shoulder" | "insert"
+    "focus": "me",                        // what the camera frames: a cast id, "monster", "insert", or "group"
+    "actors": [{ "id": "me", "spot": "center", "pose": "stand", "expr": "happy", "facing": "camera",
+                 "hold": null }],         // hold: a prop name in the hand(s) for pose "carry" / "point", e.g. "sock"
+    "monsterState": null,                 // null | { "spot": "far", "state": "lurk" | "reach" | "reveal" | "flee" }
+    "insert": null,                       // null | { "kind": "sign" | "note", "text": "NO TALKING ABOVE A WHISPER" }
+    "marker": null,                       // null | { "on": "me" | "all" | <cast id>, "kind": "tag" | "ring" | "icon", "text": "1¢" }
+    "seed": 17                            // per-shot variety (camera drift direction, extra townsfolk)
+  }],
+  "captions": [{ "word": "whisper,", "start": 1.20, "end": 1.45 }],   // every spoken word, in order
+  "audio": { "voice": "voice.wav", "music": "music.wav" }
+}
+```
+- `spot` names every set provides: `"center"`, `"left"`, `"right"`, `"back"` (behind the group), `"far"` (deep
+  background, where a monster lurks), `"door"` (an entrance). Kept on the set's floor, in camera-friendly places.
+- `facing`: `"camera"`, `"left"`, `"right"`, `"away"`, `"monster"`, or a cast id.
+- poses (`kit/people.js POSES`): `stand, walk, run, point, scared, sit, carry, wave, look_up, talk, sleep, cheer`.
+  walk/run/talk/wave/cheer are cycles driven by t.
+- expressions (face stickers, `kit/people.js EXPRS`): `neutral, happy, sad, scared, surprised, angry, sleepy, smirk,
+  cry, excited, shush`.
+
+## Module APIs (browser side, `page/`)
+All modules take `THREE` from `import * as THREE from "three"`. Asset URLs are absolute paths on the page server:
+`/assets/...`.
+
+### `page/kit/people.js` (owner: KIT agent)
+```js
+export const POSES, EXPRS;
+export function makePerson(spec /* cast entry + {id} */) -> THREE.Group   // origin at the feet, faces +z
+export function posePerson(person, pose, t /* shot-local seconds */, opts = { hold: null }) // sets joint rotations; cycles from t
+export function setFace(person, expr)                                    // swaps the face sticker (cached textures)
+export function personHeight(person) -> number
+```
+### `page/kit/monsters.js` (owner: KIT agent)
+```js
+export function makeMonster(spec /* timeline.monster */) -> THREE.Group  // "tall": ~4.5 m thin, long limbs, glowing feature (eyes / ear / lamp head) in spec.glow; "furry": ~2.6 m wide, shaggy (layered blocky fur), glowing eyes
+export function animateMonster(monster, state /* lurk|reach|reveal|flee */, t)
+```
+### `page/kit/props.js` (owner: KIT agent)
+```js
+export function makeInsert({ kind, text }) -> THREE.Group      // a sign board / handwritten note in the look, text drawn on a canvas texture, sized ~1.2 x 0.8 m, for camera "insert"
+export function makeMarker({ kind, text }) -> THREE.Object3D    // floats above a head: "tag" (price-tag card), "ring" (glowing halo ring), "icon" (round badge with text/emoji); billboard-facing via userData.billboard = true
+export function makeHeld(name) -> THREE.Object3D | null         // small hand props by keyword: sock, flashlight, candle, book, phone, bag, key, ball, box, sign, bread...; unknown -> a simple box
+```
+### `page/sets/index.js` (owner: SETS agent)
+```js
+export const SETS = ["street", "bedroom", "school", "woods"];
+export async function buildSet(name, ctx /* { THREE, scene, renderer, gltf(url), tex(name, kind, srgb) } */)
+  -> { root: THREE.Group, spots: { center, left, right, back, far, door } /* THREE.Vector3 on the floor */, indoor: bool,
+       update?(t) }
+export function applyLight(name /* day|night|warm */, ctx /* { THREE, scene, renderer, set } */) -> { dispose() }
+   // sky/background, hemisphere + sun/moon, shadows, fog, exposure, and the set's own practical lights at night
+   // (street lamps, a bedside lamp, hallway lights). day = the locked look; night = blue moonlight + warm practicals;
+   // warm = golden-hour ending.
+```
+### `page/camera.js` (owner: SETS agent)
+```js
+export function frameShot(type /* wide|medium|closeup|low|over_shoulder|insert */, ctx /* { THREE, camera, set, focus: Vector3 (feet of the subject), focusHeight, other?: Vector3, t, dur, seed } */)
+   // positions/aims the PerspectiveCamera; a slow, subtle move over the shot (push-in or drift, by seed), never a jump inside a shot
+```
+### `page/captions.js` (owner: AUDIO agent)
+```js
+export function drawCaption(ctx2d /* 1080x1920 2D canvas context */, captions, t)   // the one word spoken at t, Lilita One ("BWCaption" font-face), white with a thick dark stroke, pop-in scale over the first 80 ms, at ~62% height, never wider than 90% of the frame
+```
+### `page/engine.js` + `page/index.html` (owner: RENDER agent)
+Loads the timeline (`?tl=<url>`), builds/caches sets and cast, `window.ready = true` when every asset is loaded,
+`window.renderAt(t)` renders the frame at time t into the visible canvas (3D through the look's post chain, then the
+caption composited on top), `window.frameData()` returns that frame as a JPEG data URL.
+
+## Node side
+- `plan.mjs` (owner: PLANNER agent): `planVideo({ script, words, idea, lengthSec }) -> timeline` (no AI call: a
+  rule-based shot planner for the MVP; deterministic).
+- `voice/free.mjs` (owner: AUDIO agent): Windows SAPI voice -> `voice.wav` + word timings `[{ word, start, end }]`.
+- `audio/music.mjs`, `audio/mix.mjs` (owner: AUDIO agent): a procedural music bed (our own, synthesized, no samples),
+  and the final mix (voice + bed ducked under the voice, a soft hit on big cuts) to `mix.m4a`.
+- `render.mjs` (owner: RENDER agent): render a frame range of a timeline to an mp4 chunk; `renderParallel` splits
+  across N Chrome pages/processes and joins the chunks (stream copy); the page server serves `page/`, `assets/`,
+  `node_modules/`.
+- `make.mjs` (owner: RENDER agent, integration by the lead): script -> voice -> plan -> render -> mix -> mux ->
+  `out/<name>/final.mp4`.
+- `runpod/` (owner: RENDER agent): Dockerfile, handler, build-context and dispatch scripts mirroring
+  `scripts/cutaway/proto3d/m3/` (prepared only: nothing is built, pushed or deployed).
+
+## Ground rules for every agent
+- **No paid calls of any kind** (no Anthropic, ElevenLabs, Runware, RunPod, Fly). No deploys, no pushes, no commits.
+- **Never start a Vite / npm dev server** (the owner's runs on 5173). Your own tiny `http.createServer` on port 0 for
+  headless Chrome previews is fine. Chrome: `C:/Program Files/Google/Chrome/Application/chrome.exe`, flags
+  `--use-angle=default --enable-webgl --ignore-gpu-blocklist`. ffmpeg is on PATH.
+- Only create/edit files you own (listed above) plus your own `dev/<yourname>*.mjs` preview scripts and
+  `engine/lib/*` helpers you add (namespaced, e.g. `lib/kitUtil.js`). Do not edit `look/`, `supabase/`, `src/`.
+- Write files with the Write/Edit tools (bash heredocs mangle backslashes on this laptop).
+- Check your work visually: render stills to `out/dev/<yourname>/` and look at them.
+
+## Addendum 2026-11-04: every spoken noun gets a visual
+
+Owner's rule (from the references): every line's key nouns and actions must be visible in its shot. Never a random
+unrelated shot; when the kit lacks something, a simple version of it, or the closest clear visual (a picture card).
+
+### New timeline fields (all optional, per shot)
+```jsonc
+"objects": [{ "name": "ice_cream_truck", "spot": "center", "state": "mime", "facing": "camera" }],
+   // scene objects from page/kit/objects.js OBJECTS (catalog below), placed on the set's floor at a spot
+"focus": "object",                  // new focus value: the camera frames objects[0]
+"insert": { "kind": "card", "text": "GRANDPA'S STORIES", "icon": "📖" },   // new insert kind: a picture card
+"setState": { "windows": "dark" | "lit" | "open" },                         // street houses' windows
+"visuals": ["football team", "cheer"]   // what the planner meant to show (for the check + the report); ignored by the engine
+```
+New poses: `yell` (scream: arms down and back, leaning forward, mouth wide), `sneeze` (head snaps forward, hand to
+face), `blow` (a held whistle/horn at the mouth). New expressions: `yell` (mouth wide open, eyes squeezed), `sneeze`.
+New cast field: `"role": "baby"` (a baby: ~0.6 m, sits/lies, round head; carried by an adult with pose carry + hold = the
+baby's cast id, which the engine resolves to the baby person in the arms).
+
+### `page/kit/objects.js` (owner: OBJECTS agent)
+```js
+export const OBJECTS;   // { name: { aliases: [...], height, width, place: "floor" | "street" | "wall" } }
+export function makeObject(name, opts = { state }) -> THREE.Group  // origin on the floor at its front-centre, faces +z; userData.height, userData.width, userData.focus (Vector3, local)
+export function animateObject(obj, state, t)                       // optional per-frame (flashing alarm lights, balloons bob, the mime's arms)
+```
+Catalog (MVP, simple blocky versions in the look): `ice_cream_truck` (state "mime": a mime driver at the window: white
+face, striped shirt, beret, miming hands), `football_field` (goal posts, painted lines, players in jerseys, small
+bleachers with a seated crowd covering mouths), `birthday_party` (table, cake with candles, balloons, party hats,
+presents), `bakery` (shop front with a "BAKERY" sign, bread in the window; state "for_sale": a FOR SALE sign in the
+window), `car` (state "alarm": flashing orange/red lights + sound lines), `photo_set` (a camera on a tripod + a school
+photo backdrop), `crib` (a baby crib), `house_front` (a house facade with windows that can be dark/lit/open, people
+leaning out when open), `stories_book` (a big open storybook on a stand), plus anything else the planner's line
+review needs. Hand props added to `makeHeld`: `whistle` (brass), `baby` (handled by the engine via cast).
+
+## Addendum 2026-11-04 (b): the coverage kit (130 library ideas)
+
+One catalog for both sides: `lib/catalog.js` (pure data). `THINGS` (weather, town, country, home, underground scene
+objects), `ANIMALS` (one object per species), `CREATURE_OBJECTS` (`<kind>_creature`: a small monster look), `item` (any
+hand prop, big, on a crate: state = the prop kind), `HELD` (hand props by word), `CREATURES` (monster looks).
+- `page/kit/things.js` builds every THINGS / ANIMALS / creature / item name; `page/kit/objects.js` merges them into
+  `OBJECTS` (`makeObject` works the same). `page/kit/heldMore.js` builds the HELD props; `makeHeld` checks them first.
+- Timeline `monster` may carry `variant` (`dragon, bird, serpent, squid, fish, goblin, stump, giant, scarecrow, beast,
+  boxy, yeti, troll, ghost, mannequin`) and `species` (the very creature: "goat", "moose", "pigeon"...). `makeMonster`
+  dresses the tall / furry rig (or builds a rig with the same joints), so `animateMonster` drives every look.
+- Checks: `dev/coverage.mjs` (all 130 ideas as stand-in scripts -> `out/coverage/report.md`), `dev/coverage.test.mjs`,
+  `dev/coverageKit.mjs` (headless Chrome: every name the planner can emit builds), `dev/coverageRender.mjs` (contact
+  sheets in `out/coverage/sheets/`).
+
+## Addendum 2026-11-05: built on demand (a missing kit object or world never fails a run)
+
+Owner's rule: customers type endless topics, so the engine builds what a line needs in real time, from blocks.
+Order for every need: **1. the kit -> 2. the shared library (things built for earlier videos) -> 3. an AI design** (a
+block blueprint for an object, a world spec for a place) that the engine builds, **4. a quick still + an AI vision
+check** (pass = ok and confidence >= 0.6; up to 2 retries with the vision's fix), **5. last resort: a clear picture
+card** of that very thing. Never a failed run, never an unrelated shot. Everything built is saved to the library. The
+PERMANENT RULE still holds: built things count as covering a noun only through their names / aliases, every change is
+re-checked (checkTimeline + checkVisuals + checkSubjects) and undone if it adds a problem, and the checks run again
+before any render.
+
+### Files
+| File | What |
+|---|---|
+| `lib/builder/spec.js` | the two schemas + `validateBlueprint` / `validateWorld` (pure; never throw; limits, clamps, colours) + `normName` |
+| `page/kit/blueprint.js` | `buildBlueprint(bp) -> Group` (origin at the front-centre floor, faces +z, kit userData), `animateBlueprint(obj, t, state)` |
+| `page/sets/worldspec.js` | `buildWorld(spec, ctx)` -> the buildSet shape (`root, spots, indoor, camDir, views, bounds, rig, update(t), problems`) |
+| `page/still.html` + `still.js`, `lib/builder/still.mjs` | the check still: one object (768 x 768, 3/4 view on pavement) or one world (432 x 768, the engine's wide shot with a kid) |
+| `lib/builder/design.js` | the style guide, 3 hand-written kit blueprints as few-shot, prompts + json_schemas, `callClaude` (llm.js's pattern), `anthropicProvider`, PRICE / worst cases |
+| `lib/builder/vision.js` | the vision check (image + line -> `{ ok, confidence, reads_as, fix }`) |
+| `lib/builder/cache.js` | the library: `memoryCache`, `fileCache`, `snapshotCache` (the worker), `supabaseCache` (server) |
+| `lib/builder/resolve.js` | `resolveNeeds`: kit -> library -> design -> still -> vision -> retry <= 2 -> save, else card; parallel; money / time / design caps |
+| `lib/builder/apply.js` | `needsFromTimeline`, `applyResolved` (built things into the timeline, each re-checked) |
+| `lib/builder/index.js` | `makeBuilder` (prefetch + buildFor), `providerFromConfig` ("off" default, "mock", "anthropic") |
+| `lib/builder/mock.js` | the free mock designer + vision (robot dentist, ladder, giant heart, inside a giant turtle; a labelled crate otherwise) |
+| `supabase/migrations/20261203100000_blocky_worlds_assets.sql` | the library table (NOT applied) |
+| `dev/builder.test.mjs`, `dev/builderRender.test.mjs`, `dev/builderDemo.mjs`, `dev/builderEstimate.mjs` | tests, the demo, the cost + wait estimate |
+
+### Blueprint (an object)
+```jsonc
+{ "name": "robot dentist", "aliases": ["dentist robot"], "height": 2.1,  // m; the build is scaled to it (max 40; 200 with "giant": true)
+  "width": 1.2,                                                          // m (a hint)
+  "parts": [{                                                            // <= 120
+    "id": "arm_r", "shape": "box | roundedBox | cylinder | cone | sphere | wedge | torus",
+    "size": [x, y, z], "pos": [x, y, z], "rot": [x, y, z],              // metres, ONE shared frame (y up, +z front); degrees
+    "color": "#rrggbb", "material": "matte | plastic | metal | glass | glow | fabric | wood | stone",
+    "pattern": "none | stripes | dots | plaid",                          // fabric only (the people kit's procedural fabric)
+    "parent": "body",                                                    // moves with that part ("" none)
+    "pivot": [x, y, z] }],                                               // hinge for swing / open ([] none)
+  "labels": [{ "part": "badge", "text": "DENTIST", "color": "#fff", "bg": "", "face": "front | back | left | right | top" }],
+  "anims": [{ "part": "arm_r", "kind": "bob | spin | swing | blink | wobble | open", "axis": "x|y|z", "amount": 12, "speed": 1.2 }],
+  "focus": [x, y, z], "footprint": [w, d] }
+```
+cylinder / cone / sphere: diameter = size x (z), height = size y. wedge: a ramp, tall at the back. torus: a ring in x-y,
+outer diameter size x, tube size z. Labels use the Lilita font. Unknown fields are ignored; a bad part gets defaults;
+parts beyond the limits, unknown parents and cycles are dropped (listed in `userData.problems`). To the engine a built
+object is an ordinary kit object (userData height / width / depth / focus / detail / frameH / push / big).
+
+### World spec (a place)
+```jsonc
+{ "name": "inside a giant turtle", "aliases": [], "kind": "outdoor | indoor | enclosure | creature_world",
+  "ground": { "material": "grass|dirt|sand|rock|snow|tiles|wood|flesh|metal|water|moon|gravel", "color": "#..", "shape": "flat|hilly|rocky|wet" },
+  "enclosure": { "type": "sky | cave | room | inside_creature | underwater | space", "color": "#..", "color2": "#..",
+                 "pattern": "none|ribs|scales|flesh|rock|panels|bricks|planks", "opening": "none|mouth|hole|window|door", "glow": "#.." },
+  "palette": ["#.."], "fog": { "color": "#..", "density": 0.35 }, "particles": "none|dust|bubbles|snow|spores",
+  "light": { "base": "day|night|warm", "tint": "#..", "ambient": 1.1, "practicals": [{ "color": "#..", "pos": [x, y, z], "intensity": 10 }] },
+  "landmark": "<blueprint>",                                             // big, behind the group, off-centre
+  "props": [{ "kit": "lamp | (empty)", "blueprint": "<blueprint>", "spot": "side_left|side_right|back_left|back_right|far|scatter", "count": 1 }],
+  // EPIC hooks (validated + passed through; built only by the EPIC agent's page/sets/creatureWorld.js):
+  "creature": { "species": "turtle", "scale": 60, "city": "on | inside" },                 // scale <= 200 m
+  "giants": [{ "kind": "giant", "blueprint": "<blueprint, giant: true>", "height": 120, "spot": "far" }],
+  "crowds": [{ "kind": "knights", "count": 400, "formation": "scatter|line|block|ring|march", "action": "stand|cheer|march|run|flee|fight|wave", "spot": "far" }] }
+```
+Every world shares one layout: the camera at +z looking down -z, the group at the centre spot, the enclosure closing in
+around a ~13 m corridor, spots `center left right back far door` (door = the opening). Light: the shot's day / night /
+warm through lighting.js applyLight with the spec's rig (fog, hemisphere tint, sun scale, practicals).
+`kind: "creature_world"` goes to `ctx.buildCreatureWorld(spec, ctx)` when the engine passes one (the EPIC builder);
+otherwise it is built as `inside_creature`.
+
+### Timeline fields
+```jsonc
+"assets": { "<id>": { "kind": "object", "name": "kazoo", "aliases": [], "blueprint": {} },
+            "<id>": { "kind": "world", "name": "inside a giant turtle", "aliases": [], "spec": {} } },
+"shots": [{ "set": "world:<id>", "worldBase": "street", "worldAliases": ["inside a giant turtle"],   // a built world
+            "objects": [{ "name": "kazoo", "asset": "<id>", "aliases": [], "spot": "right" }] }]  // a built object
+```
+`worldBase` is the set the world replaced: place words that set covered ("the whole town") stay covered. The planner
+marks needs before the builder runs (`timeline.needs`, a card's `need`, a shot's `world`); apply.js removes the markers.
+
+### Models, money, time
+Design: Claude Sonnet 5.5 (effort low). Vision: Claude Sonnet 5.5 (effort low); Haiku 5.5 is the alternative for the
+vision check if the paid demo's side-by-side (`--compare-vision`) agrees with Sonnet. Per-video caps (resolve.js
+DEFAULT_BUDGET): $0.60, 120 s, 6 new designs; a call starts only when its worst case fits under the money cap.
+Estimates: `node dev/builderEstimate.mjs`. The worker's provider is "off" (kit + library + cards) unless the job says
+`builder.provider: "anthropic"` and the worker has `ANTHROPIC_KEY`.
+
+## Addendum 2026-11-05 (c): the story director (a production list before any shot is planned)
+
+Owner's goal: whatever the user types, the engine builds the whole world and video for it, as a COMBINATION of general
+systems, never one big special case at a time. Before planning shots, an AI (the story director) reads the script +
+the idea card and writes a **production list**: every world, character, creature / giant, crowd, vehicle, prop,
+effect and event the story needs, and for every script line which of them must be on screen. A matcher maps every
+item onto the **capability registry**; what is missing goes to the builder (`resolveNeeds`); what no system can do yet
+is logged as a **capability gap** and gets the clearest fallback (a picture card of that thing). Never a failed run.
+This is how the PERMANENT RULE gets enforced from the story's meaning, not from word lists.
+
+### Files (owner: DIRECTOR)
+| File | What |
+|---|---|
+| `lib/capabilities.js` | the registry: `CAPABILITIES[id] = { group, does, status: ready / partial / planned, module, owner, params: { name: { ready, partial, planned } }, fallback, files }`, `supports(id, params)`, `installedStatus(id, exists)`, `registryTable()`, `registryForPrompt()`. EPIC's vocabulary is read from `lib/epic.js`, so its giants / crowds / cameras stay in step |
+| `lib/director/vocab.js` | the shared closed vocabularies (world kinds, scales, behaviours, crowd actions, effects, events, camera beats) + word tables |
+| `lib/director/spec.js` | `productionSchema()` (structured outputs: all fields required, no maxItems), `validateProduction(raw, { lineCount })` (never throws; one entry per line), `itemsOf`, `linesByItem` |
+| `lib/director/design.js` | the AI director: `DIRECTOR_SYSTEM`, `directorPrompt`, `anthropicDirector({ apiKey, model })` (llm.js's call shape), `directorTokens`, `callUsd` |
+| `lib/director/mock.js` | the free rule-based stand-in (`mockProduction`), so everything runs for $0 |
+| `lib/director/match.js` | `matchProduction(production, { kit, exists, script, mood })` -> `{ calls, builderNeeds, gaps, perLine, summary }` |
+| `lib/director/index.js` | `directStory({ script, idea, provider, apiKey, model, gapLog, runId, storyId, exists })` -> `{ production, match, problems, costUsd, ms, provider, fellBack }` |
+| `lib/director/check.js` | `checkProduction(tl, match)`: each line's required items on screen (advisory until the planner reads the list) |
+| `lib/gaps.js` | the gap log: `makeGapLog({ store })`, `memoryStore`, `jsonlStore`, `supabaseStore`, `rankGaps`, `formatRanked` |
+| `supabase/migrations/20261204100000_blocky_worlds_capability_gaps.sql` | table + ranked view (NOT applied) |
+| `dev/director.test.mjs`, `dev/directorDemo.mjs`, `dev/stress.mjs`, `dev/gapReport.mjs` | tests, the turtle-vs-wolf demo, the stress harness (free + prepared paid run with costs), the ranked gap list |
+
+### The production list (v1)
+```jsonc
+{ "version": 1, "summary": "a town on a giant turtle is attacked by a wolf army",
+  "worlds": [{ "id": "world_main", "name": "on a giant turtle", "kind": "outdoor|indoor|enclosed|creature|underwater|space|sky",
+               "base": "street|woods|bedroom|school",        // the hand-built set used when the place can't be built
+               "description": "", "creature": { "species": "turtle", "relation": "inside|on|outside|none", "heightM": 120 },
+               "light": "day|night|warm" }],
+  "cast": [{ "id": "me", "name": "Pip", "kind": "human|robot|animal|creature|object", "role": "narrator|kid|adult|elder|baby",
+             "look": "yellow raincoat, red boots", "job": "" }],                     // "me" is always the narrator
+  "creatures": [{ "id": "turtle", "name": "the giant turtle", "species": "turtle", "look": "", "scale": "tiny|small|human|big|giant|colossal",
+                  "heightM": 120, "count": 1, "behaviours": ["stomp", "swim"], "monster": false }],
+  "crowds": [{ "id": "wolf_crowd", "name": "wolf army", "member": "person|creature|robot|vehicle", "of": "wolf",   // of: a creature id
+               "count": 200, "actions": ["march", "charge", "flee"] }],
+  "vehicles": [{ "id": "bus", "name": "school bus", "kind": "bus", "motion": "parked|drive|fly|sail|crash|launch|float" }],
+  "props": [{ "id": "story_prop", "name": "tin whistle", "size": "hand|object|big|landmark", "heldBy": "me", "storyProp": true }],
+  "effects": [{ "id": "fire", "kind": "fire|explosion|glow|magic|transformation|grow|shrink|vanish|appear|smoke|sparkles", "target": "bakery", "into": "" }],
+  "events": [{ "id": "earthquake", "kind": "rain|snow|storm|fog|wind|lightning|flood|earthquake|eruption|tornado|falling|eclipse|meteor|heatwave|hail|night_falls",
+               "what": "the ground shook", "scope": "shot|world" }],
+  "scaleMoments": [{ "line": 0, "big": "turtle", "small": "me" }],
+  "lines": [{ "line": 0, "world": "world_main", "subject": "turtle", "who": ["me"], "action": "stand",
+              "needs": ["turtle", "townsfolk_crowd"], "camera": "normal|scale|shake|action|reveal", "light": "day" }] }
+```
+Ids are lower_snake_case and unique across all lists. `lines` has exactly one entry per script line, in order.
+
+### What the planner reads (the source of truth instead of guessing)
+`plan.mjs` gets `planVideo({ script, words, idea, lengthSec, direction })` where `direction` = directStory's result
+(`{ production, match }`). When it is present (and absent: today's rules, unchanged):
+1. **Worlds per line**: `production.lines[i].world` -> `match.calls` for that world: `route "set"` -> `shot.set = set`;
+   `route "builder"` -> the builder need `needId` (`kind: "world"`; `shot.world = needId`, fallback `set`); `route "epic"`
+   -> `call.epic = { creature, view, size }` for `creatureWorld.js` (EPIC's timeline field). Replaces `readWorld`'s
+   base set and `worldNeedOf` (several worlds per video, per line).
+2. **Cast**: `production.cast` (ids, names, roles, kind) replaces the name / title / family regexes of `readWorld`;
+   `who` and `subject` per line replace `whoIn` / `segSubject`'s guesses (lib/subjects.js keeps the pronoun work for
+   lines the director left without a subject). A non-human cast member's call (`route "kit"|"builder"`) is an object.
+3. **The monster**: the creature with `monster: true` -> `timeline.monster` (`call.kitName = "monster:<look>"`).
+4. **Creatures / giants / crowds**: `call.route "kit"` -> an object (`kitName`) in the line's shots; `route "epic"` ->
+   `call.epic` for `giants.js` (`{ kind, size, actions }`) or the crowd (`call.crowdKind`, `count`, `actions`) on
+   EPIC's shot fields; `route "builder"` -> the object need `needId` (giants: `giant: true, heightM`).
+5. **Per-line required items** (`match.perLine[i].required[]`: `{ id, kind, name, capability, status, route, kitName?,
+   set?, needId?, card? }`): every one must be on screen in that line's shots. `route "card"` -> a picture card shot cut
+   into the line (`card = { kind: "card", text, icon }`, as `cardShot`). This list is what checkVisuals checks once
+   the planner reads it (`lib/director/check.js checkProduction`, advisory until then).
+6. **Action + camera per line**: `action` -> the pose (`POSES`; others: `perLine[i].extras` says which capability is
+   missing and its fallback); `camera`: `scale` -> `extras` camera.scale (`establish` / `low`), `shake` -> camera.shake
+   `{ preset }`, `action` -> camera.action `{ beat }`, `reveal` -> `giant_close`; `route "epic"` on an extra means
+   EPIC's beat / camera fields, `"fallback"` the registry's fallback. `light` per line replaces the night rules.
+7. **Builder needs**: `match.builderNeeds` (resolveNeeds' shape + `source: "director"`, `item`, `hint` for worlds:
+   `{ kind, enclosure | creature, description }`, `giant`, `heightM` for giants) are merged into `timeline.needs`
+   before `makeBuilder().buildFor` (the prepare job can `prefetch` them right after the director, during the voice).
+
+### Hooks needed in the other agents' files (not edited by DIRECTOR)
+- `plan.mjs` (PLANNER / EPIC): the `direction` input above; `collectNeeds` merges `match.builderNeeds`.
+- `lib/builder/design.js` (BUILDER): `worldPrompt` / `objectPrompt` read `need.hint` and `need.giant / heightM`.
+- `runpod/worker.mjs` (RENDER): prepare job runs `directStory` in parallel with the voice (`Promise.all`), uploads
+  `production.json`, sends `gaps` in its "planned" event (the worker has no Supabase key); `builder.prefetch(match.builderNeeds)`.
+- `blocky-worlds-render` edge function: inserts the event's gaps with `supabaseStore` (bookkeeping never fails a run).
+- `page/engine.js`: nothing new beyond EPIC's and BUILDER's fields.
+
+### Models, money, time (per 90 s video, measured from the real prompts: `node dev/stress.mjs --costs`)
+One call: ~4,700 system tokens (cached) + ~670 user tokens in, ~3,600 out (thinking included). **Haiku 5.5 (default):
+~$0.002-0.003 a video, ~15-25 s; Sonnet 5.5: ~$0.04-0.05 a video, ~40-60 s** (latency to be measured on the first paid
+run: `directStory` returns `ms`). It needs only the script text, so it starts with the prepare job and runs while the
+voice is made (10-20 s): on Haiku it adds ~0-10 s to the wait. Any AI error, refusal or bad answer: one retry with the
+problems, then the mock's list (`fellBack: true`); the planner can always plan without it.
+
+## Addendum 2026-11-05 (c): EPIC stories (giants, armies, cities on / inside creatures)
+
+Owner's request: whole cities on / inside creatures, several giants and armies in one story ("In this town, we live
+inside a massive turtle", the Big Bad Wolf and his army hunt it). The PERMANENT RULE holds: every EPIC field exists so
+the line's nouns / actions / subject are on screen (the turtle, the town, the wolf, the army, the charge).
+The engine loads `page/epicLayer.js` only when a timeline uses these fields; ordinary timelines are untouched.
+
+### Files
+| File | What |
+|---|---|
+| `lib/epic.js` | pure core (Node + browser): vocabularies, `formationSlots`, `crowdMotion`, `gaitOf` / `giantFootfalls`, `shake`, `BEATS` / `beatPlan`, `validateEpicShot` / `validateEpic`, `epicSfxCandidates`, `EPIC_SFX_TIMING` |
+| `page/kit/giants.js` | `GIANT_PRESETS` (turtle, whale, elephant, snail, wolf, giant_human, bear, dog, cat, frog, dragon, crab) + `giantParams` (data-driven: any animal = a parameter set), `makeGiant`, `animateGiant`, `updateGiantLOD`, `giantSurface` |
+| `page/kit/crowd.js` | `makeCrowd` / `updateCrowd`: instanced crowds 1-2000 (one InstancedMesh per part), soldier / knight / wolf_soldier / townsfolk, LOD |
+| `page/kit/town.js` | `townLayout` + `makeTown`: instanced blocky houses, trees, lamps (windows glow at night) |
+| `page/sets/creatureWorld.js` | `buildCreatureWorld(spec, ctx)` (inside / on / outside; the buildSet shape + `giant`, `mount`, `groundY`, `surface`, `sway(t)`), `buildCreatureOutside` |
+| `page/cameraEpic.js` | `frameEpic(type, ctx)` (establish, hero_low, track, aerial, giant_close, duel, behind_army), `applyShake` |
+| `page/epicLayer.js` | the engine hooks: `makeEpicLayer` -> `buildSet`, `buildCreatureWorld`, `problems`, `ownsFocus`, `place`, `frame`, `after`, `posOf` |
+| `audio/sfxEpic.mjs`, `audio/sfxEpicBuild.mjs` | 12 EPIC sounds (synth + Kenney CC0) into `audio/sfx/`; `PAID_TAKES` lists the ElevenLabs takes that would be better (~$0.04 each, not made) |
+| `dev/epicTimeline.mjs` -> `dev/epic_turtle_wolf.json`, `dev/epic.test.mjs`, `dev/epicTiming.mjs`, `dev/epicProbe.mjs` | the owner's test story, tests, render-time table, NaN-pixel probe |
+
+### Timeline fields
+```jsonc
+"giants": { "wolf": { "kind": "wolf", "size": 75, "armour": true,          // size m: height for bipeds, length otherwise (5-200)
+                      "params": {} } },                                     // optional: overrides of giantParams (any animal; unknown kinds need params)
+"worlds": { "turtle_in": { "creature": "turtle", "view": "inside | on | outside", "size": 120, "seed": 11, "water": false } },
+   // creature "none" + view "outside": just the land (a battlefield). The BUILDER's world spec kind "creature_world"
+   // ({ creature: { species, scale, city } }) is built by the same code (worldspec.js -> ctx.buildCreatureWorld)
+"shots": [{
+  "set": "creature:turtle_in",                       // a creature world from timeline.worlds
+  "camera": "establish | hero_low | track | aerial | giant_close | duel | behind_army",   // or any normal camera
+  "focus": "giant:<id> | world | crowd | crowd:<i> | <cast id>",   // world = the creature the town lives on
+  "giants": [{ "id": "wolf | world", "spot": "far | giant_left | giant_right | back | ...", "pos": [x, y, z],
+               "action": "idle | walk | run | stomp | roar | attack | swim | hit | fall", "facing": "camera | left | right | away | <giant id> | <spot>",
+               "role": "attacker | target | chaser | faller | giant | swimmer", "move": { "to": "<spot>", "t0": 0, "t1": 1 } }],
+  "crowds": [{ "kind": "soldier | knight | wolf_soldier | townsfolk", "count": 300, "formation": "block | line | wedge | scatter | ring | march | column",
+               "action": "stand | march | charge | run | flee | cheer | fight | wave", "spot": "back", "pos": [x, y, z],
+               "facing": "...", "faction": "wolf | town | #rrggbb", "spacing": 1.3, "seed": 3, "onWorld": true, "role": "army | crowd" }],
+  "beat": { "type": "chase | attack | impact | fall | stomp | roar | charge | flee | cheer | march | swim_away", "shake": "none | impact | stomp | rumble | roar | fall", "at": 0.55 },
+  "shake": "rumble"                                   // a shake without a beat
+}]
+```
+- A crowd at a spot stands behind it (front rank on the spot). People may face a giant (`facing: "<giant id>"`).
+- Beats (`lib/epic.js BEATS`): roles say who moves where and which action; `beatPlan` gives the shake time and the SFX
+  cue names; `lib/sfx.js` merges `epicSfxCandidates` under its sparseness rules (each sound once, ~8 per 100 s).
+- Checks: `validateEpic` runs in the engine (and is pure, for the planner / director).
+
+### Hooks for the planner / director (not done here)
+`plan.mjs` / `lib/visuals.js` do not emit EPIC fields yet: a line naming a giant creature-city, a giant or an army should
+map to `worlds` / `giants` / `crowds` / `beat` (nouns: turtle/whale/elephant/snail town, giant <animal>, army, soldiers,
+knights, crowd; verbs: march, charge, attack, stomp, roar, flee, swim). Until then EPIC timelines are hand-made or from
+the director.
+
+## Addendum 2026-11-05 (d): INTEGRATION (the production list is the planner's source of truth)
+
+`planVideo({ script, words, idea, lengthSec, direction, exists })`: with `direction` (directStory's result) the planner
+plans as today, then `lib/direction.js` lays the production list over it; without it the plan is byte-identical to
+before (132/132 cases checked against HEAD). No special code per story: worlds, giants, crowds, beats and cameras come
+from the list's items and each line's words.
+- **Refinements** (general rules, listed in `tl.direction.notes`): describing words are not things; scenery words on a
+  creature-world line are the world's own; a creature called big / taller than a giant is a giant; duplicate armies are
+  one, an army next to a giant is that giant's (wolf -> wolf_soldier); a crowd word on a line with no crowd gets it;
+  mock only: a pronoun-led line is about the line before's subject. Then the list is matched again (match.js).
+- **Worlds per line**: an EPIC creature world -> `set: "creature:<species>_<view>[_sea]"` + `tl.worlds`: the line's own
+  relation (inside / on), "outside" when the line needs a non-world giant, an army, land / sea scenery or a scale shot of
+  the creature, "on" for "on / top of / edge of the shell"; both (town + outside) -> two shots, or "on" for one short
+  shot; after the creature swims, outside / on views are at sea; people never stand in the open sea (-> on). A world
+  routed to the builder -> `shot.world` need. Indoor base sets (bedroom / school) stay rooms of the town.
+- **Giants** `tl.giants` (non-world EPIC giants), per shot `giants: [{ id: "world" | id, action, spot, facing, role,
+  aliases }]`; **crowds** per shot `crowds: [{ kind, count, formation, action, spot, facing, faction, item, aliases }]`;
+  actions from the line's verbs (given to the giant / crowd named before each verb; negated verbs say nothing);
+  **beats** (attack > fall > stomp > roar > swim_away > charge > impact > march > cheer > flee) with roles; **cameras**
+  (hero_low for a person under a giant / before an army, giant_close for a roar / reveal, behind_army for a charge, track
+  for a march, establish for the creature / a giant, aerial for a town crowd); the director's **light** per line.
+  `aliases` on giants / crowds and `shot.worldAliases` let `checkVisuals` see them (lib/visuals.js covers); crowds count
+  as people for checkSubjects; EPIC giants are "beings" for lib/subjects.js ("He was taller..." = the wolf).
+- **Checks**: `checkProduction(tl)` (plan.mjs export, STRICT, reads `tl.production`) runs with checkTimeline +
+  checkVisuals + checkSubjects in make.mjs and in the worker's prepare (code PRODUCTION_CHECK); `checkTimeline` also
+  runs `validateEpic` and the production check. A miss is re-planned inside planVideo (`fixProduction`: the item by its
+  own system, else a picture card of it, else a badge), so a planned timeline comes out clean.
+- **Pipeline**: worker prepare runs directStory in parallel with the voice (mock unless `job.prepare.director.provider =
+  "anthropic"` + ANTHROPIC_KEY), prefetches the builder with the directed plan's needs, uploads `production.json`
+  (`job.prepare.out.production`, optional), sends `director` + `gaps` in "planned"; blocky-worlds-render inserts the gaps
+  (`logCapabilityGaps`, guarded, once per run). make.mjs: `--director mock|haiku|sonnet|off` (paid ones need --paid),
+  `--script file.json`.
+- Files: `lib/direction.js`, `dev/integration.mjs` (+ `--stills`), `dev/integration.test.mjs`,
+  `dev/integrationSheet.mjs`, `dev/scripts/turtle_wolf.json`; contact sheets in `out/integration/`.
+
+## Addendum 2026-11-06: the shot review (an AI looks at every shot before the render)
+
+Why: run turtle2 passed checkVisuals at 100% while a human frame review found 23% of the lines truly shown. The checks
+read the PLAN; the review looks at the PICTURES. Owner: "render a still of every shot and have an AI vision check
+compare it to its line (who, nouns, action, place, time). Any miss gets re-planned."
+
+Flow (prepare job, after the builder, before the pre-render checks; never fails a run):
+1. `lib/vision/requirements.js`: per line what it must show, from the STORY (production list + text + premise), never
+   from the plan; the frames: each shot's middle inside the line, two (25% / 75%) for a moving line or a single
+   shot > 3 s (turtle2: 77 frames for 64 shots / 50 lines).
+2. `lib/vision/stills.mjs`: the real engine page on a copy of the timeline with no captions at 432 x 768 (443 image
+   tokens a frame); one page load a pass; later passes load a SUB-timeline of the changed shots only.
+3. `lib/vision/judge.js`: Claude (Haiku 5.5 default, Sonnet 5.5 the strict option), ~8 lines / <= 14 frames a request,
+   4 in parallel, structured outputs: per line `shows` (described first), who / missing things / action / static /
+   place / time / emotion / card, verdict match | partial | miss, miss types, bad shots, fix. The verdict is made
+   consistent with the checks in code.
+4. `lib/vision/replan.js`: misses -> fixes in the planner's vocabulary (castFix, focusFix, actionPose, crowdAction,
+   exprFix, propHeld, needObject, needCrowd, setOverride, timeOfDay, replaceCard), applied one at a time; every fix
+   re-runs the pre-render checks and is undone if it adds a problem (the PERMANENT RULE's checks are the guard, never
+   relaxed). An object the kit lacks goes to the builder (kit -> library -> builder -> card) and is taken out again if
+   none of them makes it. Up to 2 re-plan rounds (pass 1 all lines, passes 2-3 only lines on changed shots); what is
+   still missing gets a picture card of that very thing (cut into the line's longest shot, <= 1 per 30 s), the rest
+   is recorded in `shot-review.json` (next to the timeline; dev/reviewPage.mjs can read it later).
+5. Caps: money (default $0.10 / video, each request reserves its worst case first), time (120 s and a hard `until`),
+   a pass starts only if its estimate fits. Any error = the timeline as it is, a note in the report.
+
+Entry point: `reviewForPrepare({ tl, script, premise, config, apiKey, plan, kit, kitProblems, builder, dir, until,
+beforeStills })` (lib/vision/index.js), called by runpod/worker.mjs prepare after the builder, before the pre-render
+checks (a resumed prepare never reviews). Config `job.prepare.review` (the server: render.js prepareReview; secret
+`BLOCKY_WORLDS_REVIEW` unset = haiku, ON since 2026-11-06; "off" disables; `BLOCKY_WORLDS_REVIEW_MAX_USD` 0.10), else
+env `BLOCKY_WORLDS_REVIEW` (worker-only runs: off by default). The prepare limit is 420 s: the builder ends 225 s after
+the start (as before), the review by 70 s before the limit. Calibration (owner-approved, turtle2): Haiku agreed with
+the human on match-or-not for 49/50 lines, caught 49/49 problems, 1 false alarm, $0.0113. Free tools: `node lib/vision/stills.mjs <timeline.json>` (timing), `node
+dev/visionDryRun.mjs --dir <run folder>` (real stills + mock judge), `node dev/visionCalibrate.mjs` (judge vs a human
+review.json; paid only with --paid --yes). Tests: `dev/vision.test.mjs`, `dev/visionPlan.test.mjs`.
+
+## Addendum 2026-11-06 (b): run 1620fc3e fixes (flat frames, empty cards, the coast ending)
+
+- **Flat-frame guard** (`lib/frameGuard.js`, `render.mjs flatGuard`): `renderAt(t, { safe })` returns `{ shot, mean,
+  flat, detail, safe }` (flat = share of the 16x16 probe in one colour bucket, detail = mean luminance step between
+  probe neighbours). A frame with flat > 0.85 or detail < 3 is re-rendered with `safe: 1` (no fog), then `safe: 2`
+  (no fog + a plain camera on the set's centre); the level that works starts the rest of the shot. Every saved shot is
+  logged and returned in the chunk result (`flat: [{ shot, safe, frames, left }]`, worker chunk report too); only
+  when no level saves it is the last good frame used. Stills (`renderStills`) use the same guard (`--raw`: none).
+  `BW_FLAT_TEST=3,10` forces flat frames to test it. The root cause of run 1620fc3e is fixed too: a creature host is
+  >= 120 m (`lib/direction.js hostSize`; a giant next to it <= 45% unless the script says it is bigger), the inside
+  cavern is never smaller than a 110 m creature's, and `lighting.js` keeps a fog's far end well past its near end.
+- **Picture cards** (`lib/cards.js`, `page/kit/props.js`): a generic icon ("✨") or an emoji the browser cannot draw in
+  colour gives the card's text big over the board (or the word on the disc) — never an empty circle; badges drop an
+  undrawable emoji for their word. The RunPod image installs `fonts-noto-color-emoji` (next image build).
+- **Built things replace every card of their name** (`lib/builder/apply.js`): the card shots of the need and any card
+  with its name; merged into a shot of the same line, else the card itself becomes a shot of the thing.
+- **Every line on screen in its own time** (`plan.mjs lineSpanProblems`, inside `checkTimeline`): a line's shots fill
+  >= half its span and its caption words are timed inside it.
+- **The coast stage** (`lib/coast.js` coastPass in planVideo; `page/sets/creatureWorld.js addCoastStage`): per shot
+  on a creature world seen from outside (not a sea world) `stage: { ground: "land" | "hill" | "sea", mud?: true,
+  fx?: ["spray" | "splash"] }` (checked by `lib/epic.js validateEpicShot`): a hill sloping to the sea, the hill as
+  shiny mud, water sprayed from the first person's hand (who holds the new `hose` prop), a splash at the shore, the
+  creature floating at sea. Giant actions `slide` (down the slope, set-driven) and `float`. The story state carries
+  forward (once muddy stays muddy, after the splash it floats); a coast line filmed only inside gets its first shot
+  moved outside. The set's camera never stays inside the hill, and the splash is filmed from the beach. Registry:
+  `world.coast`, `fx.water` (lib/capabilities.js).
+- **Cast** (`plan.mjs mergeDirectorCast`): the director's cast ids map onto the script's people ("mrs_pell" = "Mrs.
+  Pell"), other director people join with their role ("baker" an adult), "tiny sister" Juno is "my sister", and a
+  name seen only as a sentence-start word ("Spears poked") that the director's cast does not know is no person.
+Tests: `dev/run1620.test.mjs` (fixture `dev/scripts/run1620fc3e.json`).
+
+## Addendum 2026-11-06 (c): REBUILD (the turtle target rebuilt shot for shot; style rules)
+
+- **Planner wiring of the capabilities:** `lib/caps.js capsPass(tl, { check, openUntil })` runs in planVideo after the coast pass (directed plans). Each shot gets `suggestCaps` from its own spoken words; cards get nothing; the opening window gets only a `move`; a field that fails `validateCapsShot` or adds a checkTimeline problem is undone (`tl.direction.caps`). `checkTimeline` also runs `validateCaps`.
+- **Style rules** (`lib/style.js`, docs/blocky-worlds-protocol.md section 8):
+  - `motionPass`: idle giants walk unless the shot's words say stop / wait / hide / sleep / freeze (`tl.direction.motion`).
+  - `styleReport`: the advisory R1-R8 metrics + problems on every plan (`tl.style`; never fails a run).
+  - The judgement rules are in the director's STYLE prompt block.
+- **EPIC cameras** (`page/cameraEpic.js`, `page/epicLayer.js`):
+  - giant_close frames the FACE of a non-world giant and of the world creature seen from outside (`ctx.faceDir`, `headSize`).
+  - hero_low on a giant with no person: a low camera on the ground in front of it.
+  - track on a giant (no army): the whole animal side-on (`ctx.giantTrack`).
+  - A never-inside-another-giant guard: an odd ray-crossing count or a surface closer than 3% of its height moves the camera out sideways.
+
+## Addendum 2026-11-06 (d): the WORLD BIBLE (permanent rule: world continuity)
+
+One world per story (docs/blocky-worlds-protocol.md, the rule at the top). Owner of the bible: WORLD-BIBLE. Owner of its
+visuals: WORLD-LOOK (page/*). Code: `lib/worldBible.js` (pure, deterministic). Built only for directed plans (a
+production list); an undirected plan has no `tl.world` and is checked as before.
+
+### Flow
+1. `buildWorldBible({ production, script, idea, title })` in planVideo right after `readDirection`, before any shot.
+   Input hints: `production.bible` (director schema, enum-free: creature_look, town_name, building_style, palette[],
+   streets[], places[{name, kind}], landmarks[]); missing hints are seeded. The mock director writes them too.
+2. The shots are planned as before; at the end `applyBible(tl, bible)` (after the coast / caps / motion passes)
+   re-homes any set that is not a bible set (`homeShots`), binds every cast member to a bible look, writes each shot's
+   `worldSpot` + `onCreature`, sets every creature world's `seed` to the bible's town seed, tags bible props.
+3. `checkTimeline` runs `worldBibleProblems(tl)` ("world bible: ..."): a set not in `tl.world.sets` (a plain kit set in
+   a creature story, another creature's world), a `worldSpot` not in the bible or not of the shot's set, an actor
+   whose `look` / `seed` is not the bible's, a creature world of another species / town seed, an unknown `propId`.
+   A built world (`world:<id>`, the builder's place for one line) is allowed.
+4. The prepare job saves `world-bible.json` next to `timeline.json` (`saveWorldBible`).
+
+### Timeline fields (new, all optional)
+- `tl.world` (the bible): `{ version: 1, seed, title, kind: "creature" | "town",
+  creature: { species, name, heightM, townView: "inside" | "on" | null, colors: { skin, back, belly }, backWord, features[] } | null,
+  town: { name, seed, style: { id, text, walls[], roofs[], trim }, palette[], streets: [{ id, name, from: [x,z], to: [x,z] }],
+          buildings: [{ id, name, kind, street, pos: [x,z], wall, roof, floors, sign?, prop? }], landmarks: [{ id, name, kind, pos: [x,z] }] },
+  spots: [{ id, name, kind, view, set, anchor, onCreature }], sets: [set],
+  cast: { id: { name, role, kind, look, age, gender, seed, words, from } }, townsfolk: [{ id, look, age, gender, seed }],
+  creatures: [{ id, species, name, heightM, colors, host }], props: { id: { name, size, look: { color, material }, heldBy, storyProp } },
+  time: [{ from, to, light }] }`.
+  Town plan coordinates are in [-1, 1]: x across the back, z along it, +z toward the head. Spot ids: `outside_wide`,
+  `outside_coast`, (`outside_on`), `main_street`, `square`, `deck` (the lookout at the shell / back edge), `stairs`,
+  `rooftop`, `school`, `market`, `home` (interior); a town story: `main_street` (street), `school`, `home` (bedroom), `woods`.
+- `shot.worldSpot`: the bible spot id the shot stands in.
+- `shot.onCreature` (street-level creature shots, not inserts): `{ view, shellEdge, headNeck, walkTilt, tiltDeg }`.
+- `tl.cast[id].look` (people kit `lookFor` overrides: top, pattern, bottom, pants, hair, hairColor, hat, hatColor,
+  glasses, acc), `tl.cast[id].seed` (= the bible's), `tl.cast[id].bibleId`, `tl.cast[id].gender` when the bible knows it.
+- `tl.worlds[id].seed` = `tl.world.town.seed`; `tl.worlds[id].town` = the town's name.
+- `objects[].propId`: the bible prop this object is.
+- `shot.renderFlags` (from the shot review): `["washed_out"]`: render that shot safer (less fog / bloom / exposure).
+
+### What WORLD-LOOK must render (page/*)
+- One town from `tl.world.town` in every creature view (inside, on, outside): the buildings at their `pos` along the
+  streets, `style.walls` / `roofs` / `trim`, the named places with their `sign`, the landmarks; the creature in
+  `creature.colors`. Outside wide shots show that same town on its back.
+- A shot's `worldSpot` frames its place in that town (main street, square, deck at the edge, stairs, rooftop, school,
+  market, home interior).
+- `onCreature`: `shellEdge` = the shell / back rim (or the shell wall and ribs inside) in frame; `headNeck` = the head or
+  neck in the background; `walkTilt` + `tiltDeg` = the ground slowly rocking as the creature walks (0 when it stops).
+- `renderFlags: ["washed_out"]` as a safer exposure for that shot.
+
+### Shot review (lib/vision)
+- The judge gets `bibleSummary(tl.world)` once per batch and `bibleLine` (the spot) per line; `world_ok` in the schema;
+  new miss types `world_mismatch`, `clipping`, `camera_inside`, `sky_only`, `washed_out` (`RENDER_TYPES`).
+- Fixes: `world_mismatch` -> `setOverride { set, spot }` to the bible's set + spot and `castFix { bibleLook: true }`;
+  `clipping` / `camera_inside` / `sky_only` -> `cameraFix { camera }`; `washed_out` -> `renderFlag`.
+- The mock judge flags `world_mismatch` from the planned shots (set / look not the bible's).
+
+## Addendum 2026-11-07: NO PICTURE CARDS OR BADGES (owner, PERMANENT; replaces "a picture card as last resort")
+
+Never a sign / board with a word or an icon, a word / icon badge on a person, a name tag, an "x3" counter or a rule
+sign. Real in-world signs that are part of a building (a shop sign on the bakery, in page/sets) stay.
+- The timeline never has `camera: "insert"`, `shot.insert`, or a marker of kind `tag` / `icon`; only `ring` (no
+  text) remains. `checkTimeline` fails any of them anywhere (`lib/cards.js cardProblems`); the page draws none
+  (`page/kit/props.js NO_CARDS`: makeInsert / makeMarker return empty groups, a ring still draws).
+- When a line's thing / creature can't be shown (not in the kit, library or builder, or the budget is spent), the shot
+  is the closest REAL shot, in this order: (a) the line's character doing the line's action, (b) a reaction shot (who
+  the line is about, else the narrator, with the fitting expression), (c) a wide of the world (the creature world from
+  outside, else the place wide with its people). The planner cuts nothing in: the line's own real shot stays.
+- `shot.unshown: [label]` (new, optional): what that shot could not show, for the logs and the review, never on
+  screen. `checkVisuals` / `checkProduction` / `checkSubjects` read it as excused (`lib/opening.js waivedHas`, together
+  with the owner's `waived`); anything the kit / library / builder CAN show must still be shown.
+- `shot.needs: [{ id, host: "self" }]` (planner -> builder; was the card's `shot.need`): the builder need rides on the
+  real shot; a built / kit thing stands in that very shot (and in every other shot listing it as unshown) and leaves
+  `unshown`. Not built: the shot stays as planned. `applyResolved` tidies `needs` away; its `cards` list = needs not made.
+- Loose names (kind `name`), "names" and "N times" are words, not things: no longer required keys (no tags / counters).
+- The vision `finalFallback` cuts no card: it reframes the line's longest real shot (action -> reaction -> world) and
+  records the thing in `shot.unshown` (`{ cards: [], fallbacks, unresolved, changedShots }`).
+- The opening: with no rule sign, a creature story's establishing shot of the whole giant is line 0's first moment
+  (shot 0 split at a word start, or shot 0 when line 0 has another shot).

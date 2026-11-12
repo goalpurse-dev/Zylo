@@ -1,4 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
+import { openaiFetch } from "../_shared/openaiBackup.js";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { requirePaidFruitUser, consumeFruitRateLimit } from "../_shared/fruitStoryAccess.ts";
 
@@ -155,7 +156,7 @@ Return JSON:
 }`;
 
   try {
-    const response = await fetch(OPENAI_CHAT, {
+    const response = await openaiFetch(OPENAI_CHAT, {
       method: "POST",
       headers: { "Authorization": `Bearer ${OPENAI_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({

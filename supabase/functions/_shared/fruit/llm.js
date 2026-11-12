@@ -4,6 +4,8 @@
 // Every call is meant to be logged (fruit_ai_calls) by the caller with these
 // exact request/response bodies.
 
+import { openaiFetch } from "../openaiBackup.js";
+
 // USD per 1M tokens (confirmed Sep 2026; same figures the Long Form code uses).
 export const LLM_PRICES = Object.freeze({
   "claude-sonnet-5": { input: 2.0, output: 10.0, cacheRead: 0.2, cacheWrite: 2.5 },
@@ -29,7 +31,8 @@ export class LlmError extends Error {
 
 async function post(url, headers, body, timeoutMs) {
   const t0 = Date.now();
-  const res = await fetch(url, { method: "POST", headers: { "content-type": "application/json", ...headers }, body: JSON.stringify(body), signal: AbortSignal.timeout(timeoutMs) });
+  // OpenAI calls go through the Claude backup (openaiBackup.js): same answer shape if OpenAI fails.
+  const res = await (url.startsWith("https://api.openai.com/") ? (u, init) => openaiFetch(u, init, { caller: "fruit/llm.js" }) : fetch)(url, { method: "POST", headers: { "content-type": "application/json", ...headers }, body: JSON.stringify(body), signal: AbortSignal.timeout(timeoutMs) });
   const text = await res.text();
   let json = null;
   try { json = JSON.parse(text); } catch { /* keep text */ }

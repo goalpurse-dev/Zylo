@@ -3,6 +3,7 @@ import { ArrowLeft, Clapperboard, Layers, Loader2, Play, RotateCcw, ShieldCheck,
 import { clockLength, FAILED_MESSAGE, isWorking, recentOrExamples } from "./api/cutawayApi";
 import CutawayGenerating from "./CutawayGenerating";
 import CutawayHero from "./CutawayHero";
+import { TutorialCard } from "../../launch/LaunchUI.jsx";
 import CutawayResultView, { ExampleBadge } from "./CutawayResultView";
 
 export { ExampleBadge };
@@ -137,6 +138,7 @@ function Idle({ recent, onOpen, onRetry, onWatch, isDesktop }) {
   if (recent.length) return (
     <div ref={ref} className="cw-view relative flex flex-col gap-4 overflow-x-hidden rounded-2xl border border-white/[0.06] bg-[#0B0D0F] p-4 sm:p-5 lg:h-full lg:min-h-0 lg:overflow-y-auto [scrollbar-width:thin]">
       <Recents items={recent} onOpen={onOpen} onRetry={onRetry} onWatch={onWatch} flow />
+      <TutorialCard tool="cutaway" />
     </div>
   );
   return (
@@ -147,18 +149,20 @@ function Idle({ recent, onOpen, onRetry, onWatch, isDesktop }) {
         <div className="relative flex gap-6">
           <div className="flex min-w-0 flex-1 flex-col gap-4">
             <Intro size={width >= 860 ? "lg" : "md"} features />
-            <Recents items={recent} onOpen={onOpen} compact />
+            {/* new here: the tutorial, beside the hero and well away from the form */}
+            <TutorialCard tool="cutaway" />
+            {/* no "Examples" grid here (owner, 2026-11-10): the hero's "Watch an example" opens one */}
           </div>
-          {/* the hero stays in view while the side scrolls; its height fits the panel */}
+          {/* the hero stays in view while the side scrolls; a little smaller than the panel allows (owner, 2026-11-10) */}
           <div className="sticky top-0 flex shrink-0 items-start justify-center self-start pl-8 pr-1">
-            <CutawayHero variant="tall" onWatch={onWatch} className="aspect-[9/16]" style={{ height: `${Math.max(320, Math.min(580, (height || 640) - 48))}px` }} />
+            <CutawayHero variant="tall" onWatch={onWatch} className="aspect-[9/16]" style={{ height: `${Math.max(300, Math.min(470, (height || 640) - 120))}px` }} />
           </div>
         </div>
       ) : (
         <>
-          {isDesktop && <CutawayHero variant="tall" onWatch={onWatch} className="mx-auto aspect-[9/16] w-full max-w-[300px] shrink-0" />}
+          {isDesktop && <CutawayHero variant="tall" onWatch={onWatch} className="mx-auto aspect-[9/16] w-full max-w-[240px] shrink-0" />}
           <Intro size="sm" />
-          <Recents items={recent} onOpen={onOpen} flow />
+          <TutorialCard tool="cutaway" />
         </>
       )}
     </div>

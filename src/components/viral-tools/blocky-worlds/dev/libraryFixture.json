@@ -1,0 +1,3122 @@
+[
+ {
+  "id": "9ef30041-f4bf-41cd-b989-51e1d1180fec",
+  "score": 87,
+  "idea": {
+   "mood": "funny",
+   "prop": "A roll of tape",
+   "price": "Leave your seat and your chair is gone by morning, with a tail mark.",
+   "title": "Seat Thief",
+   "twist": "The law says the dragon takes a chair when its kid leaves it. Fig tapes every kid to their chair, so they are always in it, and wheels the whole class out the door.",
+   "closer": "Everyone here stays in their seat. We just take the seat with us.",
+   "opener": "In this town, every kid must stay in their seat after the final bell, or the Detention Dragon takes your chair.",
+   "teaser": "The rule never said the chair couldn't move.",
+   "formula": "F2",
+   "premise": "At a school where chairs are guarded by a hungry dragon, a kid with a squeaky wheelie chair tries to reach the exit without moving.",
+   "setting": "school (hallway, cafeteria, classroom, stage)",
+   "examples": [
+    "Mr. Plunk stood up to sneeze. Now he teaches sitting on a bucket.",
+    "The lunch lady serves soup to kids who can't get up.",
+    "Gary has been in his chair since Tuesday."
+   ],
+   "narrator": "Fig, the kid whose chair has wheels and cannot stay still.",
+   "twistType": "T1"
+  }
+ },
+ {
+  "id": "309b50e8-c2e3-4643-9770-605d7c322356",
+  "score": 86,
+  "idea": {
+   "mood": "funny",
+   "prop": "A stale bagel in her backpack",
+   "price": "Last time bread was late, the pigeon announced Mr. Crumb's wig size to the whole square.",
+   "title": "The Polite Pigeon",
+   "twist": "The deal says the pigeon won't say anything 'while eating'. So Cass feeds it the stale bagel, which takes it three hours to chew, and the pigeon sits in the square chewing in total silence until the bakery opens.",
+   "closer": "We pay the pigeon to stay quiet. Now we just buy it the toughest bagel.",
+   "opener": "In this town, every night we give the Fountain Pigeon one whole loaf of bread, and it promises not to say anything.",
+   "teaser": "The deal said eating. The bagel said forever.",
+   "formula": "F3",
+   "premise": "A town square pays a giant pigeon to keep its mouth shut about everyone's secrets, and the narrator forgets the bread one night with the mayor's secret on the line.",
+   "setting": "town square",
+   "examples": [
+    "Baker Lou bakes the loaf in the shape of a tiny hat.",
+    "The mayor tucks a note inside every loaf begging for silence.",
+    "The bus driver gives it two loaves just to be safe."
+   ],
+   "narrator": "Cass, who owns the town's last stale bagel and is out of fresh bread.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "a88314f9-9c66-4bb6-bf82-5f6b9998310b",
+  "score": 85,
+  "idea": {
+   "mood": "funny",
+   "prop": "Grandma's sour soup pot",
+   "price": "A house with no soup wakes up with the chimney full of snow and the door frozen shut.",
+   "title": "Soup for the Yeti",
+   "twist": "The yeti's law says it must finish every bowl it is given, or it freezes in place. Fitz makes a giant pot of sour soup, the yeti must finish it, and it puckers and runs away for good.",
+   "closer": "Everyone here feeds the yeti. Now the yeti begs us to stop.",
+   "opener": "In this town, every family leaves one bowl of hot soup on the roof every night, for the Chimney Yeti.",
+   "teaser": "The yeti always finished every bowl. That was the problem.",
+   "formula": "F3",
+   "premise": "Every roof in the snowy town has a bowl for the yeti, but the narrator's family only has one cursed, terrible-tasting soup recipe.",
+   "setting": "snowy town",
+   "examples": [
+    "Mrs. Plum sends up a soup with twelve noodles, counted.",
+    "Mr. Dobbin's soup is just warm water, and he has a frozen door.",
+    "The baker's soup is so good the pigeons moved in."
+   ],
+   "narrator": "Fitz, whose grandma's soup tastes like old socks and has the most sour smell in town.",
+   "twistType": "T1"
+  }
+ },
+ {
+  "id": "ee3d27a6-4bfe-4da6-b44a-61165d5e11dc",
+  "score": 84,
+  "idea": {
+   "mood": "epic",
+   "prop": "A tin whistle in his pocket",
+   "price": "The last whistler's house is now a hole in the rock, and everyone has walked past it.",
+   "title": "Don't Whistle",
+   "twist": "The Worm is deaf to deep sounds but follows high whistles, so Fenn whistles his one loud note the whole way across the cave and leads the worm into the old dead tunnel while the town seals it.",
+   "closer": "Nobody here whistles. But when the rocks shake, they all hope I do.",
+   "opener": "In this town, nobody whistles in the mine tunnels, or the Rumble Worm hears and comes through the wall.",
+   "teaser": "The only sound it hears is the one they mocked.",
+   "formula": "F2",
+   "premise": "In the underground town of Pebble Hollow, whistling is banned and the Rumble Worm is coming, but Fenn is the only kid who can't stop whistling.",
+   "setting": "underground or cave town",
+   "examples": [
+    "Baker Nell hums with her mouth stuffed with bread.",
+    "Mr. Gravel shushes the kettle before it can whistle.",
+    "The mine train honks, and only on Sundays."
+   ],
+   "narrator": "Fenn, who has whistled through his teeth since birth and was laughed at for it.",
+   "twistType": "T3"
+  }
+ },
+ {
+  "id": "f1e72bc5-0c81-4780-85e5-36596a53380d",
+  "score": 79,
+  "idea": {
+   "mood": "funny",
+   "prop": "A spool of red ribbon",
+   "price": "Any animal that ignores a bow tie chicken gets sent to scrub the pig pen for a week.",
+   "title": "The Bow Tie Chickens",
+   "twist": "The law says anyone wearing a bow tie is boss. Pip ties a bow tie on every pig, cow and goat, so every animal is boss, and since a boss can't take orders, the chickens end up carrying the buckets themselves.",
+   "closer": "Only bow ties may boss the barnyard. Now everyone has one, and the chickens carry buckets.",
+   "opener": "In this town, only chickens with a bow tie may boss the barnyard, and every other animal must do what they say.",
+   "teaser": "Everyone gets a bow tie. That's the problem for the bosses.",
+   "formula": "F6",
+   "premise": "On a farm, chickens in bow ties give all the orders, and Pip, a plain brown hen's kid brother, gets sick of being told to carry buckets.",
+   "setting": "farm",
+   "examples": [
+    "Bow tie Gerald ordered a cow to fetch his slippers.",
+    "The goat has been carrying one tiny chair for three days.",
+    "Farmer Hal's dog salutes every time a bow tie walks by."
+   ],
+   "narrator": "Pip, a farm kid with no bow tie and a pocket full of ribbon, who is stuck doing chores.",
+   "twistType": "T1"
+  }
+ },
+ {
+  "id": "2452f36e-4a1f-4bdd-b8bc-e41acc82678d",
+  "score": 79,
+  "idea": {
+   "mood": "funny",
+   "prop": "a soup pot",
+   "price": "Anyone caught bowing late has to carry a ruler's backpack to school.",
+   "title": "Helmet Hair Loophole",
+   "twist": "The law says anyone wearing a helmet rules, and it never says what kind. Beck wears a soup pot, then the whole street wears pots, mixing bowls and buckets, and everyone rules, so nobody has to bow.",
+   "closer": "Everyone on this street has a helmet. Mine just happens to have a handle.",
+   "opener": "In this town, kids with a bike helmet are Rulers of the Street, and kids with no helmet must walk and bow.",
+   "teaser": "The rule only said helmet. It never said which kind.",
+   "formula": "F6",
+   "premise": "On Cobble Lane, helmet kids rule the sidewalks and bare-headed kids must bow, until the narrator wears something that is technically a helmet.",
+   "setting": "suburb street",
+   "examples": [
+    "King Marcus's helmet has a cupholder and a tiny flag.",
+    "Dolores bows so often her hat is just her spine.",
+    "The mailman salutes helmets and hands the rest their letters sideways."
+   ],
+   "narrator": "Beck, the only kid with no helmet, who walks, bows badly, and owns a big pot.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "bd7c7d79-5cf9-49b8-9ee4-b1c22de0963b",
+  "score": 79,
+  "idea": {
+   "mood": "funny",
+   "prop": "A fridge magnet",
+   "price": "Anyone caught moving when the light comes on gets eaten with the leftovers.",
+   "title": "The Fridge Door",
+   "twist": "The fridge door only opens when the light turns on. Gus sticks the magnet over the light switch, so the door stays shut forever, and the town gets to move whenever it wants.",
+   "closer": "We used to freeze when the door opened. Now the fridge freezes when we say so.",
+   "opener": "In this town, we all live inside a giant refrigerator, and every time the door opens we freeze in place.",
+   "teaser": "The light was the one rule they all obeyed.",
+   "formula": "F4",
+   "premise": "The whole town lives among the shelves of a giant fridge, and when a hungry teenager keeps raiding it, nine-year-old Gus has to stop the door.",
+   "setting": "house (bedroom, kitchen, living room)",
+   "examples": [
+    "Mrs. Butter freezes mid-sneeze every time the light turns on.",
+    "The pickle jar neighbours have practiced standing still for years.",
+    "Mr. Yogurt expired in 2019, so nobody asks him anything."
+   ],
+   "narrator": "Gus, the kid from the shelf of the old jam jar, who keeps a note stuck to the door with a magnet.",
+   "twistType": "T1"
+  }
+ },
+ {
+  "id": "1038ceaf-14ee-464d-ad67-dfe9a46c484a",
+  "score": 78,
+  "idea": {
+   "mood": "funny",
+   "prop": "A little jar of pepper",
+   "price": "Sneeze too softly and you shovel the Boomers' driveways until spring.",
+   "title": "The Quiet Sneezer",
+   "twist": "The Boomers' law says the loudest sneeze outranks all. Wren sneaks pepper to the whole shovel crowd, they sneeze together louder than any Boomer, and the law makes them the new rulers.",
+   "closer": "Everyone here still ranks by sneeze, but now the whole street has a cold on purpose.",
+   "opener": "In this town, the louder your sneeze, the higher your rank, so the Boomers sit on the snowy hilltop and everyone else sits below.",
+   "teaser": "The law only cares who sneezes loudest. Everyone forgot that.",
+   "formula": "F6",
+   "premise": "Rank in the snowy town of Achoo Ridge is set by sneeze volume, and the narrator's sneeze is so quiet nobody has ever heard it.",
+   "setting": "snowy town",
+   "examples": [
+    "Mayor Gruff sneezed once and the whole bakery lost its roof snow.",
+    "Mrs. Plum sneezes in a bucket so she won't get promoted.",
+    "The mailman gets his route by sneeze, so he delivers to one house."
+   ],
+   "narrator": "Wren, whose sneeze is a tiny squeak, so she wears the gray shovel mittens.",
+   "twistType": "T1"
+  }
+ },
+ {
+  "id": "c80e6375-b540-49ac-ba46-3927cf465488",
+  "score": 77,
+  "idea": {
+   "mood": "epic",
+   "prop": "Ivy's spare right shoes",
+   "price": "Loud dreams shake houses off their lots; the Garza garage is still crooked.",
+   "title": "One Left Shoe",
+   "twist": "The deal says one shoe, never which foot. The Sleeper, who only checks for shoes, finds Ivy's pile of right shoes and wears them proudly, and the town is saved by the exact words they always said.",
+   "closer": "Everyone here saves their left shoes. I saved the right ones, and that was enough.",
+   "opener": "In this town, every night each house leaves one left shoe on the curb for the Sidewalk Sleeper, and it promises to dream quietly.",
+   "teaser": "The deal says shoe. It never says which foot.",
+   "formula": "F3",
+   "premise": "A suburb street pays a sleeping giant one shoe each night to keep his dreams quiet, but tonight the street has run out of left shoes.",
+   "setting": "suburb street",
+   "examples": [
+    "Mr. Hobb hops to work on one boot every Monday.",
+    "The twins share a single pair across two houses.",
+    "The mail truck wears a tiny sneaker on its bumper."
+   ],
+   "narrator": "Ivy, the kid who is the only one on the street born with two right feet.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "97823db9-4567-4785-997b-2de2ac289143",
+  "score": 76,
+  "idea": {
+   "mood": "epic",
+   "prop": "A roll of tape",
+   "price": "Anything left on the floor at lights out gets mopped into the drain.",
+   "title": "The Midnight Mop",
+   "twist": "The mop-monster mops only what is on the floor. Juno tapes every house, bed and desk up on the walls and ceiling, so the mop finds nothing and the monster gets bored and leaves.",
+   "closer": "In this town, we live inside a school. Now our floors are always clean, and we sleep on the ceiling.",
+   "opener": "In this town, we all live inside a giant school, and every night the janitor's mop bucket floods the halls.",
+   "teaser": "The mop only cleans what it can reach.",
+   "formula": "F4",
+   "premise": "Our town lives in an enormous school building, and the mop-monster that cleans it each night is washing the town away, one hallway at a time.",
+   "setting": "school (hallway, cafeteria, classroom, stage)",
+   "examples": [
+    "Mrs. Gable lost her whole kitchen table in the cafeteria once.",
+    "The Pickens twins' tricycles are somewhere under the gym.",
+    "Mr. Dunn's hat floated off to the drain last Tuesday."
+   ],
+   "narrator": "Juno, the smallest kid in the school-town, who keeps a roll of tape in her pocket.",
+   "twistType": "T1"
+  }
+ },
+ {
+  "id": "85ae5efc-8652-4869-b1c4-eafc0ee0faf2",
+  "score": 76,
+  "idea": {
+   "mood": "funny",
+   "prop": "The Lords' rule scroll",
+   "price": "Any Stump who refuses an order has to sit on the stump all day.",
+   "title": "Lords and Stumps",
+   "twist": "The law says a Lord must obey whoever holds the antler crown. Nell hangs the crown on a Stump post, so every Lord has to obey the post, and now they all fetch her snacks.",
+   "closer": "Some are Lords, the rest are Stumps. Now the stump gets the last cookie.",
+   "opener": "In this town, kids with antlers on their heads are Lords of the Woods, and the rest of us are Stumps.",
+   "teaser": "The Lords' own law has a very silly loophole.",
+   "formula": "F6",
+   "premise": "Antlered kids order everyone around at the woods edge, and Stump Nell wants to take her turn as Lord without any antlers of her own.",
+   "setting": "woods edge",
+   "examples": [
+    "Lord Barnaby makes Stumps carry his acorn collection in a wheelbarrow.",
+    "Lady Pim has a Stump to hold her umbrella.",
+    "Lord Gus demands a Stump read him bedtime stories at noon."
+   ],
+   "narrator": "Nell, a Stump with no antlers who keeps a very long list of rules.",
+   "twistType": "T1"
+  }
+ },
+ {
+  "id": "96cf4327-34f9-441b-87a9-f540858e79c8",
+  "score": 75,
+  "idea": {
+   "mood": "funny",
+   "prop": "Milo's stinky gym sock",
+   "price": "The Hendersons left one sock on the floor. By morning there was a goblin footprint and nobody had socks.",
+   "title": "Sock Curfew",
+   "twist": "The goblin sneaks in, grabs every clean sock, then sniffs Milo's gym sock on the floor. It gags and flees, dropping all the clean socks. The smell everyone teased was the one thing it can't steal.",
+   "closer": "In this town, every sock hides at night. Except Milo's. That one guards the whole street.",
+   "opener": "In this town, every sock must be in its drawer by bedtime, or the Sock Goblin takes it and the foot it came with.",
+   "teaser": "Everyone teases Milo's feet. The goblin can't stand them.",
+   "formula": "F2",
+   "premise": "Milo's family locks every sock away at night, but Milo's socks are so stinky that they crawl out of the drawer on their own.",
+   "setting": "house (bedroom, kitchen, living room)",
+   "examples": [
+    "Grandpa Fitz tapes his socks inside a cookie tin every night.",
+    "Aunt Marla counts her socks twice and sings them to sleep.",
+    "The mail carrier ties his socks to his hat before bed."
+   ],
+   "narrator": "Milo, whose socks are so stinky that they crawl out of every drawer.",
+   "twistType": "T3"
+  }
+ },
+ {
+  "id": "3dd66547-7f2f-4716-89b8-964d432e743e",
+  "score": 75,
+  "idea": {
+   "mood": "epic",
+   "prop": "Wooden step stool",
+   "price": "Anyone below the counter line eats scraps and is never allowed near the stove.",
+   "title": "Below the Counter",
+   "twist": "The rule says only kids taller than the counter may touch the stove, but it never says how they got tall. Mini climbs onto the step stool, becomes counter-height, and legally cooks the rescue meal.",
+   "closer": "In this town, you must be taller than the counter. I just brought my own.",
+   "opener": "In this town, only kids who are taller than the kitchen counter may touch the stove, so the Tall Ones run every meal.",
+   "teaser": "The rule only counts height. It never says how.",
+   "formula": "F6",
+   "premise": "Tall kids in a giant kitchen cook, boss and eat first, while the narrator, the shortest, watches the Tall Ones promise a feast and then get trapped on the high shelf.",
+   "setting": "house (bedroom, kitchen, living room)",
+   "examples": [
+    "Big Rosa stirs the soup while little kids wash the spoons.",
+    "Mr. Gable stands on tiptoes to rule the biscuit tin.",
+    "The Tall Ones sealed the cookie jar with a sign: for counter-height only."
+   ],
+   "narrator": "Mini, the smallest kid in the kitchen, who carries a wooden step stool.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "767c241b-e072-4bf2-828c-fe0659e2c37b",
+  "score": 75,
+  "idea": {
+   "mood": "wholesome",
+   "prop": "a candle stub in my pocket",
+   "price": "Anyone without a glow gets left behind at the dark tunnel forks.",
+   "title": "The Bald Spot",
+   "twist": "At the first fork the glowing kids ran ahead, laughing. At the second they shut the gate on me. At the third they left me in the dark. Then spore fog puts every mushroom to sleep, and only my candle still lights the way home.",
+   "closer": "Everyone here has a glowing mushroom. But now, when the dark comes, they follow me.",
+   "opener": "In this town, everyone in the cave town has a glowing mushroom growing from their head, except me.",
+   "teaser": "When every glow goes out, the bald kid is the light.",
+   "formula": "F1",
+   "premise": "Everyone in Gloamdeep lights their own way with a head-mushroom, and the one bald kid carries a plain candle stub and gets left behind at every tunnel fork.",
+   "setting": "underground or cave town",
+   "examples": [
+    "Mrs. Tuft's mushroom glows so bright she reads at bedtime.",
+    "Old Barlow's mushroom blinks blue whenever he tells a fib.",
+    "The mail carrier's mushroom is the size of an umbrella."
+   ],
+   "narrator": "Moss, the only bald kid in town, who carries a candle stub everywhere.",
+   "twistType": "T3"
+  }
+ },
+ {
+  "id": "cc44488b-523a-40af-bbed-fc25ccc8f261",
+  "score": 75,
+  "idea": {
+   "mood": "funny",
+   "prop": "A cheese slicer",
+   "price": "Last time the cheese was late, the freezer door stayed open and everyone wore three sweaters.",
+   "title": "The Cheese Deal",
+   "twist": "The deal says one slice, nothing about thickness. Biscuit shaves a slice so thin you can see through it, which counts, and the fridge hums happily while the whole town's cheese lasts forever.",
+   "closer": "Everyone here pays one slice. Mine you can read the newspaper through.",
+   "opener": "In this town, every night we give the Giant Refrigerator one slice of cheese, and it promises to keep the lights on.",
+   "teaser": "The deal said one slice. It never said how thick.",
+   "formula": "F3",
+   "premise": "Everyone lives in a giant fridge and pays cheese nightly, but this week the cheese ran out and the humming grew angry.",
+   "setting": "inside something giant (an animal, a store, a tower)",
+   "examples": [
+    "Mr. Gouda trades slices like gold at the corner shop.",
+    "The mice union demands cheese in the morning too.",
+    "Grandma knits tiny cheese hats for the pantry cats."
+   ],
+   "narrator": "Biscuit, a small kid who keeps a cheese slicer and collects every crumb.",
+   "twistType": "T1"
+  }
+ },
+ {
+  "id": "8682004c-f6e5-4420-aec6-c5083cc1f1cc",
+  "score": 75,
+  "idea": {
+   "mood": "horror",
+   "prop": "a roll of tape",
+   "price": "Whatever sits under the raised flag is gone by morning.",
+   "title": "Raise the Flag",
+   "twist": "The rule says the Carrier takes only what is under the flag. Ollie tapes the flag down over the Carrier's own bag, so the Carrier takes itself away. But the flag pops up again, and a tiny shadow waves from the slot.",
+   "closer": "The Carrier takes whatever sits under the flag. So who raised it just now?",
+   "opener": "In this town, we all live inside a giant mailbox, and anything the carrier takes from the flag goes away forever.",
+   "teaser": "The rule only says what's under the flag. Ollie read it carefully.",
+   "formula": "F4",
+   "premise": "A suburb street's families live inside a huge mailbox where the red flag marks what the Carrier will collect, and the narrator accidentally raises it over his little brother.",
+   "setting": "suburb street",
+   "examples": [
+    "Mrs. Lane raised the flag over her old couch and it vanished.",
+    "The Pruitts lost a whole garage sale.",
+    "Mr. Abbot's wind chimes left in the night, still ringing."
+   ],
+   "narrator": "Ollie, a kid who is always the last to check the flag and the first to bump into it.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "540a4312-13fe-4acd-8684-0678df5fd1d9",
+  "score": 75,
+  "idea": {
+   "mood": "wholesome",
+   "prop": "his wobbly roller skates",
+   "price": "Mr. Pell stood in an aisle at closing. His mannequin tag now hangs in the window.",
+   "title": "After Closing Time",
+   "twist": "The Mannequin only grabs what stands still, so Milo wobbles and rolls on his skates through the dark aisles, and it can never catch the one thing that never holds still.",
+   "closer": "Everyone here learns to stand perfectly still. I am the only one who never could.",
+   "opener": "In this town, we all live inside a giant department store, and after closing, anyone not on a shelf belongs to the Night Mannequin.",
+   "teaser": "Everyone mocked how he can't stand still. Tonight that matters.",
+   "formula": "F2",
+   "premise": "Our families sleep as toys on store shelves each night, but the new kid is too wobbly and keeps falling off.",
+   "setting": "inside something giant (an animal, a store, a tower)",
+   "examples": [
+    "Mrs. Garza sleeps in the cereal aisle, holding very still beside the oats.",
+    "The Hendersons stand on the lamp shelf and pretend to be lamps.",
+    "Our mayor hides as a tall potted fern in aisle nine."
+   ],
+   "narrator": "Milo, who is the wobbliest kid in the store and always gets laughed at for falling over.",
+   "twistType": "T3"
+  }
+ },
+ {
+  "id": "19027390-d330-42df-af91-ae9768bdba28",
+  "score": 75,
+  "idea": {
+   "mood": "funny",
+   "prop": "A tiny paper flag",
+   "price": "Last week Captain Boots waved, and the squid shook his hand for six hours.",
+   "title": "Don't Wave Back",
+   "twist": "The squid only wanted to say hello and was lonely, because nobody ever waved first. Dot's flag starts a friendly parade, and the whole submarine learns the rule was about being brave enough to greet a friend.",
+   "closer": "In this town, we never wave at the squid. Except on Tuesdays, when it brings cupcakes.",
+   "opener": "In this town, nobody may wave at the giant squid outside the window after the bell, or it waves back with every arm.",
+   "teaser": "The scary squid just wants someone to say hi.",
+   "formula": "F2",
+   "premise": "A submarine town stays still when the squid appears, but Dot cannot stop waving, and her waving is about to get the whole crew a very long handshake.",
+   "setting": "underwater or submarine",
+   "examples": [
+    "Mr. Fizz now wears a bandage on both hands.",
+    "The cook waved once and her soup ladle got high-fived.",
+    "Cabin boy Ned was hugged by eight arms and smelled like ink."
+   ],
+   "narrator": "Dot, a kid who waves at everything, even the toaster.",
+   "twistType": "T6"
+  }
+ },
+ {
+  "id": "3a434e0a-5acc-471b-8146-fcfb05f29911",
+  "score": 75,
+  "idea": {
+   "mood": "funny",
+   "prop": "A pinch of tunnel pepper in his pocket",
+   "price": "A big sneeze last year made the mole roll over and flatten Mr. Pogue's bakery.",
+   "title": "Inside the Mole",
+   "twist": "When the burrow floods with cold fog, nothing wakes the mole. Tuck sneezes with the pepper, the mole sits up and shakes the fog out, and the whole town cheers his giant, ridiculous sneeze.",
+   "closer": "Everyone in this town hates sneezing. Now they hand me pepper.",
+   "opener": "In this town, we all live inside a giant mole's tunnel, and every morning the walls wiggle at seven.",
+   "teaser": "His loudest sneeze was the town's only alarm clock.",
+   "formula": "F4",
+   "premise": "A cave town lives in a huge sleepy mole's burrow, and the narrator is mocked for being the loudest sneezer in the tunnels.",
+   "setting": "underground or cave town",
+   "examples": [
+    "The mailman delivers letters by sliding them down the mole's whiskers.",
+    "Mrs. Dunn's laundry gets stuck in the mole's fur every Tuesday.",
+    "The school bus is a wheelbarrow, and it always comes late."
+   ],
+   "narrator": "Tuck, whose sneezes shake the walls, so everyone gives him tissues and dirty looks.",
+   "twistType": "T3"
+  }
+ },
+ {
+  "id": "f37938cb-39bc-49d9-bdd0-6767ecbaf9da",
+  "score": 75,
+  "idea": {
+   "mood": "funny",
+   "prop": "Empty tin soup can",
+   "price": "Burp too quietly and you are moved down to the Crumb Cellar.",
+   "title": "The Quiet Burp",
+   "twist": "The Grand Belchers' law says whoever burps loudest rules, so Tilly burps into the soup can she carried everywhere, and the amplified echo shakes the cheese wheel and crowns her. Her first law: whispers rule.",
+   "closer": "In this town, the loudest burp rules. Now it's whoever can burp the quietest.",
+   "opener": "In this town, the louder your burp, the higher your rank, so the Grand Belchers rule the giant cheese wheel.",
+   "teaser": "The smallest burp in the cheese wheel had a secret.",
+   "formula": "F6",
+   "premise": "Inside a giant cheese wheel, the loudest burpers sit on top, and the narrator can only manage a tiny polite hiccup.",
+   "setting": "inside something giant (an animal, a store, a tower)",
+   "examples": [
+    "Mayor Gruff burps the national anthem before every meeting.",
+    "Mrs. Plum was demoted for a burp that sounded like a mouse.",
+    "The ice cream man announces himself with one long belch."
+   ],
+   "narrator": "Tilly, who has never burped louder than a squeaky hinge, and lives in the Crumb Cellar.",
+   "twistType": "T1"
+  }
+ },
+ {
+  "id": "0f6b7787-1bd4-4296-849b-956ff13c1900",
+  "score": 74,
+  "idea": {
+   "mood": "funny",
+   "prop": "A slightly burnt slice of toast",
+   "price": "The Pickles skipped one night and woke up with their scarecrow wearing their hats.",
+   "title": "Likes It Best",
+   "twist": "Night one, Rue leaves the burnt toast, and the beast growls and the fence shakes. Night two, the barn door rattles. Night three, the beast roars at the gate, but Gary has eaten the toast first, happily, and he likes it best. The deal says the pie goes to whoever likes it best, so the beast loses and leaves forever.",
+   "closer": "Everyone here leaves pie for whoever likes it best. Gary says it's him.",
+   "opener": "In this town, every farm leaves one slice of pie on the fence post at night for whoever likes it best.",
+   "teaser": "Someone likes it best. Just not who they thought.",
+   "formula": "F3",
+   "premise": "A farm town feeds a hungry unseen pie-eater every night, and Rue's family has no pie left, only burnt toast and a goat named Gary.",
+   "setting": "farm",
+   "examples": [
+    "Farmer Doyle bakes tractor-shaped pies for luck.",
+    "Mrs. Hen leaves her pie with a tiny fork.",
+    "The Jenkins twins eat seconds and leave only crusts."
+   ],
+   "narrator": "Rue, the youngest, who has only burnt toast and Gary, a goat who loves absolutely everything.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "6dcf43d7-71c8-4771-9c23-f7a0cdb234de",
+  "score": 74,
+  "idea": {
+   "mood": "funny",
+   "prop": "An empty wooden bowl",
+   "price": "The bowl left empty means the stump eats the porch, like the Hendersons' last winter.",
+   "title": "The Hungry Stump",
+   "twist": "The deal says the stump gets 'one bowl of soup'. Bo gives it the bowl itself, a wooden soup bowl, and the stump is fed. Now every family sends bowls, and the stump gets stuck with dishes.",
+   "closer": "In this town we feed the stump every night. Now we just do dishes.",
+   "opener": "In this town, every family leaves one bowl of soup at the woods edge, every night, for the Hungry Stump.",
+   "teaser": "The deal said bowl. It never said what was in it.",
+   "formula": "F3",
+   "premise": "A woods-edge town feeds a giant stump each night, and the narrator's family is out of soup the one night the stump counts.",
+   "setting": "woods edge",
+   "examples": [
+    "Mrs. Pike leaves soup with a tiny spoon, just for manners.",
+    "Mr. Orrin sends only broth and gets his mailbox eaten.",
+    "The mayor leaves a bowl of soup the size of a bathtub."
+   ],
+   "narrator": "Bo, who has to deliver the bowl and accidentally has only a bowl, no soup.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "1ef267aa-0f68-4791-91ef-643a5fe4a887",
+  "score": 74,
+  "idea": {
+   "mood": "horror",
+   "prop": "A ball of red yarn",
+   "price": "Skip the scarf and the Wind Collector takes your roof.",
+   "title": "The Red Scarf",
+   "twist": "The deal says the Wind Collector takes whatever is tied to the post by morning. Pia ties the whole town's roofs, chimneys, and the entire cliff to the post. The Wind Collector must take the post, and it leaves with it, alone.",
+   "closer": "Every night we tie a scarf for the wind. Now it only takes the post.",
+   "opener": "In this town, every night we tie one red scarf to the cliff post, for the Wind Collector.",
+   "teaser": "The deal says to take what is tied. Pia ties everything.",
+   "formula": "F3",
+   "premise": "A cliff town ties red scarves to a post each night to pay off the Wind Collector, but the narrator's family has run out of scarves.",
+   "setting": "canyon or cliff town",
+   "examples": [
+    "The Bakers skipped one night. Their roof flew past the moon.",
+    "Mr. Alder ties a scarf to his hat, just in case.",
+    "The goat wears a scarf to dinner and holds it tight."
+   ],
+   "narrator": "Pia, the youngest of six, in charge of the scarf basket.",
+   "twistType": "T1"
+  }
+ },
+ {
+  "id": "6e2297e9-ad36-4f28-8721-5cd132700209",
+  "score": 73,
+  "idea": {
+   "mood": "horror",
+   "prop": "Her squeaky left boot",
+   "price": "Anyone who clomps after dusk gets picked up by the Hush and is never heard again.",
+   "title": "The Loud Shoes",
+   "twist": "Everyone thought the Hush took loud people. It actually hunts the silent ones, because quiet feet are its favorite food. Dot's squeak makes it back away, so the Clompers become the town's protectors.",
+   "closer": "Everyone here is quiet to be safe. Now they all clomp, and I lead the parade.",
+   "opener": "In this town, the quieter your footsteps, the higher your rank, so the Silent Steppers rule the town square.",
+   "teaser": "Her boots were the town's shame. Then the dark came calling.",
+   "formula": "F6",
+   "premise": "Silent Steppers glide across the square in felt slippers while everyone else clomps, and the loudest kid in town keeps getting noticed by the dark.",
+   "setting": "town square",
+   "examples": [
+    "Mayor Plum has worn felt slippers since birth, even in the bath.",
+    "Mrs. Tilly got demoted for sneezing on the fountain steps.",
+    "The baker bakes bread barefoot so the oven can't hear him."
+   ],
+   "narrator": "Dot, whose boots squeak so loudly that she was named Clomper at birth.",
+   "twistType": "T2"
+  }
+ },
+ {
+  "id": "d6f863df-21d1-42c6-b7f6-5da1d7c631d7",
+  "score": 73,
+  "idea": {
+   "mood": "funny",
+   "prop": "A lumpy egg-shaped rock in her apron pocket",
+   "price": "A missing egg means the echo repeats everyone's embarrassing secrets all day.",
+   "title": "The Egg Lender",
+   "twist": "The rule says return 'the egg' by morning, never that it be the same egg. The echo keeps one egg and Mabel returns a rock egg, so the echo sits on it, hatching a very confused pebble.",
+   "closer": "In this town, we hand the Echo an egg every night. Mabel hands it a rock.",
+   "opener": "In this town, every night we hand one boiled egg to the Cliff Echo, and it must be returned by morning.",
+   "teaser": "The rule only says the egg must come back.",
+   "formula": "F3",
+   "premise": "A cliff town lends an egg to a booming echo every night, and Mabel, the worst egg-boiler in town, must cook tonight's.",
+   "setting": "canyon or cliff town",
+   "examples": [
+    "Mr. Fennel once forgot, and the whole cliff heard his lullaby to his goat.",
+    "The baker boils eggs for forty minutes, just to be safe.",
+    "Mrs. Quill's egg came back cracked, so she wrote a complaint."
+   ],
+   "narrator": "Mabel, who burns water and has never boiled an egg right.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "84418760-f631-454c-b180-b79b0ca7aa21",
+  "score": 73,
+  "idea": {
+   "mood": "wholesome",
+   "prop": "Wren's long red scarf",
+   "price": "Anyone not holding on gets tossed against the glass, and Mr. Pell still wears the dent.",
+   "title": "Shake Day",
+   "twist": "Shake one throws the baker, shake two throws Mrs. Quill, shake three lifts Wren's feet. She ties her scarf to the lamppost and tosses the end to them. The town links hands, and the shake only ever tossed people apart who weren't holding on to each other.",
+   "closer": "Everyone here holds on to something when the world shakes. Now I hold on to all of them.",
+   "opener": "In this town, we all live inside one giant snow globe, and every morning at eight someone shakes it.",
+   "teaser": "Every shake throws somebody. This one needs a scarf.",
+   "formula": "F4",
+   "premise": "A lonely kid in a snow globe town has no one to hold on to when the daily shake comes, and today's shake is the biggest ever.",
+   "setting": "snowy town",
+   "examples": [
+    "The baker ties his flour sacks to the chimney every dawn.",
+    "Mrs. Quill ties a rope to her porch so her cat stays put.",
+    "Mr. Pell holds nothing, flies into the glass, and now has a dent in his hat."
+   ],
+   "narrator": "Wren, a kid with no family on her street, who hangs on to the lamppost alone and always wears her long red scarf.",
+   "twistType": "T6"
+  }
+ },
+ {
+  "id": "b1892960-ba59-4d00-b53f-a1aa62a44ef5",
+  "score": 73,
+  "idea": {
+   "mood": "horror",
+   "prop": "A bell with no clapper",
+   "price": "Ring after dark and your lamp goes out, then you do.",
+   "title": "The Doorbell Rule",
+   "twist": "The law says the Lamp Eater answers any bell that RINGS. Juno hangs clapperless bells on every door and rings them by hand. Nothing rings, so the Lamp Eater has nothing to answer.",
+   "closer": "Now every door here has a bell. And not one of them makes a sound.",
+   "opener": "In this town, every door has a bell, and anyone who rings one after dark gets answered by the Lamp Eater.",
+   "teaser": "The rule only says the bell must ring. Does it?",
+   "formula": "F2",
+   "premise": "Deep in a cave town where every home hangs a brass bell, Juno, whose family runs the bell shop, hears a bell ring at midnight.",
+   "setting": "underground or cave town",
+   "examples": [
+    "Mrs. Tuck rang for her lost cat. Only her porch lamp came back.",
+    "The mail mole drops letters and runs before the bell can swing.",
+    "Mr. Gruff stuffs socks in his bells every single night."
+   ],
+   "narrator": "Juno, the bell-shop kid who is deaf in one ear and never hears the dark bells.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "2a5c5531-1b32-496c-8e35-7f60b8c74dcd",
+  "score": 73,
+  "idea": {
+   "mood": "funny",
+   "prop": "A pin from the sewing kit",
+   "price": "Anyone who sits below a Lord is sent to scrub the moat.",
+   "title": "The Pillow Lords",
+   "twist": "The law says whoever sits highest rules, and the pin pops every pillow tower in the hall. Everyone falls, and Dot, sitting on her bucket, is the only one still up high.",
+   "closer": "The law says the highest rules. Now they all call me the Bucket Queen.",
+   "opener": "In this town, the more cushions you sit on, the more power you have, so the Pillow Lords rule the whole castle.",
+   "teaser": "The law says the highest sits on top. Dot just waits.",
+   "formula": "F6",
+   "premise": "The castle is ruled by those sitting on the tallest pillow towers, and a kitchen kid with a stool is the lowest of all.",
+   "setting": "castle",
+   "examples": [
+    "Lord Barnaby needs a ladder to reach his throne.",
+    "Lady Fluffington hasn't touched the floor in six years.",
+    "The court jester sits on a single pea and is ranked fourth."
+   ],
+   "narrator": "Dot, a kitchen kid who sits on an upside-down bucket.",
+   "twistType": "T1"
+  }
+ },
+ {
+  "id": "12d4155e-c446-40e7-8318-8b986618557a",
+  "score": 73,
+  "idea": {
+   "mood": "wholesome",
+   "prop": "a lopsided burnt roll",
+   "price": "Skip the roll and your chimney goes cold until morning.",
+   "title": "The Fog Baker",
+   "twist": "The Fog Baker has been leaving perfect rolls untouched because he is too full of fine bread and craves a roll that tastes like home. Milo's burnt roll is the only one he eats, and he warms every chimney.",
+   "closer": "They laughed at my burnt little roll. Now the whole town fogs up for it.",
+   "opener": "In this town, every night each family sets one warm bread roll on the fountain for the Fog Baker.",
+   "teaser": "The mocked roll is the only one the Baker wants.",
+   "formula": "F3",
+   "premise": "A square-dwelling town feeds a mysterious Fog Baker every night, but the narrator is a lonely kid whose family has only crumbs to give.",
+   "setting": "town square",
+   "examples": [
+    "Mr. Hale once left a stale roll and woke up to an icy kitchen.",
+    "The Cobbs bake twelve rolls just to be safe.",
+    "The mayor leaves a roll with a tiny bow tie on it."
+   ],
+   "narrator": "Milo, the kid mocked for having a tiny, crooked, burnt-edged roll nobody would eat.",
+   "twistType": "T3"
+  }
+ },
+ {
+  "id": "ddb83fd8-39bd-49e9-8d36-1eadbe0e2496",
+  "score": 73,
+  "idea": {
+   "mood": "wholesome",
+   "prop": "a stub of broken chalk",
+   "price": "Kids caught outside a circle leave only a smudge on the floor.",
+   "title": "The Eraser",
+   "twist": "The Eraser only rubs out the smudges because it is guarding the school from the dark. When Junie draws a circle big enough for everyone, it joins her inside, finally invited, and becomes the school's friend.",
+   "closer": "Everyone here stays inside their circle. I drew one big enough for the Eraser too.",
+   "opener": "In this town, every classroom has a chalk circle on the floor, and anything outside it after the bell belongs to the Eraser.",
+   "teaser": "The Eraser isn't hunting kids. It's been alone all along.",
+   "formula": "F2",
+   "premise": "At school every desk sits inside a chalk circle at day's end, but the narrator keeps smudging hers with her sneakers and is scared of being rubbed out.",
+   "setting": "school (hallway, cafeteria, classroom, stage)",
+   "examples": [
+    "Mr. Burke's chair was left out and now it's a pile of dust.",
+    "The janitor sleeps inside three circles at once.",
+    "Kids bring spare chalk to class like others bring lunch."
+   ],
+   "narrator": "Junie, the clumsy kid who always breaks her chalk and has to share her best friend's circle.",
+   "twistType": "T2"
+  }
+ },
+ {
+  "id": "f6f2b963-fea0-4cdf-a6f7-a96ca14c1216",
+  "score": 73,
+  "idea": {
+   "mood": "funny",
+   "prop": "A burnt black slice of toast",
+   "price": "Mr. Gruff skipped his toast once. His mailbox was found wearing his garage door.",
+   "title": "Toast for the Monster",
+   "twist": "The Mailbox Monster wasn't hungry. It wanted a friend to sit with at dinner. Biscuit's burnt toast is the one it loves, and now it eats on the curb with Biscuit every night.",
+   "closer": "We still leave toast on the curb. Mine is burnt, and the monster says thank you.",
+   "opener": "In this town, every family leaves one slice of toast on the curb every night for the Mailbox Monster.",
+   "teaser": "Everybody feeds it. Nobody ever stays to ask why.",
+   "formula": "F3",
+   "premise": "A street feeds a huge shape that roams after dark, and the one kid who can't make toast without burning it must feed it tonight.",
+   "setting": "suburb street",
+   "examples": [
+    "The Pattersons leave gourmet toast with tiny jam flags on top.",
+    "Mr. Gruff skipped it once. His garage door ended up on the mailbox.",
+    "Mrs. Lin sends a note: please enjoy responsibly."
+   ],
+   "narrator": "Biscuit, a kid who burns every slice into a black square.",
+   "twistType": "T6"
+  }
+ },
+ {
+  "id": "602dd804-ff5e-4d84-9f75-56e44f1864d9",
+  "score": 73,
+  "idea": {
+   "mood": "funny",
+   "prop": "A rubber stamp",
+   "price": "Last week the inspector stamped Mr. Gill and now he lives in a filing cabinet.",
+   "title": "The Duck Rule",
+   "twist": "The rule says anyone holding a duck is safe, so Dot hands the Inspector a duck. Now the Inspector is a duck holder, protected by his own rule, and has to let everyone in the filing cabinet out.",
+   "closer": "Anyone not holding a duck belongs to the Inspector. Now he holds one too.",
+   "opener": "In this town, every submarine hatch has a rubber duck, and after the bell anyone not holding a duck belongs to the Bubble Inspector.",
+   "teaser": "The inspector wrote the rule. He forgot to read it.",
+   "formula": "F2",
+   "premise": "A submarine town runs on duck-checks, and the Bubble Inspector is strict, soggy, and extremely fond of paperwork.",
+   "setting": "underwater or submarine",
+   "examples": [
+    "Mr. Gill held a lemon once. He now lives in the cabinet.",
+    "The baker hands out ducks with every loaf.",
+    "Granny Finn carries seven ducks, just in case."
+   ],
+   "narrator": "Dot, the janitor's kid, who owns three hundred rubber ducks and one very official rubber stamp.",
+   "twistType": "T1"
+  }
+ },
+ {
+  "id": "2a7015be-cfe5-48d5-8803-99fe534c6a55",
+  "score": 73,
+  "idea": {
+   "mood": "horror",
+   "prop": "Her brother's red scarf",
+   "price": "Last spring the Hanger Man took Mr. Quill's coats, then his hat, then Mr. Quill.",
+   "title": "The Hanger Man",
+   "twist": "The Hanger Man only takes things that are left out and cold, to keep them warm in his closet. Dot follows the scarf and finds everyone taken, safe and snug, waiting for someone to come hang them back.",
+   "closer": "Nobody leaves a closet open after dark. Except me, now, a crack for the Hanger Man.",
+   "opener": "In this town, nobody may leave a bedroom closet door open after dark, or the Hanger Man takes whatever hangs in your room.",
+   "teaser": "He takes things, but he never throws anything out.",
+   "formula": "F2",
+   "premise": "Every family shuts their closets at dusk, but Dot's closet door won't latch, and her little brother's coat has already been taken.",
+   "setting": "house (bedroom, kitchen, living room)",
+   "examples": [
+    "Mrs. Lark tapes her closet shut with three layers of tape.",
+    "The Bell twins sleep sitting up facing their closet.",
+    "Old Mr. Quill's room has just a hook and a hat."
+   ],
+   "narrator": "Dot, whose broken closet door has never once stayed shut.",
+   "twistType": "T2"
+  }
+ },
+ {
+  "id": "37cbf362-fab3-43e1-887e-3281cfde3234",
+  "score": 73,
+  "idea": {
+   "mood": "funny",
+   "prop": "A scarf with a hole",
+   "price": "Mr. Hobbs skipped one scarf and woke to a frozen kettle, a cold stove and icicle socks.",
+   "title": "Scarf Law",
+   "twist": "First the Frost Mayor freezes the soup, then the stoves, then every mitten. Tilly patches her holey scarf with her own sock and wraps it round the mayor, who is made of snow. The law says he must keep it on, so he warms up and gives everything back.",
+   "closer": "In this town, every snowman wears a scarf. Even the mayor, and he likes the hole.",
+   "opener": "In this town, every snowman must wear a scarf by dark, or the Frost Mayor takes everything warm.",
+   "teaser": "The rule says every snowman. It never says whose.",
+   "formula": "F2",
+   "premise": "Snowmen must be dressed by dusk, and Tilly leaves the tallest snowman bare with the Frost Mayor already marching up the road.",
+   "setting": "snowy town",
+   "examples": [
+    "Granny Pim knits forty scarves every Sunday, just in case.",
+    "The pizza guy puts a scarf on his own delivery snowman.",
+    "Officer Dunk dresses the snow-dogs in tiny ones, too."
+   ],
+   "narrator": "Tilly, nine, whose only scarf has a big hole in it, and everyone teases her for it.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "213883af-aa26-4eae-a506-71f8da1330d3",
+  "score": 72,
+  "idea": {
+   "mood": "funny",
+   "prop": "his fuzzy bunny slippers",
+   "price": "Quiet-footed kids scrub the mud puddle and eat last at the trough.",
+   "title": "The Tiptoe Rebellion",
+   "twist": "The law says the quietest feet must be obeyed by the loudest boots in a Silence Contest. Fig wins easily with his slippers, becoming ruler by the farm's own law, and he makes everyone nap.",
+   "closer": "On this farm, the loudest rule. But bedtime is mine, and I wear slippers.",
+   "opener": "In this town, the louder your boots, the higher your rank, so the Thunder Boots sit on the hay-bale throne.",
+   "teaser": "The rules say louder wins. They never said what happens at bedtime.",
+   "formula": "F6",
+   "premise": "On a farm where loud boots decide who rules, the narrator's silent, fuzzy slippers put him at the bottom, scrubbing pigpens with a toothbrush.",
+   "setting": "farm",
+   "examples": [
+    "Farmer Gus stomps so hard the eggs crack themselves.",
+    "The head Thunder Boot hasn't whispered since breakfast, 2019.",
+    "Even the goats wear tiny clog boots to get a promotion."
+   ],
+   "narrator": "Fig, who wears silent bunny slippers and gets ranked lowest.",
+   "twistType": "T1"
+  }
+ },
+ {
+  "id": "bdcc66f3-538e-426d-a08c-70282ec71864",
+  "score": 72,
+  "idea": {
+   "mood": "funny",
+   "prop": "Her paper birthday crown",
+   "price": "Mr. Pickett touched it once. Now he walks around with a bare head and a sunburn.",
+   "title": "The Hat Tax",
+   "twist": "At noon the brother's fingers get closer: first the fence, then the fountain edge, then an inch from the nose. Pearl swaps him her paper crown, which isn't a hat, so the Pigeon Mayor takes it and leaves them both alone. The rule only takes hats, and she never owned one.",
+   "closer": "In this town, nobody touches the nose after noon, except Pearl, who just lost a paper crown.",
+   "opener": "In this town, if you touch the fountain statue's nose after noon, the Pigeon Mayor takes your hat forever.",
+   "teaser": "Her brother reached for the nose. She had one paper thing.",
+   "formula": "F2",
+   "premise": "Everyone in the square keeps their hands off the statue's nose, but Pearl, the one kid with no hat, has a little brother who just learned to reach and loves noses.",
+   "setting": "town square",
+   "examples": [
+    "The barber only cuts hair before noon, out of pure panic.",
+    "Mrs. Lund wears seven hats so she can afford to lose six.",
+    "The mayor's hat is bolted to his head with a very large bolt."
+   ],
+   "narrator": "Pearl, who has never owned a hat because her head is too round for any, only a paper birthday crown she keeps in her pocket.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "5ba94df4-7033-441f-88a1-a68f808c1bbc",
+  "score": 72,
+  "idea": {
+   "mood": "funny",
+   "prop": "Spare lightbulb",
+   "price": "Skipping a hug leaves the whole street in the dark, and Mr. Barnacle once stayed dark for a week.",
+   "title": "Goodnight Hugs",
+   "twist": "The Anglerfish was never a monster, only a lonely fish who wanted a hug. When Biff finally hugs its glowing lure with his lightbulb, it turns the lights on forever.",
+   "closer": "In this town, we hug every night. Even the fish at the window.",
+   "opener": "In this town, every submarine must hug its neighbor goodnight, or the Great Anglerfish turns off the porthole lights.",
+   "teaser": "The lights were never the problem. The fish was lonely.",
+   "formula": "F2",
+   "premise": "The submarine neighbors must hug every night at nine, and Biff, who hates hugs, is trying to dodge his chores.",
+   "setting": "underwater or submarine",
+   "examples": [
+    "Captain Peg hugs her toaster just to be safe.",
+    "The mailman hugs sixty portholes on his route.",
+    "Mr. Finn hugged a mop in the dark and the mop still says no."
+   ],
+   "narrator": "Biff, a grumpy kid who hates hugs and hides in the engine room.",
+   "twistType": "T6"
+  }
+ },
+ {
+  "id": "9d9c2e56-9d11-4b6e-af2a-eaeb55041f6d",
+  "score": 72,
+  "idea": {
+   "mood": "funny",
+   "prop": "A big yellow umbrella",
+   "price": "Cloud-owners must stay damp, or their cloud floats off and sulks.",
+   "title": "No Cloud Kid",
+   "twist": "A dry spell wilts the houseplants and nothing else works, but my cloudless dry self is the only one who can carry the soggy family's clouds outside to water the garden. Dry was the point.",
+   "closer": "Everyone here has a cloud. But now, when the kitchen floods, they call me.",
+   "opener": "In this town, everyone has their own personal rain cloud that follows them around, except me.",
+   "teaser": "Everyone's cloud made a mess, but a dry kid saved dinner.",
+   "formula": "F1",
+   "premise": "In our house everyone has a personal rain cloud that follows them room to room, and I'm the only one with nothing but a dry, sad sock of a sky.",
+   "setting": "house (bedroom, kitchen, living room)",
+   "examples": [
+    "Dad's cloud rains on his cereal every single morning.",
+    "Grandma's cloud only drizzles when she's telling the same story.",
+    "My sister's cloud thunders every time she loses a board game."
+   ],
+   "narrator": "A kid with no cloud, who is always the one stuck holding everyone's umbrellas.",
+   "twistType": "T3"
+  }
+ },
+ {
+  "id": "b87abb4e-b29b-4216-a29e-fef1e3fbe53e",
+  "score": 72,
+  "idea": {
+   "mood": "epic",
+   "prop": "The street's old rulebook",
+   "price": "Forget your jar and your house is gone from the street by morning.",
+   "title": "The Night Mover",
+   "twist": "The rulebook says the Night Mover must take every jar left on the curb, and it follows the last jar. Juno lines up every jar in town, ending at the far hill, so it hauls itself away and her house stays put.",
+   "closer": "In this town, we leave a jar for the Night Mover. Now it leaves our street alone.",
+   "opener": "In this town, every night each house leaves one jar of fireflies on the curb for the Night Mover.",
+   "teaser": "It takes every jar. Every single one.",
+   "formula": "F3",
+   "premise": "Each night a huge shape rolls down the street collecting jars, and a family that forgets wakes up with their whole house moved to another block. Juno has already lost hers once.",
+   "setting": "suburb street",
+   "examples": [
+    "The Garcias forgot once and woke up three blocks away on the golf course.",
+    "Mr. Tate leaves two jars so he never ends up behind the dump.",
+    "The Pembertons' mailbox still points to the wrong street."
+   ],
+   "narrator": "Juno, the only kid who has really lost her house, and she keeps the street's old rulebook in her backpack.",
+   "twistType": "T1"
+  }
+ },
+ {
+  "id": "564fbd1c-9e26-4fad-89a7-dc82d3a5dddf",
+  "score": 72,
+  "idea": {
+   "mood": "horror",
+   "prop": "a spare streetlight bulb in his backpack",
+   "price": "The Hendersons whistled once, and their porch light has stayed dark ever since.",
+   "title": "Don't Whistle",
+   "twist": "The Long Shadow only walks where light is out, so it stops wherever a bulb glows. Cass screws his spare bulb into the Hendersons' dark porch lamp, and the shadow walks the whole street home, then fades.",
+   "closer": "Nobody whistles after dark here. But I keep a bulb for the Hendersons.",
+   "opener": "In this town, nobody may whistle after the streetlights come on, or the Long Shadow walks up your driveway.",
+   "teaser": "The shadow only stops where the light is on.",
+   "formula": "F2",
+   "premise": "Cass whistles in his sleep, and each night the Long Shadow stands closer to his house, while the streetlights are the only thing it respects.",
+   "setting": "suburb street",
+   "examples": [
+    "Mr. Tuck hums through his nose so loudly the dog howls.",
+    "The ice cream truck plays its tune only before dusk.",
+    "Mrs. Orr's teakettle is banned and sits in a drawer."
+   ],
+   "narrator": "Cass, who whistles in his sleep and has no idea he does it.",
+   "twistType": "T2"
+  }
+ },
+ {
+  "id": "90f712f2-f517-4907-b37d-ffd1f03ea02c",
+  "score": 71,
+  "idea": {
+   "mood": "horror",
+   "prop": "A pair of old muddy sneakers",
+   "price": "Step off your mat after dark and your footprints walk away without you.",
+   "title": "Off the Mat",
+   "twist": "The rule says 'anyone off THEIR OWN mat.' Wren stands in the neighbors' boots on every mat in the street, so the Doormat Man finds everyone on a mat that is not theirs and wanders off confused.",
+   "closer": "Everyone here stays on their own mat. I stay on everyone's.",
+   "opener": "In this town, every front door has a doormat, and after dark anyone standing off their own mat belongs to the Doormat Man.",
+   "teaser": "The rule only counts one kind of mat.",
+   "formula": "F2",
+   "premise": "Every kid on Birch Lane sleeps with one foot on a doormat, and Wren's mat is the only one that got stolen by the wind.",
+   "setting": "suburb street",
+   "examples": [
+    "Mr. Lopez takes out his trash by hopping from mat to mat.",
+    "The mail carrier delivers at noon and carries her own mat.",
+    "Twins Ava and Ben share one mat and one very close friendship."
+   ],
+   "narrator": "Wren, whose mat blew away last week, leaving only a muddy square on the porch.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "7c2b47f4-a9e3-4a6a-903f-cb3dd08fcdf1",
+  "score": 71,
+  "idea": {
+   "mood": "funny",
+   "prop": "The bulky arm cast",
+   "price": "Snowmen move in, melt on the couch, and leave puddles for weeks.",
+   "title": "Wave Or Else",
+   "twist": "The snowmen follow whoever doesn't wave. Bix's big cast flaps like a giant mitten, and every snowman is thrilled and wants to follow him to a warm snowman party in the park.",
+   "closer": "In this town, you wave at every snowman. And Bix gets waved at first.",
+   "opener": "In this town, if you walk past a snowman without waving, it follows you home and sits in your living room.",
+   "teaser": "His arm doesn't wave right. The snowmen love it anyway.",
+   "formula": "F2",
+   "premise": "Everyone in a snowy town waves at every snowman, and the one kid with a stiff, wobbly arm in a cast keeps failing.",
+   "setting": "snowy town",
+   "examples": [
+    "Mrs. Lund ignored one and now has a snowman named Gary at dinner.",
+    "The mailman waves with both arms and a leg to be safe.",
+    "Old Mr. Frost's snowman has its own armchair and a bad attitude."
+   ],
+   "narrator": "Bix, the kid with a big stiff cast on his waving arm.",
+   "twistType": "T3"
+  }
+ },
+ {
+  "id": "10640de2-8cd7-4b5a-aac6-528f256889ed",
+  "score": 71,
+  "idea": {
+   "mood": "funny",
+   "prop": "Dot's squelchy raincoat",
+   "price": "Friday leaks drip through the roll, and anyone caught under a drip gets stuck to the floor.",
+   "title": "Soggy Bread Friday",
+   "twist": "The hull cracks and sea water pours in, but Dot's raincoat is the one thing that sticks to the leaks and seals them, because soggy bread and a slimy coat are the same sticky stuff.",
+   "closer": "In this town, we all live inside a sandwich. And I'm the part that holds it together.",
+   "opener": "In this town, we all live inside a giant submarine sandwich, and the bread gets soggy every Friday.",
+   "teaser": "Her squishy coat is finally the right kind of squishy.",
+   "formula": "F4",
+   "premise": "A town lives in a sunken sandwich-shaped submarine, and the narrator is mocked for being so damp and squishy that nothing sticks to her.",
+   "setting": "underwater or submarine",
+   "examples": [
+    "Mayor Pickle commutes on a lettuce leaf, which is slower than walking.",
+    "The bakery sells only the bread we're standing on.",
+    "Mr. Crumb wears a mustard coat for the leaks."
+   ],
+   "narrator": "Dot, the kid everyone calls Soggy because her raincoat squelches and her socks are always wet.",
+   "twistType": "T3"
+  }
+ },
+ {
+  "id": "8129c2f2-ee64-4a54-b43a-779c9d9963b6",
+  "score": 71,
+  "idea": {
+   "mood": "funny",
+   "prop": "A burnt lumpy potato",
+   "price": "The Hendersons once left a cold potato and woke to a frozen front door shaped like a goose.",
+   "title": "The Potato Problem",
+   "twist": "The Frost Goose is bored of perfect potatoes and loves the smoky crunch of a burnt one, so Oskar's charcoal potato makes it honk with joy and it waddles off to ask for burnt ones every night.",
+   "closer": "Everyone here serves perfect potatoes. The goose only ever wanted Oskar's burnt one.",
+   "opener": "In this town, every family sets one boiled potato on the snow at midnight, for the Frost Goose.",
+   "teaser": "His potatoes were the worst in town. The goose disagreed.",
+   "formula": "F3",
+   "premise": "The Frost Goose demands a hot potato from every house at midnight, and the narrator is the kid who can only cook lumpy, burnt, ridiculous potatoes.",
+   "setting": "snowy town",
+   "examples": [
+    "Mr. Gus offers a perfect potato wearing a tiny scarf.",
+    "The Pelletiers carve faces into theirs and sing it a lullaby.",
+    "Old Mrs. Vane delivers hers by sled with an honor guard."
+   ],
+   "narrator": "Oskar, whose potatoes always come out black, lumpy and smoking.",
+   "twistType": "T3"
+  }
+ },
+ {
+  "id": "81590436-2188-4301-9201-a206c12298f7",
+  "score": 71,
+  "idea": {
+   "mood": "epic",
+   "prop": "A squeaky wheelbarrow",
+   "price": "Kids without a tractor can't help with the harvest, so they get the leftovers.",
+   "title": "No Tractor Me",
+   "twist": "When the flood hits and every big tractor sinks in the mud, only Pickle's light little wheelbarrow rolls over the soft ground, carrying every kid and animal to the barn hill.",
+   "closer": "Everyone here has a tractor. But when the mud came, they all rode with me.",
+   "opener": "In this town, every farm kid is born with a tractor that follows them everywhere, except me.",
+   "teaser": "The tiniest wheels were the only ones that could cross.",
+   "formula": "F1",
+   "premise": "On a farm where every kid has a pet tractor, the narrator has only a squeaky wheelbarrow and a flood is coming.",
+   "setting": "farm",
+   "examples": [
+    "Mr. Hank's tractor sleeps in the kitchen and eats cereal.",
+    "The twins race theirs down the cornrows every Sunday.",
+    "Mrs. Dilly's tractor does her knitting."
+   ],
+   "narrator": "Pickle, the farm kid with just a squeaky wheelbarrow that everyone mocks.",
+   "twistType": "T3"
+  }
+ },
+ {
+  "id": "d3e887de-9044-4195-860c-552528ad85d8",
+  "score": 71,
+  "idea": {
+   "mood": "funny",
+   "prop": "A small rubber duck that squeaks",
+   "price": "Mr. Pickles honked last over a fence once. Now he owns three fountains and nobody's pizza.",
+   "title": "The Quiet One",
+   "twist": "Round one, Mr. Pickles out-honks Dot. Round two, the mayor beats her. Last, the parade truck honks. Dot squeezes her duck, the last squeak in the square, and by the town's own rule she wins.",
+   "closer": "Everyone here has a horn. But in this town, the last honk is mine.",
+   "opener": "In this town, whoever honks last in an argument wins, and everyone has a horn on their head except me.",
+   "teaser": "Everyone has a horn. Dot has a very small duck.",
+   "formula": "F1",
+   "premise": "In a square where everyone honks to argue, the only kid without a horn must stop the mayor's giant parade truck from honking away the town fountains.",
+   "setting": "town square",
+   "examples": [
+    "Mrs. Dabney honks her grocery list at the baker, and wins.",
+    "The mayor honks a speech at six every morning, so nobody argues.",
+    "Two cousins honked all night over a pizza and lost the pizza."
+   ],
+   "narrator": "Dot, the only kid with no horn, who carries a little rubber duck that squeaks when she is nervous.",
+   "twistType": "T1"
+  }
+ },
+ {
+  "id": "7642e78d-67e8-4768-8a1b-f0f458116e3c",
+  "score": 71,
+  "idea": {
+   "mood": "horror",
+   "prop": "a stub of candle",
+   "price": "Anyone caught shadowless in the bright halls is led down to the cellar and never seen again.",
+   "title": "The Shadowless",
+   "twist": "The decree says, 'Only those with shadows may stay in the halls.' At midnight Tam blows out every lamp, so no one has a shadow, and the decree's own words send all the lords down to the cellar.",
+   "closer": "In this town, only people with shadows stay in the halls. Tonight, nobody has one.",
+   "opener": "In this town, only people with shadows may walk the castle's bright halls, and shadowless servants sweep the dark cellars.",
+   "teaser": "The rule only asks one thing: have a shadow.",
+   "formula": "F6",
+   "premise": "The castle's lords cast long shadows, while servants like me cast none, so we work below. Lately lords' shadows have been stepping off the wall at night.",
+   "setting": "castle",
+   "examples": [
+    "Lady Orla's shadow is so long it pours down the stairs.",
+    "The cook's helper vanished after standing near the window.",
+    "Lord Grim keeps a lamp lit so his shadow stays on."
+   ],
+   "narrator": "Tam, a cellar boy with no shadow, who sneaks into the halls with a candle stub.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "b4b6a8d8-a474-4632-b5b0-0cb8f4a46c87",
+  "score": 71,
+  "idea": {
+   "mood": "funny",
+   "prop": "A mismatched striped sock",
+   "price": "Mr. Pebble slept sockless once and giggled for three days straight.",
+   "title": "One Sock Rule",
+   "twist": "Night one the Tickler giggles in the far wall, night two at her door, night three at her bed, when only one striped sock is left. Dot hands it over and it sits down happily, because toes left cold were all it wanted tucked in. After that the town knits it socks.",
+   "closer": "We keep one sock on at night. The other goes to a friend.",
+   "opener": "In this town, every cave kid must keep one sock on at bedtime, or the Toe Tickler comes out of the walls.",
+   "teaser": "The monster in the wall only wants one thing.",
+   "formula": "F2",
+   "premise": "A cave town sleeps with one sock on, and Dot's dog steals one more sock every night, so the Tickler creeps closer to her bed.",
+   "setting": "underground or cave town",
+   "examples": [
+    "Grandma Gritt sleeps in five socks, just in case.",
+    "The mayor's sock is a hat now, and he's very proud.",
+    "The cave dentist polishes teeth wearing mismatched socks."
+   ],
+   "narrator": "Dot, whose dog eats a sock every single night, leaving her with fewer each time.",
+   "twistType": "T6"
+  }
+ },
+ {
+  "id": "bb60861a-e0f7-4490-973c-28afc8af0287",
+  "score": 71,
+  "idea": {
+   "mood": "funny",
+   "prop": "One striped sock and one dotted sock",
+   "price": "Mr. Kipp once skipped, and all the town's feet were bare and freezing for a week.",
+   "title": "Socks for the Goblin",
+   "twist": "Gus leaves his mismatched pair and sees the goblin knitting them into a patchwork blanket. It was never hungry, only lonely and cold, and the socks were a gift meant to be a hug for it.",
+   "closer": "Every night we feed a goblin socks. Now it tucks us in with them.",
+   "opener": "In this town, every family tucks one sock into the Deep Cave hole every night, for the Great Sock Goblin.",
+   "teaser": "The goblin has been collecting socks for a reason.",
+   "formula": "F3",
+   "premise": "Cave families feed a goblin their socks each night, and Gus, whose socks never match, tries to sneak in a pair that finally will.",
+   "setting": "underground or cave town",
+   "examples": [
+    "Mrs. Lund knits seventeen socks a day and still cries about it.",
+    "The mayor wears sandals to the cave in the dead of winter.",
+    "The postman delivers mail with one sock on each hand."
+   ],
+   "narrator": "Gus, the only kid whose socks never match, with one striped and one dotted.",
+   "twistType": "T6"
+  }
+ },
+ {
+  "id": "e7a6d126-ac3b-4dcd-9833-2e112a013f26",
+  "score": 71,
+  "idea": {
+   "mood": "epic",
+   "prop": "A tiny pencil sharpener",
+   "price": "Lose your star and the Star Board hangs you in the lost-and-found forever, like Ben.",
+   "title": "The Starless Kid",
+   "twist": "The Star Board's own law says a star is only valid if it is sharp, so Oli sharpens its stars down one by one until they are all points, and the Board must give back everyone it took.",
+   "closer": "Everyone here has a star floating overhead. But when the lights go out, they all look for me.",
+   "opener": "In this town, every kid at Brindle School has a gold star floating over their head, except me.",
+   "teaser": "Everyone has a star. Nobody checked the rules for stars.",
+   "formula": "F1",
+   "premise": "At Brindle School the starred kids rule the halls, and one kid with no star watches the Star Board slowly take every classmate away.",
+   "setting": "school (hallway, cafeteria, classroom, stage)",
+   "examples": [
+    "Ms. Pruitt only calls on kids whose stars shine brightest.",
+    "The lunch lady serves dessert by star count.",
+    "Kyle's star flickered once and now he lives in the supply closet."
+   ],
+   "narrator": "Oli, the only kid without a star, who carries a tiny pencil sharpener everywhere.",
+   "twistType": "T1"
+  }
+ },
+ {
+  "id": "eba10ab4-2634-449c-8316-8ebdd6791e85",
+  "score": 71,
+  "idea": {
+   "mood": "wholesome",
+   "prop": "A sock with a hole in the toe",
+   "price": "Last winter, the Hendersons forgot. Their porch light went dark and stayed dark for a week.",
+   "title": "The Lamp Walker's Sock",
+   "twist": "The Lamp Walker is a lantern with no feet, and every neat sock slides off. Only Wren's holey sock hooks onto its handle, so it can finally walk and light the street.",
+   "closer": "Everyone gives the Lamp Walker a perfect sock. Only mine ever stayed on.",
+   "opener": "In this town, every kid leaves one sock on the porch every night for the Lamp Walker.",
+   "teaser": "Everyone's gift was perfect. Only hers was ridiculed.",
+   "formula": "F3",
+   "premise": "A street gives a sock a night to a tall glowing walker, and the quietest kid on the block has only a hole-riddled sock to give.",
+   "setting": "suburb street",
+   "examples": [
+    "Mr. Olsen leaves silk socks, folded in neat triangles.",
+    "The twins leave one each so nobody argues.",
+    "Last winter the Hendersons forgot. Their porch stayed dark all week."
+   ],
+   "narrator": "Wren, the smallest kid on the street, mocked for her patched, holey socks.",
+   "twistType": "T3"
+  }
+ },
+ {
+  "id": "3b75f644-93cd-42b5-9d91-896ad2a0f26d",
+  "score": 70,
+  "idea": {
+   "mood": "funny",
+   "prop": "Her squeaky roller skates",
+   "price": "Mr. Fenn stepped on one at eight, and he has lived in the fountain ever since.",
+   "title": "The Tile Hog",
+   "twist": "The Tile Hog only takes whoever steps on a tile. Juno's skates never step, they roll, so she glides straight across and the Hog can't touch her. The whole town learns to skate.",
+   "closer": "In this town you must not step on red tiles. So we all just roll.",
+   "opener": "In this town, nobody may step on the square's red tiles after the clock strikes eight, or the Tile Hog snorts you away.",
+   "teaser": "The rule says step. It never says roll.",
+   "formula": "F2",
+   "premise": "A town square has a rule about red tiles, and the narrator's wobbly, wheeled shoes keep rolling onto them at exactly eight.",
+   "setting": "town square",
+   "examples": [
+    "The baker hops across the square like a nervous rabbit.",
+    "Mrs. Lark walks backwards to avoid all the red ones.",
+    "The mayor's dog wears four tiny socks on tile days."
+   ],
+   "narrator": "Juno, the only kid with roller skates, who cannot stop at the edge of anything.",
+   "twistType": "T1"
+  }
+ },
+ {
+  "id": "ad1e98b2-87ca-464f-8bf1-35e710b94d36",
+  "score": 70,
+  "idea": {
+   "mood": "epic",
+   "prop": "A heavy garden hose",
+   "price": "Floating kids who drift too high get swept off by the wind.",
+   "title": "The Grounded Kid",
+   "twist": "The big storm lifts every cloud kid away, but Milo is too heavy to float. He ties the garden hose to the mailbox, grabs the kids as they pass, and hauls the whole street back down.",
+   "closer": "Everyone here has a cloud. But now, when the wind blows, they hold my hose.",
+   "opener": "In this town, everyone on Maple Street has a tiny storm cloud that follows them and lifts them off the ground, except me.",
+   "teaser": "The only kid who can't fly is the only one who can't blow away.",
+   "formula": "F1",
+   "premise": "Every kid on Maple Street floats to school on a personal cloud, and the narrator walks, until a giant storm threatens to sweep the whole street away.",
+   "setting": "suburb street",
+   "examples": [
+    "Mr. Lopez floats to work with his coffee on his cloud.",
+    "Twins Ava and Max race their clouds down the block.",
+    "Grandma Rue ties her cloud to the mailbox so it stays put."
+   ],
+   "narrator": "Milo, the only kid who has no cloud, so he walks everywhere and carries a heavy anchor rope.",
+   "twistType": "T3"
+  }
+ },
+ {
+  "id": "43f3c666-bb6c-4a9c-90ee-168ca9abc61a",
+  "score": 70,
+  "idea": {
+   "mood": "epic",
+   "prop": "a jar of crumbs from his pocket",
+   "price": "A night without toast and the dragon burns every curtain on the street by morning.",
+   "title": "The Crumb Dragon",
+   "twist": "The dragon is too huge to pick up whole slices and starves on them. Only Tuck's tiny, clumsy crumbs are small enough, so he scatters crumbs across the roofs and saves the town.",
+   "closer": "Every family here feeds the dragon a slice. Tuck feeds it the crumbs, and it follows him home.",
+   "opener": "In this town, every night we leave one slice of toast on the kitchen windowsill, for the Crumb Dragon.",
+   "teaser": "His clumsy hands finally have a job.",
+   "formula": "F3",
+   "premise": "A dragon eats the toast each night to keep the house safe, but tonight the toaster broke and the only bread left is mine.",
+   "setting": "house (bedroom, kitchen, living room)",
+   "examples": [
+    "Mrs. Pell's curtains are now short, black and very sad.",
+    "Mr. Ames once served it burnt toast and lost his eyebrows.",
+    "The twins always butter it, and their windows stay spotless."
+   ],
+   "narrator": "Tuck, who is always mocked for his tiny hands that drop everything.",
+   "twistType": "T3"
+  }
+ },
+ {
+  "id": "8811236b-2502-4d86-9081-eaa9e18e74a9",
+  "score": 70,
+  "idea": {
+   "mood": "wholesome",
+   "prop": "A big red handkerchief",
+   "price": "Kids with no power ride the back of the sled and miss the festival.",
+   "title": "The Runny Nose",
+   "twist": "When the blizzard blocks the road and no power can melt it, Ivy's warm runny nose melts the snow wherever she sneezes, because every other power only freezes and she is the only warm one.",
+   "closer": "Everyone here got a power from the cold. I got the one that makes it go away.",
+   "opener": "In this town, everyone gets a snow-power the first morning their breath turns to fog, and mine was a runny nose.",
+   "teaser": "Everyone else can freeze. Only one kid is warm.",
+   "formula": "F5",
+   "premise": "Every kid in Frostbell gets an icy power when they first see their breath, but Ivy gets a nose that will not stop running.",
+   "setting": "snowy town",
+   "examples": [
+    "Hank freezes the lake with one stomp.",
+    "Greta builds snow castles by blinking.",
+    "Mr. Alder melts ice with a hum, and it is very loud."
+   ],
+   "narrator": "Ivy, who sniffles through every class and is teased as Drippy Ivy.",
+   "twistType": "T3"
+  }
+ },
+ {
+  "id": "bce22006-f3af-46b2-8962-d096ca6ded29",
+  "score": 70,
+  "idea": {
+   "mood": "epic",
+   "prop": "Muffled sneakers",
+   "price": "Anyone whose bell stops ringing is dragged off by the Gale at midnight.",
+   "title": "Silent Shoes",
+   "twist": "When the Gale comes, it hunts by following the ring of bells and sweeps up every running kid. Tobi's silent shoes are the only ones it can't hear, so he sneaks through and unties the town's bells one by one until the Gale blows away.",
+   "closer": "Everyone here has a bell on their shoe. But when the wind howls, they all ask to borrow my silence.",
+   "opener": "In this town, everyone in the town square has a bell on their shoe that rings when they run, except me.",
+   "teaser": "The Gale hears every bell. Except the ones that never rang.",
+   "formula": "F1",
+   "premise": "In a square where every kid's bell announces their speed, Tobi's shoes make no sound at all, so everyone calls him the slowest, quietest kid alive.",
+   "setting": "town square",
+   "examples": [
+    "Baker Lou rings her bell all the way to the bread oven.",
+    "The mayor's bell is so loud pigeons salute him.",
+    "Little Ana's bell broke once, and her chair has been empty since."
+   ],
+   "narrator": "Tobi, the kid whose shoes never ring, and everyone calls him Slow Tobi.",
+   "twistType": "T3"
+  }
+ },
+ {
+  "id": "7e771b79-abcd-4e20-a5f9-56b527c0bdb5",
+  "score": 70,
+  "idea": {
+   "mood": "horror",
+   "prop": "A lost-and-found tag",
+   "price": "Kids without a shadow get collected by the Hall Monitor Shade at last bell.",
+   "title": "The Shadowless Kid",
+   "twist": "The Shade's rule says it takes only 'a kid with no shadow who is found', and the tag on Wren's coat reads 'LOST: one shadow.' So Wren is not a kid, she is lost property, and the Shade must file her.",
+   "closer": "Everyone here has a shadow. But now when something is lost, they send for me.",
+   "opener": "In this town, every student has a shadow that stays glued to their feet, except me.",
+   "teaser": "The Hall Monitor Shade has one rule. Wren found the words.",
+   "formula": "F1",
+   "premise": "At Hollowbell School every kid's shadow follows them, but the narrator's shadow was lost years ago, and now the shadows of the hall are asking about it.",
+   "setting": "school (hallway, cafeteria, classroom, stage)",
+   "examples": [
+    "Ms. Pruitt's shadow grades the homework while she naps.",
+    "Owen's shadow carries his lunch tray so he never spills.",
+    "Two shadows once swapped places at recess. Nobody has seen those kids since."
+   ],
+   "narrator": "Wren, the only kid at school with no shadow, who is lonely in every hallway.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "520e19b7-0874-4e44-a3b3-ab31de94fe22",
+  "score": 70,
+  "idea": {
+   "mood": "horror",
+   "prop": "a bucket of mud",
+   "price": "Mrs. Alder's lantern flickered out and by morning only her slippers were on the path.",
+   "title": "The Dark Kid",
+   "twist": "The Hush only takes whatever glows, because it hunts the light. Juniper covers everyone's lanterns in mud, and since the Hush cannot find anything glowing, it walks away. Her dark was the safe one.",
+   "closer": "Everyone here is born with light. But it was my dark that kept us safe.",
+   "opener": "In this town, everyone is born with a lantern on their back that glows, except me.",
+   "teaser": "Maybe the dark was never the danger.",
+   "formula": "F1",
+   "premise": "At the woods edge, every villager carries a glowing lantern that keeps the Hush away, but I was born with a dark one.",
+   "setting": "woods edge",
+   "examples": [
+    "Farmer Pike polishes his lantern every sunrise.",
+    "The twins trade lantern oil like candy.",
+    "Old Wick sleeps with his lantern tied to his wrist."
+   ],
+   "narrator": "Juniper, the only kid in town with no lantern at all, so she hides in the shadows.",
+   "twistType": "T1"
+  }
+ },
+ {
+  "id": "39d7073f-d739-42ff-98e3-516881bf89c9",
+  "score": 70,
+  "idea": {
+   "mood": "horror",
+   "prop": "A spare scarecrow hat",
+   "price": "Anyone counted twice is bundled up and gone by morning.",
+   "title": "The Bale Man Counts",
+   "twist": "The Bale Man only counts what he sees move, and he bundles any number higher than the last. Wren stacks hats on poles so he counts too many heads and bundles himself.",
+   "closer": "Everyone here sleeps with one head showing. Now the Bale Man sleeps in the bale.",
+   "opener": "In this town, we all live inside a giant hollow haystack, and every night the Bale Man counts the heads in it.",
+   "teaser": "He only counts. But he hates when the number is wrong.",
+   "formula": "F4",
+   "premise": "A farm town lives inside one enormous haystack, and the narrator's little brother keeps sneaking out of bed after the nightly head count.",
+   "setting": "farm",
+   "examples": [
+    "Mrs. Tully sleeps under a bucket so she only counts once.",
+    "Farmer Bo ties his dog's head into a pillowcase at night.",
+    "The twins take turns sleeping so one head shows up."
+   ],
+   "narrator": "Wren, the only kid with two cowlicks that look like two heads from far away.",
+   "twistType": "T1"
+  }
+ },
+ {
+  "id": "4cbdbac7-26eb-4883-8b95-7de55fcbbbc3",
+  "score": 70,
+  "idea": {
+   "mood": "epic",
+   "prop": "A ball of red yarn",
+   "price": "Anyone who leaves without saying goodbye finds the bridge stretching longer every step.",
+   "title": "The Goodbye Bridge",
+   "twist": "The troll said you only leave after saying goodbye, but never said the goodbye must be to a person. Juni says goodbye to the far end, ties the yarn, and walks out as the bridge shrinks.",
+   "closer": "In this town, nobody leaves without saying goodbye. Juni just said it to the bridge.",
+   "opener": "In this town, we all live inside a giant stone bridge, and the Toll Troll lets us out only if we say goodbye first.",
+   "teaser": "The troll's own words left one door wide open.",
+   "formula": "F4",
+   "premise": "A cliff town lives inside a bridge spanning a canyon, and the narrator must cross to fetch medicine when the troll locks every door.",
+   "setting": "canyon or cliff town",
+   "examples": [
+    "Postman Gus waves goodbye to forty mailboxes every morning.",
+    "Mrs. Pike takes an hour to leave the grocery store.",
+    "Kids say goodbye to their shoes before they run."
+   ],
+   "narrator": "Juni, who always rushes and never finishes a sentence, let alone a goodbye.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "4b9682a6-3b74-4ddc-a9e9-2449a5ce3a65",
+  "score": 70,
+  "idea": {
+   "mood": "funny",
+   "prop": "A pair of fuzzy slippers",
+   "price": "Mr. Pickett lost both boots last winter and now hops to work.",
+   "title": "The Shoe Bear",
+   "twist": "The Stomp Bear hunts by the sound of stomping feet. Bean is so light she never makes a sound, so she tiptoes up in fuzzy slippers and returns every shoe, and the bear naps.",
+   "closer": "Everyone here fears the bear's ears. Now they all tiptoe, because Bean was right.",
+   "opener": "In this town, nobody steps past the fence of the woods after the pie bell, or the Stomp Bear takes their shoes.",
+   "teaser": "The bear hears every stomp. Bean has never stomped once.",
+   "formula": "F2",
+   "premise": "At the woods edge, everyone obeys the pie bell curfew, but the narrator is so tiny and light that she never makes a sound when she walks.",
+   "setting": "woods edge",
+   "examples": [
+    "The mailman delivers in socks after six, just to be safe.",
+    "Mrs. Dobbs hid her slippers in the oven for a whole month.",
+    "The school bus now stops two miles early, and the kids hop."
+   ],
+   "narrator": "Bean, the smallest kid in town, who is too light to ever make a footstep sound.",
+   "twistType": "T3"
+  }
+ },
+ {
+  "id": "71063799-f054-482b-8d97-b8df93ac3917",
+  "score": 70,
+  "idea": {
+   "mood": "epic",
+   "prop": "a roll of packing tape",
+   "price": "Any box left outside the truck at a stop gets tossed away for good.",
+   "title": "The Moving Truck Street",
+   "twist": "The movers' deal says all boxes marked FREE TO A GOOD HOME must be delivered. Juno's label makes the whole street official cargo that cannot be dumped, so the truck must carry everyone to a new street.",
+   "closer": "In this town, we all live inside a truck. And I'm the one marked free to a good home.",
+   "opener": "In this town, we all live inside a giant moving truck, and every street is a row of stacked boxes.",
+   "teaser": "One silly label turns out to matter most.",
+   "formula": "F4",
+   "premise": "Our whole street rides in a giant moving truck, and when the truck's engine stops, the narrator must save every box house from the dump.",
+   "setting": "suburb street",
+   "examples": [
+    "Mr. Ruiz labeled his house FRAGILE, so nobody bumps his porch.",
+    "The Parks family lives under a box marked THIS SIDE UP.",
+    "Mrs. Dell hangs laundry on the tie-down straps every Tuesday."
+   ],
+   "narrator": "Juno, the smallest box kid, whose house is labeled FREE TO A GOOD HOME.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "de9db037-e526-432b-8759-b1e753499485",
+  "score": 70,
+  "idea": {
+   "mood": "funny",
+   "prop": "A smudgy piece of chalk",
+   "price": "Mr. Gill stepped out for a sandwich once and came back as a hat.",
+   "title": "Chalk Hatch",
+   "twist": "The Squid is afraid of smudges, because it thinks smeared chalk means a slippery trap. Fin's clumsy smears cover the whole sub and the Squid flees.",
+   "closer": "Everyone draws straight lines here. I'm the reason they draw them messy now.",
+   "opener": "In this town, every submarine hatch gets a ring of chalk, and anything outside a ring after the lights dim belongs to the Squid.",
+   "teaser": "The Squid fears neatness less than it fears mess.",
+   "formula": "F2",
+   "premise": "Our submarine hatches are ringed in chalk to keep a hungry Squid away, and I'm the clumsy kid who always trips over everyone's rings.",
+   "setting": "underwater or submarine",
+   "examples": [
+    "The captain eats his supper inside a chalk ring on his chair.",
+    "Aunt Bubbles sleeps in a ring and snores at the Squid.",
+    "The mailman delivers letters by sliding them across the line."
+   ],
+   "narrator": "Fin, the clumsiest kid on the sub, who smudges every chalk line she touches.",
+   "twistType": "T3"
+  }
+ },
+ {
+  "id": "0605d2d8-aab8-44ed-88bf-379bf998b916",
+  "score": 70,
+  "idea": {
+   "mood": "funny",
+   "prop": "Milo's pepper shaker",
+   "price": "A sneeze makes the pumpkin roll and every plate in town lands on the floor.",
+   "title": "The Pumpkin Patch Life",
+   "twist": "A sneeze rolls the pumpkin, so Milo's endless sneezes are the only thing strong enough to roll it uphill. He pepper-sneezes the whole giant pumpkin over the hill and to the barn, and the town cheers.",
+   "closer": "In this town we live inside a pumpkin, and Milo's sneezes are officially the town engine.",
+   "opener": "In this town, we all live inside a giant hollow pumpkin, and every house is a seed pocket.",
+   "teaser": "His sneezes ruin everything, until the one time they don't.",
+   "formula": "F4",
+   "premise": "Our farm town lives in a pumpkin that rolls whenever someone sneezes, and Milo, who sneezes constantly, is blamed when a hill ahead needs climbing.",
+   "setting": "farm",
+   "examples": [
+    "Farmer Dunn eats soup only while standing on the ceiling.",
+    "The mailman glues his shoes down every morning.",
+    "Aunt Pearl keeps pillows tied to her head for rolling days."
+   ],
+   "narrator": "Milo, who sneezes constantly and is known as the town's wobbliest kid.",
+   "twistType": "T3"
+  }
+ },
+ {
+  "id": "60ad26de-f66c-4836-af53-6b0f0f8de778",
+  "score": 70,
+  "idea": {
+   "mood": "epic",
+   "prop": "A fishing net",
+   "price": "Last time we skipped, the whale dove and the town went under.",
+   "title": "The Whale Won't Dive",
+   "twist": "The deal says feed it one lantern fish, so Marlo nets the Lantern Fish King, the whale's own guide. The whale follows its glow to a calm bay, and the whole town stays above water for good.",
+   "closer": "We all feed the whale one fish a night. Now it follows ours.",
+   "opener": "In this town, we all live inside a giant whale, and every night we feed it one lantern fish so it won't dive.",
+   "teaser": "The deal said one fish. It never said which.",
+   "formula": "F3",
+   "premise": "A town lives inside a giant whale that must be fed a lantern fish each night, and the fisher girl catches the last one, with a storm coming.",
+   "setting": "inside something giant (an animal, a store, a tower)",
+   "examples": [
+    "Fisher Moss rows out at dusk with his net.",
+    "Mrs. Tully keeps a lantern fish in her teapot.",
+    "The mayor counts the fish twice and still sighs."
+   ],
+   "narrator": "Marlo, a small fisher kid who is the only one who dares row the throat tunnel.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "a6fb5380-f869-4738-a069-067fc2e00708",
+  "score": 70,
+  "idea": {
+   "mood": "horror",
+   "prop": "A box of birthday candles",
+   "price": "The Hendersons' bulb burned out once. Their house is still there, but nobody is.",
+   "title": "The Promise of Light",
+   "twist": "The Dark promised not to come inside, so it only takes what's outside. Cleo lights her candles and goes in and shuts the door, and the Dark can't take a single step in.",
+   "closer": "In this town, we leave the light on for the Dark. Now we keep ourselves inside.",
+   "opener": "In this town, every night each house leaves its porch light on, and the Dark promises not to come inside.",
+   "teaser": "The promise had one small, unspoken gap.",
+   "formula": "F3",
+   "premise": "Every porch light on Maple Street stays on all night for the Dark, and Cleo's bulb is the only one that keeps flickering.",
+   "setting": "suburb street",
+   "examples": [
+    "Mr. Gray buys bulbs by the crate and sleeps on his porch.",
+    "The Parkers have seventeen lamps for one tiny porch.",
+    "The mailman wears a headlamp and a small flag."
+   ],
+   "narrator": "Cleo, whose family's porch bulb is the one sad bulb that always flickers.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "313d263c-d12b-4fc5-ac99-7e4f709accf9",
+  "score": 70,
+  "idea": {
+   "mood": "funny",
+   "prop": "A pair of two left socks",
+   "price": "Skip the sock and the clock runs backward, and everyone wakes up yesterday.",
+   "title": "The Sock Deal",
+   "twist": "The deal says the goat keeps time only for 'one sock from each house.' Bea gives two left socks, so the goat must keep two times, and the clock now chimes twice as fast and the goat gets overworked and quits the deal for naps.",
+   "closer": "In this town, we still give the goat one sock. Now he gives us Saturdays.",
+   "opener": "In this town, every night we give the Clock Tower Goat one sock from each house, and it promises to keep the clock right.",
+   "teaser": "The goat promised one thing. Bea read the fine print.",
+   "formula": "F3",
+   "premise": "Every family feeds the town's goat a single sock each night, and Bea, who owns only mismatched socks, notices the deal has a very specific wording.",
+   "setting": "town square",
+   "examples": [
+    "Mr. Pickett's clock ran backward and he ate Tuesday's breakfast twice.",
+    "The baker wears one sock so the goat gets the other.",
+    "Mayor Lump hands over a sock puppet and hopes."
+   ],
+   "narrator": "Bea, the only kid with two left socks, which nobody has ever offered the goat.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "4d0e8dea-7a28-41c5-9383-987ccce73ad9",
+  "score": 70,
+  "idea": {
+   "mood": "funny",
+   "prop": "a bag of cotton earplugs",
+   "price": "Quiet sleepers sweep acorns and sleep under the porch, and everyone has seen it.",
+   "title": "The Snore Court",
+   "twist": "The judges rank by ear alone. Tuck slips earplugs to every judge, so each hears only their own snore and thinks it's the loudest. Every judge crowns themselves, then crowns Tuck too, so the ranking collapses.",
+   "closer": "In this town, the loudest snorer rules. Now everyone is, so nobody sweeps.",
+   "opener": "In this town, the loudest snore in the room outranks everyone, and quiet sleepers sweep acorns all day.",
+   "teaser": "Their own ears decided who was loudest. Tuck just helped.",
+   "formula": "F6",
+   "premise": "Woods kids are ranked at midnight by snoring, the Loud Snorers wear leaf crowns, and one quiet sleeper has a bag of earplugs.",
+   "setting": "woods edge",
+   "examples": [
+    "Duke Barnaby's snore knocks birds out of the trees.",
+    "Lady Fern judges rank at midnight by ear alone.",
+    "The mayor naps inside a megaphone."
+   ],
+   "narrator": "Tuck, a quiet sleeper who sweeps acorns, snores like a mouse, and keeps cotton earplugs in his pocket.",
+   "twistType": "T1"
+  }
+ },
+ {
+  "id": "251e4503-b5fc-47c9-bfaa-d693f83581ed",
+  "score": 69,
+  "idea": {
+   "mood": "wholesome",
+   "prop": "Wren's patched stinky sock",
+   "price": "Skip the sock and the wind rips the laundry, then the bridges, then the roofs away.",
+   "title": "The Sock Giant",
+   "twist": "One dawn the rope is empty and the wind lifts the laundry, then the rope bridge, then the roofs. The giant never smells anything, so Wren's stinky sock can't be a bad smell. Its patches and holes are the only thing he can feel. He stops blowing and wears her sock, the one that feels like home.",
+   "closer": "Every dawn we still hang one sock. Mine is the one he asks for.",
+   "opener": "In this town, every dawn we hang one clean sock on the cliff rope, and the Wind Giant wears it all day.",
+   "teaser": "Her socks were the town's joke. Not to him.",
+   "formula": "F3",
+   "premise": "A cliff town pays the Wind Giant one sock a day to keep the gusts gentle, and the narrator is the kid with the smelliest, holeiest socks.",
+   "setting": "canyon or cliff town",
+   "examples": [
+    "Mrs. Lark knits the socks, striped, because he is picky.",
+    "Mr. Tamm hung a soggy sock once. His roof is still missing.",
+    "The baker's twins argue over who gets sock duty."
+   ],
+   "narrator": "Wren, whose feet are so stinky and patched that everyone says her socks insult the giant, and the giant never smells a thing.",
+   "twistType": "T3"
+  }
+ },
+ {
+  "id": "f330b442-30cf-452d-8db8-b0d37ccd61f1",
+  "score": 69,
+  "idea": {
+   "mood": "funny",
+   "prop": "A tiny knitted cap tucked in her broom pocket",
+   "price": "Anyone whose hat tower falls must sit in the fountain and wave to everyone until sunset.",
+   "title": "The Hat Stackers",
+   "twist": "Biscuit tucks her tiny cap beneath the Mayor's forty hats and pulls it free. The tower tumbles, and the rule sends the Mayor to the fountain. The Stackers' towers all topple, and the fountain fills with waving rulers while Biscuit sweeps.",
+   "closer": "Everyone here wants the tallest hat. Now the tallest ones wave from the fountain, and I wave back.",
+   "opener": "In this town, the more hats you wear, the more important you are, so the Hat Stackers rule the square.",
+   "teaser": "One tiny cap, pulled at the right moment, topples the town.",
+   "formula": "F6",
+   "premise": "In a town where rank is the height of your hat tower, Biscuit is the only Bare Head, sweeping up every hat that falls in the square.",
+   "setting": "town square",
+   "examples": [
+    "Mayor Plum wears forty hats and has not seen his own feet since spring.",
+    "Tall Mr. Gable once fell from his tower and sat in the fountain all day.",
+    "Mrs. Vance's tower has a birdhouse, and the birds pay rent."
+   ],
+   "narrator": "Biscuit, the only Bare Head in town, with one tiny cap and a big broom.",
+   "twistType": "T6"
+  }
+ },
+ {
+  "id": "b7dbbd59-483e-47f4-bae1-5fac28a41858",
+  "score": 69,
+  "idea": {
+   "mood": "funny",
+   "prop": "his jump rope",
+   "price": "Whatever crosses the stripe is carried off, like Mr. Bell's trash can, which now lives somewhere else.",
+   "title": "The Crosswalk Cat",
+   "twist": "The cat takes only what crosses the stripe, not what stays on top of it. Milo ties the hamster to the rope, lifts it by the rope above the stripe, and swings it over so it never touches. The cat blinks, bored, and the hamster is home.",
+   "closer": "We still never cross the stripe. But we do swing over it.",
+   "opener": "In this town, every sidewalk has a yellow stripe, and anything crossing it after dark belongs to the Crosswalk Cat.",
+   "teaser": "The cat only counts what touches the line.",
+   "formula": "F2",
+   "premise": "A suburb street keeps off a giant cat's stripe at night, and the narrator's little brother has to get his hamster back from the middle of it.",
+   "setting": "suburb street",
+   "examples": [
+    "The mail carrier delivers by throwing from a safe distance.",
+    "Mrs. Okafor's garden gnome crossed it once. Now there's a gap.",
+    "Kids play hopscotch only on the safe side of the line."
+   ],
+   "narrator": "Milo, who is the best at jumping rope and the worst at following rules.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "4a07a08b-acaa-420e-b423-6641da45aa1d",
+  "score": 69,
+  "idea": {
+   "mood": "epic",
+   "prop": "A brass alarm bell",
+   "price": "When a clock hits zero, that person freezes like a statue until morning.",
+   "title": "No Clock for Me",
+   "twist": "The Midnight Sweeper sweeps up anyone who is frozen at zero. Dex rings the bell, and the Sweeper must obey the rule: anyone who is awake at midnight is not frozen, so it passes by the whole square and sweeps nothing.",
+   "closer": "In this town, everyone has a clock. Tonight, mine rang for all of them.",
+   "opener": "In this town, everyone in the town square has a clock over their head counting down their bedtime, except me.",
+   "teaser": "He can't be frozen. But everyone else can be woken.",
+   "formula": "F1",
+   "premise": "Everyone's bedtime clock stops them dead at zero, and Dex, who has no clock, is the only one awake when the Midnight Sweeper arrives.",
+   "setting": "town square",
+   "examples": [
+    "Mr. Lund froze mid-sneeze next to the fountain.",
+    "The mayor froze holding a cake, and the pigeons ate it.",
+    "Mrs. Bix froze on a ladder and stayed there all night."
+   ],
+   "narrator": "Dex, the only kid in the square with no clock over his head.",
+   "twistType": "T1"
+  }
+ },
+ {
+  "id": "da00b299-8afb-44e6-9611-45f9687a51ac",
+  "score": 69,
+  "idea": {
+   "mood": "wholesome",
+   "prop": "Nell's knitted mittens",
+   "price": "A small snowball means the Drift Sleeper lies down in your yard and your door freezes shut.",
+   "title": "The Smallest Snowball",
+   "twist": "The Drift Sleeper is a tiny, lonely snow creature whose paws cannot lift the big heavy balls, so it has been starving. Only Nell's marble-sized, mitten-packed snowballs fit its paws. It eats, grows warm, and melts every frozen door.",
+   "closer": "Everyone here brings a big snowball. Now they all roll one the size of Nell's.",
+   "opener": "In this town, every family leaves one snowball on the gate every night, for the Drift Sleeper.",
+   "teaser": "The big offerings never fit. The tiny ones always did.",
+   "formula": "F3",
+   "premise": "Each night the snowy town rolls huge snowballs for the Drift Sleeper, but the narrator's hands are so small she can only roll marbles, and her mittens are all she has.",
+   "setting": "snowy town",
+   "examples": [
+    "Mr. Larch rolls his as big as a barrel.",
+    "The Pooles haul theirs to the gate on a sled.",
+    "Granny Wick left a lumpy one, and her door stayed frozen a week."
+   ],
+   "narrator": "Nell, whose hands are too small for big snowballs, but her knitted mittens pack every one hard and perfectly round.",
+   "twistType": "T3"
+  }
+ },
+ {
+  "id": "db5bcea5-1ae8-45f1-8e13-fe496ea34d00",
+  "score": 69,
+  "idea": {
+   "mood": "funny",
+   "prop": "A cheese rind in her pocket",
+   "price": "Anyone who steals another squirrel finds every acorn stolen from their roof.",
+   "title": "Squirrel-Free",
+   "twist": "The squirrels all bolt when a skunk invades. Poppy's cheese smell, the thing everyone mocked, is the only scent the skunk dislikes, so she walks it out of town as everyone follows behind her.",
+   "closer": "Everyone here has a squirrel. But when the skunk comes, they all stand behind my cheese.",
+   "opener": "In this town, everyone at the woods edge has a pet squirrel that carries their shopping, except me.",
+   "teaser": "Everyone has a squirrel. Nobody expected her smell to matter.",
+   "formula": "F1",
+   "premise": "Every neighbour at Birchwood Edge has a loyal squirrel carrier, while Poppy hauls her groceries alone and gets mocked until a tiny, smelly problem sweeps into town.",
+   "setting": "woods edge",
+   "examples": [
+    "Mr. Hobb's squirrel carries his hat and his ten sandwiches.",
+    "Granny Fern's squirrel delivers her mail to the wrong porch.",
+    "The mayor's squirrel wears a tiny tie."
+   ],
+   "narrator": "Poppy, who has no squirrel and smells of old cheese from her pockets.",
+   "twistType": "T3"
+  }
+ },
+ {
+  "id": "a13df5f8-2f46-4552-88cb-2b30a87f71ec",
+  "score": 69,
+  "idea": {
+   "mood": "epic",
+   "prop": "The brass moat horn",
+   "price": "Sir Ambrose stayed on the bridge once, and now only his helmet floats in the moat.",
+   "title": "The Moat Horn",
+   "twist": "The rule only counts the moment the horn stops. Ivy keeps blowing one long unbroken note while her brother walks off the bridge, and the dragon never sees the horn end. She stops only once he is safe on the far bank.",
+   "closer": "Nobody stays on the bridge when the horn stops. But the horn is mine, so I decide when it stops.",
+   "opener": "In this town, anyone still standing on the drawbridge when the evening horn stops is kept by the Moat Dragon.",
+   "teaser": "The dragon only cares when the horn stops. Ivy has a plan.",
+   "formula": "F2",
+   "premise": "A castle town runs on the evening horn, and Ivy, the smallest page who blows it, sees her brother stuck on the bridge when the horn sounds early.",
+   "setting": "castle",
+   "examples": [
+    "The baker Mr. Crumb gallops his bread cart home every evening before the horn.",
+    "Lady Fenn sleeps in the gatehouse so she is never caught late.",
+    "Cook Marta counts the horn's last note out loud, then runs."
+   ],
+   "narrator": "Ivy, the castle's smallest page, whose only job is carrying and blowing the brass moat horn.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "4551c09f-efd9-4b0d-add7-442efb00fd22",
+  "score": 69,
+  "idea": {
+   "mood": "funny",
+   "prop": "rusty old bucket",
+   "price": "No cloud means no umbrella dances, no puddles, and always the last seat at the fountain.",
+   "title": "Cloudless in the Square",
+   "twist": "A huge drought dries up the square. All the clouds are too tiny to fill the fountain. Dot's empty sky means she can stand in the middle with her bucket and catch every drip. She shares it, and the town laughs.",
+   "closer": "Everyone here has a cloud. But when it rains, they all stand under mine.",
+   "opener": "In this town, everyone has their own tiny rain cloud over their head, except me.",
+   "teaser": "Her clear sky is the only thing that can catch the rain.",
+   "formula": "F1",
+   "premise": "Everyone in the square gets a personal weather cloud that follows them, and Dot, the one kid with nothing overhead, is laughed at during every parade.",
+   "setting": "town square",
+   "examples": [
+    "Mr. Barnaby's cloud rains on his own sandwich every day.",
+    "The mayor's thundercloud has its own tiny seat at council.",
+    "The pizza guy's cloud drizzles right into the cheese."
+   ],
+   "narrator": "Dot, who has a clear sky overhead and keeps a rusty old bucket, because she has nothing to dodge.",
+   "twistType": "T3"
+  }
+ },
+ {
+  "id": "08ec2429-d5ba-4e89-a8be-b39fe85bf7d5",
+  "score": 68,
+  "idea": {
+   "mood": "horror",
+   "prop": "A small wooden drum",
+   "price": "Anyone who stomps out of rhythm wakes the bat, and a whole street was swallowed last winter.",
+   "title": "Inside the Bat",
+   "twist": "The heartbeat speeds up three times: dust falls, the lamps swing, the floor tilts. Pia drums the slow beat the town forgot, and the bat sleeps again. But her drum keeps beating after she stops, from outside the bat's wall.",
+   "closer": "We live inside a sleeping bat. So whose heartbeat is that outside?",
+   "opener": "In this town, we all live inside a giant sleeping bat, and every heartbeat shakes our cave houses.",
+   "teaser": "The bat is asleep again. But who is still drumming?",
+   "formula": "F4",
+   "premise": "Pia has no rhythm and always stomps off the beat, yet she is the only one who can hear the bat starting to wake.",
+   "setting": "underground or cave town",
+   "examples": [
+    "Mr. Gray bakes bread only between heartbeats.",
+    "The school bell rings softly, once, in time with the pulse.",
+    "Mrs. Dunn hung her laundry from a rib. Her whole street was gone by morning."
+   ],
+   "narrator": "Pia, the clumsiest stomper in town, who has to drum quietly on her small wooden drum to keep time.",
+   "twistType": "T5"
+  }
+ },
+ {
+  "id": "cca086c9-b0a5-4848-ac3b-922998d3a1de",
+  "score": 68,
+  "idea": {
+   "mood": "horror",
+   "prop": "A stub of yellow chalk",
+   "price": "A shadow that stops copying you pulls you into the lamp-dark by morning.",
+   "title": "The Shadow Who Waved",
+   "twist": "The rule says the twin must copy you exactly, so Wren draws a chalk door on the wall, steps through it, and her shadow, bound to copy, follows into the light and stays.",
+   "closer": "Everyone here gets a shadow-twin. Mine is late. That's why I'm still here.",
+   "opener": "In this town, everyone gets one shadow-twin on their tenth birthday, and it does whatever the kid does, until the first night it doesn't.",
+   "teaser": "Her shadow was always late. That was the clue.",
+   "formula": "F5",
+   "premise": "On the town square, every ten-year-old gets a shadow-twin, and mine arrived crooked, tiny, and always a half-second late.",
+   "setting": "town square",
+   "examples": [
+    "Mrs. Fenn's twin stopped copying her once. Her porch swing still swings.",
+    "The baker's twin sneezes a second before he does now.",
+    "Old Mr. Lark keeps his lamp on all night and never sleeps."
+   ],
+   "narrator": "Wren, whose shadow is tiny and always lags a half-second behind her.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "ec448bd6-0e15-4cab-bf38-3b2f5c68a1dd",
+  "score": 68,
+  "idea": {
+   "mood": "horror",
+   "prop": "A wooden egg from the henhouse",
+   "price": "Skip the eggs and by morning the scarecrow stands in your garden, and your fence is gone.",
+   "title": "The Scarecrow's Promise",
+   "twist": "The deal says the scarecrow wants 'one egg from every house.' Wren leaves Biscuit's wooden egg, which counts as an egg, so it must sit on it forever and cannot walk.",
+   "closer": "Every night we still leave eggs. But Biscuit's is the one the scarecrow guards.",
+   "opener": "In this town, every night we leave one full egg basket at the barn door, and the Scarecrow promises not to walk.",
+   "teaser": "The promise was only as good as its wording.",
+   "formula": "F3",
+   "premise": "A farm town pays a scarecrow in eggs each night to keep it standing still, and the narrator's hens just stopped laying.",
+   "setting": "farm",
+   "examples": [
+    "Mrs. Tilly forgot her basket once. Her whole pumpkin patch was moved.",
+    "The Hendersons count eggs twice, then a third time, shaking.",
+    "Farmer Grubb pays in chocolate eggs and the scarecrow still scowls."
+   ],
+   "narrator": "Wren, who has one stubborn hen named Biscuit that never lays anything.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "c6ab5439-cef9-4a62-85a7-ef87cf692961",
+  "score": 68,
+  "idea": {
+   "mood": "epic",
+   "prop": "a stub of chalk",
+   "price": "Names left off the star list are erased from the roll book by morning.",
+   "title": "The Chalkboard Queen",
+   "twist": "The Queen's deal says she erases any name 'not on the board.' Lila writes every kid's name in chalk on the board herself, so the Queen must keep them all, and the list overwhelms her until she's erased by her own rule.",
+   "closer": "We used to pay stars to keep our names. Now our names keep her away.",
+   "opener": "In this town, every kid must hand in one gold star to the Chalkboard Queen every night, or she erases a name.",
+   "teaser": "She wanted stars. Lila gave her every name.",
+   "formula": "F3",
+   "premise": "The whole school pays gold stars to the Chalkboard Queen on the classroom board, and the narrator has none left to give.",
+   "setting": "school (hallway, cafeteria, classroom, stage)",
+   "examples": [
+    "Mrs. Ames gave her last star and has no name tag.",
+    "Gus gave his star and now nobody remembers his birthday.",
+    "The janitor hands in a star every night, grumbling."
+   ],
+   "narrator": "Lila, who has no gold stars because she always forgets her homework.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "58ae9f22-0aac-4076-8ed5-22c586ab4dfa",
+  "score": 68,
+  "idea": {
+   "mood": "wholesome",
+   "prop": "Her tiny wind-up snail",
+   "price": "Anyone still on the slide when the flag rises is delivered far away.",
+   "title": "The Slow Letter",
+   "twist": "The mailman only picks up what moves fast, so Rosie, slow as always, is overlooked, and her slow wind-up snail marches the whole street out of sight until the flag falls and everyone is safe.",
+   "closer": "They laughed that I was slow. Now the whole street walks like me.",
+   "opener": "In this town, we all live inside a giant mailbox, and every house is a letter slot that opens at noon.",
+   "teaser": "The slowest kid on the street saves everyone.",
+   "formula": "F4",
+   "premise": "Everyone in the mailbox town zips through their slot at noon, but Rosie is slow, and the day the flag goes up, the mailman is about to lift the whole street away.",
+   "setting": "suburb street",
+   "examples": [
+    "Mr. Ames got delivered to the next county last spring.",
+    "The Hendersons mail their lunches ahead each morning.",
+    "Our paper boy lives permanently in the dead letter bin."
+   ],
+   "narrator": "Rosie, the slowest kid on the street, who always gets teased for walking at a snail's pace.",
+   "twistType": "T3"
+  }
+ },
+ {
+  "id": "1ea44c28-652d-46b3-be39-8537a06759c1",
+  "score": 68,
+  "idea": {
+   "mood": "horror",
+   "prop": "Mom's sewing scissors",
+   "price": "Footprints in fresh snow at dawn, stitched shut, and the walker never seen again.",
+   "title": "The Stitcher's Needle",
+   "twist": "The Stitcher only sews footprints it finds. Wren walks backward in her own tracks, then snips the thread at the end, so no footprints are left to stitch and it stitches itself shut.",
+   "closer": "Nobody walks on fresh snow after dark here. Except the one who leaves no footprints.",
+   "opener": "In this town, nobody walks on fresh snow after dark, or the Snow Stitcher sews your footprints shut with you inside.",
+   "teaser": "The rule says footprints. It never says whose.",
+   "formula": "F2",
+   "premise": "Everyone in a snowy town sticks to shoveled paths at night, but the shovel-less kid next door has to cross a fresh white yard to fetch her brother's lost mitten.",
+   "setting": "snowy town",
+   "examples": [
+    "Mr. Hanley's boots still stand in the yard, stitched into the drift.",
+    "The mail carrier only delivers along the shoveled gray stripe.",
+    "Mrs. Okoro's dog walks on a plank, and it never complains."
+   ],
+   "narrator": "Wren, the kid whose family can't afford a shovel, so her path is always snow.",
+   "twistType": "T1"
+  }
+ },
+ {
+  "id": "596f7e69-b759-4369-8238-8f6bf304636f",
+  "score": 68,
+  "idea": {
+   "mood": "epic",
+   "prop": "A stub of blue chalk",
+   "price": "A crystal that goes dark means that person is sealed into the rock by morning.",
+   "title": "The Blank Crystal",
+   "twist": "The Sealing Rule says anyone whose name goes dark is sealed. Nell's crystal has no name, so it can never go dark. She chalks the sealed names back on, and the rock lets everyone out.",
+   "closer": "Everyone here has a name on the wall. I'm the only one the dark can't write.",
+   "opener": "In this town, everyone's name is carved into a glowing crystal in the cave wall, except mine.",
+   "teaser": "Nobody guessed that having no name could be a loophole.",
+   "formula": "F1",
+   "premise": "In a cave town where every crystal name keeps its owner's light on, the narrator is the only kid whose crystal is smooth and has no name at all.",
+   "setting": "underground or cave town",
+   "examples": [
+    "Mrs. Tilly polishes her crystal every dawn before she touches her breakfast.",
+    "Mr. Grubb's crystal flickered once. His whole family sat watching it all night.",
+    "The baker sells bread shaped like crystals, with names written in icing."
+   ],
+   "narrator": "Nell, the only kid whose crystal has no name, so the town says she has no light.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "49faa301-e912-49ae-8c87-9ecd51eb7c08",
+  "score": 68,
+  "idea": {
+   "mood": "wholesome",
+   "prop": "Her tin kazoo",
+   "price": "A hum that clashes with the bell cracks the rock, and the cracked houses fall.",
+   "title": "The Bell Town",
+   "twist": "A storm wind cracks the bell and the town's ringing goes silent and flat. Only Wren's off-key kazoo hum fits the crack's pitch and shakes the stuck stones loose, so the bell sings whole again.",
+   "closer": "In this town, we all live inside a bell, and now we ring a little off-key.",
+   "opener": "In this town, we all live inside a giant hollow cliff-top bell, and the whole town rings when the wind blows.",
+   "teaser": "Everyone told her to hum quieter. The bell disagreed.",
+   "formula": "F4",
+   "premise": "A town lives inside a huge stone bell on a cliff, and the one kid who cannot stop humming is told to be quiet.",
+   "setting": "canyon or cliff town",
+   "examples": [
+    "Mrs. Tilly bakes bread only when the wind is calm.",
+    "Mr. Ferris ties pillows to his boots every morning.",
+    "The mailman delivers letters by walking on tiptoe."
+   ],
+   "narrator": "Wren, who hums off-key all day and gets shushed by everyone.",
+   "twistType": "T3"
+  }
+ },
+ {
+  "id": "73d76cbd-a3b0-40b1-ba78-467259b6bf18",
+  "score": 68,
+  "idea": {
+   "mood": "horror",
+   "prop": "A tin of cocoa powder",
+   "price": "A cold or empty cup means a porch light goes dark by morning.",
+   "title": "One Cup for the Hush",
+   "twist": "The rule says leave a cup of cocoa 'on the porch, for the Hush.' Juno leaves the cup on the Hush's own porch at the end of the street, so it must drink from its own cup and go home.",
+   "closer": "Every family leaves one cup on the porch. Mine is on yours, Hush.",
+   "opener": "In this town, every family leaves one cup of cocoa on the porch at night, for the Hush.",
+   "teaser": "The deal said porch. It never said whose.",
+   "formula": "F3",
+   "premise": "Every night the Hush drinks the cocoa left on porches, and the narrator's family has just run out of cocoa and got a deal wrong.",
+   "setting": "suburb street",
+   "examples": [
+    "Mr. Vance left milk once. His porch is still dark.",
+    "The Pruitts leave two cups, just to be safe.",
+    "Mrs. Abara stirs hers clockwise, for manners."
+   ],
+   "narrator": "Juno, who has to put out the cup tonight because Dad is away.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "a67a3619-17fe-4efc-9edc-3bdd9e3ab3ca",
+  "score": 68,
+  "idea": {
+   "mood": "epic",
+   "prop": "her clanking leg braces",
+   "price": "Anyone left on the ground at dark is gone by morning, leaving only their boots.",
+   "title": "The Last Ladder",
+   "twist": "The serpent hates loud metal, which is why the bell-ringer and Sir Bram were never taken. Tilly clangs across the drawbridge, the serpent shrinks into the moat, and she carries her brother home.",
+   "closer": "Everyone here climbs the ladder. But when I walk, the serpent hides.",
+   "opener": "In this town, every tower window drops a rope ladder at sunset, and anything left on the ground belongs to the Moat Serpent.",
+   "teaser": "Everyone teased her braces for clanking. The serpent heard them differently.",
+   "formula": "F2",
+   "premise": "The castle town climbs ladders every night to escape the serpent, but Tilly, the slowest kid, cannot climb, and her little brother is stuck outside the wall.",
+   "setting": "castle",
+   "examples": [
+    "Baker Wend left his cart out and found only wheels.",
+    "The bell-ringer clangs his bell all night and is always fine.",
+    "Sir Bram clanked home late in armor, and the serpent slid away."
+   ],
+   "narrator": "Tilly, the smallest kid in the castle, with heavy metal leg braces that clank and can't climb a ladder.",
+   "twistType": "T3"
+  }
+ },
+ {
+  "id": "da8b6491-d0b5-47be-9828-1830b5c65516",
+  "score": 68,
+  "idea": {
+   "mood": "wholesome",
+   "prop": "A stubby broken crayon",
+   "price": "Skip a drawing and the wall eats that kid's name off the roll sheet.",
+   "title": "The Hungry Mural",
+   "twist": "The Mural has eaten only perfect drawings and is starving for something real. Juniper's wobbly stick family, drawn with the broken crayon, is the first meal it loves, and the wall paints her a friend.",
+   "closer": "Everyone here draws perfect pictures. But the wall only ever asks for mine.",
+   "opener": "In this town, every kid leaves one crayon drawing in the lunchroom cubby every night, for the Hungry Mural.",
+   "teaser": "The wall is hungry, but not for perfect.",
+   "formula": "F3",
+   "premise": "A school feeds a blank wall its best drawings every night, and the narrator draws so badly that nobody wants to be her partner.",
+   "setting": "school (hallway, cafeteria, classroom, stage)",
+   "examples": [
+    "Mrs. Tubbs draws a perfect rainbow each night, shaded and framed.",
+    "Dex traced a dog once, and the mural spat it back.",
+    "The twins draw together so nobody can say who skipped."
+   ],
+   "narrator": "Juniper, who draws wobbly stick people and gets laughed at in art class.",
+   "twistType": "T3"
+  }
+ },
+ {
+  "id": "cce0fe41-e2e5-4981-bffe-e38b002af17a",
+  "score": 68,
+  "idea": {
+   "mood": "epic",
+   "prop": "A pair of thin, patched slippers",
+   "price": "Anyone who steps on the high bridge too heavily falls into the canyon mist.",
+   "title": "Light Feet",
+   "twist": "The old rope bridge is too fragile for any heavy boots, so the Stompers cannot cross to save the stranded children on the far cliff. Wren tiptoes across in her light slippers, ties the rope tight, and leads everyone over.",
+   "closer": "Up here, heavy boots rule. Down here, the lightest feet carry us all home.",
+   "opener": "In this town, the heavier your boots, the higher your cliff ledge, so the Stompers rule the top.",
+   "teaser": "Only the lightest feet can cross the broken bridge.",
+   "formula": "F6",
+   "premise": "A canyon town ranks everyone by boot weight, and the narrator wears featherlight shoes at the bottom when the bridge begins to crack.",
+   "setting": "canyon or cliff town",
+   "examples": [
+    "Baron Clump wears boots made of anvils.",
+    "Mrs. Pebble needs three people to lift her shoe.",
+    "The mail goat carries lead in its saddlebags."
+   ],
+   "narrator": "Wren, the lightest kid in the canyon, who wears paper-thin slippers and gets laughed at.",
+   "twistType": "T3"
+  }
+ },
+ {
+  "id": "24f041dd-f1ae-4175-92aa-9b64fb11db63",
+  "score": 67,
+  "idea": {
+   "mood": "wholesome",
+   "prop": "a tiny feather",
+   "price": "Anyone who wakes the bear gets their house shaken loose and dropped in the snow.",
+   "title": "Inside the Bear",
+   "twist": "Spring comes and the bear stirs too early, and every loud voice makes it grumble. Only Pim's feather tickle is soft enough to ease it back to sleep, and the quiet kid saves the town.",
+   "closer": "Everyone here is loud. But now, when the bear stirs, they all look for me.",
+   "opener": "In this town, we all live inside a giant sleeping bear, and the loudest snore of the year is our alarm clock.",
+   "teaser": "Nobody could shout loud enough. Except the quietest kid.",
+   "formula": "F4",
+   "premise": "A town lives in a hibernating bear's fur, and the narrator is the smallest, quietest kid, teased for never being heard.",
+   "setting": "inside something giant (an animal, a store, a tower)",
+   "examples": [
+    "Mrs. Birch hangs laundry on the bear's whiskers.",
+    "Big Otto stomps and the whole town gets sent to the floor.",
+    "The mailman delivers letters along the left ear ridge."
+   ],
+   "narrator": "Pim, the smallest and quietest kid, who the town jokes about as barely there.",
+   "twistType": "T3"
+  }
+ },
+ {
+  "id": "3bcb73c7-fa81-442e-8c24-737ab69d9e46",
+  "score": 67,
+  "idea": {
+   "mood": "wholesome",
+   "prop": "A little tin lantern",
+   "price": "Kids whose shadows wander off get lost in the fog and sleep in the canyon.",
+   "title": "The Shadowless Kid",
+   "twist": "A thick fog swallows the cliff and every shadow vanishes, because shadows need sun. Everyone is stuck, but Fen has always walked by lantern light, so Fen leads them all down the stairs, step by step.",
+   "closer": "Everyone here has a shadow to follow. But when it's foggy, they follow me.",
+   "opener": "In this town, everyone on the cliff has a long shadow that walks ahead of them, except me.",
+   "teaser": "When the fog came, the shadows all disappeared. Except nothing changed for Fen.",
+   "formula": "F1",
+   "premise": "On a cliff town where shadows guide everyone down the zigzag stairs, the narrator has no shadow and is laughed at and left behind each morning.",
+   "setting": "canyon or cliff town",
+   "examples": [
+    "Mr. Tuck's shadow leads him straight to the bakery every dawn.",
+    "The mail carrier follows hers along the ledge like a dog.",
+    "Twins Ida and Ozzie hold shadow hands to cross the bridge."
+   ],
+   "narrator": "Fen, who has no shadow at all, and is called Noon because of it.",
+   "twistType": "T3"
+  }
+ },
+ {
+  "id": "46a358ac-9f05-40ef-a9b1-867d48ca2df2",
+  "score": 67,
+  "idea": {
+   "mood": "wholesome",
+   "prop": "A little jam jar with holes",
+   "price": "Kids with no fireflies get moved one row farther from the lantern ring each night.",
+   "title": "The Dark Kid",
+   "twist": "Night one Wren is pushed to the back row, night two to the fence, night three outside the ring. She sets her jar open on a stump. One dim, tired firefly moves in, then brings its whole family, because fireflies follow kids who give them a home.",
+   "closer": "Everyone here counts fireflies. Now they count how many of them sleep in my jar.",
+   "opener": "In this town, the more fireflies follow you home, the more important you are, so the Glowers rule the woods edge.",
+   "teaser": "Nobody follows Wren. Somebody's about to move in.",
+   "formula": "F6",
+   "premise": "At the woods edge, rank is counted in fireflies, and Wren, who attracts none and secretly keeps a jam jar, gets pushed farther back every night.",
+   "setting": "woods edge",
+   "examples": [
+    "Mayor Tilly wears a cloud of fireflies like a fluffy hat.",
+    "The Glowers get front-row seats at the pancake breakfast.",
+    "Mr. Burrow has forty fireflies and has never carried his own bag."
+   ],
+   "narrator": "Wren, who has zero fireflies and secretly keeps an old jam jar with holes in her coat pocket.",
+   "twistType": "T6"
+  }
+ },
+ {
+  "id": "e3b2416a-7f00-4a60-a340-5ecbcc2fdf1b",
+  "score": 67,
+  "idea": {
+   "mood": "epic",
+   "prop": "A notebook and a pencil stub",
+   "price": "Speak a wish after noon and your voice is gone by sunset.",
+   "title": "The Echo Square",
+   "twist": "The rule says 'speak a wish out loud', so I write the town's wishes in the notebook and read them in silent sign. The Echo has no claim on written words and must hand every voice back.",
+   "closer": "In this town, nobody speaks a wish after noon. We write them, and they all come true.",
+   "opener": "In this town, every fountain stops flowing at noon, and anyone who speaks a wish out loud after that belongs to the Echo.",
+   "teaser": "The Echo took every voice, but it forgot how the rule was worded.",
+   "formula": "F2",
+   "premise": "The square's fountain goes silent each noon, and when the Echo takes my brother's voice, I have to rescue the whole town using only the exact words of the rule.",
+   "setting": "town square",
+   "examples": [
+    "Baker Odd wished for more customers and now only waves.",
+    "Mayor Plum wished for a longer lunch and now whispers on paper.",
+    "The twins wished for snow and now only sign to each other."
+   ],
+   "narrator": "A kid who always writes instead of talks, so the Echo has nothing to take from me.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "668e8dc5-cead-4407-bf1a-fab65914150c",
+  "score": 67,
+  "idea": {
+   "mood": "horror",
+   "prop": "A note on the shelf",
+   "price": "Anyone who stands in the light when the door opens is picked up and gone.",
+   "title": "The Fridge Light",
+   "twist": "The Giant's own rule on the note says he only takes food that is not labeled. Dot labels every house, shelf and neighbor with a sticky tag reading 'leftovers, do not eat', and the door closes empty-handed.",
+   "closer": "The light only takes what's unlabeled. So we labeled everything, even the dark.",
+   "opener": "In this town, every house on Elm Street sits inside one giant refrigerator, and when the door opens, the light means someone is hungry.",
+   "teaser": "The Giant follows one rule. Dot just reads it carefully.",
+   "formula": "F4",
+   "premise": "The families of Elm Street live on the shelves of a giant refrigerator, and Dot hears the door open at night.",
+   "setting": "suburb street",
+   "examples": [
+    "Mr. Gable's cheese house was gone the morning after the midnight snack.",
+    "The Ortiz family keeps a rule: never stand on the top shelf.",
+    "Our mail goes by egg carton so nobody walks in the light."
+   ],
+   "narrator": "Dot, a kid who lives in the butter dish and keeps a deal slip from the hungry Giant.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "ae062c85-46bc-4ccd-948c-e9dec488f461",
+  "score": 67,
+  "idea": {
+   "mood": "horror",
+   "prop": "a tin of shoe polish",
+   "price": "The Pickups left a single shoe in the street the night the Hendersons stayed out.",
+   "title": "Lid Closes at Nine",
+   "twist": "The rule says anything outside the can goes in the trash. Milo drags the whole neighborhood's trash outside, and the lid, following its own words, takes the trash instead of the people.",
+   "closer": "In this town, we live inside a garbage can, and the lid took only the trash.",
+   "opener": "In this town, we all live inside a giant garbage can, and the lid closes every night at nine.",
+   "teaser": "The lid takes what's outside. So what's outside?",
+   "formula": "F4",
+   "premise": "Our suburb street sits inside a giant garbage can, and at nine the lid slams shut, and anyone outside at dark gets taken out with the trash.",
+   "setting": "suburb street",
+   "examples": [
+    "Mr. Cobb's dog barks at the lid every dusk.",
+    "The paperboy sprints home before eight forty.",
+    "Mrs. Vale keeps her curtains stitched shut."
+   ],
+   "narrator": "Milo, who always runs late because his sneakers are a size too big.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "f074d625-bbfb-4a47-98f2-4cb4356d3b3f",
+  "score": 67,
+  "idea": {
+   "mood": "horror",
+   "prop": "A flashlight",
+   "price": "Yesterday the Collector took Mr. Dunn's shadowless cousin, and only his hat stayed on the bench.",
+   "title": "No Guard Shadow",
+   "twist": "The Collector's law is that it takes only what has no shadow. Ivy shines her flashlight on the Collector itself, so it casts no shadow, and it takes itself away at dawn.",
+   "closer": "Everyone here has a shadow. But now when the Collector comes, they all call me.",
+   "opener": "In this town, everyone in the town square has a lantern shadow that stands guard over them, except me.",
+   "teaser": "The Collector takes anyone without a shadow. Does it have one?",
+   "formula": "F1",
+   "premise": "Every person in the square has a tall guardian shadow, and the narrator's shadow is missing just as the Dusk Collector begins taking shadowless people.",
+   "setting": "town square",
+   "examples": [
+    "Baker Rosa's shadow kneads dough in the dark.",
+    "The mayor's shadow stands taller than the clock tower.",
+    "Little Wes has a shadow that only waves at pigeons."
+   ],
+   "narrator": "Ivy, who has no shadow and keeps a flashlight in her coat pocket.",
+   "twistType": "T1"
+  }
+ },
+ {
+  "id": "b943c05c-4b1f-47a9-80b9-9b20fb95bf16",
+  "score": 67,
+  "idea": {
+   "mood": "wholesome",
+   "prop": "A tin lantern",
+   "price": "The one night a bowl was forgotten, the lamps went out for a week.",
+   "title": "Soup for the Deep",
+   "twist": "The Deep One is not a beast but a giant, lonely mole who keeps the town's lamps lit with its glow, and the soup is the only company it has. Odie sits down and eats with it, and now every night a kid comes to dinner.",
+   "closer": "Every night this town sends down soup. But now, somebody finally sends down a kid to eat it.",
+   "opener": "In this town, every family lowers one warm bowl of soup down the old mine shaft every night, for the Deep One.",
+   "teaser": "Someone down there is as lonely as he is.",
+   "formula": "F3",
+   "premise": "In a cave town that feeds something below the mine, lonely Odie decides to follow his soup bowl down the shaft one night to see who is really eating.",
+   "setting": "underground or cave town",
+   "examples": [
+    "Mrs. Gritt adds extra pepper so the Deep One sneezes.",
+    "The Tanner twins lower theirs with a tiny rope elevator.",
+    "Old Mr. Cobb once sent down a bowl of cold beans, and the town shook."
+   ],
+   "narrator": "Odie, a lonely cave kid whose parents work late and who eats dinner by himself.",
+   "twistType": "T2"
+  }
+ },
+ {
+  "id": "64597383-3f10-4031-ab07-95008421c261",
+  "score": 67,
+  "idea": {
+   "mood": "funny",
+   "prop": "A ball of yarn",
+   "price": "Any room that drifts too far from the castle wall gets eaten by the Moat Frog.",
+   "title": "The Lily Pad Castle",
+   "twist": "Fig's yarn ties her pad to every other pad, and the Moat Frog only eats rooms that drift alone. The rule was never about distance. It was about being tied to someone, and nobody is ever lonely again.",
+   "closer": "Everyone here lives on a lily pad. Now we all float tied together.",
+   "opener": "In this town, we all live inside a giant castle moat, and every room is a floating lily pad.",
+   "teaser": "The frog only ever wanted one thing from the lily pads.",
+   "formula": "F4",
+   "premise": "A whole castle town lives on floating lily pad rooms in the moat, and the narrator's pad is the smallest and keeps drifting away.",
+   "setting": "castle",
+   "examples": [
+    "Mr. Gable's bedroom drifted to the drawbridge, and he now commutes by catapult.",
+    "The school bus is a duck, and it only goes where it wants.",
+    "Mrs. Tully ties her kitchen to her neighbor's with a long spaghetti noodle."
+   ],
+   "narrator": "Fig, whose tiny lily pad room drifts away every night.",
+   "twistType": "T6"
+  }
+ },
+ {
+  "id": "b3d46272-0826-4802-8dca-08d2377d2d50",
+  "score": 67,
+  "idea": {
+   "mood": "wholesome",
+   "prop": "A tattered blue oven mitt",
+   "price": "Skip the bread once and the windmill's shadow eats the whole cornfield by morning.",
+   "title": "Bread for the Grinder",
+   "twist": "Wren wears the mitt to open the windmill door and finds the Grinder is a lonely old machine that mills the bread into flour, which it secretly sends back as the town's morning loaves. It was feeding them all along.",
+   "closer": "Everyone here feeds the monster. Turns out, it was feeding us, and now I have a family at its table.",
+   "opener": "In this town, every family carries one warm loaf of bread to the old windmill every night, for the Grinder.",
+   "teaser": "Everyone feeds the monster. Nobody asks where the bread goes.",
+   "formula": "F3",
+   "premise": "Farm families feed the creaking windmill monster each night, and the lonely kid with no family on the farm is the only one who ever stays to listen.",
+   "setting": "farm",
+   "examples": [
+    "Mrs. Tully bakes twelve loaves, just in case her cat gets hungry.",
+    "Farmer Boggs once brought stale bread and lost every pumpkin.",
+    "The Hendry twins deliver theirs on a skateboard, very fast and very scared."
+   ],
+   "narrator": "Wren, the orphan farmhand who has no family to bake for, only a borrowed oven mitt.",
+   "twistType": "T2"
+  }
+ },
+ {
+  "id": "2e2eb837-683c-4c3b-9862-f996b8976014",
+  "score": 67,
+  "idea": {
+   "mood": "wholesome",
+   "prop": "Eli's old red scarf",
+   "price": "A house with no blanket on the rope wakes to a cold, empty porch.",
+   "title": "The Blanket Rope",
+   "twist": "The Thing is a lost, shivering creature that was cold, not hungry, and Eli has been looking after it. Tuck's red scarf finds him, and now the town sends blankets with a letter inside.",
+   "closer": "We send a blanket every night. Now we send a letter to my brother too.",
+   "opener": "In this town, every night each cliff house sends one warm blanket down the rope to the Thing in the canyon.",
+   "teaser": "Tuck climbs down to find out what the blankets are for.",
+   "formula": "F3",
+   "premise": "A cliff town lowers blankets into the dark canyon every night, and Tuck, who lost his brother there, decides to follow the rope down.",
+   "setting": "canyon or cliff town",
+   "examples": [
+    "Mrs. Hale knits her blanket in the shape of a sheep.",
+    "The mayor sends a blanket with a tiny crown on it.",
+    "Mr. Dunn once sent a doormat, and his porch vanished."
+   ],
+   "narrator": "Tuck, whose big brother Eli went down the rope last winter and never came back.",
+   "twistType": "T2"
+  }
+ },
+ {
+  "id": "6975652f-db5c-4bc7-a6ef-df10e6d0f789",
+  "score": 66,
+  "idea": {
+   "mood": "horror",
+   "prop": "a coil of bridge rope",
+   "price": "Mr. Ferris left his ladder out once. By morning his whole porch was gone.",
+   "title": "Roll Up the Bridges",
+   "twist": "The Gap only takes what is on a ledge with no bridge. Juno ties the rope between the two ledges and rolls it up with her brother on it. He is on a bridge, not a ledge, so the Gap has no claim.",
+   "closer": "We still roll up the bridges at sundown. But now one stays unrolled for anyone who's late.",
+   "opener": "In this town, every rope bridge is rolled up at sundown, and anyone still on a ledge belongs to the Gap.",
+   "teaser": "The rule says ledges only. Juno finds something that isn't one.",
+   "formula": "F2",
+   "premise": "A cliff town rolls up its bridges every night, and the narrator's little brother is stuck on the far ledge when the sun drops.",
+   "setting": "canyon or cliff town",
+   "examples": [
+    "The mail carrier sprints the last bridge every day at five.",
+    "Mrs. Lund keeps a snack bag on both ledges, just in case.",
+    "The Tuttle twins got stuck out there once and never came home."
+   ],
+   "narrator": "Juno, the bridge-roller's kid, who knows every knot on every rope.",
+   "twistType": "T1"
+  }
+ },
+ {
+  "id": "3d8b6ba5-a74f-4678-9d60-88ad6fb8ba07",
+  "score": 66,
+  "idea": {
+   "mood": "horror",
+   "prop": "A flashlight",
+   "price": "Old Mr. Bolt's cat sat in the window after the bell. By morning only the cushion was left.",
+   "title": "The Watcher",
+   "twist": "The Watcher takes only what it sees, so Otis, laughed at all week, switches on his flashlight and shines it into the huge eye. All it sees is white light, so it takes the light and leaves the town alone forever.",
+   "closer": "In this town, we cover the portholes at the bell. Except one, and that one watches back.",
+   "opener": "In this town, when the bell rings, every porthole gets covered, or the Watcher takes whatever it sees through.",
+   "teaser": "It takes whatever it sees. So Otis shows it something.",
+   "formula": "F2",
+   "premise": "In a sunken sub town, one porthole stays uncovered at the bell, and a huge round eye drifts toward the glass.",
+   "setting": "underwater or submarine",
+   "examples": [
+    "Mrs. Reef sews porthole curtains in every size, even for the toaster.",
+    "The sub cook stuffs socks over the kitchen porthole.",
+    "Twins Kip and Lou keep their eyes closed after the bell."
+   ],
+   "narrator": "Otis, the lamp boy, whose habit of carrying a flashlight everywhere gets laughed at by every neighbour.",
+   "twistType": "T1"
+  }
+ },
+ {
+  "id": "48062d66-548c-4a33-9f24-d629c74930d4",
+  "score": 66,
+  "idea": {
+   "mood": "horror",
+   "prop": "A box of crayon stubs",
+   "price": "Anyone caught without light after the bell is gone by morning, leaving an empty cot.",
+   "title": "The Candle Line",
+   "twist": "Wick melts the stubs into one big wax lump and lights it at the stairs. The dark backs off and every cellar kid climbs up. Then he counts them: one more than went down.",
+   "closer": "Keepers sleep upstairs, the rest of us sleep downstairs, and now someone sleeps between.",
+   "opener": "In this town, kids who own a candle are Keepers who sleep upstairs, and kids without one sleep in the dark cellar halls.",
+   "teaser": "He won the light. Then he counted the kids.",
+   "formula": "F6",
+   "premise": "In a castle split by a staircase, Wick has no candle, sleeps in the cellar halls, and notices the dark down there keeps counting heads.",
+   "setting": "castle",
+   "examples": [
+    "Lady Pim's candle is so tall she needs a ladder.",
+    "Cook Barrow lost his stub once and his cot stayed empty.",
+    "The Keepers line the stairs with flames so we can't climb."
+   ],
+   "narrator": "Wick, a cellar kid with no candle who has to feel his way along the walls.",
+   "twistType": "T5"
+  }
+ },
+ {
+  "id": "f442cfba-7d78-4e81-ae83-d1b5cf5b8689",
+  "score": 66,
+  "idea": {
+   "mood": "epic",
+   "prop": "A paper sign reading ASK FIRST",
+   "price": "Anyone who breaks a house rule is vacuumed into the hall closet until dinner.",
+   "title": "Grounded Rules",
+   "twist": "The Vacuum must obey every house rule. Ollie holds up his sign, so the Vacuum has to ask before it enters the living room. It never learned to talk, so it stays out forever.",
+   "closer": "Everyone here makes a house rule. But the Vacuum only follows mine.",
+   "opener": "In this town, everyone gets one house rule the first time they get grounded, and the whole house must obey it.",
+   "teaser": "His rule sounds boring. The Vacuum has to follow it.",
+   "formula": "F5",
+   "premise": "Kids in the Parker house make a rule when grounded, but Ollie's rule seems useless while a giant vacuum hungrily sucks up every toy in the living room.",
+   "setting": "house (bedroom, kitchen, living room)",
+   "examples": [
+    "Dad's rule is that nobody touches the thermostat.",
+    "Big sister Jo banned socks on the kitchen floor.",
+    "Grandma's rule is that dessert comes first."
+   ],
+   "narrator": "Ollie, whose rule is that nobody may enter the living room without asking.",
+   "twistType": "T1"
+  }
+ },
+ {
+  "id": "ad2fdecc-3e21-4ab8-a8ab-86a736765bf9",
+  "score": 66,
+  "idea": {
+   "mood": "funny",
+   "prop": "His squeaky shoes",
+   "price": "Step on the carpet and you're in detention until report card day.",
+   "title": "Hall Monitor Moose",
+   "twist": "The Moose hears only silence as safe, and everyone who tiptoes is easy to catch. Pib's squeaky shoes squeak so loud the Moose thinks it's a bugle and marches out proudly.",
+   "closer": "In this town nobody steps off the tile. Now the Moose salutes my shoes.",
+   "opener": "In this town, nobody steps off the hallway tiles after the last bell, or the Hall Monitor Moose carries you to detention.",
+   "teaser": "Everyone tiptoed. Pib squeaked.",
+   "formula": "F2",
+   "premise": "After the last bell, a giant moose patrols the school halls, and the narrator is stuck on the wrong side with squeaky shoes.",
+   "setting": "school (hallway, cafeteria, classroom, stage)",
+   "examples": [
+    "Mr. Fenn hopped on one tile for a whole hour.",
+    "The lunch ladies roll their carts on the grout lines.",
+    "Brenda wears slippers to sneak, and still got caught."
+   ],
+   "narrator": "Pib, the kid with the loudest squeaky shoes in school.",
+   "twistType": "T3"
+  }
+ },
+ {
+  "id": "de5d19f6-e64a-444b-907f-9ad9979f4184",
+  "score": 66,
+  "idea": {
+   "mood": "epic",
+   "prop": "Her tin spoon for tapping pebbles",
+   "price": "Skip a night and every lamp in the tunnels goes dark until morning.",
+   "title": "The Drum Bucket",
+   "twist": "The deal says the Drum gets one bucket of echoes, not pebbles. Wren taps her tin spoon against the walls and fills the bucket with echoes. The Drum rumbles happily and the lights return, and the town never needs pebbles again.",
+   "closer": "Every night we give the Drum a bucket. Wren just fills it with a spoon.",
+   "opener": "In this town, every night we give the Deep Drum one bucket of echo pebbles, or it stops the cave lights.",
+   "teaser": "The bucket is empty. The cave is not.",
+   "formula": "F3",
+   "premise": "The cave town of Echo Hollow pays a bucket of pebbles to the Deep Drum each night, and tonight the town has run out.",
+   "setting": "underground or cave town",
+   "examples": [
+    "Mr. Hobb counts pebbles out loud and still loses three.",
+    "The baker pays in tiny crumb-sized pebbles and gets scolded.",
+    "Twins Pia and Pim polish every pebble till it shines."
+   ],
+   "narrator": "Wren, the pebble carrier's kid, who is too small to lift a full bucket.",
+   "twistType": "T1"
+  }
+ },
+ {
+  "id": "ed0a4ca6-3f36-47b5-8f68-a0818151c0a8",
+  "score": 66,
+  "idea": {
+   "mood": "funny",
+   "prop": "a pair of silent socks",
+   "price": "Anyone squeaky enough gets sucked into the vacuum's hallway for the night.",
+   "title": "Silent Socks",
+   "twist": "The vacuum only hunts squeaks, and the Squeakers can't hide. Mo's silent socks are the only way across the carpet unnoticed, so he sneaks to the plug and pulls it, saving everyone.",
+   "closer": "Everyone here ranks by squeak. Now they all beg me for quiet.",
+   "opener": "In this town, the louder your socks squeak, the higher your rank, so the Squeakers rule the living room.",
+   "teaser": "The thing they mocked is the only thing the vacuum can't hear.",
+   "formula": "F6",
+   "premise": "In a living room ruled by squeaky socks, the narrator wears the quietest pair, which everyone mocks, until a giant vacuum starts hunting for squeaks.",
+   "setting": "house (bedroom, kitchen, living room)",
+   "examples": [
+    "Lord Dennis squeaks so loudly the cat hides under the couch.",
+    "The royal guards polish their socks with olive oil.",
+    "Aunt Priya tiptoes just to avoid being promoted."
+   ],
+   "narrator": "Mo, whose silent socks have never squeaked once and get mocked daily.",
+   "twistType": "T3"
+  }
+ },
+ {
+  "id": "12e993e9-9dc3-4c26-b6d8-a9e0c0f0c864",
+  "score": 66,
+  "idea": {
+   "mood": "epic",
+   "prop": "Dad's old rope coil",
+   "price": "Skaters who touch bare snow get stuck there until spring.",
+   "title": "The Boy Who Walks",
+   "twist": "The rule says skaters get stuck on bare snow, but Tuck's plain feet never stick. He walks across the powder, ties the rope to the stuck skaters, and hauls the entire town to the glass lake.",
+   "closer": "Everyone here has skates. But now, when the snow gets deep, they call me.",
+   "opener": "In this town, everyone is born with a pair of ice skates frozen to their feet, except me.",
+   "teaser": "Everyone glides. Only one kid can walk to them.",
+   "formula": "F1",
+   "premise": "In a snowy town where everyone glides on built-in skates, one boy has plain feet, and a blizzard strands the whole town's skaters on the glass lake.",
+   "setting": "snowy town",
+   "examples": [
+    "Mrs. Lund skated to church and got stuck in a drift until April.",
+    "The mailman glides everywhere but can't stop, so he waves while passing.",
+    "Mr. Brisk skated onto the soft powder and became a snowman's neighbor all winter."
+   ],
+   "narrator": "Tuck, the only kid with ordinary feet, who plods while everyone else glides.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "748296d9-5ff3-4909-9fd4-805dd9e75cab",
+  "score": 66,
+  "idea": {
+   "mood": "horror",
+   "prop": "A roll of masking tape",
+   "price": "The Parker kids said goodnight once. By morning their bedroom lights were taped dark and their beds were tucked in tight with nobody inside.",
+   "title": "Don't Say Goodnight",
+   "twist": "The rule says out loud, so Rue tapes the toaster's goodnight shut, covering its lever and the word on its label. She then writes goodnight on a note and tapes it to the door. The Dim Man finds only silence and a written word, and leaves at sunrise.",
+   "closer": "Nobody here says goodnight after nine. But a note on my wall says it for me.",
+   "opener": "In this town, nobody says goodnight out loud after the kitchen clock strikes nine, or the Dim Man comes to tuck you in.",
+   "teaser": "She found a way to say it without saying it.",
+   "formula": "F2",
+   "premise": "Every house goes quiet at nine, but Rue's little brother loves saying goodnight to everything and has just whispered it to the toaster.",
+   "setting": "house (bedroom, kitchen, living room)",
+   "examples": [
+    "Mr. Finch nods at his wife and winks instead.",
+    "The Parker twins use a flashlight code for bedtime.",
+    "Even the parrot at number nine wears a tiny muzzle after dark."
+   ],
+   "narrator": "Rue, who talks in her sleep and always says goodnight to everybody.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "61f43404-7445-4c71-83a4-bdca4ce6f4f9",
+  "score": 66,
+  "idea": {
+   "mood": "wholesome",
+   "prop": "A red thread knotted on his wrist",
+   "price": "Any sock left unmatched on laundry day is carried off in the big hand, like Mr. Wooly's cousin last week.",
+   "title": "Laundry Day",
+   "twist": "The big hand only grabs socks that aren't tied to anything. Moss ties his red thread to a neighbour, and everyone ties on, so the drawer is one linked chain. The hand can't pick out any single sock, so it leaves.",
+   "closer": "In this town, we all live in a sock drawer. And nobody is ever left without a match.",
+   "opener": "In this town, we all live inside one giant sock drawer, and laundry day comes every Sunday.",
+   "teaser": "Moss has no match. The whole drawer is about to change that.",
+   "formula": "F4",
+   "premise": "A family of tiny neighbours lives in the sock drawer, and Moss, the loneliest kid, has no matching sock to call a friend as Sunday nears.",
+   "setting": "house (bedroom, kitchen, living room)",
+   "examples": [
+    "Mrs. Argyle sold buttons until the big hand took her unmatched neighbour.",
+    "The Stripe brothers race along the drawer track, always side by side.",
+    "Mr. Wooly pairs up with his twin before every Sunday."
+   ],
+   "narrator": "Moss, the one lonely sock-kid whose pair was lost in the dryer.",
+   "twistType": "T6"
+  }
+ },
+ {
+  "id": "598f863f-2be0-4f14-988a-4ff8fef32344",
+  "score": 66,
+  "idea": {
+   "mood": "funny",
+   "prop": "A tiny sign reading 'Please say thank you'",
+   "price": "Last time the soup was late, every fountain in town turned to pudding.",
+   "title": "The Rude Statue",
+   "twist": "The statue's deal says it will protect the town as long as it's thanked for the soup. Pearl puts her sign in front of it, and since it never says thank you, the deal turns against it and it must serve the soup back.",
+   "closer": "We feed the statue every night. Now it brings us soup on Tuesdays.",
+   "opener": "In this town, every night we serve one bowl of soup to the statue in the square, who never says thank you.",
+   "teaser": "The statue never said thank you. Pearl noticed.",
+   "formula": "F3",
+   "premise": "A stone statue in the town square gets a hot bowl of soup nightly, and nobody has ever heard it say thank you, which makes me furious.",
+   "setting": "town square",
+   "examples": [
+    "Mayor Plum stirs the soup with his hat on.",
+    "The baker adds extra croutons to be polite.",
+    "Little Jo Pickett once forgot the spoon and the fountain wobbled."
+   ],
+   "narrator": "Pearl, a kid who gets in trouble for correcting everyone's manners.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "d4dec1cd-9340-42e1-90f7-8c739829e7b7",
+  "score": 66,
+  "idea": {
+   "mood": "funny",
+   "prop": "a folded ticket to the desert",
+   "price": "Anyone whose cloud melts completely must move to the sunny desert village forever.",
+   "title": "Cloudless in the Snow",
+   "twist": "The rule says anyone whose cloud melts must leave, but Bix never had a cloud, so he can never melt. The mayor tries to send him away with the ticket, and the loophole means Bix is the only one who gets to stay. He picks everyone's ice cream flavor.",
+   "closer": "In this town, everyone has a cloud, except me, and that's why I'm staying.",
+   "opener": "In this town, everyone has a tiny weather cloud of snow above their head that says how cold they are, except me.",
+   "teaser": "The rule only counts clouds that exist.",
+   "formula": "F1",
+   "premise": "Everyone in the snowy town has a personal snow cloud that shows their mood, but Bix has a plain empty sky above him and gets teased constantly.",
+   "setting": "snowy town",
+   "examples": [
+    "Mr. Gruff has a blizzard, so his mailbox is permanently buried.",
+    "Mrs. Sleet's cloud sneezes flakes into the soup.",
+    "The mayor's cloud is so small it needs a tiny scarf."
+   ],
+   "narrator": "Bix, who has no cloud at all and a pocket full of tickets nobody wants.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "490d8374-bb13-484d-b8f8-a30645cb4299",
+  "score": 66,
+  "idea": {
+   "mood": "epic",
+   "prop": "one blank sheet of paper",
+   "price": "Any kid who skips the offering finds their lunchbox empty and their desk gone by morning.",
+   "title": "Homework for the Lunch Lady",
+   "twist": "The deal says the Lunch Lady keeps whoever's homework is not finished. Milo slides in his blank page; she must keep a blank homework, which is no kid at all, and she lets his sister go, bound by her own words.",
+   "closer": "In this town, we feed the Lunch Lady homework. Now she only eats what's finished, and I'm still not finished.",
+   "opener": "In this town, every kid slides their homework under the cafeteria door every night, for the Lunch Lady who never sleeps.",
+   "teaser": "The deal says homework. It never says whose.",
+   "formula": "F3",
+   "premise": "Every night the school feeds the unseen Lunch Lady our homework, and when Milo's little sister's math sheet is accidentally taken, the Lunch Lady promises to keep her until it's done.",
+   "setting": "school (hallway, cafeteria, classroom, stage)",
+   "examples": [
+    "Mr. Finch hands in his crossword every single night.",
+    "Penny once slid in a spelling test with her name misspelled.",
+    "The principal feeds her a stack of permission slips every Friday."
+   ],
+   "narrator": "Milo, a kid who never finishes homework and still owns one blank page from the first day.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "06a2e76b-abf2-4860-aaf5-7c8282f0ee6c",
+  "score": 66,
+  "idea": {
+   "mood": "funny",
+   "prop": "a stubby pencil",
+   "price": "When the Cook missed a pie, the bakery's roof was found hanging off the cliff.",
+   "title": "The Canyon Cook's Deal",
+   "twist": "The deal says the Cook never eats the town, but it never says the Cook can't eat pies off the town. Fig rewrites the deal so the Cook only eats pie, and the town gets a free cook.",
+   "closer": "In this town, we lower one pie every night. The Cook now sends back a thank-you note.",
+   "opener": "In this town, every night we lower one pie on a rope to the Canyon Cook, who promises never to eat the town.",
+   "teaser": "The deal had exactly one rule. Fig read the rest.",
+   "formula": "F3",
+   "premise": "The cliff town lowers pies nightly into the canyon to appease a hungry cook, but tonight the baker burns the pie and the narrator's bargaining begins.",
+   "setting": "canyon or cliff town",
+   "examples": [
+    "Mr. Tuck bakes the pie while wearing oven mitts on his ears.",
+    "The mayor tastes every pie first, for safety and for himself.",
+    "Granny Pell sends the pies down with a note full of compliments."
+   ],
+   "narrator": "Fig, the baker's kid, who reads every contract and always carries a pencil.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "539fb61d-5e72-4210-ad17-fcd0eed85608",
+  "score": 66,
+  "idea": {
+   "mood": "horror",
+   "prop": "A lantern in her pocket",
+   "price": "The shadowless who cross the porch vanish into the white, leaving only boots in the snow.",
+   "title": "Shadowless",
+   "twist": "The Frost King promised that no shadowless child would leave unharmed, but never said she could not carry a light. Wren's lantern casts her a shadow, and everyone's shadows follow her instead.",
+   "closer": "They said the shadowless can't walk outside. They never said I couldn't bring the light.",
+   "opener": "In this town, only kids who own a snow shadow may walk outside, and the shadowless must stay behind the frosted windows.",
+   "teaser": "No shadow, no rules. Unless she makes her own.",
+   "formula": "F6",
+   "premise": "Shadow-kids play outside while shadowless kids watch from windows, and the narrator sneaks out, hunting for the brother whose shadow was taken last winter.",
+   "setting": "snowy town",
+   "examples": [
+    "Mr. Fenn's shadow shovels his driveway while he drinks cocoa.",
+    "The mail shadow delivers letters and the mailman waves from inside.",
+    "Granny Pell's shadow does her knitting, badly."
+   ],
+   "narrator": "Wren, born with no shadow, who has watched the street through frost for ten winters.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "13c84251-1e6f-4100-b4d5-82db0c7ec008",
+  "score": 66,
+  "idea": {
+   "mood": "horror",
+   "prop": "a warm blanket",
+   "price": "Kids who wished big were gone by morning, with only their shoes left at the treeline.",
+   "title": "The Whispering Wish",
+   "twist": "The trees grant wishes word for word, and take the wisher to fit the wish. Moss wished for the blanket to keep everyone warm, and the trees must wrap everyone, so the taken kids come home wrapped in it.",
+   "closer": "In this town, everyone gets a wish. Mine was small, so everyone came back.",
+   "opener": "In this town, everyone gets one wish granted the first night they hear the woods whisper their name.",
+   "teaser": "The trees always give exactly what you say.",
+   "formula": "F5",
+   "premise": "Every kid at the woods edge gets a wish from the whispering trees, and Moss, who wished for a warm blanket, is the only one still home.",
+   "setting": "woods edge",
+   "examples": [
+    "Tommy wished to be tall. His shoes are still at the treeline.",
+    "Mrs. Park wished for endless cookies. Her kitchen is empty.",
+    "Dara wished for a thousand friends. Now the trees stand very close."
+   ],
+   "narrator": "Moss, who wished for only a small warm blanket, and everyone laughed.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "e3780411-f39a-4989-b1e2-6e4c9514dfa2",
+  "score": 66,
+  "idea": {
+   "mood": "epic",
+   "prop": "A wooden stool",
+   "price": "Ring it eleven times and a lamp goes dark for good.",
+   "title": "Twelve Rings",
+   "twist": "The deal says twelve rings, never who rings them or how. Juno stands the whole town on the stool in turn, and every footstep, clap and stomp counts. The bell is never the only thing ringing, so the moth loses all its power over the lamps.",
+   "closer": "In this town, we ring twelve times every night. Now the whole square does the ringing.",
+   "opener": "In this town, every night we ring the square's big brass bell exactly twelve times so the Moon Moth won't eat the lamps.",
+   "teaser": "Twelve is the rule. Nobody read the fine print.",
+   "formula": "F3",
+   "premise": "Twelve rings a night keep the Moon Moth from eating the town's lamps, and the narrator is the kid who rings the bell, until the moth shows up early and the clapper snaps.",
+   "setting": "town square",
+   "examples": [
+    "Mrs. Plum counts out loud and still loses track of eleven.",
+    "The baker bakes twelve loaves, one for every ring.",
+    "Old Mr. Tuck lost a lamp the night he sneezed."
+   ],
+   "narrator": "Juno, the bell ringer's kid, who is too short to reach the rope without a stool.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "7d200eaf-05f5-46ab-a574-b7929697b778",
+  "score": 66,
+  "idea": {
+   "mood": "funny",
+   "prop": "A feather duster",
+   "price": "Anyone who sneezes again gets one more pet, and the street is running out of room.",
+   "title": "The Sneeze Pet",
+   "twist": "A hundred pets run wild across the street. I tickle everyone's nose with the feather duster, so they sneeze again, and each new pet is a tiny, polite hamster. The wild pets vanish when their owners sneeze.",
+   "closer": "Everyone here got a magnificent pet. But now, when they sneeze, they call me.",
+   "opener": "In this town, everyone gets a random pet the moment they sneeze for the first time.",
+   "teaser": "Too many pets are causing chaos. One sneeze fixes it.",
+   "formula": "F5",
+   "premise": "On Maple Court, a sneeze brings a pet, and I got a sad, damp sock puppet when I sneezed, while neighbours got dragons and ponies.",
+   "setting": "suburb street",
+   "examples": [
+    "Mr. Ruiz sneezed and got a bear who now does his taxes.",
+    "Mrs. Vale got a unicorn that eats only her tulips.",
+    "The mailman got eleven ducks and a very stern goose."
+   ],
+   "narrator": "A kid who got a damp sock puppet while everyone else got something magnificent.",
+   "twistType": "T1"
+  }
+ },
+ {
+  "id": "d5e9fe6c-3b81-4344-84ab-ce6903e3a4e1",
+  "score": 65,
+  "idea": {
+   "mood": "funny",
+   "prop": "A rule book of town laws",
+   "price": "Skip a story and the worm wiggles up and eats the street's doorsteps by morning.",
+   "title": "The Worm Wants Sequels",
+   "twist": "The law says the worm must hear a story every night, never that it must be a good one. Tobin reads the stuttery rule itself, 'every night, every night, every night,' and the worm happily falls asleep to the loop.",
+   "closer": "Now every night at eight, we read the worm the same line, and it begs for more.",
+   "opener": "In this town, every night at eight, we read one bedtime story aloud to the Hush Worm under the cave floor.",
+   "teaser": "The worm demands a story. Tobin only knows one sentence.",
+   "formula": "F3",
+   "premise": "An underground town reads a nightly story to a giant worm that sleeps under their houses, and the town's worst storyteller is out of stories.",
+   "setting": "underground or cave town",
+   "examples": [
+    "Mrs. Pell reads recipes, and the worm gets very hungry.",
+    "The mayor read the phone book once. His porch is still missing.",
+    "Mr. Gurney does all the voices, even the furniture's."
+   ],
+   "narrator": "Tobin, who stutters, can't finish a sentence, and got picked to read tonight.",
+   "twistType": "T1"
+  }
+ },
+ {
+  "id": "f018e88d-6609-4a14-bdab-884b9f1cb224",
+  "score": 65,
+  "idea": {
+   "mood": "wholesome",
+   "prop": "A tin soup ladle",
+   "price": "Miss Hobb forgot her soup once. The wind took her roof and her chickens.",
+   "title": "Soup for the Wind",
+   "twist": "The Wind Giant is lonely and can't hear the pretty songs, because they sound like wind. Only Pim's squawky voice reaches him, so he sings back, and the Giant joins the dinner every night after that.",
+   "closer": "In this town, we feed the wind soup. Now it stays for dinner, and Pim sings.",
+   "opener": "In this town, every night each cliff house sets out one bowl of warm soup on the ledge for the Wind Giant.",
+   "teaser": "Everyone mocked his singing. The Giant has waited for it.",
+   "formula": "F3",
+   "premise": "A cliff town feeds the Wind Giant soup every night, and the kid who sings off-key is the only one the Giant will listen to.",
+   "setting": "canyon or cliff town",
+   "examples": [
+    "Mr. Banks makes pea soup, and the wind always hums.",
+    "Mrs. Lark makes tomato soup, and the wind turns pink.",
+    "The bakers make bread soup, and the wind sneezes crumbs."
+   ],
+   "narrator": "Pim, who sings so off-key that everyone covers their ears and calls him Squawk.",
+   "twistType": "T3"
+  }
+ },
+ {
+  "id": "ba29ff07-f578-42bf-a73d-2bbf615afaa7",
+  "score": 65,
+  "idea": {
+   "mood": "funny",
+   "prop": "A little wooden abacus",
+   "price": "Farmer Gus counted his ducks at midnight. Now he has fourteen ducks and a goat doing his taxes.",
+   "title": "The Tally Goat",
+   "twist": "The Tally Goat only comes to the counting and must finish whatever number it is told. Bea counts to infinity out loud, and the goat, bound by the rule to check every number, trots after her until sunrise and gives up, bleating.",
+   "closer": "Nobody may count the chickens after dark. Except me, until the goat falls asleep.",
+   "opener": "In this town, nobody may count the chickens after dark, or the Tally Goat comes to check your math.",
+   "teaser": "The goat has to check every number. Every single one.",
+   "formula": "F2",
+   "premise": "On a farm where counting is banned at night, a sleepy farm kid has to count to stay awake and keep the chickens safe.",
+   "setting": "farm",
+   "examples": [
+    "Mrs. Plum labels her hens Hen, Also Hen and Another Hen.",
+    "The cow tells time by mooing at the clock.",
+    "Mr. Dill says he owns many pigs, roughly."
+   ],
+   "narrator": "Bea, a farm kid who cannot fall asleep without counting, and always counts out loud.",
+   "twistType": "T1"
+  }
+ },
+ {
+  "id": "87971070-5ecb-4121-98c8-22ce591b2e8d",
+  "score": 65,
+  "idea": {
+   "mood": "funny",
+   "prop": "Dad's burnt frying pan",
+   "price": "A grumbling stomach shakes the street and everyone's teeth rattle until breakfast.",
+   "title": "Pancake for the Stomach",
+   "twist": "The deal says 'one whole pancake on the tongue,' so Tilly serves the giant pan itself, pancake stuck on it. The walrus swallows the pan, can't grumble, and burps out a daily free breakfast.",
+   "closer": "In this town, every night we give the Great Stomach a pancake. Now it gives us breakfast.",
+   "opener": "In this town, every night we give the Great Stomach one whole pancake, stacked on the tongue, so it won't grumble.",
+   "teaser": "The rule said pancake. It never said how big.",
+   "formula": "F3",
+   "premise": "The whole town lives inside a giant sleepy walrus, and the kid in charge of the nightly pancake has just run out of syrup and flour.",
+   "setting": "inside something giant (an animal, a store, a tower)",
+   "examples": [
+    "Mrs. Plum flips the pancake with a tennis racket every night.",
+    "Mr. Dandy once offered a rice cake and got hiccuped into the attic.",
+    "The mayor's pancake has a tiny hat on it for luck."
+   ],
+   "narrator": "Tilly, the pancake kid, who can only cook things that are flat and burnt.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "5dd5f22b-df8e-412b-aef4-d323ddb19251",
+  "score": 65,
+  "idea": {
+   "mood": "wholesome",
+   "prop": "Juno's little handbell",
+   "price": "Kids with silent hands get passed over for parade spots, prize ribbons, and the front row.",
+   "title": "No Clap",
+   "twist": "On market day Juno loses the parade spot, the prize ribbon, then her seat. Then a storm hits and the town's clapping roars so loud nobody hears the lost kids. Juno's silent hands let her hear their cries, and her bell guides them home.",
+   "closer": "Everyone here gets applause. But when the storm comes, they follow my little bell home.",
+   "opener": "In this town, everyone has tiny floating hands that clap whenever they do something good, except me.",
+   "teaser": "When the whole town got too loud, her silence mattered.",
+   "formula": "F1",
+   "premise": "Everyone in the square gets applause from their own floating hands, but Juno's hands never clap, and her little handbell is the only thing that ever makes a sound for her.",
+   "setting": "town square",
+   "examples": [
+    "Baker Odell gets a standing ovation for toasting bread.",
+    "Mrs. Vane's hands clap so hard her hat falls off.",
+    "Mayor Pruitt's hands clap before he even opens his mouth."
+   ],
+   "narrator": "Juno, the only kid whose hands stay silent, so she rings a little handbell the town laughs at.",
+   "twistType": "T3"
+  }
+ },
+ {
+  "id": "13b19d50-e14a-487d-bef7-185b4f0498dc",
+  "score": 65,
+  "idea": {
+   "mood": "epic",
+   "prop": "Her weak little flashlight",
+   "price": "Last week the Warden swallowed Mr. Fin's bright lamp, and only his boots floated back.",
+   "title": "Outside the Lamp",
+   "twist": "The Warden swallows only the biggest, brightest lights, which is why it took Mr. Fin's lamp. Nori's faint glow slips past unseen and leads the lost sub home. The bright lamps were the bait all along.",
+   "closer": "Everyone here fears the dark. Now they follow the dimmest light in the sea.",
+   "opener": "In this town, anything outside the light of a window lamp after dark belongs to the Tide Warden.",
+   "teaser": "The big lights draw it in. Her small one doesn't.",
+   "formula": "F2",
+   "premise": "A submarine town lives by lamplight, and tiny Nori, who owns only a weak flashlight, must find a lost sub as the big lamps start going out.",
+   "setting": "underwater or submarine",
+   "examples": [
+    "Captain Bell's dinner goes cold because her lamp is by the door.",
+    "Mr. Fin sleeps with his nose pressed to the glass.",
+    "Mail Eel Gus only swims between two lamps, never three."
+   ],
+   "narrator": "Nori, the smallest kid, mocked for her pocket flashlight that glows weaker than a birthday candle.",
+   "twistType": "T3"
+  }
+ },
+ {
+  "id": "75a40a60-7942-43e0-8b18-fdb160de08e8",
+  "score": 65,
+  "idea": {
+   "mood": "epic",
+   "prop": "Her shoebox mailbox",
+   "price": "Short-box kids wait until dark, and some letters never reach them.",
+   "title": "The Short Mailbox",
+   "twist": "The storm floods the street and the tall boxes tip and wash away, but Nell's low shoebox sits firm. She gathers every letter in it, and the whole street lines up at her little box.",
+   "closer": "Everyone here wanted the tallest mailbox. Now they all line up at mine.",
+   "opener": "In this town, kids with tall mailboxes are Highs who get the mail first, and kids with short mailboxes wait at the curb.",
+   "teaser": "When the storm blows, small stays standing.",
+   "formula": "F6",
+   "premise": "A street ranks everyone by mailbox height, and the narrator's mailbox is the shortest on the block when a storm threatens every letter in town.",
+   "setting": "suburb street",
+   "examples": [
+    "Mrs. Vane's mailbox is so tall it needs a ladder.",
+    "The Highs get fresh letters every morning.",
+    "Our mailbox is so low that the dog sleeps on top."
+   ],
+   "narrator": "Nell, whose mailbox is a shoebox on a stick, and the postman skips it.",
+   "twistType": "T3"
+  }
+ },
+ {
+  "id": "594c9fea-094b-4a99-b89a-2656b3035a2f",
+  "score": 65,
+  "idea": {
+   "mood": "epic",
+   "prop": "Dad's old rusty shovel",
+   "price": "Anyone who lives above the Diggers must carry their rubble and their rules.",
+   "title": "The Shallow Kid",
+   "twist": "When the deep tunnels flood, the Bottom Diggers' own rule says the highest-ranked person leads the escape. Nell digs her house down, then up through the roof, so deepest becomes the way out.",
+   "closer": "In this town, the deeper you dig, the higher you rank. So I dug up.",
+   "opener": "In this town, the deeper your house is dug, the higher your rank, so the Bottom Diggers give all the orders.",
+   "teaser": "The shallow kid has a shovel and a very strange idea.",
+   "formula": "F6",
+   "premise": "In a cave town ruled by whoever lives deepest, Nell lives in a shallow hole by the entrance and discovers the rank-keeper's rule has a loophole that could save everyone.",
+   "setting": "underground or cave town",
+   "examples": [
+    "Mrs. Gruff lives nine floors down and gets her soup delivered.",
+    "The mail carrier bows to every mailbox below the lamp line.",
+    "Mr. Tink dug an extra cellar and now bosses the baker."
+   ],
+   "narrator": "Nell, whose family house is the shallowest hole in town, right by the cave mouth.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "7b62f126-a7b3-43ca-9731-4fc5f8a66f5a",
+  "score": 65,
+  "idea": {
+   "mood": "funny",
+   "prop": "A joke book with one torn page",
+   "price": "Last time the joke was bad, the Echo repeated it for a week and nobody slept.",
+   "title": "Joke Night",
+   "twist": "The deal says the Echo repeats whatever it is given forever. Biscuit gives it the worst joke ever written, so it repeats it and the Echo can never say another thing, and the town can finally sleep.",
+   "closer": "In this town, we give the Echo one joke each night. Mine was the last one.",
+   "opener": "In this town, every night we give the Cave Echo one joke, and it promises to laugh politely.",
+   "teaser": "The deal said it repeats every joke forever. Biscuit chose carefully.",
+   "formula": "F3",
+   "premise": "The cave town pays the Echo a joke every night, and Biscuit, the kid with the worst jokes, has to deliver it when the town runs out.",
+   "setting": "underground or cave town",
+   "examples": [
+    "Mr. Pebble told the one about the rock and the Echo said it forty times.",
+    "The baker pays in puns, and the whole bakery groans.",
+    "The mayor tells knock-knock jokes with nobody ever answering."
+   ],
+   "narrator": "Biscuit, a kid whose jokes are so bad even his dog leaves the room.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "79c0d853-d873-459b-9503-e3a787d82bd3",
+  "score": 65,
+  "idea": {
+   "mood": "epic",
+   "prop": "A rolled-up paint-stained contract",
+   "price": "The Millers' lantern went missing once. Next morning half their fence was walking away on its own.",
+   "title": "The Hollow King's Promise",
+   "twist": "The deal says the King won't cross the fence. Juniper moves the fence inward, so the whole town stands outside and the King is stuck on the far side, trapped by his own promise.",
+   "closer": "The King keeps his promise perfectly. He just never noticed who moved the fence.",
+   "opener": "In this town, every family leaves one lantern at the woods edge every night, and the Hollow King promises not to cross the line.",
+   "teaser": "He promised never to cross the line. Who draws the line?",
+   "formula": "F3",
+   "premise": "A town pays the Hollow King a lantern each night for a promise never to cross the fence, but tonight the lanterns are all gone.",
+   "setting": "woods edge",
+   "examples": [
+    "Old Mr. Quill keeps a spare lantern in the freezer.",
+    "The Millers lost theirs once. Half their fence walked off.",
+    "The mayor counts all lanterns twice with a clipboard."
+   ],
+   "narrator": "Juniper, a fence painter's kid who reads every word of the town's contracts.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "d00a8848-ca2b-4719-b588-d247d7907280",
+  "score": 65,
+  "idea": {
+   "mood": "epic",
+   "prop": "A little brass gate counting bell",
+   "price": "Anyone whose breath number fades below one is left outside the gate.",
+   "title": "Zero Breath",
+   "twist": "The gate rule says the gate opens only for 'a number'. Everyone's numbers freeze and fall in the blizzard, but Juno's zero never fades, so she rings the bell and zero opens the gate for the whole lost team.",
+   "closer": "Everyone here breathes out a number. But when the storm comes, they wait for my zero.",
+   "opener": "In this town, everyone's breath freezes into a number in the air, and the bigger your number, the louder the town cheers.",
+   "teaser": "Her number was the one thing the storm couldn't erase.",
+   "formula": "F1",
+   "premise": "In a snowy town ruled by breath numbers, the narrator's breath never shows anything, and now a blizzard has trapped the whole town's sled team on the mountain.",
+   "setting": "snowy town",
+   "examples": [
+    "Mayor Tilly's breath says 98 and she never lets anyone forget.",
+    "Baker Odo's breath fell to 3 last winter, so now he sleeps in the shed.",
+    "The twins trade breath numbers like cards at recess."
+   ],
+   "narrator": "Juno, whose breath shows a blank zero, which the gate rule says doesn't count as a number at all.",
+   "twistType": "T4"
+  }
+ },
+ {
+  "id": "3c3330e2-890b-4eec-815d-f228ff4f8e48",
+  "score": 65,
+  "idea": {
+   "mood": "wholesome",
+   "prop": "his big round glasses",
+   "price": "Anyone who walks into the woods without a lantern is lost until morning.",
+   "title": "No Lantern Me",
+   "twist": "When a fog rolls in, every lantern glare turns the woods into a white wall. Moss's glasses, no glare at all, let him see the path, so he leads everyone home one hand at a time.",
+   "closer": "Everyone here has a lantern at the woods edge. Now they all hold on to me.",
+   "opener": "In this town, everyone at the woods edge is born with a glowing lantern floating at their shoulder, except me.",
+   "teaser": "When the fog came, the brightest lights were the blind ones.",
+   "formula": "F1",
+   "premise": "Everyone near the woods edge has a floating lantern that lights their way, and one kid with none is laughed at and left behind on evening walks.",
+   "setting": "woods edge",
+   "examples": [
+    "Mr. Birch's lantern sings off-key and he claps along.",
+    "The twins' lanterns argue about who shines brighter.",
+    "Baker Ash uses his lantern as a very bright oven."
+   ],
+   "narrator": "Moss, who has no lantern and wears a pair of big round glasses everyone teases.",
+   "twistType": "T3"
+  }
+ },
+ {
+  "id": "2fd9e372-a5cd-4414-a706-0613aa50f259",
+  "score": 65,
+  "idea": {
+   "mood": "horror",
+   "prop": "Tilly's dented tin ladle",
+   "price": "Skip the cocoa and the drain steams, and the house above it is gone by morning.",
+   "title": "The Frost Drinker",
+   "twist": "The law says the Frost Drinker sleeps only while the drain is fed, never what it is fed. Tilly ladles in snow and the cold wakes it, so it follows the drain's rule and drinks all the snow forever, never rising.",
+   "closer": "Every night we still pour cocoa. But now it's the Frost Drinker who stays up for ours.",
+   "opener": "In this town, every family pours one pot of hot cocoa into the snow drain every night, so the Frost Drinker stays asleep.",
+   "teaser": "Nobody ever asked what the drain actually needs.",
+   "formula": "F3",
+   "premise": "A snowy town keeps a giant sleeper under the street calm with nightly cocoa, and the narrator's family has just run out of cocoa powder.",
+   "setting": "snowy town",
+   "examples": [
+    "Mrs. Lund stirs her cocoa forty times, never thirty-nine.",
+    "The baker sells marshmallows only to people with full pots.",
+    "Mr. Orrin once poured tea. His chimney is still missing."
+   ],
+   "narrator": "Tilly, the youngest, whose job is to carry the family ladle and always spills a little.",
+   "twistType": "T1"
+  }
+ }
+]

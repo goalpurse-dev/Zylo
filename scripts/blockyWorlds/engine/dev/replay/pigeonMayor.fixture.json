@@ -1,0 +1,13 @@
+{
+ "story": "The Pigeon Mayor Takes Hats (shakedown 2026-11-12, library idea 35)",
+ "note": "the 4 failed lines were not saved (the worker saves storyboard.json since this fix); the likely causes: a statue and a fountain the kit did not have (now in the props kit), touching its nose, a bird landing / snatching (now actions)",
+ "unfilmable": [
+  "statue",
+  "fountain"
+ ],
+ "rewrites": {
+  "0": "In this town, touch the pond rock's nose after noon and the Pigeon Mayor takes your hat.",
+  "14": "Until one noon, Milo spotted the nose rock by the pond.",
+  "19": "Then he crawled onto the edge of the pond."
+ }
+}

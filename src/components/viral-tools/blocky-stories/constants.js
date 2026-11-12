@@ -1,4 +1,5 @@
 // Copy and fixed options for Blocky Stories.
+import { tutorialFor } from "../../../lib/tutorials";
 
 /**
  * The idea engine (ten story engines, five ideas a batch, a memory of used
@@ -120,5 +121,6 @@ export const SHOWCASE = [
   { id: "the-fake-admin", title: "The Fake Admin", length: "9 sec" },
 ].map((v) => ({ ...v, url: `${SHOWCASE_BASE}/${v.id}.mp4`, poster: `${SHOWCASE_BASE}/${v.id}.jpg` }));
 
-/** YouTube tutorial link for the Recent panel. Set it and a "Watch the tutorial" link appears. */
-export const TUTORIAL_URL = null;
+/** YouTube tutorial link for the Recent panel: from the one tutorials list (src/lib/tutorials.js, tool "blocky_stories");
+ *  a "Watch the tutorial" link appears as soon as one is listed there. */
+export const TUTORIAL_URL = tutorialFor("blocky_stories")?.url ?? null;

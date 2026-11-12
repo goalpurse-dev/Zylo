@@ -24,6 +24,8 @@ import PasswordRecoveryRedirect from "./components/auth/PasswordRecoveryRedirect
 import LongFormScriptReadyNotifier from "./components/LongFormScriptReadyNotifier";
 import { BLOCKY_STORIES_PATH } from "./data/blockyStories";
 import { CUTAWAY_PATH } from "./data/cutawayExplainer";
+import { BLOCKY_WORLDS_PATH } from "./data/blockyWorlds";
+import BlockyWorldsGate from "./components/viral-tools/blocky-worlds/BlockyWorldsGate";
 
 // pages…
 //import Home from "./pages/Home";
@@ -70,6 +72,7 @@ const Creations = lazy(() => import("./pages/workspace/creations.jsx"));
 const AIFruitStory = lazy(() => import("./pages/workspace/AIFruitStory"));
 const BlockyStories = lazy(() => import("./pages/workspace/BlockyStories"));
 const CutawayExplainer = lazy(() => import("./pages/workspace/CutawayExplainer"));
+const BlockyWorlds = lazy(() => import("./pages/workspace/BlockyWorlds"));
 const FirstVideo = lazy(() => import("./pages/onboarding/FirstVideo.jsx"));
 const SkeletonShorts = lazy(() => import("./pages/workspace/SkeletonShorts"));
 
@@ -319,6 +322,7 @@ const PublishPage            = lazy(() => import("./pages/workspace/publish.jsx"
 const StatsPage              = lazy(() => import("./pages/workspace/stats.jsx"));
 const ConnectionsPage        = lazy(() => import("./pages/workspace/connections.jsx"));
 const EarnPage                = lazy(() => import("./pages/workspace/earn/index.jsx"));
+const EarningsCalculatorPage  = lazy(() => import("./pages/workspace/earnings/index.jsx"));
 const LongFormPage            = lazy(() => import("./pages/workspace/long-form/index.jsx"));
 const LongFormNewPage         = lazy(() => import("./pages/workspace/long-form/new.jsx"));
 const LongFormStoryPage       = lazy(() => import("./pages/workspace/long-form/story.jsx"));
@@ -804,6 +808,8 @@ return (
   <Route path="/workspace/ai-fruit-story" element={<AIFruitStory />} />
   <Route path={BLOCKY_STORIES_PATH} element={<BlockyStories />} />
   <Route path={CUTAWAY_PATH} element={<CutawayExplainer />} />
+  {/* Blocky Worlds: the server decides who may see it (BLOCKY_WORLDS_ACCESS); everyone else is sent home */}
+  <Route path={BLOCKY_WORLDS_PATH} element={<BlockyWorldsGate><BlockyWorlds /></BlockyWorldsGate>} />
   <Route path="/workspace/face-asmr" element={<FaceAsmrPage />} />
   <Route path="/workspace/skeleton-shorts" element={<SkeletonShorts />} />
   <Route path="/workspace/micro-camera-animal" element={<MicroCameraAnimalPage />} />
@@ -824,6 +830,8 @@ return (
   <Route path="/workspace/earn/payouts"     element={<EarnPage />} />
   <Route path="/workspace/earn/leaderboard" element={<EarnPage />} />
   <Route path="/workspace/earn/rules"       element={<EarnPage />} />
+  {/* Earnings Calculator (not the Earn referral program above). In the desktop tools shell only, not the bottom nav. */}
+  <Route path="/workspace/earnings"         element={<EarningsCalculatorPage />} />
   <Route path="/long-form"                       element={<LongFormPage />} />
   <Route path="/long-form/new"                   element={<LongFormNewPage />} />
   <Route path="/long-form/create"                element={<LongFormProductionSetupPage />} />

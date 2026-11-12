@@ -33,6 +33,7 @@
 //
 // POST { projectId, dryRun }
 
+import { openaiFetch } from "../_shared/openaiBackup.js";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ok, err, cors } from "../shared/cors.ts";
@@ -64,7 +65,7 @@ function extractOutputText(payload: any) {
 
 async function callSemanticBindingRepair(input: any, usage: { inputTokens: number; outputTokens: number; modelCalls: number }) {
   const beatIds = input.shots.map((s: any) => s.beatId);
-  const response = await fetch(OPENAI_RESPONSES, {
+  const response = await openaiFetch(OPENAI_RESPONSES, {
     method: "POST",
     headers: { Authorization: `Bearer ${OPENAI_KEY}`, "Content-Type": "application/json" },
     body: JSON.stringify({

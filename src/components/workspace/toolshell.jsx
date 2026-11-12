@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { createElement, useEffect, useState } from "react";
-import { ChevronRight, Clapperboard, DollarSign, Folder, Home, LayoutGrid, Pin, Sparkles } from "lucide-react";
+import { ChevronRight, Clapperboard, DollarSign, Folder, Home, LayoutGrid, Pin, Sparkles, TrendingUp } from "lucide-react";
 import Logo from "../../assets/logo-mark.webp";
 import { optImg } from "../../lib/optImage";
 import { ALL_PINNABLE_TOOLS, DesktopCreatePanel, DesktopWorkspacePanel, useShortFormTools } from "./CreateMenu";
@@ -93,7 +93,7 @@ export default function ToolShell({ onClose }) {
     isActive("/workspace/behind-the-scenes")
   ));
   const workspaceActive = workspaceOpen || (!anyPanelOpen && (
-    isActive("/workspace/image-generator") || isActive("/workspace/video-generator")
+    isActive("/workspace/image-generator") || isActive("/workspace/video-generator") || isActive("/workspace/earnings")
   ));
 
   const closePanels = () => {
@@ -192,10 +192,17 @@ export default function ToolShell({ onClose }) {
               <NavItem
                 icon={DollarSign}
                 label="Earn"
-                active={!anyPanelOpen && isActive("/workspace/earn")}
+                active={!anyPanelOpen && (location.pathname === "/workspace/earn" || isActive("/workspace/earn/"))}
                 onClick={() => go("/workspace/earn")}
               />
             )}
+
+            <NavItem
+              icon={TrendingUp}
+              label="Earnings"
+              active={!anyPanelOpen && isActive("/workspace/earnings")}
+              onClick={() => go("/workspace/earnings")}
+            />
 
             <NavItem
               icon={Folder}

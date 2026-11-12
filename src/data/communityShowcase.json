@@ -1,0 +1,382 @@
+{
+  "_readme": [
+    "Made with Zyvo (Home). One entry per template; newest addedAt first decides Latest arrivals and the chip order.",
+    "videos: file names in the public showcase bucket, folder community/ (NAME.mp4 + NAME.webp poster). Swap, add or remove names here; a template with no videos is hidden.",
+    "Web versions: <=720 wide, <=20 s, under 3 MB, sound kept (cards play muted, the viewer has a sound toggle).",
+    "Not listed on purpose: Face ASMR, Kit Swap, 30 Days (HIDDEN_TEMPLATES: real people/brands), 2AM Worlds (slideshows, no videos), Blocky Worlds (not launched)."
+  ],
+  "templates": [
+    {
+      "id": "cutaway-explainer",
+      "name": "Cutaway Explainer",
+      "path": "/workspace/cutaway-explainer",
+      "desc": "3D cutaways that show how everyday things work",
+      "addedAt": "2026-10-31",
+      "videos": [
+        {
+          "file": "cutaway-explainer-1",
+          "sound": true,
+          "source": "4cfad336-7f37-47a8-b1c4-c25075df2c4f"
+        },
+        {
+          "file": "cutaway-explainer-2",
+          "sound": true,
+          "source": "4da08df7-1d42-4154-ab74-ba75f384a498"
+        },
+        {
+          "file": "cutaway-explainer-3",
+          "sound": true,
+          "source": "f32e2f20-0525-4d50-a4c0-5fefc82bb4fc"
+        },
+        {
+          "file": "cutaway-explainer-4",
+          "sound": true,
+          "source": "d7a95b8e-e8e1-4eba-8c1c-ee35051df2be"
+        },
+        {
+          "file": "cutaway-explainer-5",
+          "sound": true,
+          "source": "ec0b89b3-2ab7-47b1-a7a5-499537860da7"
+        }
+      ]
+    },
+    {
+      "id": "blocky-stories",
+      "name": "Blocky Stories",
+      "path": "/workspace/blocky-stories",
+      "desc": "Blocky avatars act out your story, and talk",
+      "addedAt": "2026-10-09",
+      "videos": [
+        {
+          "file": "blocky-stories-1",
+          "sound": true,
+          "source": "ff39f9f6-6532-4b24-8c33-821540aba412"
+        },
+        {
+          "file": "blocky-stories-2",
+          "sound": true,
+          "source": "418ba8bd-b692-40d0-9c0e-a2bdd0762e89"
+        },
+        {
+          "file": "blocky-stories-4",
+          "sound": false,
+          "source": "showcase:home-fake-admin"
+        }
+      ]
+    },
+    {
+      "id": "behind-the-scenes",
+      "name": "Behind the Scenes",
+      "path": "/workspace/behind-the-scenes",
+      "desc": "Miniature cities destroyed by real practical FX",
+      "addedAt": "2026-08-13",
+      "videos": [
+        {
+          "file": "behind-the-scenes-1",
+          "sound": true,
+          "source": "59a90e81-64fe-4821-9bcf-8ccc1b6ef20d"
+        },
+        {
+          "file": "behind-the-scenes-2",
+          "sound": true,
+          "source": "5379606f-ab41-4c40-9bb0-14ebddbf289c"
+        },
+        {
+          "file": "behind-the-scenes-3",
+          "sound": true,
+          "source": "6245d2a2-08af-41da-963d-0c3eec7d3edb"
+        },
+        {
+          "file": "behind-the-scenes-4",
+          "sound": true,
+          "source": "34a531a9-a0f3-4e23-b01c-b5769163edde"
+        },
+        {
+          "file": "behind-the-scenes-5",
+          "sound": true,
+          "source": "3012a645-6366-4c92-834a-a5663f8660b9"
+        },
+        {
+          "file": "behind-the-scenes-6",
+          "sound": true,
+          "source": "02e855e7-f89b-4e3f-bec4-75e4dfbd7da0"
+        },
+        {
+          "file": "behind-the-scenes-7",
+          "sound": true,
+          "source": "d1d75c01-932f-41e3-810d-85200c8e789a"
+        },
+        {
+          "file": "behind-the-scenes-8",
+          "sound": true,
+          "source": "ad271733-cd86-4f16-903e-28faa6d3d8ff"
+        },
+        {
+          "file": "behind-the-scenes-9",
+          "sound": true,
+          "source": "59d5df58-e221-40cf-bfdd-3950d19aeadb"
+        },
+        {
+          "file": "behind-the-scenes-10",
+          "sound": true,
+          "source": "469135dc-9d3d-4c2c-8368-8ee2cb61c003"
+        },
+        {
+          "file": "behind-the-scenes-11",
+          "sound": true,
+          "source": "848cc492-fe5f-485b-8a62-e92768f9b6d2"
+        },
+        {
+          "file": "behind-the-scenes-12",
+          "sound": true,
+          "source": "15f72dcc-c86a-4f2b-8a5b-b74e65036a62"
+        },
+        {
+          "file": "behind-the-scenes-13",
+          "sound": true,
+          "source": "fd887c46-ae61-47ad-8d88-41ea656c6b0e"
+        },
+        {
+          "file": "behind-the-scenes-14",
+          "sound": true,
+          "source": "c110f3b1-b417-47f4-951c-ae8cf42036f7"
+        },
+        {
+          "file": "behind-the-scenes-15",
+          "sound": true,
+          "source": "861b91a5-7c3b-4000-abd2-91cec0181191"
+        },
+        {
+          "file": "behind-the-scenes-16",
+          "sound": true,
+          "source": "0e3d3273-240a-4fe7-bf8c-f37eae577520"
+        },
+        {
+          "file": "behind-the-scenes-17",
+          "sound": true,
+          "source": "ecc1c18f-44bd-4e68-8ebd-72b7f8928547"
+        },
+        {
+          "file": "behind-the-scenes-18",
+          "sound": false,
+          "source": "dc6474a1-ab5f-4601-b9ba-d80d5eb9c9fe"
+        }
+      ]
+    },
+    {
+      "id": "cartoon-drive-by",
+      "name": "Cartoon Drive By",
+      "path": "/workspace/cartoon-drive-by",
+      "desc": "Drive past cartoon worlds in real life",
+      "addedAt": "2026-08-05",
+      "videos": [
+        {
+          "file": "cartoon-drive-by-1",
+          "sound": false,
+          "source": "90c06500-39b4-48f0-a20d-dc35850f6051"
+        },
+        {
+          "file": "cartoon-drive-by-2",
+          "sound": false,
+          "source": "e72fe34e-be2e-47e4-b40d-d8847307727b"
+        },
+        {
+          "file": "cartoon-drive-by-3",
+          "sound": false,
+          "source": "d837715d-598e-48c1-9b37-a645c9096507"
+        },
+        {
+          "file": "cartoon-drive-by-4",
+          "sound": false,
+          "source": "af520c56-3650-4271-bdb0-05cba17f2b6f"
+        }
+      ]
+    },
+    {
+      "id": "ai-cooking-matic",
+      "name": "AI Cooking Matic",
+      "path": "/workspace/ai-cooking-matic",
+      "desc": "Viral cooking videos on autopilot",
+      "addedAt": "2026-06-17",
+      "videos": [
+        {
+          "file": "ai-cooking-matic-1",
+          "sound": true,
+          "source": "c768ec60-879b-4b67-b727-cf31d9181330"
+        },
+        {
+          "file": "ai-cooking-matic-2",
+          "sound": true,
+          "source": "0f36e9b8-c7a8-4af0-8a7b-67d31563db21"
+        },
+        {
+          "file": "ai-cooking-matic-3",
+          "sound": false,
+          "source": "1953d505-b771-4ca2-b649-961a21e9857b-clip"
+        }
+      ]
+    },
+    {
+      "id": "clay-rescue",
+      "name": "Clay Rescue",
+      "path": "/workspace/clay-rescue",
+      "desc": "Giant hands save tiny clay worlds",
+      "addedAt": "2026-06-01",
+      "videos": [
+        {
+          "file": "clay-rescue-1",
+          "sound": true,
+          "source": "99649383-b46f-41ac-9565-cebb28f9dcad"
+        },
+        {
+          "file": "clay-rescue-2",
+          "sound": true,
+          "source": "451fb3b1-f7d2-41a2-a944-6ff321e58672-s0"
+        },
+        {
+          "file": "clay-rescue-3",
+          "sound": true,
+          "source": "b2414b2c-fd6c-436c-8397-da88739439cc-s0"
+        },
+        {
+          "file": "clay-rescue-4",
+          "sound": false,
+          "source": "f3b909ac-17c5-4183-93e2-7092db45ff6e-s0"
+        },
+        {
+          "file": "clay-rescue-5",
+          "sound": true,
+          "source": "451fb3b1-f7d2-41a2-a944-6ff321e58672-s1"
+        },
+        {
+          "file": "clay-rescue-6",
+          "sound": true,
+          "source": "451fb3b1-f7d2-41a2-a944-6ff321e58672-s2"
+        },
+        {
+          "file": "clay-rescue-7",
+          "sound": true,
+          "source": "451fb3b1-f7d2-41a2-a944-6ff321e58672-s3"
+        },
+        {
+          "file": "clay-rescue-8",
+          "sound": true,
+          "source": "85c32462-2ad4-47b4-bfab-9025d06379e5-s2"
+        },
+        {
+          "file": "clay-rescue-9",
+          "sound": true,
+          "source": "85c32462-2ad4-47b4-bfab-9025d06379e5-s3"
+        },
+        {
+          "file": "clay-rescue-10",
+          "sound": true,
+          "source": "b2414b2c-fd6c-436c-8397-da88739439cc-s1"
+        }
+      ]
+    },
+    {
+      "id": "micro-camera-animal",
+      "name": "Micro Camera",
+      "path": "/workspace/micro-camera-animal",
+      "desc": "Animal bodycam goes underground",
+      "addedAt": "2026-05-27",
+      "videos": [
+        {
+          "file": "micro-camera-animal-1",
+          "sound": false,
+          "source": "b3f83b1a-5628-4f5b-8fa4-d6405a5390eb-s0"
+        },
+        {
+          "file": "micro-camera-animal-2",
+          "sound": false,
+          "source": "472c9d45-688b-43d5-9352-261b5c7d06ee-s0"
+        },
+        {
+          "file": "micro-camera-animal-3",
+          "sound": false,
+          "source": "00e2fc27-3423-45dd-9b40-8f807d911f86-s0"
+        },
+        {
+          "file": "micro-camera-animal-4",
+          "sound": false,
+          "source": "0adbd78e-a297-4e49-b17c-d10b1f1311c9-s0"
+        },
+        {
+          "file": "micro-camera-animal-5",
+          "sound": false,
+          "source": "b3f83b1a-5628-4f5b-8fa4-d6405a5390eb-s1"
+        },
+        {
+          "file": "micro-camera-animal-6",
+          "sound": false,
+          "source": "b3f83b1a-5628-4f5b-8fa4-d6405a5390eb-s2"
+        },
+        {
+          "file": "micro-camera-animal-7",
+          "sound": false,
+          "source": "472c9d45-688b-43d5-9352-261b5c7d06ee-s1"
+        },
+        {
+          "file": "micro-camera-animal-8",
+          "sound": false,
+          "source": "00e2fc27-3423-45dd-9b40-8f807d911f86-s1"
+        },
+        {
+          "file": "micro-camera-animal-9",
+          "sound": false,
+          "source": "00e2fc27-3423-45dd-9b40-8f807d911f86-s2"
+        },
+        {
+          "file": "micro-camera-animal-10",
+          "sound": false,
+          "source": "0adbd78e-a297-4e49-b17c-d10b1f1311c9-s1"
+        },
+        {
+          "file": "micro-camera-animal-11",
+          "sound": false,
+          "source": "0adbd78e-a297-4e49-b17c-d10b1f1311c9-s2"
+        },
+        {
+          "file": "micro-camera-animal-12",
+          "sound": false,
+          "source": "df2d4995-4b85-4f9c-821b-16c9633c7577-s1"
+        },
+        {
+          "file": "micro-camera-animal-13",
+          "sound": false,
+          "source": "df2d4995-4b85-4f9c-821b-16c9633c7577-s2"
+        }
+      ]
+    },
+    {
+      "id": "ai-fruit-story",
+      "name": "AI Fruit Story",
+      "path": "/workspace/ai-fruit-story",
+      "desc": "Characters, stories, viral content & more",
+      "addedAt": "2026-05-12",
+      "videos": [
+        {
+          "file": "ai-fruit-story-1",
+          "sound": true,
+          "source": "c591c05d-aa52-40f8-9751-7f8cbcdfc55f"
+        },
+        {
+          "file": "ai-fruit-story-2",
+          "sound": true,
+          "source": "721f55be-3249-4d9f-9f31-c466d933831b"
+        },
+        {
+          "file": "ai-fruit-story-3",
+          "sound": true,
+          "source": "3628cf86-4b61-4ed6-a6f2-8f9f2bd8961e"
+        },
+        {
+          "file": "ai-fruit-story-4",
+          "sound": true,
+          "source": "9f3c9af6-20b4-468f-9cd7-33d28fcda067"
+        }
+      ]
+    }
+  ]
+}

@@ -24,6 +24,7 @@
 // dispatch or this function's own self-chain, both presenting the shared
 // x-cron-secret header.
 
+import { openaiFetch } from "../_shared/openaiBackup.js";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { establishFirstSetups } from "../_shared/visualPlanDeterministic.js";
@@ -80,7 +81,7 @@ function parseJson(raw: string) {
   return JSON.parse(clean);
 }
 async function callOpenAI(request: any, timeoutMs: number) {
-  const response = await fetch(OPENAI_RESPONSES, {
+  const response = await openaiFetch(OPENAI_RESPONSES, {
     method: "POST",
     headers: { Authorization: `Bearer ${OPENAI_KEY}`, "Content-Type": "application/json" },
     body: JSON.stringify(request),

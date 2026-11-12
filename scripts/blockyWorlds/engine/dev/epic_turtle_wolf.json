@@ -1,0 +1,860 @@
+{
+ "version": 1,
+ "fps": 24,
+ "width": 1080,
+ "height": 1920,
+ "duration": 27.632,
+ "title": "The Turtle Town",
+ "script": [
+  "In this town, we live inside a massive turtle.",
+  "Our streets run right down the middle of its shell.",
+  "Sunlight pours in, and the whole town sways when it walks.",
+  "The Big Bad Wolf. Taller than our turtle.",
+  "And behind him marched an army of soldiers.",
+  "They charged straight at our turtle.",
+  "Boom. The whole world shook.",
+  "So the whole town fought back.",
+  "And our turtle did what wolves never expect. It swam.",
+  "In this town, we live inside a massive turtle. And it never stops moving."
+ ],
+ "cast": {
+  "me": {
+   "role": "kid",
+   "name": "Pip",
+   "seed": 3
+  }
+ },
+ "monster": null,
+ "giants": {
+  "wolf": {
+   "kind": "wolf",
+   "size": 75,
+   "armour": true
+  }
+ },
+ "worlds": {
+  "turtle_out": {
+   "creature": "turtle",
+   "view": "outside",
+   "size": 120,
+   "seed": 11
+  },
+  "turtle_in": {
+   "creature": "turtle",
+   "view": "inside",
+   "size": 120,
+   "seed": 11
+  },
+  "turtle_on": {
+   "creature": "turtle",
+   "view": "on",
+   "size": 120,
+   "seed": 11
+  },
+  "turtle_sea": {
+   "creature": "turtle",
+   "view": "outside",
+   "size": 120,
+   "seed": 11,
+   "water": true
+  }
+ },
+ "shots": [
+  {
+   "start": 0,
+   "end": 3.032,
+   "line": 0,
+   "part": "rule",
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 11,
+   "set": "creature:turtle_out",
+   "light": "day",
+   "camera": "establish",
+   "focus": "world",
+   "giants": [
+    {
+     "id": "world",
+     "action": "walk"
+    }
+   ],
+   "actors": [],
+   "visuals": []
+  },
+  {
+   "start": 3.032,
+   "end": 5.759,
+   "line": 1,
+   "part": "tour",
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 18,
+   "set": "creature:turtle_in",
+   "light": "day",
+   "camera": "wide",
+   "focus": "me",
+   "actors": [
+    {
+     "id": "me",
+     "spot": "center",
+     "pose": "walk",
+     "expr": "happy",
+     "facing": "camera"
+    }
+   ],
+   "crowds": [
+    {
+     "kind": "townsfolk",
+     "count": 40,
+     "formation": "scatter",
+     "action": "stand",
+     "spot": "back",
+     "spacing": 2.2
+    }
+   ],
+   "visuals": []
+  },
+  {
+   "start": 5.759,
+   "end": 9.092,
+   "line": 2,
+   "part": "tour",
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 25,
+   "set": "creature:turtle_in",
+   "light": "day",
+   "camera": "aerial",
+   "focus": "crowd",
+   "actors": [],
+   "crowds": [
+    {
+     "kind": "townsfolk",
+     "count": 120,
+     "formation": "scatter",
+     "action": "wave",
+     "spot": "far",
+     "seed": 9
+    }
+   ],
+   "shake": "rumble",
+   "visuals": []
+  },
+  {
+   "start": 9.092,
+   "end": 11.55,
+   "line": 3,
+   "part": "until",
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 32,
+   "set": "creature:turtle_out",
+   "light": "day",
+   "camera": "hero_low",
+   "focus": "me",
+   "actors": [
+    {
+     "id": "me",
+     "spot": "center",
+     "pose": "scared",
+     "expr": "scared",
+     "facing": "wolf"
+    }
+   ],
+   "giants": [
+    {
+     "id": "wolf",
+     "pos": [
+      -14,
+      0,
+      -46
+     ],
+     "action": "roar",
+     "facing": "camera"
+    },
+    {
+     "id": "world",
+     "action": "idle"
+    }
+   ],
+   "beat": {
+    "type": "roar"
+   },
+   "visuals": []
+  },
+  {
+   "start": 11.55,
+   "end": 13.992,
+   "line": 4,
+   "part": "until",
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 39,
+   "set": "creature:turtle_out",
+   "light": "day",
+   "camera": "track",
+   "focus": "crowd",
+   "actors": [],
+   "giants": [
+    {
+     "id": "wolf",
+     "spot": "giant_left",
+     "action": "walk",
+     "facing": "right"
+    }
+   ],
+   "crowds": [
+    {
+     "kind": "wolf_soldier",
+     "count": 300,
+     "formation": "block",
+     "action": "march",
+     "pos": [
+      -40,
+      0,
+      -30
+     ],
+     "facing": "right",
+     "faction": "wolf"
+    }
+   ],
+   "beat": {
+    "type": "march"
+   },
+   "visuals": []
+  },
+  {
+   "start": 13.992,
+   "end": 16.108,
+   "line": 5,
+   "part": "discovery",
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 46,
+   "set": "creature:turtle_out",
+   "light": "day",
+   "camera": "behind_army",
+   "focus": "crowd",
+   "actors": [],
+   "giants": [
+    {
+     "id": "wolf",
+     "pos": [
+      -32,
+      0,
+      -40
+     ],
+     "action": "attack",
+     "facing": "far",
+     "role": "attacker"
+    },
+    {
+     "id": "world",
+     "action": "hit",
+     "role": "target"
+    }
+   ],
+   "crowds": [
+    {
+     "kind": "wolf_soldier",
+     "count": 500,
+     "formation": "wedge",
+     "action": "charge",
+     "pos": [
+      -10,
+      0,
+      45
+     ],
+     "facing": "far",
+     "faction": "wolf"
+    }
+   ],
+   "beat": {
+    "type": "attack"
+   },
+   "visuals": []
+  },
+  {
+   "start": 16.108,
+   "end": 18.01,
+   "line": 6,
+   "part": "discovery",
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 53,
+   "set": "creature:turtle_in",
+   "light": "day",
+   "camera": "wide",
+   "focus": "me",
+   "actors": [
+    {
+     "id": "me",
+     "spot": "center",
+     "pose": "scared",
+     "expr": "scared",
+     "facing": "camera"
+    }
+   ],
+   "crowds": [
+    {
+     "kind": "townsfolk",
+     "count": 60,
+     "formation": "scatter",
+     "action": "flee",
+     "spot": "back",
+     "spacing": 2,
+     "seed": 4
+    }
+   ],
+   "beat": {
+    "type": "impact"
+   },
+   "visuals": []
+  },
+  {
+   "start": 18.01,
+   "end": 19.792,
+   "line": 7,
+   "part": "climax",
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 60,
+   "set": "creature:turtle_on",
+   "light": "day",
+   "camera": "aerial",
+   "focus": "crowd",
+   "actors": [],
+   "crowds": [
+    {
+     "kind": "knight",
+     "count": 150,
+     "formation": "block",
+     "action": "charge",
+     "spot": "tail",
+     "facing": "away",
+     "faction": "town",
+     "onWorld": true
+    },
+    {
+     "kind": "townsfolk",
+     "count": 60,
+     "formation": "scatter",
+     "action": "cheer",
+     "spot": "back",
+     "onWorld": true,
+     "seed": 6
+    }
+   ],
+   "visuals": []
+  },
+  {
+   "start": 19.792,
+   "end": 22.854,
+   "line": 8,
+   "part": "climax",
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 67,
+   "set": "creature:turtle_sea",
+   "light": "warm",
+   "camera": "establish",
+   "focus": "world",
+   "actors": [],
+   "giants": [
+    {
+     "id": "world",
+     "action": "swim"
+    }
+   ],
+   "beat": {
+    "type": "swim_away"
+   },
+   "visuals": []
+  },
+  {
+   "start": 22.854,
+   "end": 27.632,
+   "line": 9,
+   "part": "closer",
+   "monsterState": null,
+   "insert": null,
+   "marker": null,
+   "seed": 74,
+   "set": "creature:turtle_in",
+   "light": "warm",
+   "camera": "medium",
+   "focus": "me",
+   "actors": [
+    {
+     "id": "me",
+     "spot": "center",
+     "pose": "wave",
+     "expr": "happy",
+     "facing": "camera"
+    }
+   ],
+   "crowds": [
+    {
+     "kind": "townsfolk",
+     "count": 30,
+     "formation": "scatter",
+     "action": "cheer",
+     "spot": "back",
+     "spacing": 2.4,
+     "seed": 2
+    }
+   ],
+   "visuals": []
+  }
+ ],
+ "captions": [
+  {
+   "word": "In",
+   "start": 0.15,
+   "end": 0.297
+  },
+  {
+   "word": "this",
+   "start": 0.31,
+   "end": 0.514
+  },
+  {
+   "word": "town,",
+   "start": 0.532,
+   "end": 0.737
+  },
+  {
+   "word": "we",
+   "start": 1.034,
+   "end": 1.182
+  },
+  {
+   "word": "live",
+   "start": 1.194,
+   "end": 1.399
+  },
+  {
+   "word": "inside",
+   "start": 1.417,
+   "end": 1.723
+  },
+  {
+   "word": "a",
+   "start": 1.75,
+   "end": 1.897
+  },
+  {
+   "word": "massive",
+   "start": 1.91,
+   "end": 2.268
+  },
+  {
+   "word": "turtle.",
+   "start": 2.299,
+   "end": 2.606
+  },
+  {
+   "word": "Our",
+   "start": 3.032,
+   "end": 3.186
+  },
+  {
+   "word": "streets",
+   "start": 3.199,
+   "end": 3.557
+  },
+  {
+   "word": "run",
+   "start": 3.588,
+   "end": 3.741
+  },
+  {
+   "word": "right",
+   "start": 3.754,
+   "end": 4.01
+  },
+  {
+   "word": "down",
+   "start": 4.032,
+   "end": 4.237
+  },
+  {
+   "word": "the",
+   "start": 4.254,
+   "end": 4.408
+  },
+  {
+   "word": "middle",
+   "start": 4.421,
+   "end": 4.728
+  },
+  {
+   "word": "of",
+   "start": 4.754,
+   "end": 4.902
+  },
+  {
+   "word": "its",
+   "start": 4.914,
+   "end": 5.068
+  },
+  {
+   "word": "shell.",
+   "start": 5.081,
+   "end": 5.337
+  },
+  {
+   "word": "Sunlight",
+   "start": 5.759,
+   "end": 6.168
+  },
+  {
+   "word": "pours",
+   "start": 6.203,
+   "end": 6.459
+  },
+  {
+   "word": "in,",
+   "start": 6.481,
+   "end": 6.628
+  },
+  {
+   "word": "and",
+   "start": 6.921,
+   "end": 7.074
+  },
+  {
+   "word": "the",
+   "start": 7.088,
+   "end": 7.241
+  },
+  {
+   "word": "whole",
+   "start": 7.254,
+   "end": 7.51
+  },
+  {
+   "word": "town",
+   "start": 7.532,
+   "end": 7.737
+  },
+  {
+   "word": "sways",
+   "start": 7.754,
+   "end": 8.01
+  },
+  {
+   "word": "when",
+   "start": 8.032,
+   "end": 8.237
+  },
+  {
+   "word": "it",
+   "start": 8.254,
+   "end": 8.402
+  },
+  {
+   "word": "walks.",
+   "start": 8.414,
+   "end": 8.67
+  },
+  {
+   "word": "The",
+   "start": 9.092,
+   "end": 9.246
+  },
+  {
+   "word": "Big",
+   "start": 9.259,
+   "end": 9.412
+  },
+  {
+   "word": "Bad",
+   "start": 9.426,
+   "end": 9.579
+  },
+  {
+   "word": "Wolf.",
+   "start": 9.592,
+   "end": 9.797
+  },
+  {
+   "word": "Taller",
+   "start": 10.094,
+   "end": 10.401
+  },
+  {
+   "word": "than",
+   "start": 10.428,
+   "end": 10.632
+  },
+  {
+   "word": "our",
+   "start": 10.65,
+   "end": 10.803
+  },
+  {
+   "word": "turtle.",
+   "start": 10.817,
+   "end": 11.123
+  },
+  {
+   "word": "And",
+   "start": 11.55,
+   "end": 11.703
+  },
+  {
+   "word": "behind",
+   "start": 11.717,
+   "end": 12.023
+  },
+  {
+   "word": "him",
+   "start": 12.05,
+   "end": 12.203
+  },
+  {
+   "word": "marched",
+   "start": 12.217,
+   "end": 12.574
+  },
+  {
+   "word": "an",
+   "start": 12.606,
+   "end": 12.753
+  },
+  {
+   "word": "army",
+   "start": 12.766,
+   "end": 12.97
+  },
+  {
+   "word": "of",
+   "start": 12.988,
+   "end": 13.135
+  },
+  {
+   "word": "soldiers.",
+   "start": 13.148,
+   "end": 13.557
+  },
+  {
+   "word": "They",
+   "start": 13.992,
+   "end": 14.197
+  },
+  {
+   "word": "charged",
+   "start": 14.214,
+   "end": 14.572
+  },
+  {
+   "word": "straight",
+   "start": 14.603,
+   "end": 15.012
+  },
+  {
+   "word": "at",
+   "start": 15.048,
+   "end": 15.195
+  },
+  {
+   "word": "our",
+   "start": 15.208,
+   "end": 15.361
+  },
+  {
+   "word": "turtle.",
+   "start": 15.374,
+   "end": 15.681
+  },
+  {
+   "word": "Boom.",
+   "start": 16.108,
+   "end": 16.312
+  },
+  {
+   "word": "The",
+   "start": 16.61,
+   "end": 16.763
+  },
+  {
+   "word": "whole",
+   "start": 16.777,
+   "end": 17.032
+  },
+  {
+   "word": "world",
+   "start": 17.054,
+   "end": 17.31
+  },
+  {
+   "word": "shook.",
+   "start": 17.332,
+   "end": 17.588
+  },
+  {
+   "word": "So",
+   "start": 18.01,
+   "end": 18.157
+  },
+  {
+   "word": "the",
+   "start": 18.17,
+   "end": 18.323
+  },
+  {
+   "word": "whole",
+   "start": 18.337,
+   "end": 18.592
+  },
+  {
+   "word": "town",
+   "start": 18.614,
+   "end": 18.819
+  },
+  {
+   "word": "fought",
+   "start": 18.837,
+   "end": 19.143
+  },
+  {
+   "word": "back.",
+   "start": 19.17,
+   "end": 19.374
+  },
+  {
+   "word": "And",
+   "start": 19.792,
+   "end": 19.946
+  },
+  {
+   "word": "our",
+   "start": 19.959,
+   "end": 20.112
+  },
+  {
+   "word": "turtle",
+   "start": 20.126,
+   "end": 20.432
+  },
+  {
+   "word": "did",
+   "start": 20.459,
+   "end": 20.612
+  },
+  {
+   "word": "what",
+   "start": 20.626,
+   "end": 20.83
+  },
+  {
+   "word": "wolves",
+   "start": 20.848,
+   "end": 21.154
+  },
+  {
+   "word": "never",
+   "start": 21.181,
+   "end": 21.437
+  },
+  {
+   "word": "expect.",
+   "start": 21.459,
+   "end": 21.766
+  },
+  {
+   "word": "It",
+   "start": 22.072,
+   "end": 22.219
+  },
+  {
+   "word": "swam.",
+   "start": 22.232,
+   "end": 22.437
+  },
+  {
+   "word": "In",
+   "start": 22.854,
+   "end": 23.002
+  },
+  {
+   "word": "this",
+   "start": 23.014,
+   "end": 23.219
+  },
+  {
+   "word": "town,",
+   "start": 23.237,
+   "end": 23.441
+  },
+  {
+   "word": "we",
+   "start": 23.739,
+   "end": 23.886
+  },
+  {
+   "word": "live",
+   "start": 23.899,
+   "end": 24.103
+  },
+  {
+   "word": "inside",
+   "start": 24.121,
+   "end": 24.428
+  },
+  {
+   "word": "a",
+   "start": 24.454,
+   "end": 24.602
+  },
+  {
+   "word": "massive",
+   "start": 24.614,
+   "end": 24.972
+  },
+  {
+   "word": "turtle.",
+   "start": 25.003,
+   "end": 25.31
+  },
+  {
+   "word": "And",
+   "start": 25.617,
+   "end": 25.77
+  },
+  {
+   "word": "it",
+   "start": 25.783,
+   "end": 25.931
+  },
+  {
+   "word": "never",
+   "start": 25.943,
+   "end": 26.199
+  },
+  {
+   "word": "stops",
+   "start": 26.221,
+   "end": 26.477
+  },
+  {
+   "word": "moving.",
+   "start": 26.499,
+   "end": 26.806
+  }
+ ],
+ "audio": {
+  "voice": null,
+  "music": null
+ }
+}

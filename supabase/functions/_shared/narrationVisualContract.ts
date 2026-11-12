@@ -31,6 +31,7 @@
 // much larger ontology, because Section 5 explicitly demands a real,
 // general-purpose visual-form taxonomy, not a patch to the old 10-value one.
 
+import { openaiFetch } from "./openaiBackup.js";
 import { GPT5_MINI_INPUT_PER_M, GPT5_MINI_OUTPUT_PER_M } from "../../../src/lib/longFormPipelineConstants.ts";
 
 export const NARRATION_CONTRACT_COMPILER_VERSION = "narration-visual-contract-v2";
@@ -322,7 +323,7 @@ function extractOutputText(payload: any): string {
 export type ContractCompileStats = { llmCalls: number; repairCalls: number; inputTokens: number; outputTokens: number; estimatedModelCostUsd: number; latencyMs: number; batches: number; droppedClaims: number };
 
 async function callResponses(openaiKey: string, segments: { id: string; text: string }[]): Promise<{ claims: any[]; inputTokens: number; outputTokens: number }> {
-  const res = await fetch(OPENAI_RESPONSES, {
+  const res = await openaiFetch(OPENAI_RESPONSES, {
     method: "POST",
     headers: { Authorization: `Bearer ${openaiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({

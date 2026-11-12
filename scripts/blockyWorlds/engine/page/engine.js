@@ -1,0 +1,1082 @@
+// Blocky Worlds engine: the page that turns a timeline (CONTRACT.md) into frames.
+//   /page/index.html?tl=<timeline url>            the real modules (kit, sets, camera, captions)
+//   ...&stubs=1                                   every module replaced by its stand-in in /dev/stubs/ (tiny, for tests)
+//   ...&stubs=people,captions                     only the named ones replaced (the rest real)
+//   ...&nopost=1 / &noao=1                        debug: no post chain / no ambient occlusion
+// Exposes window.ready (true when every set, person, prop and texture is loaded and the shaders are warm),
+// window.engineError (a message when loading failed), window.renderAt(t, { safe }?) -> { shot, mean, flat, detail, safe }
+// (mean = the 3D frame's average brightness 0-255, for the blank-frame guard; flat = the share of it in one colour,
+// detail = its mean neighbour step, for the flat-frame guard, lib/frameGuard.js; safe 1 / 2 = a re-render without fog / also with a plain camera),
+// window.frameData(q = 0.9) -> JPEG data URL of the output canvas.
+import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { rng } from "/lib/rng.js";
+import { applyCamMove } from "/lib/camMove.js";
+import { keepOut, objectMargin } from "/page/cameraGuard.js"; // LOOK-FIX 2026-11-08: the camera never inside a scene object
+import { makeSubjectLight, boostFor } from "/page/subjectLight.js";
+import { isWinter, makeWinter, snowBloom } from "/page/winter.js"; // LOOK-FIX 2026-11-08: snowy worlds (bible / director / script) // LOOK-FIX 2026-11-08: night subjects read
+import { flatShare, detailOf } from "/lib/frameGuard.js";
+import { makeRenderer, makePost } from "/page/post.js";
+import { measureContact, groundUnder, personFeet, findStandSpot } from "/page/ground.js"; // ATTACH 2026-11-07: the free ground-contact check (window.groundProbe)
+
+const Q = new URLSearchParams(location.search);
+const REAL = { people: "/page/kit/people.js", monsters: "/page/kit/monsters.js", props: "/page/kit/props.js", sets: "/page/sets/index.js", camera: "/page/camera.js", captions: "/page/captions.js" };
+const STUB = Object.fromEntries(Object.keys(REAL).map((k) => [k, `/dev/stubs/${k}.js`]));
+const stubbed = (() => {
+  if (!Q.has("stubs")) return new Set();
+  const v = Q.get("stubs");
+  if (["", "1", "true", "all"].includes(v)) return new Set(Object.keys(REAL));
+  return new Set(v.split(",").map((s) => s.trim()).filter(Boolean));
+})();
+
+const SPOTS = ["center", "left", "right", "back", "far", "door"];
+// extra spots some sets add (sets/*.js): a timeline may use them; a set without one uses "far" (monsters) or "center"
+const EXTRA_SPOTS = ["tower", "closet", "bed", "classroom"];
+const LIGHTS = ["day", "night", "warm", "dusk", "dawn"]; // dusk / dawn: WORLD-LOOK 2026-11-06 (page/lighting.js)
+const CAMERAS = ["wide", "medium", "closeup", "low", "over_shoulder", "insert", "two_shot"]; // two_shot: SCENES face-off (page/simple/camera.js)
+const FACINGS = ["camera", "left", "right", "away", "monster"];
+const MONSTER_STATES = ["lurk", "reach", "reveal", "flee"];
+const INSERT_KINDS = ["sign", "note", "card"];
+const WINDOWS = ["dark", "lit", "open"];
+const OBJ_FACINGS = ["camera", "left", "right", "away"];
+
+async function load(name) {
+  const url = stubbed.has(name) ? STUB[name] : REAL[name];
+  try { return { mod: await import(url), url }; } catch (e) {
+    throw new Error(`engine: cannot load ${url}: ${e.message}${stubbed.has(name) ? "" : ` (not written yet? ?stubs=${name} uses the stand-in)`}`);
+  }
+}
+function need({ mod, url }, name) {
+  if (typeof mod[name] !== "function") throw new Error(`engine: ${url} has no exported function ${name}() (CONTRACT.md)`);
+  return mod[name];
+}
+
+/** a shot's markers: shot.markers (a list) or the single shot.marker; duplicates of the same marker dropped */
+function markersOf(s) {
+  const list = Array.isArray(s.markers) && s.markers.length ? [...s.markers] : [];
+  if (s.marker && !list.some((m) => m.on === s.marker.on && m.kind === s.marker.kind && m.text === s.marker.text)) list.unshift(s.marker);
+  return list.filter(Boolean);
+}
+/** who a marker floats over: "all" = every actor of the shot, "monster", or one cast id */
+const markerTargets = (mk, s) => (mk.on === "all" ? (s.actors ?? []).map((a) => a.id) : [mk.on]);
+
+/** a baby's cast id when actor `a` carries one (pose carry + hold = the baby's cast id) */
+const carriedBaby = (a, cast) => (a.hold && cast[a.hold]?.role === "baby" ? a.hold : null);
+
+/**
+ * every problem in the timeline at once (planner bugs fail here, before a single frame).
+ * lists: { setNames, poses, exprs, objects: { resolve(name) -> canonical | null, catalog } } (each optional)
+ */
+function validate(tl, { setNames = null, poses = null, exprs = null, objects = null, epic = null } = {}) {
+  const bad = [];
+  if (!Array.isArray(tl.shots) || !tl.shots.length) bad.push("no shots");
+  if (!(tl.duration > 0)) bad.push("no duration");
+  const cast = tl.cast ?? {};
+  for (const [id, c] of Object.entries(cast)) if (c.role && !["kid", "adult", "elder", "baby"].includes(c.role)) bad.push(`cast "${id}": unknown role "${c.role}" (kid, adult, elder, baby)`);
+  (tl.shots ?? []).forEach((s, i) => {
+    const at = `shot ${i} (${s.start}-${s.end})`;
+    if (!(s.end > s.start)) bad.push(`${at}: end <= start`);
+    if (i > 0 && Math.abs(s.start - tl.shots[i - 1].end) > 0.002) bad.push(`${at}: does not start where shot ${i - 1} ends (${tl.shots[i - 1].end})`);
+    const worldId = /^world:/.test(s.set ?? "") ? s.set.slice(6) : null;
+    if (worldId) { if (tl.assets?.[worldId]?.kind !== "world" || !tl.assets[worldId].spec) bad.push(`${at}: built world "${worldId}" is not in timeline.assets`); }
+    else if (epic && /^creature:/.test(s.set ?? "")) { /* EPIC: a creature world (tl.worlds), checked by epic.problems() */ }
+    else if (setNames && !setNames.includes(s.set)) bad.push(`${at}: unknown set "${s.set}" (${setNames.join(", ")})`);
+    if (!LIGHTS.includes(s.light)) bad.push(`${at}: unknown light "${s.light}"`);
+    if (!CAMERAS.includes(s.camera) && !epic?.cameras.includes(s.camera)) bad.push(`${at}: unknown camera "${s.camera}"`);
+    const ids = (s.actors ?? []).map((a) => a.id);
+    const carried = (s.actors ?? []).map((a) => carriedBaby(a, cast)).filter(Boolean);
+    for (const a of s.actors ?? []) {
+      if (!cast[a.id]) bad.push(`${at}: actor "${a.id}" is not in the cast`);
+      if (!SPOTS.includes(a.spot) && !EXTRA_SPOTS.includes(a.spot) && !epic?.spots.includes(a.spot)) bad.push(`${at}: actor "${a.id}" on unknown spot "${a.spot}"`);
+      if (a.facing && !FACINGS.includes(a.facing) && !cast[a.facing] && !tl.giants?.[a.facing]) bad.push(`${at}: actor "${a.id}" facing unknown "${a.facing}"`);
+      if (poses && a.pose && !poses.includes(a.pose)) bad.push(`${at}: actor "${a.id}" has unknown pose "${a.pose}" (${poses.join(", ")})`);
+      if (exprs && a.expr && !exprs.includes(a.expr)) bad.push(`${at}: actor "${a.id}" has unknown expr "${a.expr}" (${exprs.join(", ")})`);
+      if (a.hold && cast[a.hold] && cast[a.hold].role !== "baby") bad.push(`${at}: actor "${a.id}" holds cast member "${a.hold}", who is not a baby (only babies can be carried)`);
+      if (carriedBaby(a, cast) === a.id) bad.push(`${at}: actor "${a.id}" carries itself`);
+    }
+    const objs = s.objects ?? [];
+    if (!Array.isArray(objs)) bad.push(`${at}: objects must be a list`);
+    else for (const o of objs) {
+      if (o?.asset) { // built for this video (lib/builder): a block blueprint in timeline.assets
+        if (tl.assets?.[o.asset]?.kind !== "object" || !tl.assets[o.asset].blueprint) bad.push(`${at}: built object "${o.asset}" is not in timeline.assets`);
+        if (o.spot && !SPOTS.includes(o.spot) && !EXTRA_SPOTS.includes(o.spot)) bad.push(`${at}: object "${o.name}" on unknown spot "${o.spot}"`);
+        continue;
+      }
+      if (!objects) { bad.push(`${at}: objects given but page/kit/objects.js is not loaded`); break; }
+      const key = objects.resolve(o?.name);
+      if (!key) { bad.push(`${at}: unknown object "${o?.name}" (${Object.keys(objects.catalog).join(", ")})`); continue; }
+      const st = o.state ?? objects.catalog[key].state;
+      if (!objects.catalog[key].states.includes(st)) bad.push(`${at}: object "${key}" has no state "${st}" (${objects.catalog[key].states.join(", ")})`);
+      if (o.spot && !SPOTS.includes(o.spot) && !EXTRA_SPOTS.includes(o.spot)) bad.push(`${at}: object "${key}" on unknown spot "${o.spot}"`);
+      if (o.facing && !OBJ_FACINGS.includes(o.facing)) bad.push(`${at}: object "${key}" facing unknown "${o.facing}" (${OBJ_FACINGS.join(", ")})`);
+    }
+    if (s.insert && !INSERT_KINDS.includes(s.insert.kind ?? "sign")) bad.push(`${at}: unknown insert kind "${s.insert.kind}" (${INSERT_KINDS.join(", ")})`);
+    if (s.setState?.windows != null && !WINDOWS.includes(s.setState.windows)) bad.push(`${at}: unknown setState.windows "${s.setState.windows}" (${WINDOWS.join(", ")})`);
+    const f = s.focus;
+    if (f === "monster") { if (!tl.monster) bad.push(`${at}: focus "monster" but the timeline has no monster`); }
+    else if (f === "insert") { if (!s.insert) bad.push(`${at}: focus "insert" but the shot has no insert`); }
+    else if (f === "object") { if (!objs.length) bad.push(`${at}: focus "object" but the shot has no objects`); }
+    else if (f === "group") { /* the actors + extras */ }
+    else if (epic && (/^(giant:|crowd)/.test(String(f)) || f === "world")) { /* EPIC focus */ }
+    else if (!ids.includes(f) && !carried.includes(f)) bad.push(`${at}: focus "${f}" is not one of its actors (${ids.join(", ") || "none"})`);
+    if (s.monsterState) {
+      if (!tl.monster) bad.push(`${at}: monsterState but the timeline has no monster`);
+      if (!MONSTER_STATES.includes(s.monsterState.state)) bad.push(`${at}: unknown monster state "${s.monsterState.state}"`);
+      if (s.monsterState.spot && !SPOTS.includes(s.monsterState.spot) && !EXTRA_SPOTS.includes(s.monsterState.spot)) bad.push(`${at}: monster on unknown spot "${s.monsterState.spot}"`);
+    }
+    for (const mk of markersOf(s)) {
+      if (mk.on === "monster") { if (!tl.monster) bad.push(`${at}: marker on "monster" but the timeline has no monster`); }
+      else if (mk.on !== "all" && !ids.includes(mk.on) && !carried.includes(mk.on)) bad.push(`${at}: marker on "${mk.on}", who is not in the shot`);
+      if (mk.kind && !["tag", "ring", "icon"].includes(mk.kind)) bad.push(`${at}: unknown marker kind "${mk.kind}" (tag, ring, icon)`);
+    }
+  });
+  if (epic) bad.push(...epic.problems());
+  if (bad.length) throw new Error(`engine: the timeline has ${bad.length} problem(s):\n- ${bad.slice(0, 25).join("\n- ")}`);
+}
+
+const hz = (v) => new THREE.Vector3(v.x, 0, v.z);
+const ms0 = (s) => !!(s.monsterState || s.focus === "monster");
+const yawTo = (from, to) => Math.atan2(to.x - from.x, to.z - from.z);
+
+// SIMPLE LOOK: a group's formation round the centre spot ([lateral, depth] metres; depth < 0 = further from the lens):
+// the subject in front, the next two half a step behind to each side, then a back row; extras last
+const FORMATION = [[0, 0], [-0.66, -0.72], [0.66, -0.72], [-1.25, -1.45], [1.25, -1.45], [-0.1, -1.5], [-1.9, -2.1], [1.9, -2.1]];
+function simpleFormation(placed, spots, S, shot) {
+  const free = placed.filter((p) => !p.fixed);
+  const subj = free.find((p) => p.id === shot.subject) ?? free.find((p) => p.id === "me") ?? null;
+  const order = [...(subj ? [subj] : []), ...free.filter((p) => p !== subj && !/^extra\d/.test(p.id)), ...free.filter((p) => p !== subj && /^extra\d/.test(p.id))];
+  const base = spots.center;
+  order.forEach((p, i) => { const [l, d] = FORMATION[Math.min(i, FORMATION.length - 1)]; p.pos.copy(base).addScaledVector(S.lateral, l).addScaledVector(S.depth, -d).setY(base.y); });
+}
+/** the value of a word-keyed list ([{ at, ... }], at = shot-local seconds, sorted) at lt: { cur, prev, since } */
+function keyAt(list, lt) {
+  if (!Array.isArray(list) || !list.length) return null;
+  let i = -1; for (let k = 0; k < list.length; k++) if ((list[k].at ?? 0) <= lt + 1e-6) i = k;
+  return i < 0 ? { cur: list[0], prev: null, since: Infinity } : { cur: list[i], prev: i > 0 ? list[i - 1] : null, since: lt - (list[i].at ?? 0) };
+}
+/** a pose change (on a word, or from the same person's pose in the shot before, on the same set) blends over this */
+const POSE_BLEND_SEC = 0.25;
+
+async function main() {
+  const tlUrl = Q.get("tl");
+  if (!tlUrl) throw new Error("engine: no timeline: open /page/index.html?tl=<timeline url>");
+  const res = await fetch(tlUrl);
+  if (!res.ok) throw new Error(`engine: timeline ${tlUrl}: HTTP ${res.status}`);
+  const tl = await res.json();
+  const W = tl.width ?? 1080, H = tl.height ?? 1920;
+  // SIMPLE LOOK 2026-11-10 (owner: "the simple test look is the production look"): timeline.look === "simple" swaps in
+  // the simple-look people, sets + light, camera and post chain (page/simple/*.js); everything else (objects, monsters,
+  // EPIC, the checks' fields) is shared. Stubs still win (?stubs=...).
+  const SIMPLE_LOOK = tl.look === "simple";
+  if (SIMPLE_LOOK) Object.assign(REAL, { people: "/page/simple/people.js", sets: "/page/simple/sets.js", camera: "/page/simple/camera.js", monsters: "/page/simple/monsters.js" });
+  const postM = SIMPLE_LOOK ? await import("/page/simple/post.js") : { makeRenderer, makePost };
+
+  const [peopleM, monstersM, propsM, setsM, cameraM, captionsM] = await Promise.all(["people", "monsters", "props", "sets", "camera", "captions"].map(load));
+  const makePerson = need(peopleM, "makePerson"), posePerson = need(peopleM, "posePerson"), setFace = need(peopleM, "setFace"), personHeight = need(peopleM, "personHeight");
+  const makeMonster = tl.monster ? need(monstersM, "makeMonster") : null, animateMonster = tl.monster ? need(monstersM, "animateMonster") : null;
+  const anyInsert = tl.shots.some((s) => s.insert), anyMarker = tl.shots.some((s) => markersOf(s).length);
+  const makeInsert = anyInsert ? need(propsM, "makeInsert") : null, makeMarker = anyMarker ? need(propsM, "makeMarker") : null;
+  const animateMarker = typeof propsM.mod.animateMarker === "function" ? propsM.mod.animateMarker : null; // optional
+  const buildSet = need(setsM, "buildSet"), applyLight = need(setsM, "applyLight");
+  const frameShot = need(cameraM, "frameShot");
+  const drawCaption = need(captionsM, "drawCaption");
+  const holdPerson = typeof peopleM.mod.holdPerson === "function" ? peopleM.mod.holdPerson : null; // optional (babies)
+  const releasePerson = typeof peopleM.mod.releasePerson === "function" ? peopleM.mod.releasePerson : null;
+  const heldFaceOverlap = typeof peopleM.mod.heldFaceOverlap === "function" ? peopleM.mod.heldFaceOverlap : null; // LOOK-FIX: long-prop grips
+  const gripOrder = typeof peopleM.mod.gripOrder === "function" ? peopleM.mod.gripOrder : () => [];
+  const POSE_LIFT = peopleM.mod.POSE_LIFT ?? {}, POSE_FRAME = peopleM.mod.POSE_FRAME ?? {}; // how high a pose lifts a person (fly, climb): the camera follows
+  // scene objects (kit/objects.js): loaded only when the timeline uses them
+  const anyObjects = tl.shots.some((s) => (s.objects ?? []).some((o) => !o.asset));
+  // built objects / worlds (lib/builder -> timeline.assets): page/kit/blueprint.js, page/sets/worldspec.js
+  const blueprintM = tl.shots.some((s) => (s.objects ?? []).some((o) => o.asset)) ? await import("/page/kit/blueprint.js") : null;
+  const worldM = tl.shots.some((s) => /^world:/.test(s.set ?? "")) ? await import("/page/sets/worldspec.js") : null;
+  // EPIC stories (giants, crowds, creature worlds, scale cameras, beats): page/epicLayer.js, loaded only when used
+  const epicM = (tl.giants || tl.worlds || tl.shots.some((s) => s.giants?.length || s.crowds?.length || (s.world && typeof s.world === "object") || s.beat || /^creature:/.test(s.set ?? "") || ["establish", "hero_low", "track", "aerial", "giant_close", "duel", "behind_army"].includes(s.camera) || s.move || s.tethers?.length || s.siege?.length || s.fx?.length || s.acts?.length || s.grade || s.tilt)) ? await import("/page/epicLayer.js") : null; // (+ 2026-11-06 capability fields: lib/caps.js)
+  let objectsM = null;
+  if (anyObjects) {
+    try { objectsM = await import("/page/kit/objects.js"); } catch (e) { throw new Error(`engine: cannot load /page/kit/objects.js: ${e.message}`); }
+    for (const k of ["OBJECTS", "makeObject", "animateObject", "resolveObject"]) if (!(k in objectsM)) throw new Error(`engine: /page/kit/objects.js has no export ${k} (CONTRACT.md addendum)`);
+  }
+  const realPeople = !stubbed.has("people");
+  validate(tl, {
+    setNames: Array.isArray(setsM.mod.SETS) ? setsM.mod.SETS : null,
+    poses: realPeople && Array.isArray(peopleM.mod.POSES) ? peopleM.mod.POSES : null,
+    exprs: realPeople && Array.isArray(peopleM.mod.EXPRS) ? peopleM.mod.EXPRS : null,
+    objects: objectsM ? { resolve: objectsM.resolveObject, catalog: objectsM.OBJECTS } : null,
+    epic: epicM ? { cameras: epicM.EPIC_CAMERA_TYPES, spots: epicM.EPIC_SPOTS, problems: () => [] } : null,
+  });
+
+  // ---------- renderer, output canvas, post ----------
+  const renderer = postM.makeRenderer(W, H);
+  renderer.domElement.id = "gl";
+  document.body.appendChild(renderer.domElement);
+  const out = document.createElement("canvas"); out.width = W; out.height = H; out.id = "out";
+  document.body.appendChild(out);
+  const ctx2d = out.getContext("2d");
+  const probe = document.createElement("canvas"); probe.width = probe.height = 16;
+  const probeCtx = probe.getContext("2d", { willReadFrequently: true });
+  // LOOK-FIX 2026-11-08: the night subject light + its pixel check (page/subjectLight.js)
+  const subjProbe = document.createElement("canvas"); subjProbe.width = subjProbe.height = 12;
+  const subjCtx = subjProbe.getContext("2d", { willReadFrequently: true });
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(50, W / H, 0.1, 1500);
+  scene.add(camera);
+  const subjLight = makeSubjectLight(THREE, scene);
+  const winter = isWinter(tl) ? makeWinter(THREE, scene, { seed: tl.world?.seed ?? 1 }) : null;
+  if (winter) console.log("engine: winter world (snow, frost, falling snow)");
+  const post = postM.makePost({ renderer, scene, camera, W, H, query: Q, tl });
+
+  // ---------- loading (tracked so ready waits for every texture and model) ----------
+  const LM = THREE.DefaultLoadingManager, loadErrors = [];
+  const pending = { total: 0, done: 0 };
+  LM.onStart = (u, l, t) => { pending.done = l; pending.total = t; };
+  LM.onProgress = (u, l, t) => { pending.done = l; pending.total = t; };
+  LM.onError = (u) => loadErrors.push(u);
+  const gltfLoader = new GLTFLoader(), texLoader = new THREE.TextureLoader();
+  const GLTF = new Map(), TEX = new Map();
+  /** a fresh copy of a model's scene (also reachable as .scene, for code that expects the loader's result) */
+  const gltf = async (url) => {
+    if (!GLTF.has(url)) GLTF.set(url, gltfLoader.loadAsync(url).catch((e) => { throw new Error(`engine: model ${url}: ${e.message}`); }));
+    const g = await GLTF.get(url);
+    const copy = g.scene.clone(true); copy.scene = copy; copy.animations = g.animations;
+    copy.traverse((o) => { if (o.isMesh) { o.castShadow = o.receiveShadow = true; } });
+    return copy;
+  };
+  /** a Poly Haven texture as in look/scene.js: /assets/<name>/<kind>.jpg, repeat-wrapped; srgb for colour maps */
+  const tex = (name, kind, srgb) => {
+    const k = `${name}/${kind}`;
+    if (!TEX.has(k)) { const t = texLoader.load(`/assets/${name}/${kind}.jpg`); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8; if (srgb) t.colorSpace = THREE.SRGBColorSpace; TEX.set(k, t); }
+    const t = TEX.get(k).clone(); t.needsUpdate = true; return t;
+  };
+
+  // ---------- sets ----------
+  const SETS = {};
+  const busNamed = [...(tl.lines ?? []).map((l) => l.text), ...tl.shots.map((s) => s.text)].some((t) => /\bbus(es)?\b/i.test(String(t ?? "")));
+  const epic = epicM ? await epicM.makeEpicLayer({ THREE, scene, tl, ctx: { THREE, scene, renderer, gltf, tex } }) : null;
+  if (epic) { const p = epic.problems(); if (p.length) throw new Error(`engine: the timeline has ${p.length} EPIC problem(s):\n- ${p.slice(0, 25).join("\n- ")}`); }
+  for (const name of [...new Set(tl.shots.map((s) => s.set))]) {
+    const S = /^world:/.test(name) ? await worldM.buildWorld(tl.assets[name.slice(6)].spec, { THREE, scene, renderer, gltf, tex, ...(epic ? { buildCreatureWorld: epic.buildCreatureWorld } : {}) })
+      : epic && /^creature:/.test(name) ? await epic.buildSet(name) : await buildSet(name, { THREE, scene, renderer, gltf, tex, bus: busNamed, tl }); // LOOK-LEFTOVERS: the town bus only when a line names one
+    if (S?.problems?.length) console.warn(`engine: built world ${name}: ${S.problems.slice(0, 8).join("; ")}`);
+    S.blockers ??= [];
+    if (!S?.root?.isObject3D) throw new Error(`engine: buildSet("${name}") returned no root Object3D`);
+    const missing = SPOTS.filter((k) => !S.spots?.[k]?.isVector3);
+    if (missing.length) throw new Error(`engine: set "${name}" lacks spots ${missing.join(", ")} (THREE.Vector3 each)`);
+    if (!S.root.parent) scene.add(S.root);
+    S.root.visible = false;
+    // the set's depth axis (center -> far) and its lateral axis, for spreading people sideways
+    const d = S.depthDir ? S.depthDir.clone().setY(0) : hz(S.spots.far).sub(hz(S.spots.center)); // SIMPLE LOOK: a set may name its depth axis (the street's far spot is down the road)
+    S.depth = d.lengthSq() > 1e-4 ? d.normalize() : new THREE.Vector3(0, 0, -1);
+    S.lateral = new THREE.Vector3(-S.depth.z, 0, S.depth.x);
+    S.setWindows ??= () => {}; // only the street has houses with windows
+    SETS[name] = S;
+  }
+
+  // ---------- cast, extras, monster, inserts, markers ----------
+  const PEOPLE = {};
+  const addPerson = (id, spec) => {
+    const p = makePerson({ ...spec, id });
+    if (!p?.isObject3D) throw new Error(`engine: makePerson("${id}") returned no Object3D`);
+    scene.add(p); p.visible = false;
+    const h = Number(personHeight(p)) || 1.7;
+    // the head (with hair / hat) at rest: its centre height above the feet and its radius, for the camera's head guard
+    let headC = h * 0.88, headR = Math.max(0.12, h * 0.12);
+    const hj = p.userData?.joints?.head;
+    if (hj) {
+      p.updateMatrixWorld(true);
+      const hb = new THREE.Box3().setFromObject(hj), size = hb.getSize(new THREE.Vector3());
+      if (!hb.isEmpty() && size.y > 0.02) { headC = hb.getCenter(new THREE.Vector3()).y - p.position.y; headR = Math.max(size.x, size.y, size.z) / 2; }
+    }
+    PEOPLE[id] = { obj: p, h, headC, headR };
+  };
+  // the planner's gender (visualWorld.gender: Mrs. / Ms. / Grandma / she = f) shapes the look (run 7b4c0d8b: a bearded Mrs. Oddy)
+  for (const [id, spec] of Object.entries(tl.cast ?? {})) addPerson(id, { ...spec, gender: spec.gender ?? tl.visualWorld?.gender?.[id] ?? null });
+  const EXTRAS = [];
+  if (tl.shots.some((s) => s.focus === "group" || (SIMPLE_LOOK && s.crowds?.length))) {
+    for (let i = 0; i < (SIMPLE_LOOK ? 10 : 4); i++) { const id = `extra${i}`; addPerson(id, { role: i % 3 === 2 ? "kid" : "adult", name: `Townsfolk ${i + 1}`, seed: 101 + i * 17 }); EXTRAS.push(id); }
+  }
+  let monster = null, monsterH = 0, monsterR = 0;
+  if (tl.monster) {
+    monster = makeMonster(tl.monster);
+    if (!monster?.isObject3D) throw new Error("engine: makeMonster returned no Object3D");
+    scene.add(monster); monster.visible = false;
+    monsterH = Number(monstersM.mod.monsterHeight?.(monster)) || new THREE.Box3().setFromObject(monster).getSize(new THREE.Vector3()).y || 3;
+    { const sz = new THREE.Box3().setFromObject(monster).getSize(new THREE.Vector3()); monsterR = Math.max(0.4, Math.max(sz.x, sz.z) / 2); }
+  }
+  const INSERTS = new Map(), MARKERS = new Map();
+  for (const s of tl.shots) {
+    if (s.insert) {
+      const k = `${s.insert.kind}|${s.insert.text}|${s.insert.icon ?? ""}`;
+      if (!INSERTS.has(k)) {
+        const o = makeInsert(s.insert);
+        if (!o?.isObject3D) throw new Error(`engine: makeInsert(${JSON.stringify(s.insert)}) returned no Object3D`);
+        const box = new THREE.Box3().setFromObject(o);
+        scene.add(o); o.visible = false;
+        INSERTS.set(k, { obj: o, minY: box.min.y, h: box.max.y - box.min.y || 0.8 });
+      }
+    }
+    for (const mk of markersOf(s)) {
+      for (const id of markerTargets(mk, s)) {
+        const k = `${id}|${mk.kind}|${mk.text ?? ""}`;
+        if (MARKERS.has(k)) continue;
+        const m = makeMarker({ kind: mk.kind, text: mk.text ?? "" });
+        if (!m?.isObject3D) throw new Error(`engine: makeMarker(${JSON.stringify(mk)}) returned no Object3D`);
+        scene.add(m); m.visible = false; MARKERS.set(k, m);
+      }
+    }
+  }
+
+  // ---------- scene objects: one instance per (name, state) per use in a shot (a shot may hold three cribs) ----------
+  const OBJ = new Map(); // "name|state" -> [Group]
+  // PETS (2026-11-07, lib/pets.js): a pet object is built with its one look (tl.pets[id]: species, variant, colours, size)
+  // INSERTS 2026-11-10: a designed insert (lib/insertKit.js) is built with the line's own words / time / countdown /
+  // portrait (o.text, o.secs, o.look): one instance per distinct content (4th key part, URI-encoded JSON)
+  const insOpts = (o) => (o.text != null || o.secs != null || o.look ? { text: o.text ?? null, secs: o.secs ?? null, look: o.look ?? null } : null);
+  const objKey = (o) => { if (o.asset) return `asset:${o.asset}|${o.state ?? "on"}`; const k = objectsM.resolveObject(o.name); const io = insOpts(o); return `${k}|${o.state ?? objectsM.OBJECTS[k].state}${(o.pet && tl.pets?.[o.pet]) || io ? `|${o.pet && tl.pets?.[o.pet] ? o.pet : ""}` : ""}${io ? `|${encodeURIComponent(JSON.stringify(io))}` : ""}`; };
+  if (objectsM || blueprintM) {
+    const counts = new Map();
+    for (const s of tl.shots) { const c = new Map(); for (const o of s.objects ?? []) { const k = objKey(o); c.set(k, (c.get(k) ?? 0) + 1); } for (const [k, n] of c) counts.set(k, Math.max(counts.get(k) ?? 0, n)); }
+    for (const [k, n] of counts) {
+      const [name, state, petId, insJ] = k.split("|"), list = [];
+      const io = insJ ? JSON.parse(decodeURIComponent(insJ)) : null;
+      for (let i = 0; i < n; i++) {
+        const o = name.startsWith("asset:") ? blueprintM.buildBlueprint(tl.assets[name.slice(6)].blueprint) : objectsM.makeObject(name, { state, ...(petId ? { pet: tl.pets[petId] } : {}), ...(io ?? {}) });
+        if (o?.userData?.problems?.length) console.warn(`engine: built object ${name}: ${o.userData.problems.slice(0, 8).join("; ")}`);
+        if (!o?.isObject3D) throw new Error(`engine: makeObject("${name}", ${state}) returned no Object3D`);
+        scene.add(o); o.visible = false; list.push(o);
+      }
+      OBJ.set(k, list);
+    }
+  }
+  const allObjects = [...OBJ.values()].flat();
+  const HATS = new Map(); // person id -> party hat (birthday_party shots)
+
+  // ---------- the caption font ----------
+  if (typeof captionsM.mod.loadCaptionFont === "function") await captionsM.mod.loadCaptionFont();
+  else { console.warn(`engine: ${captionsM.url} has no loadCaptionFont(); loading "BWCaption" itself`); await document.fonts.load('120px "BWCaption"'); }
+
+  // ---------- wait for every texture / model ----------
+  const t0 = performance.now();
+  while (pending.done < pending.total && performance.now() - t0 < 120000) await new Promise((r) => setTimeout(r, 50));
+  if (pending.done < pending.total) throw new Error(`engine: assets still loading after 120 s (${pending.done}/${pending.total})`);
+  if (loadErrors.length) throw new Error(`engine: assets failed to load: ${loadErrors.slice(0, 10).join(", ")}`);
+
+  // ---------- one frame ----------
+  let lightKey = null, lightHandle = null;
+  const shotIndex = (t) => { let lo = 0, hi = tl.shots.length - 1; while (lo < hi) { const m = (lo + hi + 1) >> 1; if (tl.shots[m].start <= t) lo = m; else hi = m - 1; } return lo; };
+  const allPeople = Object.values(PEOPLE);
+  const camPos = new THREE.Vector3(), camRight = new THREE.Vector3();
+
+  // ---------- the head guard (2026-11-04: a paid frame that was mostly the back of a head) ----------
+  // After frameShot places the camera: if a non-focus person's head is within ~1.1 m of the lens, fills more than ~20 %
+  // of the frame, or covers the focus' head (at the shot's start, middle or end), the camera is nudged back / up /
+  // sideways (away from that head) in fixed steps until clear. One nudge per shot (no jump inside a shot), cached;
+  // deterministic: it depends only on the shot.
+  const NUDGE = new Map();
+  const _v = new THREE.Vector3(), _f = new THREE.Vector3(), _c = new THREE.Vector3();
+  const headY = (p) => { const P = PEOPLE[p.id]; const pose = p.a?.pose; return P.headC * (pose === "sit" ? 0.68 : pose === "sleep" ? 0.3 : 1); };
+  /** how badly the current camera is blocked: { score (0 = clear), x (ndc x of the worst head) } */
+  function headScore(heads, fh) {
+    camera.getWorldPosition(_c);
+    camera.getWorldDirection(_f);
+    const tanY = Math.tan((camera.fov * Math.PI) / 360);
+    let worst = 0, wx = 0;
+    const fp = fh ? fh.clone().project(camera) : null, fd = fh ? _v.copy(fh).sub(_c).dot(_f) : 0;
+    for (const h of heads) {
+      _v.copy(h.c).sub(_c);
+      const depth = _v.dot(_f), d = _v.length();
+      if (depth <= 0.05) continue;
+      const q = h.c.clone().project(camera);
+      const rY = h.r / (depth * tanY), rX = rY / camera.aspect;
+      const w = Math.max(0, Math.min(1, q.x + rX) - Math.max(-1, q.x - rX)), hh = Math.max(0, Math.min(1, q.y + rY) - Math.max(-1, q.y - rY));
+      const area = (w * hh) / 4;
+      if (area <= 0) continue;
+      let s = 0;
+      if (d < 1.1) s += 1 + (1.1 - d);
+      if (area > 0.2) s += area;
+      if (fp && fd > depth && Math.abs(fp.x - q.x) < rX * 1.05 && Math.abs(fp.y - q.y) < rY * 1.05) s += 1;
+      if (s > worst) { worst = s; wx = q.x; }
+    }
+    return { score: worst, x: wx };
+  }
+  function guardNudge(si, shot, camType, fctx, placed, where, carried) {
+    if (NUDGE.has(si)) return NUDGE.get(si);
+    const focusIds = new Set(shot.focus === "group" ? placed.map((p) => p.id) : [shot.focus]);
+    const carrier = carried.get(shot.focus); if (carrier) focusIds.add(carrier.id);
+    const heads = placed.filter((p) => !focusIds.has(p.id) && PEOPLE[p.id]).map((p) => ({ id: p.id, c: p.pos.clone().setY(p.pos.y + headY(p)), r: PEOPLE[p.id].headR }));
+    let best = null;
+    if (heads.length) {
+      const fid = carrier ? carrier.id : shot.focus;
+      const fh = shot.focus === "monster" && monster ? monster.position.clone().setY(monster.position.y + monsterH * 0.9)
+        : where[fid] && PEOPLE[fid] ? where[fid].clone().setY(where[fid].y + PEOPLE[fid].headC) : null;
+      const ts = [0, fctx.dur / 2, Math.max(0, fctx.dur - 1e-3)];
+      const evalN = (nudge) => {
+        let worst = 0, side = 0;
+        for (const t of ts) { frameShot(camType, { ...fctx, other: fctx.other?.clone(), t, nudge }); camera.updateMatrixWorld(); const r = headScore(heads, fh); if (r.score > worst) { worst = r.score; side = r.x; } }
+        return { worst, side };
+      };
+      const base = evalN(null);
+      if (base.worst > 0) {
+        const sgn = base.side > 0 ? -1 : 1;   // move the camera away from the head's side: the head slides to the frame edge
+        let bestScore = base.worst;
+        for (let i = 1; i <= 14; i++) {
+          const n = { back: 0.25 * i, up: 0.07 * i, lat: sgn * 0.12 * i };
+          const r = evalN(n);
+          if (r.worst < bestScore - 1e-6) { bestScore = r.worst; best = n; }
+          if (r.worst === 0) break;
+        }
+        console.log(`engine: head guard, shot ${si}: ${base.worst.toFixed(2)} -> ${bestScore.toFixed(2)}${best ? ` (back ${best.back.toFixed(2)}, up ${best.up.toFixed(2)}, side ${best.lat.toFixed(2)})` : ""}`);
+      }
+    }
+    NUDGE.set(si, best);
+    return best;
+  }
+  window.headGuard = NUDGE;
+
+  let lastSet = null;
+  const SNAP = new Map(); // ATTACH: (shot, person, planned spot) -> the walkable surface height there (mount coordinates)
+  const snapSkip = new Set([...allObjects, ...(monster ? [monster] : []), ...[...INSERTS.values()].map((i) => i.obj), ...MARKERS.values()]);
+  const OFF_GROUND = new Set(["sit", "sleep", "ride", "fly", "climb", "fall", "jump", "swim", "lie", "hug"]);
+  // GATE 2026-11-09: where a frame's time goes (window.__prof; the stills role reports it per still)
+  const PROF = (window.__prof = { calib: 0, post: 0, total: 0, n: 0 });
+  function renderAt(t, opts = null) {
+    const P0 = performance.now();
+    t = Math.max(0, Math.min(Number(t) || 0, tl.duration - 1e-6));
+    const si = shotIndex(t), shot = tl.shots[si], lt = t - shot.start, dur = shot.end - shot.start;
+    const c0 = performance.now();
+    if (!opts?.calib && post.needsGrade?.(si)) renderAt(shot.start, { calib: true });
+    if (!opts?.calib) PROF.calib += performance.now() - c0; // SETS-V2: the shot's grade is measured at its first frame (page/post.js), the same in every chunk
+    const S = SETS[shot.set], spots = S.spots;
+    for (const [n, s] of Object.entries(SETS)) s.root.visible = n === shot.set;
+    const key = `${shot.set}|${shot.light}`;
+    if (key !== lightKey) {
+      lightHandle?.dispose?.();
+      lightHandle = applyLight(shot.light, { THREE, scene, renderer, set: S });
+      post.setLight(shot.light);
+      winter?.light(scene, shot.light); // LOOK-FIX: cold moon + snow bounce
+      if (winter && post.bloom) { const B = post.bloom; [B.strength, B.radius, B.threshold] = snowBloom([B.strength, B.radius, B.threshold], shot.light); } // LOOK-LEFTOVERS: no glare blobs on snow
+      lightKey = key;
+    }
+    S.setPlace?.(shot.place ?? shot.worldSpot ?? null, shot);
+    S.applyHouses?.(shot.houses ?? null, shot.light === "night" || shot.light === "dusk", shot.house ?? null); // SCENES: each house in its own state for this line
+    // (WORLD-LOOK: a street-level place in the creature's town (deck, stairs, rooftop, school, room, classroom)
+    post.setShot?.(si, shot, S, t); // SETS-V2: the shot's lighting rig (page/lighting.js makeRigLayer) + its auto grade
+    S.update?.(t, lt);   // lt: the time inside the shot (a walking giant starts every shot in frame)
+    // STORYBOARD (lib/storyboard.js, page/simple/board.js): the board set stages the whole shot (its people, the monster,
+    // the houses and rooms in this line's state, the animated actions, the camera); the engine renders it + the caption
+    if (S.boardShot && shot.board) {
+      for (const p of allPeople) { if (p.obj.userData.carriedBy) releasePerson?.(p.obj, scene); p.obj.visible = false; }
+      for (const m of MARKERS.values()) m.visible = false;
+      for (const i of INSERTS.values()) i.obj.visible = false;
+      for (const o of allObjects) o.visible = false;
+      for (const h of HATS.values()) h.visible = false;
+      if (monster) monster.visible = false;
+      const bs = S.boardShot({ shot, lt, dur, camera, people: PEOPLE, monster, animateMonster, posePerson, setFace });
+      camera.getWorldPosition(camPos);
+      S.afterCamera?.(camera, shot, {});
+      if (post.setFocus && shot.camera === "closeup") post.setFocus(bs?.focus ?? 2);
+      const R0 = performance.now();
+      post.render();
+      PROF.post += performance.now() - R0;
+      ctx2d.drawImage(renderer.domElement, 0, 0);
+      probeCtx.drawImage(out, 0, 0, 16, 16);
+      const px = probeCtx.getImageData(0, 0, 16, 16).data;
+      let sum = 0; for (let i = 0; i < px.length; i += 4) sum += px[i] + px[i + 1] + px[i + 2];
+      const flat = flatShare(px), detail = detailOf(px, 16);
+      ctx2d.save(); drawCaption(ctx2d, tl.captions ?? [], t); ctx2d.restore();
+      lastSet = S;
+      if (!opts?.calib) { PROF.total += performance.now() - P0; PROF.n++; }
+      return { shot: si, mean: +(sum / (3 * 256)).toFixed(1), flat, detail, safe: 0 };
+    }
+    // ATTACH 2026-11-07 (owner: "FLOATING PEOPLE"): on a creature the people, scene objects, monster and insert ride the
+    // set's actor mount (the creature's carrier / the swaying cavern): their spots are in its rest coordinates, so they
+    // move with the town as it walks (sway, bob, pitch, roll). Every other set: the scene, as before.
+    const mount = S.actorMount?.() ?? null, holder = mount ?? scene;
+    const toScene = (v) => (mount ? mount.localToWorld(v.clone()) : v.clone());
+    S.root.updateMatrixWorld(true);
+    // the outside view's coast stage (hill / mud / sea, spray / splash; page/sets/creatureWorld.js): moves the giant
+    S.setStage?.(shot.stage ?? null, lt, dur, (shot.giants ?? []).find((g) => g.id === "world")?.action ?? null);
+    for (const p of allPeople) { if (p.obj.userData.carriedBy) releasePerson?.(p.obj, scene); p.obj.visible = false; }
+    for (const m of MARKERS.values()) m.visible = false;
+    for (const i of INSERTS.values()) i.obj.visible = false;
+    for (const o of allObjects) o.visible = false;
+    for (const h of HATS.values()) h.visible = false;
+    S.setWindows(shot.setState?.windows ?? null);
+
+    // scene objects: at their spots, facing the camera side; big ones behind everybody, others behind the actors who
+    // share their spot (or the actors go behind / beside / onto them: userData.actors in kit/objects.js)
+    const cast = tl.cast ?? {};
+    const carried = new Map(); // baby id -> carrier actor
+    for (const a of shot.actors ?? []) { const b = carriedBaby(a, cast); if (b) carried.set(b, a); }
+    const free = (shot.actors ?? []).filter((a) => !carried.has(a.id));
+    const shotObjs = [], spotRule = {}, used = new Map();
+    const faceYaw = Math.atan2(-S.depth.x, -S.depth.z);
+    let anyBig = false;
+    for (const o of shot.objects ?? []) {
+      // SIMPLE LOOK: a house front never stands inside a room (the room's own window is the window it stands for)
+      if (SIMPLE_LOOK && o.name === "house_front" && (S.indoor || S.simple)) continue;
+      // SCENES (owner 2026-11-11: "no scribble"): where things fly in the wind, the flying things ARE the wind: no gust lines
+      if (SIMPLE_LOOK && o.name === "wind_gust" && (shot.objects ?? []).some((x) => x.state === "flying")) continue;
+      if (SIMPLE_LOOK && S.simple && !S.indoor && shot.houses && o.name === "wall") continue; // SCENES: the houses are the walls (their bricks, curtains): no loose wall piece filling the street
+      if (SIMPLE_LOOK && S.simple && !S.indoor && shot.houses && o.name === "curtain_pile" && ["window", "thin"].includes(o.state ?? "window")) continue; // SCENES: the house shows its own curtains // the simple street has real houses (their windows glow at night)
+      const k = objKey(o), n = used.get(k) ?? 0; used.set(k, n + 1);
+      const obj = OBJ.get(k)[n], u = obj.userData, spot = o.spot ?? "center", base = spots[spot] ?? spots.center;
+      const here = free.filter((a) => a.spot === spot);
+      const mode = u.actors ?? "front";
+      const pos = base.clone();
+      // pushed back behind the actors: always for big ones, and for small ones when somebody shares the spot or would
+      // stand inside it (a car at "right" next to people at "center")
+      const crowded = mode === "front" && free.some((a) => { const p = spots[a.spot] ?? spots.center; return Math.abs(hz(p).sub(hz(base)).dot(S.lateral)) < (u.width ?? 1) / 2 + 0.4 && Math.abs(hz(p).sub(hz(base)).dot(S.depth)) < (u.depth ?? 1) + 0.4; });
+      if (mode === "front" && (u.big || here.length || crowded)) pos.addScaledVector(S.depth, (u.push ?? 0.8) + (crowded && !here.length && !u.big ? 0.4 : 0));
+      if (obj.parent !== holder) holder.add(obj);
+      obj.position.copy(pos); if (u.baseScale) obj.scale.copy(u.baseScale); // (a huddle widened it on another shot)
+      obj.rotation.set(0, faceYaw + ({ left: -0.6, right: 0.6, away: Math.PI }[o.facing] ?? 0), 0);
+      obj.visible = true; obj.updateMatrixWorld(true);
+      if (u.kind === "blueprint") blueprintM.animateBlueprint(obj, lt, o.state ?? null);
+      else objectsM.animateObject(obj, o.state ?? u.state, lt);
+      if (u.big) anyBig = true;
+      shotObjs.push({ o, obj, u });
+      if (mode !== "front" && !spotRule[spot]) spotRule[spot] = { obj, u, mode };
+    }
+    S.setClutter?.(!anyBig && !shot.setState?.windows);
+    S.standInHouse?.(SIMPLE_LOOK && (shot.objects ?? []).some((o) => o.name === "house_front" || (shot.houses && o.name === "curtain_pile" && ["window", "thin"].includes(o.state ?? "window")))); // SIMPLE LOOK: the real house is the house front // the bus shelter etc. step aside for big objects and window shots
+
+    // people: grouped by spot, spread sideways, then pushed apart so nobody overlaps (people in / on an object stay put)
+    const placed = []; // { id, a (timeline actor or null for extras), pos, fixed, opts }
+    const bySpot = {};
+    for (const a of free) (bySpot[a.spot] ??= []).push(a);
+    for (const [spot, list] of Object.entries(bySpot)) {
+      const base = spots[spot] ?? spots.center, rule = spotRule[spot];
+      if (!rule) { list.forEach((a, i) => placed.push({ id: a.id, a, pos: base.clone().addScaledVector(S.lateral, (i - (list.length - 1) / 2) * 1.1).setY(base.y) })); continue; }
+      const { obj, u, mode } = rule, fwd = new THREE.Vector3(Math.sin(obj.rotation.y), 0, Math.cos(obj.rotation.y));
+      const side = []; // actors that stand beside the object
+      list.forEach((a, i) => {
+        if (mode === "behind") placed.push({ id: a.id, a, pos: base.clone().addScaledVector(S.lateral, (i - (list.length - 1) / 2) * 1.1).addScaledVector(S.depth, u.actorsBack ?? 1.2).setY(base.y) });
+        else if (mode === "bed" && cast[a.id]?.role === "baby" && !placed.some((p) => p.inBed === obj)) {
+          const p = obj.localToWorld(u.bed.clone()); p.y = base.y + u.bedH;
+          placed.push({ id: a.id, a, pos: p, fixed: true, inBed: obj });
+        } else if (mode === "seat" && !placed.some((p) => p.onSeat === obj)) {
+          const p = obj.localToWorld(u.seat.clone()); p.y = base.y;
+          const sc = PEOPLE[a.id].obj.userData.scale ?? 0.87;
+          if ((a.pose ?? "stand") === "sit") placed.push({ id: a.id, a, pos: p.addScaledVector(fwd, 0.38 * sc), fixed: true, onSeat: obj, opts: { seat: u.seatH } });
+          else placed.push({ id: a.id, a, pos: p.addScaledVector(fwd, 0.45), fixed: true, onSeat: obj });
+        } else side.push(a);
+      });
+      const half = (u.width ?? 1) / 2 + 0.45;
+      side.forEach((a, i) => { const s = i % 2 ? 1 : -1, k = Math.floor(i / 2); placed.push({ id: a.id, a, pos: base.clone().addScaledVector(S.lateral, s * (half + k * 0.9)).addScaledVector(fwd, 0.15).setY(base.y) }); });
+    }
+    // SIMPLE LOOK: a wide place shot nobody stands in is the set's establishing view (no townsfolk added)
+    const establishShot = SIMPLE_LOOK && !(shot.actors ?? []).length && !(shot.objects ?? []).length && !ms0(shot) && shot.camera === "wide";
+    if (shot.focus === "group" && EXTRAS.length && !establishShot) {
+      const r = rng((shot.seed ?? 1) * 7 + 3), n = 2 + r.int(0, 2), mood = shot.actors?.[0]?.pose;
+      for (let i = 0; i < n; i++) {
+        const pos = spots.back.clone().addScaledVector(S.lateral, (i - (n - 1) / 2) * 1.15 + r.range(-0.2, 0.2)).addScaledVector(S.depth, r.range(-0.4, 0.4));
+        const pose = ["scared", "cheer", "look_up", "run"].includes(mood) ? mood : r.pick(["stand", "talk", "stand", "wave"]);
+        placed.push({ id: EXTRAS[i], a: { id: EXTRAS[i], pose, expr: pose === "scared" ? "scared" : r.pick(["neutral", "happy", "smirk"]), facing: "camera", phase: r.range(0, 2) }, pos });
+      }
+    }
+    // SIMPLE LOOK: a crowd is drawn as the simple-style townsfolk (the old instanced crowd never shows): up to 6 at its
+    // spot, posed by the scene's crowd state (under the blanket, hiding their faces, looking up)
+    if (SIMPLE_LOOK && (shot.crowds ?? []).length && !establishShot && !S.indoor && shot.camera !== "two_shot") { // (a face-off two-shot is the two of them only)
+      const taken = new Set(placed.map((p) => p.id)), pool = EXTRAS.filter((id) => !taken.has(id));
+      const want = Math.min(pool.length, 6, shot.crowds.reduce((n, c) => n + Math.max(1, Math.min(4, c.count ?? 3)), 0));
+      const pose = { under_cover: "stand", hiding_faces: "cover_mouth", look_up: "look_up" }[shot.crowdState] ?? ({ cheer: "cheer", wave: "wave", flee: "run", run: "run", march: "walk", fight: "fight" }[shot.crowds[0].action] ?? "stand");
+      const base = (shot.crowdState === "under_cover" ? spots.center : spots[shot.crowds[0].spot]) ?? spots.back;
+      for (let i = 0; i < want; i++) {
+        const pos = base.clone().addScaledVector(S.lateral, (i - (want - 1) / 2) * 1.0).addScaledVector(S.depth, 0.5 + (i % 2) * 0.6).setY(base.y);
+        placed.push({ id: pool[i], a: { id: pool[i], pose, expr: shot.crowdState === "asleep" ? "sleepy" : pose === "cover_mouth" ? "scared" : "worried", face: shot.crowdState === "asleep" ? "sleepy" : pose === "cover_mouth" ? "scared" : "worried", facing: shot.faceoff ? "monster" : "camera", phase: i * 0.37 }, pos });
+      }
+    }
+    // SIMPLE LOOK (owner 2026-11-10: "group shots: characters fill the frame"): a group stands in a staggered formation
+    if (SIMPLE_LOOK && shot.focus === "group") simpleFormation(placed, spots, S, shot);
+    // SCENES: under one blanket (owner 2026-11-11: "the grown-ups UNDER it"): everyone in the shot huddled tight in two
+    // rows beneath the draped quilt (its canopy just over the tallest head, widened to cover them all), faces to the lens
+    {
+      const quilt = SIMPLE_LOOK ? shotObjs.find((x) => x.o.name === "patchwork_blanket" && (x.o.state ?? "draped") === "draped") : null;
+      const ppl = quilt ? placed.filter((p) => !p.fixed && PEOPLE[p.id]).slice(0, 8) : [];
+      if (ppl.length) {
+        const ob = quilt.obj, base = ob.position.y;
+        ob.userData.baseScale ??= ob.scale.clone(); ob.scale.copy(ob.userData.baseScale);
+        ob.updateMatrixWorld(true);
+        const top = new THREE.Box3().setFromObject(ob).max.y - base, tallest = Math.max(...ppl.map((p) => PEOPLE[p.id].h ?? 1.5));
+        ob.scale.multiplyScalar((tallest + 0.35) / Math.max(0.5, top));
+        const perRow = Math.ceil(ppl.length / 2), need = perRow * 0.66 + 0.5, wNow = 2.8 * ob.scale.x;
+        if (need > wNow) ob.scale.x *= need / wNow;
+        ob.updateMatrixWorld(true);
+        ppl.forEach((p, i) => {
+          const row = i < perRow ? 0 : 1, k = row ? i - perRow : i, n = row ? ppl.length - perRow : perRow;
+          const lx = n > 1 ? (k / (n - 1) - 0.5) * 2.0 : 0, lz = row ? -0.55 : 0.2;
+          const w = ob.localToWorld(new THREE.Vector3(lx + (row ? 0.3 / ob.scale.x : 0), 0, lz / ob.scale.z));
+          p.pos.set(w.x, base, w.z); p.fixed = true; p.underQuilt = true;
+          if (p.a) p.a = { ...p.a, pose: p.a.pose === "fly" ? "stand" : p.a.pose, facing: "camera" };
+        });
+      }
+    }
+    // SCENES face-off two-shot: the hero and the giant own the frame; anyone else watches from the porches, far back
+    // between the two (small, behind the gap), never between the lens and the hero
+    if (SIMPLE_LOOK && shot.camera === "two_shot" && !S.indoor) {
+      const me = placed.find((p) => p.id === "me"), rest = placed.filter((p) => p.id !== "me" && !p.fixed);
+      const cd = (S.camDir ?? new THREE.Vector3(0, 0, 1)).clone().setY(0).normalize();
+      const mon = spots.center.clone().addScaledVector(S.lateral, 5.0); // where the face-off puts the giant
+      if (me) rest.forEach((p, i) => p.pos.copy(me.pos).lerp(mon, 0.42 + 0.1 * i).addScaledVector(cd, -(1.6 + (i % 2) * 0.9)).setY(me.pos.y));
+    }
+    // 2026-11-05 (GAPS): actions that place people relative to someone / something
+    //   hug: two people both posed "hug" stand face to face, close (their arms round each other), side-on to the lens
+    //   ride: the rider sits on the shot's mount (the object at their spot, else an animal / vehicle / built thing in the
+    //         shot): the saddle found by a ray down onto it, the rider along its heading (userData.ride); none -> walk
+    //   hide: half behind the nearest object of the shot (its side away from the middle), crouched
+    {
+      const huggers = placed.filter((p) => p.a?.pose === "hug" && !p.fixed && PEOPLE[p.id]);
+      for (const h of huggers) {
+        if (h.hugWith) continue;
+        const q = huggers.find((x) => x !== h && !x.hugWith && (h.a.facing === x.id || x.a.facing === h.id)) ?? huggers.find((x) => x !== h && !x.hugWith);
+        if (!q) continue;
+        const sa = PEOPLE[h.id].obj.userData.scale ?? 0.87, sb = PEOPLE[q.id].obj.userData.scale ?? 0.87;
+        const d = 0.2 + 0.32 * (sa + sb) / 2, mid = h.pos.clone().add(q.pos).multiplyScalar(0.5);
+        h.pos.copy(mid).addScaledVector(S.lateral, -d / 2); q.pos.copy(mid).addScaledVector(S.lateral, d / 2);
+        h.fixed = q.fixed = true; h.hugWith = q.id; q.hugWith = h.id;
+      }
+      for (const p of placed) {
+        if (p.a?.pose !== "ride" || p.fixed) continue;
+        const pick = shotObjs.find((x) => (x.o.spot ?? "center") === p.a.spot && !x.ridden) ?? shotObjs.find((x) => !x.ridden && (x.u.animal || x.u.ride || x.u.kind === "blueprint" || x.u.vehicle)) ?? shotObjs.find((x) => !x.ridden);
+        if (!pick) { p.noMount = true; continue; }
+        pick.ridden = true;
+        const { obj, u } = pick;
+        obj.updateMatrixWorld(true);
+        const at = u.ride?.at ? obj.localToWorld(u.ride.at.clone()) : new THREE.Box3().setFromObject(obj).getCenter(new THREE.Vector3());
+        const box = new THREE.Box3().setFromObject(obj);
+        const rc = new THREE.Raycaster(new THREE.Vector3(at.x, box.max.y + 1, at.z), new THREE.Vector3(0, -1, 0), 0, box.max.y - box.min.y + 2);
+        const hit = rc.intersectObject(obj, true).find((x) => x.object.visible !== false && x.object.isMesh);
+        p.pos.set(at.x, hit ? hit.point.y : box.max.y, at.z);
+        p.fixed = true; p.rideYaw = obj.rotation.y + (u.ride?.yaw ?? 0); p.mount = pick;
+      }
+      for (const p of placed) { // push: right up against the thing pushed, leaning into it
+        if (p.a?.pose !== "push" || p.fixed || !shotObjs.length) continue;
+        const near = shotObjs.reduce((b, x) => (x.obj.position.distanceTo(p.pos) < b.obj.position.distanceTo(p.pos) ? x : b), shotObjs[0]);
+        const off = hz(p.pos).sub(hz(near.obj.position)).dot(S.lateral) >= 0 ? 1 : -1;
+        const c = new THREE.Box3().setFromObject(near.obj).getCenter(new THREE.Vector3());
+        p.pos.copy(c).addScaledVector(S.lateral, off * ((near.u.width ?? 1) / 2 + 0.3)).setY(near.obj.position.y);
+        p.fixed = true; p.faceAt = c.setY(near.obj.position.y);
+      }
+      for (const p of placed) {
+        if (p.a?.pose !== "hide" || p.fixed || !shotObjs.length) continue;
+        const near = shotObjs.reduce((b, x) => (x.obj.position.distanceTo(p.pos) < b.obj.position.distanceTo(p.pos) ? x : b), shotObjs[0]);
+        const off = hz(near.obj.position).sub(hz(spots.center)).dot(S.lateral) >= 0 ? 1 : -1;
+        p.pos.copy(near.obj.position).addScaledVector(S.lateral, off * ((near.u.width ?? 1) / 2 + 0.15)).addScaledVector(S.depth, Math.min(0.6, (near.u.depth ?? 1) * 0.3)).setY(near.obj.position.y);
+        p.fixed = true;
+      }
+    }
+    for (let it = 0; it < 6; it++) for (let i = 0; i < placed.length; i++) for (let j = i + 1; j < placed.length; j++) {
+      const A = placed[i].pos, B = placed[j].pos, d = hz(B).sub(hz(A)), L = d.length(), min = 1.05;
+      if (L >= min || (placed[i].fixed && placed[j].fixed)) continue;
+      const dir = L > 1e-3 ? d.divideScalar(L) : S.lateral.clone();
+      const ka = placed[i].fixed ? 0 : placed[j].fixed ? 2 : 1, kb = 2 - ka;
+      const push = (min - L) / 2; A.addScaledVector(dir, -push * ka); B.addScaledVector(dir, push * kb);
+    }
+    // ATTACH: feet on the real walkable surface (street blocks, deck planks, the shell, a floor): a ray down at each
+    // standing person (from 1 m above, so never a roof), the surface nearest the planned height within -0.6 / +0.45 m;
+    // decided once per shot and person (pose-independent: the surface rides the same mount)
+    for (const p of placed) {
+      if (p.fixed || !PEOPLE[p.id] || POSE_LIFT[p.a?.pose] || OFF_GROUND.has(p.a?.pose)) continue;
+      const key = `${si}|${p.id}|${p.pos.toArray().map((v) => Math.round(v * 50)).join(",")}`;
+      if (!SNAP.has(key)) {
+        // ATTACH-2: the whole footprint on one level (never half a foot over a wall edge, a kerb or a deck edge); no
+        // such ground here -> the nearest spot within 2.5 m that has it (clear of the other people, never in a house)
+        const w0 = toScene(p.pos), others = placed.filter((q) => q !== p).map((q) => toScene(q.pos));
+        const ok = (w) => !others.some((o) => Math.hypot(o.x - w.x, o.z - w.z) < 0.7) && !S.solidAt?.(w.clone().setY(w.y + 0.5));
+        const at = findStandSpot(THREE, S.root, w0, { skip: snapSkip, maxR: 2.5, ok: (w) => w.distanceTo(w0) < 0.01 || ok(w) });
+        const hit = at ? null : groundUnder(THREE, S.root, w0, { above: 1.0, below: 0.6, maxUp: 0.45, skip: snapSkip }); // none in reach: the plain surface under it
+        const res = at ?? (hit ? w0.clone().setY(hit.y) : null);
+        SNAP.set(key, res ? (mount ? mount.worldToLocal(res) : res) : null);
+        if (SNAP.size > 4000) SNAP.clear();
+      }
+      const at = SNAP.get(key); if (at) p.pos.copy(at);
+    }
+    const where = Object.fromEntries(placed.map((p) => [p.id, p.pos]));
+
+    // monster
+    const ms = shot.monsterState ?? (shot.eyeWindow ? { spot: "far", state: "lurk", eye: "stare" } : shot.focus === "monster" ? { spot: "far", state: "lurk" } : null); // SCENES: a house with the eye at its window brings the real Peeker there
+    if (monster) monster.visible = !!ms;
+    if (monster && ms) {
+      if (monster.parent !== holder) holder.add(monster);
+      monster.position.copy(spots[ms.spot ?? "far"] ?? spots.far);
+      // 2026-11-05 (GAPS): a monster lurking at the far spot stands at most ~9 m behind the centre (it read as a dot)
+      if ((ms.spot ?? "far") === "far" && ms.state === "lurk") { const d = hz(monster.position).sub(hz(spots.center)), L = d.length(), cap = Math.max(7, Math.min(9, monsterH * 2.4)); if (L > cap) monster.position.copy(spots.center).addScaledVector(d.normalize(), cap).setY(monster.position.y); }
+      // SIMPLE LOOK: a giant monster never stands inside a room: indoors it peers in at the window (just outside it, its
+      // eye at the window's height, the rest of it below the lawn), so the room's own window frames the eye
+      // SIMPLE LOOK: a giant never stands on the sidewalk among the people: "behind" (back / centre / sides / door) is
+      // behind the houses across the yards, looming with its eye over the roofs ("far" stays down the street)
+      if (SIMPLE_LOOK && !S.indoor && monsterH > 6 && (ms.spot ?? "far") !== "far") monster.position.copy(S.loom ?? spots.center.clone().addScaledVector(S.depth, 15.5).setY(0.02));
+      // SCENES face-off: the giant stands on the road a few metres from the hero, the two face each other
+      if (SIMPLE_LOOK && shot.faceoff && !S.indoor) monster.position.copy(spots.center).addScaledVector(S.lateral, 5.0).setY(0.02);
+      const peering = SIMPLE_LOOK && S.indoor && S.windowAt && monster.userData?.eyeY;
+      if (peering) {
+        const out = S.windowAt.clone().addScaledVector(S.depth, 1.3 + (monster.userData.headDepth ?? 1.2));
+        monster.position.set(out.x, (S.windowY ?? S.windowAt.y) - monster.userData.eyeY, out.z);
+      }
+      monster.userData.peering = !!peering;
+      for (const a of monster.userData?.arms ?? []) a.visible = true; // kneeling 3 m outside, its arms hang in the yard (seen through the window)
+      // SCENES (owner 2026-11-11: "the eye at a window is the Peeker's real eye at a real house window, its body visible
+      // outside: never a decal, never a floating frame"): on the street a pressing eye / a house with the eye in its window
+      // brings the giant KNEELING in that house's yard, its eye at the upper window; indoors it kneels outside the room's
+      // window, bent down to it
+      const winAt = SIMPLE_LOOK && !S.indoor && !shot.faceoff && S.houseWindow && (shot.eyeWindow || ms.eye === "press") ? S.houseWindow(shot.eyeWindow ?? shot.house ?? null) : null;
+      monster.userData.atWindow = winAt;
+      const kb = monstersM.mod?.kneelBend ?? null;
+      const kneel = kb && peering ? { bend: kb(S.windowY ?? S.windowAt.y) } : kb && winAt ? { bend: kb(winAt.pos.y) } : null;
+      animateMonster(monster, ms.state, lt, { eye: ms.eye ?? null, eyeAt: ms.eyeAt ?? 0, crisp: !!peering, kneel }); // SIMPLE LOOK: the eye's own state (page/simple/monsters.js)
+      if (winAt && monster.userData.eyes?.[0]) {
+        monster.rotation.set(0, Math.atan2(-winAt.n.x, -winAt.n.z), 0);
+        monster.position.set(winAt.pos.x + winAt.n.x * 3, 0.02, winAt.pos.z + winAt.n.z * 3); monster.updateMatrixWorld(true);
+        const ew = monster.userData.eyes[0].e.getWorldPosition(new THREE.Vector3()), want = winAt.pos.clone().addScaledVector(winAt.n, 0.5);
+        monster.position.add(new THREE.Vector3(want.x - ew.x, Math.max(-1.2, Math.min(1.2, want.y - ew.y)), want.z - ew.z)); monster.updateMatrixWorld(true);
+        winAt.eye = monster.userData.eyes[0].e.getWorldPosition(new THREE.Vector3());
+      }
+      if (peering && monster.userData.eyes?.[0]) { // after the pose: the eye just outside the glass, at the window's height
+        monster.rotation.set(0, Math.atan2(-S.depth.x, -S.depth.z), 0); monster.updateMatrixWorld(true);
+        const ew = monster.userData.eyes[0].e.getWorldPosition(new THREE.Vector3()), want = S.windowAt.clone().addScaledVector(S.depth, 3.2); // (owner 2026-11-11: its head AND shoulders, arms in the window: a real body outside, kneeling)
+        monster.position.add(new THREE.Vector3(want.x - ew.x, (S.windowY ?? S.windowAt.y) - ew.y, want.z - ew.z)); monster.updateMatrixWorld(true);
+      }
+    }
+    if (epic) epic.place(shot, lt, S); // EPIC: this shot's giants + crowds (placed, animated)
+    if (epic && SIMPLE_LOOK) scene.traverse((o) => { if (/^crowd:/.test(o.name ?? "")) o.visible = false; }); // SIMPLE LOOK: no crowd inside a room (a crowd member filled the lens)
+
+    // insert: in front of the center spot, toward the camera side, facing it
+    let ins = null;
+    if (shot.insert) {
+      ins = INSERTS.get(`${shot.insert.kind}|${shot.insert.text}|${shot.insert.icon ?? ""}`);
+      const base = spots.center.clone().addScaledVector(S.depth, -1.4);
+      if (ins.obj.parent !== holder) holder.add(ins.obj);
+      ins.obj.position.copy(base); ins.obj.position.y = base.y + (ins.minY < -0.05 ? 1.3 - (ins.minY + ins.h / 2) : -ins.minY);
+      ins.obj.rotation.set(0, Math.atan2(-S.depth.x, -S.depth.z), 0);
+      ins.obj.visible = true;
+    }
+
+    // the camera
+    const epicCam = !!epic && epic.ownsFocus(shot) && epic.frame(shot, lt, S, where, camera, Object.fromEntries(placed.map((p) => [p.id, PEOPLE[p.id]?.h])));
+    if (!epicCam) {
+    let focus, focusHeight, other, camType = shot.camera;
+    /** "insert" framing (straight, centred) that fits a person at `a` (height h) and an object (height capped at capH) */
+    function fitPair(a, h, { obj, u }, capH) {
+      const oc = obj.localToWorld((u.focus ?? new THREE.Vector3()).clone()).setY(obj.position.y);
+      const la = hz(a).sub(hz(oc)).dot(S.lateral), hw = (u.fitW ?? u.width ?? 2) / 2;
+      const lo = Math.min(-hw, la - 0.5), hi = Math.max(hw, la + 0.5);
+      const fitW = hi - lo, fitH = Math.max(h + 0.2, Math.min(u.fitH ?? u.height ?? 2, capH));
+      const fh = Math.max(fitH / 2.1, fitW / 1.35);
+      const f = hz(oc).addScaledVector(S.lateral, (lo + hi) / 2).addScaledVector(S.depth, hz(a).sub(hz(oc)).dot(S.depth) / 2);
+      f.y = Math.min(a.y, obj.position.y) + fitH / 2 - fh / 2;
+      return { focus: f, focusHeight: fh };
+    }
+    let otherH, otherR;
+    if (shot.focus === "monster") {
+      // over the shoulder of the one it acts on ("It walked right past me"), else whoever stands in the shot
+      const o = placed.find((p) => (shot.subjectWith ?? []).includes(p.id)) ?? placed.find((p) => !p.fixed) ?? placed[0];
+      focus = monster.position.clone(); focusHeight = monsterH; other = o?.pos; otherH = o ? PEOPLE[o.id]?.h : undefined;
+    }
+    else if (shot.focus === "insert") { focus = ins.obj.position.clone().setY(ins.obj.position.y + ins.minY); focusHeight = ins.h; }
+    else if (shot.focus === "object" && !shotObjs.length) { // SIMPLE LOOK: the house front it stood for is the street's own house
+      focus = spots.center.clone(); focusHeight = 4.2; camType = "wide";
+    }
+    else if (shot.focus === "object") {
+      // wide / insert: fit the whole object (and anybody standing around it) with the "insert" framing (a straight,
+      // centred view, vertical span 2.4 H); medium / closeup / over_shoulder: its key detail (userData.detail) like a
+      // person of that height; low: from the ground, its full height
+      const { obj, u } = shotObjs[0];
+      // GATE 2026-11-09 (#4 bell dog: "low" on the dog = a lens on the cobbles, the frame two thirds blurred ground): a
+      // small thing (under 1.2 m: a pet, a bag, a box) is never shot from the ground; it gets the medium object framing
+      const smallLow = shot.camera === "low" && (u.fitH ?? u.height ?? 2) < 1.2;
+      const at = (v) => { const p = obj.localToWorld((v ?? new THREE.Vector3()).clone()); p.y = obj.position.y; return p; };
+      other = placed[0]?.pos;
+      if (shot.camera === "wide" || shot.camera === "insert") {
+        const c = at(u.focus);
+        let fitW = u.fitW ?? u.width ?? 2, fitH = u.fitH ?? u.height ?? 2;
+        for (const p of placed) { // people next to it widen the fit (a storybook between Grandpa and Pip)
+          const d = hz(p.pos).sub(hz(c)), lat = Math.abs(d.dot(S.lateral)), dep = Math.abs(d.dot(S.depth));
+          if (lat < 3 && dep < 2.5) { fitW = Math.max(fitW, 2 * lat + 0.9); fitH = Math.max(fitH, (PEOPLE[p.id]?.h ?? 1.7) + (p.pos.y - obj.position.y) + 0.2); }
+        }
+        const fitY = Math.max(u.fitY ?? fitH / 2, fitH / 2 * 0.8);
+        focusHeight = Math.max(fitH / 2.1, fitW / 1.35);
+        focus = c; focus.y = obj.position.y + fitY - focusHeight / 2;
+        camType = "insert";
+      } else if (shot.camera === "low" && !smallLow) { focus = at(u.focus); focusHeight = u.fitH ?? u.height ?? 2; }
+      else {
+        const d = at(u.detail?.at ?? u.focus);
+        // somebody standing between the lens and the detail (Dobbs in front of the bakery): frame the two together
+        const blocker = placed.find((p) => { if (p.fixed) return false; const v = hz(p.pos).sub(hz(d)); const f = -v.dot(S.depth); return f > -0.2 && f < 2.8 && Math.abs(v.dot(S.lateral)) < 1.6; });
+        if (blocker) { ({ focus, focusHeight } = fitPair(blocker.pos, PEOPLE[blocker.id]?.h ?? 1.7, shotObjs[0], Math.max(2.6, PEOPLE[blocker.id]?.h ?? 1.7))); camType = "insert"; }
+        else if (shot.camera === "medium" || shot.camera === "closeup" || smallLow) {
+          // LOOK-FIX 2026-11-08 (owner: "the tower close-up is a flat wall", "the base block shot is a wall"): an object is
+          // not a person: frame it straight and centred (the "insert" framing) from its FRONT face, never its middle:
+          // medium = the whole thing (a big one: its lower 9 m), closeup = its key detail (userData.detail) at full width
+          const dl = u.detail?.at ?? u.focus ?? new THREE.Vector3(), close = shot.camera === "closeup";
+          const fitH = close ? (u.detail?.h ?? Math.min(u.height ?? 2, 2)) : Math.min(u.fitH ?? u.height ?? 2, u.big ? 9 : 99);
+          const fitW = Math.min(u.fitW ?? u.width ?? 2, close ? Math.max(fitH * 1.3, 1) : 99);
+          const fr = obj.localToWorld(new THREE.Vector3(dl.x, 0, 0));
+          focusHeight = Math.max(fitH / 2.1, fitW / 1.35);
+          focus = fr; focus.y = obj.position.y + (close ? Math.max(0, dl.y ?? 0) : 0) + fitH / 2 - focusHeight / 2;
+          camType = "insert";
+        }
+        else { focus = d; focusHeight = u.detail?.h ?? Math.min(u.height ?? 2, 2); }
+      }
+    }
+    else if (shot.focus === "group") {
+      const g = placed.length ? placed : [{ pos: spots.center, id: null }];
+      focus = g.reduce((s, p) => s.add(p.pos), new THREE.Vector3()).divideScalar(g.length);
+      focusHeight = Math.max(...g.map((p) => PEOPLE[p.id]?.h ?? 1.7));
+    } else if (where[shot.focus] && ((shot.camera === "wide" && shotObjs.length) || (shot.camera !== "closeup" && placed.find((p) => p.id === shot.focus)?.mount))) {
+      // a wide shot on an actor with an object in the shot: fit both (the "insert" framing, as for focus "object");
+      // a rider: the rider and the mount together
+      const fm = placed.find((p) => p.id === shot.focus)?.mount;
+      ({ focus, focusHeight } = fitPair(where[shot.focus], PEOPLE[shot.focus].h + (fm ? where[shot.focus].y - fm.obj.position.y : 0), fm ?? shotObjs[0], 5)); camType = "insert";
+    } else if (where[shot.focus]) {
+      focus = where[shot.focus].clone(); focusHeight = PEOPLE[shot.focus].h;
+      // a person off the floor (flying, up a ladder): the camera follows them up
+      const fp = placed.find((p) => p.id === shot.focus), fa = fp?.a;
+      const fr = fa && POSE_FRAME[fa.pose];
+      if (fr && ["medium", "closeup"].includes(shot.camera)) {
+        // the whole action in frame (a straight, centred view): the pair for a hug, the person + lift otherwise
+        const h = Math.max(PEOPLE[shot.focus].h, fp.hugWith ? PEOPLE[fp.hugWith]?.h ?? 0 : 0), span = fr[0] * h;
+        if (fp.hugWith && where[fp.hugWith]) focus.add(where[fp.hugWith]).multiplyScalar(0.5);
+        focusHeight = span / 2.4; focus.y += (POSE_LIFT[fa.pose] ?? 0) + fr[1] * h - focusHeight / 2;
+        camType = "insert"; other = undefined;
+      } else if (fa && POSE_LIFT[fa.pose]) focus.y += POSE_LIFT[fa.pose];
+      const op = placed.find((p) => p.id !== shot.focus);
+      other = shotObjs.length ? shotObjs[0].obj.localToWorld((shotObjs[0].u.focus ?? new THREE.Vector3()).clone()).setY(shotObjs[0].obj.position.y)
+        : op?.pos ?? (monster?.visible ? monster.position : undefined);
+      if (!shotObjs.length && !op && monster?.visible) { otherH = monsterH; otherR = monsterR; }
+      otherH = !shotObjs.length && op ? PEOPLE[op.id]?.h : otherH;
+    } else { // a carried baby: frame its carrier, a little tighter on the arms
+      const c = carried.get(shot.focus);
+      focus = where[c.id].clone(); focusHeight = PEOPLE[c.id].h * 0.85;
+    }
+    const fctx = { THREE, camera, set: S, focus, focusHeight, other, otherHeight: otherH, otherRadius: otherR, dur, seed: shot.seed ?? si,
+      // SIMPLE LOOK: a group's people (the lens fits the formation), a place shot with nobody in it (the establishing view)
+      ...(SIMPLE_LOOK && shot.focus === "group" && placed.length >= 2 ? { group: placed.filter((p) => PEOPLE[p.id]).map((p) => ({ pos: p.pos.clone(), h: PEOPLE[p.id].h })) } : {}),
+      ...(establishShot ? { establish: true } : {}),
+      // SCENES: the face-off two-shot (the hero and the giant both in frame), and the eye shots from the hero's side
+      ...(SIMPLE_LOOK && camType === "two_shot" && where.me && monster?.visible ? { twoShot: { a: where.me.clone(), ah: PEOPLE.me?.h ?? 1.4, b: monster.position.clone(), eyeY: monster.position.y + (monster.userData?.eyeY ?? monsterH * 0.85) } } : {}),
+      ...(SIMPLE_LOOK && shot.faceoff && where.me ? { faceTo: where.me.clone() } : {}),
+      ...(SIMPLE_LOOK && monster?.visible && monster.userData.atWindow?.eye && !establishShot && (shot.focus === "monster" || !(shot.actors ?? []).length) ? { windowView: monster.userData.atWindow } : {}),
+      ...(SIMPLE_LOOK && shot.tight ? { tight: shot.tight } : {}),
+      ...(SIMPLE_LOOK && shot.retreat && monster?.visible && !S.indoor ? { retreat: monster.position.clone() } : {}),
+      // SIMPLE LOOK: a close look at the monster frames its eye (page/simple/monsters.js userData.eyes)
+      ...(SIMPLE_LOOK && shot.focus === "monster" && monster?.userData?.eyes?.length ? (() => { monster.updateMatrixWorld(true); const w = monster.userData.eyes[0].e.getWorldPosition(new THREE.Vector3()); const mp = monster.getWorldPosition(new THREE.Vector3()); w.x = mp.x; w.z = mp.z; const hb = new THREE.Box3().setFromObject(monster.userData.head); return { monsterEye: w, monsterHead: { center: hb.getCenter(new THREE.Vector3()), size: hb.getSize(new THREE.Vector3()) } }; })() /* the monster turns to the lens after the framing: its centre line, at the eye's height */ : {}) };
+    const nudge = guardNudge(si, shot, camType, fctx, placed, where, carried);
+    frameShot(camType, { ...fctx, other: other?.clone(), t: lt, nudge });
+    }
+    // WORD DIRECTOR (experimental, lib/wordDirector.js): the director's own camera numbers for this shot (target,
+    // distance, yaw round the place's camera side, pitch, fov), kept inside the set's camera area
+    if (shot.cam && !epicCam) {
+      const c = shot.cam, tgt = new THREE.Vector3();
+      if (where[c.target] && PEOPLE[c.target]) tgt.copy(toScene(where[c.target].clone().setY(where[c.target].y + PEOPLE[c.target].h * 0.8)));
+      else if (c.target === "object" && shotObjs[0]) new THREE.Box3().setFromObject(shotObjs[0].obj).getCenter(tgt);
+      else if (c.target === "monster" && monster?.visible) tgt.copy(monster.position).setY(monster.position.y + monsterH * 0.6);
+      else if (placed.length) { placed.forEach((p) => tgt.add(toScene(p.pos))); tgt.divideScalar(placed.length); tgt.y += 1.2; }
+      else tgt.copy(toScene(spots.center.clone())).setY(spots.center.y + 1.4);
+      const side = (S.camDir ?? new THREE.Vector3(0, 0, 1)).clone().setY(0).normalize().applyAxisAngle(new THREE.Vector3(0, 1, 0), (Number(c.yaw) || 0) * Math.PI / 180);
+      const pitch = (Number(c.pitch) || 0) * Math.PI / 180, dist = Math.max(0.8, Number(c.distance) || 3);
+      const pos = tgt.clone().addScaledVector(side, Math.cos(pitch) * dist); pos.y += Math.sin(pitch) * dist;
+      if (S.bounds?.length && !S.bounds.some((b) => b.containsPoint(pos))) { let best = null, bd = Infinity; for (const b of S.bounds) { const q = b.clampPoint(pos, new THREE.Vector3()); const d = q.distanceTo(pos); if (d < bd) { bd = d; best = q; } } if (best) pos.copy(best); }
+      camera.position.copy(pos); camera.fov = Number(c.fov) || 40; camera.updateProjectionMatrix(); camera.up.set(0, 1, 0); camera.lookAt(tgt); camera.updateMatrixWorld();
+    }
+    // VISUAL-FIX 2026-11-08: the shot's camera move (lib/camMove.js) over whichever framing placed the camera
+    if (shot.camMove && !shot.move) applyCamMove(camera, shot.camMove, lt, dur, shot.seed ?? si);
+    // LOOK-FIX 2026-11-08 (owner: "the tower close-up is a flat maroon wall"): never inside or touching a scene object
+    // (page/cameraGuard.js): out of every visible shot object's box + margin, along the camera's own side
+    if (shotObjs.length && !shot.move) {
+      const boxes = shotObjs.filter(({ obj }) => obj.visible).map(({ obj, u }) => ({ box: new THREE.Box3().setFromObject(obj), margin: objectMargin(u) }));
+      camera.updateMatrixWorld();
+      const c0 = camera.getWorldPosition(new THREE.Vector3()), f0 = camera.getWorldDirection(new THREE.Vector3());
+      const bc = boxes[0]?.box.getCenter(new THREE.Vector3());
+      if (bc) keepOut(THREE, camera, boxes, { aim: c0.clone().addScaledVector(f0, Math.max(3, c0.distanceTo(bc))) });
+    }
+    camera.updateMatrixWorld();
+    camera.getWorldPosition(camPos);
+    camRight.setFromMatrixColumn(camera.matrixWorld, 0).setY(0).normalize();
+    if (monster?.visible && !monster.userData.peering && !monster.userData.atWindow) monster.rotation.y = shot.faceoff && where.me ? yawTo(monster.position, where.me) : yawTo(monster.position, camPos) + (ms.state === "flee" ? Math.PI : 0); // a monster peering in at a window keeps facing into the room
+
+    // people: facing, pose, face, markers
+    for (const p of placed) {
+      const P = PEOPLE[p.id], o = P.obj, a = p.a;
+      if (o.parent !== holder) holder.add(o);
+      o.visible = true; o.position.copy(p.pos);
+      o.userData.id = p.id; o.userData.offGround = !!(p.fixed || POSE_LIFT[a.pose] || OFF_GROUND.has(a.pose));
+      const f = a.facing ?? "camera";
+      let yaw;
+      if (f === "left") yaw = Math.atan2(-camRight.x, -camRight.z);
+      else if (f === "right") yaw = Math.atan2(camRight.x, camRight.z);
+      else if (f === "away") yaw = yawTo(p.pos, camPos) + Math.PI;
+      else if (f === "monster") yaw = yawTo(p.pos, monster?.visible ? monster.position : spots.far);
+      else if (f !== "camera" && where[f] && f !== p.id) yaw = yawTo(p.pos, where[f]);
+      else if (epic?.posOf(f)) yaw = yawTo(p.pos, epic.posOf(f));
+      else yaw = yawTo(p.pos, camPos);
+      let extra = null;
+      if (p.hugWith && where[p.hugWith]) { // face the partner, the face turned a little to the lens
+        yaw = yawTo(p.pos, where[p.hugWith]);
+        let dy = yawTo(p.pos, camPos) - yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
+        extra = { partnerH: PEOPLE[p.hugWith].h, headYaw: Math.max(-0.6, Math.min(0.6, dy * 0.6)) };
+      }
+      if (p.rideYaw != null) { yaw = p.rideYaw; extra = { seat: 0 }; }
+      if (p.faceAt) yaw = yawTo(p.pos, p.faceAt);
+      o.rotation.set(0, yaw, 0);
+      const baby = a.id && carried.size ? [...carried].find(([, c]) => c === a)?.[0] : null;
+      // POSES / FACES ON WORDS (owner 2026-11-10): a.poses / a.faces = [{ at (shot-local s, a word's start), pose | face }]
+      // (lib/wordTiming.js); a pose change blends over POSE_BLEND_SEC, also from this person's pose in the shot before
+      // when that shot is on the same set (the cut keeps the motion going)
+      const pk = keyAt(a.poses, lt);
+      const pose = p.noMount ? "walk" : pk?.cur?.pose ?? a.pose ?? "stand";
+      let blendFrom = null;
+      if (pk?.prev && pk.since < POSE_BLEND_SEC && pk.prev.pose !== pose) blendFrom = { pose: pk.prev.pose, t: lt + (a.phase ?? 0), k: pk.since / POSE_BLEND_SEC };
+      else if (lt < POSE_BLEND_SEC && si > 0 && tl.shots[si - 1].set === shot.set) {
+        const pa = (tl.shots[si - 1].actors ?? []).find((x) => x.id === a.id), pp = pa ? pa.poses?.at(-1)?.pose ?? pa.pose ?? "stand" : null;
+        if (pp && pp !== pose) blendFrom = { pose: pp, t: lt + (a.phase ?? 0), k: lt / POSE_BLEND_SEC };
+      }
+      const poseArgs = [pose, lt + (a.phase ?? 0), { ...(p.opts ?? {}), ...(extra ?? {}), hold: baby ? null : a.hold ?? null, ...(blendFrom ? { blendFrom } : {}) }];
+      o.userData.grip = null;
+      posePerson(o, ...poseArgs);
+      // LOOK-FIX 2026-11-08 (owner: "held props must never cover a face"): a long prop's grip is the first one (side,
+      // wide, over the shoulder, the other hand) whose prop leaves the face clear from THIS camera (kit/people.js)
+      if (heldFaceOverlap && o.userData.held?.userData.long && pose === "carry") {
+        let best = null;
+        for (const g of gripOrder(o.userData.held.userData.kind)) {
+          o.userData.grip = g; posePerson(o, ...poseArgs);
+          const ov = heldFaceOverlap(camera, o);
+          if (!best || ov < best.ov - 1e-3) best = { g, ov };
+          if (ov <= 0.08) break;
+        }
+        if (o.userData.grip !== best.g) { o.userData.grip = best.g; posePerson(o, ...poseArgs); }
+        o.userData.faceCover = best.ov;
+      }
+      setFace(o, keyAt(a.faces, lt)?.cur?.face ?? a.face ?? a.expr ?? "neutral");
+      // ATTACH: on a sloped back (the shell's dome) the planted sole edge sits ON the slope: the lowest foot's gap to the
+      // walkable surface under it (S.surface, memoised, mount coordinates) is taken out every frame
+      if (mount && S.surface && !o.userData.offGround && !baby) {
+        // ATTACH-2: the surface NEAREST each sole (the check's own rule, page/ground.js), not the first one from above
+        // (on a steep back the street of the next terrace hangs over the deck): rays on the creature + the mount only
+        const roots = S.giant && S.giant !== mount ? [S.giant, mount] : [mount];
+        const gaps = personFeet(THREE, o).map((fw) => {
+          const hit = groundUnder(THREE, roots, fw, { above: 0.3, below: 0.3, maxUp: 0.2, skip: snapSkip });
+          return hit ? mount.worldToLocal(fw.clone()).y - mount.worldToLocal(hit.point.clone()).y : Infinity;
+        });
+        const g = Math.min(...gaps);
+        if (Number.isFinite(g) && Math.abs(g) < 0.2) { o.position.y -= g; o.updateMatrixWorld(true); }
+      }
+      if (baby && holdPerson) { // the baby in the carrier's arms, posed from its own actor entry if it has one
+        const B = PEOPLE[baby].obj, ba = (shot.actors ?? []).find((x) => x.id === baby);
+        o.updateMatrixWorld(true);
+        holdPerson(o, B);
+        posePerson(B, ba?.pose && ba.pose !== "carry" ? ba.pose : "stand", lt + (ba?.phase ?? 0), {});
+        setFace(B, ba?.expr ?? "happy");
+        B.updateMatrixWorld(true);
+        where[baby] = B.getWorldPosition(new THREE.Vector3());
+      }
+    }
+    // birthday guests wear party hats
+    if (shotObjs.some((s) => s.u.name === "birthday_party") && objectsM?.partyHat) {
+      let k = 0;
+      for (const p of placed) {
+        const P = PEOPLE[p.id]; if (!P) continue;
+        let h = HATS.get(p.id);
+        if (!h) { h = objectsM.partyHat(7 + k * 3); HATS.set(p.id, h); }
+        const lk = P.obj.userData.look ?? {}, j = P.obj.userData.joints;
+        if (!j?.head) continue;
+        if (h.parent !== j.head) j.head.add(h);
+        h.position.set(0, lk.hair === "afro" ? 0.5 : lk.hat ? 0.45 : lk.hair === "bun" ? 0.42 : 0.37, 0);
+        h.visible = true; k++;
+      }
+    }
+    for (const mk of SIMPLE_LOOK ? [] : markersOf(shot)) { // SIMPLE LOOK: no floating markers (rings) at all
+      for (const id of markerTargets(mk, shot)) {
+        const m = MARKERS.get(`${id}|${mk.kind}|${mk.text ?? ""}`);
+        if (!m) continue;
+        if (id === "monster") { // above the monster's head
+          if (!monster?.visible) continue;
+          m.visible = true; m.position.copy(toScene(monster.position.clone().setY(monster.position.y + monsterH + 0.3)));
+        } else {
+          if (!where[id]) continue;
+          m.visible = true; m.position.copy(toScene(where[id].clone().setY(where[id].y + PEOPLE[id].h + 0.15))); // the marker's origin is its bottom (kit/props.js)
+        }
+        m.rotation.set(0, 0, 0);
+        animateMarker?.(m, lt);
+        if (m.userData.billboard) m.quaternion.copy(camera.quaternion);
+        m.traverse((c) => { if (c !== m && c.userData.billboard) c.quaternion.copy(camera.quaternion); });
+      }
+    }
+
+    // EPIC: crowd poses (LOD needs the camera), giant LOD, the beat's camera shake (after all framing)
+    epic?.after(shot, lt, S, camera, where);
+    S.stageAfter?.(shot, lt, where, camera); // the hose spray from the first person's hand, across the frame
+    S.afterCamera?.(camera, shot, where, epic); // WORLD-LOOK: the foreground rule (nothing hides the subject) + the fog guard
+    // WORLD-LOOK: renderFlags ["washed_out"] (the shot review): a safer exposure, half the haze, for this frame only
+    const washed = (shot.renderFlags ?? []).includes("washed_out"), expo0 = renderer.toneMappingExposure, fog0 = scene.fog ? [scene.fog.near, scene.fog.far] : null;
+    if (washed) { renderer.toneMappingExposure = expo0 * 0.82; if (scene.fog) { scene.fog.near *= 2; scene.fog.far *= 2; } }
+    // the flat-frame guard's safe re-render (render.mjs): safe 1 = no fog; safe 2 = no fog + a plain camera on the
+    // set's centre from its camera side (turtle run 1620fc3e: whole shots were one fogged colour)
+    const safe = Number(opts?.safe) || 0, savedFog = scene.fog;
+    if (safe >= 1) scene.fog = null;
+    if (safe >= 2) {
+      const c = spots.center, d = (S.camDir ?? new THREE.Vector3(0, 0, 1)).clone().setY(0).normalize();
+      camera.position.copy(c).addScaledVector(d, 9); camera.position.y = c.y + 3;
+      camera.up.set(0, 1, 0); camera.lookAt(c.x - d.x * 4, c.y + 1.2, c.z - d.z * 4); camera.updateMatrixWorld();
+    }
+    // LOOK-FIX 2026-11-08 (owner: "the night plaque shot is dark and unreadable"): at night the subject gets its own key +
+    // rim (page/subjectLight.js); after the render its screen box is checked and the key raised once if still too dark
+    let subjBox = null;
+    if (shot.light === "night" || shot.light === "dusk") {
+      if (shot.focus === "object" && shotObjs[0]) { // small things only (a plaque, a key, a lamp): a lit house / tower has its own windows
+        const b = new THREE.Box3().setFromObject(shotObjs[0].obj), s = b.getSize(new THREE.Vector3());
+        if (!shotObjs[0].u.big && Math.max(s.x, s.y, s.z) <= 3.5) subjBox = b;
+      }
+      else if (shot.focus === "insert" && ins?.obj) subjBox = new THREE.Box3().setFromObject(ins.obj);
+      else if (where[shot.focus] && PEOPLE[shot.focus] && (shot.camera === "medium" || shot.camera === "closeup")) { const p = toScene(where[shot.focus].clone()); subjBox = new THREE.Box3(p.clone().add(new THREE.Vector3(-0.4, PEOPLE[shot.focus].h * 0.78, -0.4)), p.clone().add(new THREE.Vector3(0.4, PEOPLE[shot.focus].h, 0.4))); } // GATE 2026-11-09: the HEAD (characters v2: ~1/3 of the body): a white face is measured as a white face, not averaged with dark clothes
+    }
+    winter?.update(t, camera); // LOOK-FIX: falling snow, deterministic in t
+    const subjLit = subjLight.aim(camera, subjBox, shot.light);
+    // SIMPLE LOOK: the close-up's depth of field focuses on the subject's head (page/simple/post.js)
+    if (post.setFocus && shot.camera === "closeup") {
+      const fid = where[shot.focus] && PEOPLE[shot.focus] ? shot.focus : placed[0]?.id;
+      if (fid && where[fid] && PEOPLE[fid]) post.setFocus(camPos.distanceTo(toScene(where[fid].clone().setY(where[fid].y + PEOPLE[fid].headC))));
+      else post.setFocus(Math.max(1, camPos.distanceTo(toScene(spots.center.clone().setY(spots.center.y + 1.4)))));
+    }
+    // render, then the caption on top in the output canvas
+    const R0 = performance.now();
+    post.render();
+    PROF.post += performance.now() - R0;
+    let subj = null;
+    if (subjLit && safe < 2) {
+      subj = subjLight.measure(renderer.domElement, camera, subjBox, subjCtx);
+      const k = Math.min(shot.focus === "object" || shot.focus === "insert" ? 5 : 2, boostFor(subj)); // a face: at most twice the lantern
+      if (k > 1.05 || k < 0.95) { subjLight.boost(k); post.render(); subj = { ...subj, boost: +k.toFixed(2), after: subjLight.measure(renderer.domElement, camera, subjBox, subjCtx) }; }
+    }
+    if (washed) { renderer.toneMappingExposure = expo0; if (scene.fog && fog0) [scene.fog.near, scene.fog.far] = fog0; }
+    if (safe >= 1) scene.fog = savedFog;
+    ctx2d.drawImage(renderer.domElement, 0, 0);
+    probeCtx.drawImage(out, 0, 0, 16, 16);
+    const px = probeCtx.getImageData(0, 0, 16, 16).data;
+    let sum = 0; for (let i = 0; i < px.length; i += 4) sum += px[i] + px[i + 1] + px[i + 2];
+    const flat = flatShare(px), detail = detailOf(px, 16);
+    ctx2d.save(); drawCaption(ctx2d, tl.captions ?? [], t); ctx2d.restore();
+    lastSet = S;
+    if (!opts?.calib) { PROF.total += performance.now() - P0; PROF.n++; }
+    return { shot: si, mean: +(sum / (3 * 256)).toFixed(1), flat, detail, safe, ...(subj ? { subj } : {}) };
+  }
+
+  // LOOK-FIX 2026-11-08: a winter world: snow on every set, scene object and giant (never on the people), frosted panes
+  if (winter) { const ppl = new Set(Object.values(PEOPLE).map((p) => p.obj)); const indoor = new Set(Object.values(SETS).filter((S) => S.indoor).map((S) => S.root)); const skip = (o) => { let nat = false; for (let n = o; n; n = n.parent) { if (ppl.has(n) || n.userData?.isPerson) return true; if (n.name === "nature") nat = true; if (indoor.has(n) && !nat) return true; } return false; }; winter.dress(scene, { skip }); } // indoor rooms stay dry (their window view snows)
+  // warm-up: the first frame of every (set, light) pair compiles its shaders and shadow maps (and fails here, loudly)
+  const seen = new Set();
+  for (const s of tl.shots) { const k = `${s.set}|${s.light}`; if (!seen.has(k)) { seen.add(k); renderAt(s.start); renderAt(s.start); } }
+  // ...and every shot with scene objects or a carried baby once (their materials compile here, not mid-render)
+  for (const s of tl.shots) if (s.objects?.length || s.giants?.length || s.crowds?.length || (s.actors ?? []).some((a) => carriedBaby(a, tl.cast ?? {}))) renderAt(s.start + 0.01);
+  renderAt(0);
+
+  window.timeline = tl;
+  window.renderAt = renderAt;
+  window.groundProbe = (opts = {}) => (lastSet ? measureContact(THREE, scene, lastSet, opts) : null); // dev: per actor gap feet -> surface (page/ground.js)
+  window.engineDebug = { THREE, scene, camera, renderer, post }; // dev probes (e.g. dev/epicProbe.mjs finds non-finite pixels)
+  window.frameData = (q = 0.9) => out.toDataURL("image/jpeg", q);
+  window.engineInfo = { stubs: [...stubbed], sets: Object.keys(SETS), people: Object.keys(PEOPLE), renderer: (() => { const gl = renderer.getContext(), e = gl.getExtension("WEBGL_debug_renderer_info"); return e ? gl.getParameter(e.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER); })() };
+  window.ready = true;
+}
+
+main().catch((e) => { window.engineError = String(e?.stack ?? e); console.error(window.engineError); });

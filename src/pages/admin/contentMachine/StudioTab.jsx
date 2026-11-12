@@ -84,7 +84,7 @@ function ScriptReview({ job, onDone }) {
   const set = (i, patch) => setLines(lines.map((l, k) => (k === i ? { ...l, ...patch } : l)));
   const approve = async () => {
     setBusy(true); setNote(null);
-    try { await api("studioScriptApprove", { id: job.id, edits: { title, ...(s.headline ? { headline } : {}), caption, lines: lines.map((l, i) => ({ text: l.text, ...(say[i].editable ? { on: l.on } : {}) })) } }); onDone(); }
+    try { await api("studioScriptApprove", { id: job.id, edits: { title, ...(s.headline && !s.headline.hidden ? { headline } : {}), caption, lines: lines.map((l, i) => ({ text: l.text, ...(say[i].editable ? { on: l.on } : {}) })) } }); onDone(); }
     catch (e) { setNote(e.message); setBusy(false); }
   };
   return (
@@ -92,7 +92,7 @@ function ScriptReview({ job, onDone }) {
       <div className="text-[12.5px] font-semibold text-amber-200">{s.story_mode === "topic" ? "About the topic: Zyvo only in the caption and on the end card" : "About making it with Zyvo"}</div>
       <label className="block text-[12px] text-white/60">Title<input value={title} onChange={(e) => setTitle(e.target.value)} className={`${input} mt-1 block w-full`} /></label>
       {s.headline && !s.headline.hidden ? <label className="block text-[12px] text-white/60">Headline, small on the first frame<input value={headline} onChange={(e) => setHeadline(e.target.value)} className={`${input} mt-1 block w-full`} /></label>
-        : s.split ? null : <div className="text-[12px] text-white/50">No headline: line 1 (the yell) is the hook. Line 1 is voiced 3 times and the loudest take is kept.</div>}
+        : s.split ? null : <div className="text-[12px] text-white/50">{s.rage?.yell?.mood === "pain" ? "No headline: line 1 (the personal problem, said fed up, not yelled) is the hook. Line 1 is voiced 3 times and the strongest take is kept." : "No headline: line 1 (the yell) is the hook. Line 1 is voiced 3 times and the loudest take is kept."}</div>}
       {s.split && (
         <div className="rounded-lg bg-black/30 px-3 py-2 text-[12.5px] text-white/70" data-testid="cm-studio-script-split">
           <div className="font-semibold text-amber-200">Frame 0: "{s.split.title.join(" ")}" over two real examples (credited, not ours)</div>

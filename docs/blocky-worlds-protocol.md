@@ -1,0 +1,193 @@
+# Blocky Worlds protocol
+
+> **PERMANENT RULE (owner, 2026-11-04): the scene always matches the narration.**
+> Every line's key nouns, its actions and its subject (who or what the line is about) must be visible on screen in
+> that line's shot. This is the core of why these videos work. It is a hard requirement for every future change:
+> - The pre-render check always enforces it. `checkVisuals` (nouns and actions) and `checkSubjects` (who the line is
+>   about) run in `scripts/blockyWorlds/engine/plan.mjs`, and any miss stops the run before anything is rendered or
+>   charged. Never weaken, skip or bypass these checks to make a video pass.
+> - If an idea needs something the kit doesn't have, add it to the kit (`page/kit/objects.js`, `lib/visuals.js`) or
+>   build it (below). Never a random or unrelated shot, never filler townsfolk standing in for a noun.
+> - **NO PICTURE CARDS OR BADGES. Ever.** (owner, PERMANENT 2026-11-07; replaces "a picture card as last resort")
+>   No sign or board with a word or an icon, no word / icon badge on a person, no name tag, no "x3" counter, no rule
+>   sign. Only real in-world signs that are part of a building (a shop sign on the bakery) stay. If something can't be
+>   shown (not in the kit / library / builder, or the budget is spent), the shot is the **closest real shot** instead,
+>   in this order: (a) the line's character doing the line's action, (b) a reaction shot (who the line is about, or
+>   the narrator, with the fitting expression), (c) a wide of the world (the creature / town wide, or the place wide).
+>   What was not shown is recorded on the shot (`shot.unshown`) for the logs and the review, never on screen; the
+>   checks count it as excused. Everything the kit, library or builder CAN show must still be shown. `checkTimeline`
+>   fails any card, sign insert, badge, name tag or counter anywhere in the video (`lib/cards.js`).
+> - Testing focuses on it: every planner or kit change is checked against many different ideas, not just one.
+> - **A missing kit object or world never fails a run** (owner, 2026-11-05). The engine builds what a line needs in
+>   real time: the kit first, then the shared library of things built for earlier videos, then an AI-designed block
+>   blueprint (objects) or world spec (places) that the engine builds, checked by a quick still + an AI vision check
+>   (up to 2 retries). Only if that fails: the closest real shot (above; never a card). Everything built is saved to the shared
+>   library so the kit grows with every video.
+
+> **PERMANENT RULE (owner, 2026-11-06): WORLD CONTINUITY. A story happens in ONE consistent world.**
+> A story feels real only in one consistent world. Before any shot is planned, the engine writes a **world bible**:
+> the creature, the town on / in it (its layout, streets, exact buildings, colours, landmarks), each character's look
+> and the key props. Every shot uses this same world. It is a hard requirement for every future change:
+> - Never a different street, map or building style mid-story. **Inside** = the same town at street level, and you
+>   still feel you are on the creature (the shell edge, its head or neck in the background, the ground tilting as it
+>   walks). **Outside** = wide shots always show that same town on its back.
+> - Code: `scripts/blockyWorlds/engine/lib/worldBible.js` builds the bible (`tl.world`, saved as `world-bible.json`
+>   next to the timeline) from the director's list before the shots; the planner puts every shot in a bible spot with
+>   the bible's cast looks, props and town seed; `checkTimeline` fails any shot whose set, spot, cast look, prop or
+>   town is not the bible's (`worldBibleProblems`). Never weaken or bypass it to make a video pass.
+> - The AI shot review gets the bible and flags any shot whose buildings, layout, characters or props don't match it
+>   (`world_mismatch`); the fix moves the shot back to its bible spot / the character back to the bible look.
+
+The single rulebook for how a Blocky Worlds video is made. Code follows this file; when they disagree, fix one of them in the same commit.
+
+The research behind it is `reference/blocky-worlds/ANALYSIS.md`, a study of 19 viral videos. The code lives in `supabase/functions/_shared/blockyWorlds/`.
+
+## 1. The hard rules
+
+1. **Every video starts with "In this town, "** (only this one since 2026-11-08; an older "In this world, " line is fixed by code to "In this town, "). The writer is told this, and code enforces it on every script, whether generated, rewritten or the user's own (`opener.js`). A near miss ("In my town", "In this village") is fixed by code. Anything else gets one small rewrite of the first line only; if that fails, the script is refused.
+2. **Original worlds and names only.** A famous premise may lend its shape, never its titles, names, places, objects or lines (`safety.js`).
+3. **No game-platform words.** No Roblox, Robux, noob, obby, oof or the like, anywhere: script, card, signs or upload text.
+4. **PG fear only.** Danger is suggested, never gory.
+5. **The narrator** is the one config in `config.js` NARRATOR: ElevenLabs "Little Dude II" on Multilingual v2, speed 1.2 (the maximum), stability 1.0, similarity 0.7, style 0.
+6. **The pace (~260 words a minute)** comes from short, punchy lines and trimmed gaps between sentences, never from speeding up the audio.
+7. **No paid call without the owner's go** while the template is being built. Mock mode (`BLOCKY_WORLDS_LLM=mock`) runs every step for free.
+
+## 2. One pipeline for every video
+
+Every source becomes the same complete idea card first:
+
+| Source | How it becomes a card |
+|---|---|
+| A library idea ("Pick an idea") | It already is one: judged and stored |
+| "Your topic" | The writer builds 3 complete cards around the topic and fills any missing piece; the user picks one |
+| A pasted script | It is read back into a card (`cardFromScript`); missing pieces are filled in, the script is never changed |
+
+Then, always, in this order:
+
+```
+idea card -> beat sheet (7 parts) -> script -> shot plan -> render
+```
+
+**Each step has code checks.** A failed step is retried **on its own**, once, with the problems listed; the earlier steps are kept. If it still fails, it comes back with its problems: a script shows them to the user, who can rewrite or edit. Nothing is charged before Generate.
+
+| Step | Code | Checks |
+|---|---|---|
+| 1. Idea card | `protocol.js` cardProblems | All 14 fields present; exactly 3 examples; the opener rule; known formula, twist type and mood; the originality and safety blocklist |
+| 2. Beat sheet | `writeBeats`, beatProblems | The 7 parts in order. `rule` uses the rule. `tour` uses the price and all 3 examples. `me` uses the exception and plants the prop. `until` escalates in 3 steps. `discovery` reveals the truth. `climax` pays off the prop. `closer` uses the closer. Every beat says what is on screen |
+| 3. Script | `writeScript`, checkScript + scriptProtocolCheck | The opener rule; the word budget for the length (sized at the voice's real ~212 wpm; 90-100% of it, never over, so a 1:30 video lasts <= ~90 s); lines under 16 words; the parts in order; the prop set up in tour/me and paid off in the climax; the last lines calling back line 1; the blocklist. For a "Your topic" card (card.topic, the user's own words): the topic check (`topic.js`): the first line states the topic (its setting plus one more key element), every key element appears after the opening, at least 20% of the lines mention one, and the climax involves the threat. Pausing punctuation is cleaned out by code |
+| 4. Shot plan | `writeShots`, shotProblems | Every line has a shot; only the fixed vocabulary (cameras, sets, light, effects, actions, expressions); line 1 opens on a wide shot or a prop insert; the blocklist on any sign text |
+| 5. Render | The renderer milestone | Built from the locked look (§6) |
+
+**The custom-topic gate (owner, 2026-11-07).** A "Your topic" script must also pass **the library's AI judge at the library's bar** (`library.js` ACCEPT, the same model, system prompt, rubric and schema), judged on the **finished script** (`judgeScriptPrompt`: the narration is scored, the card is only a summary; a story that drifts from the user's premise scores at most 2 on hook and twist). Below the bar or failing any check: one targeted rewrite with the judge's reasons and the failed checks, judged again, at most 2 rewrites; the best version is kept and reported with its score (`llm.js` topicScript / gateTopicScript). The launch recipe a story would use is named for free by `recipes.js` pickRecipe (topic keywords, the card's formula, beat features): creature_town_attack, curfew_monster, everyone_except_me, lost_pet_in_town, giant_reveal. Not wired into the `blocky-worlds-api` endpoint yet.
+
+**Broad topics with reference examples (owner, 2026-11-08; test flow, not in the endpoint).** `llm.js` broadTopic: 2-3 reference transcripts that match the topic's recipe (`broad.js` RECIPE_REFERENCES) go first in the system prompt of the plan and script calls (cached). The premise may match a reference; the twist, events, names and lines must not (`antiCopy.js`: no shared 5-word run outside line 1, no reference name, no reference ending as the twist). The writer returns a skeleton map that `skeleton.js` checks for free: rule + price in lines 1-2, 3 named neighbours, the narrator as the exception, the prop named in "Me", 3 escalation steps, a discovery about the rule, a climax won by the rule or the prop, a closer that echoes line 1, the twist's clue planted before the discovery and no new magic in the climax. 3 drafts per topic (angles: rule / exception / prop); a failing draft gets one fix, then is discarded unjudged; the judged drafts are scored by the library judge (premise exempt from originality) and the best is kept.
+
+**The seven parts** and their share of the words: rule 3%, world tour 17%, me 13%, until one night 22%, discovery 15%, climax 22%, closer 8%.
+
+## 3. The idea library
+
+Ideas are the core of the template, so "Pick an idea" serves from a **judged, growing library**, not from a live call.
+
+- **Size:** a starting target of 500 live ideas, growing over time. Each is a full idea card plus its formula (F1–F6), twist type (T1–T6), mood and setting.
+- **How ideas are made:** the batch job (`libraryJob.js`, endpoint `blocky-worlds-library`) runs in ticks of 3 calls, about 18 ideas a tick. Each tick:
+  1. plans formula/twist/mood/setting slots from the learning weights (§4), with 20% drawn evenly to keep exploring;
+  2. writes the ideas with Sonnet 5.5;
+  3. runs the card checks;
+  4. **deduplicates** against everything stored, including rejected ideas: the same key words, or a similarity of 0.42 or more on the rule and twist;
+  5. sends the rest to the **AI judge**.
+- **The judge** (Sonnet 5.5) scores 10 criteria from the A-tier rules, each from 1 to 5, weighted to a total of 100: hook, price, examples, exception, prop, escalation, twist, closer, originality, buildability. An idea goes **live** only if it scores **72 or more**, scores at least 3 on hook, twist and closer, and is safe. Everything else is stored as **rejected** and never shown.
+- **Money:** a batch needs an explicit dollar cap (`maxUsd`) and stops before the call that could pass it. Any single batch is capped at $25 regardless. Library spend counts toward the template's emergency cap.
+- **Serving:** each user sees **only ideas they haven't seen** (`blocky_worlds_seen`), best rank first, with the mix forced: one per formula in turn, never two of the same formula and mood in a batch. Library ideas are free and instant, with no daily limit. If a user has seen everything that fits, a live batch is written for them, and that does count toward their daily limit.
+
+## 4. Learning
+
+- **Counted per library idea:** shown, picked (its first script), rewritten, generated, downloaded, thumbs up and thumbs down after the video (the `event` action), plus the owner's real TikTok likes (`addPost`).
+- **The rank** (`library.js` rankOf) mixes these, weighted:
+
+  | Signal | Weight |
+  |---|---|
+  | judge score (the prior) | 0.30 |
+  | picks per show | 0.22 |
+  | real likes (counted most; 1M likes is the maximum) | 0.18 |
+  | generations per pick | 0.14 |
+  | downloads | 0.08 |
+  | thumbs | 0.08 |
+  | exploration bonus for little-shown ideas | 0.06 |
+
+  `rerank` recomputes it; run it daily and after entering likes.
+- **The mix the batch job makes more of** (`mixWeights`): per formula, twist type and mood, from how its ideas do (generations per show plus likes), relative to the average, kept between 0.5x and 2x so nothing disappears.
+- **User ideas:** a "Your topic" or pasted-script video that gets downloaded or a thumbs up joins the library as **pending**. Only its idea card is stored, with no user data. The judge decides at the start of the next tick, like any other idea.
+- **The owner's real numbers:** `addPost {runId or libraryId, url, likes, views}` records them and re-ranks that idea at once. A screen for it comes with the owner pages.
+
+## 5. Prices and limits
+
+Prices are in `pricing.js`, at 1 credit = $0.01 of our full cost. These are estimates until the owner's paid tests:
+
+| Length | Credits |
+|---|---|
+| 60 s | 47 |
+| 90 s | 62 |
+| 120 s | 78 |
+
+Writing is free, with daily limits: 15 script writes per user per day; idea batches 20 a day (3 on the free plan) when written live. The free plan gets ideas only. Scripts and videos are for paid plans.
+
+## 6. The locked look
+
+**The world:** a realistic game-engine world.
+- Ground and buildings: Poly Haven CC0 textures (asphalt, concrete, grass, plaster, brick, roofs) on code-built houses with windows, porches, garages and fences.
+- Props: CC0 street lamps, hydrants, bins, benches, shrubs and trees.
+- Vehicles: Kenney cars; the bus is built in code.
+- Sky and distance: a deep blue sky dome with procedural clouds, distant mountains in haze.
+- Light: warm sun with soft shadows, ambient occlusion, a slight bloom, and a punchy grade (saturation 1.58, contrast 1.24).
+
+**The people:** our own blocky people at normal game-avatar proportions.
+- Body: the head is about 1/6 of the height, with a blocky chest and hips, elbows and knees, and hands.
+- Clothing: stripes, plaid, dots, belts with buckles, shoe soles, collars and cuffs.
+- Variety: many hair, hat and accessory variants.
+- Faces: simple sticker faces (whites of the eyes, pupils, brows, mouth), drawn large enough to read in a medium shot. Never the classic avatar face; no logos.
+
+**The camera:** eye level, like a phone at street level; medium shots.
+
+**The caption:** one word at a time, Lilita One, white with a black outline, about 70% down the frame.
+
+The reference frame is `reference/blocky-worlds/look-frames/LOCKED_bus_stop.jpg`. The scene code is in `scripts/blockyWorlds/look/`.
+
+## 7. Render speed (plan)
+
+**Today, on this laptop's integrated GPU:** about 0.27 s a frame at 1080×1920 with every effect. A 90 s video at 30 fps (2,700 frames) takes about 12 minutes there.
+
+The plan for production:
+1. **Server GPUs.** The same RunPod serverless setup as Cutaway (an L4 rendered a Cutaway 30 s video in 82 s). Expected 0.05–0.1 s a frame.
+2. **24 fps instead of 30.** 20% fewer frames, no visible loss for hard-cut story videos.
+3. **Chunks in parallel.** The video is cut at shot boundaries into 6–8 chunks, each rendered by its own GPU worker at the same time, then joined by stream copy. Cutaway's CPU fallback already does this.
+4. **Raw frame capture.** Read pixels straight into ffmpeg instead of compressing each frame to a JPEG inside the browser, and use the GPU's video encoder.
+5. **Per-shot savings that don't show at phone size:** half-resolution ambient occlusion; shadows updated only when something moves; only the set in view loaded.
+6. **Start rendering a chunk as soon as its shots are planned,** while the later shots are still being planned.
+
+**Expected wait for a 90 s video:** about 3–4 minutes from Generate to the finished video. That breaks down as the voice (~15 s), the shot plan (~45 s), the parallel render (~60–90 s including GPU start-up) and the finish: captions, music and upload (~30 s). To be measured on the first paid render test.
+
+**Expected render cost:** about 2,160 frames × ~0.08 s, plus each worker's start-up, ≈ 7–8 GPU-minutes at ~$0.00016 a GPU-second. That is **≈ $0.07–0.10** a video. The voice (~$0.22) is the biggest single cost.
+
+## 8. Style rules (from the turtle target, 2026-11-06)
+
+**Where these come from:** a viral video of exactly our format ("In this world, every town is built on the back of a giant animal", 147.6 s, 115 shots). We rebuilt it shot for shot with our engine: 23% of shots matched, 61% partly, 17% couldn't (`scripts/blockyWorlds/engine` REBUILD; the per-shot page and the couldn't-do list are kept with the run). It was an internal learning test only, never posted.
+
+**Camera rule (owner, 2026-11-06): the camera moves in customer videos come from general rules + the shot library, never copied shot for shot.** The turtle rebuild was a learning test; its numbers became general rules (the table below) and moves in the shot library (`lib/caps.js` camera moves, `lib/direction.js` EPIC cameras), chosen per line from that line's own meaning. No customer video replays another video's shot list, timings or framings one for one. The director prompt says so too (`lib/director/design.js` STYLE).
+
+**Where each rule lives:**
+- **Code:** a planner pass, or a measured style report in `lib/style.js` that `planVideo` stores as `tl.style` and that is checked against the reference's numbers. The report is advisory: a style miss never fails a run (the PERMANENT RULE's checks still do).
+- **Prompt:** a judgement rule, given to the story director (`lib/director/design.js` STYLE).
+
+| # | Rule | Reference numbers | Where it lives |
+|---|---|---|---|
+| R1 | **The opener formula.** The first 5 s are 3-4 shots in bright day: a low close of the creature's foot or flank with houses on top, an aerial over the rooftops on its back, the creature walking through the landscape, and a fly-through low over the town. No narrator, card or sign in the first 10 s. | 4 shots in 5 s | Code: `lib/opening.js` (no card / badge in 10 s, shot 1 = the world) + `styleReport` R1 (>= 3 shots in 5 s, shot 1 shows the creature) |
+| R2 | **The creature is the subject, and scale is shown in every creature frame.** The giant shares the frame with houses, people or trees. The town on it is a real town (rows of houses, a school, a shop by the neck). A rival giant is 1.0-1.3x the hero creature. | Giant in 72% of shots | Code: `styleReport` R2 (>= 60% of the time) + `lib/direction.js` hostSize. Prompt: the subject, scale moments and the rival's size |
+| R3 | **Cut on word onsets, about twice per sentence.** Each listed noun gets its own shot. Hold a shot longer only for the final or a long reveal. | Median shot 1.16 s, max 3.7 s, 1.95 shots a sentence | Code: `styleReport` R3 (no shot over 3.7 s but the last, median <= 2 s) + R7 (>= 90% of cuts within 80 ms of a word start) |
+| R4 | **Every verb is shown, never carded.** Lunged, clamped, fired, snapped, grabbed, climbed, blew: each is a shot of that action. A written sign appears only when it exists in the world (SCHOOL on the school). | 0 cards | Code: `styleReport` R4 (a line with an action verb shown only by a card) + `lib/meaning.js` (verb over noun). Prompt: verbs are actions |
+| R5 | **Threat reveal ladder, then cause and effect.** The threat comes in as: far and small, then its eyes up close, then what it carries (city / army), then what they do. After every attacker shot comes the victim's consequence. | | Prompt |
+| R6 | **Nothing stands still.** Giants walk, people do the line's verb, and the camera always pushes, tracks or flies. Shake on impacts. | 100% of shots move, 92% strongly | Code: `motionPass` (an idle giant walks unless its shot's words say it stops / waits / hides / sleeps / freezes; undone if it adds a check problem) + `styleReport` R6 (<= 20% of shots with nothing moving) + `lib/caps.js` capsPass (camera moves from the words) |
+| R7 | **"Me" is my world.** The narrator is on screen 1-2 times in the "me" part; the rest is a tour of the creature, the town and its routine. Later the narrator always does something (asleep top-down, running, climbing, blowing), never poses. | | Prompt |
+| R8 | **Daylight by default, and never a blank frame.** Day even for the crisis ("one morning"). Night only for threat lore, warm for the ending. No frame with near-zero detail. | | Code: `styleReport` R5 (<= 35% night unless the script is about the night) + `lib/frameGuard.js` (flat / blank frames re-rendered). Prompt: light per line |
+| R9 | **The climax is a reaction chain ending on a punchline.** The planted prop is used (with an effect: sound rings), then one shot per giant reaction, then the physical resolution (bite the chain, SNAP), then an affection beat, then a gag between the two creatures. | | Prompt + `lib/caps.js` (sound rings, snap, nuzzle, headbutt) |
+| R10 | **Dense worlds.** The creature walks through forest, grass, rocks and dust, and the town on it is many houses with named places. Ours was a bare pale plain with a small cluster. | | Prompt (ask for the landscape and named places). Engine work: dense landscape dressing (open) |
+| R11 | **Close, low cameras on giants.** Ours sat wider and farther. The reference lives 2-15 m from a body part: a foot, an eye, a jaw on a shell, a chain link. Lit night cities must read (windows and silhouette, never a black shape). | | Code: `styleReport` R8 (>= 35% of giant-focus shots are giant_close / hero_low) + `page/cameraEpic.js` (giant_close frames the face). Engine work: part-focus camera, night fill light on dark giants (open) |

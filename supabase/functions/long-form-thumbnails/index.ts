@@ -16,6 +16,7 @@
 //     -> the headline drawn by code (Lilita One, top third) -> 1920x1080 + 1280x720 (<= 2 MB).
 //   A draw whose worker was killed (no error ever reaches its catch) is caught by
 //   the watchdog in list/start: re-dispatched once, then failed -> "Try again (free)".
+import { openaiFetch } from "../_shared/openaiBackup.js";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Image } from "https://deno.land/x/imagescript@1.3.0/mod.ts";
@@ -163,7 +164,7 @@ async function lookAt(url: string, hookObject: string, projectId: string, id: st
   if (!OPENAI_KEY) return {};
   const schema = { type: "object", additionalProperties: false, required: ["text", "people", "blankHeads", "hookVisible", "hookAttached"], properties: { text: { type: "string" }, people: { type: "integer" }, blankHeads: { type: "integer" }, hookVisible: { type: "boolean" }, hookAttached: { type: "boolean" } } };
   const ask = `Look at this cartoon image. "text": transcribe ALL readable letters and words exactly ('' if none; ignore a lone ? or !). "people": how many HUMAN stick figures are visible (not animals, creatures or objects with faces). "blankHeads": how many visible heads have NO face (no eyes). "hookVisible": is ${hookObject || "the main object"} clearly visible and large? "hookAttached": is it worn on a head or held in hands with every part attached where it belongs (true), or is it or a part of it floating loose (false)? (true when there is no person to hold it)`;
-  const r = await fetch("https://api.openai.com/v1/chat/completions", { method: "POST", headers: { Authorization: `Bearer ${OPENAI_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ model: "gpt-4o-mini", temperature: 0, messages: [{ role: "user", content: [{ type: "text", text: ask }, { type: "image_url", image_url: { url, detail: "high" } }] }], response_format: { type: "json_schema", json_schema: { name: "look", strict: true, schema } } }) }).catch(() => null);
+  const r = await openaiFetch("https://api.openai.com/v1/chat/completions", { method: "POST", headers: { Authorization: `Bearer ${OPENAI_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ model: "gpt-4o-mini", temperature: 0, messages: [{ role: "user", content: [{ type: "text", text: ask }, { type: "image_url", image_url: { url, detail: "high" } }] }], response_format: { type: "json_schema", json_schema: { name: "look", strict: true, schema } } }) }).catch(() => null);
   if (!r?.ok) return {};
   const j: any = await r.json();
   await recordCost(admin, { projectId, stage: "qa", provider: "openai", model: "gpt-4o-mini", units: { calls: 1, purpose: "thumbnail look" } as any, usd: (j.usage.prompt_tokens * 0.15 + j.usage.completion_tokens * 0.6) / 1e6, estimated: false, sourceTable: "long_form_thumbnails", sourceId: id });

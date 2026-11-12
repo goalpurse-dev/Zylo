@@ -49,6 +49,21 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 // header x ELEVENLABS_USD_PER_CREDIT (costLedger.ts config); only when the
 // header is missing is it estimated from the character count.
 
+// The owner's own projects (accounts in ADMIN_EMAILS / CUTAWAY_TEST_USERS) never email an alert:
+// the owner tests there (owner, 2026-10-26: "Not for my own tests"). The logs are still written.
+async function isOwnerProject(admin: any, projectId: string): Promise<boolean> {
+  try {
+    const emails = [Deno.env.get("ADMIN_EMAILS"), Deno.env.get("CUTAWAY_TEST_USERS")].flatMap((v) => String(v ?? "").split(/[,\s]+/)).map((e) => e.trim().toLowerCase()).filter((e) => e.includes("@"));
+    if (!emails.length) return false;
+    const { data: p } = await admin.from("long_form_projects").select("user_id").eq("id", projectId).maybeSingle();
+    if (!p?.user_id) return false;
+    const { data: prof } = await admin.from("profiles").select("email").eq("id", p.user_id).maybeSingle();
+    return emails.includes(String(prof?.email ?? "").trim().toLowerCase());
+  } catch {
+    return false;
+  }
+}
+
 async function doGeneration(admin: any, projectId: string, rowId: string, text: string, segments: { id: string; text: string }[], voiceId: string, voiceModel: string, voiceSettings: Record<string, unknown> | null, settleAtNarration = true) {
   try {
     // 2026-10-07: one quick retry here (a temporary error that failed fast); a provider that is
@@ -121,7 +136,7 @@ async function doGeneration(admin: any, projectId: string, rowId: string, text: 
         provider_metadata: { ...meta, attempts: Math.max(0, Number(meta.attempts ?? 1) - 1), phase: "paused", paused: { since: d.since, tries: d.tries, lastError: message.slice(0, 200), nextTryAt: new Date(nowMs + d.waitS * 1000).toISOString() } },
       }).eq("id", rowId);
       await logEvent("generate-long-form-narration-audio", "warn", "narration_paused", { projectId, rowId, tries: d.tries, waitS: d.waitS, since: d.since, error: message.slice(0, 200) });
-      if (d.alert) { const mail = narrationAlert(d.alert, { projectId, rowId, message, tries: d.tries }); await alertAdmin(mail.subject, mail.text, "narration"); }
+      if (d.alert && !(await isOwnerProject(admin, projectId))) { const mail = narrationAlert(d.alert, { projectId, rowId, message, tries: d.tries }); await alertAdmin(mail.subject, mail.text, "narration"); }
       return;
     }
     await admin.from("long_form_narration_audio_versions").update({
@@ -141,7 +156,7 @@ async function doGeneration(admin: any, projectId: string, rowId: string, text: 
     if (!earlier) await releaseReservationIfActive(admin, projectId, "narration_failed", logEvent);
     await logEvent("generate-long-form-narration-audio", "error", "narration_failed", { projectId, rowId, why: d.why, error: message.slice(0, 200), holdReleased: !earlier });
     const mail = narrationAlert("failed", { projectId, rowId, message, tries: Number(meta.paused?.tries ?? 0) });
-    if (!earlier) await alertAdmin(mail.subject, mail.text, "narration");
+    if (!earlier && !(await isOwnerProject(admin, projectId))) await alertAdmin(mail.subject, mail.text, "narration");
   }
 }
 

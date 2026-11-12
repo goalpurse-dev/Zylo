@@ -23,6 +23,7 @@
 // several times as a source) does not by itself make a protagonist — the
 // model is explicitly instructed on this exact case.
 
+import { openaiFetch } from "../openaiBackup.js";
 import { STICKMAN_DOODLE_EXPLAINER_V1, type StickmanRecipeStyleContract } from "./styleContract.ts";
 import { GPT5_MINI_INPUT_PER_M, GPT5_MINI_OUTPUT_PER_M } from "../../../../src/lib/longFormPipelineConstants.ts";
 import { youContexts, viewerEra } from "./viewerEra.ts";
@@ -668,7 +669,7 @@ function extractOutputText(payload: any): string {
 }
 
 async function callDraft(openaiKey: string, promptInput: string, repairNote?: string): Promise<{ draft: StickmanBibleDraft; inputTokens: number; outputTokens: number }> {
-  const res = await fetch(OPENAI_RESPONSES, {
+  const res = await openaiFetch(OPENAI_RESPONSES, {
     method: "POST",
     headers: { Authorization: `Bearer ${openaiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({

@@ -36,6 +36,7 @@
 // this function's own self-chain, or a future cron sweep — none of which a
 // normal user can reach directly), same as advance-long-form-research.
 
+import { openaiFetch } from "../_shared/openaiBackup.js";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { logEvent } from "../_shared/systemLog.ts";
@@ -357,7 +358,7 @@ function parseJson(raw: string) {
 }
 
 async function callOpenAI(request: any, timeoutMs: number) {
-  const response = await fetch(OPENAI_RESPONSES, {
+  const response = await openaiFetch(OPENAI_RESPONSES, {
     method: "POST",
     headers: { Authorization: `Bearer ${OPENAI_KEY}`, "Content-Type": "application/json" },
     body: JSON.stringify(request),

@@ -91,6 +91,22 @@ const FRUIT_LANDING_BY_OWNER = [
   "public/lp/fruit/examples/glass-walls-dont-lie.jpg",
 ];
 
+// Claude as the backup for every OpenAI call of Fruit, asked for by name on 2026-11-05 ("Add the Claude
+// API (Anthropic) as a backup for every feature that uses OpenAI: Long Form scripts, picture checks, Fruit
+// and Blocky"): each OpenAI call goes through openaiFetch (_shared/openaiBackup.js) and nothing else changes.
+const FRUIT_OPENAI_BACKUP_BY_OWNER = [
+  "supabase/functions/_shared/fruit/llm.js",
+  "supabase/functions/fruit-story-ideas/index.ts",
+  "supabase/functions/fruit-story-planner/index.ts",
+  "supabase/functions/fruit-story-video-prompts/index.ts",
+];
+
+// Live code brought back into the branch (owner, 2026-11-05: "live is newer → bring the live version into
+// laptop-transfer"): the picture bake-off proxy deployed on 2026-10-06 allows one more model, google:4@2.
+const FRUIT_LIVE_RECONCILE_BY_OWNER = [
+  "supabase/functions/runware-bakeoff-proxy/index.ts",
+];
+
 const CODE = /\.(js|jsx|mjs|ts|tsx)$/;
 function filesUnder(rel) {
   const full = path.join(ROOT, rel);
@@ -141,14 +157,20 @@ test("Fruit's files are main's, except the changes the owner asked for by name",
   let base;
   try { [base] = git("merge-base", "HEAD", "origin/main"); } catch { /* no origin/main here */ }
   if (!base) return t.skip("origin/main is not fetched here");
-  const allowed = new Set([...ALLOWED_IN_FRUIT, ...FRUIT_LANDING_BY_OWNER]);
+  const allowed = new Set([...ALLOWED_IN_FRUIT, ...FRUIT_LANDING_BY_OWNER, ...FRUIT_OPENAI_BACKUP_BY_OWNER, ...FRUIT_LIVE_RECONCILE_BY_OWNER]);
   const changed = git("diff", "--name-only", base, "--", ...FRUIT).filter((f) => !allowed.has(f));
   const added = git("ls-files", "--others", "--exclude-standard", "--", ...FRUIT).filter((f) => !allowed.has(f));
   assert.deepEqual(changed, [], "changed against main");
   assert.deepEqual(added, [], "new files in Fruit's folders");
   // The approved code change is the caption fix and nothing else: each changed Fruit file mentions it.
-  for (const f of git("diff", "--name-only", base, "--", ...FRUIT).filter((x) => allowed.has(x) && !FRUIT_LANDING_BY_OWNER.includes(x) && !/\.md$/.test(x))) {
+  for (const f of git("diff", "--name-only", base, "--", ...FRUIT).filter((x) => allowed.has(x) && !FRUIT_LANDING_BY_OWNER.includes(x) && !FRUIT_OPENAI_BACKUP_BY_OWNER.includes(x) && !FRUIT_LIVE_RECONCILE_BY_OWNER.includes(x) && !/\.md$/.test(x))) {
     assert.match(read(f), /drawn|speech|negativePrompt/i, `${f} differs from main for the caption fix`);
+  }
+  // The backup change: only the openaiFetch import and calls (every other line as on main).
+  for (const f of git("diff", "--name-only", base, "--", ...FRUIT_OPENAI_BACKUP_BY_OWNER)) {
+    const lines = git("diff", "-U0", base, "--", f).filter((l) => /^[+-](?![+-])/.test(l));
+    for (const l of lines.filter((x) => x.startsWith("+"))) assert.match(l, /openaiFetch|openaiBackup|^\+\s*(\/\/.*)?$/, `${f}: only the backup added (${l.slice(0, 120)})`);
+    for (const l of lines.filter((x) => x.startsWith("-"))) assert.match(l, /\bfetch\(/, `${f}: only a direct fetch replaced (${l.slice(0, 120)})`);
   }
 });
 

@@ -13,6 +13,7 @@
 // purpose (see section "why server-side" below) — the frontend only ever
 // sends structured preferences and gets back structured results.
 
+import { openaiFetch } from "../_shared/openaiBackup.js";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ok, err, cors } from "../shared/cors.ts";
@@ -386,7 +387,7 @@ function buildRankingSchema(count: number) {
 
 // acc: the request's usage total (real token counts, for the cost ledger).
 async function callJson(messages: any[], schema: any, maxTokens: number, temperature: number, timeoutMs = 30_000, acc?: { calls: number; inputTokens: number; outputTokens: number }) {
-  const response = await fetch(OPENAI_CHAT, {
+  const response = await openaiFetch(OPENAI_CHAT, {
     method: "POST",
     headers: { Authorization: `Bearer ${OPENAI_KEY}`, "Content-Type": "application/json" },
     body: JSON.stringify({

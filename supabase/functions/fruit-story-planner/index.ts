@@ -1,4 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
+import { openaiFetch } from "../_shared/openaiBackup.js";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { requirePaidFruitUser, consumeFruitRateLimit } from "../_shared/fruitStoryAccess.ts";
 
@@ -1292,7 +1293,7 @@ Deno.serve(async (req) => {
   let planJson: any;
   console.log(`[fruit-story-planner] calling OpenAI — preset=${preset} sceneCount=${sceneCount} chars=${user.id}`);
   try {
-    const aiRes = await fetch(OPENAI_CHAT, {
+    const aiRes = await openaiFetch(OPENAI_CHAT, {
       method: "POST",
       headers: { Authorization: `Bearer ${OPENAI_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({

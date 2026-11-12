@@ -1,3 +1,4 @@
+import { openaiFetch } from "./openaiBackup.js";
 // deno-lint-ignore-file no-explicit-any
 // Character Pack QA (Part 8) — one cheap automated vision pass per
 // CHARACTER PACK (Identity Master + Face + Profile [+ Back]), not one call
@@ -136,7 +137,7 @@ export async function runSheetQA(role: SheetRole, imageUrl: string, anchorUrl?: 
   for (const [index, img] of images.entries()) content.push({ type: "text", text: `IMAGE ${index + 1}: ${img.label}` }, { type: "image_url", image_url: { url: img.url, detail: "high" } });
   const fallback = (reason: string): SheetQAResult => ({ viewCount3: false, sameIdentityAcrossViews: false, frontViewPresent: false, sideViewPresent: false, backViewPresent: false, sideViewIsStrict: false, backViewFaceHidden: false, correctFraming: false, textArtifacts: false, environmentContamination: false, styleConsistent: false, sameIdentityAsAnchor: false, approved: false, reasons: [reason] });
   try {
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    const res = await openaiFetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${OPENAI_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -271,7 +272,7 @@ export async function runCharacterReferenceSheetQA(imageUrl: string, importance:
   const content: any[] = [{ type: "text", text: prompt }, { type: "image_url", image_url: { url: imageUrl, detail: "high" } }];
   const fallback = (reason: string): CharacterReferenceSheetQAResult => ({ panelCountCorrect: false, sameIdentityAcrossPanels: false, frontPresent: false, sidePresent: false, backPresent: false, facePresent: false, outfitDetailPresent: false, actionPosePresent: false, expressionPanelPresent: false, expressionCount: 0, outfitConsistent: false, fullBodyNotCropped: false, environmentContamination: false, textArtifactSeverity: "major", styleMismatchSeverity: "none", corruptionArtifacts: false, approved: false, reasons: [reason] });
   try {
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    const res = await openaiFetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${OPENAI_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -323,7 +324,7 @@ export async function runCharacterPackQA(input: CharacterPackQAInput): Promise<C
   for (const img of images) content.push({ type: "image_url", image_url: { url: img.url, detail: "low" } });
 
   try {
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    const res = await openaiFetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${OPENAI_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -397,7 +398,7 @@ export async function runCanonicalReferenceQA(imageUrl: string, expectations: Re
     "approved is advisory; the caller recomputes it from the hard fields. Give short, specific reasons only for failures.",
   ].join("\n");
   try {
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    const res = await openaiFetch("https://api.openai.com/v1/chat/completions", {
       method: "POST", headers: { Authorization: `Bearer ${OPENAI_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({ model: "gpt-4o-mini", messages: [{ role: "user", content: [{ type: "text", text: prompt }, { type: "image_url", image_url: { url: imageUrl, detail: "low" } }] }], response_format: { type: "json_schema", json_schema: { name: "canonical_reference_qa", strict: true, schema: CANONICAL_REFERENCE_QA_SCHEMA } }, max_tokens: 350, temperature: 0 }),
       signal: AbortSignal.timeout(30_000),

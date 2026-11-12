@@ -27,3 +27,21 @@ research/seamless-niche/work/
 content/reference-videos/
 content/studio-previews/
 content/studio-worker/
+
+# Blocky Worlds reference inbox: creator videos, frames, transcripts and voice clips are never committed
+reference/blocky-worlds/videos/
+reference/blocky-worlds/work/
+reference/blocky-worlds/voice-samples/
+# shot library study output (scripts/blockyWorlds/shotlib): third-party transcripts, keyframes, descriptions
+reference/blocky-worlds/analysis/
+# reference music stems (Demucs, from the creator videos) and our own music drafts: kept local for now
+reference/blocky-worlds/audio-only/
+reference/blocky-worlds/music-options/
+
+# Blocky Worlds look scene: Poly Haven downloads (fetchPH.mjs), never committed
+scripts/blockyWorlds/look/ph/
+
+# Blocky Worlds render engine: downloaded CC0 assets, packages, renders (kept out of git)
+scripts/blockyWorlds/engine/assets/
+scripts/blockyWorlds/engine/node_modules/
+scripts/blockyWorlds/engine/out/

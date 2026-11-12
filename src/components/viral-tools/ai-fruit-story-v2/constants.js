@@ -1,4 +1,5 @@
 // Copy and fixed options for AI Fruit Story v2 (text follows the approved prototype).
+import { tutorialFor } from "../../../lib/tutorials";
 
 export const SINGLE_STEPS = ["Story", "Settings", "Scenes", "Clips", "Final video"];
 
@@ -105,5 +106,6 @@ export const EXAMPLE_VIDEO = {
   poster: "/lp/fruit/examples/the-surprise-wedding-switch.jpg",
 };
 
-/** YouTube tutorial link for the Recent panel. Set it and a "Watch the tutorial" link appears. */
-export const TUTORIAL_URL = null;
+/** YouTube tutorial link for the Recent panel: from the one tutorials list (src/lib/tutorials.js, tool "ai_fruit_story");
+ *  a "Watch the tutorial" link appears as soon as one is listed there. */
+export const TUTORIAL_URL = tutorialFor("ai_fruit_story")?.url ?? null;
