@@ -240,9 +240,10 @@ const EVERYDAY = new Set(("rule rules law laws town towns city time times day da
   "house houses home homes room rooms window windows door doors wall walls floor floors roof roofs street streets road roads yard yards garden gardens porch porches kitchen kitchens bedroom bedrooms bed beds sofa couch table tables chair chairs lamp lamps light lights " +
   "school schools class classroom shop shops store stores park parks square woods forest tree trees grass path paths pond bench benches sky moon sun star stars cloud clouds ground air water dark darkness shadow shadows " +
   "turn way place places spot spots inside outside corner corners front everything nothing something anything ones bunch group team " +
-  "dog dogs cat cats pane panes glass inch inches mile miles meter meters grown-up grown-ups grownup grownups adult adults").split(/\s+/));
+  "dog dogs cat cats pane panes glass inch inches mile miles meter meters grown-up grown-ups grownup grownups adult adults " +
+  "height width length depth weight size shape color colour complaint complaints rank ranks score scores order lamppost lampposts streetlight streetlights").split(/\s+/));
 // words a determiner can precede that are not nouns (adverbs, past-tense verbs after "that")
-const NOT_NOUN = /^(?:fast|slow|slowly|quickly|soon|now|then|here|there|again|ever|never|always|once|twice|already|yet)$|ed$/;
+const NOT_NOUN = /^(?:fast|slow|slowly|quickly|soon|now|then|here|there|again|ever|never|always|once|twice|already|yet)$|ed$|(?:ness|ment|tion|sion|ity|ance|ence|ship|hood|dom|ism)s?$/; // abstract nouns by their ending (kindness, excitement, tradition)
 const NOUN_MAX = 3; // a noun phrase head within 3 words of its determiner
 function nounCandidates(text) {
   const t = words(text).split(/\s+/).filter(Boolean), out = [];
@@ -258,8 +259,11 @@ function nounCandidates(text) {
 /** the unknown concrete nouns of the lines: [{ word, lines }] (kit things, NOT_IN_KIT words, names and everyday words left out) */
 export function unknownNouns(lines, kit = BOARD_KIT) {
   const covered = coveredBy(kit), v = kitView(kit);
-  const known0 = [...covered, ...v.props.flatMap((p) => p.words.map((w) => String(w).toLowerCase())), ...v.animals, ...v.weather, ...v.places.map((p) => p.id)];
+  const placeWhat = v.places.flatMap((p) => String(p.what ?? "").toLowerCase().split(/[^a-z]+/).filter((w) => w.length > 2 && !DETS.has(w) && !ADJS.has(w) && !FUNCTION.has(w) && !EVERYDAY.has(w) && !/^(?:inside|outside|each|from|story|room|house|houses|street|real|place|places|day|dusk|night|rooms|cast)$/.test(w))); // the places own things (a park: benches, a pond, lamps)
+  const known0 = [...placeWhat, ...covered, ...v.props.flatMap((p) => p.words.map((w) => String(w).toLowerCase())), ...v.animals, ...v.weather, ...v.places.map((p) => p.id)];
   const known = new Set([...known0, ...known0.map((w) => singular(w))]);
+  // a noun the story pairs with a kit thing ("hat tower", "dog bowl") is that kit thing on screen (stacked hats, a bowl)
+  for (const l of lines) { const t = words(l).split(/\s+/).filter(Boolean); for (let i = 0; i + 1 < t.length; i++) if ((known.has(t[i]) || known.has(singular(t[i]))) && !DETS.has(t[i]) && !FUNCTION.has(t[i]) && !ADJS.has(t[i])) { known.add(t[i + 1]); known.add(singular(t[i + 1])); } }
   const names = new Set(lines.flatMap((l) => [...String(l).matchAll(/(?<![.!?]\s|^)\b([A-Z][a-z]+)\b/g)].map((m) => m[1].toLowerCase())));
   const seen = new Map();
   lines.forEach((text, i) => {

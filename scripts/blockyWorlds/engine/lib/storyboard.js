@@ -207,7 +207,8 @@ function showsOf(b) {
   if (b.loc === "street" || b.loc.startsWith("house:")) ["street", "house", "houses", "town"].forEach((w) => out.add(w));
   const PLACE_WORDS = { school: ["school", "classroom", "class", "desk", "desks", "teacher"], woods: ["woods", "forest", "trees", "tree", "path"], park: ["park", "trees", "bench", "pond", "grass", "square"], shop: ["shop", "store", "counter", "shelves", "till"] };
   if (/^place:/.test(b.loc)) for (const w of PLACE_WORDS[b.loc.slice(6)] ?? []) out.add(w);
-  for (const a of b.animals ?? []) [a.species, `${a.species}s`].forEach((w) => out.add(w));
+  const KIN = { bird: ["pigeon", "pigeons", "crow", "crows", "sparrow", "sparrows", "birdie"], dog: ["puppy", "puppies", "pup", "pups", "hound"], cat: ["kitten", "kittens", "kitty"], rabbit: ["bunny", "bunnies"], chicken: ["hen", "hens", "chick", "chicks"], mouse: ["mice"] };
+  for (const a of b.animals ?? []) [a.species, `${a.species}s`, ...(KIN[a.species] ?? [])].forEach((w) => out.add(w));
   for (const pr of [...(b.props ?? []).map((x) => x.name), ...(b.people ?? []).map((x) => x.hold).filter(Boolean)]) { out.add(pr); out.add(`${pr}s`); for (const a of PROP_ALIASES[pr] ?? []) out.add(a); }
   if (b.weather) [b.weather, `${b.weather}y`].forEach((w) => out.add(w));
   for (const a of b.acts) for (const w of ACT_SHOWS[a.k] ?? []) out.add(w);
@@ -254,6 +255,7 @@ export function housesInView(b) {
   const h = b.loc.split(":")[1];
   return h ? [h] : [];
 }
+const ANIMAL_OBJECTS = new Set(["dog", "cat", "duck", "cow", "pig", "sheep", "chicken", "rabbit", "goat", "mouse", "fox", "deer", "bear", "wolf", "frog", "turtle"]); // in lib/visuals.js OBJECT_CATALOG (checked 2026-11-12; not imported: visuals.js imports this file)
 const FACE_OK = new Set(["neutral", "happy", "sad", "scared", "surprised", "angry", "sleepy", "smirk", "cry", "excited", "shush", "yell", "sneeze"]); // plan.mjs EXPRS
 export function manifest(b) {
   const keys = new Set(b.acts.map((a) => a.k));
@@ -270,7 +272,7 @@ export function manifest(b) {
   for (const h of inView) for (const st of [houseOf(b.houses, h), ...(changing ? [houseOf(b.before, h)] : [])]) { if (!st) continue; if (COVER_OBJ[st.cover]) add(COVER_OBJ[st.cover]); if (st.bricks) add({ name: "wall" }); }
   for (const k of keys) for (const o of ACT_OBJ[k] ?? []) add(o);
   // the kit expansion on screen: its animals (pets) are things the checks can see
-  for (const a of b.animals ?? []) add({ name: a.species, state: "on", pet: a.species }); /* props: board props, not engine catalog objects (their words are in board.shows) */
+  for (const a of b.animals ?? []) if (ANIMAL_OBJECTS.has(a.species)) add({ name: a.species }); // the engine catalog s animals (a bird / an owl: board.shows only) /* props: board props, not engine catalog objects (their words are in board.shows) */
   const m = b.monster;
   const monsterState = m ? { spot: "back", state: m.state === "flee" ? "flee" : m.state === "lurk" ? "lurk" : "reveal", eye: m.eye ?? "stare", eyeAt: b.acts.find((a) => /:eye$/.test(a.k))?.at ?? 0 } : null;
   const setState = keys.has("glow:windows") || keys.has("lights_on:windows") ? { windows: "lit" } : keys.has("dark:windows") ? { windows: "dark" } : null;

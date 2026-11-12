@@ -67,6 +67,8 @@ export const PROPS = Object.freeze({
   basket: (g) => { cyl(g, 0.16, 0.12, 0.14, [0, 0.07, 0], mat("#c9a36a")); },
   // a garden gate in a short picket fence (2.4 m), with a few leashes hanging on it (the dogs story, 2026-11-12)
   gate: (g) => { const w = mat(C.white); box(g, [2.4, 0.08, 0.06], [0, 0.85, 0], w); box(g, [2.4, 0.08, 0.06], [0, 0.35, 0], w); for (let i = 0; i < 9; i++) { const x = -1.15 + i * 0.29; if (Math.abs(x) < 0.3) continue; box(g, [0.1, 1.05, 0.05], [x, 0.52, 0.04], w); } const gt = mat(C.wood); box(g, [0.56, 0.95, 0.06], [0, 0.5, 0.05], gt); box(g, [0.06, 0.06, 0.06], [0.22, 0.6, 0.1], mat(C.dark)); for (let i = 0; i < 3; i++) box(g, [0.035, 0.42, 0.02], [-0.9 + i * 0.12, 0.62, 0.1], mat([C.red, C.blue, C.green][i])); },
+  // a tower of hats: five hats stacked, each a little smaller, a touch crooked (the hat-stack stories, 2026-11-12)
+  hat_stack: (g) => { const cs = [C.dark, C.red, C.blue, C.green, C.purple]; let y = 0; for (let i = 0; i < 5; i++) { const r = 0.16 - i * 0.015, h = 0.14; const m = mat(cs[i]); const brim = cyl(g, r + 0.05, r + 0.05, 0.02, [0.012 * Math.sin(i * 2.1), y + 0.01, 0], m); const top = cyl(g, r, r, h, [0.012 * Math.sin(i * 2.1), y + 0.02 + h / 2, 0], m); brim.rotation.z = top.rotation.z = 0.05 * Math.sin(i * 1.7); y += h + 0.02; } },
   // a coiled dog leash: a strap loop + a clip
   leash: (g) => { const m = mat(C.red); for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; box(g, [0.06, 0.02, 0.03], [0.12 * Math.cos(a), 0.012, 0.12 * Math.sin(a)], m).rotation.y = -a; } box(g, [0.05, 0.03, 0.03], [0.17, 0.015, 0], mat(C.grey)); },
 });

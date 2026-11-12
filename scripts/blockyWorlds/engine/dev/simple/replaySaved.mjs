@@ -7,7 +7,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fixCameras, validateStoryboard } from "../../lib/storyboardDirector.js";
-import { applyStoryboard, storyboardChecks, cutStats } from "../../lib/storyboard.js";
+import { applyStoryboard, storyboardChecks, cutStats, lineProblems } from "../../lib/storyboard.js";
 import { checkTimeline, checkVisuals, checkSubjects, checkProduction } from "../../plan.mjs";
 import { loadScript } from "./planScript.mjs";
 import { planVideo } from "../../plan.mjs";
@@ -25,6 +25,8 @@ for (const spec of String(arg("rebuild", "")).split(",").filter(Boolean)) {
   const e = old?.was ?? { line, place: `${kind}:${where}`, shots: [{ loc: kind === "street" ? "street" : `${kind}:${where}`, light: "day", cam, people: who ? [{ id: who, where: kind === "place" ? "place:center" : "street:3" }] : [], acts: [] }] };
   board.lines = board.lines.filter((l) => l.line !== line); board.lines.push(e); rebuilt.push(line);
 }
+// the director s own entries of lines that fell back (saved as was since 2026-11-12) come back for the replay
+let restored = 0; board.lines = board.lines.map((l) => (l.was ? (restored++, l.was) : l));
 board.lines.sort((a, b) => a.line - b.line);
 const camFixes = fixCameras(board);
 // the planner run the worker does (estimated words, the scene list, the mock direction): its cast is the storyboard`s
@@ -34,7 +36,7 @@ const planned = planVideo({ script, words: estimateWords(script), idea, directio
 const cast = planned.cast ?? {};
 const problems = validateStoryboard(board, { lines, cast });
 const kept = board.lines.filter((l) => l.keep && !l.fallback).map((l) => l.line);
-console.log(`saved board: ${board.lines.length} lines; rebuilt (labelled, not the director's own): ${rebuilt.join(", ") || "-"}; camera fixes ${camFixes}`);
+console.log(`saved board: ${board.lines.length} lines; restored ${restored}; rebuilt (labelled, not the director's own): ${rebuilt.join(", ") || "-"}; camera fixes ${camFixes}`);
 console.log(`validation: ${problems.length} problem(s)${problems.length ? ": " + problems.slice(0, 6).map((p) => `#${p.line + 1} ${p.problem}`).join("; ") : ""}`);
 console.log(`kept for the old planner: ${kept.length} line(s) ${kept.map((n) => `#${n + 1}`).join(" ")}${boardOnly && kept.length ? " -> board-only: these go to the repair (a paid call) and fail the run if still kept" : ""}`);
 const tl = applyStoryboard(planned, board);
@@ -42,6 +44,11 @@ const checks = { ...storyboardChecks(tl, board), timeline: checkTimeline(tl).fil
 console.log(`engine checks (estimated timing, kept lines on the old planner): ${Object.entries(checks).map(([k, v]) => `${k} ${v.length}`).join(", ")}`);
 for (const [k, v] of Object.entries(checks)) for (const p of v.slice(0, Number(arg("show", 6)))) console.log(`  ${k}: ${typeof p === "string" ? p : JSON.stringify(p)}`);
 if (arg("out")) fs.writeFileSync(arg("out"), JSON.stringify(tl));
+// the same per-line view the director gets before the voice (lib/storyboard.js lineProblems), grouped by kind
+const lp = lineProblems(tl, checks), kinds = {};
+for (const p of lp) { const k = p.problem.replace(/line d+/g, "line N").replace(/shot d+/g, "shot N").replace(/\"[^\"]*\"/g, "\"X\"").slice(0, 80); kinds[k] = (kinds[k] ?? 0) + 1; }
+console.log(`per-line problems: ${lp.length} on ${new Set(lp.map((p) => p.line)).size} of ${lines.length} lines`);
+for (const [k, n] of Object.entries(kinds).sort((a, b) => b[1] - a[1]).slice(0, Number(arg("kinds", 15)))) console.log(`  ${n} x ${k}`);
 console.log(`cuts: ${JSON.stringify(cutStats(tl))}; ${tl.shots.length} shots, ${tl.shots.filter((s) => s.board).length} board, ${tl.duration} s`);
 const pass = !problems.length && Object.values(checks).every((v) => !v.length) && !(boardOnly && kept.length);
 console.log(pass ? "PASS" : "FAIL");

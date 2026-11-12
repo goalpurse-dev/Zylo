@@ -36,10 +36,11 @@ const { formulaProblems } = await import(pathToFileURL(path.join(SHARED, "formul
 const { kitCheck } = await import(pathToFileURL(path.join(SHARED, "kitCheck.js")).href);
 
 // 1. the script (the money meter stops a call whose worst case would pass what is left)
-const meter = LLM.moneyMeter(Math.min(0.12, CAP));
-const w = await step("script", () => LLM.writeScript({ apiKey, idea: card, lengthSec: 90, meter, maxTokens: 8000, board: true }));
-C.script = +meter.spent.toFixed(5);
-const script = w.script;
+// --reuse: the script of an earlier attempt in this folder (its cost stays booked; no second paid write)
+const prevRun = argv.includes("--reuse") && fs.existsSync(path.join(out, "results.json")) ? JSON.parse(fs.readFileSync(path.join(out, "run.json"), "utf8")) : null;
+let script;
+if (prevRun) { script = JSON.parse(fs.readFileSync(path.join(out, "results.json"), "utf8")).results[0].script; C.script = prevRun.usd.script; T.script = prevRun.seconds.script; }
+else { const meter = LLM.moneyMeter(Math.min(0.12, CAP)); const w = await step("script", () => LLM.writeScript({ apiKey, idea: card, lengthSec: 90, meter, maxTokens: 8000, board: true })); C.script = +meter.spent.toFixed(5); script = w.script; }
 fs.writeFileSync(path.join(out, "results.json"), JSON.stringify({ results: [{ script, card }] }, null, 1));
 const formula = formulaProblems(script, 90), kc = kitCheck(script, { card, boardOnly: true });
 say(`script "${script.title}": ${script.lines.length} lines, ${script.lines.reduce((a, l) => a + l.text.split(/\s+/).length, 0)} words ($${C.script}); formula ${formula.length} problem(s); kitCheck(board-only) ${kc.ok ? "ok" : kc.missing.map((m) => m.word).join(", ")}`);
