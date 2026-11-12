@@ -20,15 +20,17 @@ const rand = (i, k) => { const x = Math.sin(i * 127.1 + k * 311.7) * 43758.5453;
  * down it, foam and a few droplets where it lands. It replaces the rain-streak curtain for custom layouts (the stream
  * kind, m2/parts.js). update(t, on)
  */
-export function fallSheet(ctx, { x0 = 0, x1 = 0.4, z = 0, yTop = 2, yBot = 0, color = null } = {}) {
+export function fallSheet(ctx, { x0 = 0, x1 = 0.4, z = 0, yTop = 2, yBot = 0, color = null, bowZ = false } = {}) {
   const { THREE } = ctx, clock = waterClock(ctx);
   const a = Number(x0), b = Number(x1), cx = (a + b) / 2, w = Math.max(0.12, Math.abs(b - a)), h = Math.max(0.2, Number(yTop) - Number(yBot));
-  const out = Math.sign(cx) || 1, bow = Math.min(0.35, h * 0.1);
-  const pts = [[cx, yTop, z], [cx + out * bow * 0.6, yTop - h * 0.2, z], [cx + out * bow, yTop - h * 0.6, z], [cx + out * bow * 1.05, yBot, z]].map((q) => new THREE.Vector3(...q));
+  const out = Math.sign(cx) || 1, bow = Math.min(bowZ ? 0.6 : 0.35, h * 0.1);
+  // (bowZ: a sheet over a rim facing the camera curls out toward it, +z, not sideways: the spill over a tank's rim)
+  const at = (k, y) => (bowZ ? [cx, y, z + bow * k] : [cx + out * bow * k, y, z]);
+  const pts = [at(0, yTop), at(0.6, yTop - h * 0.2), at(1, yTop - h * 0.6), at(1.05, yBot)].map((q) => new THREE.Vector3(...q));
   const { geo, length } = ribbonGeometry(THREE, pts, (u) => w * (1 + 0.25 * u), { side: () => new THREE.Vector3(1, 0, 0) });
   const mat = streamMaterial(ctx, { color: color ?? "#8cc8d6", opacity: 0.85, speed: 5.5, streak: 0.8, edge: 0.75, env: 0.8 });
   const sheet = new THREE.Mesh(geo, mat); sheet.renderOrder = 5; sheet.visible = false; ctx.scene.add(sheet);
-  const foot = [cx + out * bow * 1.05, Number(yBot), z];
+  const foot = at(1.05, Number(yBot));
   const foam = foamPatch(ctx, { at: foot, r: Math.max(0.25, w * 0.9) });
   const drops = droplets(ctx, { at: foot, n: 10, size: 0.03, spread: 0.45, height: 0.35, speed: 1.6 });
   return {
@@ -85,13 +87,57 @@ export function fx(ctx, p, api) {
       }
       dust.forEach((d, i) => { const k = clamp01(u * 1.4 - 0.1); d.m.position.set(Math.cos(d.a) * k * 1.6 * s, 0.25 * s + k * 0.6 * s * d.k, Math.sin(d.a) * k * 0.8 * s + 0.3); d.m.scale.setScalar(0.4 + k * 1.3 * d.k); d.m.material.opacity = 0.55 * (1 - k * 0.85); });
     };
+  } else if (type === "burst" || type === "spill") {
+    // (custom layouts, the owner's rule of 2026-11-12 "a burst sprays water, a spill runs over the rim as a sheet", after
+    // the real water tower run showed a CRASH! label and faint bubbles at the burst joint and no water over the rim)
+    // burst: a hard jet of water out of the point (p.dir, default up and toward the camera), drops thrown in a narrow cone,
+    // falling back under gravity, a mist at the split and foam where it lands; spill: a falling sheet over the rim (p.sheet,
+    // world space: x0, x1, z, yTop, yBot) with drops tipping over the lip. Both run while "on".
+    const nu = waterNew(ctx);
+    if (type === "spill") {
+      const sh = p.sheet ?? { x0: -0.6 * s, x1: 0.6 * s, z: 0, yTop: 0, yBot: -2 * s };
+      const o = p.at ?? [0, 0, 0], world = p.sheet ? sh : { ...sh, x0: o[0] + sh.x0, x1: o[0] + sh.x1, z: o[2], yTop: o[1], yBot: o[1] + sh.yBot };
+      const sheet = fallSheet(ctx, { ...world, bowZ: true, ...(typeof p.color === "string" ? { color: p.color } : {}) });
+      const lip = droplets(ctx, { at: [(world.x0 + world.x1) / 2, world.yTop + 0.05, world.z + 0.1], n: 12, size: 0.04, spread: Math.abs(world.x1 - world.x0) / 2, height: 0.25, speed: 1.4 });
+      update = (t) => { const on = clamp01(api.ch("on", t)); sheet.update(t, on); lip.set(t, on > 0.2 ? 1 : 0); root.visible = false; };
+    } else {
+      const fxClock = waterClock(ctx), d0 = Array.isArray(p.dir) ? p.dir.map(Number) : Number((p.at ?? [0, 0, 0])[1]) < -0.2 ? [0.75, 0.65, 0.04] : [0.45, 0.8, 0.3], dl = Math.hypot(...d0) || 1, dir = d0.map((v) => v / dl);
+      const at0 = p.at ?? [0, 0, 0], foam = Math.abs(Number(at0[1])) < 0.6 ? foamPatch(ctx, { at: [Number(at0[0]) + dir[0] * 1.6 * s, 0, Number(at0[2]) + dir[2] * 1.6 * s], r: 0.6 * s }) : null;
+      const N = nu ? 90 : 50, dropM = std({ color: C(typeof p.color === "string" ? p.color : "#d6eeff"), roughness: 0.06 });
+      dropM.transparent = true; dropM.opacity = 0.82; dropM.depthWrite = false;
+      const J = Array.from({ length: N }, (_, i) => ({ m: mesh(new THREE.SphereGeometry(0.055 * s * (0.6 + rand(i, 3) * 0.8), 10, 8), dropM), ph: rand(i, 1), a: rand(i, 2) * Math.PI * 2, k: rand(i, 4), sp: 0.8 + rand(i, 5) * 0.5 }));
+      const mistM = glowM("#f4fbff", 0.22), mist = Array.from({ length: 6 }, (_, i) => ({ m: mesh(new THREE.SphereGeometry(0.28 * s, 12, 10), mistM), a: rand(i, 6) * Math.PI * 2, k: rand(i, 7) }));
+      // (a split in a pipe under the ground sprays along the soil face, never out of the cut toward the lens into thin air,
+      // which read as drops falling below the pipe; the jet's width lies across the view, z)
+      const sl = Math.hypot(dir[1], dir[0]) || 1, side = sl > 0.2 ? [dir[1] / sl, -dir[0] / sl, 0] : [1, 0, 0];
+      // (the jet itself: a water ribbon along the arc from the split, so it reads as a spraying jet, not a puff; the first
+      // free stills of the water tower burst were a small white cloud)
+      const reach = 3.4 * s, arc = Array.from({ length: 9 }, (_, i) => { const f = i / 8; return new THREE.Vector3(dir[0] * reach * f, dir[1] * reach * f - 2.0 * s * f * f, dir[2] * reach * f); });
+      const jet = ribbonGeometry(THREE, arc, (u) => (0.1 + 0.35 * u) * s, { side: () => new THREE.Vector3(side[0], side[1], side[2]) });
+      const jetM = streamMaterial(ctx, { color: '#a9d8ea', opacity: 0.88, speed: 7, streak: 0.85, edge: 0.7, env: 0.9 }), jetMesh = mesh(jet.geo, jetM); jetMesh.renderOrder = 5;
+      update = (t) => {
+        fxClock.set(t);
+        const on = clamp01(api.ch("on", t)); root.visible = on > 0.01; jetM.userData.stream?.set({ on: Math.min(1, on * 1.4), reach: jet.length * Math.min(1, on * 1.6) }); if (foam) foam.set(on > 0.3 ? Math.min(1, (on - 0.3) / 0.5) : 0); if (!root.visible) return;
+        for (const q of J) {
+          const f = (t * 1.6 * q.sp + q.ph) % 1, sp = 3.2 * s * on, cone = 0.22 * (q.k - 0.5), up = Math.sin(q.a) * 0.18;
+          const v = [dir[0] + side[0] * cone, dir[1] + up, dir[2] + side[2] * cone];
+          const x = v[0] * f * sp * 1.05, y = v[1] * f * sp * 1.05 - 2.1 * s * f * f, z = v[2] * f * sp * 1.05;
+          q.m.position.set(x, y, z); q.m.visible = true;
+          const vy = v[1] * sp - 4.8 * s * f, vel = [v[0] * sp, vy, v[2] * sp], L = Math.hypot(...vel) || 1;
+          q.m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(vel[0] / L, vel[1] / L, vel[2] / L)); q.m.scale.set(1, 2.2, 1);
+        }
+        mist.forEach((q, i) => { const g = ((t * 0.7 + q.k) % 1); q.m.position.set(dir[0] * (0.3 + g) * s + Math.cos(q.a) * 0.2 * s, dir[1] * (0.3 + g) * s, dir[2] * (0.3 + g) * s + Math.sin(q.a) * 0.2 * s); q.m.scale.setScalar(0.6 + g * 1.4); q.m.material.opacity = 0.22 * on * (1 - g); });
+      };
+    }
   } else if (type === "crack") {
     // a few jagged lines from the point across the face (z = the point's), growing with "go", staying
-    const lines = [];
+    // (custom layouts: a clear, wide crack, the owner's rule of 2026-11-12; the water tower's leg cracks read as thin lines)
+    const wide = waterNew(ctx), lines = [];
     for (let j = 0; j < 5; j++) {
       const pts = [new THREE.Vector3(0, 0, 0)]; let a = (j / 5) * Math.PI * 2 + rand(j, 1);
-      for (let k = 1; k <= 6; k++) { a += (rand(j, k) - 0.5) * 1.1; const last = pts[pts.length - 1]; pts.push(new THREE.Vector3(last.x + Math.cos(a) * 0.35 * s, last.y + Math.sin(a) * 0.3 * s, 0.01)); }
-      const m = mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, false, "catmullrom", 0), 40, 0.035 * s, 6), new THREE.MeshBasicMaterial({ color: C("#1a1410") }));
+      for (let k = 1; k <= 6; k++) { a += (rand(j, k) - 0.5) * 1.1; const last = pts[pts.length - 1]; pts.push(new THREE.Vector3(last.x + Math.cos(a) * (wide ? 0.42 : 0.35) * s, last.y + Math.sin(a) * (wide ? 0.38 : 0.3) * s, 0.01)); }
+      const r = wide ? (j < 2 ? 0.13 : 0.085) * Math.max(s, 0.8) : 0.035 * s;
+      const m = mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, false, "catmullrom", 0), 40, r, 6), new THREE.MeshBasicMaterial({ color: C("#1a1410") }));
       m.geometry.setDrawRange(0, 0); lines.push(m);
     }
     const dust = puffs(5, "#c9bca8", 0.5);
@@ -169,5 +215,8 @@ export function fx(ctx, p, api) {
 /** the box an effect covers (the camera and the checks) */
 export function fxBox(p) {
   const [x, y, z] = p.at ?? [0, 0, 0], s = Number(p.size ?? 1), r = (p.type === "blast" ? 4 : p.type === "smoke" ? 2.2 : 1.6) * s;
+  // (a spill: its sheet, from the rim to where it lands; a burst: the jet's reach round the split)
+  if (p.type === "spill" && p.sheet) { const q = p.sheet, a = Math.min(q.x0, q.x1), b = Math.max(q.x0, q.x1); return { min: [a - 0.4, Math.min(q.yBot, q.yTop), q.z - 0.4], max: [b + 0.4, Math.max(q.yBot, q.yTop) + 0.3, q.z + 0.9] }; }
+  if (p.type === "burst") return { min: [x - 1.4 * s, y - 0.6 * s, z - 0.4 * s], max: [x + 1.4 * s, y + 1.6 * s, z + 1.4 * s] };
   return { min: [x - r, y - 0.2, z - r * 0.5], max: [x + r, y + r, z + r * 0.5] };
 }

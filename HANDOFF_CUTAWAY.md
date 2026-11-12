@@ -1,5 +1,67 @@
 # Cutaway handoff (written 2026-11-07, for a fresh session)
 
+**UPDATE 2026-11-12: after the real water tower run.** Everything is local on `cutaway-work`. Nothing has been pushed or
+deployed, and the production worker is still af43baaf.
+
+**The real water tower run (2026-11-11).** "How a water tower works", 60 s, a new topic.
+- Page: https://claude.ai/artifact/KTR4irb7RRiNCuR8GdkfTc. Output: `<session scratchpad 49da1815>/watertower/`.
+- Real cost: **$2.033**, $0.03 over the $2 cap.
+  - The beat plan at "high" cost $1.158 (105k output tokens, 89k of them thinking). Its repair cost $0.414.
+  - A wrong ffmpeg path stopped the run. A resume then lost the first voice take ($0.109).
+- The owner's verdict: "Good result. The video is strong."
+- The owner's 3 fixes, all done for free for every custom topic (premade unchanged):
+  1. **First frame.** The opening shows the world above ground with the hook's action starting.
+     - `director.js`, the "opening and closing fill" pass: `aboveGroundBox` + `frameIssues(opening)`.
+     - The hook object must be a thing that comes back working (a dry tap, never "a hole"). This is checked as rule 4 in `storyRules.js`: `NOT_AN_OBJECT` kinds, and `HOLE_HOOK` for "…you have a hole". The planner's prompt says the same: the STORY_RULES hook line and rule 7.
+  2. **Mid-video framing.** Every line's frame shows the part the line is about.
+     - New `m2/lineFrame.js`: `frameIssues` flags behind / off / hidden / wall / close (blurry close-up) / under. `lineFramePass` runs last in compile.mjs (custom only): it tests the exact frames the picture checker sees (`previewTimes`) and reframes a failing line on a view that passes.
+     - Fixed on the way:
+       - A rig piece is now boxed where it stands at that line: `rigBox({played})`, `cameraRules.playedMoves`. The float in the lifted tank had been boxed on the ground.
+       - The stream (spill) kind had no box. Drops were boxed at z 0 and not at their own z. A flow inside a pipe is now boxed by its pipe.
+       - A canopy or car-wash arch hides only with its roof.
+  3. **Real effects.**
+     - New fx `burst`: a water jet ribbon with drops, mist and foam at ground level. An underground split sprays along the soil face, never out of the cut.
+     - New fx `spill`: a falling sheet over a rim, `fallSheet` with `bowZ`.
+     - The crack is wide and dark.
+     - `storyFx.js customEvent`:
+       - "bursts" on a water line becomes a burst;
+       - "spills / overflows / pours over" becomes a spill;
+       - "spraying" becomes a splash;
+       - a planned splash on a burst line is upgraded;
+       - a narrow planned stream on a spill line is widened;
+       - "slams" next to a burst adds no crash flash;
+       - "an overflow pipe" (a noun) adds nothing.
+     - `compile.mjs stateCards`: the physical labels (CRASH!, BROKEN, CRACKED, FLOODED, LEAKING, OVERFLOW, DIRTY…) are never shown in custom videos.
+- **The paid medium-effort test** (owner's go, cap $0.80). It ran only the beat plan, stopped by `CUTAWAY_PLAN_STOP_AFTER`, with replies capped at 60k tokens.
+  - Topic: "How a fire hydrant works", 60 s. It cost **$0.482** (37k output tokens, 26k of them thinking).
+  - Before any repair, the free story checker found:
+    - the water tower at high: 8 loops, 3 problems;
+    - the hydrant at medium: 9 loops, 4 problems of the same kinds.
+  - The hook object is the hydrant itself, and it comes back working.
+  - **"medium" is now the default** (`BEATS_EFFORT` in planner.mjs; `CUTAWAY_BEATS_EFFORT` overrides it). A 60 s plan with its repair should cost about $0.8 instead of $1.57. The budget's worst case for a beat plan is now $0.65.
+  - Both plans are saved in `m3/paidPlans/`.
+- **Free numbers (61 custom plans, including `m3/sweep/plans/real_water_tower.json`):**
+  - `node m3/lineFrames.mjs`: bad lines 7/882 (62/858 before), first frame above ground 61/61 (54/60 before).
+  - `m3/endFill.mjs`: 61/61. The opening is now measured on the above-ground box.
+  - `m3/storyScore.mjs`: 29/40. It was 32; swimming pool, septic tank and chip factory now correctly fail the new rule 4 because their hooks open on a dig or settling sand. Next free step: re-plan those stand-ins.
+  - Tests: 256/258, the 2 known old failures.
+  - Premade: the 4 live premades build identically (parts, tracks, camera; `premadeCmp.mjs`).
+  - The crash sweep and the premade pixel compare were running at handoff: see the commit message of the last commit.
+- **Left by the line check:**
+  - aquarium name/how (the filter seen past the canopy roof);
+  - nuclear plant intake;
+  - sewage duck: a token that travels along a path has a static box;
+  - smoke detector congrats (the build box is half off the frame);
+  - storm drain hook: the dig is the legacy hook object;
+  - basement myth wetBand.
+- **Seen in the free stills but not fixed:**
+  - Falling leaves are specks.
+  - The house fire is small.
+  - Dribble drops look like rice.
+  - The long main pipe's macro shows only a piece of it.
+  - The saved water tower plan's end card sits off the frame: its sign came from the old run.
+- **Waiting on the owner:** a deploy go (story rules, the look, these fixes, medium effort; a new worker image, see below). The real re-check is skipped until the owner asks.
+
 **UPDATE 2026-11-11: the competitor round** (owner's 25 rules from 5 top competitor videos; commits 3f06de76, ab5cc3a1,
 e68e8746 on cutaway-work; nothing deployed; production worker is still af43baaf). Page: https://claude.ai/artifact/76B12rsq5DV1PrNeHEFr6q
 - Story rules 1-11: `m2/storyRules.js` (+ STORY_RULES / WRITING_RULES in planner.mjs, roles problem4-12 / fix6-12 / name3,
@@ -136,6 +198,8 @@ The goal from the owner: take the 40-topic scoreboard to 40/40, mostly for free.
 - Every report to the owner starts with the scoreboard, in plain words, and ends with "In plain terms".
 
 ## Tools (all in m3/, run from scripts/cutaway/proto3d)
+- (2026-11-12) `node m3/lineFrames.mjs [--only a,b] [--v]`: every line's frame and the first frame, free. `m3/endFill.mjs`: opening/closing fill. `m3/storyScore.mjs`: story rules.
+- (2026-11-12) Dev switches for a capped paid planner test: `CUTAWAY_BEATS_EFFORT=low|medium|high`, `CUTAWAY_BEATS_MAX_TOKENS=n`, `CUTAWAY_PLAN_STOP_AFTER="beats plan"` (throws STOPPED after that paid step; its reply is in `<out>/steps/`).
 - `scoreboard.mjs --proto PROTO --known --out DIR`: the free code checks on all 40 topics. **Too lenient**: it caught only 24 of the 125 lines the real checker failed. Use it only as a pre-filter.
 - `realCheck.mjs --proto PROTO --out DIR --known --only <list> [--max USD] [--dry]`
   - Runs the **real** picture checker on the same frame strips a customer run sends it.
@@ -263,3 +327,6 @@ The full stand-in reports, with stills: `<new scratchpad>/standin/<key>/`. The o
 - Heredocs on this laptop eat backslashes. Write regex code with Write or Edit, never `cat <<EOF`.
 - Push or merge to main only on the owner's say. Supabase deploys are OK, but verify by downloading and diffing.
 - Database writes to production may be blocked by the safety check; then hand the owner the command.
+- `node -e` replacement strings eat backslashes too (a regex lost every `\s` on 2026-11-12): use a small script file written with Write.
+- A real run resumed from its steps needs the same ffmpeg path as the first try (`ffmpeg.exe`, not `.exe.exe`), and never in replay mode after a paid voice (the replay rebuilt the old script and set the paid take aside, 2026-11-11).
+- Custom-only behaviour is gated on `layout.approved !== true` (or `cameraRulesOn`, or `waterNew(ctx)` in kit). Prove premade unchanged with premadeCmp.mjs and pmdense.sh after every kit or director change.

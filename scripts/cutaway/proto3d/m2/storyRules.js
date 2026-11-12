@@ -33,6 +33,11 @@ const SCALE_RANK = { part: 0, thing: 1, room: 1, house: 2, yard: 2, neighbours: 
 // rule 6: world pieces that are places, never built mid-story: in the world from the first frame
 const WORLD_KINDS = new Set(["terrain", "waterBody", "creek"]);
 const APPEAR_VERBS = new Set(["show", "build", "grow", "appear", "arrive"]);
+// rule 4: what a hook's object can never be (it cannot come back working at the end): a hole, a fill, an effect, a label
+export const NOT_AN_OBJECT = new Set(["dig", "gravel", "soakPit", "wrap", "settle", "crack", "fx", "flow", "pipeFlow", "pipeRunFlow", "seepFlow", "arrows", "outline", "counter", "wipe", "lawnWet", "soak", "wetBand", "soilLeak", "drops", "puddles", "rain", "light", "sign", "ambient", "bubbles"]);
+// (the thing "you have" is a hole: "…you have a deep hole"; a hole cut IN something, the competitor's "If you cut a hole in your
+// street", is about the street, which comes back paved)
+const HOLE_HOOK = /\byou(?:'ve| have| get| end up with)\s+(?:a|an|the|your)\s+(?:[a-z]+\s+)?(?:hole|pit|trench|ditch)\b/i;
 // rule 7: labels and meters that only say a problem (a red state label, a counter / gauge): at most 2 per video
 export const MAX_METERS = 2;
 // rule 9: "This is a..." at most 3
@@ -119,6 +124,12 @@ export function storyRuleProblems(L, story = {}, sentences = null, lengthSec = 6
   const endSays = endIdx.some((i) => [...stems(textOf(i))].some((w) => hookWords.has(w) && !topicWords.has(w)));
   const endShows = !!hookP && endParts.has(hookP);
   stats.hookReturns = endSays || endShows;
+  // (the hook's object is a thing that can come back working: a dry tap, a dark lamp, a green pool; never a hole, a dig, an
+  // effect or a label. The real water tower run opened on "you have a deep hole", in the dark under the lawn, and ended on
+  // a tower the hole never was; the owner, 2026-11-12)
+  const hookPart = hookP ? parts.get(String(hookP).split(".")[0]) : null;
+  if (hookPart && NOT_AN_OBJECT.has(hookPart.kind)) P.push(`rule 4 (the hook's object): the hook shows ${hookPart.id} (${hookPart.kind}), which cannot come back working at the end; open on the thing itself, above ground, at the moment it fails or is needed (a dry tap, a dark lamp, a green pool, a flooded yard), never a hole, a dig or an effect`);
+  else if (HOLE_HOOK.test(String(textOf(0) ?? ""))) P.push(`rule 4 (the hook's object): the hook "${String(textOf(0)).slice(0, 60)}" is about a hole; open on a thing that can come back working at the end (a dry tap, not "a hole")`);
   if (!endIdx.length) P.push("rule 4: the story ends with a finish line that brings the hook's object back working");
   else if (!stats.hookReturns) P.push(`rule 4 (hook = ending): the end must bring back the hook's own object${hookP ? ` (${hookP})` : ""}, finished or working ("Bury the pipes, pave the road, and let it rain"; "open the tap, and there's your water"): put it in the finish beat's shows/do and say it in the last lines`);
 

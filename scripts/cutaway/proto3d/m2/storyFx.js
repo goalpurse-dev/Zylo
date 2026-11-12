@@ -25,6 +25,23 @@ export const EVENTS = [
   { re: /^(spins?|spinning|spun|whirls?|whirling|rotates?|rotating)$/, type: "swirl" },
 ];
 const ONE_SHOT = new Set(["blast", "crash", "crack", "collapse"]);
+// (custom layouts, the owner's rule of 2026-11-12 "a burst sprays water, a spill runs over the rim as a sheet, a crack is a
+// clear wide crack; no label instead of the effect"): a burst of a pipe, hose, main or tank is a jet of water, not a crash
+// flash; water over a rim or edge is a falling sheet; spraying and gushing are a splash. A premade video keeps its events.
+const BURST = /^(burst|bursts|bursting|ruptures?|ruptured)$/, SPILL = /^(spills?|spilled|spilling|overflows?|overflowed|overflowing|pours?|poured|pouring)$/;
+const SPRAY = /^(spraying|sprayed|gushing|gushed|squirts?|squirting)$/;
+const WATERY = /\b(pipes?|hoses?|mains?|joints?|tanks?|water|valves?|dams?|pumps?|taps?|faucets?|lines?|plumbing|tower|barrel|pool|basin|tub|sink|gutter|drain)\b/i;
+function customEvent(layout, low, i, text) {
+  if (layout.approved === true) return null;
+  const w = low[i];
+  // (a word naming a thing, not an event: "an overflow pipe", "the spill valve", "burst disc"; the water tower's fix line
+  // "So an overflow pipe will carry the extra water down" got a spill)
+  if ((BURST.test(w) || SPILL.test(w)) && /^(pipes?|valves?|drains?|tubes?|holes?|outlets?|tanks?|basins?|channels?|discs?|disks?|lines?|ports?|spouts?|weirs?|trays?|pans?)$/.test(low[i + 1] ?? "")) return "skip";
+  if (BURST.test(w)) return WATERY.test(text) ? "burst" : null;
+  if (SPILL.test(w)) { if (/^pour/.test(w) && !/\b(over|out|down)\b/.test(low.slice(i + 1, i + 4).join(" "))) return null; return "spill"; }
+  if (SPRAY.test(w)) return "splash";
+  return null;
+}
 // not things the "Add ..." line adds: gauges, arrows, flows and the scene's switches
 const DRESSING = new Set(["counter", "arrows", "outline", "flow", "pipeFlow", "pipeRunFlow", "seepFlow", "light", "rain", "sign", "fx", "lawnWet", "soak", "bubbles"]);
 // words for the same thing (an item word -> words a part's id, kind or name may use)
@@ -59,6 +76,14 @@ function spot(layout, beat, type) {
   const size = +Math.min(3.5, Math.max(0.5, w * 0.22)).toFixed(2), front = +(box.max[2] + 0.05).toFixed(2);
   // (on its top: a blast, fire, a splash, frost on a surface, specks in the air; frost in the soil under an ice rink read as
   // nothing, 2026-11-05)
+  // (a spill: a sheet over the top edge of what the line shows, down its front to the ground, half its width; a burst: at
+  // its middle, size from its width, at least 0.8 so the jet reads)
+  if (type === "spill") {
+    const bw = box.max[0] - box.min[0], sw = Math.min(4, Math.max(0.6, bw * 0.5)), yBot = Math.max(0, box.min[1]);
+    const sheet = { x0: +(c[0] - sw / 2).toFixed(2), x1: +(c[0] + sw / 2).toFixed(2), z: front, yTop: +box.max[1].toFixed(2), yBot: +(box.max[1] - yBot < 0.4 ? box.max[1] - 0.4 : yBot).toFixed(2) };
+    return { at: [+c[0].toFixed(2), sheet.yTop, front], size: +Math.max(0.6, sw / 2).toFixed(2), sheet };
+  }
+  if (type === "burst") return { at: [+c[0].toFixed(2), +c[1].toFixed(2), front], size: +Math.max(0.8, size).toFixed(2) };
   const y = inMachine ? c[1] : ["blast", "fire", "smoke", "spark", "swirl", "frost", "splash", "motes"].includes(type) ? box.max[1] : type === "drip" ? box.max[1] - (box.max[1] - box.min[1]) * 0.25 : c[1];
   return { at: [+c[0].toFixed(2), +Math.max(y, box.min[1]).toFixed(2), front], size };
 }
@@ -120,10 +145,26 @@ export function storyFx(layout, sentences) {
     // the words something already happens on (an action's cue word), and its neighbours
     const hit = new Set();
     for (const a of b.do ?? []) { const i = a.w ? low.indexOf(clean(a.w)) : 0; if (i >= 0) for (const j of [i - 1, i, i + 1]) hit.add(j); }
-    const seen = new Set();
+    const seen = new Set(), line = textOf(b.s);
+    // (a burst on this line is the disaster: no crash flash beside it for "the pump slams", the water tower run)
+    const bursts = low.some((_, i) => customEvent(layout, low, i, line) === "burst");
     low.forEach((w, i) => {
-      const ev = EVENTS.find((e) => e.re.test(w));
-      if (!ev || seen.has(ev.type) || hit.has(i)) return;
+      const cust = customEvent(layout, low, i, line), ev = cust ? { type: cust } : EVENTS.find((e) => e.re.test(w));
+      if (!ev || ev.type === "skip" || seen.has(ev.type)) return;
+      if (ev.type === "crash" && bursts) return;
+      // (custom: what the planner put on this line for the burst or the spill becomes the real effect: a splash at the
+      // burst joint sprays as a jet; a narrow stream over a rim widens to a sheet a viewer reads; idempotent)
+      if (cust === "burst" || cust === "spill") {
+        const mine = (b.do ?? []).map((a) => layout.parts.find((p) => p.id === a.p)).concat(layout.parts.find((p) => p.id === b.shows?.p)).filter(Boolean);
+        let up = false;
+        for (const p of mine) {
+          if (cust === "burst" && p.kind === "fx" && ["splash", "crash", "drip"].includes(p.params?.type)) { p.params.type = "burst"; p.params.size = Math.max(0.8, Number(p.params.size ?? 1)); up = true; }
+          if (cust === "spill" && p.kind === "stream") { const q = p.params, h = Math.abs(Number(q.yTop) - Number(q.yBot ?? 0)), w0 = Math.abs(q.x1 - q.x0), w1 = Math.min(4, Math.max(w0, 0.8, h * 0.18)); if (w1 > w0 + 1e-3) { const cx = (q.x0 + q.x1) / 2; q.x0 = +(cx - w1 / 2).toFixed(2); q.x1 = +(cx + w1 / 2).toFixed(2); } up = true; }
+          if (cust === "spill" && p.kind === "fx" && p.params?.type === "splash") { const sp = spot(layout, b, "spill"); Object.assign(p.params, { type: "spill", sheet: sp.sheet, at: sp.at }); up = true; }
+        }
+        if (up) { seen.add(cust); stats.events++; notes.push(`${b.s}: "${words[i]}" shown as a real ${cust}`); return; }
+      }
+      if (hit.has(i)) return;
       // (a word of the topic's own name is the thing, not an event: "smoke" in "smoke detector", "flood" in "flood
       // light", "fire" in "fire hydrant"; the owner's list of 2026-11-07)
       if (topicWords.has(w) && (topicWords.has(low[i + 1]) || topicWords.has(low[i - 1]))) return;
@@ -137,10 +178,10 @@ export function storyFx(layout, sentences) {
       seen.add(ev.type);
       // (a leak of gas, air, steam or fumes is a puff of smoke, not water drops)
       const type = ev.type === "drip" && low.some((x) => /^(gas|air|steam|fumes?|vapou?r|smoke)$/.test(x)) ? "smoke" : ev.type;
-      const id = `auto_fx${++k}`, { at, size } = spot(layout, b, type);
+      const id = `auto_fx${++k}`, { at, size, sheet } = spot(layout, b, type);
       // (water in a planned video as droplets, not blue balls: the owner on the dishwasher run, 2026-11-10; a premade
       // video keeps its approved look)
-      layout.parts.push({ id, kind: "fx", params: { type, at, size, ...(["splash", "drip"].includes(type) && layout.approved !== true ? { look: "drops" } : {}) } });
+      layout.parts.push({ id, kind: "fx", params: { type, at, size, ...(sheet ? { sheet } : {}), ...(["splash", "drip"].includes(type) && layout.approved !== true ? { look: "drops" } : {}) } });
       b.do.push({ p: id, v: ONE_SHOT.has(type) ? "go" : "start", w: words[i].replace(/[^A-Za-z0-9'-]/g, ""), auto: true });
       // a state stops when the build fixes it: at the next sentence that is a fix (or the finish)
       if (!ONE_SHOT.has(type)) { const nb = layout.beats.slice(layout.beats.indexOf(b) + 1).find((x) => /^(fix|finish|name|congrats)/.test(x.s)); if (nb) nb.do.push({ p: id, v: "stop", auto: true }); }

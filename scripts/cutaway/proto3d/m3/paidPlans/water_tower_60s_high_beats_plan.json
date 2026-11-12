@@ -1,0 +1,331 @@
+{
+ "data": {
+  "why": "A plain-lawn yard with a narrow well shaft cut into the ground, a neighbours' street of houses planted from the first frame, and a water tower built beat by beat. A tank first sits on the ground, then lifts onto legs on the word 'lift'. A crew member points from beside the well in every phase. The camera opens close on the hole being dug, follows the water from the groundwater up the pipe into the tank, out the main to the hydrant and the house fire, and ends on the finished tower.",
+  "sceneJson": "{\"world\":{\"cut\":[-8.4,-7,-1.4,13],\"house\":[9,0,-11],\"porch\":false,\"trees\":[[-15.5,-3],[1,-18,1.1]],\"road\":false,\"moreTrees\":false,\"worker\":false,\"rocksAvoid\":[[-8.6,13.5,-3.9,-1.9],[7.5,9.5,-3.4,0]]},\"parts\":[{\"id\":\"dig\",\"kind\":\"dig\",\"params\":{\"clumps\":90,\"dark\":true,\"mound\":{\"x\":-12.5,\"z\":-2.6,\"rx\":1.5,\"rz\":1.2,\"h\":1}}},{\"id\":\"aquifer\",\"kind\":\"water\",\"params\":{\"box\":{\"x0\":-8.38,\"x1\":-7.02,\"y0\":-13,\"y1\":-11.2,\"z0\":-1.38,\"z1\":-0.01},\"mat\":\"water\"}},{\"id\":\"pump\",\"kind\":\"boxPop\",\"params\":{\"size\":[0.8,0.9,0.8],\"pos\":[-7.7,-12.55,-0.45],\"r\":0.08,\"mat\":\"machineBody\"}},{\"id\":\"pipe\",\"kind\":\"pipeRun\",\"params\":{\"path\":[[-7.7,-12.1,-0.06],[-7.7,-2.4,-0.06],[1.5,-2.4,-0.06],[1.5,-2.4,-2.5]],\"r\":0.28,\"radial\":20,\"joints\":true,\"mat\":\"metal\"}},{\"id\":\"pipeFlow1\",\"kind\":\"pipeRunFlow\",\"params\":{\"pipe\":\"pipe\",\"count\":10,\"size\":0.13,\"speed\":2,\"dz\":0.24,\"mat\":\"water\"}},{\"id\":\"burst\",\"kind\":\"fx\",\"params\":{\"type\":\"splash\",\"at\":[-3.5,-2.4,0.3],\"size\":1.3}},{\"id\":\"neighbour1\",\"kind\":\"building\",\"params\":{\"pos\":[-5,0,-9.5],\"width\":6,\"depth\":4.5,\"floors\":[{\"h\":3}],\"roof\":\"gable\",\"use\":\"house\",\"cutaway\":\"none\"}},{\"id\":\"neighbour2\",\"kind\":\"building\",\"params\":{\"pos\":[-13,0,-10],\"width\":5,\"depth\":4,\"floors\":[{\"h\":3}],\"roof\":\"gable\",\"use\":\"house\",\"cutaway\":\"none\"}},{\"id\":\"tower\",\"kind\":\"rig\",\"params\":{\"name\":\"water tower\",\"synonyms\":[\"elevated tank\",\"water tank\"],\"pos\":[1.5,0,-2.5],\"nodes\":[{\"id\":\"legs\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.3,9.3,0.3],\"at\":[-2.1,4.65,-2],\"look\":\"metal\",\"color\":\"#8fa0ab\"},{\"shape\":\"box\",\"size\":[0.3,9.3,0.3],\"at\":[2.1,4.65,-2],\"look\":\"metal\",\"color\":\"#8fa0ab\"},{\"shape\":\"box\",\"size\":[0.3,9.3,0.3],\"at\":[-2.1,4.65,2],\"look\":\"metal\",\"color\":\"#8fa0ab\"},{\"shape\":\"box\",\"size\":[0.3,9.3,0.3],\"at\":[2.1,4.65,2],\"look\":\"metal\",\"color\":\"#8fa0ab\"},{\"shape\":\"box\",\"size\":[4.2,0.14,0.14],\"at\":[0,3,-2],\"look\":\"metal\",\"color\":\"#8fa0ab\"},{\"shape\":\"box\",\"size\":[4.2,0.14,0.14],\"at\":[0,3,2],\"look\":\"metal\",\"color\":\"#8fa0ab\"},{\"shape\":\"box\",\"size\":[4.2,0.14,0.14],\"at\":[0,6.2,-2],\"look\":\"metal\",\"color\":\"#8fa0ab\"},{\"shape\":\"box\",\"size\":[4.2,0.14,0.14],\"at\":[0,6.2,2],\"look\":\"metal\",\"color\":\"#8fa0ab\"},{\"shape\":\"box\",\"size\":[0.14,0.14,4],\"at\":[-2.1,3,0],\"look\":\"metal\",\"color\":\"#8fa0ab\"},{\"shape\":\"box\",\"size\":[0.14,0.14,4],\"at\":[2.1,3,0],\"look\":\"metal\",\"color\":\"#8fa0ab\"},{\"shape\":\"box\",\"size\":[0.14,0.14,4],\"at\":[-2.1,6.2,0],\"look\":\"metal\",\"color\":\"#8fa0ab\"},{\"shape\":\"box\",\"size\":[0.14,0.14,4],\"at\":[2.1,6.2,0],\"look\":\"metal\",\"color\":\"#8fa0ab\"},{\"shape\":\"box\",\"size\":[4.8,0.1,4.6],\"at\":[0,0.05,0],\"look\":\"concrete\"}],\"moves\":[{\"name\":\"legsIn\",\"type\":\"appear\"}]},{\"id\":\"riser\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"tube\",\"path\":[[0,0.1,0],[0,10.9,0]],\"r\":0.28,\"look\":\"metal\",\"color\":\"#c9d1d6\"}],\"moves\":[{\"name\":\"riserIn\",\"type\":\"appear\"},{\"name\":\"pumpUp\",\"type\":\"flow\",\"path\":[[0,0.2,0.34],[0,10.8,0.34]],\"color\":\"#3ad6ff\",\"look\":\"water\",\"size\":0.14}]},{\"id\":\"outlet\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"tube\",\"path\":[[0.45,9.1,0],[0.45,0.1,0]],\"r\":0.2,\"look\":\"metal\",\"color\":\"#9fb4c1\"}],\"moves\":[{\"name\":\"outletIn\",\"type\":\"appear\"},{\"name\":\"outletFlow\",\"type\":\"flow\",\"path\":[[0.45,9,0.24],[0.45,0.3,0.24]],\"color\":\"#3ad6ff\",\"look\":\"water\",\"size\":0.12}]},{\"id\":\"overflow\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"tube\",\"path\":[[-0.45,12.4,0],[-0.45,0.1,0]],\"r\":0.17,\"look\":\"metal\",\"color\":\"#9fb4c1\"}],\"moves\":[{\"name\":\"overflowIn\",\"type\":\"appear\"},{\"name\":\"drainOut\",\"type\":\"flow\",\"path\":[[-0.45,12.3,0.2],[-0.45,0.3,0.2]],\"color\":\"#3ad6ff\",\"look\":\"water\",\"size\":0.12}]},{\"id\":\"tank\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":2.3,\"h\":0.3,\"axis\":\"y\",\"at\":[0,0.15,0],\"look\":\"metal\",\"color\":\"#7f8c96\"},{\"shape\":\"cylinder\",\"r\":1.8,\"h\":3.2,\"axis\":\"y\",\"at\":[0,1.9,0],\"look\":\"glass\",\"color\":\"#bfe3f2\"}],\"moves\":[{\"name\":\"tankIn\",\"type\":\"appear\"},{\"name\":\"lift\",\"type\":\"slide\",\"to\":[0,9,0]},{\"name\":\"fill\",\"type\":\"fill\",\"box\":{\"size\":[2.5,3.1,2.5],\"at\":[0,1.85,0],\"color\":\"#3ab0e8\"}}]},{\"id\":\"spout\",\"parent\":\"tank\",\"at\":[1.8,0.7,0],\"shapes\":[{\"shape\":\"cylinder\",\"r\":0.18,\"h\":0.6,\"axis\":\"x\",\"at\":[0.3,0,0],\"look\":\"metal\",\"color\":\"#7f8c96\"}],\"moves\":[{\"name\":\"spoutIn\",\"type\":\"appear\"}]},{\"id\":\"roof\",\"parent\":\"tank\",\"at\":[0,3.5,0],\"shapes\":[{\"shape\":\"cone\",\"r\":2,\"r2\":0.1,\"h\":1.1,\"axis\":\"y\",\"at\":[0,0.55,0],\"look\":\"paint\",\"color\":\"#d9e0e5\"},{\"shape\":\"cylinder\",\"r\":0.3,\"h\":0.25,\"axis\":\"y\",\"at\":[0,1.2,0],\"look\":\"metal\",\"color\":\"#7f8c96\"}],\"moves\":[{\"name\":\"roofIn\",\"type\":\"appear\"}]},{\"id\":\"gauge\",\"parent\":\"tank\",\"at\":[1.1,0.3,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.08,3.1,0.08],\"at\":[0,1.55,0],\"look\":\"metal\",\"color\":\"#444c52\"}],\"moves\":[{\"name\":\"floatIn\",\"type\":\"appear\"}]},{\"id\":\"ball\",\"parent\":\"gauge\",\"at\":[0,0.3,0],\"shapes\":[{\"shape\":\"sphere\",\"r\":0.28,\"at\":[0,0,0],\"look\":\"plastic\",\"color\":\"#ff8a2a\"}],\"moves\":[{\"name\":\"floatIn\",\"type\":\"appear\"},{\"name\":\"rise\",\"type\":\"slide\",\"to\":[0,2.5,0]}]},{\"id\":\"ladder\",\"at\":[0,0,0],\"shapes\":[{\"shape\":\"box\",\"size\":[0.06,9.3,0.06],\"at\":[-2.3,4.65,2.15],\"look\":\"metal\",\"color\":\"#5b666e\"},{\"shape\":\"box\",\"size\":[0.06,9.3,0.06],\"at\":[-1.9,4.65,2.15],\"look\":\"metal\",\"color\":\"#5b666e\"},{\"shape\":\"box\",\"size\":[0.46,0.05,0.05],\"at\":[-2.1,1,2.18],\"look\":\"metal\",\"color\":\"#5b666e\"},{\"shape\":\"box\",\"size\":[0.46,0.05,0.05],\"at\":[-2.1,2,2.18],\"look\":\"metal\",\"color\":\"#5b666e\"},{\"shape\":\"box\",\"size\":[0.46,0.05,0.05],\"at\":[-2.1,3,2.18],\"look\":\"metal\",\"color\":\"#5b666e\"},{\"shape\":\"box\",\"size\":[0.46,0.05,0.05],\"at\":[-2.1,4,2.18],\"look\":\"metal\",\"color\":\"#5b666e\"},{\"shape\":\"box\",\"size\":[0.46,0.05,0.05],\"at\":[-2.1,5,2.18],\"look\":\"metal\",\"color\":\"#5b666e\"},{\"shape\":\"box\",\"size\":[0.46,0.05,0.05],\"at\":[-2.1,6,2.18],\"look\":\"metal\",\"color\":\"#5b666e\"},{\"shape\":\"box\",\"size\":[0.46,0.05,0.05],\"at\":[-2.1,7,2.18],\"look\":\"metal\",\"color\":\"#5b666e\"},{\"shape\":\"box\",\"size\":[0.46,0.05,0.05],\"at\":[-2.1,8,2.18],\"look\":\"metal\",\"color\":\"#5b666e\"},{\"shape\":\"box\",\"size\":[0.46,0.05,0.05],\"at\":[-2.1,9,2.18],\"look\":\"metal\",\"color\":\"#5b666e\"}],\"moves\":[{\"name\":\"ladderIn\",\"type\":\"appear\"}]},{\"id\":\"post\",\"at\":[2.35,0,2],\"shapes\":[{\"shape\":\"box\",\"size\":[0.2,2.2,0.2],\"at\":[0,1.1,0],\"look\":\"metal\",\"color\":\"#5b666e\"}],\"moves\":[{\"name\":\"postIn\",\"type\":\"appear\"}]}]}},{\"id\":\"dribble\",\"kind\":\"flow\",\"params\":{\"path\":[[3.9,0.7,-2.5],[4.2,0.55,-2.5],[4.5,0.05,-2.5]],\"look\":\"water\",\"size\":0.1,\"speed\":0.7,\"count\":4}},{\"id\":\"spill\",\"kind\":\"stream\",\"params\":{\"x0\":1.2,\"x1\":1.8,\"z\":-0.55,\"yTop\":12.4,\"yBot\":0.12,\"count\":90}},{\"id\":\"puddles\",\"kind\":\"puddles\",\"params\":{\"list\":[[5.4,-2.2,1.2,0.8],[-2.2,-2.6,1.1,0.7],[1.5,-6,1.5,0.7]],\"rise\":[0.3,0.2],\"fall\":[0.2,0]}},{\"id\":\"leaves\",\"kind\":\"drops\",\"params\":{\"x0\":0.6,\"x1\":2.4,\"count\":14,\"fromY\":17,\"landY\":12.4,\"z\":-2.5,\"mat\":\"mud\",\"size\":0.16}},{\"id\":\"towerOutline\",\"kind\":\"outline\",\"params\":{\"of\":\"tower\",\"opts\":{\"r\":0.12}}},{\"id\":\"tankArrows\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[0.4,8.4,-0.1],\"dir\":[0,-1],\"travel\":1.2,\"phase\":0},{\"at\":[2.6,8.4,-0.1],\"dir\":[0,-1],\"travel\":1.2,\"phase\":0.5}],\"opts\":{\"color\":\"#3ad6ff\",\"scale\":1.1}}},{\"id\":\"main\",\"kind\":\"pipeRun\",\"params\":{\"path\":[[1.95,-3.2,-2.5],[1.95,-3.2,-0.06],[12.5,-3.2,-0.06]],\"r\":0.3,\"radial\":20,\"joints\":true,\"mat\":\"metal\"}},{\"id\":\"mainFlow\",\"kind\":\"pipeRunFlow\",\"params\":{\"pipe\":\"main\",\"count\":14,\"size\":0.14,\"speed\":2.2,\"dz\":0.24,\"mat\":\"water\"}},{\"id\":\"pushArrows\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[2.9,5.5,0.1],\"dir\":[0,-1],\"travel\":2.5,\"phase\":0},{\"at\":[5.5,-2.2,0.5],\"dir\":[1,0],\"travel\":2,\"phase\":0.3}],\"opts\":{\"color\":\"#3ad6ff\",\"scale\":1.2}}},{\"id\":\"counter\",\"kind\":\"counter\",\"params\":{\"pos\":[3.85,2.85,-0.45],\"size\":1.2,\"from\":0,\"to\":43,\"color\":\"#3ad6ff\",\"bar\":true,\"danger\":99}},{\"id\":\"weightArrows\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[-0.6,11.4,0.3],\"dir\":[0,-1],\"travel\":1.6,\"phase\":0},{\"at\":[3.6,11.4,0.3],\"dir\":[0,-1],\"travel\":1.6,\"phase\":0.3}],\"opts\":{\"color\":\"#ffd23d\",\"scale\":1.3}}},{\"id\":\"fireFx\",\"kind\":\"fx\",\"params\":{\"type\":\"fire\",\"at\":[9,3,-7.6],\"size\":1.8}},{\"id\":\"smokeFx\",\"kind\":\"fx\",\"params\":{\"type\":\"smoke\",\"at\":[9,5.5,-7.6],\"size\":1.6,\"color\":\"#333333\"}},{\"id\":\"hydrant\",\"kind\":\"hydrant\",\"params\":{\"pos\":[8.5,0,-0.3],\"depth\":3.2,\"color\":\"#d93a2e\"}},{\"id\":\"crew\",\"kind\":\"person\",\"params\":{\"pos\":[-6.1,0,-1],\"rotY\":-1,\"action\":\"point\",\"look\":\"worker\"}},{\"id\":\"sign\",\"kind\":\"sign\",\"params\":{\"at\":[12.5,0.25,-2.8],\"rotY\":0.3,\"scale\":1.2}}],\"beats\":[{\"s\":\"hook\",\"shows\":{\"p\":\"dig\",\"does\":\"dig the well shaft\"},\"do\":[{\"p\":\"dig\",\"v\":\"dig\",\"w\":\"dig\"},{\"p\":\"crew\",\"v\":\"show\",\"w\":\"\"},{\"p\":\"crew\",\"v\":\"start\",\"w\":\"\"}],\"shots\":[{\"focus\":[\"dig\"],\"view\":\"home\",\"width\":0,\"type\":\"close\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem\",\"shows\":{\"p\":\"aquifer\",\"does\":\"water seeps in at the bottom of the shaft\"},\"do\":[{\"p\":\"aquifer\",\"v\":\"trickle\",\"w\":\"water\",\"d\":2.5}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0.9,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-8.8,-13.6,-2,-6.6,-10.6,0.5]}]},{\"s\":\"fix1\",\"shows\":{\"p\":\"pipe\",\"does\":\"pump sinks in and the pipe grows up\"},\"do\":[{\"p\":\"pump\",\"v\":\"show\",\"w\":\"pump\"},{\"p\":\"pipe\",\"v\":\"grow\",\"w\":\"pipe\",\"d\":2.4},{\"p\":\"pipeFlow1\",\"v\":\"show\",\"w\":\"up\"},{\"p\":\"crew\",\"v\":\"start\",\"w\":\"\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0.9,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-8.6,-13.3,-1.5,-6.8,-11.7,0.5]},{\"focus\":[\"pipe\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"pipe\",\"box\":[]}]},{\"s\":\"problem2\",\"shows\":{\"p\":\"burst\",\"does\":\"water splashes from a burst joint\"},\"do\":[{\"p\":\"burst\",\"v\":\"start\",\"w\":\"bursts\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0.9,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-6,-4.4,-2,-1,-0.4,1.5]}]},{\"s\":\"fix2\",\"shows\":{\"p\":\"tower\",\"does\":\"tank appears and fills\"},\"do\":[{\"p\":\"tower\",\"v\":\"tankIn\",\"w\":\"tank\"},{\"p\":\"tower\",\"v\":\"spoutIn\",\"w\":\"tank\"},{\"p\":\"burst\",\"v\":\"stop\",\"w\":\"surge\"},{\"p\":\"tower\",\"v\":\"fill\",\"w\":\"fills\",\"d\":2}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0.9,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-0.8,-0.5,-4.8,3.8,3.9,0.5]}]},{\"s\":\"problem3\",\"shows\":{\"p\":\"dribble\",\"does\":\"a weak dribble leaves the spout\"},\"do\":[{\"p\":\"dribble\",\"v\":\"start\",\"w\":\"dribbles\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0.9,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-0.8,-0.4,-4.8,5.2,4,0.5]}]},{\"s\":\"fix3\",\"shows\":{\"p\":\"tower\",\"does\":\"tank lifts onto legs, riser appears\"},\"do\":[{\"p\":\"dribble\",\"v\":\"stop\",\"w\":\"lift\"},{\"p\":\"tower\",\"v\":\"spoutInBack\",\"w\":\"lift\"},{\"p\":\"tower\",\"v\":\"lift\",\"w\":\"lift\",\"d\":2.4},{\"p\":\"tower\",\"v\":\"legsIn\",\"w\":\"legs\"},{\"p\":\"tower\",\"v\":\"riserIn\",\"w\":\"riser\"},{\"p\":\"tower\",\"v\":\"pumpUp\",\"w\":\"riser\",\"o\":0.4}],\"shots\":[{\"focus\":[\"tower\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem4\",\"shows\":{\"p\":\"spill\",\"does\":\"water pours over the tank rim\"},\"do\":[{\"p\":\"spill\",\"v\":\"start\",\"w\":\"spills\"},{\"p\":\"puddles\",\"v\":\"rise\",\"w\":\"spills\",\"o\":0.3}],\"shots\":[{\"focus\":[\"tower\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix4\",\"shows\":{\"p\":\"tower\",\"does\":\"overflow pipe grows and carries water down\"},\"do\":[{\"p\":\"tower\",\"v\":\"overflowIn\",\"w\":\"overflow\"},{\"p\":\"spill\",\"v\":\"stop\",\"w\":\"overflow\",\"o\":0.3},{\"p\":\"puddles\",\"v\":\"dry\",\"w\":\"overflow\",\"o\":0.6},{\"p\":\"tower\",\"v\":\"drainOut\",\"w\":\"carries\"}],\"shots\":[{\"focus\":[\"tower\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem5\",\"shows\":{\"p\":\"leaves\",\"does\":\"dirt drops into the open tank\"},\"do\":[{\"p\":\"leaves\",\"v\":\"fall\",\"w\":\"dirt\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0.9,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-1.2,9,-4.8,4.2,16.5,0.5]}]},{\"s\":\"fix5\",\"shows\":{\"p\":\"tower\",\"does\":\"roof goes on the tank\"},\"do\":[{\"p\":\"tower\",\"v\":\"roofIn\",\"w\":\"roof\"},{\"p\":\"leaves\",\"v\":\"hide\",\"w\":\"roof\"}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0.9,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-1.2,9,-4.8,4.2,15.2,0.5]}]},{\"s\":\"name\",\"shows\":{\"p\":\"towerOutline\",\"does\":\"outline traces the tower\"},\"do\":[{\"p\":\"towerOutline\",\"v\":\"show\",\"w\":\"tower\"},{\"p\":\"crew\",\"v\":\"start\",\"w\":\"\"}],\"shots\":[{\"focus\":[\"tower\"],\"view\":\"home\",\"width\":0.85,\"type\":\"\",\"hero\":true,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem6\",\"state\":{\"text\":\"NO OUTLET\",\"w\":\"house\"},\"shows\":{\"p\":\"tankArrows\",\"does\":\"water presses on a sealed tank bottom\"},\"do\":[{\"p\":\"towerOutline\",\"v\":\"hide\",\"w\":\"But\"},{\"p\":\"tankArrows\",\"v\":\"show\",\"w\":\"cannot\"}],\"shots\":[{\"focus\":[\"tower\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix6\",\"shows\":{\"p\":\"main\",\"does\":\"outlet pipe and water main grow, water flows\"},\"do\":[{\"p\":\"tankArrows\",\"v\":\"hide\",\"w\":\"So\"},{\"p\":\"tower\",\"v\":\"outletIn\",\"w\":\"outlet\"},{\"p\":\"main\",\"v\":\"grow\",\"w\":\"main\",\"d\":2.5},{\"p\":\"tower\",\"v\":\"outletFlow\",\"w\":\"main\",\"o\":0.3},{\"p\":\"mainFlow\",\"v\":\"show\",\"w\":\"main\",\"o\":2}],\"shots\":[{\"focus\":[\"tower\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]},{\"focus\":[],\"view\":\"home\",\"width\":0.95,\"type\":\"\",\"hero\":false,\"word\":\"main\",\"box\":[0,-5,-3.5,13.2,1,0.8]}]},{\"s\":\"how\",\"shows\":{\"p\":\"counter\",\"does\":\"pressure gauge counts up to 43\"},\"do\":[{\"p\":\"tower\",\"v\":\"postIn\",\"w\":\"tower\"},{\"p\":\"counter\",\"v\":\"show\",\"w\":\"tower\"},{\"p\":\"pushArrows\",\"v\":\"show\",\"w\":\"pushes\"},{\"p\":\"counter\",\"v\":\"count\",\"w\":\"pushes\",\"d\":2.6}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0.9,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-1.5,-0.5,-5,7,15,1]}]},{\"s\":\"fact\",\"shows\":{\"p\":\"weightArrows\",\"does\":\"weight arrows press down on the legs\"},\"do\":[{\"p\":\"counter\",\"v\":\"hide\",\"w\":\"A\"},{\"p\":\"tower\",\"v\":\"postInBack\",\"w\":\"A\"},{\"p\":\"pushArrows\",\"v\":\"hide\",\"w\":\"A\"},{\"p\":\"weightArrows\",\"v\":\"show\",\"w\":\"weighs\"}],\"shots\":[{\"focus\":[\"tower\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"problem7\",\"shows\":{\"p\":\"fireFx\",\"does\":\"fire burns on the house wall\"},\"do\":[{\"p\":\"weightArrows\",\"v\":\"hide\",\"w\":\"But\"},{\"p\":\"fireFx\",\"v\":\"start\",\"w\":\"fire\"},{\"p\":\"smokeFx\",\"v\":\"start\",\"w\":\"fire\",\"o\":0.5}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0.9,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[3.5,-0.5,-12.5,14.8,8.5,0]}]},{\"s\":\"fix7\",\"shows\":{\"p\":\"hydrant\",\"does\":\"hydrant opens and sprays onto the fire\"},\"do\":[{\"p\":\"hydrant\",\"v\":\"show\",\"w\":\"hydrant\"},{\"p\":\"hydrant\",\"v\":\"open\",\"w\":\"open\"},{\"p\":\"hydrant\",\"v\":\"fill\",\"w\":\"water\"},{\"p\":\"hydrant\",\"v\":\"spray\",\"w\":\"sprays\"},{\"p\":\"fireFx\",\"v\":\"stop\",\"w\":\"sprays\",\"o\":1},{\"p\":\"smokeFx\",\"v\":\"stop\",\"w\":\"sprays\",\"o\":1.2}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0.9,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[6.5,-3.8,-1.5,10.5,1.4,1]},{\"focus\":[],\"view\":\"home\",\"width\":0.9,\"type\":\"\",\"hero\":false,\"word\":\"sprays\",\"box\":[3.5,-0.5,-12.5,14.8,8.5,1]}]},{\"s\":\"problem8\",\"shows\":{\"p\":\"tower\",\"does\":\"tank water level falls\"},\"do\":[{\"p\":\"tower\",\"v\":\"pumpUpBack\",\"w\":\"But\"},{\"p\":\"pipeFlow1\",\"v\":\"hide\",\"w\":\"But\"},{\"p\":\"tower\",\"v\":\"fillBack\",\"w\":\"drains\",\"d\":3},{\"p\":\"hydrant\",\"v\":\"close\",\"w\":\"taps\"}],\"shots\":[{\"focus\":[\"tower\"],\"view\":\"home\",\"width\":0,\"type\":\"mid\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"fix8\",\"shows\":{\"p\":\"tower\",\"does\":\"float rises as the tank refills\"},\"do\":[{\"p\":\"tower\",\"v\":\"floatIn\",\"w\":\"float\"},{\"p\":\"tower\",\"v\":\"pumpUp\",\"w\":\"starts\"},{\"p\":\"pipeFlow1\",\"v\":\"show\",\"w\":\"starts\"},{\"p\":\"tower\",\"v\":\"fill\",\"w\":\"refills\",\"d\":3},{\"p\":\"tower\",\"v\":\"rise\",\"w\":\"refills\",\"d\":3}],\"shots\":[{\"focus\":[],\"view\":\"home\",\"width\":0.9,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[-0.8,8.8,-4.8,3.8,13,0.5]}]},{\"s\":\"finish\",\"shows\":{\"p\":\"tower\",\"does\":\"ladder goes up the leg, tower full and working\"},\"do\":[{\"p\":\"tower\",\"v\":\"ladderIn\",\"w\":\"ladder\"},{\"p\":\"crew\",\"v\":\"start\",\"w\":\"\"}],\"shots\":[{\"focus\":[\"home\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]},{\"s\":\"congrats\",\"do\":[],\"shots\":[{\"focus\":[\"home\"],\"view\":\"home\",\"width\":0,\"type\":\"\",\"hero\":false,\"word\":\"\",\"box\":[]}]}],\"audio\":{\"cards\":[{\"text\":\"43 PSI\",\"at\":{\"s\":\"how\",\"w\":\"43\",\"o\":0},\"d\":1.6},{\"text\":\"8,000,000 LB\",\"at\":{\"s\":\"fact\",\"w\":\"8\",\"o\":0},\"d\":1.6}],\"sfx\":[{\"lib\":\"dirt\",\"at\":{\"s\":\"hook\",\"w\":\"dig\",\"o\":0.05},\"d\":1.4},{\"lib\":\"motor_hum\",\"at\":{\"s\":\"fix1\",\"w\":\"pump\",\"o\":0},\"d\":1.6},{\"lib\":\"water_rush\",\"at\":{\"s\":\"problem2\",\"w\":\"bursts\",\"o\":0},\"d\":1.2},{\"lib\":\"flame\",\"at\":{\"s\":\"problem7\",\"w\":\"fire\",\"o\":0},\"d\":1.5},{\"lib\":\"water_rush\",\"at\":{\"s\":\"fix7\",\"w\":\"sprays\",\"o\":0},\"d\":1.5}],\"chimes\":[{\"s\":\"name\",\"w\":\"\",\"o\":0},{\"s\":\"how\",\"w\":\"43\",\"o\":0},{\"s\":\"fact\",\"w\":\"8\",\"o\":0},{\"s\":\"congrats\",\"w\":\"\",\"o\":0}],\"rain\":[]}}",
+  "sentences": [
+   {
+    "role": "hook",
+    "text": "If you dig a well in your yard, you have a water supply."
+   },
+   {
+    "role": "problem",
+    "text": "But the water sits far below, out of reach."
+   },
+   {
+    "role": "fix1",
+    "text": "So you sink a pump and run a pipe up."
+   },
+   {
+    "role": "problem2",
+    "text": "But the pump slams the pipe, and a joint bursts."
+   },
+   {
+    "role": "fix2",
+    "text": "So you add a tank that catches the surge and fills."
+   },
+   {
+    "role": "problem3",
+    "text": "But a ground tank only dribbles, with no push."
+   },
+   {
+    "role": "fix3",
+    "text": "So you lift the tank onto legs and add a riser."
+   },
+   {
+    "role": "problem4",
+    "text": "But the riser keeps pushing, and the tank spills over."
+   },
+   {
+    "role": "fix4",
+    "text": "So you add an overflow pipe that carries extra water down."
+   },
+   {
+    "role": "problem5",
+    "text": "But an open top and overflow pipe let dirt in."
+   },
+   {
+    "role": "fix5",
+    "text": "So you add a roof, and the water stays clean."
+   },
+   {
+    "role": "name",
+    "text": "This is a water tower."
+   },
+   {
+    "role": "problem6",
+    "text": "But under that roof, the water cannot reach any house."
+   },
+   {
+    "role": "fix6",
+    "text": "So you run an outlet pipe to a water main."
+   },
+   {
+    "role": "how",
+    "text": "A tower 100 feet tall pushes water at about 43 pounds per square inch."
+   },
+   {
+    "role": "fact",
+    "text": "A tank of one million gallons weighs over 8 million pounds."
+   },
+   {
+    "role": "problem7",
+    "text": "But a house fire needs more water than the main carries."
+   },
+   {
+    "role": "fix7",
+    "text": "So you add a hydrant, open it, and its water sprays on the fire."
+   },
+   {
+    "role": "problem8",
+    "text": "But the open hydrant drains the tank, and taps run low."
+   },
+   {
+    "role": "fix8",
+    "text": "So you add a float switch that starts the pump and refills."
+   },
+   {
+    "role": "finish",
+    "text": "Add a ladder, and the well's water waits above every tap."
+   },
+   {
+    "role": "congrats",
+    "text": "Congratulations, you have built a water tower."
+   }
+  ],
+  "story": {
+   "title": "How a Water Tower Works",
+   "hero": "a water tower",
+   "parts": [
+    "well",
+    "pump",
+    "pipe",
+    "tank",
+    "legs",
+    "riser",
+    "overflow pipe",
+    "roof",
+    "outlet pipe",
+    "water main",
+    "hydrant",
+    "float switch",
+    "ladder"
+   ],
+   "flow": [
+    "well",
+    "pipe",
+    "tank",
+    "main",
+    "hydrant"
+   ],
+   "recurring": {
+    "p": "crew",
+    "what": "a foreman in a hard hat pointing at the build"
+   },
+   "ideas": [
+    {
+     "role": "hook",
+     "idea": "dig a well in the yard and you only have a deep hole with water at the bottom"
+    },
+    {
+     "role": "problem",
+     "idea": "the groundwater sits far below, out of reach"
+    },
+    {
+     "role": "fix1",
+     "idea": "a pump at the bottom and a pipe lift the water up"
+    },
+    {
+     "role": "problem2",
+     "idea": "the pump pushes in violent surges and a pipe joint bursts"
+    },
+    {
+     "role": "fix2",
+     "idea": "a tank takes the surge and fills with water"
+    },
+    {
+     "role": "problem3",
+     "idea": "a tank on the ground has no pressure, so the water only dribbles out"
+    },
+    {
+     "role": "fix3",
+     "idea": "lift the tank on tall legs and feed it with a riser pipe"
+    },
+    {
+     "role": "problem4",
+     "idea": "the pump keeps pushing and the full tank spills over the rim"
+    },
+    {
+     "role": "fix4",
+     "idea": "an overflow pipe carries the extra water safely down"
+    },
+    {
+     "role": "problem5",
+     "idea": "the open top and the overflow pipe let dirt into the water"
+    },
+    {
+     "role": "fix5",
+     "idea": "a roof keeps the water clean"
+    },
+    {
+     "role": "name",
+     "idea": "this finished tank on legs is a water tower"
+    },
+    {
+     "role": "problem6",
+     "idea": "the sealed tank has no way to send water to the houses"
+    },
+    {
+     "role": "fix6",
+     "idea": "an outlet pipe leads the water down into a main"
+    },
+    {
+     "role": "how",
+     "idea": "the height of the water itself makes the pressure, with no pump needed at the tap"
+    },
+    {
+     "role": "fact",
+     "idea": "the tank holds an enormous weight of water"
+    },
+    {
+     "role": "problem7",
+     "idea": "a house fire needs far more water than the main carries at once"
+    },
+    {
+     "role": "fix7",
+     "idea": "a hydrant taps the stored water and sprays it on the fire"
+    },
+    {
+     "role": "problem8",
+     "idea": "the open hydrant drains the tank so the taps run low"
+    },
+    {
+     "role": "fix8",
+     "idea": "a float switch starts the pump when the level falls and refills the tank"
+    },
+    {
+     "role": "finish",
+     "idea": "the ladder completes the tower and the well's water waits high above every tap"
+    },
+    {
+     "role": "congrats",
+     "idea": "you have built a water tower"
+    }
+   ],
+   "chain": [
+    {
+     "problem": "problem",
+     "causedBy": "hook",
+     "shows": "groundwater pooling at the bottom of the deep shaft",
+     "stakes": "you cannot reach the water",
+     "size": 1,
+     "at": "well",
+     "scale": "part"
+    },
+    {
+     "problem": "problem2",
+     "causedBy": "fix1",
+     "shows": "water splashing from a burst pipe joint in the soil",
+     "stakes": "the pipe and the supply",
+     "size": 2,
+     "at": "pipe",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem3",
+     "causedBy": "fix2",
+     "shows": "a weak dribble from the ground tank spout",
+     "stakes": "the taps get no pressure",
+     "size": 3,
+     "at": "tank",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem4",
+     "causedBy": "fix3",
+     "shows": "water pouring over the tank rim and puddling around the legs",
+     "stakes": "wasted water and a flooded base",
+     "size": 4,
+     "at": "tank",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem5",
+     "causedBy": "fix4",
+     "shows": "dirt lumps dropping into the open tank",
+     "stakes": "the drinking water gets dirty",
+     "size": 5,
+     "at": "tank",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem6",
+     "causedBy": "fix5",
+     "shows": "a sealed full tank with water pressing on its closed bottom",
+     "stakes": "no water reaches the houses",
+     "size": 6,
+     "at": "tank",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem7",
+     "causedBy": "fix6",
+     "shows": "fire burning on a house wall with smoke rising",
+     "stakes": "the house and its neighbours",
+     "size": 8,
+     "at": "main",
+     "scale": "house"
+    },
+    {
+     "problem": "problem8",
+     "causedBy": "fix7",
+     "shows": "the tank level falling as the hydrant runs",
+     "stakes": "every tap in town runs low",
+     "size": 9,
+     "at": "hydrant",
+     "scale": "town"
+    }
+   ],
+   "surprises": [
+    {
+     "claim": "A water tower 100 feet tall pushes water at about 43 pounds per square inch.",
+     "role": "how",
+     "search": "100 feet of water head equals 43 psi water tower pressure"
+    },
+    {
+     "claim": "A tank holding one million gallons of water weighs over 8 million pounds.",
+     "role": "fact",
+     "search": "one gallon of water weighs 8.34 pounds million gallon tank weight"
+    },
+    {
+     "claim": "A fire hydrant draws its water from the same pressurized water main under the ground.",
+     "role": "fix7",
+     "search": "fire hydrant connected to water main pressure"
+    },
+    {
+     "claim": "Water towers use a float or level switch to start the pump when the tank level drops.",
+     "role": "fix8",
+     "search": "water tower float level switch starts pump"
+    }
+   ]
+  }
+ },
+ "costUsd": 1.15786,
+ "usage": {
+  "input_tokens": 484,
+  "cache_creation_input_tokens": 43124,
+  "cache_read_input_tokens": 0,
+  "cache_creation": {
+   "ephemeral_5m_input_tokens": 43124,
+   "ephemeral_1h_input_tokens": 0
+  },
+  "output_tokens": 104908,
+  "service_tier": "standard",
+  "inference_geo": "global",
+  "speed": "standard",
+  "output_tokens_details": {
+   "thinking_tokens": 89127
+  }
+ },
+ "searches": 0,
+ "sources": []
+}

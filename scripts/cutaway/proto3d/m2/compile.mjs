@@ -11,7 +11,10 @@ const KIND_OK = (k) => !!KIND_CHANNELS[k];
 import { validateLayout } from "./format.js";
 import { expandBeats } from "./verbs.js";
 import { focusOf, signalQueueBox, union } from "./focus.js";
-import { directCamera, cameraAt, projectBox, MOVE } from "./director.js";
+import { directCamera, cameraAt, projectBox, frameBox, MOVE } from "./director.js";
+import { cameraRulesOn, lineSubject, outerOf } from "./cameraRules.js";
+import { lineFramePass } from "./lineFrame.js";
+import { previewTimes } from "./checks.mjs";
 
 // The end card rule (owner-approved 2026-10-20): the sign pops 0.4 s after the voice audibly stops (measured from
 // the audio, not the aligner), pops over 0.45 s and holds 1.75 s. Without the end card: a 1.5 s calm hold.
@@ -66,7 +69,11 @@ export const STATE_WORDS = [
   // (the free pond run: "heavy rain" was labelled TOO HEAVY, and "soaks into the soil" and "spills over" got no label)
   [/\bsoaks? (?:in|away|into)\b|\bdrains? away\b/i, "EMPTY"], [/\bspills?\b/i, "OVERFLOW"],
 ];
-export function stateCards(sentences, words, beats = [], cards = []) {
+// (custom layouts, the owner's rule of 2026-11-12 "no label instead of the effect": a state the picture shows physically, a
+// crash, a break, a crack, a flood, a leak, a spill, dirty water, is never a label; the real water tower run's burst was a red
+// CRASH! with faint bubbles. Premade keeps its approved labels)
+export const PHYSICAL_STATES = new Set(["CRASH!", "BROKEN", "CRACKED", "FLOODED", "LEAKING", "OVERFLOW", "DIRTY", "SOAKED", "MELTING", "FROZEN", "CLOGGED"]);
+export function stateCards(sentences, words, beats = [], cards = [], { physical = true } = {}) {
   const out = [];
   for (const [i, s] of sentences.entries()) {
     if (!/^problem/.test(s.role ?? "")) continue;
@@ -74,6 +81,7 @@ export function stateCards(sentences, words, beats = [], cards = []) {
     let text = own?.text ?? (typeof own === "string" ? own : null), word = own?.w ?? null;
     if (!text) for (const [re, label] of STATE_WORDS) { const m = re.exec(s.text ?? ""); if (m) { text = label; word = m[0].split(/\s+/)[0]; break; } }
     if (!text || text.length > 14) continue;
+    if (!physical && PHYSICAL_STATES.has(String(text).toUpperCase())) continue;
     const key = String(word ?? "").toLowerCase().replace(/[^a-z']/g, "");
     const w = key && words.find((x) => x.s >= s.t0 - 0.01 && x.s <= s.t1 + 0.01 && x.w.toLowerCase().replace(/[^a-z']/g, "").startsWith(key));
     // (to the line's end, never into the fix that follows: a DIRTY label 1.2 s from a late word sat on the fix's frame)
@@ -341,12 +349,15 @@ export function compile(layout0, words, speechEnd, { roles = [] } = {}) {
     if (extra.length) director = directCamera(layout, [...kept, ...extra].sort((a, b) => a.t - b.t), marks);
     }, null);
     camera = { end: director.end, noend: director.noend };
+    // the last word on every line's frame (the owner's rule of 2026-11-12: "every frame shows the part the line is about,
+    // never a neighbour's wall or a blurry close-up"): custom layouts only, m2/lineFrame.js
+    if (cameraRulesOn(layout)) soft("every line's frame", () => notes.push(...lineFramePass(layout, camera, { sentences, tracks, marks, frames: director?.frames ?? [] }, { previewTimes, frameBox, cameraAt, lineSubject, outerOf })), null);
   }
   const audio = layout.audio ?? {};
   const cards = (audio.cards ?? []).map((c) => soft(`card ${c.text}`, () => ({ text: c.text, s: at(c.at), e: at(c.at) + (c.d ?? 1.8) }), null)).filter(Boolean);
   cards.push(...soft("name cards", () => nameCards(sentences, words, cards), []));
   // the red state labels on problem lines, for a planner layout (premade keeps its approved cards)
-  if (layout.hold) cards.push(...soft("state cards", () => stateCards(sentences, words, layout.beats ?? [], cards), []));
+  if (layout.hold) cards.push(...soft("state cards", () => stateCards(sentences, words, layout.beats ?? [], cards, { physical: layout.approved === true }), []));
   // a caption never sits on a counter or gauge (the owner's review of 2026-10-31): a word said while one is up in the
   // caption's band goes to the first free band instead (planned layouts; the approved ones keep theirs)
   const captionY = {};

@@ -9,8 +9,9 @@
 //      caption band.
 // Custom layouts only (codeShots, approved !== true, no hand-made camera): a premade video keeps the camera the owner
 // approved. The free check of these rules is cameraRuleChecks in m2/checks.mjs. Pure math: runs in node and in the page.
-import { focusOf, focusOfId } from "./focus.js";
+import { focusOf, focusOfId, union } from "./focus.js";
 import { subjectBox } from "./framing.js";
+import { rigBox } from "./rig.js";
 
 // holdMax: the longest framing (s); fill: the line's part as a share of the frame (the larger of its width and height
 // share, so a downspout standing the frame's height counts as filling it); macroFill: a macro's part at least this;
@@ -33,9 +34,26 @@ export function cameraRulesOn(layout) {
   return !!layout?.codeShots && layout.approved !== true && !layout.camera?.home && !layout.camera?.keys?.length;
 }
 
+/** the moves of a designed part played by the story up to a line (with that line's own when `inclusive`), a Set */
+export function playedMoves(layout, partId, role, inclusive = true) {
+  const out = new Set();
+  for (const b of layout.beats ?? []) {
+    const here = b.s === role;
+    if (here && !inclusive) break;
+    for (const a of b.do ?? []) if (a.p === partId && a.v) { const v = String(a.v); if (/Back$/.test(v)) out.delete(v.replace(/Back$/, "")); else out.add(v); }
+    if (here) break;
+  }
+  return out;
+}
+
 /** a padded piece of a designed part: at least 25% of the machine each way (a thin rod alone was a flat grey frame) */
-function pieceBox(layout, main, node) {
-  const cut = layout.world?.cut ?? null, b = focusOfId(new Map(layout.parts.map((p) => [p.id, p])), `${main.id}.${node}`, cut), mb = focusOf(main, cut);
+function pieceBox(layout, main, node, role = null) {
+  const cut = layout.world?.cut ?? null, mb0 = focusOf(main, cut);
+  // (custom layouts: the piece where it is during this line, before and after its own move, carried by every slide played
+  // so far: the float in a lifted tank; the swept box from the ground up put the camera on the legs, 2026-11-11)
+  const at = role && layout.approved !== true ? (inc) => rigBox(main.params ?? {}, { node, played: playedMoves(layout, main.id, role, inc) }) : null;
+  const b = at ? union([at(false), at(true)].filter(Boolean)) : focusOfId(new Map(layout.parts.map((p) => [p.id, p])), `${main.id}.${node}`, cut);
+  const mb = at ? rigBox(main.params ?? {}, { played: playedMoves(layout, main.id, role, true) }) ?? mb0 : mb0;
   if (!b || !mb) return b ?? null;
   const c = b.min.map((v, i) => (v + b.max[i]) / 2), h = b.min.map((v, i) => Math.max((b.max[i] - v) / 2, 0.125 * (mb.max[i] - mb.min[i])));
   return { min: c.map((v, i) => +(v - h[i]).toFixed(3)), max: c.map((v, i) => +(v + h[i]).toFixed(3)) };
@@ -50,14 +68,48 @@ export function lineSubject(layout, role) {
   if (!id) return null;
   const parts = new Map((layout.parts ?? []).map((p) => [p.id, p])), cut = layout.world?.cut ?? null;
   const p = parts.get(String(id).split(".")[0]); if (!p) return null;
-  if (String(id).includes(".")) { const b = p.kind === "rig" ? pieceBox(layout, p, String(id).split(".").slice(1).join(".")) : focusOfId(parts, id, cut); return b ? { id: String(id), box: b } : null; }
+  if (String(id).includes(".")) { const b = p.kind === "rig" ? pieceBox(layout, p, String(id).split(".").slice(1).join("."), role) : focusOfId(parts, id, cut); return b ? { id: String(id), box: b } : null; }
   if (p.kind === "rig") {
     const acted = (beat.do ?? []).filter((a) => a.p === p.id).map((a) => (p.params?.nodes ?? []).find((n) => (n.moves ?? []).some((m) => m.name === a.v))).find(Boolean);
-    const b = acted && pieceBox(layout, p, acted.id);
+    const b = acted && pieceBox(layout, p, acted.id, role);
     if (b) return { id: `${p.id}.${acted.id}`, box: b };
   }
-  const b = focusOf(p, cut);
+  const b = layout.approved !== true ? lineBoxOf(layout, p, role) : focusOf(p, cut);
   return b ? { id: p.id, box: b } : null;
+}
+
+/** the whole part a line's piece ("tower.float") belongs to, as it stands during the line (lineFrame.js: no blurry close-up
+ * of its near wall); null for a whole part */
+export function outerOf(layout, sb, role) {
+  if (!sb?.id || !String(sb.id).includes(".")) return null;
+  const p = (layout.parts ?? []).find((q) => q.id === String(sb.id).split(".")[0]);
+  return p ? lineBoxOf(layout, p, role) : null;
+}
+
+/**
+ * A part's box as it stands during a line (custom layouts): a designed part with the slides played so far (a tank lifted
+ * onto its legs is up there, not swept from the ground); water running off an edge (a stream: the spill over a tank's
+ * rim had no box, so no line could frame it) and falling drops at their own depth (leaves into a tank 2.5 m back were
+ * boxed at the cut face). Else focusOf.
+ */
+export function lineBoxOf(layout, p, role = null) {
+  const q = p.params ?? {};
+  if (p.kind === "rig" && role) return rigBox(q, { played: playedMoves(layout, p.id, role, true) }) ?? focusOf(p, layout.world?.cut ?? null);
+  if (p.kind === "stream" && [q.x0, q.x1, q.yTop].every((v) => Number.isFinite(Number(v)))) {
+    const z = Number(q.z ?? 0), x0 = Math.min(q.x0, q.x1), x1 = Math.max(q.x0, q.x1), pad = Math.max(0.4, 0.15 * (q.yTop - (q.yBot ?? 0)));
+    return { min: [x0 - pad, Number(q.yBot ?? 0), z - 0.5], max: [x1 + pad, Number(q.yTop), z + 0.5] };
+  }
+  if (p.kind === "drops" && Number.isFinite(Number(q.z))) { const b = focusOf(p, layout.world?.cut ?? null); return b && { min: [b.min[0], b.min[1], Number(q.z) - 0.5], max: [b.max[0], b.max[1], Number(q.z) + 0.5] }; }
+  // (water running inside a pipe is seen in its pipe: the pipe's box; 15 lines of the saved plans had no part to frame)
+  if ((p.kind === "pipeFlow" || p.kind === "pipeRunFlow") && q.pipe) { const pipe = (layout.parts ?? []).find((x) => x.id === q.pipe); if (pipe) return focusOf(pipe, layout.world?.cut ?? null); }
+  const own = focusOf(p, layout.world?.cut ?? null);
+  if (own || !role) return own;
+  // (a part with no box of its own, rain, a light, a wet band: what the line's beat acts on, else the finished build)
+  const beat = (layout.beats ?? []).find((b) => b.s === role), cut = layout.world?.cut ?? null;
+  const others = (beat?.do ?? []).map((a) => (layout.parts ?? []).find((x) => x.id === a.p)).filter((x) => x && x.id !== p.id && !["light", "rain", "sign", "outline", "arrows", "counter"].includes(x.kind)).map((x) => { try { return focusOf(x, cut); } catch { return null; } }).filter(Boolean);
+  if (others.length) return union(others);
+  const main = (layout.parts ?? []).filter((x) => x.main).map((x) => { try { return focusOf(x, cut); } catch { return null; } }).filter(Boolean);
+  return main.length ? union(main) : null;
 }
 
 /**

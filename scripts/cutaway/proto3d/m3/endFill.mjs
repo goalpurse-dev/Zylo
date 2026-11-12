@@ -13,7 +13,7 @@ const MIN = Number(a.min ?? 0.4), only = a.only ? String(a.only).split(",") : nu
 const imp = (f) => import(pathToFileURL(path.join(M2, f)).href);
 const { compile } = await imp("compile.mjs"), { draftWords } = await imp("plan.js"), { previewTimes } = await imp("checks.mjs");
 const { cameraAt, projectBox, finishedBuildParts } = await imp("director.js"), { focusOf, union } = await imp("focus.js"), { layoutRules } = await imp("layoutRules.js");
-const { expandModels } = await imp("recipes.js"), { subjectBox } = await imp("framing.js");
+const { expandModels } = await imp("recipes.js"), { subjectBox } = await imp("framing.js"), { aboveGroundBox } = await imp("lineFrame.js");
 
 const share = (k, b) => { if (!b) return null; const r = projectBox(k.pos, k.tgt, b); if (r.behind) return 0; return Math.max(0, Math.min(1, r.x1) - Math.max(0, r.x0)); };
 const DIR = path.join(here, "sweep", "plans"), rows = [];
@@ -31,7 +31,8 @@ for (const f of fs.readdirSync(DIR).filter((x) => x.endsWith(".json"))) {
     const build = mains.length ? union(mains) : subjectBox(L);
     const pt = previewTimes(tl, L), hookTs = pt.find((p) => p.role === "hook")?.ts ?? [], endTs = [...(pt.find((p) => p.role === "congrats")?.ts ?? []), tl.marks.lengthEnd - 0.05];
     const at = (t) => cameraAt(tl.camera.end, t);
-    const open = Math.min(...hookTs.map((t) => share(at(t), box(hookP) ?? build) ?? 1));
+    // (the opening as the owner's rule of 2026-11-12 frames it: the hook's object with the ground above it, from above ground)
+    const open = Math.min(...hookTs.map((t) => share(at(t), aboveGroundBox(box(hookP)) ?? build) ?? 1));
     const conTs = endTs.slice(0, -1), close = Math.min(...conTs.map((t) => share(at(t), build) ?? 1)), card = share(at(tl.marks.lengthEnd - 0.05), build) ?? 1;
     rows.push({ key, open: +open.toFixed(2), close: +close.toFixed(2), card: +card.toFixed(2) });
   } catch (e) { rows.push({ key, error: String(e.message).slice(0, 80) }); }

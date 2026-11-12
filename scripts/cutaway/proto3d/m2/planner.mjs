@@ -54,6 +54,9 @@ export const LENGTH = { 30: { words: [95, 120], sentences: [10, 16], beats: [12,
 export const WORD_TOLERANCE = 0.05;
 // the beat plan's reply limit (Sonnet 5.5 allows 128,000): a 60 s plan thinks long
 export const BEATS_MAX_TOKENS = 120000, BEATS_TIMEOUT_MS = 1_200_000;
+// (medium by default since 2026-11-12, the owner's go after the paid test: a 60 s plan at medium cost $0.48 against the water
+// tower's $1.16 at high, with the same story-rule problems before the repair, 9 loops against 8)
+export const BEATS_EFFORT = () => (/^(low|medium|high)$/.test(process.env.CUTAWAY_BEATS_EFFORT ?? "") ? process.env.CUTAWAY_BEATS_EFFORT : "medium");
 export const wordCount = (t) => String(t ?? "").split(/\s+/).filter(Boolean).length;
 export const overWords = (n, lengthSec) => n > Math.round(LENGTH[lengthSec].words[1] * (1 + WORD_TOLERANCE));
 
@@ -528,14 +531,14 @@ export function approvedScript(key) {
 // (the competitor rules 1-11 of the owner's study, 2026-11-11: each is checked for free in m2/storyRules.js and sent back
 // in the one repair round; the top storm drain, roof, tunnel, well and sewer videos all tell their story this way)
 const STORY_RULES = `THE STORY (the account's formula and the rules of the top videos in this niche; you plan it as beats, one sentence each later; every rule below is checked by code):
-- hook: "If you [one naive physical action], you have a [thing]." The video opens on that action, on its own object (the hole in the street, the plywood on the house, the tap).
+- hook: "If you [one naive physical action], you have a [thing]." The video opens on that action, on its own object, ABOVE GROUND in the world (the house, the yard, the street, the thing being built: the plywood on the house, the dry tap, the dark lamp, the green pool). The hook's object (beats[0].shows.p) is a solid thing that comes back WORKING at the end: a dry tap, never "a hole"; never a dig, a hole, a trench, water, an effect, a label or a meter.
 - 1 FOLLOW THE FLOW: the story's order is the path of what moves (rain down a roof into the gutter, the downspout, the yard, the street drain, the river; sewage from the toilet to the street sewer to the plant to the river; water from the ground up the well to the tower to the tap; cars through a tunnel). story.flow lists those places in order; each new problem happens where the flow goes next (chain[i].at is one of the flow places, in order; one step back at most).
 - 2 THE FIX CAUSES THE NEXT PROBLEM: every "But" after the first is caused by the "So" right before it and names that fix's part or its effect ("So you put a hinged flap on the outlet. But with the flap shut, the rain has nowhere to go."). "But now" alone is not enough.
 - 3 MANY SHORT LOOPS: a 60 s video has 10-12 But/So loops, one about every 5 s; a 30 s video 5-6. Each loop is a problem beat ("But [what goes wrong]") and a fix beat ("So you [add one real part]"); problem roles are problem, problem2 … problem12, fix roles fix1 … fix12. Sentences of 8-15 words (the hook up to 16). Keep the other beats few: the loops ARE the video.
 - 4 HOOK = ENDING: the hook's object returns at the end, finished or working: the last lines bring it back and the finish beat shows it ("Bury the pipes, pave the road, and let it rain."; "Open the tap, and there's your water."; "Let the rain pass the chimney, through the gutter, and out into the grass."). congrats is that closing line: "Congratulations, you have built a [thing]" is allowed only when the same line or the finish brings the hook's object back working. Never a generic finish ("add a bench and a trash can").
 - 5 SCALE GROWS where the topic allows: one house, then the neighbours, the street or the town, then the river (chain[i].scale: part, thing, house, neighbours, street, town, river).
 - 6 PLANT EARLY: everything a later beat needs as a place (the river, the neighbours' houses, the tank's site, the sea) is in the world from the first frame; never pop a place in later. Parts that a fix ADDS appear on their cue word as before.
-- 7 PHYSICAL DISASTERS: show every problem as a visible consequence in close-up: water dripping into the attic, a puddle by the wall, a gutter spilling over, the street turning into a pool, a brown plume in the river, a collapse, a car crash. Red state labels and meters: at most 2 in the whole video, only where nothing physical can show it.
+- 7 PHYSICAL DISASTERS: show every problem as a visible consequence in close-up: water dripping into the attic, a puddle by the wall, a gutter spilling over, the street turning into a pool, a brown plume in the river, a collapse, a car crash. A burst pipe sprays water (an fx "burst" at the joint), water over a rim pours as a sheet (a stream from the rim down), a crack is a wide crack (an fx "crack"): the effect itself, never a label in its place. Red state labels and meters: at most 2 in the whole video, only for a state nothing physical can show (TOO FAST, NO POWER), never CRASH!, BROKEN, CRACKED, FLOODED, LEAKING or OVERFLOW.
 - 8 ONE RECURRING PROP or person (story.recurring {p: its part id, what}): a small thing (a tennis ball washed along by the water, a rubber duck, a leaf, a hand at the tap) that is in a beat by the first third and comes back in at least 3 beats, the last one near the end; never hidden.
 - 9 "THIS IS A…" at most 3 (name, name2, name3), only names viewers will repeat; the last reveal is the relatable one ("Those are the manholes you drive over every day.").
 - 10 ACTION ON THE WORD: a part reaches its state on the verb that says it ("Water flowing out pushes it OPEN; water pushing in forces it SHUT"): the open / shut / fill / spin action's cue word is that verb.
@@ -878,7 +881,9 @@ ${models.map((m) => `- ${m.file}`).join("\n")}` : ""}`;
   };
   // 1. the beat plan (120,000 tokens: the real 60 s swimming pool plan of 2026-10-29 used 45,000 of the old 64,000, and
   // a cut-off reply is a failed attempt; it costs only what is used)
-  let r = await step("beats plan", { system: SYS, user, schema: BEATS_REPLY_SCHEMA, effort: "high", maxTokens: BEATS_MAX_TOKENS, timeoutMs: BEATS_TIMEOUT_MS });
+  // (the effort and the reply limit can be set per run, CUTAWAY_BEATS_EFFORT / CUTAWAY_BEATS_MAX_TOKENS: the owner's paid test of
+  // a medium-effort 60 s plan, 2026-11-12; at high the water tower's plan thought for 89,000 tokens, $1.16)
+  let r = await step("beats plan", { system: SYS, user, schema: BEATS_REPLY_SCHEMA, effort: BEATS_EFFORT(), maxTokens: Number(process.env.CUTAWAY_BEATS_MAX_TOKENS) || BEATS_MAX_TOKENS, timeoutMs: BEATS_TIMEOUT_MS });
   let B = plan(r);
   trace.push({ label: "beat plan checks", problems: B.problems, warnings: B.warnings, opening: openingOf(B.conv.layout) });
   if (B.problems.length) {
@@ -1107,7 +1112,10 @@ async function planTopicRaw({ apiKey, topic, lengthSec = 30, reuse = null, log, 
     if (defer && label === "scene plan") { defer.push({ file, label, model, ...args }); throw Object.assign(new Error("deferred to a batch"), { deferred: true }); }
     const r = await callJSON({ apiKey, model, log, label, ...args });
     if (file) { fs.mkdirSync(cacheDir, { recursive: true }); fs.writeFileSync(file, JSON.stringify(r, null, 1)); }
-    cost += r.costUsd; trace.push({ label, costUsd: r.costUsd, searches: r.searches, data: r.data }); return r;
+    cost += r.costUsd; trace.push({ label, costUsd: r.costUsd, searches: r.searches, data: r.data });
+    // (a test of one step, CUTAWAY_PLAN_STOP_AFTER=<label>: nothing is paid after it; the owner's capped plan test, 2026-11-12)
+    if (process.env.CUTAWAY_PLAN_STOP_AFTER === label) throw Object.assign(new Error(`stopped after "${label}" (CUTAWAY_PLAN_STOP_AFTER), ${r.costUsd.toFixed(3)}`), { code: "STOPPED", retryable: false });
+    return r;
   };
   const saved = reuse ? template(reuse) : null;
   const savedFacts = saved?.facts?.filter((f) => f.verdict !== "drop") ?? [];

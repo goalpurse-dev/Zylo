@@ -72,7 +72,7 @@ export const FIELDS = Object.freeze({
   arrows: { f: { list: { each: { at: "vec3", dir: "vec2|vec3", travel: "num", phase: "num" } }, opts: { obj: { color: "color", scale: "num", speed: "num", flat: "bool" } } }, need: ["list"] },
   outline: { f: { of: "str", points: "path", opts: { obj: { color: "color", r: "num", closed: "bool", over: "bool" } } } },
   seepFlow: { f: { count: "num", width: "num", y0: "num", fall: "num", floor: "num" } },
-  fx: { f: { type: "one:blast,crash,crack,collapse,fire,smoke,drip,splash,spark,frost,swirl,motes", at: "vec3", size: "num", color: "color", look: "one:drops" }, need: ["type", "at"] },
+  fx: { f: { type: "one:blast,crash,crack,collapse,fire,smoke,drip,splash,burst,spill,spark,frost,swirl,motes", at: "vec3", size: "num", color: "color", look: "one:drops", dir: "vec3", sheet: { x0: "num", x1: "num", z: "num", yTop: "num", yBot: "num" } }, need: ["type", "at"] },
   wires: { f: { points: "path", sag: "num", count: "num", spacing: "num", color: "color", glow: "color" }, need: ["points"] },
   model: { f: { keyword: "str", pos: "vec3", rotY: "num", scale: "num", size: "num" }, need: ["keyword", "pos"] },
   road: { f: { points: "points", width: "num", surface: "one:asphalt,gravel,rail,path,track", lines: "bool", y: "num", bridge: { obj: { from: "num", to: "num", height: "num", type: "one:beam,arch,suspension", tower: "num" } } }, need: ["points"] },

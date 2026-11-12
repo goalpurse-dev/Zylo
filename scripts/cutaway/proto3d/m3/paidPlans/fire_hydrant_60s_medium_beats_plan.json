@@ -1,0 +1,359 @@
+{
+ "data": {
+  "why": "A fire hydrant on a street sidewalk, cut open in section so the barrel, the buried valve and the main pipe show. The video opens close on the red hydrant above ground with a hand cranking it, and a tennis ball sits by the curb. Each loop adds one real hydrant part (valve, deep burial, stem, drain hole, threads, flange, caps, five-sided nut), and the camera stays on the hydrant. At the end a fire truck arrives and the hydrant works again.",
+  "sceneJson": "{\"world\":{\"cut\":[-2.5,2.5,-3,5],\"house\":false,\"porch\":false,\"trees\":[],\"road\":false,\"rocksAvoid\":[[-2.4,2.4,-4.6,0.5]],\"backdrop\":{\"type\":\"street\",\"sign\":\"CORNER CAFE\",\"lampX\":14,\"benchX\":-12,\"road\":{\"side\":1}},\"worker\":false,\"moreTrees\":false},\"parts\":[{\"id\":\"dig\",\"kind\":\"dig\",\"params\":{\"clumps\":150,\"margin\":0.6,\"endY\":1,\"arc\":4.2,\"uvFlip\":true,\"mound\":{\"x\":-9,\"z\":-5,\"rx\":1.8,\"rz\":1.4,\"flat\":0.5,\"base\":0.05,\"gain\":2.2,\"sx\":1.15,\"sy\":1,\"sz\":1},\"haul\":true}},{\"id\":\"hyd\",\"kind\":\"hydrant\",\"params\":{\"pos\":[0,0.12,-0.3],\"depth\":3.3,\"color\":\"#d22b2b\"},\"main\":true},{\"id\":\"main\",\"kind\":\"pipeRun\",\"params\":{\"path\":[[-2.4,-3.7,-0.06],[2.4,-3.7,-0.06]],\"r\":0.45,\"radial\":24,\"jointR\":0.5,\"mat\":\"metal\"}},{\"id\":\"mainFlow\",\"kind\":\"pipeRunFlow\",\"params\":{\"pipe\":\"main\",\"count\":14,\"size\":0.18,\"speed\":3,\"dz\":0.4,\"mat\":\"water\"}},{\"id\":\"stem\",\"kind\":\"riser\",\"params\":{\"x\":0,\"z\":-0.3,\"y0\":-3,\"y1\":0.9,\"r\":0.08,\"radial\":16,\"mat\":\"metal\"}},{\"id\":\"hand\",\"kind\":\"hand\",\"params\":{\"pos\":[0,1.1,-0.2],\"from\":[0.6,1.6,0.6],\"size\":0.5,\"action\":\"turn\",\"sleeve\":\"#3d6fb0\"}},{\"id\":\"ball\",\"kind\":\"token\",\"params\":{\"type\":\"tennisBall\",\"pos\":[1.8,0.12,-0.8],\"path\":[[1.8,0.12,-0.8],[3.5,0.12,-0.8],[5.5,0.12,-0.8],[7.5,0.12,-0.8]],\"size\":0.35}},{\"id\":\"flood\",\"kind\":\"water\",\"params\":{\"box\":{\"x0\":-2.5,\"x1\":6,\"y0\":0.12,\"y1\":0.4,\"z0\":-3,\"z1\":0},\"mat\":\"water\"}},{\"id\":\"fxFrostTop\",\"kind\":\"fx\",\"params\":{\"type\":\"frost\",\"at\":[0,0.9,0.2],\"size\":1}},{\"id\":\"fxSplit\",\"kind\":\"fx\",\"params\":{\"type\":\"burst\",\"at\":[0,0.7,0.2],\"dir\":[1,0.4,0.6],\"size\":1}},{\"id\":\"fxFrostBarrel\",\"kind\":\"fx\",\"params\":{\"type\":\"frost\",\"at\":[0,-1.2,0.2],\"size\":1.2}},{\"id\":\"fxBurstMain\",\"kind\":\"fx\",\"params\":{\"type\":\"burst\",\"at\":[1.5,-3.4,0.15],\"dir\":[0.3,1,0.4],\"size\":1}},{\"id\":\"fxCrash\",\"kind\":\"fx\",\"params\":{\"type\":\"crash\",\"at\":[1.6,0.6,0.3],\"size\":1.2}},{\"id\":\"fxBurstBase\",\"kind\":\"fx\",\"params\":{\"type\":\"burst\",\"at\":[0,0.3,0.15],\"dir\":[1,0.5,0.5],\"size\":1}},{\"id\":\"arrowsDown\",\"kind\":\"arrows\",\"params\":{\"list\":[{\"at\":[0.9,1.6,0.4],\"dir\":[0,-1],\"travel\":2.5,\"phase\":0},{\"at\":[0.9,1.6,0.4],\"dir\":[0,-1],\"travel\":2.5,\"phase\":0.5}],\"opts\":{\"color\":\"#ffd23d\",\"scale\":1,\"speed\":0.9}}},{\"id\":\"holeFlow\",\"kind\":\"flow\",\"params\":{\"path\":[[0.3,-3,0.2],[1,-3.4,0.25]],\"look\":\"water\",\"size\":0.14,\"speed\":2,\"count\":10}},{\"id\":\"sprayFlow\",\"kind\":\"flow\",\"params\":{\"path\":[[0.3,0.9,0.3],[1.8,0.3,0.8]],\"look\":\"spray\",\"size\":0.14,\"speed\":2,\"count\":16}},{\"id\":\"counter\",\"kind\":\"counter\",\"params\":{\"pos\":[1.6,1.7,-0.3],\"size\":0.9,\"from\":0,\"to\":1000,\"color\":\"#3ad6ff\",\"bar\":true,\"danger\":2}},{\"id\":\"flange\",\"kind\":\"boxPop\",\"params\":{\"size\":[0.9,0.14,0.9],\"pos\":[0,0.25,-0.3],\"r\":0.04,\"mat\":\"metal\"}},{\"id\":\"caps\",\"kind\":\"panels\",\"params\":{\"panels\":[{\"ch\":\"caps\",\"mat\":\"metal\",\"size\":[0.2,0.25,0.25],\"anchor\":[0,0,0],\"pos\":[-0.5,0.7,-0.3],\"axis\":null,\"vis\":0,\"r\":0.03},{\"ch\":\"caps\",\"mat\":\"metal\",\"size\":[0.2,0.25,0.25],\"anchor\":[0,0,0],\"pos\":[0.5,0.7,-0.3],\"axis\":null,\"vis\":0,\"r\":0.03}]}},{\"id\":\"nut\",\"kind\":\"boxPop\",\"params\":{\"size\":[0.28,0.14,0.28],\"pos\":[0,1.2,-0.3],\"r\":0.03,\"mat\":\"metal\"}},{\"id\":\"car\",\"kind\":\"car\",\"params\":{\"pos\":[10,0.12,-3.5],\"from\":-22,\"to\":22,\"color\":\"#2e62c9\",\"model\":\"sedan\"}},{\"id\":\"truck\",\"kind\":\"car\",\"params\":{\"pos\":[10,0.12,-3.5],\"from\":-22,\"to\":22,\"color\":\"#c62d2d\",\"model\":\"firetruck\"}},{\"id\":\"outline\",\"kind\":\"outline\",\"params\":{\"of\":\"hyd\",\"opts\":{\"r\":0.06,\"closed\":true}}},{\"id\":\"sign\",\"kind\":\"sign\",\"params\":{\"at\":[5.5,0.14,-12],\"rotY\":0.2,\"scale\":1.3}}],\"beats\":[{\"s\":\"hook\",\"shows\":{\"p\":\"hyd\",\"does\":\"crank open and spray\"},\"do\":[{\"p\":\"hyd\",\"v\":\"show\",\"w\":\"\"},{\"p\":\"hand\",\"v\":\"show\",\"w\":\"\"},{\"p\":\"ball\",\"v\":\"sit\",\"w\":\"\"},{\"p\":\"hand\",\"v\":\"turn\",\"w\":\"crank\"},{\"p\":\"hyd\",\"v\":\"open\",\"w\":\"crank\"},{\"p\":\"hyd\",\"v\":\"spray\",\"w\":\"geyser\"}],\"shots\":[{\"focus\":[\"hyd\"],\"view\":\"home\",\"type\":\"close\",\"hero\":false}]},{\"s\":\"problem\",\"shows\":{\"p\":\"flood\",\"does\":\"flood the street\"},\"do\":[{\"p\":\"ball\",\"v\":\"ride\",\"w\":\"blasts\",\"amp\":0.4},{\"p\":\"flood\",\"v\":\"flood\",\"w\":\"floods\"}],\"shots\":[{\"focus\":[\"hyd\",\"flood\"],\"view\":\"home\",\"type\":\"mid\",\"hero\":false}]},{\"s\":\"fix1\",\"shows\":{\"p\":\"hyd\",\"does\":\"close the valve\"},\"do\":[{\"p\":\"hyd\",\"v\":\"close\",\"w\":\"shuts\"},{\"p\":\"hand\",\"v\":\"turnBack\",\"w\":\"shuts\"},{\"p\":\"flood\",\"v\":\"hide\",\"w\":\"shuts\"}],\"shots\":[{\"focus\":[\"hyd\"],\"view\":\"home\",\"type\":\"mid\",\"hero\":false}]},{\"s\":\"problem2\",\"shows\":{\"p\":\"fxSplit\",\"does\":\"ice freezes and splits the valve\"},\"do\":[{\"p\":\"fxFrostTop\",\"v\":\"start\",\"w\":\"freezes\"},{\"p\":\"fxSplit\",\"v\":\"start\",\"w\":\"splits\"}],\"shots\":[{\"focus\":[\"hyd\"],\"view\":\"home\",\"type\":\"close\",\"hero\":false}]},{\"s\":\"fix2\",\"shows\":{\"p\":\"dig\",\"does\":\"dig and bury the valve\"},\"do\":[{\"p\":\"dig\",\"v\":\"dig\",\"w\":\"dig\",\"d\":1.8},{\"p\":\"hyd\",\"v\":\"barrel\",\"w\":\"bury\"},{\"p\":\"fxSplit\",\"v\":\"stop\",\"w\":\"bury\"},{\"p\":\"fxFrostTop\",\"v\":\"stop\",\"w\":\"bury\"},{\"p\":\"main\",\"v\":\"grow\",\"w\":\"deep\"}],\"shots\":[{\"focus\":[\"hyd\",\"main\"],\"view\":\"home\",\"type\":\"mid\",\"hero\":false}]},{\"s\":\"problem3\",\"shows\":{\"p\":\"hand\",\"does\":\"hand cannot reach valve\"},\"do\":[{\"p\":\"arrowsDown\",\"v\":\"show\",\"w\":\"far\"},{\"p\":\"hand\",\"v\":\"show\",\"w\":\"reach\"}],\"shots\":[{\"focus\":[\"hyd\",\"hand\"],\"view\":\"home\",\"type\":\"mid\",\"hero\":false}]},{\"s\":\"fix3\",\"shows\":{\"p\":\"stem\",\"does\":\"grow stem and turn\"},\"do\":[{\"p\":\"stem\",\"v\":\"grow\",\"w\":\"stem\"},{\"p\":\"arrowsDown\",\"v\":\"hide\",\"w\":\"stem\"},{\"p\":\"hand\",\"v\":\"turn\",\"w\":\"turns\"},{\"p\":\"hyd\",\"v\":\"open\",\"w\":\"turns\"}],\"shots\":[{\"focus\":[\"hyd\",\"stem\"],\"view\":\"home\",\"type\":\"mid\",\"hero\":false}]},{\"s\":\"problem4\",\"shows\":{\"p\":\"fxFrostBarrel\",\"does\":\"water stays and freezes\"},\"do\":[{\"p\":\"hyd\",\"v\":\"close\",\"w\":\"shuts\"},{\"p\":\"hand\",\"v\":\"turnBack\",\"w\":\"shuts\"},{\"p\":\"hyd\",\"v\":\"fill\",\"w\":\"stays\"},{\"p\":\"fxFrostBarrel\",\"v\":\"start\",\"w\":\"freezes\"}],\"shots\":[{\"focus\":[\"hyd\"],\"view\":\"home\",\"type\":\"mid\",\"hero\":false}]},{\"s\":\"fix4\",\"shows\":{\"p\":\"hyd\",\"does\":\"barrel drains\"},\"do\":[{\"p\":\"hyd\",\"v\":\"drain\",\"w\":\"drain\"},{\"p\":\"fxFrostBarrel\",\"v\":\"stop\",\"w\":\"empties\"}],\"shots\":[{\"focus\":[\"hyd\"],\"view\":\"home\",\"type\":\"mid\",\"hero\":false}]},{\"s\":\"name\",\"shows\":{\"p\":\"outline\",\"does\":\"outline the hydrant\"},\"do\":[{\"p\":\"outline\",\"v\":\"show\",\"w\":\"hydrant\"}],\"shots\":[{\"focus\":[\"hyd\"],\"view\":\"home\",\"width\":0.6,\"hero\":true}]},{\"s\":\"problem5\",\"shows\":{\"p\":\"holeFlow\",\"does\":\"water pours from the drain hole\"},\"do\":[{\"p\":\"outline\",\"v\":\"hide\",\"w\":\"But\"},{\"p\":\"hyd\",\"v\":\"open\",\"w\":\"opens\"},{\"p\":\"holeFlow\",\"v\":\"start\",\"w\":\"pours\"}],\"shots\":[{\"focus\":[\"hyd\",\"holeFlow\"],\"view\":\"home\",\"type\":\"mid\",\"hero\":false}]},{\"s\":\"fix5\",\"shows\":{\"p\":\"hyd\",\"does\":\"stem seals the hole\"},\"do\":[{\"p\":\"hyd\",\"v\":\"stopDrain\",\"w\":\"seal\"},{\"p\":\"holeFlow\",\"v\":\"stop\",\"w\":\"seal\"}],\"shots\":[{\"focus\":[\"hyd\",\"holeFlow\"],\"view\":\"home\",\"type\":\"mid\",\"hero\":false}]},{\"s\":\"how\",\"shows\":{\"p\":\"hyd\",\"does\":\"water rises up the barrel\"},\"do\":[{\"p\":\"hand\",\"v\":\"turn\",\"w\":\"Turn\"},{\"p\":\"mainFlow\",\"v\":\"show\",\"w\":\"Turn\"},{\"p\":\"hyd\",\"v\":\"fill\",\"w\":\"rises\"},{\"p\":\"hyd\",\"v\":\"spray\",\"w\":\"barrel\"}],\"shots\":[{\"focus\":[\"hyd\",\"main\"],\"view\":\"home\",\"type\":\"mid\",\"hero\":false}]},{\"s\":\"problem6\",\"shows\":{\"p\":\"fxBurstMain\",\"does\":\"main pipe bursts\"},\"do\":[{\"p\":\"ball\",\"v\":\"ride\",\"w\":\"slams\",\"amp\":0.3},{\"p\":\"fxBurstMain\",\"v\":\"start\",\"w\":\"bursts\"}],\"shots\":[{\"focus\":[\"hyd\",\"main\"],\"view\":\"home\",\"type\":\"mid\",\"hero\":false}]},{\"s\":\"fix6\",\"shows\":{\"p\":\"hand\",\"does\":\"many slow turns\"},\"do\":[{\"p\":\"hand\",\"v\":\"turnBack\",\"w\":\"cut\"},{\"p\":\"fxBurstMain\",\"v\":\"stop\",\"w\":\"threads\"},{\"p\":\"hand\",\"v\":\"turn\",\"w\":\"turns\",\"d\":3}],\"shots\":[{\"focus\":[\"hyd\",\"main\"],\"view\":\"home\",\"type\":\"mid\",\"hero\":false}]},{\"s\":\"fact\",\"shows\":{\"p\":\"counter\",\"does\":\"counts up gallons\"},\"do\":[{\"p\":\"counter\",\"v\":\"show\",\"w\":\"hydrant\"},{\"p\":\"counter\",\"v\":\"count\",\"w\":\"gallons\",\"d\":2.5}],\"shots\":[{\"focus\":[\"hyd\",\"counter\"],\"view\":\"home\",\"type\":\"mid\",\"hero\":false}]},{\"s\":\"problem7\",\"shows\":{\"p\":\"fxCrash\",\"does\":\"car hits and snaps the hydrant\"},\"do\":[{\"p\":\"counter\",\"v\":\"hide\",\"w\":\"But\"},{\"p\":\"car\",\"v\":\"arrive\",\"w\":\"car\"},{\"p\":\"fxCrash\",\"v\":\"go\",\"w\":\"hits\"},{\"p\":\"fxBurstBase\",\"v\":\"start\",\"w\":\"snaps\"}],\"shots\":[{\"focus\":[\"hyd\",\"car\"],\"view\":\"home\",\"type\":\"wide\",\"hero\":false}]},{\"s\":\"fix7\",\"shows\":{\"p\":\"flange\",\"does\":\"flange pops on, valve shuts\"},\"do\":[{\"p\":\"flange\",\"v\":\"show\",\"w\":\"flange\"},{\"p\":\"fxBurstBase\",\"v\":\"stop\",\"w\":\"flange\"},{\"p\":\"car\",\"v\":\"leave\",\"w\":\"flange\"},{\"p\":\"hyd\",\"v\":\"close\",\"w\":\"shut\"},{\"p\":\"hand\",\"v\":\"turnBack\",\"w\":\"shut\"}],\"shots\":[{\"focus\":[\"hyd\",\"flange\"],\"view\":\"home\",\"type\":\"mid\",\"hero\":false}]},{\"s\":\"problem8\",\"shows\":{\"p\":\"sprayFlow\",\"does\":\"water sprays sideways\"},\"do\":[{\"p\":\"hyd\",\"v\":\"open\",\"w\":\"nozzle\"},{\"p\":\"sprayFlow\",\"v\":\"start\",\"w\":\"hose\"},{\"p\":\"hyd\",\"v\":\"spray\",\"w\":\"hose\"}],\"shots\":[{\"focus\":[\"hyd\",\"sprayFlow\"],\"view\":\"home\",\"type\":\"mid\",\"hero\":false}]},{\"s\":\"fix8\",\"shows\":{\"p\":\"caps\",\"does\":\"caps pop on\"},\"do\":[{\"p\":\"caps\",\"v\":\"pop\",\"w\":\"caps\",\"ch\":\"caps\"},{\"p\":\"sprayFlow\",\"v\":\"stop\",\"w\":\"caps\"}],\"shots\":[{\"focus\":[\"hyd\",\"caps\"],\"view\":\"home\",\"type\":\"mid\",\"hero\":false}]},{\"s\":\"problem9\",\"shows\":{\"p\":\"hand\",\"does\":\"wrench slips\"},\"do\":[{\"p\":\"hand\",\"v\":\"turn\",\"w\":\"slips\",\"d\":0.8}],\"shots\":[{\"focus\":[\"hyd\",\"hand\"],\"view\":\"home\",\"type\":\"mid\",\"hero\":false}]},{\"s\":\"fix9\",\"shows\":{\"p\":\"nut\",\"does\":\"nut pops on and turns\"},\"do\":[{\"p\":\"nut\",\"v\":\"show\",\"w\":\"nut\"},{\"p\":\"hand\",\"v\":\"turnBack\",\"w\":\"So\"},{\"p\":\"hand\",\"v\":\"turn\",\"w\":\"wrenches\"}],\"shots\":[{\"focus\":[\"hyd\",\"nut\"],\"view\":\"home\",\"type\":\"mid\",\"hero\":false}]},{\"s\":\"name2\",\"shows\":{\"p\":\"outline\",\"does\":\"outline the hydrant\"},\"do\":[{\"p\":\"outline\",\"v\":\"show\",\"w\":\"hydrants\"}],\"shots\":[{\"focus\":[\"hyd\"],\"view\":\"home\",\"width\":0.5,\"hero\":true}]},{\"s\":\"finish\",\"shows\":{\"p\":\"hyd\",\"does\":\"truck arrives, hydrant opens and sprays\"},\"do\":[{\"p\":\"outline\",\"v\":\"hide\",\"w\":\"Add\"},{\"p\":\"hand\",\"v\":\"turnBack\",\"w\":\"Add\"},{\"p\":\"truck\",\"v\":\"arrive\",\"w\":\"truck\"},{\"p\":\"hyd\",\"v\":\"open\",\"w\":\"open\"},{\"p\":\"hand\",\"v\":\"turn\",\"w\":\"open\"},{\"p\":\"hyd\",\"v\":\"spray\",\"w\":\"flows\"},{\"p\":\"ball\",\"v\":\"ride\",\"w\":\"flows\",\"amp\":0.3}],\"shots\":[{\"focus\":[\"hyd\",\"truck\"],\"view\":\"home\",\"type\":\"wide\",\"hero\":false}]},{\"s\":\"congrats\",\"do\":[],\"shots\":[]}],\"audio\":{\"cards\":[{\"text\":\"1,000 GALLONS\",\"at\":{\"s\":\"fact\",\"w\":\"1,000\",\"o\":0},\"d\":1.8}],\"sfx\":[{\"lib\":\"water_rush\",\"at\":{\"s\":\"hook\",\"w\":\"geyser\",\"o\":0},\"d\":1.4},{\"lib\":\"dirt\",\"at\":{\"s\":\"fix2\",\"w\":\"dig\",\"o\":0.2},\"d\":1.4},{\"lib\":\"drip\",\"at\":{\"s\":\"problem5\",\"w\":\"pours\",\"o\":0},\"d\":1.3},{\"lib\":\"water_rush\",\"at\":{\"s\":\"problem6\",\"w\":\"bursts\",\"o\":0},\"d\":1.4}],\"chimes\":[{\"s\":\"name\",\"w\":\"\",\"o\":0},{\"s\":\"name2\",\"w\":\"\",\"o\":0},{\"s\":\"fact\",\"w\":\"1,000\",\"o\":0},{\"s\":\"congrats\",\"w\":\"\",\"o\":0}],\"rain\":[]}}",
+  "sentences": [
+   {
+    "role": "hook",
+    "text": "If you crank open a fire hydrant, you have a geyser."
+   },
+   {
+    "role": "problem",
+    "text": "But the water blasts out and floods the street."
+   },
+   {
+    "role": "fix1",
+    "text": "So you add a valve that shuts the flow."
+   },
+   {
+    "role": "problem2",
+    "text": "But ice freezes that valve and splits it open."
+   },
+   {
+    "role": "fix2",
+    "text": "So you dig down and bury the valve deep."
+   },
+   {
+    "role": "problem3",
+    "text": "But the buried valve sits too far to reach."
+   },
+   {
+    "role": "fix3",
+    "text": "So you add a long stem that turns the valve."
+   },
+   {
+    "role": "problem4",
+    "text": "But once the stem shuts it, water stays and freezes."
+   },
+   {
+    "role": "fix4",
+    "text": "So you drill a drain hole that empties the barrel."
+   },
+   {
+    "role": "name",
+    "text": "This is a dry barrel hydrant."
+   },
+   {
+    "role": "problem5",
+    "text": "But when the valve opens, water pours from the drain hole."
+   },
+   {
+    "role": "fix5",
+    "text": "So you let the stem seal the hole."
+   },
+   {
+    "role": "how",
+    "text": "Turn the nut, and water rises up the barrel."
+   },
+   {
+    "role": "problem6",
+    "text": "But opening fast slams the water, and the main bursts."
+   },
+   {
+    "role": "fix6",
+    "text": "So you cut threads, so the stem takes many turns."
+   },
+   {
+    "role": "fact",
+    "text": "A hydrant can push out 1,000 gallons every minute."
+   },
+   {
+    "role": "problem7",
+    "text": "But a speeding car hits and snaps the hydrant."
+   },
+   {
+    "role": "fix7",
+    "text": "So you add a breakaway flange that keeps it shut."
+   },
+   {
+    "role": "problem8",
+    "text": "But shut again, the bare nozzle cannot hold a hose."
+   },
+   {
+    "role": "fix8",
+    "text": "So you add threaded caps that a hose screws onto."
+   },
+   {
+    "role": "problem9",
+    "text": "But the threaded caps stay tight and the wrench slips."
+   },
+   {
+    "role": "fix9",
+    "text": "So you add a five sided nut for wrenches."
+   },
+   {
+    "role": "name2",
+    "text": "Those are the hydrants you pass every day."
+   },
+   {
+    "role": "finish",
+    "text": "Add a fire truck, open the hydrant, and water flows."
+   },
+   {
+    "role": "congrats",
+    "text": "Congratulations, you have built a working hydrant."
+   }
+  ],
+  "story": {
+   "title": "How a Fire Hydrant Works",
+   "hero": "a dry barrel hydrant",
+   "parts": [
+    "hydrant",
+    "valve",
+    "barrel",
+    "stem",
+    "drain hole",
+    "flange",
+    "caps",
+    "nut"
+   ],
+   "flow": [
+    "nozzle",
+    "valve",
+    "barrel",
+    "water main",
+    "street"
+   ],
+   "recurring": {
+    "p": "ball",
+    "what": "a tennis ball"
+   },
+   "ideas": [
+    {
+     "role": "hook",
+     "idea": "cranking a hydrant open sends a geyser into the street"
+    },
+    {
+     "role": "problem",
+     "idea": "the uncontrolled water floods the street and washes the ball away"
+    },
+    {
+     "role": "fix1",
+     "idea": "a valve shuts the flow off"
+    },
+    {
+     "role": "problem2",
+     "idea": "the valve sits up top, so winter ice freezes and splits it"
+    },
+    {
+     "role": "fix2",
+     "idea": "dig down and bury the valve below the frost line"
+    },
+    {
+     "role": "problem3",
+     "idea": "the buried valve is too far down to reach by hand"
+    },
+    {
+     "role": "fix3",
+     "idea": "a long stem turns the valve from the top"
+    },
+    {
+     "role": "problem4",
+     "idea": "after shutting, water left in the barrel freezes"
+    },
+    {
+     "role": "fix4",
+     "idea": "a drain hole empties the barrel"
+    },
+    {
+     "role": "name",
+     "idea": "this is a dry barrel hydrant"
+    },
+    {
+     "role": "problem5",
+     "idea": "opening the valve lets water pour out the drain hole"
+    },
+    {
+     "role": "fix5",
+     "idea": "the stem seals the hole as it opens"
+    },
+    {
+     "role": "how",
+     "idea": "turning the nut sends water up the barrel and out the nozzle"
+    },
+    {
+     "role": "problem6",
+     "idea": "opening fast slams the water and bursts the main"
+    },
+    {
+     "role": "fix6",
+     "idea": "threads make the stem take many slow turns"
+    },
+    {
+     "role": "fact",
+     "idea": "a hydrant can push out 1,000 gallons every minute"
+    },
+    {
+     "role": "problem7",
+     "idea": "a car hits the hydrant and snaps it"
+    },
+    {
+     "role": "fix7",
+     "idea": "a breakaway flange snaps while the valve stays shut"
+    },
+    {
+     "role": "problem8",
+     "idea": "a bare nozzle cannot hold a hose"
+    },
+    {
+     "role": "fix8",
+     "idea": "threaded caps let a hose screw on"
+    },
+    {
+     "role": "problem9",
+     "idea": "the tight caps stay on and a smooth nut slips under the wrench"
+    },
+    {
+     "role": "fix9",
+     "idea": "a five sided nut gives the wrench a grip"
+    },
+    {
+     "role": "name2",
+     "idea": "those are the hydrants people pass every day"
+    },
+    {
+     "role": "finish",
+     "idea": "a fire truck arrives and the hydrant gives water where it is needed"
+    },
+    {
+     "role": "congrats",
+     "idea": "you built a working hydrant"
+    }
+   ],
+   "chain": [
+    {
+     "problem": "problem",
+     "causedBy": "hook",
+     "shows": "water blasting out and flooding the street",
+     "stakes": "the street and passing people",
+     "size": 1,
+     "at": "nozzle",
+     "scale": "part"
+    },
+    {
+     "problem": "problem2",
+     "causedBy": "fix1",
+     "shows": "frost forming on the valve and it splitting with a spray",
+     "stakes": "the hydrant",
+     "size": 2,
+     "at": "valve",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem3",
+     "causedBy": "fix2",
+     "shows": "arrows down to the deep valve and a hand that cannot reach",
+     "stakes": "firefighters",
+     "size": 3,
+     "at": "valve",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem4",
+     "causedBy": "fix3",
+     "shows": "water left in the barrel with frost",
+     "stakes": "the hydrant barrel",
+     "size": 4,
+     "at": "barrel",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem5",
+     "causedBy": "fix4",
+     "shows": "water pouring out of the drain hole into the soil",
+     "stakes": "water pressure for the hose",
+     "size": 5,
+     "at": "valve",
+     "scale": "thing"
+    },
+    {
+     "problem": "problem6",
+     "causedBy": "fix5",
+     "shows": "the water main bursting under the street",
+     "stakes": "the street",
+     "size": 6,
+     "at": "water main",
+     "scale": "street"
+    },
+    {
+     "problem": "problem7",
+     "causedBy": "fix6",
+     "shows": "a car crashing into the hydrant and a jet spraying",
+     "stakes": "the street",
+     "size": 7,
+     "at": "street",
+     "scale": "street"
+    },
+    {
+     "problem": "problem8",
+     "causedBy": "fix7",
+     "shows": "water spraying sideways from a bare nozzle",
+     "stakes": "firefighters",
+     "size": 8,
+     "at": "street",
+     "scale": "street"
+    },
+    {
+     "problem": "problem9",
+     "causedBy": "fix8",
+     "shows": "the wrench slipping on the nut",
+     "stakes": "the town",
+     "size": 9,
+     "at": "street",
+     "scale": "town"
+    }
+   ],
+   "surprises": [
+    {
+     "claim": "A hydrant can push out about 1,000 gallons every minute.",
+     "role": "fact",
+     "search": "fire hydrant flow rate gallons per minute"
+    },
+    {
+     "claim": "The valve of a dry barrel hydrant sits deep underground, below the frost line.",
+     "role": "fix2",
+     "search": "dry barrel hydrant main valve below frost line"
+    },
+    {
+     "claim": "A dry barrel hydrant has a small drain hole that empties the barrel after use.",
+     "role": "fix4",
+     "search": "dry barrel hydrant drain hole empties barrel"
+    },
+    {
+     "claim": "Hydrant operating nuts are five sided, so only a special wrench fits.",
+     "role": "fix9",
+     "search": "fire hydrant pentagon operating nut"
+    }
+   ]
+  }
+ },
+ "costUsd": 0.48168,
+ "usage": {
+  "input_tokens": 582,
+  "cache_creation_input_tokens": 42921,
+  "cache_read_input_tokens": 0,
+  "cache_creation": {
+   "ephemeral_5m_input_tokens": 42921,
+   "ephemeral_1h_input_tokens": 0
+  },
+  "output_tokens": 37321,
+  "service_tier": "standard",
+  "inference_geo": "global",
+  "speed": "standard",
+  "output_tokens_details": {
+   "thinking_tokens": 25885
+  }
+ },
+ "searches": 0,
+ "sources": []
+}

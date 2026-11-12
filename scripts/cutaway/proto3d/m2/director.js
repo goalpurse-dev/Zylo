@@ -12,6 +12,7 @@ import { rigBox } from "./rig.js";
 import { LENS, CAMERA_LIMITS, finishedBuildParts, measureKey, settingBoxes, subjectBox, turnBetween } from "./framing.js";
 export { finishedBuildParts };
 import { RULES, SKIP_ROLES, cameraRulesOn, fillMet, fillOf, flowPlaces, lineSubject, sameView } from "./cameraRules.js";
+import { aboveGroundBox, frameIssues } from "./lineFrame.js";
 
 export { LENS };
 // the shot vocabulary, measured on the hand-built paths (m2/shotStudy.mjs): the camera's distance as a share of the
@@ -654,8 +655,31 @@ export function directCamera(layout, shots, marks) {
     const tClose = Math.min(shots.find((s) => s.at?.s === "finish")?.t ?? Infinity, shots.find((s) => s.at?.s === "congrats")?.t ?? Infinity, marks.signPop - 4);
     const sb = signPart ? focusOf(signPart, cut) : null;
     const refit = (k, b) => { const f = frameBox(b, { view: sub(k[1], k[2]), width: AIM, zone: "center", minField: 0 }); return [k[0], f.pos, f.tgt]; };
+    // (the first frame is the world above ground with the hook's action starting (the owner's rule of 2026-11-12): the
+    // hook's object with the ground above it, the camera over the lawn, the soil face under a third of the frame; the real
+    // water tower run opened in the dark, a camera under the lawn looking down the well shaft)
+    const hookAG = hookBox && aboveGroundBox(hookBox), DEG = Math.PI / 180;
+    const openOk = (k) => hookAG && share(k[1], k[2], hookAG) >= MIN_FILL && !frameIssues(layout, { pos: k[1], tgt: k[2] }, hookAG, { opening: true, skipIds: [hookId] }).issues.length;
+    const openFix = (k) => {
+      const d = sub(k[1], k[2]), yaw = Math.atan2(d[0], d[2]);
+      for (const el of [22, 30, 40, 52]) for (const w of [AIM, 0.6, 0.7]) {
+        const f = frameBox(hookAG, { view: [Math.sin(yaw) * Math.cos(el * DEG), Math.sin(el * DEG), Math.cos(yaw) * Math.cos(el * DEG)], width: w, zone: "center", minField: 0 });
+        const q = [k[0], f.pos, f.tgt]; if (openOk(q)) return q;
+        const l = liftSoil(layout, { pos: f.pos, tgt: f.tgt }, hookAG), ql = [k[0], l.pos, l.tgt]; if (openOk(ql)) return ql;
+      }
+      return null;
+    };
     for (const list of [end, noend]) list.forEach((k, i) => {
-      if (k[0] <= tHookEnd + 1e-3 && hookBox && share(k[1], k[2], hookBox) < MIN_FILL) { list[i] = refit(k, hookBox); notes.push(`opening at ${k[0].toFixed(2)} s: framed closer, the hook's object fills ${Math.round(AIM * 100)}% (it was under ${MIN_FILL * 100}%)`); return; }
+      if (k[0] <= tHookEnd + 1e-3 && hookAG && !openOk(k)) {
+        const q = openFix(k);
+        if (q) { list[i] = q; notes.push(`opening at ${k[0].toFixed(2)} s: the hook's object from above ground, ${Math.round(share(q[1], q[2], hookAG) * 100)}% of the width`); return; }
+      }
+      if (k[0] <= tHookEnd + 1e-3 && hookBox && share(k[1], k[2], hookBox) < MIN_FILL) {
+        // (never back under the ground: a hook object all below it is framed with the ground above it, as above)
+        const r = refit(k, hookBox);
+        if (!hookAG || hookAG === hookBox || openOk(r)) { list[i] = r; notes.push(`opening at ${k[0].toFixed(2)} s: framed closer, the hook's object fills ${Math.round(AIM * 100)}% (it was under ${MIN_FILL * 100}%)`); }
+        return;
+      }
       // (the main build itself, not the union with what the finish adds: a rain barrel framed with its new bushes was 5% wide)
       const B = subjEnd ?? subjectBox(layout);
       if (k[0] >= tClose - 1e-3 && share(k[1], k[2], B) < MIN_FILL) {
@@ -668,6 +692,11 @@ export function directCamera(layout, shots, marks) {
         list[i] = refit(k, B); notes.push(`closing at ${k[0].toFixed(2)} s: framed closer, the build fills ${Math.round(AIM * 100)}% (it was under ${MIN_FILL * 100}%)`);
       }
     });
+    // (the opening still moves: two hook keys refitted to one framing get the gentle push-in back, 8% further out first)
+    for (const list of [end, noend]) if (list.length > 1 && list[1][0] <= tHookEnd + 1e-3 && JSON.stringify(list[0].slice(1)) === JSON.stringify(list[1].slice(1))) {
+      const w = scaleView({ pos: list[1][1], tgt: list[1][2] }, 1.08), q = [list[0][0], w.pos, w.tgt];
+      if (!hookAG || openOk(q)) list[0] = q;
+    }
   }, null);
   return { end, noend, notes, frames };
 }

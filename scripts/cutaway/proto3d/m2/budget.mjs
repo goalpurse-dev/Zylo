@@ -4,7 +4,8 @@
 // The cap: CUTAWAY_RUN_CAP_USD, or setRunCap() (the worker sets the job's capUsd). No cap: Infinity.
 let cap = Number(process.env.CUTAWAY_RUN_CAP_USD) || Infinity, spent = 0;
 // what one call can cost at most, by label (measured on the paid runs of 2026-10-26/28, with headroom)
-const WORST = [[/beats plan|scene plan/, 0.5], [/beats repair|scene repair|preview repair/, 0.4], [/fact research/, 0.15], [/fact-check/, 0.08], [/vision|repair look/, 0.1], [/voice/, 0.08], [/words|re-anchor|post text|kit check/, 0.04]];
+// (a beat plan at medium effort cost $0.48 on the paid test of 2026-11-12: 0.65)
+const WORST = [[/beats plan|scene plan/, 0.65], [/beats repair|scene repair|preview repair/, 0.4], [/fact research/, 0.15], [/fact-check/, 0.08], [/vision|repair look/, 0.1], [/voice/, 0.08], [/words|re-anchor|post text|kit check/, 0.04]];
 export const worstOf = (label) => WORST.find(([re]) => re.test(label))?.[1] ?? 0.2;
 export function setRunCap(usd) { if (Number(usd) > 0) cap = Number(usd); }
 export function spentSoFar() { return spent; }

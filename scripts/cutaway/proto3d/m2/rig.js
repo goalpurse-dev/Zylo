@@ -219,10 +219,33 @@ function nodeBoxes(p) {
   return out;
 }
 
+function rigBoxPlayed(p, { node, hide, played }) {
+  const nodes = nodesOf(p), byId = new Map(nodes.map((n) => [n.id, n])), boxes = nodeBoxes(p);
+  const keep = node ? new Set([node]) : null;
+  if (keep) for (let grown = true; grown;) { grown = false; for (const n of nodes) if (n.parent && keep.has(n.parent) && !keep.has(n.id)) { keep.add(n.id); grown = true; } }
+  const gone = hide ? new Set(hide) : null;
+  if (gone) for (let grown = true; grown;) { grown = false; for (const n of nodes) if (n.parent && gone.has(n.parent) && !gone.has(n.id)) { gone.add(n.id); grown = true; } }
+  const lift = (n, seen = new Set()) => {
+    if (!n || seen.has(n.id)) return [0, 0, 0]; seen.add(n.id);
+    const own = (n.moves ?? []).filter((m) => m.type === "slide" && played.has(m.name)).reduce((a, m) => a.map((v, i) => v + v3(m.to)[i]), [0, 0, 0]);
+    const up = n.parent ? lift(byId.get(n.parent), seen) : [0, 0, 0];
+    return own.map((v, i) => v + up[i]);
+  };
+  const b = unionB([...boxes].filter(([id]) => (!keep || keep.has(id)) && (!gone || !gone.has(id))).map(([id, x]) => shift(x.rest, lift(byId.get(id)))));
+  if (!b) return null;
+  const s = num(p.scale, 1), pos = v3(p.pos), ry = num(p.rotY, 0), cs = [];
+  for (const x of [b.min[0], b.max[0]]) for (const z of [b.min[2], b.max[2]]) cs.push([x * s * Math.cos(ry) + z * s * Math.sin(ry), z * s * Math.cos(ry) - x * s * Math.sin(ry)]);
+  return { min: [Math.min(...cs.map((c) => c[0])) + pos[0], b.min[1] * s + pos[1], Math.min(...cs.map((c) => c[1])) + pos[2]], max: [Math.max(...cs.map((c) => c[0])) + pos[0], b.max[1] * s + pos[1], Math.max(...cs.map((c) => c[1])) + pos[2]] };
+}
+
 /** the rig's box in world space (at rest and through its moves), for the camera and the checks */
 /** rigBox, softly (its crash is our bug, logged; no box) */
 export function rigBox(p, opts = {}) { return soft("a designed part's box (rigBox)", () => rigBoxRaw(p, opts), null); }
-function rigBoxRaw(p, { swept = true, node = null, hide = null } = {}) {
+function rigBoxRaw(p, { swept = true, node = null, hide = null, played = null } = {}) {
+  // (played: the move names played so far in the story, a Set: each piece at rest, carried by the slides it and the pieces
+  // it hangs on have made; a float inside a tank lifted onto its legs was framed where the tank stood before the lift, the
+  // camera on the bare legs, the real water tower run of 2026-11-11)
+  if (played) return rigBoxPlayed(p, { node, hide, played });
   // (node: one piece and the pieces hung on it, for a shot of "part.node": the camera frames the motor, not the garage)
   const keep = node ? new Set([node]) : null;
   if (keep) for (let grown = true; grown;) { grown = false; for (const n of nodesOf(p)) if (n.parent && keep.has(n.parent) && !keep.has(n.id)) { keep.add(n.id); grown = true; } }
