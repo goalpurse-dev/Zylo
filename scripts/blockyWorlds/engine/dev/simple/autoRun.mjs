@@ -30,7 +30,7 @@ const meter = LLM.moneyMeter(SCRIPT_CAP);
 const results = await stage("script", async () => {
   const ideas = await LLM.writeTopicIdeas({ apiKey, topic, meter });
   const card = (ideas.cards ?? ideas.ideas ?? ideas.items ?? ideas)[0] ?? ideas;
-  const w = await LLM.writeScript({ apiKey, idea: card, lengthSec: LEN, meter });
+  const w = await LLM.writeScript({ apiKey, idea: card, lengthSec: LEN, meter, maxTokens: 8000 });
   return { results: [{ script: w.script, card }], costUsd: meter.spent };
 });
 C.script = meter.spent;
@@ -52,10 +52,10 @@ fs.writeFileSync(path.join(out, "scenes.json"), JSON.stringify(scenes));
 say(`scenes: ${scenes.length} ($${C.scenes}, ${T.scenes} s)`);
 
 // 3. the video: the RunPod prepare with the automatic storyboard + the chunks (videoRun keeps its own costs.json)
-const left = +(CAP - C.script - C.scenes).toFixed(3);
+const left = +(CAP - C.script - C.scenes - Number(arg("spent", 0))).toFixed(3); // --spent: an earlier stopped attempt's spend
 const run = path.join(out, "video");
 const r = await stage("video", async () => spawnSync(process.execPath, [path.join(ENGINE, "dev/simple/videoRun.mjs"), "--script", path.join(out, "results.json"), "--pick", "1", "--out", run, "--scenes", path.join(out, "scenes.json"),
-  "--storyboard", "auto", "--storyboard-usd", "0.2", "--prompts-usd", "0.3", "--review-usd", "0.03", "--builder-usd", "0", "--prepare-sec", "420", "--chunks", "6", "--max-chunk-sec", "180", "--cap", String(left), "--yes"], { cwd: ENGINE, encoding: "utf8", maxBuffer: 1 << 26 }));
+  "--storyboard", "auto", "--storyboard-usd", "0.15", "--prompts-usd", "0.25", "--per-shot", "330", "--review-usd", "0.02", "--builder-usd", "0", "--prepare-sec", "300", "--chunks", "6", "--max-chunk-sec", "120", "--cap", String(left), "--yes"], { cwd: ENGINE, encoding: "utf8", maxBuffer: 1 << 26 }));
 fs.writeFileSync(path.join(out, "videoRun.out"), `${r.stdout}\n${r.stderr}`);
 const costs = fs.existsSync(path.join(run, "costs.json")) ? JSON.parse(fs.readFileSync(path.join(run, "costs.json"), "utf8")) : {};
 Object.assign(C, costs);
