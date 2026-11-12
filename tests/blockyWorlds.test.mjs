@@ -122,33 +122,35 @@ test("ideas: the prompts name the slots and the topic; the schema has no array l
 
 // ---------- the script: the pace (~260 words a minute from short lines) and the checks ----------
 
-test("script: the example script (340 words, ~96 s at the real pace) passes at 100 s, and is too long for 90 s", () => {
-  const s = normalizeScript(EXAMPLE_SCRIPT), c = checkScript(s, 100, "written");
+test("script: the example script (340 words, ~79 s at the formula pace) passes at 80 s, and is too long for 70 s", () => {
+  const s = normalizeScript(EXAMPLE_SCRIPT), c = checkScript(s, 80, "written");
   assert.deepEqual(c.problems, []);
-  assert.ok(Math.abs(c.words - targetWords(100)) / targetWords(100) < 0.08, `${c.words} words`);
+  assert.ok(Math.abs(c.words - targetWords(80)) / targetWords(80) < 0.08, `${c.words} words`);
   const lens = s.lines.slice(1).map((l) => wordCount(l.text)).sort((a, b) => a - b);
   assert.ok(lens[Math.floor(lens.length / 2)] <= 8, "median line is short");
-  assert.ok(c.seconds > 90 && c.seconds <= 100, `${c.seconds} s`);
-  assert.match(checkScript(s, 90, "written").problems.join(), /Too long: 340 words, a 90 s video fits 318 at most/);
-  assert.equal(PACE.targetWpm, 212);
-  assert.equal(targetWords(60), 212);
+  assert.ok(c.seconds > 70 && c.seconds <= 82, `${c.seconds} s`);
+  assert.match(checkScript(s, 70, "written").problems.join(), /Too long: 340 words, a 70 s video fits 300 at most/);
+  // the story formula (2026-11-12): ~4.3 words a second after the engine's 1.25x speed-up, a 1:30 video is ~385 words
+  assert.equal(PACE.targetWpm, 257);
+  assert.equal(targetWords(60), 257);
+  assert.ok(Math.abs(targetWords(90) - 385) <= 2, `${targetWords(90)}`);
   assert.equal(partBudgets(120).reduce((a, b) => a + b.words, 0) >= targetWords(120) - 5, true);
   assert.ok(SCRIPT_SYSTEM.includes("Barnaby"), "the style sample is in the writer's prompt");
   assert.ok(!SCRIPT_SYSTEM.includes("90-second script"), "the sample's length is never presented as the target");
 });
 
-test("script: a 1:30 script lands on 1:30 at the voice's measured pace (~215 wpm), never over the target", () => {
-  // 2026-11-06: 342 words (target 330, +6% allowed) ran 95.8 s
-  const MEASURED_WPM = 215;
+test("script: a 1:30 script lands on 1:30 at the formula pace (~257 wpm after the speed-up), never over the target", () => {
+  // 2026-11-06: 342 words (target 330, +6% allowed) ran 95.8 s at the old pace; 2026-11-12 the engine speeds the voice up
+  const MEASURED_WPM = 257;
   for (const s of LENGTHS) {
     const most = Math.round(targetWords(s) * 1.0);
     assert.ok((most / MEASURED_WPM) * 60 <= s + 1, `${s} s: ${most} words would run ${((most / MEASURED_WPM) * 60).toFixed(1)} s`);
     assert.ok(partBudgets(s).reduce((a, b) => a + b.words, 0) <= targetWords(s), `${s} s: the part budgets stay inside the band`);
   }
-  assert.equal(targetWords(90), 318);
+  assert.equal(targetWords(90), 386);
   const lines = (n) => Array.from({ length: Math.ceil(n / 8) }, (_, i) => ({ part: "own", text: Array.from({ length: Math.min(8, n - i * 8) }, () => "word").join(" ") + "." }));
-  assert.match(checkScript({ lines: [{ part: "rule", text: "In this town, x." }, ...lines(330)] }, 90).problems.join(), /Too long/);
-  assert.match(scriptPrompt({ idea: EXAMPLE_IDEAS[0], lengthSec: 90 }), /LENGTH: 90 seconds = 286 to 318 words in total, in about \d+ lines\. Never more than 318 words/);
+  assert.match(checkScript({ lines: [{ part: "rule", text: "In this town, x." }, ...lines(400)] }, 90).problems.join(), /Too long/);
+  assert.match(scriptPrompt({ idea: EXAMPLE_IDEAS[0], lengthSec: 90 }), /LENGTH: 90 seconds = 347 to 386 words in total, in about \d+ lines\. Never more than 386 words/);
 });
 
 test("script: pausing punctuation is cleaned out, meaning kept", () => {
@@ -180,7 +182,7 @@ test("script: the user's own script is split into lines and checked more loosely
   assert.ok(!/Missing parts/.test(c.problems.join()));
   const longOwn = scriptFromText(narrationOf(EXAMPLE_SCRIPT));
   assert.deepEqual(checkScript(longOwn, 90, "own").problems, []);
-  assert.equal(estimateSeconds([{ text: "a b c" }]), Number(((3 / 220) * 60).toFixed(1)));
+  assert.equal(estimateSeconds([{ text: "a b c" }]), Number(((3 / 257) * 60).toFixed(1)));
 });
 
 test("script: the prompt carries the idea, the word budget and the rewrite note", () => {

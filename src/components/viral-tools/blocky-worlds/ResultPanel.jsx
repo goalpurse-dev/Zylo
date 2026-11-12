@@ -164,6 +164,7 @@ function RunView({ run, onEvent, retry }) {
         <Music2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-lime-300" aria-hidden="true" />
         <span><b className="font-bold text-white/85">Tip:</b> for max reach, add a trending sound in TikTok when you post.</span>
       </p>
+      <p className="px-1 text-[10.5px] leading-relaxed text-white/40" data-testid="bw-sound-tip">Tip: add &lsquo;Numbers&rsquo; by TEMPOREX in TikTok when you post.</p>
     </div>
   );
 }

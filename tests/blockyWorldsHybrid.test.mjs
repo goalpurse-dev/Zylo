@@ -67,28 +67,28 @@ const OLD_PLAN = {
   beats: ["rule", "tour", "me", "until", "discovery", "climax", "closer"].map((part) => ({ part, intent: part, shows: part, lines: [part] })),
 };
 
-// the BEAT SHEET (owner, 2026-11-10): a 90 s script (305 words) that does every beat's job
+// the BEAT SHEET (owner, 2026-11-10): a 90 s script (the story formula, 2026-11-12) that does every beat's job
 const B = (beat, ...texts) => texts.map((text) => ({ part: BEAT_PART[beat], beat, text }));
 const SCRIPT = {
   title: "Low Houses Hear",
   lines: [
     ...B("rule", "In this town, poorer people live on the ground and richer people live higher up."),
-    ...B("origin", "You see, every coin you earn lifts your house a little.", "Go broke and it sinks right back down where everyone can see."),
-    ...B("neighbours", "Mr. Pell's house floats ten floors up.", "He waves at birds like they owe him money.",
+    ...B("origin", "And right now my doormat is underground, with everyone watching!", "You see, every coin you earn lifts your house a little.", "Go broke and it sinks right back down where everyone can see."),
+    ...B("neighbours", "Mr. Pell's house floats ten floors up, above the bakery.", "He waves at birds like they owe him money.",
       "Captain Huxworth's house is so high it has snow on the roof.", "In July.",
-      "Mrs. Quibble's house floats just above the fence.", "She tiptoes to look richer."),
-    ...B("me", "Then there's me.", "Tilly. The lowest house in town.", "Our doormat is technically in the ground."),
+      "Mrs. Quibble's house floats just above the school fence.", "She tiptoes to look richer."),
+    ...B("me", "But my house is the lowest of two hundred.", "Then there's me.", "Tilly. The lowest house in town.", "Our doormat is technically in the ground."),
     ...B("ally", "My best friend Nub just shrugged at our muddy step.", "He said, \"Low houses hear everything first.\"", "I thought he meant the gossip."),
-    ...B("trigger", "Until one day every floating house started to shake.", "The whole hill was sliding toward the river.", "Every floating house was tied to it."),
-    ...B("adults", "Mr. Pell tried to pay the hill to stop.", "He threw coins at it. The hill ate them.",
-      "Captain Huxworth tied his house to a cloud.", "The cloud floated away. So did his boots.",
-      "Mrs. Quibble yelled at the river.", "The river splashed her back.", "The mayor called a meeting.",
-      "Nobody came because their houses were wobbling.", "It got worse every minute.", "The hill kept sliding."),
-    ...B("save", "Then I remembered Nub.", "\"Low houses hear everything first.\"", "I pressed my ear to our muddy floor.",
+    ...B("trigger", "Then one day every floating house started to shake.", "Rumble! The whole hill was sliding toward the river.", "Every floating house was tied to it.", "Two houses tipped. Then twenty. Then two hundred!"),
+    ...B("adults", "Mr. Pell tried to pay the hill to stop.", "He threw coins at it. Thud! The hill ate them.",
+      "Captain Huxworth tied his house to a cloud.", "Whoosh! The cloud floated away. So did his boots.",
+      "Mrs. Quibble yelled at the river.", "Splash! The river splashed her back.", "The mayor called a meeting.",
+      "Nobody came because their houses were wobbling.", "It got worse every minute.", "Mr. Pell hired a hundred balloons. Pop! Pop! Pop!", "Creak! The hill kept sliding.", "Five hundred chimneys leaned over the edge."),
+    ...B("save", "Then I noticed something.", "Nub's words. \"Low houses hear everything first.\"", "I pressed my ear to our muddy floor.",
       "I heard water. Underground water.", "It was rushing under the hill like a bathtub.", "I'm the lowest kid in town.",
       "So I'm the only one who could reach the drain.", "I crawled under our house and pulled the old plug.",
-      "The water drained out with a giant burp.", "The hill stopped sliding.", "Every house stayed tied and safe."),
-    ...B("callback", "Now everyone visits the lowest house to listen to the ground.", "Mrs. Quibble still tiptoes.", "Now she tiptoes down to us."),
+      "Glug! The water drained out with a giant burp.", "The hill stopped sliding.", "Every house stayed tied and safe.", "Nobody floated away. Nobody sank.", "The whole street cheered for the mud."),
+    ...B("callback", "Now everyone visits the lowest house to listen.", "Now Mrs. Quibble tiptoes down to us."),
   ],
   post: { title: "t", description: "d", hashtags: ["#a"] },
 };
@@ -174,7 +174,8 @@ test("hybrid checks: the good script has no hard problem; soft misses are adviso
   // an older 7-part draft keeps its skeleton notes
   const old = planCard(OLD_PLAN, TOPIC), m = clone(OLD_MAP);
   m.neighbours = []; m.clue_quote = "nothing";
-  const c3 = hybridChecks({ script: OLD_SCRIPT, skeleton: m, card: old, examples: [], lengthSec: 90 });
+  // 80 s: the 308-word older draft is a bit short for the formula pace (flagged, not hard)
+  const c3 = hybridChecks({ script: OLD_SCRIPT, skeleton: m, card: old, examples: [], lengthSec: 80 });
   assert.deepEqual(c3.hard, []);
   assert.ok(c3.advisory.some((x) => /^Skeleton/.test(x)) && c3.advisory.some((x) => /^Twist/.test(x)) && !c3.advisory.some((x) => /^Beat sheet/.test(x)));
 });
@@ -228,10 +229,10 @@ test("the plan (beat sheet): the rule visual, the planted ally line, the adults,
 test("beat sheet: nine beats in order with the owner's timing; budgets fit the length; both prompts carry it", () => {
   assert.deepEqual(BEAT_IDS, ["rule", "origin", "neighbours", "me", "ally", "trigger", "adults", "save", "callback"]);
   for (let i = 1; i < BEATS.length; i++) assert.equal(BEATS[i].span[0], BEATS[i - 1].span[1], BEATS[i].id);
-  assert.equal(BEATS.find((b) => b.id === "me").span[0], 22);
-  assert.equal(BEATS.find((b) => b.id === "ally").span[0], 30);
-  assert.equal(BEATS.find((b) => b.id === "trigger").span[0], 38);
-  assert.equal(BEATS.find((b) => b.id === "adults").span[0], 45);
+  assert.equal(BEATS.find((b) => b.id === "me").span[0], 19);
+  assert.equal(BEATS.find((b) => b.id === "ally").span[0], 27);
+  assert.equal(BEATS.find((b) => b.id === "trigger").span[0], 35);
+  assert.equal(BEATS.find((b) => b.id === "adults").span[0], 42);
   // the engine parts follow the beats in the old order (the renderer and director read parts)
   const order = ["rule", "tour", "me", "until", "discovery", "climax", "closer"];
   const parts = BEAT_IDS.map((id) => order.indexOf(BEAT_PART[id]));
@@ -297,7 +298,7 @@ test("beat sheet run fixes (2026-11-10): the free trim keeps named lines and \"T
   const p = beatSheetProblems(s, { ...MAP, worst: "" }, card());
   assert.ok(!p.some((x) => /never visibly fail|WORST/.test(x)), JSON.stringify(p));
   // the planner gets fewer, fuller lines (~8.5 words) and the trigger is told not to copy "Until one night the"
-  assert.equal(lengthNumbers(90).lines, 35);
+  assert.equal(lengthNumbers(90).lines, 42);
   assert.match(BEAT_SHEET_TEXT, /never "Until one night the\.\.\."/);
 });
 
@@ -309,14 +310,14 @@ test("beat sheet (round 2): a \"me\" line that shows the hero's rule-visual valu
   assert.ok(beatSheetProblems(s, { ...MAP, worst: "" }, card()).some((x) => /WORST/.test(x)));
 });
 
-test("length v2: budgets sized to the aim (middle of the band), 9-word lines, the origin at least 18 words; the writer counts each line", async () => {
+test("length v2: budgets sized to the aim (middle of the band), 9-word lines, the origin at least 24 words; the writer counts each line", async () => {
   for (const len of [30, 60, 90, 120, 180]) {
     const b = beatBudgets(len), n = lengthNumbers(len);
     assert.equal(b.reduce((a, x) => a + x.words, 0) <= aimWords(len), true, `${len}`);
     assert.ok(n.aim > n.lo && n.aim < n.hi, `${len}`);
   }
-  assert.equal(aimWords(90), 302);
-  assert.ok(beatBudgets(90).find((x) => x.id === "origin").words >= 18);
+  assert.equal(aimWords(90), 367);
+  assert.ok(beatBudgets(90).find((x) => x.id === "origin").words >= 24);
   assert.equal(beatBudgets(90).find((x) => x.id === "neighbours").lines, 6);
   assert.deepEqual(hybridLinesSchema().properties.lines.items.required, ["beat", "text", "words"]);
   assert.match(HYBRID_PLAN_SYSTEM, /THE THREAT COMES FROM THE RULE'S OWN WORLD/);
@@ -328,8 +329,8 @@ test("length v2: budgets sized to the aim (middle of the band), 9-word lines, th
     globalThis.fetch = async (_u, init) => { const b = JSON.parse(init.body); const data = b.model === "claude-opus-5-5" ? PLAN : /verdicts/.test(JSON.stringify(b.output_config)) ? { verdicts: [{ scores: Object.fromEntries(RUBRIC.map((c) => [c.id, 4])), safe: true, better: "x" }] } : { title: "t", lines, post: SCRIPT.post, map: MAP }; return { ok: true, json: async () => ({ model: b.model, usage: { input_tokens: 10, output_tokens: 10 }, stop_reason: "end_turn", content: [{ type: "text", text: JSON.stringify(data) }] }) }; };
     try { return { result: await writeHybrid({ apiKey: "x", topic: TOPIC, lengthSec: 90, judge: false }) }; } finally { globalThis.fetch = real; }
   })();
-  assert.equal(r.draftWords, 306);
-  assert.deepEqual(r.selfCount, { stated: 306 + SCRIPT.lines.length, real: 306 });
+  assert.equal(r.draftWords, 367);
+  assert.deepEqual(r.selfCount, { stated: 367 + SCRIPT.lines.length, real: 367 });
   assert.ok(r.script.lines.every((l) => !("words" in l)));
 });
 
@@ -536,8 +537,8 @@ test("pad check: a little short (within 10% of the minimum) is only flagged, no 
   const calls = [];
   await writeHybrid({ topic: TOPIC, lengthSec: 90, steps: fakes([s], calls) });
   assert.deepEqual(calls, ["plan", "lines", "judge:true"]);
-  // the real 2026-11-08 case: 264 words for a 286 minimum is now flagged, not a $0.034 fix
-  assert.ok(264 >= Math.ceil(lo * (1 - SHORT_GRACE)));
+  // the 2026-11-08 case (264 words for a 286 minimum), at the formula pace 320 for 347 is now flagged, not a $0.034 fix
+  assert.ok(320 >= Math.ceil(lo * (1 - SHORT_GRACE)));
   const short = { ...clone(SCRIPT), lines: SCRIPT.lines.slice(0, 20) };
   assert.ok(hybridChecks({ script: short, skeleton: MAP, card: card(), lengthSec: 90 }).hard.some((x) => /^Too short/.test(x)));
 });

@@ -18,18 +18,19 @@ import { contentWords } from "./library.js";
 import { norm } from "./antiCopy.js";
 import { isException, MAGIC } from "./skeleton.js";
 import { wordCount, estimateSeconds, RULE_MIN_WORDS } from "./script.js";
+import { FORMULA_TEXT } from "./formula.js";
 
 /** The beats, in order: [start, end] in % of the video, the engine part, the job (the prompts quote it). */
 export const BEATS = Object.freeze([
   Object.freeze({ id: "rule", part: "rule", span: [0, 3], target: "0%", job: 'line 1: the rule as plain fact, starting with exactly "In this town, "' }),
-  Object.freeze({ id: "origin", part: "tour", span: [3, 7], target: "0-6 s", job: "how the rule came to be or how it works, and what it costs, in two quick lines; the RULE VISUAL is seen here for the first time" }),
-  Object.freeze({ id: "neighbours", part: "tour", span: [7, 22], target: "6-20 s", job: "three NAMED neighbours living the rule, one quick joke each, each one SHOWN by the rule visual (their height, their house, their cloud)" }),
-  Object.freeze({ id: "me", part: "me", span: [22, 30], target: "~22%", job: '"Then there\'s me." The hero is the WORST at the rule (the lowest, the smallest, the quietest), seen in the rule visual; their flaw is plain' }),
-  Object.freeze({ id: "ally", part: "me", span: [30, 38], target: "~30%", job: "an ally (a friend, a grandparent, a sibling) says ONE line, quoted, that sounds like a throwaway joke or odd advice; the hero needs it later" }),
-  Object.freeze({ id: "trigger", part: "until", span: [38, 45], target: "~38%", job: "the trouble arrives: the rule breaks or the threat comes, visible to everyone. The threat comes from the rule's own world (the rule, its rule visual or something already shown), never from nowhere. Open it in your own words, never \"Until one night the...\" (the references open their trouble that way; a copied phrase is thrown away)" }),
-  Object.freeze({ id: "adults", part: "until", span: [45, 68], target: "45-65%", job: "the ADULTS TRY AND FAIL: two or three named grown-ups (neighbours from the tour count) each try their fix, each failing in a funny, visible way; it gets worse each time" }),
-  Object.freeze({ id: "save", part: "climax", span: [68, 94], target: "70-90%", job: "the hero remembers the ally's line, and the very flaw that made them the worst at the rule is what saves everyone; the planted line is said again here" }),
-  Object.freeze({ id: "callback", part: "closer", span: [94, 100], target: "last line", job: "the world after, then a last line that is a callback JOKE to something from the first half (a neighbour's joke, the ally's line, the rule)" }),
+  Object.freeze({ id: "origin", part: "tour", span: [3, 8], target: "0-6 s", job: "line 2 is the RESULT-FIRST HOOK (the craziest consequence the narrator is in right now, first person, an exclamation, inside the first 5 seconds, filmable); then how the rule works and what it costs, in one or two quick lines; the RULE VISUAL is seen here for the first time" }),
+  Object.freeze({ id: "neighbours", part: "tour", span: [8, 19], target: "6-15 s", job: "two or three NAMED neighbours living the rule, one quick joke each, each in its OWN place (a kitchen, the school, the bus stop) and SHOWN by the rule visual (their height, their house, their cloud); about 70 words in the first 15 seconds" }),
+  Object.freeze({ id: "me", part: "me", span: [19, 27], target: "~15 s", job: 'the "But..." PIVOT, a line that starts with "But" and puts the narrator in the worst case of the rule WITH A NUMBER ("But I had ten minutes and four hundred stairs."); "Then there\'s me." The hero is the WORST at the rule (the lowest, the smallest, the quietest), seen in the rule visual; their flaw is plain' }),
+  Object.freeze({ id: "ally", part: "me", span: [27, 35], target: "~30%", job: "an ally (a friend, a grandparent, a sibling) says ONE line, quoted, that sounds like a throwaway joke or odd advice; the hero needs it later" }),
+  Object.freeze({ id: "trigger", part: "until", span: [35, 42], target: "~38%", job: "the trouble arrives: the rule breaks or the threat comes, visible to everyone. The threat comes from the rule's own world (the rule, its rule visual or something already shown), never from nowhere. Open it in your own words, never \"Until one night the...\" (the references open their trouble that way; a copied phrase is thrown away)" }),
+  Object.freeze({ id: "adults", part: "until", span: [42, 66], target: "45-65%", job: "the ADULTS TRY AND FAIL, the ESCALATION: two or three named grown-ups (neighbours from the tour count) each try their fix, each failing in a funny, visible way; it DOUBLES every 8 to 12 seconds (one, ten, a hundred), in short sentences of 3 to 10 words, with a SOUND WORD (Boom! Crash! Poof!) as its own short fragment on every hit, at least one every 12 seconds" }),
+  Object.freeze({ id: "save", part: "climax", span: [66, 94], target: "70-90%", job: "start with the line \"Then I noticed something.\"; the hero remembers the ally's line, and the very flaw that made them the worst at the rule is what saves everyone; the planted line is said again here" }),
+  Object.freeze({ id: "callback", part: "closer", span: [94, 100], target: "last line", job: "the world after, then a last line of 2 to 6 words that is a callback JOKE to something from the first half (a neighbour's joke, the ally's line, the rule) and reopens the loop" }),
 ]);
 export const BEAT_IDS = Object.freeze(BEATS.map((b) => b.id));
 export const BEAT_PART = Object.freeze(Object.fromEntries(BEATS.map((b) => [b.id, b.part])));
@@ -52,7 +53,7 @@ export const AIM_SHARE = 0.95;
 export const aimWords = (lengthSec) => Math.round(targetWords(lengthSec) * AIM_SHARE);
 /** The most words a line may have in the beat-sheet writer's prompt (the opener excepted). */
 export const LINE_MAX_WORDS = 10;
-const MIN_BEAT_WORDS = Object.freeze({ origin: 18 });
+const MIN_BEAT_WORDS = Object.freeze({ origin: 24 });
 
 /**
  * Per-beat word budgets and line counts for a length: the rule is the opener (at least RULE_MIN_WORDS, one line), the
@@ -73,7 +74,9 @@ export function beatBudgets(lengthSec) {
 
 /** The beat sheet as prompt text (both system prompts quote it; the same bytes every call, so it caches). */
 export const BEAT_SHEET_TEXT = `THE BEAT SHEET (measured on 15 viral videos of this format; in order, with where each beat starts):
-${BEATS.map((b, i) => `${i + 1}. ${b.id} (${b.target}): ${b.job}.`).join("\n")}`;
+${BEATS.map((b, i) => `${i + 1}. ${b.id} (${b.target}): ${b.job}.`).join("\n")}
+
+${FORMULA_TEXT}`;
 
 export const RULE_VISUAL_TEXT = `THE STORY IS IN THE PICTURE (the RULE VISUAL): the rule must be VISIBLE in the world through one concrete PARAMETER, never only explained. Examples: friends = how tall you are; rich = how high your house stands; mood = a little weather cloud over each head; luck = the colour of your front door; a score = a number on a sign above each house; loudness = how far your hat flies off. Pick ONE parameter a camera can show at a glance in a blocky toy world (height, house height, a cloud, a colour, a glow, a size, a number on a sign). Say how it looks for each of the three named neighbours (three clearly different values) and for the hero (the worst value of all). The opening and the neighbour beats show it; the climax may flip it.`;
 
@@ -161,7 +164,7 @@ export function beatSheetProblems(script, map = {}, card = null, lengthSec = 90)
   const before = tourIdx.length ? tourIdx : lines.map((_, i) => i).filter((i) => PCT(i) < 25);
   const names = [...(map.neighbours ?? []).map((x) => x?.name), ...(card?.neighbourNames ?? [])].filter(Boolean);
   const named = new Set(names.filter((nm) => before.some((i) => says(lines[i].text, nm))).map((nm) => nameWords(nm)[0]?.toLowerCase()).filter(Boolean));
-  if (named.size < 3) bad(`three NAMED neighbours should live the rule before "then there's me" (found ${named.size}).`);
+  if (named.size < 2) bad(`two or three NAMED neighbours should live the rule before the "But" pivot (found ${named.size}).`);
   // 2. the hero is the worst at the rule
   const meIdx = of("me");
   // the map's "worst" quote counts only in the first half (the hero is the worst before the trouble starts)

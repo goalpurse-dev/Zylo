@@ -4,7 +4,8 @@
 //
 // Switches (function secrets):
 //   BLOCKY_WORLDS_ACCESS=owner|allowlist|everyone   who may see and use the template at all (_shared/blockyWorlds/gate.js).
-//                                    Default (unset or unknown) owner: only ADMIN_EMAILS; allowlist adds
+//                                    Default (unset or unknown) owner: only the Blocky owner list (gate.js; secret
+//                                    BLOCKY_WORLDS_OWNER_EMAILS may override it; ADMIN_EMAILS opens nothing here); allowlist adds
 //                                    BLOCKY_WORLDS_TEST_USERS; everyone is launch. Until everyone, the owner's and
 //                                    testers' runs are env "test". Everyone else gets OFF on every action and a bare
 //                                    { visible: false } from `access`. (BLOCKY_WORLDS_ENABLED is retired: it opens nothing.)
@@ -28,7 +29,7 @@ import { adminEmailList } from "../_shared/contentMachine/adminGuard.js";
 import { ERRORS, FAILED_MESSAGE, failReason } from "../_shared/blockyWorlds/contract.js";
 import { DEFAULT_LENGTH, LENGTHS, NARRATOR } from "../_shared/blockyWorlds/config.js";
 import { canGenerate, canRemoveEndCard, canWrite, endCardFor } from "../_shared/blockyWorlds/access.js";
-import { accessModeFrom, closedReply, guestAllowed, viewerAccess } from "../_shared/blockyWorlds/gate.js";
+import { accessModeFrom, blockyOwners, closedReply, guestAllowed, viewerAccess } from "../_shared/blockyWorlds/gate.js";
 import { costBasisUsd, PRICES, toolKey } from "../_shared/blockyWorlds/pricing.js";
 import { DEFAULT_SETTINGS, decide, WRITING } from "../_shared/blockyWorlds/guard.js";
 import { MOODS } from "../_shared/blockyWorlds/formulas.js";
@@ -54,7 +55,7 @@ const flag = (k: string) => (Deno.env.get(k) ?? "").trim().toLowerCase();
 const ACCESS = accessModeFrom(Deno.env.get("BLOCKY_WORLDS_ACCESS"));
 const OPEN = ACCESS === "everyone";
 const TESTERS = adminEmailList(Deno.env.get("BLOCKY_WORLDS_TEST_USERS"));
-const OWNERS = adminEmailList(Deno.env.get("ADMIN_EMAILS"));
+const OWNERS = blockyOwners(Deno.env.get("BLOCKY_WORLDS_OWNER_EMAILS"));
 const PAID_OFF = flag("BLOCKY_WORLDS_PAID_CALLS") === "off";
 const PROVIDER = providerFrom(Deno.env.get("BLOCKY_WORLDS_LLM"));
 // the hybrid writer for typed topics (default on; the mock provider keeps the free old path)
@@ -224,7 +225,7 @@ async function handle(req: Request, trace: Trace) {
 
   if (action === "access") {
     const who = await whoIs(req);
-    // the owner (ADMIN_EMAILS) always sees it; anyone else only as BLOCKY_WORLDS_ACCESS allows. Closed = a bare reply.
+    // the owner (the Blocky owner list) always sees it; anyone else only as BLOCKY_WORLDS_ACCESS allows. Closed = a bare reply.
     const visible = who ? who.allowed : guestAllowed(ACCESS);
     if (!visible) return closedReply(Boolean(who));
     let ideaBatchesLeft = null;

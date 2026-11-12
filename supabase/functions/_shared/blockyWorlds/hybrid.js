@@ -27,6 +27,7 @@ import { skeletonProblems } from "./skeleton.js";
 import { mentions, ruleMissing, topicBlock, topicElements, topicProblems } from "./topic.js";
 import { blockedWordsRule } from "./safety.js";
 import { targetWords } from "./config.js";
+import { formulaProblems } from "./formula.js";
 import { BOARD_KIT } from "./boardKit.js";
 import { boardFitProblems, kitBlock, swapHint } from "./boardFit.js";
 
@@ -88,15 +89,17 @@ ${BEAT_SHEET_TEXT}
 ${RULE_VISUAL_TEXT}
 
 WHAT EACH PIECE OF THE PLAN MUST DO
-- opener: line 1, the user's topic as the world's rule, plain fact, starting with exactly "In this town, ". price: what the rule costs, concrete and seen by everyone (said in the origin).
+- opener: line 1, the user's topic as the world's rule, plain fact, starting with exactly "In this town, " (8 to 14 words).
+- hook: line 2, the RESULT-FIRST HOOK: the craziest consequence the narrator is in RIGHT NOW, first person, 5 to 12 words, an exclamation (the example's shape: "And I just sneezed in the cockpit of a flying plane!"). It must be filmable with what the world can show, and it must be a result of the rule that the story then explains. price: what the rule costs, concrete and seen by everyone (said in the origin).
 - rule_visual: parameter (the one visible thing: "how high your house floats", "the colour of the cloud over your head"), description (how it looks in the world, filmable), neighbours (each named neighbour and the value they show), hero (the hero's value: the worst of all), opening_shot (what the first shot shows so a viewer gets the rule with the sound off).
-- neighbours: three NAMED neighbours (new names, never from the references), each living the rule with one quick joke, and what the rule visual shows for them. Three clearly different values.
+- neighbours: three NAMED neighbours (new names, never from the references), each living the rule with one quick joke, and what the rule visual shows for them. Three clearly different values. Each neighbour lives in its OWN place ("place": a kitchen, the school, the bus stop; three different places).
+- pivot: the "But..." line, starting with "But", that puts the hero in the worst case of the rule WITH A NUMBER ("But I had ten minutes and four hundred stairs."). It lands about 15 seconds in.
 - hero: the narrator's name, who they are, how they are the WORST at the rule, and their FLAW (the very thing that makes them worst, which later saves everyone).
 - ally: a friend, grandparent or sibling who says ONE line (quoted, 4 to 12 words) that sounds like a joke or odd advice. It must be the key to the save. Plan it so the viewer laughs at it first and remembers it at the save.
 - trigger: what goes wrong, visible to everyone. THE THREAT COMES FROM THE RULE'S OWN WORLD: it grows out of the rule, its rule visual or something the viewer already saw (the machine that runs the rule, a neighbour's habit, the meter, the creature, the festival), never from nowhere. A giant flower that simply blooms on a hill in a sneezing contest town is from nowhere; the Sneeze Meter overloading after one sneeze too many is from the rule's world. trigger_root: the earlier detail it grows from, and where the viewer saw it.
-- adults: two or three grown-ups (neighbours from the tour are best) each try their fix and FAIL in a funny, VISIBLE way (a camera can show it), each worse than the last.
-- save: how the hero's flaw, together with the ally's line, saves everyone. No outside help, no new magic, no new power: only the flaw, the line and the world's own rule.
-- callback: the last line, a callback joke to something from the first half (a neighbour's joke, the ally's line, the rule), and what it calls back.
+- adults: two or three grown-ups (neighbours from the tour are best) each try their fix and FAIL in a funny, VISIBLE way (a camera can show it), each worse than the last. The trouble DOUBLES every 8 to 12 seconds (one, ten, a hundred): plan the numbers, and a sound word (Boom! Crash! Poof!) on each hit.
+- save: how the hero's flaw, together with the ally's line, saves everyone. It starts with the line "Then I noticed something." No outside help, no new magic, no new power: only the flaw, the line and the world's own rule.
+- callback: the last line, a 2 to 6 word BUTTON, a callback joke to something from the first half (a neighbour's joke, the ally's line, the rule) that reopens the loop, and what it calls back.
 - beats: one entry per beat of the beat sheet, in order, each with a short intent, what the camera shows (filmable in a blocky world; the origin and neighbour beats show the rule visual), and the LINE INTENTS: one short note per spoken line (what that line does, not its final wording). Keep the line counts given in LENGTH.
 
 THE LENGTH: the request gives the exact number of line intents per beat. Keep to it: the writer writes one line per intent, and a plan with too few lines makes a script that is thrown away as too short.
@@ -130,10 +133,10 @@ export function hybridPlanSchema({ board = false } = {}) {
   } : {};
   return obj({
     ...world,
-    title: s, premise: s, opener: s, price: s, teaser: s,
+    title: s, premise: s, opener: s, hook: s, pivot: s, price: s, teaser: s,
     rule_visual: obj({ parameter: s, description: s, neighbours: { type: "array", items: obj({ name: s, shows: s }) }, hero: s, opening_shot: s }),
     origin: s,
-    neighbours: { type: "array", items: obj({ name: s, joke: s, shows: s }) },
+    neighbours: { type: "array", items: obj({ name: s, joke: s, shows: s, place: s }) },
     hero: obj({ name: s, who: s, worst: s, flaw: s }),
     ally: obj({ name: s, who: s, line: s, why: s }),
     trigger: s, trigger_root: s,
@@ -229,10 +232,12 @@ export function planText(plan) {
     `TITLE: ${p.title}`,
     `PREMISE: ${p.premise}`,
     `LINE 1 (the rule; tighten if needed, keep "In this town, "): ${p.opener}`,
+    ...(p.hook ? [`LINE 2 (the RESULT-FIRST HOOK, inside the first 5 seconds; keep its meaning, 5 to 12 words, an exclamation): ${p.hook}`] : []),
+    ...(p.pivot ? [`THE "BUT" PIVOT (starts with "But", has a number, about 15 seconds in): ${p.pivot}`] : []),
     `THE PRICE (in the origin): ${p.price}`,
     `THE RULE VISUAL (the rule is SEEN, not explained: name it in the origin and in each neighbour's joke): ${rv.parameter}. ${rv.description}\n${(rv.neighbours ?? []).map((n) => `- ${n.name}: ${n.shows}`).join("\n")}\n- the hero: ${rv.hero}`,
     `THE ORIGIN: ${p.origin}`,
-    `THE THREE NAMED NEIGHBOURS (one quick joke each, each line names its neighbour):\n${(p.neighbours ?? []).map((n, i) => `${i + 1}. ${n.name}: ${n.joke} (shows: ${n.shows})`).join("\n")}`,
+    `THE THREE NAMED NEIGHBOURS (one quick joke each, each line names its neighbour):\n${(p.neighbours ?? []).map((n, i) => `${i + 1}. ${n.name}: ${n.joke} (shows: ${n.shows})${n.place ? ` (place: ${n.place})` : ""}`).join("\n")}`,
     `THE HERO ("Then there's me."): ${p.hero?.name}, ${p.hero?.who}. The worst at the rule: ${p.hero?.worst}. The flaw: ${p.hero?.flaw}`,
     `THE ALLY'S PLANTED LINE (said by ${p.ally?.name}, ${p.ally?.who}, word for word, in quotes): "${p.ally?.line}". Why it matters later: ${p.ally?.why}`,
     `THE TRIGGER (it grows out of the rule's own world, never from nowhere): ${p.trigger}${p.trigger_root ? ` It grows from: ${p.trigger_root}` : ""}`,
@@ -270,6 +275,7 @@ export const HYBRID_LINES_SYSTEM = SCRIPT_SYSTEM
 - The hero's flaw saves everyone. No outside help, no new magic at the end.
 - The last line is the most quotable line in the video and is a callback joke to the first half.
 - Original world`)
+  .replace('- Line two usually starts "You see,".', "- Line two is the RESULT-FIRST HOOK (see THE STORY FORMULA); the rule is explained right after it, \"You see,\" is fine there.")
   .replace(/\n\nReturn only the JSON object\.$/, `
 
 YOU GET A PLAN from the story planner: every story decision is made (the rule visual, the neighbours, the hero and the flaw, the ally's line, the adults' attempts, the save, the callback, the beats line by line). Your job is the WORDS: write each planned line in the fast, punchy, deadpan kid voice of the reference examples, keep the plan's order, names and planted line, and keep to the length. Make the jokes land; you may sharpen a joke's wording, never its job.
@@ -358,6 +364,8 @@ export function hybridChecks({ script, skeleton = {}, card, examples = [], lengt
     // a beat-sheet draft gets the beat-sheet notes; a draft written before it (2026-11-10) keeps the old skeleton notes
     ...(beatDraft(script, skeleton, card) ? beatSheetProblems(script, skeleton ?? {}, card, lengthSec) : [...(card ? propProblems(card, script) : []), ...(card && callbackProblem(card, script) ? [callbackProblem(card, script)] : []), ...skeletonProblems(script, skeleton ?? {}, card)]),
     ...base.warnings,
+    // the story formula (formula.js): the hook, the places, the "But" pivot, the escalation, "Then I noticed", the button
+    ...formulaProblems(script, lengthSec),
   ];
   return { hard, advisory: [...new Set(advisory)], copy, words: base.words, seconds: base.seconds };
 }

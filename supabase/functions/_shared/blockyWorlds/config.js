@@ -48,7 +48,10 @@ export const NARRATORS = Object.freeze({
  * (pricing.js PRICED_WPM), unchanged.
  */
 export const PACE = Object.freeze({
-  targetWpm: 212,
+  // 2026-11-12 (owner, the story formula): the engine speeds the voice up 1.25x and trims it, so the video runs ~4.3 words
+  // a second (255-280 a minute, formula.js): scripts are sized at 257 a minute, a 1:30 video is ~385 words, ~70 of them
+  // in the first 15 s. 212 was the pace before that speed-up.
+  targetWpm: 257,
   // the gap left between sentences after trimming the voice's own pauses (seconds); commas are left as spoken
   sentenceGapSec: 0.1,
 });

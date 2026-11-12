@@ -9,6 +9,7 @@ import { PART_IDS, PARTS, partBudgets, wordCount } from "./script.js";
 import { contentWords } from "./library.js";
 import { conflictLines, TOPIC_PREFIX } from "./topic.js";
 import { BOARD_PREFIX, boardProblemLines, isPremiseProblem } from "./boardFit.js";
+import { FORMULA_PREFIX, formulaLines } from "./formula.js";
 
 // ---------- step 1: the idea card ----------
 export const CARD_FIELDS = Object.freeze(["opener", "title", "premise", "price", "examples", "narrator", "prop", "twist", "teaser", "closer", "formula", "twistType", "mood", "setting"]);
@@ -176,6 +177,13 @@ export function problemSpots(script, problems) {
     }
     // the board-only launch mode (boardFit.js): a whole-premise miss -> "Move it to our town"; a line miss -> that line's
     // part (Fix it rewrites the flagged lines of that part with the reason, which names the kit's alternatives)
+    // the story formula (formula.js): a note names its lines like "(line 7)"; Fix it rewrites those lines of their part
+    if (p.startsWith(FORMULA_PREFIX)) {
+      const idx = formulaLines(p).filter((i) => lines[i]);
+      if (!idx.length) return spot(p, null, [], "rewrite");
+      const part = lines[idx[0]].part;
+      return spot(p, part, idx.filter((i) => lines[i].part === part));
+    }
     if (isPremiseProblem(p)) return spot(p, null, [], "move");
     if (p.startsWith(BOARD_PREFIX)) {
       const idx = boardProblemLines(p).filter((i) => lines[i]);

@@ -27,6 +27,9 @@ const real = {
   ],
   post: { title: "The Wolf Hunts Our Turtle", description: "", hashtags: [] },
 };
+// 2026-11-12 (the story formula: ~4.3 words a second): the owner's 305-word draft is padded with neutral tour lines up to the 90 s band
+const PADDED = (script) => ({ ...script, lines: [...script.lines.slice(0, 6), ...Array.from({ length: 7 }, (_, i) => ({ part: "tour", text: `Neighbour number ${["one", "two", "three", "four", "five", "six"][i % 6]} waves from a little window.` })), ...script.lines.slice(6)] });
+real.lines = PADDED(real).lines;
 const withClimax = (script, texts) => ({ ...script, lines: [...script.lines.filter((l) => l.part !== "climax" && l.part !== "closer"), ...L("climax", ...texts), ...script.lines.filter((l) => l.part === "closer")] });
 
 test("checker: the real climax that says 'a strip' (of Grandma's duct tape, named the line before) passes", () => {
@@ -131,16 +134,16 @@ test("fixPart: a fix that still fails is retried once with what is still wrong; 
 test("fixPart: never reaches past its own part, and the free mock fixes a blocked script", async () => {
   const listener = EXAMPLE_IDEAS[0], script = normalizeScript(EXAMPLE_SCRIPT);
   const blocked = { ...script, lines: script.lines.map((l) => (l.part === "climax" && /whistle/i.test(l.text) ? { ...l, text: "Then I did the only thing I could." } : l)) };
-  const problems = scriptProtocolCheck(blocked, 100, listener).problems;
+  const problems = scriptProtocolCheck(blocked, 80, listener).problems;
   const spot = problemSpots(blocked, problems).find((s) => s.part === "climax");
   // asked with lines from two parts, only the first part's run is rewritten
   const me = blocked.lines.findIndex((l) => l.part === "me");
-  const r = await fixPart({ provider: "mock", script: blocked, indexes: [me, ...spot.lines], reasons: [spot.problem], card: listener, lengthSec: 100 });
+  const r = await fixPart({ provider: "mock", script: blocked, indexes: [me, ...spot.lines], reasons: [spot.problem], card: listener, lengthSec: 80 });
   assert.deepEqual(r.script.lines.filter((l) => l.part === "climax").map((l) => l.text), blocked.lines.filter((l) => l.part === "climax").map((l) => l.text));
-  const m = await fixPart({ provider: "mock", script: blocked, indexes: spot.lines, reasons: [spot.problem], card: listener, lengthSec: 100 });
+  const m = await fixPart({ provider: "mock", script: blocked, indexes: spot.lines, reasons: [spot.problem], card: listener, lengthSec: 80 });
   assert.equal(m.fixed, true);
   assert.equal(m.costUsd, 0);
-  assert.deepEqual(draftCheck(m.script, 100, "written", listener).problems, []);
+  assert.deepEqual(draftCheck(m.script, 80, "written", listener).problems, []);
 });
 
 test("rewrite: the writer is told exactly which checks the current version failed", async () => {

@@ -11,6 +11,7 @@ import { fixOpener, hasOpener, openerProblem } from "./opener.js";
 import { safetyProblems } from "./safety.js";
 import { EXAMPLE_SCRIPT } from "./examples.js";
 import { topicBlock } from "./topic.js";
+import { sfxTags } from "./sfxTags.js";
 
 /** The seven parts, in order, and their share of the words (ANALYSIS.md 2.2). */
 export const PARTS = Object.freeze([
@@ -183,7 +184,9 @@ export function normalizeScript(raw) {
   const lines = (Array.isArray(raw?.lines) ? raw.lines : [])
     // the hybrid writer's beat (beatSheet.js) rides along on the line; the part stays one of the seven
     .map((l) => ({ part: PART_IDS.includes(l?.part) ? l.part : "own", text: paceClean(l?.text), ...(typeof l?.beat === "string" && /^[a-z]{2,12}$/.test(l.beat) ? { beat: l.beat } : {}) }))
-    .filter((l) => l.text && l.text !== ".");
+    .filter((l) => l.text && l.text !== ".")
+    // the sound-word tags the engine reads (sfxTags.js): always taken from the text, so they never drift from it
+    .map((l) => { const sfx = sfxTags(l.text); return sfx.length ? { ...l, sfx } : l; });
   if (lines.length) {
     const fixed = fixOpener(lines[0].text);
     if (fixed) lines[0] = { ...lines[0], text: fixed };
