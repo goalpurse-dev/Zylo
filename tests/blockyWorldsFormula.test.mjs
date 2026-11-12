@@ -291,3 +291,23 @@ test("kit list: launch (kit) mode is on by default; plan, lines and Fix it get t
     for (const i of at) assert.match(api.slice(i, i + 700).split("\n")[0], /board: LAUNCH_BOARD/, `${call} gets board: LAUNCH_BOARD`);
   }
 });
+
+test("library-idea script writer: the kit + sound words ride in its SYSTEM prompt, the beat planner and the library batch writer get the kit too", async () => {
+  const { writeScript, writeBeats, writeLibraryIdeas } = await import("../supabase/functions/_shared/blockyWorlds/llm.js");
+  const { EXAMPLE_IDEAS } = await import("../supabase/functions/_shared/blockyWorlds/examples.js");
+  const sent = [];
+  const real = globalThis.fetch;
+  globalThis.fetch = async (_u, init) => { sent.push(JSON.parse(init.body)); return new Response(JSON.stringify({ model: "x", stop_reason: "end_turn", usage: { input_tokens: 1, output_tokens: 1 }, content: [{ type: "text", text: "{}" }] }), { status: 200, headers: { "content-type": "application/json" } }); };
+  const sys = (b) => JSON.stringify(b.system);
+  try {
+    await writeScript({ apiKey: "k", idea: EXAMPLE_IDEAS[0], lengthSec: 90, board: true }).catch(() => {});
+    await writeScript({ apiKey: "k", idea: EXAMPLE_IDEAS[0], lengthSec: 90, board: false }).catch(() => {});
+    await writeBeats({ apiKey: "k", card: EXAMPLE_IDEAS[0], lengthSec: 90, board: true }).catch(() => {});
+    await writeLibraryIdeas({ apiKey: "k", slots: [{ formula: "F1", twistType: "T1", mood: "epic", setting: "town square" }] }).catch(() => {});
+  } finally { globalThis.fetch = real; }
+  assert.match(sys(sent[0]), /THE WORLD WE CAN FILM/);
+  assert.match(sys(sent[0]), /SOUND WORDS/);
+  assert.doesNotMatch(sys(sent.find((_, i) => i === sent.findIndex((b) => !/THE WORLD WE CAN FILM/.test(sys(b))))), /THE WORLD WE CAN FILM/);
+  assert.ok(sent.some((b) => /THE WORLD WE CAN FILM/.test(sys(b)) && /beat sheet/i.test(sys(b))), "beat planner");
+  assert.match(sys(sent.at(-1)), /THE WORLD WE CAN FILM/, "library batch ideas");
+});

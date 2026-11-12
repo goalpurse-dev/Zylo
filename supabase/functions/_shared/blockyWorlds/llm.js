@@ -243,10 +243,10 @@ export async function writeTopicIdeas({ apiKey = "", provider = "anthropic", top
  * fail the code checks are dropped here (dedup and the judge come after, in the job).
  * @param {{apiKey?: string, provider?: string, slots: object[], avoid?: string[], seed?: number}} input
  */
-export async function writeLibraryIdeas({ apiKey = "", provider = "anthropic", slots, avoid = [], seed = 1 }) {
+export async function writeLibraryIdeas({ apiKey = "", provider = "anthropic", slots, avoid = [], seed = 1, board = true }) {
   const reply = provider === "mock"
     ? await MOCK.ideas({ seed, slots })
-    : await callJson({ apiKey, model: MODELS.library, system: IDEAS_SYSTEM, user: slotsPrompt(slots, avoid), schema: ideasSchema(), effort: "medium", timeoutMs: 180_000, maxTokens: LIBRARY_MAX_TOKENS.write });
+    : await callJson({ apiKey, model: MODELS.library, system: ideasSystem({ board }), user: slotsPrompt(slots, avoid), schema: ideasSchema(), effort: "medium", timeoutMs: 180_000, maxTokens: LIBRARY_MAX_TOKENS.write });
   const ideas = usableIdeas(reply.data, slots);
   return { ideas, dropped: Math.max(0, (reply.data?.ideas?.length ?? 0) - ideas.length), costUsd: reply.costUsd };
 }
@@ -302,12 +302,12 @@ export async function cardFromScript({ apiKey = "", provider = "anthropic", line
  * The 7-part beat sheet for a card; a sheet that fails the checks is retried once (this step only).
  * @param {{apiKey?: string, provider?: string, card: object, lengthSec: number}} input
  */
-export async function writeBeats({ apiKey = "", provider = "anthropic", card, lengthSec, meter = null, maxTokens = 16000 }) {
+export async function writeBeats({ apiKey = "", provider = "anthropic", card, lengthSec, meter = null, maxTokens = 16000, board = false }) {
   let costUsd = 0, beats = [], problems = [];
   for (let attempt = 1; attempt <= 2; attempt++) {
     const reply = provider === "mock"
       ? await MOCK.beats({ card, lengthSec })
-      : await callJson({ apiKey, model: MODELS.beats, system: BEATS_SYSTEM, user: beatsPrompt(card, lengthSec) + (problems.length ? `\n\nFIX THESE PROBLEMS:\n${problems.map((p) => `- ${p}`).join("\n")}` : ""), schema: beatsSchema(), effort: "low", meter, maxTokens });
+      : await callJson({ apiKey, model: MODELS.beats, system: board ? `${BEATS_SYSTEM}\n\n${kitBlock(BOARD_KIT, "plan")}` : BEATS_SYSTEM, user: beatsPrompt(card, lengthSec) + (problems.length ? `\n\nFIX THESE PROBLEMS:\n${problems.map((p) => `- ${p}`).join("\n")}` : ""), schema: beatsSchema(), effort: "low", meter, maxTokens });
     costUsd += reply.costUsd;
     beats = reply.data?.beats ?? [];
     problems = beatProblems(beats);
@@ -366,13 +366,15 @@ export function trimForLength(script, lengthSec, card = null, { board = false } 
  */
 export async function writeScript({ apiKey = "", provider = "anthropic", idea, lengthSec, previous = null, note = "", beats = null, failed = [], meter = null, maxTokens = 16000, board = false }) {
   // the board-only launch mode: the kit as hard rules for the writer, and the kit checks with the others
-  const opts = { board }, baseNote = board ? [note, kitBlock(BOARD_KIT, "lines"), idea?.swap ? swapHint(idea.swap) : ""].filter(Boolean).join("\n\n") : note;
+  // 2026-11-12: the kit (places, creature looks, animals, props, weather, SOUND WORDS) rides in the SYSTEM prompt, as in the formula writer
+  const opts = { board }, baseNote = board ? [note, idea?.swap ? swapHint(idea.swap) : ""].filter(Boolean).join("\n\n") : note;
+  const system = board ? `${SCRIPT_SYSTEM}\n\n${kitBlock(BOARD_KIT, "lines")}` : SCRIPT_SYSTEM;
   let costUsd = 0, attempts = 0, script = null, check = null, prev = previous, extra = baseNote, trimmed = [];
   for (let round = 1; round <= 2; round++) {
     attempts++;
     const reply = provider === "mock"
       ? await MOCK.script({ lengthSec })
-      : await callJson({ apiKey, model: MODELS.script, system: SCRIPT_SYSTEM, user: scriptPrompt({ idea, lengthSec, previous: prev, note: extra, beats, failed: round === 1 ? failed : [] }), schema: scriptSchema(), effort: "medium", timeoutMs: 180_000, meter, maxTokens });
+      : await callJson({ apiKey, model: MODELS.script, system, user: scriptPrompt({ idea, lengthSec, previous: prev, note: extra, beats, failed: round === 1 ? failed : [] }), schema: scriptSchema(), effort: "medium", timeoutMs: 180_000, meter, maxTokens });
     costUsd += reply.costUsd;
     script = normalizeScript(reply.data);
     check = scriptProtocolCheck(script, lengthSec, provider === "mock" ? null : idea, opts);

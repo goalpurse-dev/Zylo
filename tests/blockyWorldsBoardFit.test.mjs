@@ -150,7 +150,9 @@ test("a whole-premise miss is ONE problem with the move action; the card's plant
   const tape = S("In this town, nobody says goodnight out loud.", ...filler(4), "I kept a roll of tape in my pocket.", ...filler(3), "I taped its mouth shut with the tape.");
   const t = boardFitProblems(tape, { prop: "A roll of masking tape" });
   assert.ok(t.problems.some((p) => p.startsWith(`${BOARD_PREFIX} "tape"`)));
-  assert.deepEqual(boardFitProblems(tape, { prop: "a flashlight" }).problems, []);
+  // 2026-11-12: an unknown noun the story leans on (the tape, in the last lines) is a hard miss in board mode, whatever the card says
+  assert.ok(boardFitProblems(tape, { prop: "a flashlight" }).problems.some((p) => /"tape"/.test(p)));
+  assert.deepEqual(boardFitProblems(S("In this town, nobody says goodnight out loud.", ...filler(8), "I kept a flashlight in my pocket."), { prop: "a flashlight" }).problems, []);
 });
 
 test("the kit as writer rules: every place, look, animal and weather named; the same text every call (cacheable)", () => {

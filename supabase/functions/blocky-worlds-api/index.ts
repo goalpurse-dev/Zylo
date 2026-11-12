@@ -427,7 +427,7 @@ async function handle(req: Request, trace: Trace) {
     // (a move to our town plans the beats again: the old ones are set in the world that has to move)
     let beats: any = d?.beats && d.length_sec === lengthSec && !move ? d.beats : null;
     if (!beats) {
-      try { const b = await writeBeats({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, card, lengthSec }); costUsd += b.costUsd; beats = b.beats; } catch (e: any) { await logCall(who.user.id, "script", (e?.costUsd ?? 0) + costUsd, false); throw writerError(e); }
+      try { const b = await writeBeats({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, card, lengthSec, board: LAUNCH_BOARD }); costUsd += b.costUsd; beats = b.beats; } catch (e: any) { await logCall(who.user.id, "script", (e?.costUsd ?? 0) + costUsd, false); throw writerError(e); }
     }
     // step 3: the script, following the beats
     trace.step = "writer";

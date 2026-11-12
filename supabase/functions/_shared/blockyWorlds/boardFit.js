@@ -251,7 +251,8 @@ const PREMISE_KINDS = new Set(["place", "world", "creature"]);
  */
 export function boardFitProblems(script, card = null, kit = BOARD_KIT) {
   const v = kitView(kit), lines = script?.lines ?? [], n = lines.length;
-  const kc = kitCheck(script, { card, kit });
+  // board mode: a noun the kit does not know in a must-have position is a HARD miss (kitCheck boardOnly), not a warning
+  const kc = kitCheck(script, { card, kit, boardOnly: true });
   const listed = new Set([...v.places.map((p) => p.id), ...v.animals, ...v.props.flatMap((p) => p.words)].map(lower));
   const keep = (e) => kit === BOARD_KIT || !listed.has(e.word);
   const missing = kc.missing.filter(keep).map((e) => ({ ...e, source: "kitCheck" })), warned = kc.warnings.filter(keep);
