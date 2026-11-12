@@ -55,6 +55,16 @@ export const SFX = {
   boing: { dur: 0.7, anchor: 0, gainDb: -6, quality: "ok", ...OURS, what: "a spring boing, wobbling pitch" },
   squeak: { dur: 0.21, anchor: 0, gainDb: -6, quality: "ok", ...OURS, what: "a rising-falling squeak (mouse / rubber toy)" },
   poof: { dur: 0.55, anchor: 0, gainDb: -6, quality: "ok", ...OURS, what: "a soft low puff of smoke" },
+  // the animal + eating sound words (ElevenLabs takes, owner OK 2026-11-12)
+  meow: { dur: 1.2, anchor: 0, gainDb: -6, quality: "good", source: "ElevenLabs Sound Effects (audio/elevenSfx.mjs; take in assets/sfx-src/eleven/)", license: "commercial use on the owner's paid ElevenLabs plan", what: "meow" },
+  woof: { dur: 0.96, anchor: 0, gainDb: -6, quality: "good", source: "ElevenLabs Sound Effects (audio/elevenSfx.mjs; take in assets/sfx-src/eleven/)", license: "commercial use on the owner's paid ElevenLabs plan", what: "woof" },
+  moo: { dur: 1.29, anchor: 0, gainDb: -6, quality: "good", source: "ElevenLabs Sound Effects (audio/elevenSfx.mjs; take in assets/sfx-src/eleven/)", license: "commercial use on the owner's paid ElevenLabs plan", what: "moo" },
+  quack: { dur: 1, anchor: 0, gainDb: -6, quality: "good", source: "ElevenLabs Sound Effects (audio/elevenSfx.mjs; take in assets/sfx-src/eleven/)", license: "commercial use on the owner's paid ElevenLabs plan", what: "quack" },
+  oink: { dur: 0.87, anchor: 0, gainDb: -6, quality: "good", source: "ElevenLabs Sound Effects (audio/elevenSfx.mjs; take in assets/sfx-src/eleven/)", license: "commercial use on the owner's paid ElevenLabs plan", what: "oink" },
+  ribbit: { dur: 0.91, anchor: 0, gainDb: -6, quality: "good", source: "ElevenLabs Sound Effects (audio/elevenSfx.mjs; take in assets/sfx-src/eleven/)", license: "commercial use on the owner's paid ElevenLabs plan", what: "ribbit" },
+  gulp: { dur: 0.68, anchor: 0, gainDb: -6, quality: "good", source: "ElevenLabs Sound Effects (audio/elevenSfx.mjs; take in assets/sfx-src/eleven/)", license: "commercial use on the owner's paid ElevenLabs plan", what: "gulp" },
+  munch: { dur: 1.36, anchor: 0, gainDb: -6, quality: "good", source: "ElevenLabs Sound Effects (audio/elevenSfx.mjs; take in assets/sfx-src/eleven/)", license: "commercial use on the owner's paid ElevenLabs plan", what: "munch" },
+  slurp: { dur: 1.07, anchor: 0, gainDb: -6, quality: "good", source: "ElevenLabs Sound Effects (audio/elevenSfx.mjs; take in assets/sfx-src/eleven/)", license: "commercial use on the owner's paid ElevenLabs plan", what: "slurp" },
 };
 export const SFX_NAMES = Object.keys(SFX);
 export const sfxPath = (name) => {

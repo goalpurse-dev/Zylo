@@ -87,8 +87,8 @@ test("the viral pace (2026-11-12): sound words get our effects, pace stats, the 
   const words = "Boom! The door flew open. Knock. Knock. Meow!".split(" ");
   const captions = words.map((w, i) => ({ word: w, start: i * 0.25, end: i * 0.25 + 0.2 }));
   const r = soundWordCues({ captions, lines: [{ start: 0, end: 1.2 }, { start: 1.25, end: 2 }] }, { lines: [{ text: "Boom! The door flew open.", sfx: ["boom"] }, { text: "Knock. Knock. Meow!", sfx: ["knock", "knock", "meow"] }] });
-  assert.deepEqual(r.cues.map((c) => [c.name, c.at]), [["impact", 0], ["knock", 1.25], ["knock", 1.5]]);
-  assert.deepEqual(r.missing, ["meow"]);
+  assert.deepEqual(r.cues.map((c) => [c.name, c.at]), [["impact", 0], ["knock", 1.25], ["knock", 1.5], ["meow", 1.75]]);
+  assert.deepEqual(r.missing, []); // every sound word has a sound since 2026-11-12
   assert.deepEqual(paceStats(captions), { wpm: 246, first15: 8, maxPause: 0.05, firstWord: 0 });
   // 60 s of 3-second board shots -> quick cuts, the first by 0.6 s, none over the max, none under the min
   const shots = Array.from({ length: 20 }, (_, i) => ({ start: i * 3, end: i * 3 + 3, camera: "wide", board: { loc: "street", cam: "street_wide", acts: [], people: [] } }));

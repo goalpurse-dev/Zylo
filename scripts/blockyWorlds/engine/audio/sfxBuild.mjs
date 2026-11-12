@@ -322,6 +322,8 @@ Object.assign(BUILD, {
   drip: () => resample(kenney("kenney_interface-sounds/Audio/drop_002.ogg"), 1.4),
 });
 Object.assign(BUILD, { beep: () => beep(), buzz: () => buzz(81), hiss: () => hiss(82), fizz: () => fizz(83), boing: () => boing(), squeak: () => squeak(84), poof: () => poof(85) });
+// the animal + eating sound words: ElevenLabs Sound Effects takes (owner OK 2026-11-12, $0.0228)
+Object.assign(BUILD, { meow: () => eleven("meow"), woof: () => eleven("woof"), moo: () => eleven("moo"), quack: () => eleven("quack"), oink: () => eleven("oink"), ribbit: () => eleven("ribbit"), gulp: () => eleven("gulp"), munch: () => eleven("munch"), slurp: () => eleven("slurp") });
 const LOOPS = new Set(["crowd_murmur", "footsteps_walk", "footsteps_run"]);
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

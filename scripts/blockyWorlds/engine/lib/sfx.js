@@ -28,6 +28,8 @@ export const SFX_TIMING = {
   bonk: [0.33, 0, -6], clunk: [0.31, 0, -6], tap: [0.14, 0, -6], splat: [0.51, 0, -6], snap: [0.19, 0, -6], click: [0.04, 0, -6], ding: [0.12, 0, -6], zap: [0.23, 0, -6], twang: [0.09, 0, -6], scratch: [0.12, 0, -6], plop: [0.11, 0, -6], drip: [0.13, 0, -6],
   // home-made (2026-11-12)
   beep: [0.18, 0, -6], buzz: [0.7, 0, -6], hiss: [0.6, 0, -6], fizz: [0.9, 0, -6], boing: [0.7, 0, -6], squeak: [0.21, 0, -6], poof: [0.55, 0, -6],
+  // ElevenLabs takes (2026-11-12)
+  meow: [1.2, 0, -6], woof: [0.96, 0, -6], moo: [1.29, 0, -6], quack: [1, 0, -6], oink: [0.87, 0, -6], ribbit: [0.91, 0, -6], gulp: [0.68, 0, -6], munch: [1.36, 0, -6], slurp: [1.07, 0, -6],
 };
 
 // EPIC stories (lib/epic.js): giants, armies and beats add their own candidates and sounds (audio/sfxEpic.mjs)
