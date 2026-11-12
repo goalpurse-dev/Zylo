@@ -9,6 +9,7 @@ import { mat, box, rbox, ball, cyl, canvasTex, seeded } from "./common.js";
 import { makeSky, cloudTree } from "./town.js";
 import { kneelBend } from "./monsters.js";
 import { BOARD_ACTIONS } from "/lib/boardActions.js";
+import { buildPlace, makeWeather, placeAnimals } from "./boardPlaces.js"; // the kit expansion (school, woods, park, shop; rain, snow; animals)
 
 const HZ = -7, HX0 = -45, HDX = 15, HW = 9, FL = 3.2;            // house fronts at z = HZ, x = HX0 + i * HDX
 const WIN = [[-2.4, 0.9], [2.4, 0.9], [-2.4, 4.1], [2.4, 4.1]];  // window [x, sill y] (0, 1 ground; 2, 3 upstairs)
@@ -237,6 +238,10 @@ export function buildBoard({ tl = null } = {}) {
   for (let x = -50; x <= 60; x += 14) { makeLamp(root, x, -3.6, S); makeLamp(root, x + 7, 3.6, S); }
   for (let x = -60; x <= 70; x += 13) cloudTree(root, x, 15 + (x % 3), 1.1, x + 99); // the far side, well behind the street cameras
   S.rooms = {}; owners.forEach((o, k) => { S.rooms[o] = makeRoom(root, k, o, tl?.storyboard?.rooms?.[o]?.props); });
+  // the story's other places (the storyboard bible's places: school, woods, park, shop), built only when used
+  const used = new Set((tl?.shots ?? []).map((x) => x.board?.loc).filter((l) => /^place:/.test(l ?? "")).map((l) => l.slice(6)));
+  S.places = {}; for (const name of used) S.places[name] = buildPlace(name, root, tl);
+  S.weather = makeWeather(root);
   Object.assign(S.spots, { center: V(0, 0, 0), left: V(-3, 0, 0), right: V(3, 0, 0), back: V(0, 0, HZ), far: V(0, 0, HZ - 4), door: V(0, 0, HZ + 1) });
   S.depthDir = V(0, 0, -1);
   // the flying things (wind, kites), the blanket, the tongue, the leaves
@@ -254,7 +259,7 @@ export function buildBoard({ tl = null } = {}) {
 }
 
 // every action key this page animates (a key in lib/boardActions.js without one here fails the build above)
-const ACTS = new Set(["lights_on:windows", "peek:curtains", "lurk:monster", "press:eye", "glow:windows", "stare:ceiling", "bulge:curtains", "poke_out:cat", "stack:bricks", "tremble:curtains", "wave", "peek:sock", "stare:cat", "catch:peeking", "talk", "rip:curtains", "fly:curtains", "grab:boards", "nail:boards", "smear:batter", "lick:glass", "huddle:blanket", "herd", "sneeze", "blow_off:blanket", "look_up", "turn:monster", "pull:sock", "blink:eye", "back_away:monster", "dark:windows", "sleep", "cover:eyes", "walk", "stare", "twitch:eye", "arrive:monster", "hide:curtains"]);
+const ACTS = new Set(["rain:falls", "snow:falls", "cheer", "run", "animal:move", "lights_on:windows", "peek:curtains", "lurk:monster", "press:eye", "glow:windows", "stare:ceiling", "bulge:curtains", "poke_out:cat", "stack:bricks", "tremble:curtains", "wave", "peek:sock", "stare:cat", "catch:peeking", "talk", "rip:curtains", "fly:curtains", "grab:boards", "nail:boards", "smear:batter", "lick:glass", "huddle:blanket", "herd", "sneeze", "blow_off:blanket", "look_up", "turn:monster", "pull:sock", "blink:eye", "back_away:monster", "dark:windows", "sleep", "cover:eyes", "walk", "stare", "twitch:eye", "arrive:monster", "hide:curtains"]);
 
 // ------------------------------------------------------------------------------------------------ one shot
 const houseLight = (st, night) => (!st ? "warm" : st.light === "glow_white" || st.light === "eye" ? "white" : st.light === "dark" ? "dark" : night ? "warm" : "off");
@@ -264,6 +269,8 @@ function boardShot(S, { shot, lt, dur, camera, people, monster, animateMonster, 
   const b = shot.board, acts = new Map(b.acts.map((a) => [a.k, a])), has = (k) => acts.has(k), atOf = (k) => acts.get(k)?.at ?? 0;
   const night = shot.light === "night" || shot.light === "dusk";
   const room = /^room:/.test(b.loc) ? S.rooms[b.loc.slice(5)] : null;
+  const place = /^place:/.test(b.loc) ? S.places?.[b.loc.slice(6)] : null;
+  for (const P of Object.values(S.places ?? {})) P.light.intensity = P === place && P.indoor ? (night ? 8 : 4) : 0;
   const houseOf = (id) => b.houses?.[id] ?? b.houses?.["*"] ?? null;
   for (const h of S.held) h.parent?.remove(h); S.held = [];
   // ---- the houses + rooms: their windows in this line's state
@@ -302,6 +309,8 @@ function boardShot(S, { shot, lt, dur, camera, people, monster, animateMonster, 
     let pos = V(0, 0, 0), yaw = 0;
     const w = String(p.where);
     if (w.startsWith("window:")) { const [, h, k] = w.split(":"); const win = S.houses[h]?.wins[Number(k) || 0]; if (win) { const c = winWorld(win); pos = V(c.x, c.y - P.headC + 0.05, c.z - 0.75); yaw = 0; } }
+    else if (w.startsWith("place:") && place) { const m = w.slice(6); pos = (place.spots[m] ?? place.spots.center).clone(); const i = b.people.indexOf(p); pos.x += (i % 3 - 1) * 0.9 * (m === "center" ? 1 : 0.5); pos.z += Math.floor(i / 3) * -0.9; yaw = 0; p.faceLens ??= true; }
+    else if (/^street:\d$/.test(w)) { const n = Number(w.slice(7)), i = b.people.indexOf(p); pos = V(-44 + n * 9 + (i % 3) * 0.8, 0.18, 1.6 + (i % 2) * 1.1); yaw = 0; p.faceLens ??= true; } // outdoor crowds: along the street
     else if (w.startsWith("room:") && room) {
       const m = MARK[w.slice(5)] ?? MARK.center; pos = room.g.localToWorld(V(m[0], 0, m[1]));
       yaw = w === "room:window" ? (has("peek:sock") ? Math.PI : has("smear:batter") ? Math.PI - 0.7 : has("pull:sock") ? Math.PI - 0.9 : has("stack:bricks") ? Math.PI * 0.55 : 0.3) : w === "room:painting" ? -Math.PI / 2 + 0.5 : w === "room:door" ? Math.PI * 0.35 : /^room:huddle/.test(w) ? (p.pose === "look_up" ? Math.PI - 1.5 : 0.15) : 0;
@@ -316,6 +325,8 @@ function boardShot(S, { shot, lt, dur, camera, people, monster, animateMonster, 
     let pose = p.pose ?? "stand";
     if (p.where === "room:bed") pose = p.awake ? "stand" : "sleep";
     if (has("herd") && p.id === acts.get("herd").who) pose = "wave";
+    if (has("cheer") && (!acts.get("cheer").who || p.id === acts.get("cheer").who)) pose = "cheer";
+    if (has("run") && (!acts.get("run").who || p.id === acts.get("run").who)) pose = "run";
     if (has("sneeze") && p.id === acts.get("sneeze").who) pose = "sneeze";
     if (has("grab:boards") && p.id === acts.get("grab:boards").who) pose = lt < 0.5 ? "stand" : "carry";
     const blink = !!p.shut;
@@ -408,6 +419,8 @@ function boardShot(S, { shot, lt, dur, camera, people, monster, animateMonster, 
     M.updateMatrixWorld(true);
   }
 
+  // ---- animals + weather (the kit expansion)
+  if (b.animals?.length) placeAnimals(root(S), b.animals.map((a, i) => ({ ...a, pos: markPos(S, b, place, a.where, i), yaw: a.yaw ?? 0 })), lt); else placeAnimals(root(S), [], lt);
   // ---- the camera
   const cam = b.cam; let look = V(0, 2, 0), pos = V(0, 3, 10), fov = 50;
   const R0 = room ? (lx, ly, lz) => room.g.localToWorld(V(lx, ly, lz)) : null;
@@ -424,6 +437,8 @@ function boardShot(S, { shot, lt, dur, camera, people, monster, animateMonster, 
   else if (/^window:/.test(cam)) { const [, h, kk] = cam.split(":"); const c = winWorld(S.houses[h].wins[Number(kk) || 0]); if (mon || has("lick:glass")) { pos = c.clone().add(V(2.4, 0.5, 2.2)); look = c.clone().add(V(-0.1, 0.05, 0.35)); fov = 50; } else { pos = c.clone().add(V(0.7, 0.15, 4.2 - 0.5 * k)); look = c.clone().add(V(0, -0.05, 0)); fov = 40; } } // the eye at a window: from the side, the head in profile against the glass, the body going back to the road
   else if (/^cat:/.test(cam)) { const c = winWorld(S.houses[cam.slice(4)].wins[0]); pos = c.clone().add(V(0.9, 0.3, 2.6)); look = c.clone().add(V(0.25, 0.15, 0.4)); fov = 44; }
   else if (/^arrive:/.test(cam)) { const h = S.houses[cam.slice(7)]; pos = V(h.x + 4, 2.4, 10); look = V(h.x - 4, 5, HZ + 2); fov = 56; }
+  else if (place && /^place_/.test(cam)) { const c = place.cam(cam, { where, people: b.people, k }); pos = c.pos; look = c.look; fov = c.fov; }
+  else if (place && /^face:/.test(cam)) { const p = where[cam.slice(5)]; if (p) { const f = V(Math.sin(p.yaw), 0, Math.cos(p.yaw)); pos = p.head.clone().addScaledVector(f, 2.0 - 0.15 * k); look = p.head.clone(); fov = 42; } }
   else if (R0) {
     if (cam === "room_window") { pos = b.monster ? R0(1.2, 1.55, -0.2) : R0(2.2, 1.6, 0.6); look = b.monster ? R0(-0.1, 1.75, -3) : R0(-0.6, 1.4, -2.6); fov = 58; } // the eye behind the sock: the window big in frame
     else if (cam === "room_wide") { const grab = has("grab:boards"); pos = grab ? R0(-0.6, 1.6, 2.6) : R0(0.5, 2.1, 3.4 - 0.4 * k); look = grab ? R0(0.9, 1.1, 0.0) : R0(-0.2, 1.1, -1.4); fov = grab ? 55 : 64; }
@@ -440,7 +455,8 @@ function boardShot(S, { shot, lt, dur, camera, people, monster, animateMonster, 
     else if (cam === "huddle_up") { pos = R0(1.8, 0.9, 1.4); look = R0(-0.1, 1.7, -2.6); fov = 60; } // low at the side: their faces tipped up, the eye filling the window behind them
     else if (/^face:/.test(cam)) { const p = where[cam.slice(5)]; if (p) { const f = V(Math.sin(p.yaw), 0, Math.cos(p.yaw)); pos = p.head.clone().addScaledVector(f, 2.3 - 0.15 * k).add(V(0, 0.02, 0)); look = p.head.clone(); fov = 40; } }
   }
-  S.camFill.position.copy(pos).add(V(0, 0.4, 0)); S.camFill.intensity = room && night ? (cam === "pov_eye" ? 9 : 4) : 0; S.camFill.color.set(cam === "pov_eye" ? "#e8f0ff" : "#fff1dc");
+  S.weather.update(b.weather ?? (b.acts.some((a) => a.k === "rain:falls") ? "rain" : b.acts.some((a) => a.k === "snow:falls") ? "snow" : null), lt, camera);
+  S.camFill.position.copy(pos).add(V(0, 0.4, 0)); S.camFill.intensity = (room || place?.indoor) && night ? (cam === "pov_eye" ? 9 : 4) : 0; S.camFill.color.set(cam === "pov_eye" ? "#e8f0ff" : "#fff1dc");
   camera.position.copy(pos); camera.fov = fov; camera.near = 0.05; camera.far = 3000; camera.updateProjectionMatrix();
   camera.up.set(0, 1, 0); camera.lookAt(look); camera.updateMatrixWorld();
   // faceLens (the still gate's re-plan, lib/vision/gatePass.js boardAlternatives): the person turns to the lens
@@ -458,4 +474,14 @@ function hold(S, hand, what) {
   if (what === "brick") box(g, [0.36, 0.18, 0.2], [0, -0.12, 0.1], mat("#b5492f"));
   g.scale.setScalar(1 / Math.max(0.2, hand.getWorldScale(V(0, 0, 0)).x));
   return g;
+}
+
+// the board root (animals ride it) and a mark's world position (a place's mark, a street slot, else the shot's first person)
+function root(S) { return S.root; }
+function markPos(S, b, place, where, i) {
+  const w = String(where ?? "");
+  if (/^place:/.test(w) && place) return (place.spots[w.slice(6)] ?? place.spots.center).clone().add(new THREE.Vector3(0.8 * i, 0, 0.6));
+  if (/^street:\d$/.test(w)) return new THREE.Vector3(-44 + Number(w.slice(7)) * 9 + 0.6 * i, 0.18, 2.4);
+  if (/^room:/.test(w)) { const r = /^room:/.test(b.loc) ? S.rooms[b.loc.slice(5)] : null; if (r) return r.g.localToWorld(new THREE.Vector3(1.2 + 0.5 * i, 0, -0.2)); }
+  return (place?.spots.center ?? new THREE.Vector3(0, 0.18, 2)).clone();
 }

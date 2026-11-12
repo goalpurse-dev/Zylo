@@ -121,6 +121,10 @@ const ACT_SHOWS = { "fly:curtains": ["curtains", "kites", "kite"], "rip:curtains
 function showsOf(b) {
   const out = new Set(["window", "windows", "glass", "pane", "panes"]);
   if (b.loc === "street" || b.loc.startsWith("house:")) ["street", "house", "houses", "town"].forEach((w) => out.add(w));
+  const PLACE_WORDS = { school: ["school", "classroom", "class", "desk", "desks", "teacher"], woods: ["woods", "forest", "trees", "tree", "path"], park: ["park", "trees", "bench", "pond", "grass", "square"], shop: ["shop", "store", "counter", "shelves", "till"] };
+  if (/^place:/.test(b.loc)) for (const w of PLACE_WORDS[b.loc.slice(6)] ?? []) out.add(w);
+  for (const a of b.animals ?? []) [a.species, `${a.species}s`].forEach((w) => out.add(w));
+  if (b.weather) [b.weather, `${b.weather}y`].forEach((w) => out.add(w));
   for (const a of b.acts) for (const w of ACT_SHOWS[a.k] ?? []) out.add(w);
   for (const h of housesInView(b)) { const c = houseOf(b.houses, h)?.cover; if (c && c !== "bare") (c === "sock" ? ["sock", "hole"] : ["curtains", "curtain"]).forEach((w) => out.add(w)); if (houseOf(b.houses, h)?.bricks) ["bricks", "wall"].forEach((w) => out.add(w)); }
   return [...out];
@@ -161,6 +165,7 @@ const COVER_OBJ = { curtained: { name: "curtain_pile", state: "window" }, bulgin
 /** the houses a camera shows (lib side of page/simple/board.js camFor): all on a street view, one at a house / room */
 export function housesInView(b) {
   if (b.loc === "street") return /^(houses|front):/.test(b.cam) ? b.cam.split(":").slice(1) : /^(eye_close|sky_up)$/.test(b.cam) ? [] : Object.keys(b.homes);
+  if (/^place:/.test(b.loc)) return []; // a school / woods / park / shop: no houses in view
   const h = b.loc.split(":")[1];
   return h ? [h] : [];
 }
@@ -189,7 +194,7 @@ export function manifest(b) {
 // ------------------------------------------------------------------------------------------------ the hard checks
 const NIGHT = (light) => ["night", "dusk"].includes(light);
 const outsidePeople = (s) => {
-  if (s.board) return s.board.loc === "street" || s.board.loc.startsWith("house:") ? s.board.people.filter((p) => !/^window:/.test(p.where)).map((p) => p.id) : [];
+  if (s.board) return s.board.loc === "street" || s.board.loc.startsWith("house:") || /^place:(woods|park)$/.test(s.board.loc) ? s.board.people.filter((p) => !/^(window|room):/.test(p.where)).map((p) => p.id) : [];
   if (s.set !== "street") return [];
   return [...(s.actors ?? []).map((a) => a.id), ...((s.crowds ?? []).length ? ["crowd"] : [])];
 };

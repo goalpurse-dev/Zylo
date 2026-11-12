@@ -10,13 +10,14 @@
 import { BOARD_ACTIONS } from "./boardActions.js";
 import { costOf } from "./builder/design.js";
 import { KID_NEVER_BLINKS } from "./storyboards/kidNeverBlinks.js";
+import { BOARD_KIT } from "../../../../supabase/functions/_shared/blockyWorlds/boardKit.js"; // the one kit manifest (server + engine)
 
 export const BOARD_MODEL = "claude-sonnet-5-5";
 // THE BOARD KIT VOCABULARY (page/simple/board.js): what a storyboard may use
 export const BOARD = Object.freeze({
-  locs: ["street", "house:<owner>", "room:<owner>"],
-  cams: { street: ["town_wide", "street_wide", "street_end", "street_back", "sky_up", "eye_close", "houses:<a>:<b>", "front:<owner>"], house: ["house:<owner>", "front:<owner>", "window:<owner>:<0-3>", "cat:<owner>", "arrive:<owner>"], room: ["room_wide", "room_window", "room_door", "room_side", "face:<person>", "peek:me", "cat_stare", "bed_top", "painting", "behind_window", "huddle_up", "pov_eye", "window_in"] },
-  where: ["window:<owner>:<0-3>", "room:window", "room:center", "room:door", "room:painting", "room:bed", "room:huddle0", "room:huddle1", "room:huddle2", "room:huddle3"],
+  locs: ["street", "house:<owner>", "room:<owner>", "place:<school|woods|park|shop>"],
+  cams: { street: ["town_wide", "street_wide", "street_end", "street_back", "sky_up", "eye_close", "houses:<a>:<b>", "front:<owner>"], house: ["house:<owner>", "front:<owner>", "window:<owner>:<0-3>", "cat:<owner>", "arrive:<owner>"], place: ["place_wide", "place_medium", "face:<person>"], room: ["room_wide", "room_window", "room_door", "room_side", "face:<person>", "peek:me", "cat_stare", "bed_top", "painting", "behind_window", "huddle_up", "pov_eye", "window_in"] },
+  where: ["place:<center|left|right|back|far|door>", "street:<0-9>", "window:<owner>:<0-3>", "room:window", "room:center", "room:door", "room:painting", "room:bed", "room:huddle0", "room:huddle1", "room:huddle2", "room:huddle3"],
   monsterWhere: ["end", "street:<owner>", "window:<owner>:<0-3>", "roomwindow:<owner>"],
   eyes: ["stare", "squint", "twitch", "blink", "press"],
   poses: ["stand", "walk", "wave", "talk", "point", "scared", "look_up", "sneeze", "carry", "cover_mouth", "sleep", "cheer", "hide"],
@@ -24,6 +25,9 @@ export const BOARD = Object.freeze({
   covers: ["curtained", "bulging", "thin", "sock", "bare", "smeared"],
   roomProps: ["bed", "shelf", "rug", "cat", "painting", "boards", "bricks", "counter", "bowl", "sofa", "lamp", "table", "nightstand"],
   lights: ["dusk", "night", "day"],
+  places: BOARD_KIT.places.filter((p) => !["street", "room"].includes(p.id)).map((p) => p.id),
+  weather: BOARD_KIT.weather.filter((w) => w !== "wind"),
+  animals: [...BOARD_KIT.animals],
 });
 
 const BIBLE_SYSTEM = `You set up the WORLD BIBLE of a vertical blocky-cartoon story video built from a fixed 3D kit: one suburban street of up to 7 houses (left to right), each house's front windows (0, 1 ground floor; 2, 3 upstairs) and one room inside each house. Output ONLY compact JSON:
@@ -32,14 +36,15 @@ covers: curtained | bulging | thin | sock | bare | smeared. light: default | eye
 
 export const SHOT_SYSTEM = `You are the storyboard director of a vertical (9:16) blocky-cartoon story video built from a FIXED 3D kit (a street of houses with real windows, a room in each house, people, one monster with one huge eye, and an action library). For every narration line you write what we SEE happening: place, inside / outside, who (where, pose, face), the visible action of every verb (an animated action from the library, never just a face), and the camera. Follow the owner's example storyboard: its level of detail, its choices of place and camera per line, its use of the world state.
 
-Format per line (compact JSON): {"line":n,"place":"street"|"home:<owner>","shots":[{"at":"<first word of a cut, not on the first shot>","loc":"street"|"house:<owner>"|"room:<owner>","light":"dusk"|"night"|"day","cam":"..","people":[{"id":..,"where":..,"pose"?:..,"face"?:..}],"monster"?:{"where":..,"eye"?:..,"state"?:"lurk"|"flee","turnTo"?:<owner>},"acts":[{"k":<action>,"who"?:id,"at"?:"<word>","only"?:"<owner>:<window>"|"room"}]}]}
-- A line that the kit cannot show (another place, vehicles, animals other than a cat, things not in the action library) is {"line":n,"keep":true}: the regular planner shows it.
+Format per line (compact JSON): {"line":n,"place":"street"|"home:<owner>"|"place:<name>","shots":[{"at":"<first word of a cut, not on the first shot>","loc":"street"|"house:<owner>"|"room:<owner>"|"place:<school|woods|park|shop>","weather"?:"rain"|"snow","animals"?:[{"species":..,"where":..,"action"?:"idle"|"walk"|"run"|"sit"}],"light":"dusk"|"night"|"day","cam":"..","people":[{"id":..,"where":..,"pose"?:..,"face"?:..}],"monster"?:{"where":..,"eye"?:..,"state"?:"lurk"|"flee","turnTo"?:<owner>},"acts":[{"k":<action>,"who"?:id,"at"?:"<word>","only"?:"<owner>:<window>"|"room"}]}]}
+- Places: the street of houses, each house's room, and the school (classroom), the woods, the park, the shop. People on the street stand at street:<0-9>; in a place at place:<mark>. Animals: the listed species. Weather: rain, snow.
+- A line that the kit cannot show (another place, vehicles, animals not listed, things not in the action library) is {"line":n,"keep":true}: the regular planner shows it.
 - Every action verb of the line needs an action whose key matches it. People at windows / in rooms are INSIDE; after dark nobody is outside except the rule's exceptions.
 - A line about a person at home happens at THEIR house (house:<owner> outside, room:<owner> inside). Faces toward the camera; 1 shot a line, 2 when the line has two beats (cut on a word); never 3 cameras of one type in a row.
 Output ONLY a compact JSON array of line entries for the lines asked.`;
 
 function vocabText() {
-  return `KIT VOCABULARY:\nplaces: ${BOARD.locs.join(" | ")}\ncameras: street ${BOARD.cams.street.join(", ")}; at a house ${BOARD.cams.house.join(", ")}; in a room ${BOARD.cams.room.join(", ")}\npeople where: ${BOARD.where.join(", ")}\nmonster where: ${BOARD.monsterWhere.join(", ")}; eye: ${BOARD.eyes.join(", ")}\nposes: ${BOARD.poses.join(", ")}\nfaces: ${BOARD.faces.join(", ")}\nACTIONS (key: what we see):\n${Object.entries(BOARD_ACTIONS).map(([k, v]) => `${k}: ${v}`).join("\n")}`;
+  return `KIT VOCABULARY:\nplaces: ${BOARD.locs.join(" | ")}\ncameras: street ${BOARD.cams.street.join(", ")}; at a house ${BOARD.cams.house.join(", ")}; in a room ${BOARD.cams.room.join(", ")}\npeople where: ${BOARD.where.join(", ")}\nplaces: ${BOARD.places.join(", ")}; animals: ${BOARD.animals.join(", ")}; weather: ${BOARD.weather.join(", ")}\nmonster where: ${BOARD.monsterWhere.join(", ")}; eye: ${BOARD.eyes.join(", ")}\nposes: ${BOARD.poses.join(", ")}\nfaces: ${BOARD.faces.join(", ")}\nACTIONS (key: what we see):\n${Object.entries(BOARD_ACTIONS).map(([k, v]) => `${k}: ${v}`).join("\n")}`;
 }
 /** the few-shot: #2's storyboard (its lines with their text) */
 export function exampleText() {
@@ -50,7 +55,7 @@ export function exampleText() {
 
 // ------------------------------------------------------------------------------------------------ validation (free)
 const tok = (s) => String(s).split(/\s+/).filter(Boolean), norm = (w) => String(w).toLowerCase().replace(/[^a-z0-9']/g, "");
-const CAM_RE = { street: /^(town_wide|street_wide|street_end|street_back|sky_up|eye_close|houses:[a-z0-9_]+(:[a-z0-9_]+)+|front:[a-z0-9_]+)$/, house: /^(house|front|cat|arrive):[a-z0-9_]+$|^window:[a-z0-9_]+:[0-3]$/, room: /^(room_wide|room_window|room_door|room_side|peek:me|cat_stare|bed_top|painting|behind_window|huddle_up|pov_eye|window_in|face:[a-z0-9_]+|room_me)$/ };
+const CAM_RE = { street: /^(town_wide|street_wide|street_end|street_back|sky_up|eye_close|houses:[a-z0-9_]+(:[a-z0-9_]+)+|front:[a-z0-9_]+)$/, house: /^(house|front|cat|arrive):[a-z0-9_]+$|^window:[a-z0-9_]+:[0-3]$/, place: /^(place_wide|place_medium|face:[a-z0-9_]+)$/, room: /^(room_wide|room_window|room_door|room_side|peek:me|cat_stare|bed_top|painting|behind_window|huddle_up|pov_eye|window_in|face:[a-z0-9_]+|room_me)$/ };
 export function validateStoryboard(board, { lines, cast }) {
   const out = [], homes = board.bible?.homes ?? {}, isOwner = (o) => o in homes;
   const P = (n, m) => out.push({ line: n, problem: m });
@@ -63,13 +68,15 @@ export function validateStoryboard(board, { lines, cast }) {
     b.shots.forEach((s, i) => {
       if (i && !words.includes(norm(s.at))) P(n, `shot ${i}: cut word "${s.at}" is not in the line`);
       const [kind, owner] = String(s.loc).split(":");
-      if (!["street", "house", "room"].includes(kind) || (kind !== "street" && !isOwner(owner))) P(n, `shot ${i}: unknown place "${s.loc}"`);
+      if (kind === "place" ? !BOARD.places.includes(owner) : !["street", "house", "room"].includes(kind) || (kind !== "street" && !isOwner(owner))) P(n, `shot ${i}: unknown place "${s.loc}"`);
       if (!CAM_RE[kind]?.test(String(s.cam))) P(n, `shot ${i}: camera "${s.cam}" not usable at ${kind}`);
       if (!BOARD.lights.includes(s.light ?? "night")) P(n, `shot ${i}: light "${s.light}"`);
+      if (s.weather && !BOARD.weather.includes(s.weather)) P(n, `shot ${i}: weather "${s.weather}"`);
+      for (const a of s.animals ?? []) if (!BOARD.animals.includes(a.species)) P(n, `shot ${i}: animal "${a.species}" not in the kit`);
       for (const p of s.people ?? []) {
         if (!cast[p.id]) P(n, `shot ${i}: unknown person "${p.id}"`);
         const w = String(p.where);
-        if (!(/^window:[a-z0-9_]+:[0-3]$/.test(w) && isOwner(w.split(":")[1])) && !BOARD.where.includes(w)) P(n, `shot ${i}: ${p.id} where "${w}"`);
+        if (!(/^window:[a-z0-9_]+:[0-3]$/.test(w) && isOwner(w.split(":")[1])) && !BOARD.where.includes(w) && !/^street:\d$/.test(w) && !(kind === "place" && /^place:(center|left|right|back|far|door)$/.test(w))) P(n, `shot ${i}: ${p.id} where "${w}"`);
         if (/^room:/.test(w) && kind !== "room") P(n, `shot ${i}: ${p.id} in a room on a ${kind} shot`);
         if (p.pose && !BOARD.poses.includes(p.pose)) P(n, `shot ${i}: pose "${p.pose}"`);
         if (p.face && !BOARD.faces.includes(p.face)) P(n, `shot ${i}: face "${p.face}"`);

@@ -65,7 +65,7 @@ if (!fs.existsSync(path.join(out, "timeline.json"))) {
     prepare: {
       script, idea, lengthSec: 90, music: "A", ...(arg("scenes") ? { scenes: JSON.parse(fs.readFileSync(arg("scenes"), "utf8")) } : {}),
       // --storyboard <lib/storyboards name> [--prompts <shot prompts json>]: the storyboard drives the shots (runpod/worker.mjs)
-      ...(arg("storyboard") === "auto" ? { storyboard: { auto: true, capUsd: Number(arg("storyboard-usd", 0.25)), promptsCapUsd: Number(arg("prompts-usd", 0.3)) } } : arg("storyboard") ? { storyboard: { board: Object.values(await import(pathToFileURL(path.join(ENGINE, "lib/storyboards", `${arg("storyboard")}.js`)).href))[0], prompts: arg("prompts") ? JSON.parse(fs.readFileSync(arg("prompts"), "utf8")).prompts : null } } : {}),
+      ...(arg("storyboard") === "auto" ? { storyboard: { auto: true, capUsd: Number(arg("storyboard-usd", 0.25)), promptsCapUsd: Number(arg("prompts-usd", 0.3)), perShot: Number(arg("per-shot", 520)) } } : arg("storyboard") ? { storyboard: { board: Object.values(await import(pathToFileURL(path.join(ENGINE, "lib/storyboards", `${arg("storyboard")}.js`)).href))[0], prompts: arg("prompts") ? JSON.parse(fs.readFileSync(arg("prompts"), "utf8")).prompts : null } } : {}),
       director: { provider: "anthropic", model: "claude-sonnet-5-5", ...(haveDirection ? { stored: await st.signGet("direction.json") } : {}) },
       builder: { provider: B.builder > 0 ? "anthropic" : "off", library, budget: { maxUsd: B.builder } }, // --builder-usd 0: the kit only, no design call
       review: B.review > 0 ? { provider: "anthropic", model: "claude-haiku-5-5", budget: { maxUsd: B.review } } : { provider: "off" }, // --review-usd 0: no AI shot review (the free checks + still gate stay)

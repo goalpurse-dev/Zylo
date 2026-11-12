@@ -39,3 +39,17 @@ test("progress stages + the storyboard failures refund as story failures", () =>
   assert.deepEqual(STAGES.map((x) => x.stage), ["queued", "voice", "storyboard", "plan", "prompts", "checks", "stills", "mix", "render", "finish"]);
   for (const c of ["STORYBOARD_FAILED", "STORYBOARD_CHECKS", "KIT_UNSUPPORTED"]) { assert.ok(NO_RETRY.has(c)); assert.equal(failReason(c).kind, "story"); }
 });
+
+test("the kit manifest (boardKit.js) lists exactly the engine's animated actions, and its animals exist in the animal kit", async () => {
+  const { BOARD_KIT } = await import("../../../../supabase/functions/_shared/blockyWorlds/boardKit.js");
+  const { BOARD_ACTIONS } = await import("../lib/boardActions.js");
+  assert.deepEqual([...BOARD_KIT.actions].sort(), Object.keys(BOARD_ACTIONS).sort());
+  const { resolveAnimal } = await import("../page/kit/animals/species.js");
+  for (const a of BOARD_KIT.animals) assert.ok(resolveAnimal(a), a);
+});
+
+test("a storyboard line in the park with a crowd cheering, a dog and rain passes validation", async () => {
+  const { validateStoryboard } = await import("../lib/storyboardDirector.js");
+  const board = { bible: { homes: { me: 0 } }, lines: [{ line: 0, place: "place:park", shots: [{ loc: "place:park", light: "day", cam: "place_wide", weather: "rain", people: [{ id: "me", where: "place:center", pose: "cheer" }], animals: [{ species: "dog", where: "place:left", action: "run" }], acts: [{ k: "cheer" }, { k: "rain:falls" }, { k: "animal:move" }] }] }] };
+  assert.deepEqual(validateStoryboard(board, { lines: ["We cheered in the rain as the dog ran."], cast: { me: {} } }), []);
+});

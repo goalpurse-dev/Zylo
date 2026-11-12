@@ -45,6 +45,12 @@ export const BOARD_ACTIONS = Object.freeze({
   "twitch:eye": "the giant eyelid twitches",
   "arrive:monster": "the Peeker strides up the street and kneels at a window",
   "hide:curtains": "people lean to the glass, almost look, then duck back and yank the curtain shut",
+  // the kit expansion (2026-11-12): weather, crowds, animals
+  "rain:falls": "rain pours down in streaks",
+  "snow:falls": "snowflakes drift down",
+  "cheer": "people throw their arms up and cheer",
+  "run": "a person runs",
+  "animal:move": "the animal walks, runs or hops (its own gait)",
 });
 
 // [regex on the narration, the keys that show it]: physical action verbs only (states like "has" and thoughts like
@@ -81,6 +87,11 @@ export const VERBS = Object.freeze([
   [/\bpeeked\b/i, ["cover:eyes", "peek:curtains"]],
   [/\btwitched\b/i, ["twitch:eye"]],
   [/\b(said|says)\b/i, ["talk"]],
+  [/\b(rain(ed|ing|s)?|pour(ed|ing)|drizzl\w*)\b/i, ["rain:falls"]],
+  [/\b(snow(ed|ing|s)?)\b/i, ["snow:falls"]],
+  [/\b(cheer(ed|ing|s)?|clapp(ed|ing))\b/i, ["cheer"]],
+  [/\b(ran|runs|running|raced|chased|sprinted|dashed)\b/i, ["run", "walk", "animal:move"]],
+  [/\b(barked|meowed|purred|hopped|scampered|trotted|galloped|flapped|waddled|slithered)\b/i, ["animal:move"]],
 ]);
 
 /** the action verbs of a line: [{ verb, keys }] (quoted speech dropped) */
