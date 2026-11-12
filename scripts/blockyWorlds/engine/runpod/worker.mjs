@@ -302,7 +302,7 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
   // (lib/storyboardDirector.js: the bible, then every scene in parallel) WHILE the voice is made; its spend is the director's
   // THE EARLY KIT CHECK (2026-11-12): a story that leans on a thing the board kit can't show stops HERE, before the voice is
   // bought (the server runs the same check before the charge: _shared/blockyWorlds/kitCheck.js, "Fix it")
-  if (p.storyboard?.auto) { const kc = kitCheck(script); if (!kc.ok) throw coded("KIT_UNSUPPORTED", `the story needs ${kc.missing.map((m) => `"${m.word}" (${m.kind})`).join(", ")}, which our board kit can't film yet`); }
+  if (p.storyboard?.auto) { const kc = kitCheck(script, { boardOnly: p.storyboard.maxFallback === 0 }); /* board-only: an unknown noun in a must-have spot is a miss too */ if (!kc.ok) throw coded("KIT_UNSUPPORTED", `the story needs ${kc.missing.map((m) => `"${m.word}" (${m.kind})`).join(", ")}, which our board kit can't film yet`); }
   // the voice waits for the FINAL lines (the storyboard may reword an unfilmable line: the take must speak the new words)
   let linesFinal = () => {}; const linesReady = p.storyboard?.auto ? new Promise((r) => { linesFinal = r; }) : null;
   // the storyboard's record for the free replay (dev/simple/replayStoryboard.mjs): the board, its problems, the rewrites
@@ -312,7 +312,7 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
     if (!process.env.ANTHROPIC_KEY) throw coded("NOT_CONFIGURED", "no Anthropic key for the storyboard director");
     await post("progress", { stage: "storyboard", pct: 4 });
     const r = await directStoryboard({ apiKey: process.env.ANTHROPIC_KEY, script, cast: early.cast ?? {}, scenes: early.scenes ?? p.scenes ?? null, title: script.title ?? "", capUsd: Number(p.storyboard.capUsd) || 0.25, maxFallback: Number.isFinite(Number(p.storyboard.maxFallback)) && p.storyboard.maxFallback !== null ? Number(p.storyboard.maxFallback) : null, log: (m) => console.log(m),
-      kitCheckFn: (ls) => kitCheck(ls), onLinesFinal: (L, rw) => { if (rw.length) { script.lines = script.lines.map((l, i) => ({ ...l, text: L[i] })); console.log(`storyboard: ${rw.length} line(s) reworded before the voice: ${rw.map((x) => `#${x.line + 1}`).join(", ")}`); } linesFinal(rw); } });
+      kitCheckFn: (ls) => kitCheck(ls, { boardOnly: p.storyboard.maxFallback === 0 }), onLinesFinal: (L, rw) => { if (rw.length) { script.lines = script.lines.map((l, i) => ({ ...l, text: L[i] })); console.log(`storyboard: ${rw.length} line(s) reworded before the voice: ${rw.map((x) => `#${x.line + 1}`).join(", ")}`); } linesFinal(rw); } });
     await saveBoard({ board: r.board, problems: r.problems, rewrites: r.rewrites, lines: r.lines, fellBack: r.fellBack });
     spend.directorUsd += r.costUsd; spend.plannedDirectorUsd += r.costUsd;
     console.log(`storyboard: ${r.board.lines.length} lines, ${r.fellBack.length} on the engine planner (${r.ms} ms, $${r.costUsd})`);

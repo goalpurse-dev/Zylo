@@ -82,3 +82,14 @@ test("the writers get the swap as a hint (the plan writer's picked idea, the lib
   assert.match(index, /pickForUser\(LAUNCH_BOARD \? fittingWithSwap\(cands \?\? \[\]\) : cands \?\? \[\], IDEAS_PER_BATCH, mood\)/);
   assert.ok(BOARD_KIT.props.length > 0);
 });
+
+test("kitCheck unknown nouns (2026-11-12): a noun the kit doesn't know in a must-have spot warns; board-only makes it a miss; gate + leash are kit props now", async () => {
+  const { kitCheck } = await import("../supabase/functions/_shared/blockyWorlds/kitCheck.js");
+  const lines = ["In this town, nobody touches the old flute.", "You see, the flute sings at night.", "Then I went home.", "The end."];
+  const warn = kitCheck(lines), hard = kitCheck(lines, { boardOnly: true });
+  assert.equal(warn.ok, true); assert.ok(warn.warnings.some((w) => w.word === "flute" && /unknown/.test(w.why)));
+  assert.equal(hard.ok, false); assert.ok(hard.missing.some((m) => m.word === "flute"));
+  assert.equal(kitCheck(["A hundred leashes hung empty on the gate.", "The gate stayed shut."], { boardOnly: true }).ok, true);
+  // a card's single text keeps the warnings only (the idea picker's fit count does not change)
+  assert.equal(kitCheck(["a houseplant that eats the carpet"]).ok, true);
+});

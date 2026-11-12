@@ -37,7 +37,7 @@ export function scenesOf(tl0, board) {
   for (const [n] of (tl0.lines ?? []).entries()) {
     const b = board.lines.find((x) => x.line === n);
     let sc;
-    if (b.keep) { const o = sceneOf(old, n); sc = { ...o, id: o.id, location: o.location, time: o.time }; }
+    if (b.keep) { const o = sceneOf(old, n) ?? { ...(out.at(-1) ?? {}), id: `k${n}`, location: out.at(-1)?.location ?? "street", time: out.at(-1)?.time ?? "day", setPieces: [] }; sc = { ...o, id: o.id, location: o.location, time: o.time }; } // no planned scene for a kept line: the one before (never a crash)
     else { const time = b.shots[0].light ?? "night"; sc = { id: `b${n}`, location: b.place ?? "street", time, cast: [], happens: "storyboard", board: true }; }
     const last = out.at(-1);
     const same = last && (sc.board ? last.board && last.location === sc.location && last.time === sc.time : last.id === sc.id);
@@ -137,7 +137,14 @@ export function cutPass(shots, captions = []) {
   const out = [];
   const tooSame = (type) => out.length >= 2 && out.at(-1).camera === type && out.at(-2).camera === type;
   for (const s of shots) {
-    if (!s.board) { out.push(s); continue; }
+    if (!s.board) {
+      // an old-planner shot after two board shots of its camera type: the board shot before it takes another angle
+      const p = out.at(-1);
+      if (tooSame(s.camera) && p?.board) { const alt = [p.board.cam, ...SIBLINGS(p.board)].find((x) => camTypeOf(x) !== s.camera); if (alt) { p.board.cam = alt; p.camera = camTypeOf(alt); } }
+      out.push(s); continue;
+    }
+    // a director's cut shorter than the minimum (0.32 s in the dogs replay): it joins the shot before it on the same line
+    if (s.end - s.start < PACE.minShot && out.at(-1)?.board && out.at(-1).line === s.line) { out.at(-1).end = s.end; continue; }
     const dur = s.end - s.start, first = !out.length;
     const L = s.start < PACE.earlySec ? PACE.earlyMaxShot : PACE.maxShot;
     // the cut points: the very first cut by PACE.firstCutSec, then even parts no longer than L and no shorter than minShot
@@ -195,7 +202,7 @@ function boardShot(s, { n, l, t0, t1, words, board, seed, part, subjects = [] })
     start: r3(t0), end: r3(t1), line: n, lines: [n], part, set: "board", light: s.light ?? "night", camera: camType,
     insert: null, marker: null, seed,
     text: inShot.map((w) => w.word).join(" ") || l.text,
-    board: { loc: s.loc, cam: s.cam, people: s.people ?? [], monster: s.monster ?? null, acts: (s.acts ?? []).map((a) => ({ ...a, at: at(a.at) })), houses, before: housesAt(board, n - 1), homes: board.bible.homes }, // before: the houses as the line starts (what the wind rips off, the sock pulled)
+    board: { loc: s.loc, cam: s.cam, people: s.people ?? [], monster: s.monster ?? null, acts: (s.acts ?? []).map((a) => ({ ...a, at: at(a.at) })), ...(s.animals?.length ? { animals: s.animals } : {}), ...(s.props?.length ? { props: s.props } : {}), ...(s.weather ? { weather: s.weather } : {}), houses, before: housesAt(board, n - 1), homes: board.bible.homes }, // before: the houses as the line starts (what the wind rips off, the sock pulled)
   };
   Object.assign(shot, manifest(shot.board));
   shot.board.shows = showsOf(shot.board);
@@ -225,11 +232,12 @@ export function housesInView(b) {
   const h = b.loc.split(":")[1];
   return h ? [h] : [];
 }
+const FACE_OK = new Set(["neutral", "happy", "sad", "scared", "surprised", "angry", "sleepy", "smirk", "cry", "excited", "shush", "yell", "sneeze"]); // plan.mjs EXPRS
 export function manifest(b) {
   const keys = new Set(b.acts.map((a) => a.k));
   const actors = b.people.map((p) => {
     const act = b.acts.find((a) => a.who === p.id && HOLD[a.k]);
-    return { id: p.id, spot: "center", pose: ({ cover_mouth: "scared" })[p.pose] ?? p.pose ?? (p.where === "room:bed" && !p.awake ? "sleep" : "stand"), expr: ({ worried: "scared", thinking: "neutral", grin: "happy", shocked: "surprised" })[p.face] ?? p.face ?? "neutral", facing: "camera", hold: act ? HOLD[act.k] : null, face: p.face ?? "neutral" };
+    return { id: p.id, spot: "center", pose: ({ cover_mouth: "scared" })[p.pose] ?? p.pose ?? (p.where === "room:bed" && !p.awake ? "sleep" : "stand"), expr: ({ worried: "scared", thinking: "neutral", grin: "happy", shocked: "surprised", laugh: "happy", crying: "cry", teary: "sad", determined: "neutral" })[p.face] ?? (FACE_OK.has(p.face) ? p.face : "neutral"), facing: "camera", hold: act ? HOLD[act.k] : null, face: p.face ?? "neutral" };
   });
   const objects = [];
   const add = (o) => { if (!objects.some((x) => x.name === o.name && x.state === o.state)) objects.push({ ...o, facing: "camera", spot: "back" }); };
@@ -239,6 +247,8 @@ export function manifest(b) {
   const changing = [...keys].some((k) => /^(rip:curtains|pull:sock|lick:glass)$/.test(k)); // the line's change happens on screen: the old state is drawn too
   for (const h of inView) for (const st of [houseOf(b.houses, h), ...(changing ? [houseOf(b.before, h)] : [])]) { if (!st) continue; if (COVER_OBJ[st.cover]) add(COVER_OBJ[st.cover]); if (st.bricks) add({ name: "wall" }); }
   for (const k of keys) for (const o of ACT_OBJ[k] ?? []) add(o);
+  // the kit expansion on screen: its animals (pets) are things the checks can see
+  for (const a of b.animals ?? []) add({ name: a.species, state: "on", pet: a.species }); /* props: board props, not engine catalog objects (their words are in board.shows) */
   const m = b.monster;
   const monsterState = m ? { spot: "back", state: m.state === "flee" ? "flee" : m.state === "lurk" ? "lurk" : "reveal", eye: m.eye ?? "stare", eyeAt: b.acts.find((a) => /:eye$/.test(a.k))?.at ?? 0 } : null;
   const setState = keys.has("glow:windows") || keys.has("lights_on:windows") ? { windows: "lit" } : keys.has("dark:windows") ? { windows: "dark" } : null;

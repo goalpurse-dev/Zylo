@@ -223,12 +223,62 @@ export function scanText(text, kit = BOARD_KIT, opts = {}) {
   return { needs, tags };
 }
 
+// ------------------------------------------------------------------------------------------------ unknown nouns
+// A concrete noun the kit doesn't know (not a kit thing, not in NOT_IN_KIT): found after a determiner, a possessive or a
+// number ("the gate", "his leash", "a hundred leashes", "the rusty key"), skipping up to two adjectives. Everyday words the
+// board never has to build are not nouns to film: people, the body, time, places the kit has, abstract words.
+const DETS = new Set("the a an his her my their our your its these those every each two three four five six seven eight nine ten twelve hundred thousand dozen some any another".split(" ")); // not that / this / one / no / all / both: mostly pronouns there ("no one", "all of", "that the")
+const FUNCTION = new Set("and or but with without who whom whose which what when where why how the a an that this than then has have had get gets got keep keeps follow follows step steps stand stands fall falls roll rolls topple can could will would must should may might shall is are was were be been being do does did not of for from into onto upon about above below under over across through around near behind beside between against along among within".split(" "));
+const ADJS = new Set("big small little tiny huge giant enormous long short tall low high old new young rusty shiny dusty dirty clean empty full broken open closed shut wooden metal iron golden silver plastic paper glass stone red blue green yellow orange purple pink white black brown grey gray dark bright light heavy soft hard warm cold hot wet dry quiet loud secret magic strange weird odd funny scary spooky creepy angry happy sad sleepy lazy brave nosy shortest longest tallest biggest smallest best worst first last next only same other whole entire extra spare favorite favourite own real fake round square flat thin fat thick wide narrow deep sharp sticky fluffy fuzzy hairy bald striped spotted lucky unlucky special normal ordinary single double half front back top bottom left right middle inner outer upper lower north south east west main local entire every very so too more most much many few out up off down away over just still even almost nearly really quite wild grown grown-up rude youngest oldest".split(" "));
+const EVERYDAY = new Set(("rule rules law laws town towns city time times day days night nights week weeks month months year years morning mornings evening afternoon noon midnight minute minutes second seconds hour hours moment moments age " +
+  "way ways thing things stuff end ends start beginning part parts side sides rest top bottom middle edge kind sort lot lots bit bits piece pieces number numbers amount " +
+  "idea ideas plan plans problem problems trouble answer question reason secret secrets truth joke jokes word words name names story stories life lives luck deal deals trick tricks game games turn turns chance point points " +
+  "line lines list job jobs work fun fear rule's price cost rent fine prize reward punishment promise mistake mess noise noises sound sounds voice voices breath shout scream silence song songs laugh laughter smile " +
+  "people person persons kid kids child children boy boys girl girls man men woman women mom mum mother dad father parent parents grandpa grandma gran granny grandad grandfather grandmother brother brothers sister sisters baby babies " +
+  "family families friend friends neighbour neighbours neighbor neighbors teacher teachers coach mayor everyone everybody nobody somebody someone anyone guy guys lady ladies folks crowd crowds owner owners stranger strangers " +
+  "head heads hand hands face faces eye eyes nose noses mouth mouths ear ears arm arms leg legs foot feet finger fingers hair belly bellies tummy chin chins knee knees shoulder shoulders toe toes tongue tongues teeth tooth tail tails paw paws body back neck cheek cheeks lip lips heart " +
+  "house houses home homes room rooms window windows door doors wall walls floor floors roof roofs street streets road roads yard yards garden gardens porch porches kitchen kitchens bedroom bedrooms bed beds sofa couch table tables chair chairs lamp lamps light lights " +
+  "school schools class classroom shop shops store stores park parks square woods forest tree trees grass path paths pond bench benches sky moon sun star stars cloud clouds ground air water dark darkness shadow shadows " +
+  "turn way place places spot spots inside outside corner corners front everything nothing something anything ones bunch group team " +
+  "dog dogs cat cats pane panes glass inch inches mile miles meter meters grown-up grown-ups grownup grownups adult adults").split(/\s+/));
+// words a determiner can precede that are not nouns (adverbs, past-tense verbs after "that")
+const NOT_NOUN = /^(?:fast|slow|slowly|quickly|soon|now|then|here|there|again|ever|never|always|once|twice|already|yet)$|ed$/;
+const NOUN_MAX = 3; // a noun phrase head within 3 words of its determiner
+function nounCandidates(text) {
+  const t = words(text).split(/\s+/).filter(Boolean), out = [];
+  for (let i = 0; i < t.length; i++) {
+    if (!DETS.has(t[i])) continue;
+    let j = i + 1, skipped = 0;
+    while (j < t.length && (ADJS.has(t[j]) || DETS.has(t[j]) || (/est$/.test(t[j]) && t[j].length > 5)) && skipped < NOUN_MAX - 1) { j++; skipped++; } /* superlatives (rudest, youngest) are adjectives */
+    const w = t[j]; if (!w || w.length < 3 || /'/.test(w) || NOT_NOUN.test(w) || FUNCTION.has(w) || DETS.has(w) || /^(?:one|all|no|that|this|both)$/.test(w) || /(?:ing|less|ful|ous|ive|able|ible|ant)$/.test(w)) continue; /* adjectives by their ending (glowing, cloudless, important) */
+    out.push(w);
+  }
+  return out;
+}
+/** the unknown concrete nouns of the lines: [{ word, lines }] (kit things, NOT_IN_KIT words, names and everyday words left out) */
+export function unknownNouns(lines, kit = BOARD_KIT) {
+  const covered = coveredBy(kit), v = kitView(kit);
+  const known0 = [...covered, ...v.props.flatMap((p) => p.words.map((w) => String(w).toLowerCase())), ...v.animals, ...v.weather, ...v.places.map((p) => p.id)];
+  const known = new Set([...known0, ...known0.map((w) => singular(w))]);
+  const names = new Set(lines.flatMap((l) => [...String(l).matchAll(/(?<![.!?]\s|^)\b([A-Z][a-z]+)\b/g)].map((m) => m[1].toLowerCase())));
+  const seen = new Map();
+  lines.forEach((text, i) => {
+    for (const w of nounCandidates(text)) {
+      const k = singular(w);
+      if (EVERYDAY.has(w) || EVERYDAY.has(k) || known.has(w) || known.has(k) || NOT.has(w) || NOT.has(k) || names.has(w) || kitHas(w) || ANIMAL_SYNONYMS[w]) continue;
+      const e = seen.get(k) ?? { word: k, kind: "unknown", lines: [] }; if (!e.lines.includes(i)) e.lines.push(i); seen.set(k, e);
+    }
+  });
+  return [...seen.values()];
+}
+
 // ------------------------------------------------------------------------------------------------ the one check
 const MUST = (lines, n) => lines.length >= 2 || lines.some((i) => i <= 1 || i >= n - 2);
 export const PREMISE_SHARE = 0.34;
 const PREMISE_KINDS = new Set(["place", "world", "creature"]);
-export function kitCheck(scriptOrLines, { card = null, kit = BOARD_KIT } = {}) {
-  const lines = (Array.isArray(scriptOrLines) ? scriptOrLines : scriptOrLines?.lines ?? []).map((l) => String(l?.text ?? l));
+export function kitCheck(scriptOrLines, { card = null, kit = BOARD_KIT, boardOnly = false } = {}) {
+  const raw = Array.isArray(scriptOrLines) ? scriptOrLines : scriptOrLines?.lines ?? [];
+  const lines = raw.map((l) => String(l?.text ?? l));
   const n = lines.length, seen = new Map();
   const covered = coveredBy(kit);
   const add = (kind, word, i) => { const k = singular(String(word).toLowerCase().trim()); const e = seen.get(k) ?? { word: k, kind, lines: [] }; if (!e.lines.includes(i)) e.lines.push(i); seen.set(k, e); };
@@ -243,7 +293,12 @@ export function kitCheck(scriptOrLines, { card = null, kit = BOARD_KIT } = {}) {
   const missing = [], warnings = [];
   for (const e of seen.values()) { e.lines.sort((a, b) => a - b); (MUST(e.lines, n) ? missing : warnings).push(e); }
   const found = []; lines.forEach((l, i) => { for (const tok of words(l).split(/\s+/)) { const id = kitHas(tok); if (!id) continue; const f = found.find((x) => x.id === id); if (f) { if (!f.lines.includes(i)) f.lines.push(i); } else found.push({ id, kind: (ALIAS.get(tok) ?? ALIAS.get(singular(tok)))?.kind ?? "prop", lines: [i] }); } });
+  // UNKNOWN NOUNS (2026-11-12): a noun the kit doesn't know in a must-have position (the first / last 2 lines, the
+  // escalation, or on 2+ lines) is a warning, "unknown - not in kit"; board-only (boardOnly: true) makes it a hard miss
+  const escal = new Set(raw.map((l, i) => (/^(until|escalation|adults|trigger)$/.test(String(l?.part ?? l?.beat ?? "")) ? i : -1)).filter((i) => i >= 0));
+  const unknown = unknownNouns(lines, kit).filter((e) => !seen.has(e.word) && (MUST(e.lines, n) || e.lines.some((i) => escal.has(i))));
+  for (const e of unknown) (boardOnly ? missing : warnings).push({ ...e, why: "unknown - not in kit" });
   const bad = new Set(missing.flatMap((e) => e.lines));
   const premise = n > 0 && (missing.some((e) => PREMISE_KINDS.has(e.kind) && e.lines.some((i) => i <= 1)) || bad.size / n > PREMISE_SHARE);
-  return { ok: !missing.length, missing, warnings, found, premise };
+  return { ok: !missing.length, missing, warnings, found, premise, unknown };
 }

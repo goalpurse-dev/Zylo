@@ -77,3 +77,19 @@ test("fixCameras: a street camera on a park shot becomes the place's wide camera
   assert.equal(fixCameras(board), 2);
   assert.deepEqual(board.lines[0].shots.map((s) => s.cam), ["place_wide", "street_wide", "face:me"]);
 });
+test("board-only: a line the director KEPT for the old planner is a problem (repair, then KIT_UNSUPPORTED); not board-only it stays a kept line", async () => {
+  const keepMock = (fixOnRepair) => async (url, init) => {
+    const b = JSON.parse(init.body);
+    if (b.max_tokens === 1) return reply([]);
+    if (/WORLD BIBLE of a vertical/.test(b.system)) return reply({ homes: K.bible.homes, houses: K.bible.houses, events: K.bible.events, rule: K.bible.rule });
+    if (/You fix single narration lines/.test(b.system)) return reply([]);
+    const ask = b.messages[0].content.at(-1).text, ids = ask.match(/lines ([\d, ]+) only/)[1].split(",").map(Number), repair = /Fix these problems/.test(ask);
+    const filmed = (n) => { const e = JSON.parse(JSON.stringify(K.lines.find((l) => l.line === n))); if (!e.keep) return e; const z = JSON.parse(JSON.stringify(K.lines.find((l) => l.line === 0))); return { ...z, line: n, shots: z.shots.slice(0, 1) }; }; // #2 keeps a few lines itself: filmed here
+    return reply(ids.map((n) => (n === 3 && !(repair && fixOnRepair) ? { line: n, keep: true } : filmed(n))));
+  };
+  const relaxed = await directStoryboard({ apiKey: "x", script, cast, scenes, fetchFn: keepMock(false) });
+  assert.ok(relaxed.board.lines.find((l) => l.line === 3).keep);
+  await assert.rejects(directStoryboard({ apiKey: "x", script, cast, scenes, maxFallback: 0, fetchFn: keepMock(false) }), (e) => e.code === "KIT_UNSUPPORTED");
+  const fixed = await directStoryboard({ apiKey: "x", script, cast, scenes, maxFallback: 0, fetchFn: keepMock(true) });
+  assert.ok(!fixed.board.lines.find((l) => l.line === 3).keep);
+});

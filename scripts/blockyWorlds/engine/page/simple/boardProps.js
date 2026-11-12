@@ -65,6 +65,10 @@ export const PROPS = Object.freeze({
   statue: (g) => { box(g, [0.9, 0.9, 0.9], [0, 0.45, 0], mat("#b8b2a6")); const s = mat("#9fb3a6"); box(g, [0.5, 0.9, 0.3], [0, 1.35, 0], s); box(g, [0.42, 0.42, 0.42], [0, 2.02, 0], s); box(g, [0.08, 0.08, 0.14], [0, 2.0, 0.27], s); for (const x of [-0.33, 0.33]) box(g, [0.14, 0.7, 0.16], [x, 1.4, 0], s); },
   fountain: (g) => { cyl(g, 1.4, 1.5, 0.45, [0, 0.22, 0], mat("#c9c3b6")); cyl(g, 1.25, 1.25, 0.1, [0, 0.4, 0], mat("#5fb3e6", { rough: 0.1 })); cyl(g, 0.12, 0.16, 1.1, [0, 0.8, 0], mat("#c9c3b6")); ball(g, 0.18, [0, 1.42, 0], mat("#bfe6ff", { rough: 0.1 }), { sy: 1.6 }); },
   basket: (g) => { cyl(g, 0.16, 0.12, 0.14, [0, 0.07, 0], mat("#c9a36a")); },
+  // a garden gate in a short picket fence (2.4 m), with a few leashes hanging on it (the dogs story, 2026-11-12)
+  gate: (g) => { const w = mat(C.white); box(g, [2.4, 0.08, 0.06], [0, 0.85, 0], w); box(g, [2.4, 0.08, 0.06], [0, 0.35, 0], w); for (let i = 0; i < 9; i++) { const x = -1.15 + i * 0.29; if (Math.abs(x) < 0.3) continue; box(g, [0.1, 1.05, 0.05], [x, 0.52, 0.04], w); } const gt = mat(C.wood); box(g, [0.56, 0.95, 0.06], [0, 0.5, 0.05], gt); box(g, [0.06, 0.06, 0.06], [0.22, 0.6, 0.1], mat(C.dark)); for (let i = 0; i < 3; i++) box(g, [0.035, 0.42, 0.02], [-0.9 + i * 0.12, 0.62, 0.1], mat([C.red, C.blue, C.green][i])); },
+  // a coiled dog leash: a strap loop + a clip
+  leash: (g) => { const m = mat(C.red); for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; box(g, [0.06, 0.02, 0.03], [0.12 * Math.cos(a), 0.012, 0.12 * Math.sin(a)], m).rotation.y = -a; } box(g, [0.05, 0.03, 0.03], [0.17, 0.015, 0], mat(C.grey)); },
 });
 /** a prop by name (an unknown name: null); its base at y = 0 */
 export function makeProp(name) { const f = PROPS[name]; if (!f) return null; const g = new THREE.Group(); g.name = `prop:${name}`; f(g); g.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } }); return g; }

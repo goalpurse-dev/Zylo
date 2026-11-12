@@ -1027,6 +1027,7 @@ export function planVideo({ script, words, idea = {}, lengthSec = null, directio
     try { tl.hero = heroSignature(tl); tl.props = propPass(tl, { check: check4 }); tl.props.flyFixed = flyPass(tl, { check: check4 }); }
     catch (e) { tl.props = { error: String(e?.message ?? e) }; }
     // SCENES + WORLD STATE (lib/scenes.js, lib/scenePass.js): every shot inside its scene, the state on screen, the set pieces
+    if (Array.isArray(scenes)) scenes = { scenes }; // a bare scene list (autoRun, the worker job) counts too: it was ignored before 2026-11-12
     if (scenes?.scenes?.length) { const v = validateScenes(scenes, { lines: script.lines }); tl.sceneReport = scenePass(tl, { ...scenes, scenes: v.scenes }, { check: check4, problems: (t) => ({ timeline: checkTimeline(t), visuals: checkVisuals(t, script), subjects: checkSubjects(t), production: checkProduction(t) }) }); tl.sceneReport.repaired = v.problems; tl.sceneReport.flyFixed = flyPass(tl, { check: check4 }); }
     try { tl.pacing = pacePass(tl, { check: check4, minPiece: PACE.minShot }); } catch (e) { tl.pacing = { error: String(e?.message ?? e) }; }
     try { tl.eyes = eyePass(tl); } catch (e) { tl.eyes = { error: String(e?.message ?? e) }; } // the monster's eye states on their words

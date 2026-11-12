@@ -137,12 +137,17 @@ export async function directStoryboard({ apiKey, script, cast, scenes, title = "
   const board = { id: "auto", title, bible, kit: {}, lines: parts.flatMap((p) => (Array.isArray(p.data) ? p.data : [])) };
   log(`storyboard scenes: ${groups.length} calls in parallel, ${board.lines.length} lines (${Math.max(...parts.map((p) => p.ms ?? 0))} ms)`);
   // 3. validation + one repair of the failing lines, then the engine fallback
-  fixCameras(board); let problems = validateStoryboard(board, { lines, cast });
+  // BOARD-ONLY (maxFallback 0): a line the director KEPT for the old planner is a problem too (the shakedown 4 retry kept
+  // 16 of 43 lines that way: in board-only mode they would have been old-planner shots); it goes through the repair and
+  // the rewording like any other, and fails the run only if it still can not be filmed. The camera fix runs first, free.
+  const boardOnly = maxFallback === 0;
+  const check = () => { fixCameras(board); const p = validateStoryboard(board, { lines, cast }); if (boardOnly) for (const b of board.lines) if (b.keep && !b.fallback) p.push({ line: b.line, problem: "kept for the old planner, but this video is board-only: film it with the kit (a line with nothing to show = a face close-up of who speaks or who it is about)" }); return p; };
+  let problems = check();
   if (problems.length) {
     const bad = [...new Set(problems.map((p) => p.line))];
     const rep = spend(await call({ apiKey, fetchFn, maxTokens: 450 * bad.length + 300, system: SHOT_SYSTEM, content: ask(bad, ` Fix these problems (use ONLY the kit vocabulary; a line the kit can't show is {"line":n,"keep":true}): ${JSON.stringify(problems)}`) }).catch((e) => ({ data: null, costUsd: e.costUsd ?? 0 })));
     for (const e of Array.isArray(rep.data) ? rep.data : []) { board.lines = board.lines.filter((l) => l.line !== e.line); board.lines.push(e); }
-    fixCameras(board); problems = validateStoryboard(board, { lines, cast });
+    problems = check();
   }
   // THE LINE REPAIR (owner: every problem = a check + an auto-fix, a clean failure only if unfixable): the lines still
   // unfilmable are REWORDED to kit things (one cheap call, lines only), re-checked (kitCheck + the director again for just
@@ -157,13 +162,13 @@ export async function directStoryboard({ apiKey, script, cast, scenes, title = "
       const ids = fixed.map((x) => x.line), numbered2 = lines.map((t, i) => `#${i} ${t}`).join("\n");
       const again = spend(await call({ apiKey, fetchFn, maxTokens: 450 * ids.length + 300, system: SHOT_SYSTEM, content: [{ type: "text", text: prefix }, { type: "text", text: `These lines were REWORDED so the kit can film them (use the new text):\n${ids.map((n) => `#${n} ${lines[n]}`).join("\n")}\nWrite the storyboard entries for lines ${ids.join(", ")} only. The whole story now:\n${numbered2}` }] }).catch((e) => ({ data: null, costUsd: e.costUsd ?? 0 })));
       for (const e of Array.isArray(again.data) ? again.data : []) { if (!ids.includes(e.line)) continue; board.lines = board.lines.filter((l) => l.line !== e.line); board.lines.push(e); }
-      fixCameras(board); problems = validateStoryboard(board, { lines, cast });
+      problems = check();
       log(`storyboard repair: ${fixed.length} of ${bad.length} line(s) reworded to kit things; ${new Set(problems.map((p) => p.line)).size} still unfilmable`);
     }
   }
   onLinesFinal(lines.slice(), rewrites); // the voice can be made now (the final wording)
   const fellBack = [...new Set(problems.map((p) => p.line))];
-  for (const n of fellBack) { board.lines = board.lines.filter((l) => l.line !== n); board.lines.push({ line: n, keep: true, fallback: problems.filter((p) => p.line === n).map((p) => p.problem) }); }
+  for (const n of fellBack) { const was = board.lines.find((l) => l.line === n && !l.keep) ?? null; board.lines = board.lines.filter((l) => l.line !== n); board.lines.push({ line: n, keep: true, fallback: problems.filter((p) => p.line === n).map((p) => p.problem), ...(was ? { was } : {}) }); } /* was: the director's own entry, kept for the free replay */
   board.lines.sort((a, b) => a.line - b.line);
   // maxFallback: how many lines may go to the old planner (the server's BLOCKY_WORLDS_BOARD_ONLY sends 0: board only); default half
   if (fellBack.length > (Number.isFinite(maxFallback) ? maxFallback : lines.length / 2)) throw Object.assign(new Error(`the board kit can't show ${fellBack.length} of ${lines.length} lines: ${fellBack.slice(0, 6).map((n) => `#${n + 1} (${(problems.find((p) => p.line === n)?.problem ?? "no storyboard").slice(0, 80)})`).join("; ")}`), { code: "KIT_UNSUPPORTED", costUsd, fellBack, board, problems, rewrites });
