@@ -61,6 +61,9 @@ export const PROPS = Object.freeze({
   mask: (g) => { box(g, [0.2, 0.12, 0.03], [0, 0.06, 0], mat(C.purple)); },
   trophy: (g) => { cyl(g, 0.08, 0.04, 0.12, [0, 0.16, 0], mat(C.gold, { rough: 0.3 })); box(g, [0.1, 0.06, 0.1], [0, 0.03, 0], mat(C.dark)); },
   drum: (g) => { cyl(g, 0.16, 0.16, 0.16, [0, 0.08, 0], mat(C.red)); cyl(g, 0.165, 0.165, 0.01, [0, 0.165, 0], mat(C.white)); },
+  hat: (g) => { cyl(g, 0.14, 0.14, 0.02, [0, 0.01, 0], mat(C.dark)); cyl(g, 0.09, 0.09, 0.16, [0, 0.09, 0], mat(C.dark)); cyl(g, 0.092, 0.092, 0.03, [0, 0.04, 0], mat(C.red)); },
+  statue: (g) => { box(g, [0.9, 0.9, 0.9], [0, 0.45, 0], mat("#b8b2a6")); const s = mat("#9fb3a6"); box(g, [0.5, 0.9, 0.3], [0, 1.35, 0], s); box(g, [0.42, 0.42, 0.42], [0, 2.02, 0], s); box(g, [0.08, 0.08, 0.14], [0, 2.0, 0.27], s); for (const x of [-0.33, 0.33]) box(g, [0.14, 0.7, 0.16], [x, 1.4, 0], s); },
+  fountain: (g) => { cyl(g, 1.4, 1.5, 0.45, [0, 0.22, 0], mat("#c9c3b6")); cyl(g, 1.25, 1.25, 0.1, [0, 0.4, 0], mat("#5fb3e6", { rough: 0.1 })); cyl(g, 0.12, 0.16, 1.1, [0, 0.8, 0], mat("#c9c3b6")); ball(g, 0.18, [0, 1.42, 0], mat("#bfe6ff", { rough: 0.1 }), { sy: 1.6 }); },
   basket: (g) => { cyl(g, 0.16, 0.12, 0.14, [0, 0.07, 0], mat("#c9a36a")); },
 });
 /** a prop by name (an unknown name: null); its base at y = 0 */

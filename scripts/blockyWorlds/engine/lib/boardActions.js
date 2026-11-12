@@ -51,6 +51,9 @@ export const BOARD_ACTIONS = Object.freeze({
   "cheer": "people throw their arms up and cheer",
   "run": "a person runs",
   "animal:move": "the animal walks, runs or hops (its own gait)",
+  "touch": "a person reaches out and touches something (a statue's nose, a door, a hand)",
+  "bird:land": "a bird swoops down and lands on someone's head",
+  "bird:fly_off": "a bird takes off and flies away (with what it took)",
 });
 
 // [regex on the narration, the keys that show it]: physical action verbs only (states like "has" and thoughts like
@@ -65,7 +68,7 @@ export const VERBS = Object.freeze([
   [/\bbulging\b/i, ["bulge:curtains"]],
   [/\blost (her|his|my) cat\b/i, ["poke_out:cat"]],
   [/\bripped\b/i, ["rip:curtains"]],
-  [/\bflew\b/i, ["fly:curtains", "blow_off:blanket"]],
+  [/\bflew\b/i, ["fly:curtains", "blow_off:blanket", "bird:fly_off", "animal:move"]],
   [/\bgrabbed\b/i, ["grab:boards"]],
   [/\bnailed\b/i, ["nail:boards"]],
   [/\bfilled\b/i, ["press:eye"]],
@@ -92,6 +95,9 @@ export const VERBS = Object.freeze([
   [/\b(cheer(ed|ing|s)?|clapp(ed|ing))\b/i, ["cheer"]],
   [/\b(ran|runs|running|raced|chased|sprinted|dashed)\b/i, ["run", "walk", "animal:move"]],
   [/\b(barked|meowed|purred|hopped|scampered|trotted|galloped|flapped|waddled|slithered)\b/i, ["animal:move"]],
+  [/\b(touch(ed|es)?|booped|poked|tapped|patted)\b/i, ["touch"]],
+  [/\b(landed|lands|swooped)\b/i, ["bird:land"]],
+  [/\b(snatched|flew off|flew away with|took off)\b/i, ["bird:fly_off", "fly:curtains"]],
 ]);
 
 /** the action verbs of a line: [{ verb, keys }] (quoted speech dropped) */

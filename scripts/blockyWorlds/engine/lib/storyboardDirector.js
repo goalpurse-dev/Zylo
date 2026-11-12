@@ -17,7 +17,7 @@ export const BOARD_MODEL = "claude-sonnet-5-5";
 export const BOARD = Object.freeze({
   locs: ["street", "house:<owner>", "room:<owner>", "place:<school|woods|park|shop>"],
   cams: { street: ["town_wide", "street_wide", "street_end", "street_back", "sky_up", "eye_close", "houses:<a>:<b>", "front:<owner>"], house: ["house:<owner>", "front:<owner>", "window:<owner>:<0-3>", "cat:<owner>", "arrive:<owner>"], place: ["place_wide", "place_medium", "face:<person>"], room: ["room_wide", "room_window", "room_door", "room_side", "face:<person>", "peek:me", "cat_stare", "bed_top", "painting", "behind_window", "huddle_up", "pov_eye", "window_in"] },
-  where: ["place:<center|left|right|back|far|door>", "street:<0-9>", "window:<owner>:<0-3>", "room:window", "room:center", "room:door", "room:painting", "room:bed", "room:huddle0", "room:huddle1", "room:huddle2", "room:huddle3"],
+  where: ["place:<center|left|right|back|far|door>", "street:<0-9>", "on:<person> (an animal on someone's head)", "window:<owner>:<0-3>", "room:window", "room:center", "room:door", "room:painting", "room:bed", "room:huddle0", "room:huddle1", "room:huddle2", "room:huddle3"],
   monsterWhere: ["end", "street:<owner>", "window:<owner>:<0-3>", "roomwindow:<owner>"],
   eyes: ["stare", "squint", "twitch", "blink", "press"],
   poses: ["stand", "walk", "wave", "talk", "point", "scared", "look_up", "sneeze", "carry", "cover_mouth", "sleep", "cheer", "hide"],
@@ -103,8 +103,9 @@ async function call({ apiKey, system, content, maxTokens, fetchFn }) {
 }
 
 /** the whole automatic storyboard: bible, then every scene in parallel, validation, one repair, the engine fallback */
-export async function directStoryboard({ apiKey, script, cast, scenes, title = "", fetchFn = fetch, log = () => {}, capUsd = 0.25, maxFallback = null }) {
-  const t0 = Date.now(), lines = script.lines.map((l) => String(l.text ?? l));
+export const REWRITE_SYSTEM = `You fix single narration lines of a short kid's story video so a FIXED 3D kit can film them. Each line you get could not be filmed for the reason given. Rewrite ONLY its wording so every thing, place, creature and action in it is one the kit has, keeping the story's meaning, the narrator's voice, the facts later lines rely on, and about the same length (never longer than 16 words). Change as little as possible. Output ONLY a compact JSON array [{"line":n,"text":"..."}].`;
+export async function directStoryboard({ apiKey, script, cast, scenes, title = "", fetchFn = fetch, log = () => {}, capUsd = 0.25, maxFallback = null, onLinesFinal = () => {}, kitCheckFn = null }) {
+  const t0 = Date.now(), lines = script.lines.map((l) => String(l.text ?? l)), rewrites = [];
   const castText = Object.entries(cast).map(([id, c]) => `${id}: ${c.name} (${c.role})`).join("; ");
   const numbered = lines.map((t, i) => `#${i} ${t}`).join("\n");
   let costUsd = 0;
@@ -131,10 +132,28 @@ export async function directStoryboard({ apiKey, script, cast, scenes, title = "
     for (const e of Array.isArray(rep.data) ? rep.data : []) { board.lines = board.lines.filter((l) => l.line !== e.line); board.lines.push(e); }
     problems = validateStoryboard(board, { lines, cast });
   }
+  // THE LINE REPAIR (owner: every problem = a check + an auto-fix, a clean failure only if unfixable): the lines still
+  // unfilmable are REWORDED to kit things (one cheap call, lines only), re-checked (kitCheck + the director again for just
+  // those lines + the board validation); the voice is made only after (onLinesFinal)
+  let bad = [...new Set(problems.map((p) => p.line))];
+  if (bad.length && bad.length <= Math.max(8, Math.ceil(lines.length / 4))) {
+    const kitLine = `places: ${BOARD.places.join(", ")}, the street + its houses + their rooms; monster looks; animals: ${BOARD.animals.join(", ")}; props: ${BOARD.props.join(", ")}; weather: ${BOARD.weather.join(", ")}; actions: ${Object.keys(BOARD_ACTIONS).join(", ")}`;
+    const rw = spend(await call({ apiKey, fetchFn, maxTokens: 90 * bad.length + 200, system: REWRITE_SYSTEM, content: `STORY "${title}"\nTHE KIT: ${kitLine}\nTHE WHOLE STORY:\n${numbered}\nFIX THESE LINES: ${JSON.stringify(bad.map((n) => ({ line: n, text: lines[n], reason: problems.filter((p) => p.line === n).map((p) => p.problem).join("; ") })))}` }).catch((e) => ({ data: null, costUsd: e.costUsd ?? 0 })));
+    const fixed = (Array.isArray(rw.data) ? rw.data : []).filter((x) => bad.includes(x.line) && typeof x.text === "string" && x.text.trim() && x.text.split(/\s+/).length <= 18 && (!kitCheckFn || kitCheckFn([x.text]).ok));
+    for (const x of fixed) { rewrites.push({ line: x.line, from: lines[x.line], to: x.text.trim() }); lines[x.line] = x.text.trim(); }
+    if (fixed.length) {
+      const ids = fixed.map((x) => x.line), numbered2 = lines.map((t, i) => `#${i} ${t}`).join("\n");
+      const again = spend(await call({ apiKey, fetchFn, maxTokens: 450 * ids.length + 300, system: SHOT_SYSTEM, content: [{ type: "text", text: prefix }, { type: "text", text: `These lines were REWORDED so the kit can film them (use the new text):\n${ids.map((n) => `#${n} ${lines[n]}`).join("\n")}\nWrite the storyboard entries for lines ${ids.join(", ")} only. The whole story now:\n${numbered2}` }] }).catch((e) => ({ data: null, costUsd: e.costUsd ?? 0 })));
+      for (const e of Array.isArray(again.data) ? again.data : []) { if (!ids.includes(e.line)) continue; board.lines = board.lines.filter((l) => l.line !== e.line); board.lines.push(e); }
+      problems = validateStoryboard(board, { lines, cast });
+      log(`storyboard repair: ${fixed.length} of ${bad.length} line(s) reworded to kit things; ${new Set(problems.map((p) => p.line)).size} still unfilmable`);
+    }
+  }
+  onLinesFinal(lines.slice(), rewrites); // the voice can be made now (the final wording)
   const fellBack = [...new Set(problems.map((p) => p.line))];
   for (const n of fellBack) { board.lines = board.lines.filter((l) => l.line !== n); board.lines.push({ line: n, keep: true, fallback: problems.filter((p) => p.line === n).map((p) => p.problem) }); }
   board.lines.sort((a, b) => a.line - b.line);
   // maxFallback: how many lines may go to the old planner (the server's BLOCKY_WORLDS_BOARD_ONLY sends 0: board only); default half
-  if (fellBack.length > (Number.isFinite(maxFallback) ? maxFallback : lines.length / 2)) throw Object.assign(new Error(`the board kit can't show ${fellBack.length} of ${lines.length} lines: ${fellBack.slice(0, 6).map((n) => `#${n + 1} (${(problems.find((p) => p.line === n)?.problem ?? "no storyboard").slice(0, 80)})`).join("; ")}`), { code: "KIT_UNSUPPORTED", costUsd, fellBack });
-  return { board, costUsd: +costUsd.toFixed(6), ms: Date.now() - t0, fellBack, problems };
+  if (fellBack.length > (Number.isFinite(maxFallback) ? maxFallback : lines.length / 2)) throw Object.assign(new Error(`the board kit can't show ${fellBack.length} of ${lines.length} lines: ${fellBack.slice(0, 6).map((n) => `#${n + 1} (${(problems.find((p) => p.line === n)?.problem ?? "no storyboard").slice(0, 80)})`).join("; ")}`), { code: "KIT_UNSUPPORTED", costUsd, fellBack, board, problems, rewrites });
+  return { board, costUsd: +costUsd.toFixed(6), ms: Date.now() - t0, fellBack, problems, rewrites, lines };
 }

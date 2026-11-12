@@ -303,15 +303,21 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
   // THE EARLY KIT CHECK (2026-11-12): a story that leans on a thing the board kit can't show stops HERE, before the voice is
   // bought (the server runs the same check before the charge: _shared/blockyWorlds/kitCheck.js, "Fix it")
   if (p.storyboard?.auto) { const kc = kitCheck(script); if (!kc.ok) throw coded("KIT_UNSUPPORTED", `the story needs ${kc.missing.map((m) => `"${m.word}" (${m.kind})`).join(", ")}, which our board kit can't film yet`); }
+  // the voice waits for the FINAL lines (the storyboard may reword an unfilmable line: the take must speak the new words)
+  let linesFinal = () => {}; const linesReady = p.storyboard?.auto ? new Promise((r) => { linesFinal = r; }) : null;
+  // the storyboard's record for the free replay (dev/simple/replayStoryboard.mjs): the board, its problems, the rewrites
+  const saveBoard = async (rec) => { if (!p.out?.storyboard) return; try { const f = path.join(dir, "storyboard.json"); fs.writeFileSync(f, JSON.stringify(rec)); await put(p.out.storyboard, f, "application/json"); } catch (e) { console.log(`storyboard.json upload: ${e.message}`); } };
   const boarding = p.storyboard?.auto ? directing.then(async (d) => {
     const early = plan.planVideo({ script, words: plan.estimateWords ? plan.estimateWords(script) : null, idea: p.idea ?? {}, lengthSec: p.lengthSec ?? null, direction: d, exists, criticalMode: "report", library: libraryFind, scenes: p.scenes ?? null });
     if (!process.env.ANTHROPIC_KEY) throw coded("NOT_CONFIGURED", "no Anthropic key for the storyboard director");
     await post("progress", { stage: "storyboard", pct: 4 });
-    const r = await directStoryboard({ apiKey: process.env.ANTHROPIC_KEY, script, cast: early.cast ?? {}, scenes: early.scenes ?? p.scenes ?? null, title: script.title ?? "", capUsd: Number(p.storyboard.capUsd) || 0.25, maxFallback: Number.isFinite(Number(p.storyboard.maxFallback)) && p.storyboard.maxFallback !== null ? Number(p.storyboard.maxFallback) : null, log: (m) => console.log(m) });
+    const r = await directStoryboard({ apiKey: process.env.ANTHROPIC_KEY, script, cast: early.cast ?? {}, scenes: early.scenes ?? p.scenes ?? null, title: script.title ?? "", capUsd: Number(p.storyboard.capUsd) || 0.25, maxFallback: Number.isFinite(Number(p.storyboard.maxFallback)) && p.storyboard.maxFallback !== null ? Number(p.storyboard.maxFallback) : null, log: (m) => console.log(m),
+      kitCheckFn: (ls) => kitCheck(ls), onLinesFinal: (L, rw) => { if (rw.length) { script.lines = script.lines.map((l, i) => ({ ...l, text: L[i] })); console.log(`storyboard: ${rw.length} line(s) reworded before the voice: ${rw.map((x) => `#${x.line + 1}`).join(", ")}`); } linesFinal(rw); } });
+    await saveBoard({ board: r.board, problems: r.problems, rewrites: r.rewrites, lines: r.lines, fellBack: r.fellBack });
     spend.directorUsd += r.costUsd; spend.plannedDirectorUsd += r.costUsd;
     console.log(`storyboard: ${r.board.lines.length} lines, ${r.fellBack.length} on the engine planner (${r.ms} ms, $${r.costUsd})`);
     return r.board;
-  }).catch((e) => { if (Number(e?.costUsd) > 0) { spend.directorUsd += Number(e.costUsd); spend.plannedDirectorUsd += Number(e.costUsd); } const c = e.code ? e : coded("STORYBOARD_FAILED", String(e.message ?? e).slice(0, 300)); c.storyboard = true; throw c; }) : null;
+  }).catch(async (e) => { linesFinal(null); if (e?.board) await saveBoard({ board: e.board, problems: e.problems, rewrites: e.rewrites, fellBack: e.fellBack, error: String(e.message).slice(0, 600) }); if (Number(e?.costUsd) > 0) { spend.directorUsd += Number(e.costUsd); spend.plannedDirectorUsd += Number(e.costUsd); } const c = e.code ? e : coded("STORYBOARD_FAILED", String(e.message ?? e).slice(0, 300)); c.storyboard = true; throw c; }) : null;
   boarding?.catch(() => {}); // awaited below (an early rejection must not be unhandled)
   try {
   // 1. the voice: the run's earlier take, or one new paid take uploaded at once
@@ -324,7 +330,7 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
   const voice = voiceFn ?? (await import(pathToFileURL(path.join(ENGINE, "voice", "eleven.mjs")).href)).elevenVoice;
   let v = null;
   try {
-    [v] = await Promise.all([lap("voice", async () => { if (boarding && p.storyboard?.voiceAfter) await boarding; return voice({ lines: script.lines, outDir: dir, apiKey: process.env.ELEVENLABS_KEY ?? null }); }), /* voiceAfter: no paid take before the storyboard is written (render.js switch) */ lap("director", () => directing), ...(boarding ? [lap("storyboard", () => boarding)] : [])]); // the storyboard is written while the voice is made
+    [v] = await Promise.all([lap("voice", async () => { if (boarding && p.storyboard?.voiceAfter) await boarding; if (linesReady && (await linesReady) === null) return null; /* the final lines first; a failed storyboard buys no take */ return voice({ lines: script.lines, outDir: dir, apiKey: process.env.ELEVENLABS_KEY ?? null }); }), /* voiceAfter: no paid take before the storyboard is written (render.js switch) */ lap("director", () => directing), ...(boarding ? [lap("storyboard", () => boarding)] : [])]); // the storyboard is written while the voice is made
   } catch (e) {
     const m = String(e.message ?? e);
     if (e?.storyboard) throw e; // the storyboard's own failure (KIT_UNSUPPORTED, STORYBOARD_FAILED): not the voice's

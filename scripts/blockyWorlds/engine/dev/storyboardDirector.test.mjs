@@ -51,3 +51,20 @@ test("an unusable bible is a clean STORYBOARD_FAILED (refunded by the server)", 
 test("maxFallback 0 (BOARD_ONLY): one line the kit can't show is a clean KIT_UNSUPPORTED", async () => {
   await assert.rejects(directStoryboard({ apiKey: "x", script, cast, scenes, maxFallback: 0, fetchFn: mock({ breakLine: 5, repairFixes: false }).fetchFn }), (e) => e.code === "KIT_UNSUPPORTED");
 });
+
+test("the free replay: the Pigeon Mayor's unfilmable lines are reworded to kit things before the voice; the whistler needs nothing", async () => {
+  const { replay } = await import("./simple/replayStoryboard.mjs");
+  const fs = await import("node:fs");
+  for (const [n, expect] of [["pigeonMayor", 3], ["whistler", 0]]) {
+    const R = JSON.parse(fs.readFileSync(new URL(`./replay/${n}/results.json`, import.meta.url), "utf8"));
+    const S = JSON.parse(fs.readFileSync(new URL(`./replay/${n}/scenes.json`, import.meta.url), "utf8"));
+    const F = JSON.parse(fs.readFileSync(new URL(`./replay/${n}.fixture.json`, import.meta.url), "utf8"));
+    const r = await replay({ script: R.results[0].script, scenes: S, fixture: F, maxFallback: 0 });
+    assert.equal(r.error, null, n); assert.equal(r.rewrites.length, expect, n); assert.deepEqual(r.fellBack, [], n); assert.ok(r.kitCheck.ok, n);
+  }
+  // no rewrite on offer: the same lines are a clean KIT_UNSUPPORTED (board only)
+  const R = JSON.parse(fs.readFileSync(new URL("./replay/pigeonMayor/results.json", import.meta.url), "utf8"));
+  const S = JSON.parse(fs.readFileSync(new URL("./replay/pigeonMayor/scenes.json", import.meta.url), "utf8"));
+  const r = await replay({ script: R.results[0].script, scenes: S, fixture: { unfilmable: ["statue", "fountain"], rewrites: {} }, maxFallback: 0 });
+  assert.match(String(r.error), /^KIT_UNSUPPORTED/);
+});

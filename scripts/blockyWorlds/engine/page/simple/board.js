@@ -260,7 +260,7 @@ export function buildBoard({ tl = null } = {}) {
 }
 
 // every action key this page animates (a key in lib/boardActions.js without one here fails the build above)
-const ACTS = new Set(["rain:falls", "snow:falls", "cheer", "run", "animal:move", "lights_on:windows", "peek:curtains", "lurk:monster", "press:eye", "glow:windows", "stare:ceiling", "bulge:curtains", "poke_out:cat", "stack:bricks", "tremble:curtains", "wave", "peek:sock", "stare:cat", "catch:peeking", "talk", "rip:curtains", "fly:curtains", "grab:boards", "nail:boards", "smear:batter", "lick:glass", "huddle:blanket", "herd", "sneeze", "blow_off:blanket", "look_up", "turn:monster", "pull:sock", "blink:eye", "back_away:monster", "dark:windows", "sleep", "cover:eyes", "walk", "stare", "twitch:eye", "arrive:monster", "hide:curtains"]);
+const ACTS = new Set(["touch", "bird:land", "bird:fly_off", "rain:falls", "snow:falls", "cheer", "run", "animal:move", "lights_on:windows", "peek:curtains", "lurk:monster", "press:eye", "glow:windows", "stare:ceiling", "bulge:curtains", "poke_out:cat", "stack:bricks", "tremble:curtains", "wave", "peek:sock", "stare:cat", "catch:peeking", "talk", "rip:curtains", "fly:curtains", "grab:boards", "nail:boards", "smear:batter", "lick:glass", "huddle:blanket", "herd", "sneeze", "blow_off:blanket", "look_up", "turn:monster", "pull:sock", "blink:eye", "back_away:monster", "dark:windows", "sleep", "cover:eyes", "walk", "stare", "twitch:eye", "arrive:monster", "hide:curtains"]);
 
 // ------------------------------------------------------------------------------------------------ one shot
 const houseLight = (st, night) => (!st ? "warm" : st.light === "glow_white" || st.light === "eye" ? "white" : st.light === "dark" ? "dark" : night ? "warm" : "off");
@@ -327,6 +327,7 @@ function boardShot(S, { shot, lt, dur, camera, people, monster, animateMonster, 
     if (p.where === "room:bed") pose = p.awake ? "stand" : "sleep";
     if (has("herd") && p.id === acts.get("herd").who) pose = "wave";
     if (has("cheer") && (!acts.get("cheer").who || p.id === acts.get("cheer").who)) pose = "cheer";
+    const touching = has("touch") && (!acts.get("touch").who || p.id === acts.get("touch").who) && lt >= (acts.get("touch").at ?? 0);
     if (has("run") && (!acts.get("run").who || p.id === acts.get("run").who)) pose = "run";
     if (has("sneeze") && p.id === acts.get("sneeze").who) pose = "sneeze";
     if (has("grab:boards") && p.id === acts.get("grab:boards").who) pose = lt < 0.5 ? "stand" : "carry";
@@ -341,6 +342,7 @@ function boardShot(S, { shot, lt, dur, camera, people, monster, animateMonster, 
     if (J && has("smear:batter") && p.id === acts.get("smear:batter").who) { const a = lt * 5; J.sh[1].rotation.set(-1.6 + 0.35 * Math.sin(a), 0, 0.3 * Math.cos(a)); J.sh[0].rotation.set(-0.9, 0, 0.3); hold(S, J.hand[0], "bowl"); }
     if (J && has("pull:sock") && p.id === acts.get("pull:sock").who) { const k = ease(lt / Math.max(0.6, dur * 0.5)); J.sh[1].rotation.set(-2.6 + 1.6 * k, 0, 0); J.sh[0].rotation.set(-2.4 + 1.4 * k, 0, 0); }
     if (J && has("stack:bricks") && p.id === acts.get("stack:bricks").who) { const sw = Math.sin(lt * 4.5); J.sh[0].rotation.set(-1.3 + 0.3 * sw, 0, 0); J.sh[1].rotation.set(-1.3 + 0.3 * sw, 0, 0); hold(S, J.hand[1], "brick"); }
+    if (J && touching) { const k = ease((lt - (acts.get("touch").at ?? 0)) / 0.35); J.sh[1].rotation.set(-1.45 * k, 0, 0); J.el[1].rotation.set(-0.15 * k, 0, 0); }
     if (J && has("cover:eyes")) { J.sh[0].rotation.set(-2.5, 0, 0.35); J.sh[1].rotation.set(-2.5, 0, -0.35); J.el[0].rotation.set(-1.3, 0, 0); J.el[1].rotation.set(-1.3, 0, 0); }
     if (J && has("look_up") && pose === "look_up") J.head.rotation.x = -0.55;
     if (J && has("stare:cat") && p.id === acts.get("stare:cat").who) { J.head.rotation.x = 0.15; }
@@ -432,7 +434,11 @@ function boardShot(S, { shot, lt, dur, camera, people, monster, animateMonster, 
     g.position.copy(pos); root(S).add(g); S.held.push(g);
   }
   // ---- animals + weather (the kit expansion)
-  if (b.animals?.length) placeAnimals(root(S), b.animals.map((a, i) => ({ ...a, pos: markPos(S, b, place, a.where, i), yaw: a.yaw ?? 0 })), lt); else placeAnimals(root(S), [], lt);
+  if (b.animals?.length) placeAnimals(root(S), b.animals.map((a, i) => { const on = /^on:/.test(String(a.where)) ? where[String(a.where).slice(3)] : null; let pos = on ? on.head.clone().add(V(0, 0.32, 0)) : markPos(S, b, place, a.where, i);
+      const landAt = acts.get("bird:land")?.at ?? 0, offAt = acts.get("bird:fly_off")?.at ?? 0;
+      if (has("bird:land") && a.species === "bird") { const k = ease((lt - landAt) / 0.7); pos = pos.clone().add(V(2.4 * (1 - k), 2.6 * (1 - k), 0.6 * (1 - k))); }
+      if (has("bird:fly_off") && a.species === "bird" && lt > offAt) { const e = lt - offAt; pos = pos.clone().add(V(1.6 * e, 1.4 * e + 0.6 * e * e, -0.8 * e)); }
+      return { ...a, pos, yaw: a.yaw ?? 0, action: has("bird:land") || has("bird:fly_off") ? "fly" : a.action }; }), lt); else placeAnimals(root(S), [], lt);
   // ---- the camera
   const cam = b.cam; let look = V(0, 2, 0), pos = V(0, 3, 10), fov = 50;
   const R0 = room ? (lx, ly, lz) => room.g.localToWorld(V(lx, ly, lz)) : null;

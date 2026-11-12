@@ -42,7 +42,7 @@ const rp = rpClient();
 // a stored director list adapted to a changed script (--direction, no paid call): the prepare reuses it
 if (arg("direction") && !(await st.get("direction.json"))) await st.put("direction.json", fs.readFileSync(arg("direction")), "application/json");
 const minBuild = endpointInfo().build ?? null;
-const F = ["voice.mp3", "take.json", "timeline.json", "mix.m4a", "visual-check.json", "production.json", "direction.json", "shot-review.json"];
+const F = ["voice.mp3", "take.json", "timeline.json", "mix.m4a", "visual-check.json", "production.json", "direction.json", "shot-review.json", "storyboard.json"];
 
 async function libraryRows() {
   try {
@@ -70,7 +70,7 @@ if (!fs.existsSync(path.join(out, "timeline.json"))) {
       builder: { provider: B.builder > 0 ? "anthropic" : "off", library, budget: { maxUsd: B.builder } }, // --builder-usd 0: the kit only, no design call
       review: B.review > 0 ? { provider: "anthropic", model: "claude-haiku-5-5", budget: { maxUsd: B.review } } : { provider: "off" }, // --review-usd 0: no AI shot review (the free checks + still gate stay)
       voice: haveTake ? { get: { mp3: await st.signGet("voice.mp3"), take: await st.signGet("take.json") } } : { put: { mp3: up["voice.mp3"], take: up["take.json"] } },
-      out: { timeline: up["timeline.json"], mix: up["mix.m4a"], visualCheck: up["visual-check.json"], production: up["production.json"], direction: up["direction.json"], shotReview: up["shot-review.json"] },
+      out: { timeline: up["timeline.json"], mix: up["mix.m4a"], visualCheck: up["visual-check.json"], production: up["production.json"], direction: up["direction.json"], shotReview: up["shot-review.json"], storyboard: up["storyboard.json"] },
       limits: { prepareSec: Number(arg("prepare-sec", 420)) },
     },
   };
@@ -89,6 +89,7 @@ if (!fs.existsSync(path.join(out, "timeline.json"))) {
   if (o.spend) { if (o.spend.directorUsd) costs[`director_run${run}`] = o.spend.directorUsd; if (o.spend.builderUsd) costs[`builder_run${run}`] = o.spend.builderUsd; if (o.spend.reviewUsd) costs[`review_run${run}`] = o.spend.reviewUsd; }
   saveCosts();
   say(`prepare ${s.status}: billed ${b.seconds} s $${b.usd}; voice $${o.voice?.costUsd ?? "?"}; spend ${JSON.stringify(o.spend ?? null)}; spent so far $${spent().toFixed(4)}`);
+  { const sb = await st.get("storyboard.json"); if (sb) fs.writeFileSync(path.join(out, "storyboard.json"), sb); } // kept even when the run stops (the free replay)
   if (!(s.status === "COMPLETED" && o.ok)) { say(`STOPPED: prepare failed: ${o.code ?? ""} ${String(s.error ?? o.error ?? "").slice(0, 1500)}`); process.exit(1); }
   for (const f of F) { const buf = await st.get(f); if (buf) fs.writeFileSync(path.join(out, f), buf); }
 }

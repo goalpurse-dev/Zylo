@@ -1,0 +1,207 @@
+{
+ "results": [
+  {
+   "script": {
+    "title": "The Pigeon Mayor Takes Hats",
+    "lines": [
+     {
+      "part": "rule",
+      "text": "In this town, touch the statue's nose after noon and the Pigeon Mayor takes your hat."
+     },
+     {
+      "part": "tour",
+      "text": "You see, he's a very fast pigeon."
+     },
+     {
+      "part": "tour",
+      "text": "Mr. Pickett touched it once."
+     },
+     {
+      "part": "tour",
+      "text": "Now he walks around with a bare head and a sunburn."
+     },
+     {
+      "part": "tour",
+      "text": "The barber only cuts hair before noon."
+     },
+     {
+      "part": "tour",
+      "text": "He does it out of pure panic."
+     },
+     {
+      "part": "tour",
+      "text": "Mrs. Lund wears seven hats so she can afford to lose six."
+     },
+     {
+      "part": "tour",
+      "text": "The mayor's hat is bolted on with a very large bolt."
+     },
+     {
+      "part": "me",
+      "text": "I'm Pearl, and I've never owned a hat."
+     },
+     {
+      "part": "me",
+      "text": "My head's too round for any of them."
+     },
+     {
+      "part": "me",
+      "text": "I only have a paper birthday crown in my pocket."
+     },
+     {
+      "part": "me",
+      "text": "Nobody's ever tried to steal it. Nobody wants it."
+     },
+     {
+      "part": "me",
+      "text": "My little brother Milo just learned to reach."
+     },
+     {
+      "part": "me",
+      "text": "He loves noses."
+     },
+     {
+      "part": "until",
+      "text": "Until one noon, Milo spotted the statue."
+     },
+     {
+      "part": "until",
+      "text": "He pointed. He giggled."
+     },
+     {
+      "part": "until",
+      "text": "Mom was buying pickles. Nobody was watching."
+     },
+     {
+      "part": "until",
+      "text": "The clock struck noon."
+     },
+     {
+      "part": "until",
+      "text": "First, his fingers grabbed the fence."
+     },
+     {
+      "part": "until",
+      "text": "Then he crawled onto the fountain edge."
+     },
+     {
+      "part": "until",
+      "text": "Pigeons turned their heads. All of them."
+     },
+     {
+      "part": "until",
+      "text": "Then his hand stopped an inch from the nose."
+     },
+     {
+      "part": "until",
+      "text": "Mrs. Lund gasped and clutched all seven hats."
+     },
+     {
+      "part": "discovery",
+      "text": "I froze. Then I remembered the rule."
+     },
+     {
+      "part": "discovery",
+      "text": "Touch the nose, lose your hat."
+     },
+     {
+      "part": "discovery",
+      "text": "Not your shirt. Not your shoes."
+     },
+     {
+      "part": "discovery",
+      "text": "Just hats."
+     },
+     {
+      "part": "discovery",
+      "text": "And I'd never owned one."
+     },
+     {
+      "part": "discovery",
+      "text": "The rule never said anything about crowns."
+     },
+     {
+      "part": "climax",
+      "text": "I plopped my paper crown on Milo's head."
+     },
+     {
+      "part": "climax",
+      "text": "He booped the nose."
+     },
+     {
+      "part": "climax",
+      "text": "Boop."
+     },
+     {
+      "part": "climax",
+      "text": "Pigeons exploded off the rooftops."
+     },
+     {
+      "part": "climax",
+      "text": "The Pigeon Mayor landed on Milo."
+     },
+     {
+      "part": "climax",
+      "text": "He glared at the crown."
+     },
+     {
+      "part": "climax",
+      "text": "A paper crown. Nobody had tried that."
+     },
+     {
+      "part": "climax",
+      "text": "He snatched it and flew off."
+     },
+     {
+      "part": "climax",
+      "text": "Milo laughed. The pigeons did not."
+     },
+     {
+      "part": "closer",
+      "text": "The Pigeon Mayor wears it to every meeting."
+     },
+     {
+      "part": "closer",
+      "text": "It looks better on him."
+     },
+     {
+      "part": "closer",
+      "text": "In this town, nobody touches the nose after noon, except me."
+     }
+    ],
+    "post": {
+     "title": "Never touch the nose after noon or the Pigeon Mayor comes",
+     "description": "Pearl has no hat, but her baby brother loves noses. One paper crown might save the day.",
+     "hashtags": [
+      "#blockyworlds",
+      "#storytime",
+      "#funny",
+      "#shorts",
+      "#cartoon"
+     ]
+    }
+   },
+   "card": {
+    "mood": "funny",
+    "prop": "Her paper birthday crown",
+    "price": "Mr. Pickett touched it once. Now he walks around with a bare head and a sunburn.",
+    "title": "The Hat Tax",
+    "twist": "At noon the brother's fingers get closer: first the fence, then the fountain edge, then an inch from the nose. Pearl swaps him her paper crown, which isn't a hat, so the Pigeon Mayor takes it and leaves them both alone. The rule only takes hats, and she never owned one.",
+    "closer": "In this town, nobody touches the nose after noon, except Pearl, who just lost a paper crown.",
+    "opener": "In this town, if you touch the fountain statue's nose after noon, the Pigeon Mayor takes your hat forever.",
+    "teaser": "Her brother reached for the nose. She had one paper thing.",
+    "formula": "F2",
+    "premise": "Everyone in the square keeps their hands off the statue's nose, but Pearl, the one kid with no hat, has a little brother who just learned to reach and loves noses.",
+    "setting": "town square",
+    "examples": [
+     "The barber only cuts hair before noon, out of pure panic.",
+     "Mrs. Lund wears seven hats so she can afford to lose six.",
+     "The mayor's hat is bolted to his head with a very large bolt."
+    ],
+    "narrator": "Pearl, who has never owned a hat because her head is too round for any, only a paper birthday crown she keeps in her pocket.",
+    "twistType": "T4"
+   }
+  }
+ ],
+ "costUsd": 0.04228
+}

@@ -1,0 +1,208 @@
+{
+ "results": [
+  {
+   "script": {
+    "title": "The Whistler Wants Milk",
+    "lines": [
+     {
+      "part": "rule",
+      "text": "In this town, nobody whistles after sunset and we leave the Whistler milk every night."
+     },
+     {
+      "part": "tour",
+      "text": "You see, something in the dark whistles back."
+     },
+     {
+      "part": "tour",
+      "text": "So every night, Mom pours it a saucer of milk."
+     },
+     {
+      "part": "tour",
+      "text": "Nobody remembers why we owe it."
+     },
+     {
+      "part": "tour",
+      "text": "Mr. Plunk forgot the milk once."
+     },
+     {
+      "part": "tour",
+      "text": "Now his front door whistles itself open."
+     },
+     {
+      "part": "tour",
+      "text": "Mrs. Crumb pours extra and gets a free bagel every Friday."
+     },
+     {
+      "part": "tour",
+      "text": "The mailman pays too. The Whistler sorts his letters by whistle."
+     },
+     {
+      "part": "me",
+      "text": "I'm Gus, the loudest whistler in town."
+     },
+     {
+      "part": "me",
+      "text": "I've never once been quiet at sunset."
+     },
+     {
+      "part": "me",
+      "text": "Mom tapes a scarf over my mouth at dinner."
+     },
+     {
+      "part": "me",
+      "text": "My best friend is my dog, Waffles."
+     },
+     {
+      "part": "me",
+      "text": "And in my pocket, a plastic kazoo from the milk raffle."
+     },
+     {
+      "part": "until",
+      "text": "Until one night, I forgot the milk."
+     },
+     {
+      "part": "until",
+      "text": "Then I whistled. Only one note."
+     },
+     {
+      "part": "until",
+      "text": "Outside, something whistled back."
+     },
+     {
+      "part": "until",
+      "text": "Higher. Closer. Right under our window."
+     },
+     {
+      "part": "until",
+      "text": "The porch light flickered."
+     },
+     {
+      "part": "until",
+      "text": "Our front door began to hum."
+     },
+     {
+      "part": "until",
+      "text": "It whistled itself right off its hinges."
+     },
+     {
+      "part": "until",
+      "text": "Mom screamed. Waffles hid in the laundry."
+     },
+     {
+      "part": "until",
+      "text": "A tall shadow stepped in, lips puckered like a flute."
+     },
+     {
+      "part": "discovery",
+      "text": "Then I saw the deal stuck on our fridge."
+     },
+     {
+      "part": "discovery",
+      "text": "Nobody whistles after sunset. Nothing whistles back."
+     },
+     {
+      "part": "discovery",
+      "text": "It said nothing about who pays."
+     },
+     {
+      "part": "discovery",
+      "text": "We paid milk for its silence."
+     },
+     {
+      "part": "discovery",
+      "text": "But if I keep making noise, it can't answer."
+     },
+     {
+      "part": "discovery",
+      "text": "It has to pay us to stay quiet."
+     },
+     {
+      "part": "climax",
+      "text": "I pulled out the kazoo."
+     },
+     {
+      "part": "climax",
+      "text": "Bzzzzz!"
+     },
+     {
+      "part": "climax",
+      "text": "The Whistler flinched. Its lips squeezed shut."
+     },
+     {
+      "part": "climax",
+      "text": "I kazooed until sunrise."
+     },
+     {
+      "part": "climax",
+      "text": "Every honk, it wanted to answer."
+     },
+     {
+      "part": "climax",
+      "text": "But the deal said nothing whistles back."
+     },
+     {
+      "part": "climax",
+      "text": "By morning, it was shaking and sweating."
+     },
+     {
+      "part": "climax",
+      "text": "It opened its coat and poured out milk."
+     },
+     {
+      "part": "climax",
+      "text": "Twelve bottles for Mom. Twelve for Mr. Plunk. Twelve for everyone."
+     },
+     {
+      "part": "climax",
+      "text": "Mrs. Crumb got a bagel too."
+     },
+     {
+      "part": "closer",
+      "text": "Now the Whistler pays us milk to stay silent."
+     },
+     {
+      "part": "closer",
+      "text": "Mr. Plunk's door finally stopped whistling."
+     },
+     {
+      "part": "closer",
+      "text": "Here nobody whistles after sunset, and nothing whistles back. Not even the milk."
+     }
+    ],
+    "post": {
+     "title": "Nobody whistles after sunset. Gus did anyway.",
+     "description": "Gus forgot the milk and whistled at the dark, and something whistled back. Then a plastic kazoo turned the deal around.",
+     "hashtags": [
+      "#blockyworlds",
+      "#storytime",
+      "#funnystory",
+      "#whistler",
+      "#shorts"
+     ]
+    }
+   },
+   "card": {
+    "opener": "In this town, nobody whistles after sunset, and every night we leave the Whistler milk so nothing whistles back.",
+    "title": "The Night Whistler's Milk",
+    "premise": "Gus is the town's loudest whistler, and his mom keeps paying the Whistler a nightly saucer of milk for a debt nobody remembers making.",
+    "price": "Skip one night's milk and by morning the Whistler has taken your front door.",
+    "examples": [
+     "Mr. Plunk forgot the milk once and now his front door whistles open.",
+     "Mrs. Crumb pours a saucer for the Whistler and gets a free bagel every Friday.",
+     "The mailman leaves the milk, and the Whistler sorts his letters by whistle."
+    ],
+    "narrator": "Gus, the town's loudest whistler, who has never once been quiet at sunset.",
+    "prop": "A plastic kazoo from the milk-bottle raffle",
+    "twist": "Gus blows the kazoo all night, and since the deal says nothing whistles back, the Whistler must pay the whole town in milk just to stay silent.",
+    "teaser": "The deal has one word that cuts both ways.",
+    "closer": "Here nobody whistles after sunset, and nothing whistles back. Not even the milk.",
+    "formula": "F3",
+    "twistType": "T4",
+    "mood": "funny",
+    "setting": "house",
+    "topic": "In our town nobody whistles after sunset, because something in the dark whistles back"
+   }
+  }
+ ],
+ "costUsd": 0.04369
+}
