@@ -7,6 +7,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { tileProblems } from "./pixel.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const { costOf } = await import(pathToFileURL(path.resolve(HERE, "../../../supabase/functions/_shared/blockyWorlds/llm.js")).href);
@@ -60,4 +61,23 @@ export async function visionAudit({ mp4, tl, mustShow, out, L, apiKey, model = "
   const data = JSON.parse(text);
   fs.writeFileSync(path.join(out, "vision-audit.json"), JSON.stringify(data, null, 1));
   return { ...data, usd, sheets };
+}
+
+/** the free frame check of the FINAL (the preview thresholds, studio/pixel.mjs) on the contact sheet's tiles (one frame
+ *  per cut, the label strip cropped off): -> { tiles, blocked: [{ i, id, problems }] } */
+export function finalFrameCheck({ dir, tl }) {
+  const tiles = [], blocked = [];
+  tl.shots.forEach((s, i) => {
+    const f = path.join(dir, `${String(i).padStart(3, "0")}.jpg`);
+    if (!fs.existsSync(f)) return;
+    const buf = execFileSync("ffmpeg", ["-v", "error", "-i", f, "-vf", "crop=200:356:0:0,scale=72:128,format=gray", "-f", "rawvideo", "-"]);
+    const n = 72 * 128, hist = new Map(); let s1 = 0, s2 = 0, e = 0, ec = 0;
+    for (let p = 0; p < n; p++) { const v = buf[p]; s1 += v; s2 += v * v; hist.set(v >> 4, (hist.get(v >> 4) ?? 0) + 1); }
+    for (let y = 0; y < 128; y++) for (let x = 0; x < 71; x++) { ec++; if (Math.abs(buf[y * 72 + x] - buf[y * 72 + x + 1]) > 14) e++; }
+    const mean = s1 / n, tile = { mean: +mean.toFixed(1), sd: +Math.sqrt(Math.max(0, s2 / n - mean * mean)).toFixed(1), edge: +(e / ec).toFixed(3), flat: +(Math.max(...hist.values()) / n).toFixed(2) };
+    tiles.push({ i, id: s.studio, ...tile });
+    const problems = tileProblems(tile);
+    if (problems.length) blocked.push({ i, id: s.studio, problems });
+  });
+  return { tiles, blocked };
 }

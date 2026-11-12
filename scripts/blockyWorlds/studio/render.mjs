@@ -39,8 +39,9 @@ async function oneJob({ code, specs, out, prefix, maxSec, L, label, quality = 0.
       if (!x.file) { files[i] = { error: x.error }; return; }
       const buf = await st.get(x.file); const f = path.join(out, x.file);
       if (buf) fs.writeFileSync(f, buf);
-      files[i] = { file: f, mean: x.mean, ms: x.ms };
-      if (x.lut && x.lut !== false) { try { for (const e of JSON.parse(x.lut)) if (!pageErrors.includes(e)) pageErrors.push(e); } catch { /* not ours */ } }
+      let rep = null; if (x.lut && x.lut !== false) { try { rep = JSON.parse(x.lut); } catch { /* not ours */ } }
+      for (const e of rep?.errors ?? []) if (!pageErrors.includes(e)) pageErrors.push(e);
+      files[i] = { file: f, mean: x.mean, ms: x.ms, tiles: rep?.tiles ?? [] };
     }));
     return { ok: true, job: id, files, pageErrors, billed: b, wallSec: +((Date.now() - t0) / 1000).toFixed(1), renderer: s.output.renderer, loadMs: s.output.loadMs };
   } finally { await st.cleanup().catch(() => 0); }
@@ -51,7 +52,7 @@ export async function renderSheets({ code, sheets, out, L, label = "preview" }) 
   fs.mkdirSync(out, { recursive: true });
   const frames = sheets.reduce((n, s) => n + s.frames.length, 0), maxSec = sheetMaxSec(frames);
   L?.check(`runpod ${label}`, +(maxSec * RATE).toFixed(4));
-  const specs = sheets.map((s) => ({ label: s.name, sheet: true, frames: s.frames, cols: s.cols ?? 5, tw: s.tw ?? 216, th: s.th ?? 384, labels: true }));
+  const specs = sheets.map((s) => ({ label: s.name, sheet: true, frames: s.frames, cols: s.cols ?? 5, tw: s.tw ?? 216, th: s.th ?? 384, labels: true, stats: true }));
   return oneJob({ code, specs, out, prefix: `blocky-worlds-test/studio/${path.basename(path.dirname(out))}-${label}-${Date.now()}`, maxSec, L, label });
 }
 
@@ -60,7 +61,9 @@ export async function renderFinal({ code, tl, out, mix, jobs = 6, L, fps = 24 })
   fs.mkdirSync(out, { recursive: true });
   const n = Math.round(tl.duration * fps), packs = [];
   for (let i = 0; i < n; i += 4) packs.push({ label: `p${String(i / 4).padStart(4, "0")}`, sheet: true, frames: [0, 1, 2, 3].map((j) => ({ t: Math.min(tl.duration - 1e-3, (i + j) / fps) })), cols: 2, tw: 1080, th: 1920, labels: false, quality: 0.86 });
-  const per = Math.ceil(packs.length / jobs), maxSec = Math.round(150 + per * 4 * 0.6);
+  // the per-job limit from the measured final (run 1: ~21 s render + ~28 s upload for ~280 frames, plus start-up): 100 s +
+  // 0.3 s a frame; a job is cancelled there, so jobs x maxSec bounds the spend
+  const per = Math.ceil(packs.length / jobs), maxSec = Math.round(100 + per * 4 * 0.3);
   L?.check("runpod final", +(jobs * maxSec * RATE).toFixed(4));
   const t0 = Date.now();
   const parts = await Promise.all(Array.from({ length: jobs }, (_, j) => packs.slice(j * per, (j + 1) * per)).filter((x) => x.length).map((specs, j) =>

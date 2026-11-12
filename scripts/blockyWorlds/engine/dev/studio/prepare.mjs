@@ -10,8 +10,10 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { planVideo, checkTimeline, checkVisuals, checkSubjects } from "../../plan.mjs";
 import { directStory } from "../../lib/director/index.js";
-import { elevenVoice, envKey, narratorFor, paceStats } from "../../voice/eleven.mjs";
+import { envKey, narratorFor, paceStats } from "../../voice/eleven.mjs";
 import { ledger } from "../../../studio/ledger.mjs";
+import { fitPace } from "../../../studio/pace.mjs";
+import { fixAnimalCast } from "../../../studio/castFix.mjs";
 
 const ENGINE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const SHARED = path.resolve(ENGINE, "../../../supabase/functions/_shared/blockyWorlds");
@@ -30,12 +32,21 @@ const LLM = await import(pathToFileURL(path.join(SHARED, "llm.js")).href);
 const { kitCheck } = await import(pathToFileURL(path.join(SHARED, "kitCheck.js")).href);
 const { formulaProblems } = await import(pathToFileURL(path.join(SHARED, "formula.js")).href);
 
+// --from <run dir>: the script and the paid take of an earlier run (a second director on the SAME words and voice:
+// nothing is paid again; the pace is re-fitted for free)
+if (arg("from")) {
+  const src = path.resolve(arg("from"));
+  if (!fs.existsSync(path.join(out, "results.json"))) fs.copyFileSync(path.join(src, "results.json"), path.join(out, "results.json"));
+  fs.mkdirSync(path.join(out, "voice"), { recursive: true });
+  for (const f of ["take.json", "voice.mp3"]) if (!fs.existsSync(path.join(out, "voice", f))) fs.copyFileSync(path.join(src, "voice", f), path.join(out, "voice", f));
+  say(`reusing the script and the take of ${src} (no paid script, no paid voice)`);
+}
 // 1. the script (worst case = the meter's cap)
 const resFile = path.join(out, "results.json");
 let script;
 if (fs.existsSync(resFile)) { script = JSON.parse(fs.readFileSync(resFile, "utf8")).results[0].script; say("script: reused"); }
 else {
-  const capScript = 0.12; L.check("script", capScript);
+  const capScript = Number(arg("script-cap", 0.12)); L.check("script", capScript);
   const apiKey = envKey("ANTHROPIC_KEY") ?? envKey("ANTHROPIC_API_KEY");
   const meter = LLM.moneyMeter(capScript);
   try {
@@ -49,19 +60,25 @@ const kc = kitCheck(script, { card, boardOnly: true });
 say(`script "${script.title}": ${script.lines.length} lines, ${words0} words; formula ${formulaProblems(script, LEN).length} problem(s); kitCheck(board-only) ${kc.ok ? "ok" : `misses ${kc.missing.map((m) => m.word).join(", ")}`} (studio mode builds missing things from blocks, so a miss is reported, not a stop)`);
 for (const [i, l] of script.lines.entries()) say(`  ${i}: [${l.part}] ${l.text}`);
 
-// 2. the voice (worst case: 0.5 ElevenLabs credits a character at $0.0002 a credit)
+// 2. the voice (worst case: 0.5 ElevenLabs credits a character at $0.0002 a credit): the one paid take, then the speed
+// fitted to THIS take so it lands at 255-280 wpm after the silence cut (studio/pace.mjs; re-processing is free)
 const narrator = narratorFor("scruffy_duck");
 const chars = script.lines.map((l) => String(l.text).trim()).join("\n").length;
 const voiceDir = path.join(out, "voice");
 const hadTake = fs.existsSync(path.join(voiceDir, "take.json"));
 if (!hadTake) L.check("voice", +(chars * 0.5 * 0.0002).toFixed(4));
-const v = await L.step("voice", () => elevenVoice({ lines: script.lines, outDir: voiceDir, narrator }), { chars, voice: narrator.voiceName, model: narrator.model, reused: hadTake });
+const fit = await L.step("voice", () => fitPace({ lines: script.lines, outDir: voiceDir, narrator, allowPaid: !hadTake, log: say }), { chars, voice: narrator.voiceName, model: narrator.model, reused: hadTake });
+const v = fit.v;
 if (!hadTake) L.add("voice", v.costUsd ?? +(chars * 0.44 * 0.0002).toFixed(4));
-say(`voice: ${narrator.voiceName} ${narrator.model}, ${v.duration.toFixed(2)} s, ${v.wpm} wpm, pace ${JSON.stringify(v.pace)}, $${v.costUsd} (${hadTake ? "reused" : "new take"})`);
+say(`voice: ${narrator.voiceName} ${narrator.model}, ${v.duration.toFixed(2)} s at ${fit.speed}x (1.25x gave ${fit.firstWpm} wpm), pace ${JSON.stringify(fit.pace)}${fit.inBand ? "" : `; OUT OF BAND: ${fit.note}`}, $${hadTake ? 0 : v.costUsd} (${hadTake ? "reused take" : "new take"})`);
+const wordsPerMin = Math.round(script.lines.reduce((a, l) => a + l.text.split(/\s+/).length, 0) / (LEN / 60));
+if (v.duration < LEN * 0.85) say(`NOTE (the writer's side): the script is short for ${LEN} s: at this pace it runs ${v.duration.toFixed(1)} s (${wordsPerMin} words a minute of target length)`);
 
 // 3. the base plan (free): the real word timings; the mock director (no paid call)
 const direction = await directStory({ script, idea: card, provider: "mock" });
 const tl0 = await L.step("plan", () => planVideo({ script, words: v.words, idea: card, lengthSec: LEN, direction, criticalMode: "report" }));
+const castFixes = fixAnimalCast(tl0, script); // a pet the planner cast as a person (studio/castFix.mjs)
+if (castFixes.length) say(`cast fix: ${castFixes.map((f) => `${f.name} is a ${f.species}, not a person`).join("; ")}`);
 fs.writeFileSync(path.join(out, "base-timeline.json"), JSON.stringify(tl0));
 fs.writeFileSync(path.join(out, "words.json"), JSON.stringify(v.words));
 say(`base plan: ${tl0.shots.length} shots, ${tl0.duration} s, look ${tl0.look}, cast ${Object.keys(tl0.cast ?? {}).join(", ")}, monster ${tl0.monster ? JSON.stringify(tl0.monster).slice(0, 80) : "none"}; base checks timeline ${checkTimeline(tl0).length}, visuals ${checkVisuals(tl0, script).length}, subjects ${checkSubjects(tl0).length}`);

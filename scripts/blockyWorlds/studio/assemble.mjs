@@ -80,7 +80,7 @@ export function assemble(tl0, plan) {
       ...(s.props?.length ? { props: s.props } : {}), ...(s.weather ? { weather: s.weather } : {}),
       houses: housesAt(sceneHouses, n), before: housesAt(sceneHouses, n - 1), homes,
     };
-    const shot = { start: T.start, end: T.end, line: n, lines: [n], part: tl0.lines[n]?.part ?? "tour", set: "board", light: s.light ?? "day", camera: CAM_TYPES.includes(s.camType) ? s.camType : "medium", insert: null, marker: null, seed: 900 + i, text: inShot.map((w) => w.word).join(" ") || tl.lines[n].text, studio: id, board };
+    const shot = { start: T.start, end: T.end, line: n, lines: [n], part: tl0.lines[n]?.part ?? "tour", set: "board", light: s.light ?? "day", camera: CAM_TYPES.includes(s.camType) ? s.camType : "medium", insert: null, marker: null, seed: 900 + i, text: inShot.map((w) => w.word).join(" ") || tl.lines[n].text, studio: id, ...(s.autoPush ? { studioPush: true } : {}), board }; // studioPush: the adapter's safety push for a still camera
     Object.assign(shot, SB.manifest(board));
     // the code's own things: the people it shows (beyond the staging), the creature (engine monster or a built one), pets
     // (a code-driven pose / face / held prop replaces the staged one: the checks see what the code draws)

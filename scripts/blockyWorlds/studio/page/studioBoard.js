@@ -33,7 +33,15 @@ export function buildBoard(opts) {
   const orig = S.boardShot;
   S.studio = { pool: new Map(), live: new Set(), root: new THREE.Group(), errors: [] };
   S.root.add(S.studio.root);
+  // THE NIGHT FLOOR (owner 2026-11-12): a key light from the lens side, a cool rim behind the subject and a fill on the
+  // creature's face, plus a soft sky fill; always in the scene (intensity 0 by day: no shader recompiles between cuts)
+  const L = S.studio.lights = {
+    key: new THREE.PointLight("#fff0dc", 0, 70, 1.0), rim: new THREE.PointLight("#a8c8ff", 0, 60, 1.0),
+    face: new THREE.PointLight("#ffe2b8", 0, 40, 1.0), sky: new THREE.HemisphereLight("#7d9cff", "#3a3046", 0),
+  };
+  for (const l of Object.values(L)) S.studio.root.add(l);
   window.__studioErrsList = () => S.studio.errors; // the bundle's renderSheet sends them back with the stills
+  window.__studioStats = () => S.studio.stats ?? null; // the last frame's geometry stats (person size, creature share)
   S.boardShot = (ctx) => {
     const r = orig(ctx);
     for (const o of S.studio.live) o.visible = false;
@@ -51,6 +59,8 @@ function studioFrame(S, ctx, base) {
   const sid = shot.studio, homes = shot.board?.homes ?? ST.homes ?? {};
   const SD = S.studio;
   let prims = 0, assets = 0, cam = null, shakeAmt = 0;
+  const creatures = [];
+  for (const l of Object.values(SD.lights)) l.intensity = 0;
   // a pooled object for this shot: created once, shown this frame
   const pooled = (key, make) => { let o = SD.pool.get(key); if (!o) { o = make(); SD.pool.set(key, o); } o.visible = true; SD.live.add(o); return o; };
   let primIdx = 0;
@@ -101,7 +111,7 @@ function studioFrame(S, ctx, base) {
         if (o.headTilt != null) J.head.rotation.x = o.headTilt;
         if (o.hold) {
           if (!o.armR && J.sh[1].rotation.x > -0.55) J.sh[1].rotation.x = -0.55;
-          const g = pooled(`${sid}|hold|${id}|${o.hold}`, () => { const g = new THREE.Group(); const p = makeProp(o.hold); if (p) { p.position.set(0, -0.16, 0.06); p.rotation.x = -Math.PI / 2; g.add(p); } return g; });
+          const g = pooled(`${sid}|hold|${id}|${o.hold}`, () => { const g = new THREE.Group(); g.userData.held = true; const p = makeProp(o.hold); if (p) { p.position.set(0, -0.16, 0.06); p.rotation.x = -Math.PI / 2; g.add(p); } return g; });
           if (g.parent !== J.hand[1]) J.hand[1].add(g);
           g.scale.setScalar(1 / Math.max(0.2, J.hand[1].getWorldScale(new THREE.Vector3()).x));
         }
@@ -122,6 +132,7 @@ function studioFrame(S, ctx, base) {
       const fn = compiled("asset", name); if (!fn) throw new Error(`no asset "${name}"`);
       const g = pooled(`${sid}|asset|${name}|${assets}`, () => { const g = new THREE.Group(); SD.root.add(g); return g; });
       g.position.copy(V(params.at)); g.rotation.set(0, params.yaw ?? 0, 0); g.scale.setScalar(params.scale ?? 1);
+      g.userData.creature = (ST.creatures ?? []).includes(name); if (g.userData.creature) creatures.push(g);
       const saved = { cur: primParent.cur, prefix: primParent.prefix, idx: primIdx, p: api.p };
       primParent.cur = g; primParent.prefix = `${sid}|a${assets}|${name}`; primIdx = 0; api.p = params;
       try { fn(api, Math); } finally { primParent.cur = saved.cur; primParent.prefix = saved.prefix; primIdx = saved.idx; api.p = saved.p; }
@@ -152,15 +163,72 @@ function studioFrame(S, ctx, base) {
   }
   if (cam?.pos && cam?.look) {
     const pos = V(cam.pos), look = V(cam.look);
+    // NEVER A STILL FRAME: a cut whose camera the pre-check found still gets a slow push-in, already moving at frame 0
+    if (shot.studioPush) { const q = 0.25 + 0.75 * Math.min(1, t / dur); pos.lerp(look, 0.12 * q); cam = { ...cam, fov: (cam.fov ?? 50) * (1 - 0.06 * q) }; }
     if (shakeAmt) { const s = shakeAmt; pos.add(new THREE.Vector3(s * Math.sin(t * 37.1), s * Math.sin(t * 43.7 + 1), s * 0.5 * Math.sin(t * 29.3 + 2))); look.add(new THREE.Vector3(s * 0.6 * Math.sin(t * 31.3 + 3), s * 0.6 * Math.sin(t * 41.9), 0)); }
-    camera.position.copy(pos); camera.fov = Math.min(100, Math.max(12, cam.fov ?? 50)); camera.near = 0.05; camera.far = 3000; camera.updateProjectionMatrix();
-    camera.up.set(0, 1, 0); camera.lookAt(look);
-    if (cam.roll) camera.rotateZ(cam.roll);
-    camera.updateMatrixWorld();
+    const aim = () => { camera.position.copy(pos); camera.fov = Math.min(100, Math.max(12, cam.fov ?? 50)); camera.near = 0.05; camera.far = 3000; camera.updateProjectionMatrix(); camera.up.set(0, 1, 0); camera.lookAt(look); if (cam.roll) camera.rotateZ(cam.roll); camera.updateMatrixWorld(); };
+    aim();
+    // the engine monster counts as the creature when it is on screen
+    if (monster?.visible) creatures.push(monster);
+    // THE CREATURE NEVER FILLS THE FRAME in a wide / medium / low / two-shot / over-the-shoulder cut: the lens backs off
+    // along its own line of sight until the creature covers at most CREATURE_MAX of the frame (close-ups / inserts may)
+    const capped = !["closeup", "insert"].includes(shot.camera);
+    let cShare = creatures.length ? Math.max(...creatures.map((c) => screenShare(c, camera))) : 0;
+    const cR = creatures.length ? Math.max(...creatures.map((c) => new THREE.Box3().setFromObject(c).getSize(new THREE.Vector3()).length() / 2)) : 0;
+    for (let i = 0; capped && cShare > CREATURE_MAX && i < 8; i++) { const off = pos.clone().sub(look); const d = Math.max(0.5, off.length()); if (off.lengthSq() < 1e-6) off.set(0, 0.3, 1); pos.copy(look).addScaledVector(off.normalize(), Math.max(d * 1.25, d + 0.4 * cR)); aim(); cShare = Math.max(...creatures.map((c) => screenShare(c, camera))); } // steps sized by the creature: a lens under / inside it gets out
+    // NO BLOCKED LENS: a built thing (block, prop, a non-creature asset) with the lens inside it, or nearer than the
+    // subject and covering over half the frame, is left out of this frame
+    const dl = pos.distanceTo(look), fwd = camera.getWorldDirection(new THREE.Vector3()), bx = new THREE.Box3(), c = new THREE.Vector3();
+    for (const o of SD.live) {
+      if (!o.visible || o.userData.held || o.userData.creature || o.isLight || o.parent?.userData?.creature) continue;
+      bx.setFromObject(o); if (bx.isEmpty()) continue;
+      if (bx.clone().expandByScalar(0.25).containsPoint(pos)) { o.visible = false; continue; }
+      bx.getCenter(c);
+      if (c.distanceTo(pos) < dl - 0.8 && c.clone().sub(pos).dot(fwd) > 0 && boxShare(bx, camera) > 0.5) o.visible = false;
+    }
+    // THE NIGHT FLOOR: key from the lens side, rim behind the subject, a warm fill on the creature's face, a sky fill
+    const Lt = SD.lights, dir = look.clone().sub(pos).normalize();
+    const ls = shot.studioLight ?? ST.lightScale ?? 0.12; // the floor's strength: 0.12 calibrated on RunPod 2026-11-13 (0.25 washes out, 1 blows out)
+    if (night && ls > 0) {
+      Lt.key.position.copy(pos).add(new THREE.Vector3(0, 1.2, 0)); Lt.key.intensity = ls * (26 + 2.5 * dl);
+      Lt.rim.position.copy(look).addScaledVector(dir, 4).add(new THREE.Vector3(0, 4, 0)); Lt.rim.intensity = ls * 45;
+      Lt.sky.intensity = Math.min(0.55, ls * 2.5);
+      if (creatures.length) { const cb = new THREE.Box3().setFromObject(creatures[0]), top = cb.getCenter(new THREE.Vector3()); top.y = cb.min.y + 0.8 * (cb.max.y - cb.min.y); Lt.face.position.copy(top).addScaledVector(dir, -4); Lt.face.intensity = ls * (60 + 4 * top.distanceTo(pos)); }
+    }
     S.camFill?.position.copy(pos).add(new THREE.Vector3(0, 0.4, 0));
     S.weather?.update(shot.board?.weather ?? null, t, camera, night);
     S.spots.center.copy(look).setY(0);
+    // the frame's geometry stats for the checks: each visible cast member's on-screen height share, the creature's share
+    const ppl = {};
+    for (const [id, P] of Object.entries(people)) if (P.obj.visible) { const h = heightShare(P.obj, camera); if (h > 0) ppl[id] = +h.toFixed(3); }
+    SD.stats = { people: ppl, creature: +cShare.toFixed(3), camera: shot.camera };
     return { focus: pos.distanceTo(look) };
   }
+  SD.stats = { people: {}, creature: 0, camera: shot.camera, noCamera: true };
   return base;
+}
+
+const CREATURE_MAX = 0.6;
+/** the share (0-1) of the frame a world box covers (its projected corners, clipped to the frame) */
+function boxShare(bx, camera) {
+  let x0 = 1, x1 = -1, y0 = 1, y1 = -1, behind = 0;
+  for (const cx of [bx.min.x, bx.max.x]) for (const cy of [bx.min.y, bx.max.y]) for (const cz of [bx.min.z, bx.max.z]) {
+    const p = new THREE.Vector3(cx, cy, cz); const v = p.clone().applyMatrix4(camera.matrixWorldInverse); if (v.z > 0) { behind++; continue; }
+    p.project(camera); x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); y0 = Math.min(y0, p.y); y1 = Math.max(y1, p.y);
+  }
+  if (behind === 8) return 0;
+  if (behind) return 1; // the lens is inside / right at it
+  return (Math.max(0, Math.min(1, x1) - Math.max(-1, x0)) * Math.max(0, Math.min(1, y1) - Math.max(-1, y0))) / 4;
+}
+const screenShare = (o, camera) => { const b = new THREE.Box3().setFromObject(o); return b.isEmpty() ? 0 : boxShare(b, camera); };
+/** a person's visible on-screen height as a share of the frame height (0 when off screen) */
+function heightShare(o, camera) {
+  const b = new THREE.Box3().setFromObject(o); if (b.isEmpty()) return 0;
+  let y0 = 1, y1 = -1, x0 = 1, x1 = -1, front = 0;
+  for (const cx of [b.min.x, b.max.x]) for (const cy of [b.min.y, b.max.y]) for (const cz of [b.min.z, b.max.z]) {
+    const p = new THREE.Vector3(cx, cy, cz); if (p.clone().applyMatrix4(camera.matrixWorldInverse).z > 0) continue; front++;
+    p.project(camera); y0 = Math.min(y0, p.y); y1 = Math.max(y1, p.y); x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x);
+  }
+  if (!front || x1 < -1 || x0 > 1 || y1 < -1 || y0 > 1) return 0;
+  return Math.max(0, Math.min(1, y1) - Math.max(-1, y0)) / 2;
 }

@@ -71,9 +71,9 @@ function stubApi({ t, dur, night, homes, shot, cast, assets, rec }) {
     },
     prop(name, o = {}) { if (!PROPS.has(name)) rec.errors.add(`prop "${name}" is not a kit prop (build it from blocks or an asset)`); if (o.at) pt(o.at, `prop(${name}).at`); rec.props.add(name); },
     animal(species, o = {}) { if (!ANIMALS.includes(species)) rec.errors.add(`animal "${species}" is not in the kit`); if (o.action && !ANIMAL_ACTIONS.includes(o.action)) rec.errors.add(`animal action "${o.action}" unknown`); if (o.at) pt(o.at, "animal.at"); rec.animals.add(species); },
-    block(size, at) { pt(size, "block size"); pt(at, "block at"); rec.prims++; },
-    ball(r, at) { num(r, "ball r"); pt(at, "ball at"); rec.prims++; },
-    cyl(a, b, h, at) { pt(at, "cyl at"); rec.prims++; },
+    block(size, at, c, o = {}) { pt(size, "block size"); pt(at, "block at"); rec.prims++; if ((o?.glow ?? 0) >= 1) rec.glow++; },
+    ball(r, at, c, o = {}) { num(r, "ball r"); pt(at, "ball at"); rec.prims++; if ((o?.glow ?? 0) >= 1) rec.glow++; },
+    cyl(a, b, h, at, c, o = {}) { pt(at, "cyl at"); rec.prims++; if ((o?.glow ?? 0) >= 1) rec.glow++; },
     camera(c = {}) { if (pt(c.pos, "camera.pos") && pt(c.look, "camera.look")) rec.cam = { pos: c.pos.map(Number), look: c.look.map(Number), fov: Number(c.fov ?? 50), roll: Number(c.roll ?? 0) }; },
     shake: () => {},
   };
@@ -85,7 +85,7 @@ const camDelta = (a, b) => (!a || !b ? 0 : Math.hypot(...a.pos.map((x, i) => x -
 
 /** run one shot (or asset) body at time t; returns the record */
 function runAt(code, ctx, t) {
-  const rec = { errors: new Set(), people: new Set(), props: new Set(), animals: new Set(), assets: new Set(), prims: 0, monster: false, cam: null, depth: 0, info: {} };
+  const rec = { errors: new Set(), people: new Set(), props: new Set(), animals: new Set(), assets: new Set(), prims: 0, monster: false, cam: null, depth: 0, info: {}, glow: 0 };
   const api = stubApi({ ...ctx, t, rec });
   try { vm.runInNewContext(`(function (api, Math) { "use strict";\n${code}\n})(api, Math)`, { api, Math }, { timeout: 200 }); }
   catch (e) { rec.errors.add(`runtime at t=${t.toFixed(2)}: ${String(e.message ?? e).slice(0, 160)}`); }
@@ -114,7 +114,17 @@ export function checkShots({ shots, assets = {}, homes, cast, timing }) {
     const motion = camDelta(recs[0].cam, recs[3].cam), step = camDelta(recs[0].cam, recs[1].cam);
     if (recs[0].cam && motion < MIN_MOVE) errors.push(`the camera barely moves (${motion.toFixed(2)} over the cut; every shot needs a move > ${MIN_MOVE})`);
     if (recs[0].cam && step < MIN_STEP) errors.push("the camera is still at frame 0 (start the move already in motion: e.g. use 0.25 + 0.75 * k)");
-    out[s.id] = { ok: errors.length === 0, errors: errors.slice(0, 8), motion: +motion.toFixed(3), midMove: step >= MIN_STEP, people: [...new Set(recs.flatMap((r) => [...r.people]))], info: Object.assign({}, ...recs.slice().reverse().map((r) => r.info)), props: [...new Set(recs.flatMap((r) => [...r.props]))], animals: [...new Set(recs.flatMap((r) => [...r.animals]))], assets: [...new Set(recs.flatMap((r) => [...r.assets]))], monster: recs.some((r) => r.monster) };
+    const motionOnly = errors.length > 0 && errors.every((e) => /barely moves|still at frame 0/.test(e)); // a still camera: the adapter's safety push can save it
+    out[s.id] = { ok: errors.length === 0, motionOnly, errors: errors.slice(0, 8), motion: +motion.toFixed(3), midMove: step >= MIN_STEP, people: [...new Set(recs.flatMap((r) => [...r.people]))], info: Object.assign({}, ...recs.slice().reverse().map((r) => r.info)), props: [...new Set(recs.flatMap((r) => [...r.props]))], animals: [...new Set(recs.flatMap((r) => [...r.animals]))], assets: [...new Set(recs.flatMap((r) => [...r.assets]))], monster: recs.some((r) => r.monster) };
   }
   return out;
+}
+
+/** an asset's own check: validated, runs in the stub, how many glowing parts it draws (a creature needs a face that reads
+ *  at night: at least 2 glowing parts, its eyes) -> { ok, errors, glow, prims } */
+export function assetInfo(code, { homes = {}, cast = {} } = {}) {
+  const v = validateShotCode(code);
+  if (!v.ok) return { ok: false, errors: v.errors, glow: 0, prims: 0 };
+  const rec = runAt(code, { dur: 1, night: true, homes, shot: { people: [] }, cast, assets: {} }, 0.5);
+  return { ok: rec.errors.size === 0, errors: [...rec.errors], glow: rec.glow, prims: rec.prims };
 }
