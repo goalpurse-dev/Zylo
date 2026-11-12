@@ -53,3 +53,22 @@ test("a storyboard line in the park with a crowd cheering, a dog and rain passes
   const board = { bible: { homes: { me: 0 } }, lines: [{ line: 0, place: "place:park", shots: [{ loc: "place:park", light: "day", cam: "place_wide", weather: "rain", people: [{ id: "me", where: "place:center", pose: "cheer" }], animals: [{ species: "dog", where: "place:left", action: "run" }], acts: [{ k: "cheer" }, { k: "rain:falls" }, { k: "animal:move" }] }] }] };
   assert.deepEqual(validateStoryboard(board, { lines: ["We cheered in the rain as the dog ran."], cast: { me: {} } }), []);
 });
+
+test("monster variants + the creature check: the script's words pick the drawn variant; unshowable words fail", async () => {
+  const { creatureCheck } = await import("../lib/storyboard.js");
+  assert.equal(creatureCheck([{ text: "Its giant grin flickered in the dark." }], "peeker").variant, "grin");
+  assert.equal(creatureCheck([{ text: "Its eye pressed the glass." }], null).variant, "peeker");
+  assert.equal(creatureCheck([{ text: "Something waited." }], null).variant, "shadow");
+  assert.ok(creatureCheck([{ text: "Its tentacles curled round the house." }], "peeker").problems.length);
+  const { BOARD_KIT } = await import("../../../../supabase/functions/_shared/blockyWorlds/boardKit.js");
+  assert.deepEqual(BOARD_KIT.creatures.map((c) => c.id), ["peeker", "shadow", "grin", "hat", "many_eyes"]);
+});
+
+test("the voice-failure metric and its switch", async () => {
+  const { voiceFailureStats, productionSettings, prepareProduction } = await import("../../../../supabase/functions/_shared/blockyWorlds/render.js");
+  const runs = [...Array(18).fill({ status: "done", voice_ready: true }), { status: "failed", voice_ready: true, error_code: "STILL_GATE" }, { status: "failed", voice_ready: false, error_code: "NO_GPU" }];
+  const s = voiceFailureStats(runs); assert.equal(s.failedAfterVoice, 1); assert.equal(s.pct, 5); assert.deepEqual(s.byCode, { STILL_GATE: 1 });
+  const env = { BLOCKY_WORLDS_STORYBOARD: "auto", BLOCKY_WORLDS_VOICE_AFTER_STORYBOARD: "on" };
+  assert.equal(prepareProduction(productionSettings((k) => env[k])).storyboard.voiceAfter, true);
+  assert.equal(prepareProduction(productionSettings((k) => ({ BLOCKY_WORLDS_STORYBOARD: "auto" })[k])).storyboard.voiceAfter, undefined);
+});

@@ -320,7 +320,7 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
   const voice = voiceFn ?? (await import(pathToFileURL(path.join(ENGINE, "voice", "eleven.mjs")).href)).elevenVoice;
   let v = null;
   try {
-    [v] = await Promise.all([lap("voice", () => voice({ lines: script.lines, outDir: dir, apiKey: process.env.ELEVENLABS_KEY ?? null })), lap("director", () => directing), ...(boarding ? [lap("storyboard", () => boarding)] : [])]); // the storyboard is written while the voice is made
+    [v] = await Promise.all([lap("voice", async () => { if (boarding && p.storyboard?.voiceAfter) await boarding; return voice({ lines: script.lines, outDir: dir, apiKey: process.env.ELEVENLABS_KEY ?? null }); }), /* voiceAfter: no paid take before the storyboard is written (render.js switch) */ lap("director", () => directing), ...(boarding ? [lap("storyboard", () => boarding)] : [])]); // the storyboard is written while the voice is made
   } catch (e) {
     const m = String(e.message ?? e);
     throw coded(/VOICE_CONFIG/.test(m) ? "VOICE_CONFIG" : /quota|credits|payment|insufficient|\b40[12]\b/i.test(m) ? "PROVIDER_BALANCE" : /different script/.test(m) ? "BAD_JOB" : "VOICE_FAILED", m.slice(0, 600));

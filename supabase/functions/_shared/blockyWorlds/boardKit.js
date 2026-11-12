@@ -12,10 +12,19 @@ export const BOARD_KIT = Object.freeze({
     { id: "school", what: "a classroom", outdoor: false },
     { id: "shop", what: "a shop: shelves of goods, a counter with a till, a shop window", outdoor: false },
   ]),
-  creatures: Object.freeze([{ id: "monster", what: "one tall dark blocky creature with ONE huge glowing eye (lurks, presses its eye to windows, licks glass, turns, blinks, backs away)" }]),
+  // the monster VARIANTS on the same tall body (page/simple/monsters.js MONSTER_VARIANTS): the script must describe the one drawn
+  // (engine lib/storyboard.js creatureCheck: the words pick the variant; words no variant can show fail cleanly)
+  creatures: Object.freeze([
+    { id: "peeker", what: "one huge glowing eye", signature: "the eye presses glass, stares, twitches, blinks" },
+    { id: "shadow", what: "a faceless tall shadow", signature: "stretches taller, flickers out, shivers" },
+    { id: "grin", what: "a wide glowing grin", signature: "the grin widens, flickers, jitters" },
+    { id: "hat", what: "a tall figure in a tall hat, one dim eye", signature: "tips its hat, the hat wobbles" },
+    { id: "many_eyes", what: "six small glowing eyes", signature: "the eyes open in turn, close in turn, dart" },
+  ]),
+  creatureMoves: "lurks, strides in and kneels at a window, presses to the glass, licks the glass, turns toward a house, backs away into the dark",
   animals: Object.freeze(["dog", "cat", "rabbit", "bird", "duck", "cow", "pig", "sheep", "chicken", "fox", "bear", "deer", "frog", "owl", "mouse", "goat", "turtle", "wolf"]),
   weather: Object.freeze(["rain", "snow", "wind"]),
   crowds: "people on the street (street slots 0-9) or in a place: stand, walk, run, cheer, wave, look up, cover their eyes",
   actions: Object.freeze(["lights_on:windows", "peek:curtains", "lurk:monster", "press:eye", "glow:windows", "stare:ceiling", "bulge:curtains", "poke_out:cat", "stack:bricks", "tremble:curtains", "wave", "peek:sock", "stare:cat", "catch:peeking", "talk", "rip:curtains", "fly:curtains", "grab:boards", "nail:boards", "smear:batter", "lick:glass", "huddle:blanket", "herd", "sneeze", "blow_off:blanket", "look_up", "turn:monster", "pull:sock", "blink:eye", "back_away:monster", "dark:windows", "sleep", "cover:eyes", "walk", "stare", "twitch:eye", "arrive:monster", "hide:curtains", "rain:falls", "snow:falls", "cheer", "run", "animal:move"]),
-  notYet: Object.freeze(["creatures other than the one-eyed monster", "inside a giant thing (a world kind)", "vehicles", "fog / storms / lightning", "snow-covered ground", "the beach, the city, space, castles, underwater", "held props other than a hammer, boards, a bowl, a brick"]),
+  notYet: Object.freeze(["creatures other than the 5 tall-body variants (no wings, tentacles, slime, spiders, swimmers)", "inside a giant thing (a world kind)", "vehicles", "fog / storms / lightning", "snow-covered ground", "the beach, the city, space, castles, underwater", "held props other than a hammer, boards, a bowl, a brick"]),
 });

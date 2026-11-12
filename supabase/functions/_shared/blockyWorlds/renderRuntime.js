@@ -144,7 +144,7 @@ export function makeRuntime({ db, storage, runpod, secret, callbackUrl, cfg = RE
       await db.updateJob(j.id, { state: "failed", finished_at: iso(), error_code: "CANCELLED", error_message: `the run failed (${code})` }, { live: true });
       if (j.provider_job_id) await Promise.resolve(runpod?.cancel?.(j.provider_job_id)).catch(() => {});
     }
-    log(`run ${run.id}: FAILED ${code} (${String(message ?? "").slice(0, 200)}), refunded ${credits} credits`);
+    log(`run ${run.id}: FAILED ${code} (${String(message ?? "").slice(0, 200)}), refunded ${credits} credits${run.voice_ready ? " [FAILED_AFTER_VOICE]" : ""}`); // the voice-failure metric (render.js voiceFailureStats)
     await Promise.resolve(db.alert?.(`blocky-worlds-${code}`, `Blocky Worlds: a video failed (${code})`, `Run ${run.id} (${run.title ?? ""}) failed: ${code} ${String(message ?? "").slice(0, 600)}. Refunded ${credits} credits.`)).catch(() => {});
     return true;
   }

@@ -253,7 +253,10 @@ export function productionSettings(get = () => "") {
   // THE AUTOMATIC STORYBOARD (2026-11-12): "auto" = the director writes a storyboard + every shot's prompts (runpod/worker.mjs);
   // off until the owner switches the launch on (secret BLOCKY_WORLDS_STORYBOARD=auto)
   const storyboard = v("BLOCKY_WORLDS_STORYBOARD") === "auto" ? "auto" : "off";
-  return { director, builder, builderMaxUsd, review, reviewMaxUsd, storyboard };
+  // the voice waits for the storyboard (no paid take for a story the storyboard can't film): off by default (the voice is made
+  // alongside, faster); switched on if the soft launch shows > ~5 % of runs failing after the voice (voiceFailureStats)
+  const voiceAfterStoryboard = ["on", "true", "1"].includes(v("BLOCKY_WORLDS_VOICE_AFTER_STORYBOARD"));
+  return { director, builder, builderMaxUsd, review, reviewMaxUsd, storyboard, voiceAfterStoryboard };
 }
 export const REVIEW_MODELS = Object.freeze({ haiku: "claude-haiku-5-5", sonnet: "claude-sonnet-5-5" });
 /** job.prepare.review for the worker (engine lib/vision/index.js judgeFromConfig) */
@@ -295,7 +298,7 @@ export function prepareProduction(s = PRODUCTION_DEFAULTS, { attempt = 1, librar
   const left = +Math.max(0, (Number(s.builderMaxUsd) || 0) - (attempt > 1 ? Math.max(0, Number(builderSpentUsd) || 0) : 0)).toFixed(5);
   const designs = s.builder === "on" && left >= (attempt > 1 ? BUILDER_MIN_LEFT_USD : 1e-9);
   const builder = { provider: designs ? "anthropic" : "off", library: s.builder === "on" ? library : [], budget: { maxUsd: designs ? left : 0 } };
-  return { director, builder, review: prepareReview(s), limits: { ...aiCeilingUsd(s), prepareSec: RENDER.runSec.prepare }, ...(s.storyboard === "auto" ? { storyboard: { auto: true, capUsd: 0.25, promptsCapUsd: 0.3 } } : {}) };
+  return { director, builder, review: prepareReview(s), limits: { ...aiCeilingUsd(s), prepareSec: RENDER.runSec.prepare }, ...(s.storyboard === "auto" ? { storyboard: { auto: true, capUsd: 0.25, promptsCapUsd: 0.3, ...(s.voiceAfterStoryboard ? { voiceAfter: true } : {}) } } : {}) };
 }
 
 /** what the earlier prepare tries of a run spent on the builder (their job rows: the done output's or the failed
@@ -576,6 +579,15 @@ export function reconcile(run, jobsIn, now = Date.now(), cfg = RENDER) {
   return out;
 }
 
+/** THE VOICE-FAILURE METRIC (soft launch): of the finished runs, how many failed AFTER their paid voice was made (the take
+ *  is paid and lost), as a count, a % and by failure code. runs: [{ status, voice_ready, error_code }] (the runs table).
+ *  Over ~5 %: switch BLOCKY_WORLDS_VOICE_AFTER_STORYBOARD on. */
+export function voiceFailureStats(runs = []) {
+  const ended = runs.filter((r) => r.status === "done" || r.status === "failed");
+  const after = ended.filter((r) => r.status === "failed" && r.voice_ready);
+  const byCode = {}; for (const r of after) byCode[r.error_code ?? "UNKNOWN"] = (byCode[r.error_code ?? "UNKNOWN"] ?? 0) + 1;
+  return { runs: ended.length, failedAfterVoice: after.length, pct: ended.length ? +((100 * after.length) / ended.length).toFixed(1) : 0, byCode, switchOn: ended.length >= 20 && after.length / ended.length > 0.05 };
+}
 /** every ledger row's usd by stage, and the total */
 export function costSummary(rows) {
   const by = {};

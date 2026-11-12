@@ -93,6 +93,8 @@ export function applyStoryboard(tl00, board) {
   tl.scenes = scenesOf(tl0, board);
   tl.sceneHouses = sceneHousesOf(board);
   for (const s of tl.shots) { s.scene = sceneOf(tl.scenes, s.line)?.id ?? null; s.houses = sceneHousesAt(tl.sceneHouses, s.line); if (s.board) s.board.houses = s.houses; }
+  // THE CREATURE: the variant the director picked, made to match how the SCRIPT describes it (creatureCheck)
+  if (tl.monster) { const c = creatureCheck(tl.lines ?? [], board.bible.monster?.variant); tl.monster = { ...tl.monster, variant: c.variant }; tl.creature = c; }
   tl.storyboard = { id: board.id, rule: board.bible.rule, homes: board.bible.homes, rooms: board.bible.rooms ?? {} }; // rooms: each room's furniture (page/simple/board.js)
   if (Array.isArray(tl.world?.sets) && !tl.world.sets.includes("board")) tl.world.sets.push("board"); // the storyboard's own town joins the world bible
   // the production list's items as the storyboard shows them (board.kit: id -> { kitName, crowdKind }): the same
@@ -255,4 +257,16 @@ export function checkBoard(tl, board) {
   return out;
 }
 
-export const storyboardChecks = (tl, board) => ({ board: checkBoard(tl, board), rule: checkRule(tl, board), actions: checkActions(tl), places: checkPlaces(tl, board) });
+// the monster variants (page/simple/monsters.js MONSTER_VARIANTS) and the words a script uses for each
+const VARIANT_CUES = { peeker: /\b(one|single|giant|huge|big|glowing)\s+eye\b|\beyes? (presses|pressed|filled|blinked|stared|twitched)\b|\beyelid\b/i, shadow: /\b(shadow|faceless|no face|dark shape|shape in the dark)\b/i, grin: /\b(grin|grins|grinning|smile|smiling|teeth)\b/i, hat: /\b(top hat|tall hat|its hat|his hat)\b/i, many_eyes: /\b(many|hundred|dozen|six|seven|eight|so many) eyes\b/i };
+const NO_VARIANT = /\b(tentacles?|wings|slime|slimy|eight legs|spider|invisible|swims|flying (thing|monster))\b/i;
+/** the creature the video draws matches the script: the variant the words describe wins over the director's pick;
+ *  words no variant can show are a problem (a clean failure) */
+export function creatureCheck(lines, pick) {
+  const text = lines.map((l) => l.text ?? l).join(" ");
+  const said = Object.entries(VARIANT_CUES).filter(([, re]) => re.test(text)).map(([v]) => v);
+  const variant = said.length === 1 ? said[0] : said.includes(pick) ? pick : said[0] ?? (pick ?? "shadow");
+  const problems = NO_VARIANT.test(text) ? [`the script describes the creature with "${text.match(NO_VARIANT)[0]}": no monster variant can show it`] : [];
+  return { variant, said, pick: pick ?? null, fixed: !!pick && variant !== pick, problems };
+}
+export const storyboardChecks = (tl, board) => ({ creature: tl.creature?.problems ?? [], board: checkBoard(tl, board), rule: checkRule(tl, board), actions: checkActions(tl), places: checkPlaces(tl, board) });

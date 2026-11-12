@@ -13,6 +13,13 @@ import * as THREE from "three";
 import { mat, box, rbox } from "./common.js";
 
 export const EYE_STATES = Object.freeze(["stare", "squint", "twitch", "blink", "press"]);
+// VARIANTS (2026-11-12): the same tall body, another face; spec.variant. Each plays its SIGNATURE on the eye states:
+//   peeker     one huge glowing eye (the default; the eye's own lids)
+//   shadow     faceless: no eye; it stretches taller on stare, flickers out on blink, shivers on twitch
+//   grin       a wide glowing grin: widens on stare, flickers on blink, jitters on twitch
+//   hat        a tall hat, one dim eye: tips the hat on blink, the hat wobbles on twitch
+//   many_eyes  six small eyes: they open in turn on stare, close in turn on blink, dart on twitch
+export const MONSTER_VARIANTS = Object.freeze(["peeker", "shadow", "grin", "hat", "many_eyes"]);
 // TALLER + THINNER (owner 2026-11-10: "it towers over the houses in wide shots"): long legs and torso, a bigger head;
 // ~11.6 m, well over a two-storey roof (~9.3 m)
 const LEG = 5.6, TOR = 3.4, ARM = 4.4, HEADK = 1.6;
@@ -69,7 +76,14 @@ export function makeMonster(spec = {}) {
     for (const k of [-2, -1, 0, 1, 2]) box(lash, [r * 0.06, r * 0.22, 0.03], [k * r * 0.4, -r * 0.14, 0], lashM, { cast: false, rot: [0, 0, k * 0.18] });
     eyes.push({ e, ball, ir, top, bot, lash, r, halo });
   };
-  if (one) makeEye(0, 0.72, 0.58); else { makeEye(-0.36, 0.78, 0.26); makeEye(0.36, 0.78, 0.26); }
+  const variant = MONSTER_VARIANTS.includes(spec.variant) ? spec.variant : "peeker";
+  if (variant === "many_eyes") { for (const [x, y, r] of [[-0.42, 1.05, 0.2], [0.05, 1.12, 0.17], [0.45, 1.0, 0.21], [-0.3, 0.55, 0.18], [0.2, 0.5, 0.24], [0.52, 0.42, 0.13]]) makeEye(x, y, r); }
+  else if (variant === "hat") makeEye(0, 0.72, 0.3);
+  else if (one || variant !== "peeker") makeEye(0, 0.72, 0.58); else { makeEye(-0.36, 0.78, 0.26); makeEye(0.36, 0.78, 0.26); }
+  const vparts = {};
+  if (variant === "shadow" || variant === "grin") for (const e of eyes) e.e.visible = false; // faceless / the grin is the face (the eye stays as an anchor)
+  if (variant === "grin") { const g = new THREE.Group(); g.position.set(0, 0.45, 0.67); head.add(g); const gm = new THREE.MeshStandardMaterial({ color: glow, emissive: glow, emissiveIntensity: 1.1 }); for (let i = -4; i <= 4; i++) box(g, [0.16, 0.18 - Math.abs(i) * 0.012, 0.04], [i * 0.18, -0.12 + Math.abs(i) * Math.abs(i) * 0.012, 0], gm, { cast: false }); vparts.grin = g; vparts.grinM = gm; }
+  if (variant === "hat") { const h = new THREE.Group(); h.position.set(0, 1.45, 0); head.add(h); box(h, [1.6, 0.08, 1.4], [0, 0, 0], mat("#141621")); box(h, [1.0, 1.3, 0.95], [0, 0.68, 0], mat("#141621")); box(h, [1.02, 0.14, 0.97], [0, 0.2, 0], mat("#7a1f2a")); vparts.hat = h; }
   // two little horns of block
   for (const s of [-1, 1]) { const h = rbox(head, [0.2, 0.5, 0.2], [s * 0.55, 1.6, -0.1], dark2, 0.04); h.rotation.z = -s * 0.3; }
   // the pane the eye presses on (press state)
@@ -82,7 +96,7 @@ export function makeMonster(spec = {}) {
   // a soft light of its own (the eye lights what it looks at)
   const eyeLight = new THREE.PointLight(glow, 1.0, 10, 1.6); eyeLight.position.set(0, 0.72, 3.2); head.add(eyeLight); // well in front: it lights what the eye looks at, never the eye itself
   root.traverse((o) => { if (o.isMesh) { o.castShadow = o !== glass; o.receiveShadow = true; } });
-  root.userData = { kind: "monster", height: H, eyeY: LEG + TOR + 0.02 + 0.72 * HEADK, headDepth: 0.7 * HEADK, body, torso, head, arms, legs, eyes, pane, one, iris, eyeLight, simple: true };
+  root.userData = { kind: "monster", variant, vparts, height: H, eyeY: LEG + TOR + 0.02 + 0.72 * HEADK, headDepth: 0.7 * HEADK, body, torso, head, arms, legs, eyes, pane, one, iris, eyeLight, simple: true };
   return root;
 }
 const HALO = new Map();
@@ -173,4 +187,25 @@ export function animateMonster(m, state = "lurk", t = 0, opts = {}) {
     }
   }
   lids(u, lid);
+  signature(u, eye, t, at);
+}
+
+/** the variant's own motion on the eye state (shot-local t, at = the word's time) */
+function signature(u, eye, t, at) {
+  const v = u.variant ?? "peeker", P = u.vparts ?? {}, d = t - at;
+  if (v === "shadow") { u.body.scale.set(1, 1, 1); for (const o of [u.torso]) o.scale.set(1, 1, 1);
+    if (eye === "stare") u.torso.scale.y = 1 + 0.18 * ease(t / 1.5);
+    if (eye === "blink") u.body.visible = !(d > 0 && d < 0.5 && Math.floor(d * 14) % 2 === 0); else u.body.visible = true;
+    if (eye === "twitch" && t > at) u.body.position.x += 0.06 * Math.sin(t * 40); }
+  if (v === "grin" && P.grin) { P.grin.scale.set(1, 1, 1); P.grinM.emissiveIntensity = 1.1;
+    if (eye === "stare") P.grin.scale.x = 1 + 0.35 * ease(t / 1.2);
+    if (eye === "blink" && d > 0 && d < 0.6) P.grinM.emissiveIntensity = Math.floor(d * 12) % 2 ? 0.05 : 1.4;
+    if (eye === "twitch" && t > at) { P.grin.position.x = 0.05 * Math.sin(t * 35); P.grin.scale.y = 1 + 0.25 * Math.abs(Math.sin(t * 20)); } else P.grin.position.x = 0; }
+  if (v === "hat" && P.hat) { P.hat.rotation.set(0, 0, 0); P.hat.position.y = 1.45;
+    if (eye === "blink" && d > 0) { const k = d < 0.6 ? ease(d / 0.3) - ease((d - 0.3) / 0.3) : 0; P.hat.rotation.x = -0.5 * k; P.hat.position.y = 1.45 + 0.25 * k; }
+    if (eye === "twitch" && t > at) P.hat.rotation.z = 0.12 * Math.sin(t * 22); }
+  if (v === "many_eyes") u.eyes.forEach((e, i) => {
+    const k = eye === "stare" ? 1 - ease((t - i * 0.18) / 0.25) : eye === "blink" && d > 0 ? ease((d - i * 0.1) / 0.15) - ease((d - 0.6 - i * 0.1) / 0.2) : 0;
+    const s = Math.max(0.001, Math.min(1, k)); e.top.scale.y = s; e.bot.scale.y = s; e.top.visible = e.bot.visible = s > 0.01;
+    e.ir.position.x = eye === "twitch" && t > at ? e.r * 0.25 * Math.sin(t * 19 + i) : 0; });
 }
