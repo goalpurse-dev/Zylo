@@ -47,6 +47,14 @@ export const SFX = {
   scratch: { dur: 0.12, anchor: 0, gainDb: -6, quality: "ok", ...KENNEY("Interface Sounds"), source: "Kenney Interface Sounds scratch_001 (CC0, picked by name for the sound word)", what: "a scratch" },
   plop: { dur: 0.11, anchor: 0, gainDb: -6, quality: "ok", ...KENNEY("Interface Sounds"), source: "Kenney Interface Sounds drop_001 (CC0, picked by name for the sound word)", what: "a plop" },
   drip: { dur: 0.13, anchor: 0, gainDb: -6, quality: "ok", ...KENNEY("Interface Sounds"), source: "Kenney Interface Sounds drop_002 pitched up (CC0, picked by name for the sound word)", what: "a drip" },
+  // the home-made sound words (owner, 2026-11-12: our own code, audio/sfxBuild.mjs)
+  beep: { dur: 0.18, anchor: 0, gainDb: -6, quality: "ok", ...OURS, what: "a 1 kHz beep" },
+  buzz: { dur: 0.7, anchor: 0, gainDb: -6, quality: "ok", ...OURS, what: "a buzz (bee / buzzer), 125 Hz saw with flutter" },
+  hiss: { dur: 0.6, anchor: 0, gainDb: -6, quality: "ok", ...OURS, what: "a high hiss (snake / tyre)" },
+  fizz: { dur: 0.9, anchor: 0, gainDb: -6, quality: "ok", ...OURS, what: "a soda fizz with tiny bubble pops" },
+  boing: { dur: 0.7, anchor: 0, gainDb: -6, quality: "ok", ...OURS, what: "a spring boing, wobbling pitch" },
+  squeak: { dur: 0.21, anchor: 0, gainDb: -6, quality: "ok", ...OURS, what: "a rising-falling squeak (mouse / rubber toy)" },
+  poof: { dur: 0.55, anchor: 0, gainDb: -6, quality: "ok", ...OURS, what: "a soft low puff of smoke" },
 };
 export const SFX_NAMES = Object.keys(SFX);
 export const sfxPath = (name) => {

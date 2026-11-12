@@ -256,6 +256,24 @@ function whistle(seed) {
   return addReverb(x, 0.15, 0.75, 0.4);
 }
 
+
+// ---------------------------------------------------------------- the home-made sound words (owner, 2026-11-12)
+const lp = (x, f) => (biquadLP(x, f), x), hp = (x, f) => (biquadHP(x, f), x); // the biquads filter in place
+/** beep: a 1 kHz tone with a touch of its 3rd harmonic, 0.18 s, clean edges */
+function beep() { const n = Math.round(0.18 * SR), x = new Float32Array(n); for (let k = 0; k < n; k++) { const t = k / SR, e = Math.min(1, t / 0.004) * Math.min(1, (0.18 - t) / 0.01); x[k] = (Math.sin(TAU * 1000 * t) + 0.18 * Math.sin(TAU * 3000 * t)) * e; } return x; }
+/** buzz: a 125 Hz sawtooth with a 28 Hz wing flutter, band-limited (a bee / a buzzer), 0.7 s */
+function buzz(seed) { const r = rng(seed), n = Math.round(0.7 * SR), x = new Float32Array(n); let ph = 0; for (let k = 0; k < n; k++) { const t = k / SR; ph += (125 * (1 + 0.03 * Math.sin(TAU * 3 * t)) + (r() - 0.5) * 2) / SR; const saw = 2 * (ph % 1) - 1; x[k] = saw * (0.65 + 0.35 * Math.sin(TAU * 28 * t)) * Math.min(1, t / 0.03) * Math.min(1, (0.7 - t) / 0.08); } return lp(hp(x, 180), 3200); }
+/** hiss: white noise high-passed at 3 kHz, swelling in and fading (a snake / a tyre), 0.6 s */
+function hiss(seed) { const r = rng(seed), n = Math.round(0.6 * SR); const x = hp(hp(noise(n, r), 3000), 3000); return envApply(x, (t) => Math.min(1, t / 0.12) * Math.min(1, (0.6 - t) / 0.2)); }
+/** fizz: a soft high hiss with random tiny bubble pops on top (a soda), 0.9 s */
+function fizz(seed) { const r = rng(seed), n = Math.round(0.9 * SR); const x = envApply(hp(noise(n, r), 5000), (t) => 0.35 * Math.min(1, t / 0.05) * Math.min(1, (0.9 - t) / 0.3)); for (let i = 0; i < 70; i++) { const at = r() * 0.85, f = 2500 + r() * 4500, len = Math.round(0.004 * SR), o = Math.round(at * SR); for (let k = 0; k < len && o + k < n; k++) x[o + k] += Math.sin(TAU * f * k / SR) * Math.exp(-k / (0.0012 * SR)) * (0.3 + 0.5 * r()); } return x; }
+/** boing: a spring: a 190 Hz tone whose pitch wobbles at 11 Hz, the wobble dying away, 0.7 s */
+function boing() { const n = Math.round(0.7 * SR), x = new Float32Array(n); let ph = 0; for (let k = 0; k < n; k++) { const t = k / SR; ph += TAU * 190 * (1 + 0.45 * Math.exp(-t / 0.22) * Math.sin(TAU * 11 * t)) / SR; x[k] = (Math.sin(ph) + 0.25 * Math.sin(2 * ph)) * Math.min(1, t / 0.003) * Math.exp(-t / 0.28); } return x; }
+/** squeak: a quick rising-falling chirp around 2.2 kHz with a little roughness (a mouse / a rubber toy), 0.22 s */
+function squeak(seed) { const r = rng(seed), n = Math.round(0.22 * SR), x = new Float32Array(n); let ph = 0; for (let k = 0; k < n; k++) { const t = k / SR, u = t / 0.22; ph += TAU * (1800 + 900 * Math.sin(Math.PI * u)) * (1 + 0.01 * (r() - 0.5)) / SR; x[k] = Math.sin(ph) * Math.sin(Math.PI * Math.min(1, u * 1.05)) * (0.85 + 0.15 * Math.sin(TAU * 60 * t)); } return x; }
+/** poof: a soft low puff of air (smoke), low-passed noise with a fast attack and a 0.35 s decay */
+function poof(seed) { const r = rng(seed), n = Math.round(0.55 * SR); const x = lp(lp(noise(n, r), 900), 900); return envApply(x, (t) => Math.min(1, t / 0.008) * Math.exp(-t / 0.13)); }
+
 // ---------------------------------------------------------------- Kenney-based sounds
 function footsteps(files, interval, count, rate = 1, seed = 3) {
   const r = rng(seed), len = interval * count, x = new Float32Array(Math.round(len * SR));
@@ -303,6 +321,7 @@ Object.assign(BUILD, {
   plop: () => kenney("kenney_interface-sounds/Audio/drop_001.ogg"),
   drip: () => resample(kenney("kenney_interface-sounds/Audio/drop_002.ogg"), 1.4),
 });
+Object.assign(BUILD, { beep: () => beep(), buzz: () => buzz(81), hiss: () => hiss(82), fizz: () => fizz(83), boing: () => boing(), squeak: () => squeak(84), poof: () => poof(85) });
 const LOOPS = new Set(["crowd_murmur", "footsteps_walk", "footsteps_run"]);
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

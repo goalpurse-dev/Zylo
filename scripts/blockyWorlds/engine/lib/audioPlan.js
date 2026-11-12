@@ -49,9 +49,10 @@ export const SOUND_SFX = Object.freeze({
   pop: "pop", knock: "knock", slam: "door_slam", creak: "door_creak", rumble: "rumble", achoo: "sneeze", choo: "sneeze",
   clang: "shield_clash", bonk: "bonk", clunk: "clunk", tap: "tap", splat: "splat", snap: "snap", click: "click", ding: "ding",
   zap: "zap", twang: "twang", scratch: "scratch", plop: "plop", drip: "drip",
+  beep: "beep", buzz: "buzz", hiss: "hiss", fizz: "fizz", boing: "boing", squeak: "squeak", poof: "poof", // home-made
 });
 /** the writer's sound words we have NO sound for yet (sfxTags.js SOUND_WORDS minus SOUND_SFX) */
-export const SOUND_MISSING = Object.freeze(["poof", "squeak", "hiss", "buzz", "beep", "boing", "fizz", "gulp", "munch", "slurp", "ribbit", "meow", "woof", "moo", "quack", "oink"]);
+export const SOUND_MISSING = Object.freeze(["gulp", "munch", "slurp", "ribbit", "meow", "woof", "moo", "quack", "oink"]);
 const LOOPED = { rumble: 1.6 };
 const squeeze = (w) => { const s = String(w ?? "").toLowerCase().replace(/[^a-z]/g, ""); return [s, s.replace(/(.)\1{2,}/g, "$1$1"), s.replace(/(.)\1+/g, "$1")]; };
 /** cues for the script's tagged sound words, each on its spoken word (in order, inside its line when the timeline has
