@@ -362,7 +362,7 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
     const board0 = p.storyboard.board;
     const tl0 = applyStoryboard(tl, board0);
     // every scene's shot prompts in parallel, then the free fixes (verbs as timed actions, the state from the facts, HOW)
-    const w = await writePromptsByScene({ apiKey: process.env.ANTHROPIC_KEY, tl: tl0, board: board0, capUsd: Number(p.storyboard.promptsCapUsd) || 0.3, log: (m) => console.log(m) }).catch((e) => { throw coded(e.code === "PROMPTS_CAP" ? "STORYBOARD_FAILED" : "STORYBOARD_FAILED", `shot prompts: ${String(e.message).slice(0, 200)}`); });
+    const w = await lap("prompts", () => writePromptsByScene({ apiKey: process.env.ANTHROPIC_KEY, tl: tl0, board: board0, capUsd: Number(p.storyboard.promptsCapUsd) || 0.3, log: (m) => console.log(m) })).catch((e) => { throw coded("STORYBOARD_FAILED", `shot prompts: ${String(e.message).slice(0, 200)}`); });
     spend.directorUsd += w.costUsd; spend.plannedDirectorUsd += w.costUsd;
     p.storyboard.prompts = enrichPrompts(w.data, tl0).prompts;
     const pc = checkPrompts(p.storyboard.prompts, tl0, board0);

@@ -31,7 +31,8 @@ const spent = () => Object.values(costs).reduce((a, b) => a + (Number(b) || 0), 
 // the RunPod prepare + chunks
 // the builder's cap must cover at least one design call's worst case (Sonnet object design ~/usr/bin/bash.065: a /usr/bin/bash.06 cap built
 // nothing and the run stopped CRITICAL_UNBUILT, 2026-11-10); --builder-usd sets it
-const B = { voiceWorst: +(chars * Number(arg("voice-usd-per-char", 0.0001))).toFixed(4), director: arg("direction") ? 0 : 0.1, review: Number(arg("review-usd", 0.03)), builder: Number(arg("builder-usd", 0.15)), prepareRunpod: +(Number(arg("prepare-sec", 420)) * RATE).toFixed(4), chunks: +(K * Number(arg("max-chunk-sec", 600)) * RATE).toFixed(4) }; // hard limits: the prepare and every chunk are stopped at their seconds
+const SB = arg("storyboard") === "auto" ? Number(arg("storyboard-usd", 0.25)) + Number(arg("prompts-usd", 0.3)) : 0; // the automatic storyboard's caps (worker)
+const B = { storyboard: SB, voiceWorst: +(chars * Number(arg("voice-usd-per-char", 0.0001))).toFixed(4), director: arg("direction") ? 0 : 0.1, review: Number(arg("review-usd", 0.03)), builder: Number(arg("builder-usd", 0.15)), prepareRunpod: +(Number(arg("prepare-sec", 420)) * RATE).toFixed(4), chunks: +(K * Number(arg("max-chunk-sec", 600)) * RATE).toFixed(4) }; // hard limits: the prepare and every chunk are stopped at their seconds
 say(`plan: "${script.title}" ${script.lines.length} lines, ${chars} chars; worst case $${Object.values(B).reduce((a, b) => a + b, 0).toFixed(3)} (cap $${CAP})`);
 if (!argv.includes("--yes")) { say("dry run: nothing sent (add --yes)"); process.exit(0); }
 
@@ -54,7 +55,7 @@ async function libraryRows() {
 
 // ---------------------------------------------------------------- 1. prepare on RunPod
 if (!fs.existsSync(path.join(out, "timeline.json"))) {
-  const prepWorst = B.builder + B.review + 0.05 + (fs.existsSync(path.join(out, "costs.json")) ? 0 : B.voiceWorst + B.director);
+  const prepWorst = B.storyboard + B.builder + B.review + 0.05 + (fs.existsSync(path.join(out, "costs.json")) ? 0 : B.voiceWorst + B.director);
   if (spent() + prepWorst > CAP) { say(`STOPPED: prepare's worst case ${prepWorst.toFixed(3)} would take the spend ${spent().toFixed(3)} over ${CAP}`); process.exit(1); }
   const haveTake = !!(await st.get("take.json")), haveDirection = !!(await st.get("direction.json")); // a re-run pays for neither again
   const up = {}; for (const f of F) up[f] = await st.signPut(f);
@@ -64,7 +65,7 @@ if (!fs.existsSync(path.join(out, "timeline.json"))) {
     prepare: {
       script, idea, lengthSec: 90, music: "A", ...(arg("scenes") ? { scenes: JSON.parse(fs.readFileSync(arg("scenes"), "utf8")) } : {}),
       // --storyboard <lib/storyboards name> [--prompts <shot prompts json>]: the storyboard drives the shots (runpod/worker.mjs)
-      ...(arg("storyboard") ? { storyboard: { board: Object.values(await import(pathToFileURL(path.join(ENGINE, "lib/storyboards", `${arg("storyboard")}.js`)).href))[0], prompts: arg("prompts") ? JSON.parse(fs.readFileSync(arg("prompts"), "utf8")).prompts : null } } : {}),
+      ...(arg("storyboard") === "auto" ? { storyboard: { auto: true, capUsd: Number(arg("storyboard-usd", 0.25)), promptsCapUsd: Number(arg("prompts-usd", 0.3)) } } : arg("storyboard") ? { storyboard: { board: Object.values(await import(pathToFileURL(path.join(ENGINE, "lib/storyboards", `${arg("storyboard")}.js`)).href))[0], prompts: arg("prompts") ? JSON.parse(fs.readFileSync(arg("prompts"), "utf8")).prompts : null } } : {}),
       director: { provider: "anthropic", model: "claude-sonnet-5-5", ...(haveDirection ? { stored: await st.signGet("direction.json") } : {}) },
       builder: { provider: B.builder > 0 ? "anthropic" : "off", library, budget: { maxUsd: B.builder } }, // --builder-usd 0: the kit only, no design call
       review: B.review > 0 ? { provider: "anthropic", model: "claude-haiku-5-5", budget: { maxUsd: B.review } } : { provider: "off" }, // --review-usd 0: no AI shot review (the free checks + still gate stay)

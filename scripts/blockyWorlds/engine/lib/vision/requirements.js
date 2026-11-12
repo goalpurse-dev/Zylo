@@ -79,6 +79,8 @@ export function lineRequirements(tl, { script = null, premise = null } = {}) {
     const shots = shotsOfLine(tl, span).map((x) => x.i);
     return {
       line: i, text, prevText: i > 0 ? texts(i - 1) : null, start: r2(span.start), end: r2(span.end),
+      // the storyboard's IMAGE PROMPT of each shot of the line (lib/shotPrompts.js paramsFromPrompts): what the still must show
+      imagePrompts: (tl.shots ?? []).filter((x) => x.line === i && x.board?.prompt?.image).map((x) => cap(x.board.prompt.image, 400)).slice(0, 3),
       who, people, nouns, place, time: light ? LIGHT_WORD[light] ?? light : null, light,
       emotion, moving: MOVE_RE.test(text), action: (text.match(MOVE_RE) ?? [])[0]?.toLowerCase() ?? null, shots,
     };

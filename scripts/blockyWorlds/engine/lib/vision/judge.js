@@ -34,6 +34,9 @@ How to judge (be strict: a viewer gets under 2 seconds per line):
   of at least one frame, matching the hint (a kid vs an adult, a woman vs a man, an old person, a crowd, an animal).
   A different person in focus, the wrong age or gender, or the subject a tiny speck = not ok. A name that is really a
   pronoun or a word ("Grandpa His") is not a person: judge against what the line means.
+- IMAGE PROMPT (when given): each shot's frame must match its image prompt: the people in frame and where they are,
+  the props and their state (curtains on or gone, windows white or dark), the place, and what the viewer must understand
+  at a glance. A frame that misses its image prompt's subject or its key prop is not ok, even if the line is loosely met.
 - THINGS: every key noun of the line (the listed ones AND the important nouns in the line text) must be visible as
   that thing at phone size. A random similar object, a tiny speck, or only a word on a card/sign counts as missing
   (list it in missing). A picture card (an icon + a word on a board) is at best partial (type picture_card).
@@ -83,7 +86,7 @@ export function itemText(it) {
     it.action ? `action: ${it.action}${it.moving ? " (movement)" : ""}` : "",
     it.place ? `place: ${it.place}` : "", it.world ? String(it.world) : "", it.time ? `time: ${it.time}` : "", it.emotion ? `feeling: ${it.emotion}` : "",
   ].filter(Boolean).join(" | ");
-  return [`LINE ${it.line}: "${it.text}"`, it.prevText ? `(line before: "${it.prevText}")` : "", `Must show -> ${req}`, `Frames: ${it.stills.map((s) => s.key).join(", ")}`].filter(Boolean).join("\n");
+  return [`LINE ${it.line}: "${it.text}"`, it.prevText ? `(line before: "${it.prevText}")` : "", `Must show -> ${req}`, ...(it.imagePrompts?.length ? [`IMAGE PROMPT${it.imagePrompts.length > 1 ? "S (one per shot, in order)" : ""} (the frame must match it: who is in frame and where, the props and their state, the place, what the viewer must understand): ${it.imagePrompts.map((x, k) => `${k + 1}) ${x}`).join(" ")}`] : []), `Frames: ${it.stills.map((s) => s.key).join(", ")}`].filter(Boolean).join("\n");
 }
 
 /** the content blocks of a batch: per line, its text, then each frame as "frame <key>" + the image */
