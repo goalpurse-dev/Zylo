@@ -109,7 +109,7 @@ export async function directStoryboard({ apiKey, script, cast, scenes, title = "
   const castText = Object.entries(cast).map(([id, c]) => `${id}: ${c.name} (${c.role})`).join("; ");
   const numbered = lines.map((t, i) => `#${i} ${t}`).join("\n");
   let costUsd = 0;
-  const spend = (r) => { costUsd += r.costUsd ?? 0; if (costUsd > capUsd) throw Object.assign(new Error(`storyboard director over its cap $${capUsd}`), { code: "STORYBOARD_FAILED" }); return r; };
+  const spend = (r) => { costUsd += r.costUsd ?? 0; if (costUsd > capUsd) throw Object.assign(new Error(`storyboard director over its cap $${capUsd} (spent $${costUsd.toFixed(4)})`), { code: "STORYBOARD_FAILED", costUsd: +costUsd.toFixed(6) }); return r; }; /* the spend rides on the error so the worker books it (shakedown 4 lost it) */
   // 1. the world bible
   const bib = spend(await call({ apiKey, fetchFn, maxTokens: 1500, system: BIBLE_SYSTEM, content: `STORY "${title}"\nCAST: ${castText}\nLINES:\n${numbered}\n\n${exampleText()}` }));
   if (!bib.data?.homes) throw Object.assign(new Error("the storyboard bible was not usable"), { code: "STORYBOARD_FAILED", costUsd });

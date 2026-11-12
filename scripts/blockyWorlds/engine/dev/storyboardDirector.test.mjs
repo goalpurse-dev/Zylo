@@ -68,3 +68,6 @@ test("the free replay: the Pigeon Mayor's unfilmable lines are reworded to kit t
   const r = await replay({ script: R.results[0].script, scenes: S, fixture: { unfilmable: ["statue", "fountain"], rewrites: {} }, maxFallback: 0 });
   assert.match(String(r.error), /^KIT_UNSUPPORTED/);
 });
+test("over its cap: the error carries the spend (the worker books it; shakedown 4 lost ~$0.12)", async () => {
+  await assert.rejects(directStoryboard({ apiKey: "x", script, cast, scenes, capUsd: 0.0000001, fetchFn: mock({}).fetchFn }), (e) => e.code === "STORYBOARD_FAILED" && e.costUsd > 0 && /spent \$/.test(e.message));
+});
