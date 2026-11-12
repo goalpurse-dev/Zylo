@@ -17,10 +17,10 @@ import { ERRORS, STATUSES, STATUS_LABELS } from "../supabase/functions/_shared/b
 
 // ---------- the narrator (the owner's pick, 2026-11-03) ----------
 
-test("narrator: Little Dude II on Multilingual v2 at the owner's settings, inside the API's ranges", () => {
-  assert.equal(NARRATOR.voiceId, "fBD19tfE58bkETeiwUoC");
-  assert.equal(NARRATOR.model, "eleven_multilingual_v2");
-  assert.deepEqual({ ...NARRATOR.settings }, { stability: 1, similarity_boost: 0.7, style: 0, use_speaker_boost: true, speed: 1.2 });
+test("narrator: Scruffy Duck on Eleven v3 (owner, 2026-11-12), inside the API's ranges", () => {
+  assert.equal(NARRATOR.voiceId, "8VJBrRk4O7tFoB5kqxa6");
+  assert.equal(NARRATOR.model, "eleven_v3");
+  assert.deepEqual({ ...NARRATOR.settings }, { stability: 0.5, similarity_boost: 0.75, style: 0, use_speaker_boost: true, speed: 1.2 });
   assert.deepEqual(narratorProblems(), []);
   assert.equal(NARRATOR.settings.speed, VOICE_RANGES.speed[1], "speed is at the API's maximum");
 });
@@ -36,8 +36,8 @@ test("narrator: out-of-range settings are refused before any call", () => {
 
 test("narrator: the request body carries exactly the config", () => {
   const b = ttsBody("In this town, hello.");
-  assert.equal(b.model_id, "eleven_multilingual_v2");
-  assert.deepEqual(b.voice_settings, { stability: 1, similarity_boost: 0.7, style: 0, use_speaker_boost: true, speed: 1.2 });
+  assert.equal(b.model_id, "eleven_v3");
+  assert.deepEqual(b.voice_settings, { stability: 0.5, similarity_boost: 0.75, style: 0, use_speaker_boost: true, speed: 1.2 });
   const words = alignmentWords({ characters: [..."Hi yo"], character_start_times_seconds: [0, 0.1, 0.2, 0.3, 0.4], character_end_times_seconds: [0.1, 0.2, 0.3, 0.4, 0.5] });
   assert.deepEqual(words.map((w) => w.w), ["Hi", "yo"]);
 });

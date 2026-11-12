@@ -1,4 +1,4 @@
-// Blocky Worlds engine: the real narrator (ElevenLabs "Little Dude II", config.js NARRATOR) with word timings.
+// Blocky Worlds engine: the real narrator (ElevenLabs "Scruffy Duck" on Eleven v3 since 2026-11-12, config.js NARRATOR) with word timings.
 // A PAID call (~0.44 ElevenLabs credits a character on the owner's plan). One take per script: a finished take in the
 // out folder (voice.mp3 + take.json) is reused, never bought twice, unless force is set.
 // The pace: the voice's own pauses between words longer than MAX_GAP are cut down to GAP (config.js PACE: the 260 wpm
@@ -52,7 +52,7 @@ export function remap(t, ranges) {
   return prevEnd - shift;
 }
 
-/** the narrator: BLOCKY_WORLDS_NARRATOR=<config.js NARRATORS key> (little_dude_ii, the default, or v4) */
+/** the narrator: BLOCKY_WORLDS_NARRATOR=<config.js NARRATORS key> (scruffy_duck, the default, or little_dude_ii) */
 export function narratorFor(key = process.env.BLOCKY_WORLDS_NARRATOR) {
   if (!key) return NARRATOR;
   const n = NARRATORS[key]; if (!n) throw new Error(`unknown narrator "${key}" (one of ${Object.keys(NARRATORS).join(", ")})`);
