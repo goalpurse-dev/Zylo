@@ -17,6 +17,7 @@ export const KID_NEVER_BLINKS = {
   bible: {
     // Pell is Dottie's surname: ONE person, Dottie Pell (the planner's extra kid "Pell" is dropped from the cast)
     drop: ["pell"],
+    rooms: { me: { props: ["bed:side", "shelf", "rug", "cat"] }, town1: { props: ["bed", "nightstand"] }, hollis: { props: ["painting", "boards", "table", "bricks"] }, dottie: { props: ["counter", "bowl", "table"] }, fenwick: { props: ["sofa", "rug:red", "lamp"] } },
     homes: { town1: 0, town2: 1, dottie: 2, hollis: 3, fenwick: 4, town3: 5, me: 6 },
     // the houses' windows (the scene list's format, lib/scenes.js): "*" = every other house; events change them from a
     // line on (during that line the change happens on screen: the wind's rip, the sock pulled off, the batter licked)

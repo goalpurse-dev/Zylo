@@ -171,7 +171,7 @@ function makeLamp(root, x, z, S) {
 }
 
 // ------------------------------------------------------------------------------------------------ the rooms
-function makeRoom(root, k, owner) {
+function makeRoom(root, k, owner, props = ["bed", "shelf", "rug"]) {
   const g = new THREE.Group(); g.position.set(-60 + k * RDX, 0, ROOMZ); root.add(g);
   const wall = mat(["#f6e3c4", "#dfe9f7", "#f4d9e4", "#e3f1d8", "#fbe8c8", "#e9e0f6", "#f7efc9"][k % 7], { rough: 0.9 }), floor = mat("#b98b5e", { rough: 0.8 });
   box(g, [RW, 0.1, RD], [0, -0.05, -RD / 2 + 3], floor);
@@ -192,20 +192,28 @@ function makeRoom(root, k, owner) {
   // furniture by owner
   const P = R.props;
   const bed = (x, z) => { const b = new THREE.Group(); b.position.set(x, 0, z); g.add(b); box(b, [1.4, 0.45, 2.3], [0, 0.25, 0], mat("#8a5a3a")); box(b, [1.3, 0.18, 2.1], [0, 0.55, 0.05], mat("#fbfbf5")); box(b, [1.3, 0.12, 1.4], [0, 0.66, 0.4], mat("#5b8fd9")); rbox(b, [0.7, 0.16, 0.4], [0, 0.7, -0.8], mat("#ffffff"), 0.06); box(b, [1.4, 0.9, 0.12], [0, 0.6, -1.12], mat("#8a5a3a")); return b; };
-  if (owner === "me") { P.bed = bed(2.2, -0.9); box(g, [1.6, 0.06, 0.3], [-2.6, 1.9, -1.0], mat("#8a5a3a")); for (let i = 0; i < 5; i++) box(g, [0.14, 0.32, 0.22], [-3.1 + i * 0.2, 2.1, -1.0], mat(CURT[i])); cyl(g, 1.3, 1.3, 0.02, [0.3, 0.01, 0.2], mat("#ffb84a")); P.cat = catBody(g); P.cat.position.set(1.65, 0.7, -0.4); P.cat.rotation.y = -Math.PI / 2; }
-  if (owner === "hollis") {
+  // the furniture: the storyboard bible's props for this room (lib/storyboardDirector.js BOARD.roomProps)
+  const has = (p) => props.some((x) => x === p || x.startsWith(p + ":"));
+  if (has("bed")) P.bed = bed(props.includes("bed:side") ? 2.2 : 0.6, -0.9);
+  if (has("shelf")) { box(g, [1.6, 0.06, 0.3], [-2.6, 1.9, -1.0], mat("#8a5a3a")); for (let i = 0; i < 5; i++) box(g, [0.14, 0.32, 0.22], [-3.1 + i * 0.2, 2.1, -1.0], mat(CURT[i])); }
+  if (has("rug")) cyl(g, props.includes("rug:red") ? 1.5 : 1.3, props.includes("rug:red") ? 1.5 : 1.3, 0.02, props.includes("rug:red") ? [0.3, 0.01, -0.4] : [0.3, 0.01, 0.2], mat(props.includes("rug:red") ? "#c9545a" : "#ffb84a"));
+  if (has("cat")) { P.cat = catBody(g); P.cat.position.set(1.65, 0.7, -0.4); P.cat.rotation.y = -Math.PI / 2; }
+  if (has("painting")) {
     const pf = new THREE.Group(); pf.position.set(-RW / 2 + 0.12, 1.75, -0.6); pf.rotation.y = Math.PI / 2; g.add(pf);
     box(pf, [1.6, 1.15, 0.06], [0, 0, 0], mat("#7a4a1c")); const pic = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 0.98), new THREE.MeshStandardMaterial({ map: BOAT_TEX(), roughness: 0.8 })); pic.position.z = 0.035; pf.add(pic);
-    P.boards = [0, 1, 2].map((i) => { const b = box(pf, [1.9, 0.22, 0.05], [0, -0.38 + i * 0.38, 0.09], mat("#c9935a")); b.rotation.z = [0.12, -0.08, 0.05][i]; return b; });
-    P.nails = P.boards.map((b) => [-0.75, 0.75].map((x) => { const n = ball(pf, 0.035, [x, b.position.y, 0.13], mat("#9aa0a8", { rough: 0.3 })); return n; }));
-    P.stack = new THREE.Group(); P.stack.position.set(2.6, 0, -2.4); g.add(P.stack); for (let i = 0; i < 4; i++) { const b = box(P.stack, [0.22, 1.9, 0.05], [i * 0.08, 0.95, i * 0.12], mat("#c9935a")); b.rotation.z = 0.12; }
-    P.table = box(g, [0.9, 0.75, 0.6], [1.8, 0.375, -0.2], mat("#8a5a3a"));
-    P.bricks = []; for (let r = 0; r < 6; r++) for (let c = 0; c < 5; c++) P.bricks.push(box(g, [0.4, 0.2, 0.22], [-0.8 + c * 0.4 + (r % 2) * 0.2 - 0.1, 0.9 + 0.11 + r * 0.21, -2.65], mat(["#b5492f", "#c4583a", "#a8412b"][(r + c) % 3])));
-    P.ledge = box(g, [2.2, 0.9, 0.3], [0, 0.45, -2.7], mat("#8a5a3a"));
+    if (has("boards")) {
+      P.boards = [0, 1, 2].map((i) => { const b = box(pf, [1.9, 0.22, 0.05], [0, -0.38 + i * 0.38, 0.09], mat("#c9935a")); b.rotation.z = [0.12, -0.08, 0.05][i]; return b; });
+      P.nails = P.boards.map((b) => [-0.75, 0.75].map((x) => ball(pf, 0.035, [x, b.position.y, 0.13], mat("#9aa0a8", { rough: 0.3 }))));
+    }
   }
-  if (owner === "dottie") { box(g, [2.2, 0.9, 0.7], [-2.2, 0.45, -2.4], mat("#e9ecef")); P.bowl = cyl(g, 0.25, 0.16, 0.18, [-2.2, 1.0, -2.3], mat("#4fa3d9")); ball(g, 0.2, [-2.2, 1.06, -2.3], mat("#f3d58a", { rough: 0.5 }), { sy: 0.4 }); box(g, [1.2, 0.75, 0.8], [1.6, 0.375, -0.8], mat("#c98a5a")); }
-  if (owner === "fenwick") { box(g, [2.6, 0.5, 0.9], [-1.7, 0.25, -2.3], mat("#7a8fd9")); box(g, [2.6, 0.8, 0.25], [-1.7, 0.75, -2.7], mat("#6a7fc9")); cyl(g, 1.5, 1.5, 0.02, [0.3, 0.01, -0.4], mat("#c9545a")); cyl(g, 0.05, 0.05, 1.5, [2.8, 0.75, -2.4], mat("#2b2f3a")); ball(g, 0.25, [2.8, 1.6, -2.4], new THREE.MeshStandardMaterial({ color: "#fff3c8", emissive: "#ffdf9a", emissiveIntensity: 0.8 })); }
-  if (owner === "town1") { P.bed = bed(0.6, -0.9); box(g, [0.5, 0.6, 0.5], [-0.6, 0.3, -1.7], mat("#8a5a3a")); }
+  if (has("boards")) { P.stack = new THREE.Group(); P.stack.position.set(2.6, 0, -2.4); g.add(P.stack); for (let i = 0; i < 4; i++) { const b = box(P.stack, [0.22, 1.9, 0.05], [i * 0.08, 0.95, i * 0.12], mat("#c9935a")); b.rotation.z = 0.12; } }
+  if (has("table")) P.table = box(g, [0.9, 0.75, 0.6], [1.8, 0.375, -0.2], mat("#8a5a3a"));
+  if (has("bricks")) { P.bricks = []; for (let r = 0; r < 6; r++) for (let c = 0; c < 5; c++) P.bricks.push(box(g, [0.4, 0.2, 0.22], [-0.8 + c * 0.4 + (r % 2) * 0.2 - 0.1, 0.9 + 0.11 + r * 0.21, -2.65], mat(["#b5492f", "#c4583a", "#a8412b"][(r + c) % 3]))); P.ledge = box(g, [2.2, 0.9, 0.3], [0, 0.45, -2.7], mat("#8a5a3a")); }
+  if (has("counter")) box(g, [2.2, 0.9, 0.7], [-2.2, 0.45, -2.4], mat("#e9ecef"));
+  if (has("bowl")) { P.bowl = cyl(g, 0.25, 0.16, 0.18, [-2.2, 1.0, -2.3], mat("#4fa3d9")); ball(g, 0.2, [-2.2, 1.06, -2.3], mat("#f3d58a", { rough: 0.5 }), { sy: 0.4 }); }
+  if (has("sofa")) { box(g, [2.6, 0.5, 0.9], [-1.7, 0.25, -2.3], mat("#7a8fd9")); box(g, [2.6, 0.8, 0.25], [-1.7, 0.75, -2.7], mat("#6a7fc9")); }
+  if (has("lamp")) { cyl(g, 0.05, 0.05, 1.5, [2.8, 0.75, -2.4], mat("#2b2f3a")); ball(g, 0.25, [2.8, 1.6, -2.4], new THREE.MeshStandardMaterial({ color: "#fff3c8", emissive: "#ffdf9a", emissiveIntensity: 0.8 })); }
+  if (has("nightstand")) box(g, [0.5, 0.6, 0.5], [-0.6, 0.3, -1.7], mat("#8a5a3a"));
   // the door (left wall, at the front)
   box(g, [0.1, 2.2, 1.1], [-RW / 2 + 0.12, 1.1, 2.0], mat("#a0522d"));
   return R;
@@ -223,12 +231,12 @@ export function buildBoard({ tl = null } = {}) {
   box(root, [200, 0.04, 7], [0, 0.0, 0], mat("#2f3238", { rough: 0.95 }));
   for (let x = -96; x < 100; x += 6) box(root, [2.4, 0.02, 0.18], [x, 0.03, 0], mat("#f2c14e"), { cast: false });
   for (const z of [-4.6, 4.6]) box(root, [200, 0.18, 2.2], [0, 0.09, z], mat("#c9c5bb"));
-  const homes = tl?.storyboard?.homes ?? { town1: 0, town2: 1, dottie: 2, hollis: 3, fenwick: 4, town3: 5, me: 6 };
+  const homes = tl?.storyboard?.homes ?? { me: 0 }; // the storyboard's homes (lib/storyboard.js)
   const owners = Object.entries(homes).sort((a, b) => a[1] - b[1]).map(([o]) => o);
   S.houses = {}; owners.forEach((o, i) => { S.houses[o] = makeHouse(root, i, o); });
   for (let x = -50; x <= 60; x += 14) { makeLamp(root, x, -3.6, S); makeLamp(root, x + 7, 3.6, S); }
   for (let x = -60; x <= 70; x += 13) cloudTree(root, x, 15 + (x % 3), 1.1, x + 99); // the far side, well behind the street cameras
-  S.rooms = {}; owners.forEach((o, k) => { S.rooms[o] = makeRoom(root, k, o); });
+  S.rooms = {}; owners.forEach((o, k) => { S.rooms[o] = makeRoom(root, k, o, tl?.storyboard?.rooms?.[o]?.props); });
   Object.assign(S.spots, { center: V(0, 0, 0), left: V(-3, 0, 0), right: V(3, 0, 0), back: V(0, 0, HZ), far: V(0, 0, HZ - 4), door: V(0, 0, HZ + 1) });
   S.depthDir = V(0, 0, -1);
   // the flying things (wind, kites), the blanket, the tongue, the leaves
@@ -284,7 +292,7 @@ function boardShot(S, { shot, lt, dur, camera, people, monster, animateMonster, 
   // ---- the hidden-by-default things
   S.kites.forEach((k) => { k.visible = false; }); S.blanket.visible = false; S.flyBlanket.visible = false; S.leaves.forEach((l) => { l.visible = false; });
   if (S.tongue.parent) S.tongue.parent.remove(S.tongue);
-  for (const R of Object.values(S.rooms)) { const P = R.props; if (P.cat) P.cat.visible = has("stare:cat"); if (P.boards) { P.boards.forEach((x) => { x.visible = (houseOf("hollis")?.painting === "boarded"); }); P.nails.flat().forEach((n) => { n.visible = houseOf("hollis")?.painting === "boarded"; }); } if (P.bricks) P.bricks.forEach((x) => { x.visible = false; }); }
+  for (const R of Object.values(S.rooms)) { const P = R.props; if (P.cat) P.cat.visible = has("stare:cat"); if (P.boards) { P.boards.forEach((x) => { x.visible = houseOf(R.owner)?.painting === "boarded"; }); P.nails.flat().forEach((n) => { n.visible = houseOf(R.owner)?.painting === "boarded"; }); } if (P.bricks) P.bricks.forEach((x) => { x.visible = false; }); }
 
   // ---- people
   const where = {};
@@ -334,13 +342,13 @@ function boardShot(S, { shot, lt, dur, camera, people, monster, animateMonster, 
   const H = /^(house|window):/.test(b.loc) || b.loc.startsWith("house:") ? S.houses[b.loc.split(":")[1]] : null;
   if (has("peek:curtains")) { const p = acts.get("peek:curtains"), win = S.houses[p.who]?.wins[0] ?? H?.wins[0]; if (win) { const k = ease((lt - 0.2) / 0.7); win.curt[1].scale.x = 1 - 0.55 * k; win.curt[1].position.x = win.curt[1].userData.home.x + 0.22 * k; win.curt[0].position.x = win.curt[0].userData.home.x - 0.05 * k; } }
   if (has("hide:curtains")) for (const p of b.people) { if (!String(p.where).startsWith("window:")) continue; const [, h, kk] = p.where.split(":"); const win = S.houses[h]?.wins[Number(kk) || 0]; const P = people[p.id]; if (!win || !P) continue; const lean = Math.sin(Math.PI * Math.min(1, lt / Math.max(0.8, dur * 0.55))); P.obj.position.z += 0.35 * lean - (lt > dur * 0.55 ? 0.4 * ease((lt - dur * 0.55) / 0.3) : 0); const shut = ease((lt - dur * 0.5) / 0.35); win.curt.forEach((c, ci) => { c.visible = true; c.position.x = c.userData.home.x * (1 - 0.95 * shut) + (ci ? 0.02 : -0.02); c.scale.x = 1 + 0.35 * shut; }); P.obj.updateMatrixWorld(true); }
-  if (has("tremble:curtains")) for (const w of (H ?? S.houses.fenwick).wins) for (const c of w.thin) flutter(c, lt, 0.06, 11);
-  if (has("bulge:curtains")) { const pl = S.houses.dottie.wins.map((w) => w.pile); pl.forEach((g, gi) => g.children.forEach((p, i) => { if (p.userData.home) { const s = 1 + 0.07 * Math.sin(lt * 2.2 + i + gi); p.scale.setScalar(s); } else flutter(p, lt + i, 0.08, 3); })); }
-  if (has("poke_out:cat")) { const w = S.houses.dottie.wins[0]; if (!S.cat) S.cat = catHead(new THREE.Group()); w.g.add(S.cat); S.held.push(S.cat); const k = ease((lt - 0.3) / 0.6); S.cat.position.set(0.35, 0.95, -0.1 + 1.05 * k); S.cat.rotation.set(0, 0.5 * Math.sin(lt * 2.5) * k, 0.15 * Math.sin(lt * 3)); }
+  if (has("tremble:curtains")) for (const w of (H ?? Object.values(S.houses).find((x) => x.wins[0]?.thin[0]?.visible) ?? Object.values(S.houses)[0]).wins) for (const c of w.thin) flutter(c, lt, 0.06, 11);
+  if (has("bulge:curtains")) { const pl = (H ?? Object.values(S.houses).find((x) => x.wins[0]?.pile.visible) ?? Object.values(S.houses)[0]).wins.map((w) => w.pile); pl.forEach((g, gi) => g.children.forEach((p, i) => { if (p.userData.home) { const s = 1 + 0.07 * Math.sin(lt * 2.2 + i + gi); p.scale.setScalar(s); } else flutter(p, lt + i, 0.08, 3); })); }
+  if (has("poke_out:cat")) { const w = (H ?? Object.values(S.houses).find((x) => x.wins[0]?.pile.visible) ?? Object.values(S.houses)[0]).wins[0]; if (!S.cat) S.cat = catHead(new THREE.Group()); w.g.add(S.cat); S.held.push(S.cat); const k = ease((lt - 0.3) / 0.6); S.cat.position.set(0.35, 0.95, -0.1 + 1.05 * k); S.cat.rotation.set(0, 0.5 * Math.sin(lt * 2.5) * k, 0.15 * Math.sin(lt * 3)); }
   if (has("stack:bricks") && room?.props.bricks) { const n = room.props.bricks.length, k = Math.min(1, lt / Math.max(0.5, dur * 0.85)); room.props.bricks.forEach((x, i) => { const on = i < 6 + k * (n - 6); x.visible = on; const fresh = on && i >= Math.floor(6 + k * (n - 6)) - 2; x.position.y = x.userData.y0 ?? (x.userData.y0 = x.position.y); if (fresh) x.position.y += 0.25 * (1 - ((k * (n - 6)) % 1)); }); room.win.curt.forEach((c) => { c.visible = true; }); }
-  if (has("nail:boards") && room?.props.boards) { const k = Math.min(1, lt / Math.max(0.6, dur * 0.8)); room.props.boards.forEach((x, i) => { x.visible = k > i * 0.3 || houseOf("hollis")?.painting === "boarded" && b.cam !== "painting"; }); room.props.nails.forEach((ns, i) => ns.forEach((n) => { n.visible = k > i * 0.3 + 0.12; })); }
+  if (has("nail:boards") && room?.props.boards) { const k = Math.min(1, lt / Math.max(0.6, dur * 0.8)); room.props.boards.forEach((x, i) => { x.visible = k > i * 0.3 || houseOf(room.owner)?.painting === "boarded" && b.cam !== "painting"; }); room.props.nails.forEach((ns, i) => ns.forEach((n) => { n.visible = k > i * 0.3 + 0.12; })); }
   if (has("smear:batter") && room) { const n = room.win.batter.length; room.win.batter.forEach((x, i) => { x.visible = lt > 0.25 + i * (dur * 0.8 / n); const k = ease((lt - 0.25 - i * (dur * 0.8 / n)) / 0.2); x.scale.z = 0.25 * k; x.scale.x = (x.userData.sx0 ??= x.scale.x) * (0.4 + 0.6 * k); }); }
-  if (has("lick:glass")) { const w = S.houses.dottie.wins[0]; const sweep = -0.9 + 1.8 * ease(lt / Math.max(0.6, dur * 0.85)); w.batter.forEach((x) => { x.visible = x.position.x > sweep; x.scale.z = 0.25; }); }
+  if (has("lick:glass")) { const mw = String(b.monster?.where ?? "").split(":"); const w = (S.houses[mw[1]] ?? H ?? Object.values(S.houses)[0]).wins[Number(mw[2]) || 0]; const sweep = -0.9 + 1.8 * ease(lt / Math.max(0.6, dur * 0.85)); w.batter.forEach((x) => { x.visible = x.position.x > sweep; x.scale.z = 0.25; }); }
   if (has("pull:sock") && room) { const k = ease((lt - 0.2) / Math.max(0.5, dur * 0.5)); room.win.sock.position.set(0.3 * k, room.win.o.h * 0.4 - 1.4 * k, -0.12 + 0.6 * k); room.win.sock.rotation.set(-0.9 * k, 0, 0.6 * k); room.win.sock.visible = k < 0.98; room.win.tape.forEach((t) => { t.visible = k < 0.2; }); }
   if (has("rip:curtains")) {
     const t0 = dur * 0.18;
@@ -417,10 +425,10 @@ function boardShot(S, { shot, lt, dur, camera, people, monster, animateMonster, 
   else if (/^cat:/.test(cam)) { const c = winWorld(S.houses[cam.slice(4)].wins[0]); pos = c.clone().add(V(0.9, 0.3, 2.6)); look = c.clone().add(V(0.25, 0.15, 0.4)); fov = 44; }
   else if (/^arrive:/.test(cam)) { const h = S.houses[cam.slice(7)]; pos = V(h.x + 4, 2.4, 10); look = V(h.x - 4, 5, HZ + 2); fov = 56; }
   else if (R0) {
-    if (cam === "room_window") { pos = room.owner === "me" && b.monster ? R0(1.2, 1.55, -0.2) : R0(2.2, 1.6, 0.6); look = room.owner === "me" && b.monster ? R0(-0.1, 1.75, -3) : R0(-0.6, 1.4, -2.6); fov = 58; } // the eye behind the sock: the window big in frame
-    else if (cam === "room_wide") { pos = room.owner === "hollis" ? R0(-0.6, 1.6, 2.6) : R0(0.5, 2.1, 3.4 - 0.4 * k); look = room.owner === "hollis" ? R0(0.9, 1.1, 0.0) : R0(-0.2, 1.1, -1.4); fov = room.owner === "hollis" ? 55 : 64; }
+    if (cam === "room_window") { pos = b.monster ? R0(1.2, 1.55, -0.2) : R0(2.2, 1.6, 0.6); look = b.monster ? R0(-0.1, 1.75, -3) : R0(-0.6, 1.4, -2.6); fov = 58; } // the eye behind the sock: the window big in frame
+    else if (cam === "room_wide") { const grab = has("grab:boards"); pos = grab ? R0(-0.6, 1.6, 2.6) : R0(0.5, 2.1, 3.4 - 0.4 * k); look = grab ? R0(0.9, 1.1, 0.0) : R0(-0.2, 1.1, -1.4); fov = grab ? 55 : 64; }
     else if (cam === "room_me") { pos = R0(-0.4, 1.5, 0.6); look = R0(-1.1, 1.2, -2.3); fov = 58; }
-    else if (cam === "room_door") { pos = room.owner === "me" ? R0(2.8, 1.5, 2.6) : R0(2.4, 1.45, 2.4); look = room.owner === "me" ? R0(0.6, 1.35, -0.6) : R0(-0.6, 1.1, -0.5); fov = room.owner === "me" ? 55 : 62; } // the huddle + the rug + the sneezer in frame (mostly wall + ceiling read as a "wall" at the still gate)
+    else if (cam === "room_door") { const ct = has("catch:peeking"); pos = ct ? R0(2.8, 1.5, 2.6) : R0(2.4, 1.45, 2.4); look = ct ? R0(0.6, 1.35, -0.6) : R0(-0.6, 1.1, -0.5); fov = ct ? 55 : 62; } // the huddle + the rug + the sneezer in frame (mostly wall + ceiling read as a "wall" at the still gate)
     else if (cam === "pov_eye") { pos = R0(0.15, 2.2, -2.75); look = R0(0.15, 1.15, -0.6); fov = 62; } // from the eye at the window: the faces tipped up at it
     else if (cam === "window_in") { pos = R0(0.5, 1.7, -0.6); look = R0(0, 1.85, -3); fov = 50; } // the window from inside: the eye fills it
     else if (cam === "room_side") { pos = R0(1.6, 1.6, -2.3); look = R0(-1.0, 1.5, -2.75); fov = 56; }

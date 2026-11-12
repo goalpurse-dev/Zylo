@@ -93,7 +93,7 @@ export function applyStoryboard(tl00, board) {
   tl.scenes = scenesOf(tl0, board);
   tl.sceneHouses = sceneHousesOf(board);
   for (const s of tl.shots) { s.scene = sceneOf(tl.scenes, s.line)?.id ?? null; s.houses = sceneHousesAt(tl.sceneHouses, s.line); if (s.board) s.board.houses = s.houses; }
-  tl.storyboard = { id: board.id, rule: board.bible.rule, homes: board.bible.homes };
+  tl.storyboard = { id: board.id, rule: board.bible.rule, homes: board.bible.homes, rooms: board.bible.rooms ?? {} }; // rooms: each room's furniture (page/simple/board.js)
   if (Array.isArray(tl.world?.sets) && !tl.world.sets.includes("board")) tl.world.sets.push("board"); // the storyboard's own town joins the world bible
   // the production list's items as the storyboard shows them (board.kit: id -> { kitName, crowdKind }): the same
   // required items per line, checked on the storyboard's shots (an item never drops out of the list)
