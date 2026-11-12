@@ -87,6 +87,8 @@ export function applyStoryboard(tl00, board) {
     });
     b.shots.forEach((s, i) => shots.push(boardShot(s, { n, l, t0: starts[i], t1: i + 1 < starts.length ? starts[i + 1] : l.end, words: W, board, seed: 700 + n * 7 + i, part: old[0]?.part ?? "tour", subjects: old.map((x) => x.subject) })));
   }
+  // THE CUT PASS: the viral pace on the board shots (cutPass below)
+  const paced = cutPass(shots, tl.captions ?? []); shots.length = 0; shots.push(...paced);
   // the shots tile the voice: each starts where the one before ended
   for (let i = 1; i < shots.length; i++) shots[i].start = shots[i - 1].end;
   shots[0].start = 0; shots.at(-1).end = tl.duration;
@@ -119,6 +121,55 @@ export function boardHas(s, what) {
 
 // the camera type of a board camera preset (the planner's variety + framing checks read it)
 const CAM_TYPE = [[/^(face|eye_close|peek|window_in)/, "closeup"], [/^(cat)/, "low"], [/^(town_wide|street_wide|street_back|house:|arrive:|front:)/, "wide"], [/^(street_end|sky_up|pov_window|pov_eye)/, "low"], [/^(room_window|behind_window)/, "over_shoulder"], [/^(room_wide)/, "wide"]];
+// ------------------------------------------------------------------------------------------------ the cut pass
+export const PACE = Object.freeze({ firstCutSec: 0.6, earlySec: 15, earlyMaxShot: 1.1, maxShot: 1.35, minShot: 0.5 });
+export const SHOCK = /^(suddenly|boom|bang|crash|kaboom|smash|snap|snapped|gasped|screamed|shrieked|froze|exploded|landed|snatched|grabbed|slammed|blinked|glared|stared|vanished|disappeared|wham|thud|pop|boop|aah+|no+)\b/i;
+const SIBLINGS = (b) => {
+  const [kind, who] = String(b.loc).split(":"), p0 = (b.people ?? [])[0]?.id;
+  if (kind === "street") return ["street_wide", "street_end", "town_wide"];
+  if (kind === "house") return [`front:${who}`, `house:${who}`, `window:${who}:0`];
+  if (kind === "place") return ["place_wide", "place_medium", ...(p0 ? [`face:${p0}`] : [])];
+  return ["room_wide", "room_window", "room_side", ...(p0 ? [`face:${p0}`] : [])];
+};
+const canFace = (b) => !/^(street|house)/.test(String(b.loc)); // the board films faces in rooms and places only
+/** split the board shots into quick cuts; each cut keeps the shot's action clock (board.t0 = its offset, dur0 = the whole) */
+export function cutPass(shots, captions = []) {
+  const out = [];
+  const tooSame = (type) => out.length >= 2 && out.at(-1).camera === type && out.at(-2).camera === type;
+  for (const s of shots) {
+    if (!s.board) { out.push(s); continue; }
+    const dur = s.end - s.start, first = !out.length;
+    const L = s.start < PACE.earlySec ? PACE.earlyMaxShot : PACE.maxShot;
+    // the cut points: the very first cut by PACE.firstCutSec, then even parts no longer than L and no shorter than minShot
+    const parts = []; let a0 = s.start;
+    if (first && dur >= PACE.firstCutSec + PACE.minShot) { parts.push([a0, a0 + PACE.firstCutSec]); a0 += PACE.firstCutSec; }
+    const rest = s.end - a0, k = Math.max(1, Math.min(Math.floor(rest / PACE.minShot), Math.ceil(rest / L)));
+    for (let j = 0; j < k; j++) parts.push([a0 + (rest * j) / k, j === k - 1 ? s.end : a0 + (rest * (j + 1)) / k]);
+    const sib = SIBLINGS(s.board).filter((c) => c !== s.board.cam);
+    const shock = captions.filter((w) => w.start >= s.start && w.start < s.end && SHOCK.test(String(w.word).replace(/[^A-Za-z]/g, "")));
+    const p0 = (s.board.people ?? [])[0]?.id;
+    parts.forEach(([q0, q1], j) => {
+      const c = JSON.parse(JSON.stringify(s)); c.start = +q0.toFixed(3); c.end = +q1.toFixed(3);
+      c.board.t0 = +(q0 - s.start).toFixed(3); c.board.dur0 = +dur.toFixed(3);
+      const hit = shock.find((w) => w.start >= q0 && w.start < q1), after = shock.find((w) => w.start < q0 && w.start >= q0 - 1.2);
+      // a reaction close-up after a shock word (where the board films faces), else the next angle of the same place
+      let cam = j === 0 ? s.board.cam : after && p0 && canFace(s.board) ? `face:${p0}` : sib[(j - 1) % Math.max(1, sib.length)] ?? s.board.cam;
+      // the variety rule: never the same camera type 3 times in a row
+      if (tooSame(camTypeOf(cam))) cam = [s.board.cam, ...sib].find((x) => !tooSame(camTypeOf(x))) ?? cam;
+      c.board.cam = cam;
+      c.board.move = hit ? "crash" : j > 0 ? "whip" : "push"; c.board.moveAt = hit ? +(hit.start - q0).toFixed(3) : 0;
+      c.camera = camTypeOf(cam);
+      c.text = captions.filter((w) => w.start >= q0 && w.start < q1).map((w) => w.word).join(" ") || s.text;
+      out.push(c);
+    });
+  }
+  return out;
+}
+/** the pace of a timeline: cuts a minute, cuts in the first 15 s, the first cut */
+export function cutStats(tl) {
+  const sh = tl.shots ?? [], d = Number(tl.duration) || sh.at(-1)?.end || 1;
+  return { cuts: sh.length - 1, cutsPerMin: +(((sh.length - 1) / d) * 60).toFixed(1), first15: sh.filter((s) => s.start > 0 && s.start < 15).length, firstCut: +(sh[1]?.start ?? d).toFixed(2) };
+}
 const camTypeOf = (cam) => CAM_TYPE.find(([re]) => re.test(cam))?.[1] ?? "medium";
 // the words a board shot draws (windows everywhere outside and in every room; the actions' things)
 const ACT_SHOWS = { "fly:curtains": ["curtains", "kites", "kite"], "rip:curtains": ["curtains", "wind"], "smear:batter": ["batter", "pancake"], "lick:glass": ["batter", "tongue"], "bulge:curtains": ["curtains", "cloud"], "poke_out:cat": ["curtains"], "stack:bricks": ["bricks", "wall"], "nail:boards": ["boards", "painting", "boat"], "grab:boards": ["boards", "hammer"], "huddle:blanket": ["blanket"], "blow_off:blanket": ["blanket"], "peek:sock": ["sock", "hole"], "pull:sock": ["sock"] };

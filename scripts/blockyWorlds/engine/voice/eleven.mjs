@@ -9,11 +9,22 @@ import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { NARRATOR } from "../../../../supabase/functions/_shared/blockyWorlds/config.js";
+import { NARRATOR, NARRATORS } from "../../../../supabase/functions/_shared/blockyWorlds/config.js";
 import { synthesize } from "../../../../supabase/functions/_shared/blockyWorlds/voice.js";
 
 const FF = process.env.FFMPEG ?? "ffmpeg";
-const GAP = 0.1, MAX_GAP = 0.18, EDGE = 0.04;
+// THE VIRAL PACE (2026-11-12): every silence over MAX_GAP is cut to GAP, then the take is sped up SPEED x at the same
+// pitch (ffmpeg atempo); the words are timed on the result. Targets: 255-280 wpm, ~70 words in the first 15 s, no pause
+// over 0.6 s (paceStats). BLOCKY_WORLDS_VOICE_SPEED overrides (1 = the old pace).
+const GAP = 0.08, MAX_GAP = 0.15, EDGE = 0.04;
+export const SPEED = Number(process.env.BLOCKY_WORLDS_VOICE_SPEED) > 0 ? Number(process.env.BLOCKY_WORLDS_VOICE_SPEED) : 1.25;
+/** the pace of timed words: wpm, words in the first 15 s, the longest pause, the first word */
+export function paceStats(words = []) {
+  if (!words.length) return { wpm: 0, first15: 0, maxPause: 0 };
+  const span = Math.max(0.1, words.at(-1).end - words[0].start);
+  let maxPause = 0; for (let i = 1; i < words.length; i++) maxPause = Math.max(maxPause, words[i].start - words[i - 1].end);
+  return { wpm: Math.round(words.length / (span / 60)), first15: words.filter((w) => w.start < 15).length, maxPause: +maxPause.toFixed(2), firstWord: +words[0].start.toFixed(2) };
+}
 
 export function envKey(name, file = "C:/Users/Public/Zylo/.env.local") {
   const line = fs.readFileSync(file, "utf8").split(/\r?\n/).find((l) => l.startsWith(`${name}=`));
@@ -41,33 +52,40 @@ export function remap(t, ranges) {
   return prevEnd - shift;
 }
 
-export async function elevenVoice({ lines, outDir, apiKey = null, force = false }) {
+/** the narrator: BLOCKY_WORLDS_NARRATOR=<config.js NARRATORS key> (little_dude_ii, the default, or v4) */
+export function narratorFor(key = process.env.BLOCKY_WORLDS_NARRATOR) {
+  if (!key) return NARRATOR;
+  const n = NARRATORS[key]; if (!n) throw new Error(`unknown narrator "${key}" (one of ${Object.keys(NARRATORS).join(", ")})`);
+  return n;
+}
+export async function elevenVoice({ lines, outDir, apiKey = null, force = false, narrator = narratorFor() }) {
   fs.mkdirSync(outDir, { recursive: true });
   const mp3 = path.join(outDir, "voice.mp3"), takeJson = path.join(outDir, "take.json");
   const text = lines.map((l) => String(l.text ?? l).trim()).filter(Boolean).join("\n");
   let take = fs.existsSync(takeJson) && fs.existsSync(mp3) ? JSON.parse(fs.readFileSync(takeJson, "utf8")) : null;
   if (take && take.text !== text) throw new Error("voice.mp3 in this folder is a take of a different script; use a new out folder (no second paid take by accident)");
+  if (take && take.voiceId && take.voiceId !== narrator.voiceId) throw new Error(`voice.mp3 in this folder is a take by ${take.voice}, not ${narrator.voiceName}; use a new out folder`);
   if (!take || force) {
     const key = apiKey ?? envKey("ELEVENLABS_KEY");
     if (!key) throw new Error("ELEVENLABS_KEY missing");
-    const r = await synthesize({ apiKey: key, text, narrator: NARRATOR });
+    const r = await synthesize({ apiKey: key, text, narrator });
     fs.writeFileSync(mp3, Buffer.from(r.audioBase64, "base64"));
-    take = { text, spoken: r.spoken, costUsd: r.costUsd, billedChars: r.costUsd != null ? Math.round(r.costUsd / 0.0002) : null, chars: text.length, voice: NARRATOR.voiceName, model: NARRATOR.model, at: new Date().toISOString() };
+    take = { text, spoken: r.spoken, costUsd: r.costUsd, billedChars: r.costUsd != null ? Math.round(r.costUsd / 0.0002) : null, chars: text.length, voice: narrator.voiceName, voiceId: narrator.voiceId, model: narrator.model, at: new Date().toISOString() };
     fs.writeFileSync(takeJson, JSON.stringify(take, null, 1));
   }
   // trim the long pauses, then map the timings onto the trimmed audio
   const rawDur = Number(execFileSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", mp3]).toString());
   const ranges = keepRanges(take.spoken, rawDur);
   const parts = ranges.map(([a, b], i) => `[s${i}]atrim=${a.toFixed(3)}:${b.toFixed(3)},asetpts=PTS-STARTPTS,afade=t=in:d=0.008,afade=t=out:st=${Math.max(0, b - a - 0.008).toFixed(3)}:d=0.008[p${i}]`);
-  const graph = `[0:a]asplit=${ranges.length}${ranges.map((_, i) => `[s${i}]`).join("")};${parts.join(";")};${ranges.map((_, i) => `[p${i}]`).join("")}concat=n=${ranges.length}:v=0:a=1[out]`;
+  const graph = `[0:a]asplit=${ranges.length}${ranges.map((_, i) => `[s${i}]`).join("")};${parts.join(";")};${ranges.map((_, i) => `[p${i}]`).join("")}concat=n=${ranges.length}:v=0:a=1${SPEED !== 1 ? `[cat];[cat]atempo=${SPEED}` : ""}[out]`;
   const graphFile = path.join(outDir, "trim.graph");
   fs.writeFileSync(graphFile, graph);
   const wav = path.join(outDir, "voice.wav");
   execFileSync(FF, ["-v", "error", "-y", "-i", mp3, "-/filter_complex", graphFile, "-map", "[out]", "-ac", "1", "-ar", "44100", "-c:a", "pcm_s16le", wav]);
-  const words = take.spoken.map((w) => ({ word: w.w, start: +remap(w.s, ranges).toFixed(3), end: +remap(w.e, ranges).toFixed(3) }));
+  const words = take.spoken.map((w) => ({ word: w.w, start: +(remap(w.s, ranges) / SPEED).toFixed(3), end: +(remap(w.e, ranges) / SPEED).toFixed(3) }));
   const duration = Number(execFileSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", wav]).toString());
   fs.writeFileSync(path.join(outDir, "words.json"), JSON.stringify(words));
-  return { wav, words, duration, rawDuration: rawDur, wpm: Math.round(words.length / (duration / 60)), costUsd: take.costUsd, billedChars: take.billedChars, chars: take.chars };
+  return { wav, words, duration, rawDuration: rawDur, speed: SPEED, pace: paceStats(words), wpm: Math.round(words.length / (duration / 60)), costUsd: take.costUsd, billedChars: take.billedChars, chars: take.chars };
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

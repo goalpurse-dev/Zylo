@@ -99,6 +99,7 @@ const tl = JSON.parse(fs.readFileSync(path.join(out, "timeline.json"), "utf8"));
 const checks = { timeline: checkTimeline(tl).filter((p) => !/unknown built asset/.test(p)), visuals: checkVisuals(tl, script), subjects: checkSubjects(tl), production: checkProduction(tl) };
 fs.writeFileSync(path.join(out, "checks.json"), JSON.stringify(checks, null, 1));
 const n = Object.values(checks).reduce((a, b) => a + b.length, 0);
+{ const { cutStats } = await import(pathToFileURL(path.join(ENGINE, "lib", "storyboard.js")).href); const { paceStats } = await import(pathToFileURL(path.join(ENGINE, "voice", "eleven.mjs")).href); say(`pace: ${JSON.stringify(paceStats((tl.captions ?? []).map((w) => ({ word: w.word, start: w.start, end: w.end }))))}; cuts: ${JSON.stringify(cutStats(tl))}`); } // the viral pace targets: 255-280 wpm, ~70 words in the first 15 s, no pause over 0.6 s; 50-60 cuts a minute, 14-18 in the first 15 s
 say(`checks: ${Object.entries(checks).map(([k, v]) => `${k} ${v.length}`).join(", ")}; look ${tl.look}; ${tl.shots.length} shots, ${tl.duration} s; pacing ${JSON.stringify(tl.pacing?.after ?? null)}`);
 if (n) { say("STOPPED: a pre-render check failed (no render)"); process.exit(1); }
 

@@ -268,6 +268,8 @@ function winWorld(w) { w.g.updateMatrixWorld(true); return w.g.localToWorld(V(0,
 
 function boardShot(S, { shot, lt, dur, camera, people, monster, animateMonster, posePerson, setFace }) {
   const b = shot.board, acts = new Map(b.acts.map((a) => [a.k, a])), has = (k) => acts.has(k), atOf = (k) => acts.get(k)?.at ?? 0;
+  // a quick cut of a longer shot (lib/storyboard.js cutPass): the actions run on the whole shot's clock; the camera move on the cut's
+  const ltCut = lt, durCut = dur; if (Number.isFinite(b.t0)) { lt = b.t0 + lt; dur = b.dur0 ?? dur; }
   const night = shot.light === "night" || shot.light === "dusk";
   const room = /^room:/.test(b.loc) ? S.rooms[b.loc.slice(5)] : null;
   const place = /^place:/.test(b.loc) ? S.places?.[b.loc.slice(6)] : null;
@@ -476,7 +478,17 @@ function boardShot(S, { shot, lt, dur, camera, people, monster, animateMonster, 
   }
   S.camFill.position.copy(pos).add(V(0, 0.4, 0)); S.camFill.intensity = (room || place) && night ? (cam === "pov_eye" ? 9 : 4) : 0; S.camFill.color.set(cam === "pov_eye" ? "#e8f0ff" : "#fff1dc");
   camera.position.copy(pos); camera.fov = fov; camera.near = 0.05; camera.far = 3000; camera.updateProjectionMatrix();
-  camera.up.set(0, 1, 0); camera.lookAt(look); camera.updateMatrixWorld();
+  // faces + signs in the UPPER half (the captions own the lower third): a close-up looks a little below the face
+  if (/^face:/.test(cam)) look.y -= 0.22;
+  // NEVER A STILL FRAME, frame 0 mid-move: push (a slow dolly in, already 30 % along at frame 0), crash (a fast zoom on a
+  // shock word), whip (a fast pan settling onto the subject at the cut)
+  { const mv = b.move ?? "push", q = Math.min(1, 0.3 + ltCut / Math.max(0.3, durCut));
+    if (mv === "push") pos.lerp(look, 0.07 * q);
+    if (mv === "crash") fov *= 1 - 0.36 * ease((ltCut - (b.moveAt ?? 0) + 0.04) / 0.22);
+    camera.position.copy(pos); camera.fov = fov; camera.updateProjectionMatrix(); }
+  camera.up.set(0, 1, 0); camera.lookAt(look);
+  if ((b.move ?? "") === "whip") camera.rotateY(0.55 * (1 - ease(Math.min(1, (ltCut + 0.03) / 0.2))));
+  camera.updateMatrixWorld();
   S.weather.update(b.weather ?? (b.acts.some((a) => a.k === "rain:falls") ? "rain" : b.acts.some((a) => a.k === "snow:falls") ? "snow" : null), lt, camera, night); // after the camera is placed (it rains round the lens)
   // faceLens (the still gate's re-plan, lib/vision/gatePass.js boardAlternatives): the person turns to the lens
   for (const p of b.people) if (p.faceLens && where[p.id] && !(p.where === "room:bed" && p.awake)) { const o = people[p.id].obj; o.rotation.y = Math.atan2(pos.x - o.position.x, pos.z - o.position.z); o.updateMatrixWorld(true); }

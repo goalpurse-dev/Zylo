@@ -66,12 +66,12 @@ export function drawCaption(ctx, captions, t) {
   const i = captionIndexAt(captions, t);
   if (i < 0) return;
   const w = captions[i];
-  const text = captionText(w.word);
+  const text = captionText(w.word).toUpperCase(); // the viral caption: one word, UPPERCASE
   if (!text) return;
   const W = ctx.canvas.width, H = ctx.canvas.height;
   const s = W / 1080;
   const maxW = W * 0.9;
-  const strokeW = 16 * s;
+  const strokeW = 24 * s; // a thick black outline
   ctx.save();
   let px = BASE_PX * s;
   const font = (p) => `${Math.round(p)}px ${FAMILY}, "Lilita One", "Arial Black", sans-serif`;
@@ -79,7 +79,7 @@ export function drawCaption(ctx, captions, t) {
   const tw = ctx.measureText(text).width + strokeW;
   if (tw > maxW) { px *= maxW / tw; ctx.font = font(px); }
   const scale = popScale(t - w.start);
-  ctx.translate(W / 2, H * 0.62);
+  ctx.translate(W / 2, H * 0.74); // the lower third (faces + signs stay in the upper half: the camera rules)
   ctx.scale(scale, scale);
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
@@ -95,7 +95,7 @@ export function drawCaption(ctx, captions, t) {
   ctx.shadowColor = "transparent";
   ctx.shadowBlur = 0;
   ctx.shadowOffsetY = 0;
-  ctx.fillStyle = isEmphasis(w.word) ? EMPHASIS : "#ffffff";
+  ctx.fillStyle = "#ffffff"; // white, always (the viral caption)
   ctx.fillText(text, 0, 0);
   ctx.restore();
 }

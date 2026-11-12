@@ -49,7 +49,7 @@ test("swapIdea rewrites the card fields deterministically; a swapped idea fits",
 
 test("the library fixture: fit before and after the swap (the 2026-11-12 numbers), every row it keeps fits", () => {
   const before = fittingOnly(LIBRARY).length, after = fittingWithSwap(LIBRARY);
-  assert.equal(before, 12);
+  assert.equal(before, 13); // 12 until the kit gained hat / statue / fountain props (c9c2aae5): "The Hat Tax"-style rows now fit
   assert.ok(after.length >= 40 && after.length <= 48, `after ${after.length}`);
   for (const r of after) assert.ok(kitFit(r.idea).fit, r.id);
   // the library row's id and stats ride along; only the idea is the swapped copy

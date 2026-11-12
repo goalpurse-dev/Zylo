@@ -24,6 +24,22 @@ export const NARRATOR = Object.freeze({
 });
 
 /**
+ * The narrators to choose from (2026-11-12). little_dude_ii = NARRATOR, the default. v4 = the owner's second pick on
+ * Eleven v4: NOT TESTED YET (no take bought; the settings are a first guess, the owner OKs a 15 s test line first). The
+ * engine picks one with BLOCKY_WORLDS_NARRATOR=<key> (voice/eleven.mjs); a take records which voice made it.
+ */
+export const NARRATORS = Object.freeze({
+  little_dude_ii: NARRATOR,
+  v4: Object.freeze({
+    ...NARRATOR,
+    voiceId: "skghcThhrhzKre1Ny7M7",
+    voiceName: "owner pick on Eleven v4",
+    model: "eleven_v4",
+    settings: Object.freeze({ stability: 0.5, similarity_boost: 0.75, style: 0, use_speaker_boost: true, speed: 1.2 }),
+  }),
+});
+
+/**
  * The pace the script is sized for. The references speak at ~260 words a minute (ANALYSIS.md 2.3), but Little Dude II at
  * its top speed reads ~219 after the pauses are trimmed (first paid test, 2026-11-04: 413 words -> 113 s). Scripts are
  * sized at 220 so a 90 s video lasts ~90 s (owner, 2026-11-04: ~15% shorter scripts). 2026-11-06: the engine measured

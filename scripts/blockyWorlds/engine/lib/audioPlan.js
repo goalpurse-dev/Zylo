@@ -6,7 +6,7 @@
 //   - almost no sound effects: ONE low boom on the rule's key word, + at most AUDIO_SIMPLE.maxStoryCues of the plan's
 //     strongest story cues (a sneeze, a reveal sting), spaced far apart. No whooshes, no footsteps.
 //   simpleCues(tl, planCues) -> cues (lib/sfx.js shape: { t, at, name, gainDb, why })
-export const AUDIO_SIMPLE = Object.freeze({ musicUnderVoiceDb: 12, maxGap: 0.3, boom: "impact", boomGainDb: -4, maxStoryCues: 2, storyGapSec: 20 });
+export const AUDIO_SIMPLE = Object.freeze({ bedTempo: 1.25, musicUnderVoiceDb: 14, maxGap: 0.3, boom: "impact", boomGainDb: -4, maxStoryCues: 2, storyGapSec: 20 });
 const STORY = new Set(["sneeze", "stinger", "scream", "crash", "door_slam", "thunder", "growl", "crowd_cheer"]);
 const KEY = /^(never|always|nobody|no|don't|dont|can't|cant|must|everyone|every|only|nothing)$/;
 const clean = (w) => String(w ?? "").toLowerCase().replace(/[^a-z']/g, "");
@@ -24,7 +24,8 @@ export function ruleKeyWord(tl) {
   return after.find((w) => KEY.test(clean(w.word))) ?? (ri >= 0 ? after[0] : null) ?? inLine.at(-1);
 }
 
-export function simpleCues(tl, planCues = []) {
+export function simpleCues(tl, planCues = [], script = null) {
+  const words = script ? soundWordCues(tl, script).cues : [];
   const out = [];
   const k = ruleKeyWord(tl);
   if (k) out.push({ t: +Math.max(0, k.start - 0.02).toFixed(3), at: +k.start.toFixed(3), name: AUDIO_SIMPLE.boom, gainDb: AUDIO_SIMPLE.boomGainDb, why: `the rule's key word "${clean(k.word)}" (one low boom)` });
@@ -33,7 +34,44 @@ export function simpleCues(tl, planCues = []) {
     if (out.some((x) => Math.abs(x.at - c.at) < AUDIO_SIMPLE.storyGapSec)) continue;
     out.push({ ...c, gainDb: Math.min(c.gainDb ?? -8, -8) });
   }
-  return out.sort((a, b) => a.t - b.t);
+  // the sound words on top; the boom / a story cue within 0.6 s of one gives way (one hit, not two)
+  return [...out.filter((c) => !words.some((w) => Math.abs(w.at - c.at) < 0.6)), ...words].sort((a, b) => a.t - b.t);
+}
+
+// ------------------------------------------------------------------------------------------- the sound words
+// THE SOUND WORDS (2026-11-12, the viral pace): the writer's tags (script line.sfx: lowercase sound words in spoken order,
+// filled from the text by _shared/blockyWorlds/sfxTags.js) each get one effect on the word's start. OUR library only
+// (audio/sfx.mjs + audio/sfxEpic.mjs: our own code, CC0 Kenney, the owner's ElevenLabs takes); a word with no fitting sound
+// gets none (SOUND_MISSING, logged), never a random one.
+export const SOUND_SFX = Object.freeze({
+  boom: "impact", bang: "impact", thud: "impact", thump: "impact", whack: "impact", kaboom: "impact_big", pow: "impact_big",
+  crash: "crash", smash: "crash", crack: "crash", whoosh: "whoosh_1", swoosh: "whoosh_3", zoom: "whoosh_3", splash: "splash_big",
+  pop: "pop", knock: "knock", slam: "door_slam", creak: "door_creak", rumble: "rumble", achoo: "sneeze", choo: "sneeze",
+  clang: "shield_clash",
+});
+/** the writer's sound words we have NO sound for yet (sfxTags.js SOUND_WORDS minus SOUND_SFX) */
+export const SOUND_MISSING = Object.freeze(["poof", "bonk", "snap", "clunk", "tap", "splat", "squeak", "scratch", "hiss", "buzz", "beep", "ding", "click", "twang", "plop", "drip", "gulp", "munch", "slurp", "ribbit", "meow", "woof", "moo", "quack", "oink", "boing", "zap", "fizz"]);
+const LOOPED = { rumble: 1.6 };
+const squeeze = (w) => { const s = String(w ?? "").toLowerCase().replace(/[^a-z]/g, ""); return [s, s.replace(/(.)\1{2,}/g, "$1$1"), s.replace(/(.)\1+/g, "$1")]; };
+/** cues for the script's tagged sound words, each on its spoken word (in order, inside its line when the timeline has
+ *  line times) -> { cues, missing: [words with no sound], unplaced: [tags not found in the voice] } */
+export function soundWordCues(tl, script) {
+  const caps = tl?.captions ?? [], cues = [], missing = [], unplaced = [];
+  let k = 0;
+  (script?.lines ?? []).forEach((line, i) => {
+    const L = (tl?.lines ?? [])[i], lo = Number.isFinite(L?.start) ? L.start - 0.05 : -Infinity, hi = Number.isFinite(L?.end) ? L.end + 0.05 : Infinity;
+    if (Number.isFinite(L?.start)) while (k < caps.length && caps[k].start < lo) k++;
+    for (const tag of Array.isArray(line?.sfx) ? line.sfx : []) {
+      const t = String(tag).toLowerCase();
+      let j = k; while (j < caps.length && caps[j].start <= hi && !squeeze(caps[j].word).includes(t)) j++;
+      if (j >= caps.length || caps[j].start > hi) { unplaced.push(t); continue; }
+      k = j + 1;
+      const name = SOUND_SFX[t];
+      if (!name) { missing.push(t); continue; }
+      cues.push({ t: +Math.max(0, caps[j].start - 0.01).toFixed(3), at: +caps[j].start.toFixed(3), name, gainDb: -5, ...(LOOPED[name] ? { dur: LOOPED[name] } : {}), why: `the sound word "${t}"` });
+    }
+  });
+  return { cues, missing, unplaced };
 }
 
 /** the voice's pace: words per minute over the spoken span, the longest gap between words, gaps over maxGap */

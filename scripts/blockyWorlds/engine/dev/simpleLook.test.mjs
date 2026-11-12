@@ -77,3 +77,25 @@ test("bundle: a module importing a stubbed one ships too (its import rewritten)"
   assert.match(code, /bundle stub: page\/post\.js/);
   assert.ok(fs.existsSync(path.join(here, "../page/simple/people.js")));
 });
+test("the viral pace (2026-11-12): sound words get our effects, pace stats, the cut pass hits 50-60 cuts a minute", async () => {
+  const { soundWordCues, SOUND_SFX, SOUND_MISSING } = await import("../lib/audioPlan.js");
+  const { paceStats } = await import("../voice/eleven.mjs");
+  const { cutPass, cutStats, PACE } = await import("../lib/storyboard.js");
+  const { SFX } = await import("../audio/sfx.mjs"), { SFX_EPIC } = await import("../audio/sfxEpic.mjs");
+  for (const n of Object.values(SOUND_SFX)) assert.ok(SFX[n] || SFX_EPIC[n], n);
+  for (const w of SOUND_MISSING) assert.equal(SOUND_SFX[w], undefined, w);
+  const words = "Boom! The door flew open. Knock. Knock. Meow!".split(" ");
+  const captions = words.map((w, i) => ({ word: w, start: i * 0.25, end: i * 0.25 + 0.2 }));
+  const r = soundWordCues({ captions, lines: [{ start: 0, end: 1.2 }, { start: 1.25, end: 2 }] }, { lines: [{ text: "Boom! The door flew open.", sfx: ["boom"] }, { text: "Knock. Knock. Meow!", sfx: ["knock", "knock", "meow"] }] });
+  assert.deepEqual(r.cues.map((c) => [c.name, c.at]), [["impact", 0], ["knock", 1.25], ["knock", 1.5]]);
+  assert.deepEqual(r.missing, ["meow"]);
+  assert.deepEqual(paceStats(captions), { wpm: 246, first15: 8, maxPause: 0.05, firstWord: 0 });
+  // 60 s of 3-second board shots -> quick cuts, the first by 0.6 s, none over the max, none under the min
+  const shots = Array.from({ length: 20 }, (_, i) => ({ start: i * 3, end: i * 3 + 3, camera: "wide", board: { loc: "street", cam: "street_wide", acts: [], people: [] } }));
+  const cut = cutPass(shots), st = cutStats({ shots: cut, duration: 60 });
+  assert.equal(st.firstCut, PACE.firstCutSec);
+  assert.ok(st.cutsPerMin >= 50 && st.cutsPerMin <= 60, JSON.stringify(st));
+  assert.ok(st.first15 >= 14 && st.first15 <= 18, JSON.stringify(st));
+  for (const s of cut) assert.ok(s.end - s.start >= PACE.minShot - 1e-6 && s.end - s.start <= PACE.maxShot + 1e-6);
+  for (let i = 2; i < cut.length; i++) assert.ok(!(cut[i].camera === cut[i - 1].camera && cut[i].camera === cut[i - 2].camera), `shot ${i}`);
+});
