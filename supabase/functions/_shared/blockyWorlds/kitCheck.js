@@ -18,6 +18,7 @@ export function singular(w) {
   if (/(knives|wives|lives)$/.test(s)) return s.slice(0, -3) + "fe";
   if (/(leaves|loaves|wolves|calves|halves|shelves|scarves|thieves|elves)$/.test(s)) return s.slice(0, -3) + "f";
   if (/(sses|shes|ches|xes|zes|uses)$/.test(s)) return s.slice(0, -2);
+  if (/oes$/.test(s) && !/^(shoes|toes|tiptoes|hoes|does|floes|canoes|oboes|horseshoes|snowshoes)$/.test(s)) return s.slice(0, -2); // potatoes, tomatoes, heroes (but shoe, toe)
   if (/s$/.test(s)) return s.slice(0, -1);
   return s;
 }
@@ -42,6 +43,17 @@ export const PHRASE_RULES = Object.freeze([
   { word: "tv", kind: "prop", re: /\b(?:tv|telly)\b/i },
 ]);
 const NOT = new Map(); for (const [kind, list] of Object.entries(NOT_IN_KIT)) for (const w of list) NOT.set(w, kind);
+/** every word a kit names (its places, props + aliases, animals, weather, creature ids): a NOT_IN_KIT word in it is covered */
+function coveredBy(kit) {
+  const out = new Set();
+  const put = (w) => { const x = String(w ?? "").toLowerCase().trim(); if (x) { out.add(x); out.add(singular(x)); } };
+  for (const p of kit?.places ?? []) { put(p.id ?? p); for (const a of p.aliases ?? []) put(a); }
+  for (const p of kit?.props ?? []) { put(p.id ?? p); for (const a of p.aliases ?? []) put(a); }
+  for (const a of kit?.animals ?? []) put(a);
+  for (const w of kit?.weather ?? []) put(w);
+  for (const c of kit?.creatures ?? []) put(c.id ?? c);
+  return out;
+}
 export function kitHas(name) {
   const w = words(name).trim().split(/\s+/);
   for (let n = Math.min(3, w.length); n >= 1; n--) for (let i = 0; i + n <= w.length; i++) { const k = w.slice(i, i + n).join(" "); const hit = ALIAS.get(k) ?? ALIAS.get(singular(k)); if (hit) return hit.id; }
@@ -218,14 +230,15 @@ const PREMISE_KINDS = new Set(["place", "world", "creature"]);
 export function kitCheck(scriptOrLines, { card = null, kit = BOARD_KIT } = {}) {
   const lines = (Array.isArray(scriptOrLines) ? scriptOrLines : scriptOrLines?.lines ?? []).map((l) => String(l?.text ?? l));
   const n = lines.length, seen = new Map();
+  const covered = coveredBy(kit);
   const add = (kind, word, i) => { const k = singular(String(word).toLowerCase().trim()); const e = seen.get(k) ?? { word: k, kind, lines: [] }; if (!e.lines.includes(i)) e.lines.push(i); seen.set(k, e); };
   const all = lines.join("\n") + "\n" + [card?.premise, card?.opener].filter(Boolean).join("\n");
   const creature = scanText(all, kit).tags.creature != null;
   lines.forEach((text, i) => {
     const t = words(text).split(/\s+/).filter(Boolean);
-    for (let k = 0; k < t.length; k++) for (const g of [t[k], t.slice(k, k + 2).join(" ")]) { const kind = NOT.get(g) ?? NOT.get(singular(g)); if (kind) add(kind, g, i); }
-    for (const r of PHRASE_RULES) if (r.re.test(text) && (!r.needs || r.needs.test(text))) add(r.kind, r.word, i);
-    for (const x of scanText(text, kit, { creature }).needs) add(x.kind, x.word, i);
+    for (let k = 0; k < t.length; k++) for (const g of [t[k], t.slice(k, k + 2).join(" ")]) { const kind = NOT.get(g) ?? NOT.get(singular(g)); if (kind && !covered.has(g) && !covered.has(singular(g))) add(kind, g, i); }
+    for (const r of PHRASE_RULES) if (r.re.test(text) && (!r.needs || r.needs.test(text)) && !covered.has(r.word)) add(r.kind, r.word, i);
+    for (const x of scanText(text, kit, { creature }).needs) if (!covered.has(singular(String(x.word).toLowerCase())) && !covered.has(String(x.value ?? "").toLowerCase())) add(x.kind, x.word, i);
   });
   const missing = [], warnings = [];
   for (const e of seen.values()) { e.lines.sort((a, b) => a - b); (MUST(e.lines, n) ? missing : warnings).push(e); }

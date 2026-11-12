@@ -97,3 +97,13 @@ test("kitCheck v2: real singulars, ambiguous words only in context, boardFit's k
   const r = kitCheck(["We took the bus to school.", "The bus was late.", "Fog rolled in."]);
   assert.equal(r.ok, false); assert.equal(r.missing.find((m) => m.kind === "vehicle").word, "bus");
 });
+
+test("kitCheck: -oes singulars; a what-if kit covers its own NOT_IN_KIT words", async () => {
+  const { kitCheck, singular } = await import("../../../../supabase/functions/_shared/blockyWorlds/kitCheck.js");
+  const { BOARD_KIT } = await import("../../../../supabase/functions/_shared/blockyWorlds/boardKit.js");
+  assert.deepEqual(["potatoes", "tomatoes", "heroes", "shoes", "toes"].map(singular), ["potato", "tomato", "hero", "shoe", "toe"]);
+  const lines = ["In our town everyone hides in the cave.", "Nobody leaves the cave after dark."];
+  assert.equal(kitCheck(lines).ok, false);
+  const kit = { ...BOARD_KIT, places: [...BOARD_KIT.places, { id: "cave", what: "a cave", outdoor: false }] };
+  assert.equal(kitCheck(lines, { kit }).ok, true);
+});
