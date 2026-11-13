@@ -33,14 +33,21 @@ const client = () => rpClient({ endpointId: studioEndpoint() });
 /** worst-case seconds of a stills job (the job is cancelled at maxSec, so this bounds the spend) */
 export const sheetMaxSec = (frames) => Math.round(120 + frames * 1.2);
 
-async function oneJob({ code, specs, out, prefix, maxSec, L, label, quality = 0.88 }) {
+// the storage calls (2026-11-13: 320 parallel signs / downloads hit Supabase 429 and a network outage cut a finished job's
+// download): at most 16 at a time, each retried; a job whose frames did not all come back keeps its folder (no cleanup), so
+// the uploaded frames can still be fetched (`kept` in the result)
+const pool = async (items, n, fn) => { const out = []; let i = 0; await Promise.all(Array.from({ length: Math.min(n, items.length) }, async () => { while (i < items.length) { const k = i++; out[k] = await fn(items[k], k); } })); return out; };
+const retry = async (fn, tries = 4) => { for (let t = 0; ; t++) { try { const v = await fn(); if (v != null) return v; if (t >= tries - 1) return null; } catch (e) { if (t >= tries - 1) throw e; } await new Promise((res) => setTimeout(res, [1500, 4000, 9000][t] ?? 9000)); } };
+export async function oneJob({ code, specs, out, prefix, maxSec, L, label, quality = 0.88 }) {
   if (code.length > 2_000_000) throw new Error(`the bundle is ${code.length} bytes (the role's limit is 2 MB)`);
   fs.mkdirSync(out, { recursive: true });
   const st = storage(loadEnv(), prefix), rp = client();
   const names = simpleFileNames(specs), uploads = {};
-  await Promise.all(names.map(async (n) => { uploads[n] = await st.signPut(n); }));
+  await pool(names, 16, async (n) => { uploads[n] = await retry(() => st.signPut(n)); });
   const t0 = Date.now();
+  let keep = false;
   try {
+    keep = true; // from the submit on, the job may upload: the folder is cleaned only when every frame is home
     const id = await rp.submit({ job: { role: "simpleStills", mode: "gpu", simple: { code, shots: specs, quality, out: { uploads } } } });
     const s = await rp.wait(id, { maxSec, pollMs: 2000 });
     const b = billed(s);
@@ -48,16 +55,19 @@ async function oneJob({ code, specs, out, prefix, maxSec, L, label, quality = 0.
     L?.log({ step: `runpod:${label}`, job: id, status: s.status, billedSec: b.seconds, usd: b.usd, wallSec: +((Date.now() - t0) / 1000).toFixed(1), loadMs: s.output?.loadMs, timing: s.output?.timing });
     if (!(s.status === "COMPLETED" && s.output?.ok)) return { ok: false, error: JSON.stringify({ status: s.status, error: s.error ?? s.output?.error ?? null }).slice(0, 1500), billed: b, files: [] };
     const files = [], pageErrors = [...(s.output.errors ?? [])];
-    await Promise.all(s.output.stills.map(async (x, i) => {
+    const missing = [];
+    await pool(s.output.stills, 16, async (x, i) => {
       if (!x.file) { files[i] = { error: x.error }; return; }
-      const buf = await st.get(x.file); const f = path.join(out, x.file);
-      if (buf) fs.writeFileSync(f, buf);
+      const buf = await retry(() => st.get(x.file)).catch(() => null); const f = path.join(out, x.file);
+      if (buf) fs.writeFileSync(f, buf); else missing.push(x.file);
       let rep = null; if (x.lut && x.lut !== false) { try { rep = JSON.parse(x.lut); } catch { /* not ours */ } }
       for (const e of rep?.errors ?? []) if (!pageErrors.includes(e)) pageErrors.push(e);
       files[i] = { file: f, mean: x.mean, ms: x.ms, tiles: rep?.tiles ?? [] };
-    }));
+    });
+    if (missing.length) return { ok: false, error: `${missing.length} frame file(s) did not download (kept in ${prefix})`, kept: prefix, billed: b, files };
+    keep = false;
     return { ok: true, job: id, files, pageErrors, billed: b, wallSec: +((Date.now() - t0) / 1000).toFixed(1), renderer: s.output.renderer, loadMs: s.output.loadMs };
-  } finally { await st.cleanup().catch(() => 0); }
+  } finally { if (!keep) await st.cleanup().catch(() => 0); else L?.log({ step: `storage_kept:${label}`, prefix }); }
 }
 
 /** contact sheets: [{ name, frames: [{ t, label, sub }], cols, tw, th }] in ONE job */
