@@ -238,3 +238,10 @@ test("wiring + migration: the ideas action uses the engine (Studio default, BLOC
   assert.match(sql, /NOT APPLIED/);
   for (const bit of ["blocky_worlds_idea_log", "rule_key text NOT NULL UNIQUE", "blocky_worlds_name_log", "ENABLE ROW LEVEL SECURITY", "blocky_worlds_log_names"]) assert.ok(sql.includes(bit), bit);
 });
+
+test("2026-11-14 run lessons: 'float up' rules are banned (the kit's laughing-floats), a chilling smile or a warm coin is no soft ending", () => {
+  assert.ok(bannedConcepts(L("Then you float up until someone pulls you down.")).length === 1);
+  assert.equal(bannedConcepts(L("The cloud floated away. So did his boots.")).length, 0);
+  const s = { lines: L("In this town, I'm the only kid afraid to go up.", "You see, in this town, higher up means richer.", "a", "b", "c", "d", "e", "f", "A warm coin fell on the empty street.", "Grandma stood inside, smiling.", "\"Stand tall for me, Jasper.\"") };
+  assert.ok(!darkProblems(s, 20).hard.some((x) => /the ending is soft/.test(x)));
+});

@@ -9,6 +9,7 @@
 
 /** The pieces of the examples (the kit's two scripts, the 6M-view reference, our own old examples). id -> pattern, why. */
 export const BANNED_CONCEPTS = Object.freeze([
+  { id: "things float / lighter than air", re: /\blighter than air\b|\b(?:makes?|lets?|turns?)\s+(?:you|them|us|everyone|things?|objects?|the \w+)\s+float\b|\bfloat(?:s|ed|ing)?\s+up\b/i, why: "making things float is the kit's laughing-floats example" },
   { id: "sneezing", re: /\b(sneez\w*|achoo|ah-?choo|atchoo|choo)\b/i, why: "sneezing is the kit's example rule" },
   { id: "cat allergy", re: /\ballerg\w*[^.!?]{0,40}\bcats?\b|\bcats?\b[^.!?]{0,40}\ballerg\w*/i, why: "the cat allergy is the kit's example" },
   { id: "pepper", re: /\bpepper\w*\b/i, why: "pepper is the kit's example prop" },

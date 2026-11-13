@@ -730,7 +730,9 @@ export async function writeIdeaPool({ apiKey = "", count = 10, style = null, top
     const j = await judge({ apiKey, model: MODELS.judge, system: [IDEA_JUDGE_SYSTEM], user: ideaJudgePrompt(f.kept), schema: ideaJudgeSchema(), effort: "low", maxTokens: 6000, meter });
     log("judge", MODELS.judge, j);
     const scores = readIdeaScores(j.data, f.kept.length);
-    out.ideas = topIdeas(f.kept, scores, count).map((x) => ({ ...x, card: cardFromPoolIdea(x) }));
+    const ranked = topIdeas(f.kept, scores, f.kept.length);
+    out.all = ranked.map(({ hook, rule, style, twist, source, total, scores: sc }) => ({ hook, rule, style, twist, source, total, scores: sc })); // the whole judged pool, best first
+    out.ideas = ranked.slice(0, count).map((x) => ({ ...x, card: cardFromPoolIdea(x) }));
   } catch (e) {
     out.costUsd = Number((out.costUsd + Number(e?.costUsd ?? 0)).toFixed(5));
     out.stopped = stoppedText(e);

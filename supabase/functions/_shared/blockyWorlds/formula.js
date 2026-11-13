@@ -245,7 +245,7 @@ export function formulaLines(note) {
 
 // ---------- the ENDING: a clear big win, then a HOLY TWIST; never soft, sentimental or abstract (owner, 2026-11-13) ----------
 /** Words that make an ending soft, sentimental or abstract (the last three lines are read for them). */
-export const SOFT_ENDING = /\b(peace|peaceful|peacefully|together|togetherness|love|loved|loving|family|families|friendship|friends forever|forever|learn|learned|learning|lesson|lessons|realiz\w*|grateful|thankful|gratitude|hug|hugs|hugged|warm|warmth|smiled|smiling|happily|happiness|hope|hoped|hopeful|dream|dreams|heart|hearts|cherish\w*|special|believe|believed|belief|brave|bravery|courage|kindness|joy|joyful|belong\w*|meaning|meaningful|truth|sunshine|safe and sound|all along|at last|finally home|better place|never alone)\b/i;
+export const SOFT_ENDING = /\b(peace|peaceful|peacefully|together|togetherness|love|loved|loving|family|families|friendship|friends forever|forever|learn|learned|learning|lesson|lessons|realiz\w*|grateful|thankful|gratitude|hug|hugs|hugged|warmth|happily|happiness|hope|hoped|hopeful|dream|dreams|heart|hearts|cherish\w*|special|believe|believed|belief|brave|bravery|courage|kindness|joy|joyful|belong\w*|meaning|meaningful|truth|sunshine|safe and sound|all along|at last|finally home|better place|never alone)\b/i;
 /** A flip: the last two lines turn the win around or restart the chaos (an exclamation, a sound word, "again", "uh oh", a question...). */
 const TWIST_MARK = /(!|\?|\b(again|uh oh|oops|but|until|except|still|wait|turns out|twice|restart|once more|back|too|then|now it|now we|now everyone)\b)/i;
 
