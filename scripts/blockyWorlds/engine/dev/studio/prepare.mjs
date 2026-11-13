@@ -92,7 +92,7 @@ say(`voice: ${narrator.voiceName} ${narrator.model}, ${v.duration.toFixed(2)} s 
 const direction = await directStory({ script, idea: card, provider: "mock" });
 const tl0 = await L.step("plan", () => planVideo({ script, words: v.words, idea: card, lengthSec: LEN, direction, criticalMode: "report" }));
 const castFixes = fixAnimalCast(tl0, script); // a pet the planner cast as a person (studio/castFix.mjs)
-if (castFixes.length) say(`cast fix: ${castFixes.map((f) => `${f.name} is a ${f.species}, not a person`).join("; ")}`);
+if (castFixes.length) say(`cast fix: ${castFixes.map((f) => `${f.name} is ${f.species ? `a ${f.species}, not a person` : f.what}`).join("; ")}`);
 fs.writeFileSync(path.join(out, "base-timeline.json"), JSON.stringify(tl0));
 fs.writeFileSync(path.join(out, "words.json"), JSON.stringify(v.words));
 say(`base plan: ${tl0.shots.length} shots, ${tl0.duration} s, look ${tl0.look}, cast ${Object.keys(tl0.cast ?? {}).join(", ")}, monster ${tl0.monster ? JSON.stringify(tl0.monster).slice(0, 80) : "none"}; base checks timeline ${checkTimeline(tl0).length}, visuals ${checkVisuals(tl0, script).length}, subjects ${checkSubjects(tl0).length}`);
