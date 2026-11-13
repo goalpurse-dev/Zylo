@@ -13,7 +13,9 @@ const wordsIn = (lines) => lines.reduce((n, l) => n + l.text.trim().split(/\s+/)
 
 /**
  * Step 2: the script, grouped by its parts (each part its own block, every line editable), the checks with their fixes;
- * pinned at the bottom: the length, Rewrite, and "Make the video" with its price. Generate waits for a clean script.
+ * pinned at the bottom: the length, Rewrite, and "Make my video" with its price. Generate waits for a clean script.
+ * SCRIPT APPROVAL (owner, 2026-11-13): the customer reads and edits the script here; an edit is saved and re-checked
+ * (the same kit checks, with Fix it) before Make my video unlocks, and nothing is charged before Make my video.
  */
 export default function ScriptStep({ flow, onGenerate, notice, onBack, made = false, onNew, onTake }) {
   const { draft, lines, busy, access } = flow;
@@ -140,9 +142,10 @@ export default function ScriptStep({ flow, onGenerate, notice, onBack, made = fa
 
       <ActionBar above={<>
         {notice && <p className="mb-2 text-center text-[11px] font-semibold text-white/70" role="status">{notice}</p>}
+        {ready && !made && !notice && <p className="mb-2 text-center text-[11px] leading-relaxed text-white/45" data-testid="bw-approve-note">Read it and change any line you like. Nothing is charged until you press Make my video.</p>}
         {problems.length > 0 && !made && (
           <p className="mb-2 flex items-center justify-center gap-1.5 text-center text-[11.5px] font-semibold text-rose-200/90"><AlertTriangle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-            {firstBad ? `Make the video unlocks once the ${firstBad.part === "own" ? "marked line" : `${LABEL[firstBad.part] ?? firstBad.part} part`} is fixed.` : "Make the video unlocks once the script is fixed."}
+            {firstBad ? `Make my video unlocks once the ${firstBad.part === "own" ? "marked line" : `${LABEL[firstBad.part] ?? firstBad.part} part`} is fixed.` : "Make my video unlocks once the script is fixed."}
           </p>
         )}
         {lengthMismatch && !flow.edited && (
@@ -170,7 +173,7 @@ export default function ScriptStep({ flow, onGenerate, notice, onBack, made = fa
           <ActionButton busy={busy === "saving" ? "Checking…" : null} onClick={flow.saveEdits}><Check className="h-4 w-4" />Save and check</ActionButton>
         ) : (
           <ActionButton busy={busy === "starting" ? "Starting…" : busy === "rewriting" ? "Rewriting…" : busy === "writing" ? "Writing your story…" : null} disabled={!ready} onClick={onGenerate}>
-            Make the video<span className="flex items-center gap-1 text-[13px] font-semibold"><CreditMark />{price}</span><ChevronRight className="h-4 w-4" />
+            Make my video<span className="flex items-center gap-1 text-[13px] font-semibold"><CreditMark />{price}</span><ChevronRight className="h-4 w-4" />
           </ActionButton>
         )}
       </ActionBar>

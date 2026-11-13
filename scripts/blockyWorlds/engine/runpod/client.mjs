@@ -21,6 +21,9 @@ export const estimate = ({ jobs = 1, stills = 0, objects = 0 }) => {
 };
 
 export function loadEnv(file = "C:/Users/Public/Zylo/.env.local") {
+  // the Studio worker's container (scripts/blockyWorlds/studioWorker/): its keys are its own secrets, in the process
+  // environment; the laptop file does not exist there
+  if (process.env.BLOCKY_WORLDS_KEYS_FROM_ENV === "1") return Object.fromEntries(["RUNPOD_API_KEY", "SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"].filter((k) => process.env[k]).map((k) => [k, process.env[k]]));
   return Object.fromEntries(fs.readFileSync(file, "utf8").split(/\r?\n/).map((l) => l.match(/^\s*([A-Z_0-9]+)\s*=\s*(.*)\s*$/)).filter(Boolean).map((m) => [m[1], m[2].replace(/^["']|["']$/g, "")]));
 }
 export const endpointInfo = () => JSON.parse(fs.readFileSync(path.join(here, "endpoint.json"), "utf8"));

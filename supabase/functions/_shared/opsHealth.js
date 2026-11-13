@@ -21,7 +21,10 @@ export const SERVICES = [
     fix: "Add credit at console.anthropic.com (Plans & Billing).", autoTopUp: "Yes: auto-reload (minimum balance + reload amount) in Plans & Billing." },
   { id: "fly", name: "Fly.io", does: "the video renderers (Long Form, Fruit, Blocky final videos)", kind: "postpaid", checked: true,
     fix: "Check fly.io/dashboard (machines and billing).", autoTopUp: "Not needed: billed to the card after use." },
-  { id: "runpod", name: "RunPod", does: "Cutaway Explainer rendering (not live yet, owner tests only)", kind: "balance", checked: true, ownerOnly: true,
+  // RunPod (2026-11-13): ONE account for Blocky Worlds (endpoint gm9eqdkuyc2ofs: the Studio previews + final frames, the
+  // pipeline's jobs) and Cutaway's tests. Owner-only (shown, never red) until Blocky Worlds is open to testers or everyone
+  // (servicesFor runpodLive); then red when it runs out within ALERT_DAYS or drops under minBalanceUsd.
+  { id: "runpod", name: "RunPod", does: "Blocky Worlds videos (previews + final frames) and Cutaway Explainer tests (one account)", kind: "balance", checked: true, ownerOnly: true, minBalanceUsd: 10,
     fix: "Top up at runpod.io (Billing).", autoTopUp: "Yes: auto-pay (threshold + amount, card) in Billing." },
   { id: "fal", name: "fal.ai", does: "lip-sync and an older video path", kind: "balance", checked: false,
     fix: "Top up at fal.ai (Billing).", autoTopUp: "Not found in fal's docs: top up by hand, check the dashboard." },
@@ -40,6 +43,13 @@ export const SERVICES = [
   { id: "instagram", name: "Instagram", does: "publishing to Instagram and its stats", kind: "free", checked: false, fix: "-", autoTopUp: "Not applicable." },
   { id: "cloudflare", name: "Cloudflare", does: "the domain's DNS and email forwarding", kind: "free", checked: false, fix: "-", autoTopUp: "Not applicable." },
 ];
+
+/** The services for this check: RunPod counts as live (red alerts) once Blocky Worlds is open beyond the owner. */
+export function servicesFor({ runpodLive = false } = {}) {
+  return SERVICES.map((s) => (s.id === "runpod" && runpodLive ? { ...s, ownerOnly: false } : s));
+}
+/** BLOCKY_WORLDS_ACCESS (a project secret every function can read): allowlist or everyone = real users render on RunPod */
+export const runpodLiveFrom = (access) => ["allowlist", "everyone"].includes(String(access ?? "").trim().toLowerCase());
 
 // Spend per day from balance readings: only the drops count (a rise is a top-up).
 // points: [{ balance, at }] oldest first. → usd (or units) per day, or null without enough history.
@@ -161,6 +171,8 @@ export function judge(service, s) {
   const before = red.length;
   if (runsOutFirst && left < ALERT_DAYS) red.push(`runs out in about ${left < 1 ? "less than a day" : `${left.toFixed(1)} days`}`);
   if (Number(s.balance) <= 0 && s.balance != null && service.kind === "balance") red.push("balance is empty");
+  // a floor that holds even when the spend rate is unknown (RunPod reads ~0 a day while idle)
+  if (red.length === before && service.minBalanceUsd != null && s.balance != null && Number(s.balance) < service.minBalanceUsd) red.push(`balance under $${service.minBalanceUsd}`);
   const balanceRed = red.length > before;
   if (balanceRed) todo.push(service.fix);
   if ((s.failingUsers ?? 0) >= 1 && (s.failures ?? 0) >= 3) {

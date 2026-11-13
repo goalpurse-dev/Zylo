@@ -17,6 +17,10 @@
 //   BLOCKY_WORLDS_RENDERER=runpod    video making on (docs/blocky-worlds-pipeline.md), and only when RunPod and the
 //                                    callback secret are configured too (renderSupabase.ts); otherwise start refuses
 //                                    BEFORE anything is charged. A tester's dryRun still runs every check and the price
+//   BLOCKY_WORLDS_ENGINE=studio      (2026-11-13) new videos are made by the Studio worker (_shared/blockyWorlds/studio.js,
+//                                    scripts/blockyWorlds/studioWorker/): Sonnet director + 1 fix round. The kit checks
+//                                    always run before the charge; start refuses (nothing charged) without a live worker.
+//                                    Unset / anything else: the RunPod pipeline above. docs/blocky-worlds-launch.md
 // The protocol (docs/blocky-worlds-protocol.md): "Pick an idea" serves unseen ideas from the judged library first; every
 // source becomes a complete idea card; then card -> beat sheet -> script, each step checked and retried on its own.
 // Learning: picked / rewritten / generated / downloaded / thumbs are counted per library idea (event action).
@@ -31,6 +35,7 @@ import { DEFAULT_LENGTH, LENGTHS, NARRATOR } from "../_shared/blockyWorlds/confi
 import { canGenerate, canRemoveEndCard, canWrite, endCardFor } from "../_shared/blockyWorlds/access.js";
 import { accessModeFrom, blockyOwners, closedReply, guestAllowed, viewerAccess } from "../_shared/blockyWorlds/gate.js";
 import { costBasisUsd, PRICES, toolKey } from "../_shared/blockyWorlds/pricing.js";
+import { studioFullCostUsd } from "../_shared/blockyWorlds/studio.js";
 import { DEFAULT_SETTINGS, decide, WRITING } from "../_shared/blockyWorlds/guard.js";
 import { MOODS } from "../_shared/blockyWorlds/formulas.js";
 import { cardOf, DAILY_IDEA_BATCHES, FREE_IDEA_BATCHES, IDEAS_PER_BATCH } from "../_shared/blockyWorlds/ideas.js";
@@ -45,6 +50,8 @@ import { cardProblems, problemSpots } from "../_shared/blockyWorlds/protocol.js"
 import { queueInfo, renderConfigured, renderRuntime } from "../_shared/blockyWorlds/renderSupabase.ts";
 import { canFilm, canFilmLine, fittingWithSwap, launchModeFrom, moveNote } from "../_shared/blockyWorlds/boardFit.js";
 import { boardOnlyBlocked, productionSettings, stageOf } from "../_shared/blockyWorlds/render.js";
+import { engineFrom, readyEmailOn, STUDIO, studioEtaText, studioStageOf } from "../_shared/blockyWorlds/studio.js";
+import { studioQueueInfo, studioWorkerAlive } from "../_shared/blockyWorlds/studioSupabase.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -61,15 +68,24 @@ const PROVIDER = providerFrom(Deno.env.get("BLOCKY_WORLDS_LLM"));
 // the hybrid writer for typed topics (default on; the mock provider keeps the free old path)
 const HYBRID_ON = flag("BLOCKY_WORLDS_HYBRID") !== "off" && PROVIDER === "anthropic";
 const CACHE_TTL: string = (CACHE_TTLS as readonly string[]).includes(flag("BLOCKY_WORLDS_CACHE_TTL")) ? flag("BLOCKY_WORLDS_CACHE_TTL") : HYBRID.cacheTtl;
-// on only when it says runpod AND everything a run needs is configured: a half-configured renderer never charges anyone
-const RENDERER = (Deno.env.get("BLOCKY_WORLDS_RENDERER") ?? "").trim() === "runpod" && renderConfigured() ? "runpod" : "";
+const envGet = (k: string) => Deno.env.get(k) ?? "";
+// THE ENGINE (2026-11-13, _shared/blockyWorlds/studio.js): BLOCKY_WORLDS_ENGINE=studio -> new videos are directed by the
+// Studio worker (Sonnet director + 1 fix round, scripts/blockyWorlds/studioWorker/); anything else: the RunPod pipeline.
+// A run records its engine at the charge (blocky_worlds_start_run p_engine), so a switch never moves a running video.
+const ENGINE = engineFrom(envGet);
+const STUDIO_ON = ENGINE === "studio";
+// BLOCKY_WORLDS_READY_EMAIL=on: the sweeper emails "your video is ready" (studioSupabase.ts); the page says so
+const READY_EMAIL = readyEmailOn(envGet);
+// on only when it says runpod AND everything a run needs is configured: a half-configured renderer never charges anyone.
+// Studio: the switch is enough here; start also needs a live worker (studioWorkerAlive), checked before the charge.
+const RENDERER = STUDIO_ON ? "studio" : (Deno.env.get("BLOCKY_WORLDS_RENDERER") ?? "").trim() === "runpod" && renderConfigured() ? "runpod" : "";
 const BUCKET = "blocky-worlds-renders";
 // BOARD-ONLY LAUNCH MODE (owner, 2026-11-12; _shared/blockyWorlds/boardFit.js): BLOCKY_WORLDS_LAUNCH=board shows only
 // library ideas the board kit can film, gives the writers the kit as hard rules and checks every script against the kit
 // before the charge; BLOCKY_WORLDS_BOARD_ONLY=on adds the strict render (no old-planner lines: a miss is refunded) and
 // implies launch mode. Both off by default; a secret change switches them (no code deploy).
-const envGet = (k: string) => Deno.env.get(k) ?? "";
-const LAUNCH_BOARD = launchModeFrom(envGet);
+// The Studio engine always runs with it: an edited script goes through the same kit checks (with Fix it) before the charge.
+const LAUNCH_BOARD = launchModeFrom(envGet) || STUDIO_ON;
 /** the library rows the picker may show: in launch mode only those the board kit can film (computed at read time) */
 const LIBRARY_LIMIT = LAUNCH_BOARD ? 200 : 60;
 
@@ -155,8 +171,12 @@ async function runView(r: any, { owner = false, queue = null }: { owner?: boolea
   return {
     id: r.id, draftId: r.draft_id, title: r.title, lengthSec: r.length_sec, credits: r.credits_charged, createdAt: r.created_at, doneAt: r.finished_at,
     status: r.status, stepAt: Date.parse(r.stage_at ?? r.created_at), pct: r.pct ?? 0, post: done ? r.post : null,
-    // the progress screen's stage (render.js STAGES: queued, voice, storyboard, plan, prompts, checks, stills, mix, render, finish)
-    stage: stageOf(r.status, r.pct ?? 0),
+    // the progress screen's stage (render.js STAGES: queued, voice, storyboard, plan, prompts, checks, stills, mix, render,
+    // finish; a Studio run: studio.js STUDIO_STAGES: queued, voice, plan, directing, previews, checking, fixing, rendering,
+    // finishing) and the engine that makes it (the page picks the stage list by it)
+    engine: r.engine === "studio" ? "studio" : "pipeline",
+    stage: r.engine === "studio" ? studioStageOf(r) : stageOf(r.status, r.pct ?? 0),
+    ...(r.engine === "studio" && working ? { etaText: studioEtaText(r.length_sec), emailWhenReady: READY_EMAIL } : {}),
     // the shared line (renderQueue.js): place in line + seconds until it starts while waiting, seconds until ready;
     // etaAt = when they were computed (the page counts down between polls)
     queuePosition: working ? queue?.queuePosition ?? null : null, etaSec: working ? queue?.etaSec ?? null : null,
@@ -237,6 +257,8 @@ async function handle(req: Request, trace: Trace) {
       enabled: OPEN, signedIn: Boolean(who), plan: who?.plan ?? null, owner: Boolean(who?.owner), tester: Boolean(who?.tester),
       visible, canWrite: Boolean(who && visible && writerOk(who)), canGenerate: Boolean(who && visible && (who.owner || canGenerate(who.plan)) && RENDERER),
       canRemoveWatermark: Boolean(who && canRemoveEndCard(who.plan)), mock: PROVIDER === "mock", renderer: Boolean(RENDERER),
+      // the engine (studio.js): "studio" shows the Beta label and the Studio progress screen
+      engine: ENGINE, beta: STUDIO_ON,
       lengths: LENGTHS, defaultLength: DEFAULT_LENGTH, prices: PRICES, narrator: { name: NARRATOR.voiceName },
       moods: Object.entries(MOODS).map(([id, m]: any) => ({ id, label: m.label })), ideaBatchesLeft,
       // launch mode: the page shows "What we can film" (generated from the kit list) and "Move it to our town"
@@ -497,9 +519,16 @@ async function handle(req: Request, trace: Trace) {
     const dryRun = body?.dryRun === true && (who.tester || who.owner);
     if (!RENDERER && !dryRun) throw new ApiError("RENDER_OFF", undefined, {}, "BLOCKY_WORLDS_RENDERER is not runpod, or RunPod / the callback secret is not configured");
     // board-only without the automatic storyboard would send every line to the old planner: refused before any charge
-    if (boardOnlyBlocked(productionSettings(envGet))) throw new ApiError("RENDER_OFF", undefined, {}, "BLOCKY_WORLDS_BOARD_ONLY is on but BLOCKY_WORLDS_STORYBOARD is not auto");
+    // (the pipeline only: the Studio engine never uses the storyboard)
+    if (!STUDIO_ON && boardOnlyBlocked(productionSettings(envGet))) throw new ApiError("RENDER_OFF", undefined, {}, "BLOCKY_WORLDS_BOARD_ONLY is on but BLOCKY_WORLDS_STORYBOARD is not auto");
+    // the Studio engine: a run is only charged while a Studio worker is alive to make it (fail closed, before any charge)
+    if (STUDIO_ON && !dryRun) {
+      trace.step = "studio worker";
+      if (!(await studioWorkerAlive(admin))) throw new ApiError("BUSY", "Our video studio is restarting. Nothing was charged. Try again in a few minutes.", { retryAfterSec: 300 }, `no Studio worker said hello in the last ${STUDIO.workerSeenSec} s (blocky_worlds_workers)`);
+    }
     trace.step = "cap check";
-    await guardFor(who.user.id, costBasisUsd(lengthSec), "video");
+    // what one attempt is expected to cost us (the emergency cap counts it): the Studio model's or the pipeline's
+    await guardFor(who.user.id, STUDIO_ON ? studioFullCostUsd(lengthSec) : costBasisUsd(lengthSec), "video");
     trace.step = "price";
     const { data: price, error: pErr } = await admin.rpc("compute_tool_price", { p_tool_key: toolKey(lengthSec), p_input: {} });
     if (pErr || price == null) throw new ApiError("SERVER", "Couldn't load the price. Please try again.", {}, pErr?.message ?? "no price row");
@@ -516,6 +545,9 @@ async function handle(req: Request, trace: Trace) {
     const { data: run, error } = await admin.rpc("blocky_worlds_start_run", {
       p_user: who.user.id, p_draft: d.id, p_title: d.title, p_length: lengthSec, p_lines: d.lines, p_narration: narrationOf(script), p_post: d.post,
       p_narrator: NARRATOR, p_end_card: endCard, p_credits: credits, p_env: (who.tester || who.owner) && !OPEN ? "test" : "prod",
+      // the engine is written with the charge (migration 20261213100000): the pipeline's sweeper never sees a Studio run.
+      // Sent only for Studio, so the pipeline keeps working whether or not that migration is applied yet.
+      ...(STUDIO_ON ? { p_engine: "studio" } : {}),
     });
     if (error || !run) {
       if (/INSUFFICIENT_CREDITS/.test(error?.message ?? "")) throw new ApiError("CREDITS", `You need ${credits} credits for this video.`, { credits });
@@ -528,6 +560,8 @@ async function handle(req: Request, trace: Trace) {
     if (ideaLib) await countEvent(who.user.id, ideaLib, "generated", { draftId: d.id, runId: run.id });
     // the pipeline (docs/blocky-worlds-pipeline.md): the prepare job goes to RunPod now; a run that can't be sent is
     // failed and refunded by the runtime; anything else that goes wrong here is picked up by the sweeper within a minute
+    // A Studio run waits in the table: a Studio worker claims it (blocky_worlds_claim_studio_run); nothing is sent here.
+    if (run.engine === "studio") return await runView({ ...run, library_id: ideaLib }, { owner: who.owner, queue: (await studioQueueInfo(admin, [run]))[run.id] ?? null });
     trace.step = "dispatch";
     let started: any = null;
     try { started = await renderRuntime(admin).start(run.id); } catch (e: any) { console.error("[blocky-worlds-api] start dispatch:", run.id, e?.message ?? e); }
@@ -538,15 +572,15 @@ async function handle(req: Request, trace: Trace) {
   const who = await requireUser(req, trace);
   if (action === "list") {
     const { data } = await admin.from("blocky_worlds_runs").select("*").eq("user_id", who.user.id).is("deleted_at", null).order("created_at", { ascending: false }).limit(20);
-    const working = (data ?? []).filter((r: any) => !["done", "failed"].includes(r.status)).map((r: any) => r.id);
-    const q: Record<string, any> = working.length ? await queueInfo(admin, working) : {};
+    const working = (data ?? []).filter((r: any) => !["done", "failed"].includes(r.status) && r.engine !== "studio").map((r: any) => r.id);
+    const q: Record<string, any> = { ...(working.length ? await queueInfo(admin, working) : {}), ...(await studioQueueInfo(admin, data ?? [])) };
     return { runs: await Promise.all((data ?? []).map((r: any) => runView(r, { owner: who.owner, queue: q[r.id] ?? null }))) };
   }
   const runId = String(body?.runId ?? "");
   if (!/^[0-9a-f-]{36}$/i.test(runId)) throw new ApiError("BAD_INPUT");
   const { data: run } = await admin.from("blocky_worlds_runs").select("*").eq("id", runId).eq("user_id", who.user.id).is("deleted_at", null).maybeSingle();
   if (!run) throw new ApiError("NOT_FOUND", "We couldn't find that video.");
-  if (action === "status") return await runView(run, { owner: who.owner, queue: ["done", "failed"].includes(run.status) ? null : (await queueInfo(admin, [run.id]))[run.id] ?? null });
+  if (action === "status") return await runView(run, { owner: who.owner, queue: ["done", "failed"].includes(run.status) ? null : run.engine === "studio" ? (await studioQueueInfo(admin, [run]))[run.id] ?? null : (await queueInfo(admin, [run.id]))[run.id] ?? null });
   if (action === "event") {
     const kind = String(body?.kind ?? "");
     if (!["downloaded", "thumb_up", "thumb_down"].includes(kind)) throw new ApiError("BAD_INPUT");

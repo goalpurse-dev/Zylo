@@ -191,8 +191,13 @@ async function durations(admin: any) {
 export async function queueInfo(admin: any, runIds: string[]): Promise<Record<string, any>> {
   try {
     if (!runIds.length) return {};
-    const { data: runs, error } = await admin.from("blocky_worlds_runs").select("id,status,created_at,planned_at,length_sec,render").not("status", "in", TERMINAL).is("deleted_at", null).order("created_at").limit(50);
-    if (error || !runs?.length) return {};
+    const read = (cols: string) => admin.from("blocky_worlds_runs").select(cols).not("status", "in", TERMINAL).is("deleted_at", null).order("created_at").limit(50);
+    let { data: all, error } = await read("id,status,created_at,planned_at,length_sec,render,engine");
+    // before migration 20261213100000 there is no engine column (and no Studio run): the old read
+    if (error) ({ data: all, error } = await read("id,status,created_at,planned_at,length_sec,render"));
+    // Studio runs (studio.js) wait in their own line (studioSupabase.ts studioQueueInfo), not in the GPU pipeline's
+    const runs = (all ?? []).filter((r: any) => r.engine !== "studio");
+    if (error || !runs.length) return {};
     const ids = runs.map((r: any) => r.id);
     const jobs = await supabaseDb(admin).jobsOfRuns(ids);
     const jobsByRun = new Map(ids.map((id: string) => [id, [] as any[]]));

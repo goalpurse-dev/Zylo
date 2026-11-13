@@ -30,7 +30,8 @@ export function makeRuntime({ db, storage, runpod, secret, callbackUrl, cfg = RE
 
   /** every live run (oldest first) and its job rows */
   async function snapshot() {
-    const runs = [...((await db.liveRuns(50)) ?? [])].sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at));
+    // a Studio run (studio.js) is made by the Studio worker, never by this pipeline: not in the GPU line either
+    const runs = [...((await db.liveRuns(50)) ?? [])].filter((r) => r.engine !== "studio").sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at));
     const ids = runs.map((r) => r.id), jobsByRun = new Map(ids.map((id) => [id, []]));
     const rows = typeof db.jobsOfRuns === "function" ? await db.jobsOfRuns(ids) : (await Promise.all(ids.map((id) => db.jobs(id)))).flat();
     for (const j of rows ?? []) jobsByRun.get(j.run_id)?.push(j);
@@ -203,6 +204,9 @@ export function makeRuntime({ db, storage, runpod, secret, callbackUrl, cfg = RE
   async function reconcileRun(runId, depth = 0) {
     let run = await db.getRun(runId);
     if (!run) return null;
+    // THE STUDIO GUARD (2026-11-13): a Studio run is never reconciled here (no prepare / chunk / finish job is ever sent
+    // for it); the Studio worker makes it and studioRuns.js sweeps it
+    if (run.engine === "studio") return run;
     let jobs = await db.jobs(runId);
     // a "planned" whose split was never saved (a lost callback, an unreadable timeline): applied now
     if (!run.planned_at && run.status !== "failed" && run.status !== "done" && jobs.some((j) => j.role === "prepare" && (j.stage === "mix" || j.state === "done"))) {
@@ -284,7 +288,7 @@ export function makeRuntime({ db, storage, runpod, secret, callbackUrl, cfg = RE
   /** the sweeper (pg_cron every minute): RunPod's view of every live job, then reconcile every running run */
   async function sweep() {
     // oldest first: the shared line gives free workers to the oldest run (renderQueue.js admission)
-    const runs = [...(await db.liveRuns(50))].sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at));
+    const runs = [...(await db.liveRuns(50))].filter((r) => r.engine !== "studio").sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at));
     let looked = 0;
     for (const run of runs) {
       try {

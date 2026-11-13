@@ -1,0 +1,17 @@
+# Blocky Worlds STUDIO WORKER on Fly.io (docs/blocky-worlds-launch.md). NOT created and NOT deployed: the owner does both.
+# A background worker: no ports, no public address. One machine = one video at a time; two machines = two at once.
+# The app name is a suggestion; change it here and in the launch doc's commands if you pick another.
+app = "zyvo-blocky-studio"
+primary_region = "fra"
+kill_signal = "SIGTERM"
+kill_timeout = 30
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  BLOCKY_WORLDS_POLL_SEC = "10"
+
+[[vm]]
+  size = "shared-cpu-2x"
+  memory = "4gb"

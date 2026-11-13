@@ -96,7 +96,11 @@ export default function BlockyWorldsStudio({ access: pageAccess, onSignUp, onUpg
         <div className="flex items-center gap-2">
           <span className="grid h-8 w-8 place-items-center rounded-xl border border-lime-300/20 bg-lime-300/10"><Boxes className="h-4 w-4 text-lime-300" aria-hidden="true" /></span>
           <div>
-            <p className="text-[16px] font-black tracking-[-0.03em] text-white">Blocky Worlds</p>
+            <p className="flex items-center gap-1.5 text-[16px] font-black tracking-[-0.03em] text-white">
+              Blocky Worlds
+              {/* the Studio director engine (studio.js, soft launch 2026-11-13): the server says when it is on */}
+              {flow.access?.beta && <span className="rounded-md border border-lime-300/30 bg-lime-300/10 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-[0.12em] text-lime-200" data-testid="bw-beta">Beta</span>}
+            </p>
             <p className="text-[9.5px] font-semibold uppercase tracking-[0.14em] text-lime-300/65">Story videos, built in blocks</p>
           </div>
         </div>

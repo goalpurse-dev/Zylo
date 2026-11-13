@@ -17,6 +17,14 @@ const STUB_POST = `export const POST = {}; export function makeRenderer() { thro
 
 /** browser files (page/**, lib/** .js) changed since `since` (a commit) + new untracked ones, as server paths */
 export function changedFiles(since) {
+  // the Studio worker's container has no git: its build (scripts/blockyWorlds/studioWorker/buildContext.mjs) writes this
+  // list once on the laptop, for the same `since`
+  const pre = process.env.BLOCKY_WORLDS_CHANGED_FILES;
+  if (pre) {
+    const saved = JSON.parse(fs.readFileSync(pre, "utf8"));
+    if (saved.since !== since) throw new Error(`${pre} was written for ${saved.since}, not ${since}: rebuild the Studio worker`);
+    return saved.files.filter((p) => fs.existsSync(path.join(ENGINE, p.slice(1))));
+  }
   const rel = (p) => p.replace(/^scripts\/blockyWorlds\/engine\//, "");
   const git = (args) => execFileSync("git", args, { cwd: ENGINE, encoding: "utf8" }).split(/\r?\n/).filter(Boolean);
   const list = new Set([...git(["diff", "--name-only", since, "--", "page", "lib"]), ...git(["ls-files", "--others", "--exclude-standard", "--", "page", "lib"])].map(rel));
