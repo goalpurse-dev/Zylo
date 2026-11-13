@@ -22,23 +22,25 @@ rendered on RunPod, fixes the bad cuts, then the final renders in parallel on Ru
 |---|---|
 | `shotApi.js` | the only API shot code can use (`api.*`, `Math.*`), poses, faces, animals, limits |
 | `validate.mjs` | the whitelist validator (esprima AST): no globals, no eval / Function / import / network, no `x[expr]`, bounded loops |
-| `shotCheck.mjs` | free Node pre-check: runs each cut against a stub API in a vm (timeout): runtime errors, unknown ids, camera motion, frame 0 mid-move |
+| `shotCheck.mjs` | free Node pre-check, run in a SANDBOXED CHILD PROCESS (`sandbox/checkChild.mjs`: empty env, Node permission model, network off, 120 s): `shotCheckCore.mjs` runs each cut against a stub API in a vm (timeout): runtime errors, unknown ids, camera motion, frame 0 mid-move, asset sizes |
+| `library/` | the STUDIO ASSET LIBRARY: built things saved PENDING (`items/<id>.json` + `thumbs/<id>.jpg`), `lookup(name, kind)` = approved only, `approve.mjs <id> [--reject]`, the owner's `review.html`, `showcase.mjs` (a build alone on RunPod for its thumbnail) |
 | `assemble.mjs` | the agent's plan -> a real engine timeline (set "board", `studio: <id>`); the cuts' declarations become the engine's shot fields, so checkTimeline / checkVisuals / checkSubjects / checkProduction / the storyboard rule + action checks run unchanged |
-| `page/studioBoard.js` | the page adapter shipped inside the job in place of `page/simple/board.js`: the real board stages the cut, then the validated code runs every frame; the night floor (key / rim / creature-face / sky fill at 0.12, calibrated on RunPod), built things blocking the lens hidden, per-frame stats; a still camera's safety push |
+| `page/studioBoard.js` | the page adapter shipped inside the job in place of `page/simple/board.js`: the real board stages the cut, then the validated code runs every frame; the night floor (key / rim / creature-face / sky fill at 0.12, calibrated on RunPod) and the NIGHT GRADE outdoors (dark sky, warm lamps, the lights confined to the subject; calibrated on test A2's night cuts), built things blocking the lens hidden, per-frame stats; a still camera's safety push |
 | `bundle.mjs` | the page-code-in-job bundle (like `engine/dev/simple/bundle.mjs`): changed engine files + the adapter + the timeline + the code as base64 data |
-| `render.mjs` | RunPod endpoint `gm9eqdkuyc2ofs` only (asserted), the image's `simpleStills` role: preview contact sheets; the final as 2x2 full-size frame packs over K parallel jobs, then a local encode + mux |
+| `render.mjs` | RunPod endpoint from `BLOCKY_WORLDS_STUDIO_ENDPOINT` (default `gm9eqdkuyc2ofs`; Cutaway's `f66astc0vrus92` refused), the image's `simpleStills` role: preview contact sheets; the final as 2x2 full-size frame packs over K parallel jobs, then a local encode + mux |
 | `agent.mjs`, `prompt.mjs` | the one director (run 1's prompt + the shot-mix and creature rules; four tools; finish-driven rounds; every call priced worst-case first with the cached prefix at the read price and the output limit fitted to what is left; every answer saved on arrival; the best version kept) |
 | `checker.mjs` | the one fixed vision checker (Sonnet 5.5, low effort) for every tier |
 | `shotMix.mjs` | the shot-mix rules (75% doing something, empty wides at most 1 in 6, never the same building twice in a row, creatures with a body and a face) |
 | `pixel.mjs` | the blocking frame checks (thresholds calibrated on run 1's frames) |
-| `pace.mjs`, `castFix.mjs` | the voice: 1.25x + the pause cut; the animal-cast fix on the base plan |
+| `pace.mjs`, `castFix.mjs` | the voice: 1.25x + the pause cut; the cast fixes on the base plan (an animal cast as a person, a named thing cast as a person, a relation cast twice) |
 | `ledger.mjs` | cost + time per step (`steps.jsonl`), the experiment cap and the agent cap |
 
 ## Security model
 - The customer topic / script is delimited DATA in the user message; the system prompt and the tools are fixed.
 - The model gets four tools and nothing else: no shell, no files, no network, no keys. The keys stay in the orchestrator
   (`.env.local` read by `engine/runpod/client.mjs` and the fetch headers).
-- Shot code is validated before anything runs it (laptop vm with a timeout for the pre-check; the page only after that),
+- Shot code is validated before anything runs it (the pre-check runs it in a separate Node process with no env keys, no
+  network, no file writes and no child processes, in a vm with a timeout; the page only after that),
   and in the page it can reach only `api` and `Math`. The page runs in the RunPod worker's headless Chrome, which holds no
   secrets; the job carries only signed upload URLs for its own test folder.
 

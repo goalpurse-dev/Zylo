@@ -48,6 +48,40 @@ if (arg("from")) {
 const resFile = path.join(out, "results.json");
 let script;
 if (fs.existsSync(resFile)) { const r0 = JSON.parse(fs.readFileSync(resFile, "utf8")).results[0]; script = r0.script; card = r0.card ?? card; say("script: reused"); }
+else if (TOPIC && argv.includes("--studio")) {
+  // --studio: the APP'S writer for a typed topic with BLOCKY_WORLDS_ENGINE=studio (blocky-worlds-api: board = "prefer",
+  // no kit refusal): the topic ideas (the first one, as if the customer picked it) -> the hybrid writer (Opus plan +
+  // Sonnet lines, the recipe and its reference examples, the judge as feedback) -> the draft's checks (only Studio's
+  // four blocks may refuse: reported, never a stop here) -> the Studio builds list (studioBuilds.js) + the worker's note
+  const { studioBuilds, studioBuildsNote, isStudioBlock } = await import(pathToFileURL(path.join(SHARED, "studioBuilds.js")).href);
+  const { pickRecipe, RECIPES } = await import(pathToFileURL(path.join(SHARED, "recipes.js")).href);
+  const { examplesFor } = await import(pathToFileURL(path.join(SHARED, "referenceTexts.js")).href);
+  const { APP_HYBRID } = await import(pathToFileURL(path.join(SHARED, "hybridApp.js")).href);
+  const capScript = Number(arg("script-cap", 0.62)); L.check("script", capScript); // the ideas call + APP_HYBRID.capUsd (0.6)
+  const apiKey = envKey("ANTHROPIC_KEY") ?? envKey("ANTHROPIC_API_KEY");
+  const meter = LLM.moneyMeter(capScript); // ONE meter for every writer call of this script
+  try {
+    const t = await L.step("script", async () => {
+      const ideas = await LLM.writeTopicIdeas({ apiKey, topic: TOPIC, board: "prefer", meter });
+      if (!ideas.ideas?.length) throw new Error(`the topic writer returned no idea${ideas.unfit ? ` (unfit: ${JSON.stringify(ideas.unfit)})` : ""}`);
+      const idea = { ...ideas.ideas[0], topic: TOPIC };
+      const picked = pickRecipe({ topic: TOPIC, card: idea }), recipe = { ...picked, what: RECIPES[picked.id]?.what };
+      const r = await LLM.writeHybrid({ apiKey, topic: TOPIC, recipe, examples: examplesFor(recipe.id), lengthSec: LEN, meter, judge: APP_HYBRID.judge, idea, board: "prefer" });
+      return { ideas: ideas.ideas.map((i) => i.title), idea, recipe: recipe.id, r };
+    }, { topic: TOPIC, studio: true });
+    const r = t.r;
+    fs.writeFileSync(path.join(out, "studio-writer.json"), JSON.stringify({ ideas: t.ideas, recipe: t.recipe, calls: r.calls, checks: r.checks, feedback: r.feedback, stopped: r.stopped, card: r.card }, null, 1));
+    if (!r.script?.lines?.length) throw new Error(`the hybrid writer stopped: ${r.stopped}`);
+    script = r.script; card = { ...(r.card ?? t.idea), topic: TOPIC };
+    const dc = LLM.draftCheck(script, LEN, "hybrid", card, { board: "prefer" });
+    const blocks = (dc.problems ?? []).filter(isStudioBlock);
+    const builds = studioBuilds(script, card);
+    fs.writeFileSync(path.join(out, "studio-builds.json"), JSON.stringify(builds, null, 1));
+    fs.writeFileSync(path.join(out, "studio-note.txt"), studioBuildsNote(builds, {}));
+    say(`studio writer: ideas ${t.ideas.map((x) => `"${x}"`).join(", ")}; recipe ${t.recipe}; checks ${dc.problems?.length ?? 0} problem(s), Studio blocks ${blocks.length}${blocks.length ? `: ${blocks.join(" | ")}` : " (no refusal)"}; builds ${builds.map((b) => `${b.name} (${b.kind}, lines ${b.lines.join(",")})`).join("; ") || "none"}`);
+  } finally { L.add("script", meter.spent); L.log({ step: "script", usd: meter.spent, calls: meter.calls }); }
+  fs.writeFileSync(resFile, JSON.stringify({ results: [{ script, card }] }, null, 1));
+}
 else if (TOPIC) {
   const capScript = Number(arg("script-cap", 0.4)); L.check("script", capScript);
   const apiKey = envKey("ANTHROPIC_KEY") ?? envKey("ANTHROPIC_API_KEY");

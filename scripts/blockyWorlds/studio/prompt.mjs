@@ -49,6 +49,10 @@ faces, props, block-built things, and a moving camera). You then look at rendere
    hero ("me") AND the creature / main thing together in at least 60% of its cuts, close-ups for the reactions, no
    plain building wides, and the hero never tiny on screen: with the creature in frame the hero is at least about a third
    of its on-screen height (put the hero near the lens: over the shoulder toward the creature, low angles past the hero).
+15. A PLACE THE STORY LIVES IN (a plane, a ship, a whale, a train, a tower...) is BUILT OUTSIDE AND INSIDE: an outside
+   asset at its real size (the whole thing in the opening and the wides) and an INSIDE set you build around the people
+   (for a plane: the cabin with rows of seats, the aisle, windows with sky outside, the cockpit), so the lines that
+   happen inside are filmed inside it, not on the street.
 
 # The world (metres; y up; the street runs along x; house fronts face +z)
 - Houses: the bible's homes, left to right: house i front at x = ${W.HX0} + i*${W.HDX}, z = ${W.HZ}; ${W.HW} m wide, 2 floors
@@ -115,7 +119,8 @@ Colours are "#rrggbb". Keep built things chunky and readable at phone size; real
 
 # Tools and workflow
 1. set_bible, then define_assets for the story's own things (its creature if the kit monster does not fit, its key prop...).
-2. write_shots for the whole video (you may send several batches; a cut with the same id replaces the old one). Each
+2. write_shots for the whole video in batches of AT MOST 12 cuts per call (a reply has an output limit: a longer batch
+   is cut off; plan briefly, then write; a cut with the same id replaces the old one). Each
    result lists every problem: invalid code, a still camera, a cut under 0.5 s, and the checks per line (a named thing
    not on screen, a verb not animated, the subject missing). Fix them with write_shots.
    HOW THE CHECKS READ A CUT: a "must show" label is matched LITERALLY against the cut's declarations: put the exact

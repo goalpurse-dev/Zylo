@@ -28,6 +28,8 @@ const { verbsOf } = await import(pathToFileURL(path.resolve(HERE, "../engine/lib
 const { checkVisuals } = await import(pathToFileURL(path.resolve(HERE, "../engine/plan.mjs")).href);
 export const MODELS = Object.freeze({ sonnet: "claude-sonnet-5-5", opus: "claude-opus-5-5" }); // config.js / llm.js PRICE ids
 const FALLBACK = new Set(["claude-sonnet-5-5", "claude-opus-5-5"]);
+// the TASK BUDGET (2026-11-13, test 5: a first director reply spent all 20k / 32k tokens thinking, no tool call, $0.24 / $0.72): each
+// director call tells the model its token budget (the beta task budget, advisory: it paces itself), min 20000
 const MAX_TOKENS = 20000; // run 1's biggest director calls used ~12k (thinking included)
 
 // how the checks read a cut (sent with every visuals / subjects problem)
@@ -40,6 +42,23 @@ const TOOLS = [
   { name: "write_shots", description: "Add or replace cuts (by id). Returns every problem the free checks find: invalid code, a still camera, timing, the engine checks per line, the shot mix.", input_schema: { type: "object", properties: { shots: { type: "array", items: { type: "object" } }, remove: { type: "array", items: { type: "string" }, description: "ids of cuts to delete" } }, required: ["shots"] } },
   { name: "finish", description: "Done writing: the engine renders a contact sheet of the cuts and a checker reviews every tile. Refused while a free check fails.", input_schema: { type: "object", properties: { notes: { type: "string" } }, required: ["notes"] } },
 ];
+
+/** a tool input cut off by the output limit (test 5, 2026-11-13: a write_shots of ~40 cuts hit max_tokens and every cut
+ *  was lost): the longest prefix that ends after a complete value, closed -> the object (e.g. every COMPLETE cut kept) */
+export function salvageJson(src) {
+  const s = String(src ?? "");
+  let k = s.length;
+  while (k > 0 && (k = s.lastIndexOf("}", k - 1)) >= 0) {
+    const head = s.slice(0, k + 1), stack = []; let inStr = false, esc = false;
+    for (const ch of head) {
+      if (inStr) { if (esc) esc = false; else if (ch === "\\") esc = true; else if (ch === '"') inStr = false; continue; }
+      if (ch === '"') inStr = true; else if (ch === "{" || ch === "[") stack.push(ch); else if (ch === "}" || ch === "]") stack.pop();
+    }
+    if (inStr) continue; // that "}" sits inside a string
+    try { const v = JSON.parse(head + stack.reverse().map((c) => (c === "{" ? "}" : "]")).join("")); if (v && typeof v === "object") return v; } catch { /* a shorter prefix */ }
+  }
+  return {};
+}
 
 /** a streamed Messages reply (server-sent events) rebuilt into the message object a non-streaming call returns:
  *  { model, content: [blocks], stop_reason, usage }; thinking blocks keep their signature (passed back unchanged) */
@@ -55,7 +74,7 @@ async function readStream(res) {
       else if (d.type === "thinking_delta") b.thinking = (b.thinking ?? "") + d.thinking;
       else if (d.type === "signature_delta") b.signature = (b.signature ?? "") + d.signature;
       else if (d.type === "input_json_delta") json[ev.index] += d.partial_json;
-    } else if (ev.type === "content_block_stop") { if (json[ev.index] != null) { try { msg.content[ev.index].input = json[ev.index] ? JSON.parse(json[ev.index]) : {}; } catch { msg.content[ev.index].input = {}; msg.content[ev.index].truncated = true; } } }
+    } else if (ev.type === "content_block_stop") { if (json[ev.index] != null) { try { msg.content[ev.index].input = json[ev.index] ? JSON.parse(json[ev.index]) : {}; } catch { msg.content[ev.index].input = salvageJson(json[ev.index]); (msg.truncated ??= []).push({ index: ev.index, name: msg.content[ev.index].name, raw: json[ev.index] }); } } } // (the raw text is saved with the answer; only the API fields go back)
     else if (ev.type === "message_delta") { if (ev.delta?.stop_reason) msg.stop_reason = ev.delta.stop_reason; if (ev.usage) Object.assign(msg.usage, ev.usage); }
     else if (ev.type === "error") throw Object.assign(new Error(`stream error: ${JSON.stringify(ev.error).slice(0, 300)}`), { usage: msg.usage });
   };
@@ -135,7 +154,8 @@ export async function directVideo({ tl0, script, out, L, apiKey, model = MODELS.
     }
     const worst = +(maxTokens * PP.output / 1e6 + inCost).toFixed(4);
     L.check(`${label} (${m})`, worst, { agent: true });
-    const body = { model: m, max_tokens: maxTokens, ...(system ? { system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }] } : {}), messages, ...(tools ? { tools } : {}), thinking: { type: "adaptive" }, output_config: { effort: eff, ...(schema ? { format: { type: "json_schema", schema } } : {}) }, ...(kind === "agent" ? { cache_control: { type: "ephemeral" } } : {}), ...(FALLBACK.has(m) ? { fallbacks: "default" } : {}) };
+    const body = { model: m, max_tokens: maxTokens, ...(system ? { system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }] } : {}), messages, ...(tools ? { tools } : {}), thinking: { type: "adaptive" }, output_config: { effort: eff, ...(schema ? { format: { type: "json_schema", schema } } : {}), ...(kind === "agent" ? { task_budget: { type: "tokens", total: Math.max(20000, maxTokens) } } : {}) }, ...(kind === "agent" ? { cache_control: { type: "ephemeral" } } : {}), ...(FALLBACK.has(m) ? { fallbacks: "default" } : {}) };
+    const betas = [...(FALLBACK.has(m) ? ["server-side-fallback-2026-07-01"] : []), ...(kind === "agent" ? ["task-budgets-2026-03-13"] : [])];
     const a = Date.now();
     let res, j;
     // STREAMED (2026-11-13: a non-streaming Opus call over 5 min died on Node's 300 s header timeout, and the automatic
@@ -143,7 +163,7 @@ export async function directVideo({ tl0, script, out, L, apiKey, model = MODELS.
     // happens only for a refusal to start (429 / 5xx / 529: nothing generated, nothing billed), never after a network
     // failure mid-answer (that one may be billed: the run stops instead).
     for (let tries = 0; tries < 2; tries++) {
-      try { res = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json", ...(FALLBACK.has(m) ? { "anthropic-beta": "server-side-fallback-2026-07-01" } : {}) }, body: JSON.stringify({ ...body, stream: true }), signal: AbortSignal.timeout(20 * 60_000) }); j = res.ok ? await readStream(res) : await res.json(); }
+      try { res = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json", ...(betas.length ? { "anthropic-beta": betas.join(",") } : {}) }, body: JSON.stringify({ ...body, stream: true }), signal: AbortSignal.timeout(20 * 60_000) }); j = res.ok ? await readStream(res) : await res.json(); }
       catch (e) { j = { error: { message: String(e.message) }, usage: e.usage ?? null, model: m }; res = { ok: false, status: 0 }; }
       if (res.ok || ![429, 500, 502, 503, 529].includes(res.status)) break;
       await new Promise((r) => setTimeout(r, 6000));
@@ -332,7 +352,9 @@ ${briefNote}` : brief0;
     messages.push({ role: "assistant", content: j.content });
     fs.writeFileSync(f("agent-messages.json"), JSON.stringify(messages));
     const uses = j.content.filter((b) => b.type === "tool_use");
-    if (!uses.length) { messages.push({ role: "user", content: [{ type: "text", text: `Use the tools (call finish when the cuts are ready). ${left()}` }] }); continue; }
+    const cutOff = j.stop_reason === "max_tokens"; // (test 5: a reply spent on thinking alone, a write_shots cut mid-cut)
+    const SMALL = "Work in SMALL steps: think briefly, then act; at most 12 cuts per write_shots call.";
+    if (!uses.length) { messages.push({ role: "user", content: [{ type: "text", text: `${cutOff ? `Your last reply ran out of room before it used a tool. ${SMALL} ` : ""}Use the tools (call finish when the cuts are ready). ${left()}` }] }); continue; }
     const results = [];
     for (const u of uses) {
       const b = Date.now();
@@ -342,6 +364,7 @@ ${briefNote}` : brief0;
       if (finished) break;
     }
     if (finished) break;
+    if (cutOff) results.push({ type: "text", text: `Your last reply hit the output limit${(j.truncated ?? []).length ? ` inside ${j.truncated.map((x) => x.name).join(", ")}: only its COMPLETE items were kept (the last one was lost)` : ""}. ${SMALL}` });
     if (Date.now() > deadline) results.push({ type: "text", text: "TIME IS UP: call finish now." });
     messages.push({ role: "user", content: results });
     fs.writeFileSync(f("agent-messages.json"), JSON.stringify(messages));
