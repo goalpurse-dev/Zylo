@@ -234,15 +234,15 @@ test("pricing: 1 credit = $0.01 of our full cost, whole credits, and the migrati
   for (let i = 1; i < LENGTHS.length; i++) assert.ok(PRICES[LENGTHS[i - 1]] < PRICES[LENGTHS[i]], "longer costs more");
   // the slider: 30 s to 3 min in 10 s steps; the first three lengths' prices are pinned (the owner applied them)
   assert.deepEqual(LENGTHS, [30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180]);
-  assert.deepEqual([PRICES[60], PRICES[90], PRICES[120]], [47, 62, 78]);
+  // the Studio prices (2026-11-13, studio.js's measured model): 1 min 108, 1:30 150 (the owner's ~150), 2 min 192
+  assert.deepEqual([PRICES[60], PRICES[90], PRICES[120]], [108, 150, 192]);
   assert.throws(() => videoCredits(20));
   assert.throws(() => videoCredits(95));
-  const sql = readFileSync(new URL("../supabase/migrations/20261205100000_blocky_worlds_lengths.sql", import.meta.url), "utf8");
+  const sql = readFileSync(new URL("../supabase/migrations/20261214100000_blocky_worlds_studio_prices.sql", import.meta.url), "utf8");
   for (const r of PRICE_ROWS) assert.ok(new RegExp(`\\('${r.tool_key}', NULL, ${r.flat_credits}, NULL,`).test(sql), `${r.tool_key} = ${r.flat_credits} in the migration`);
   assert.equal(PRICE_ROWS.length, LENGTHS.length);
-  assert.ok(sql.includes(`CHECK (length_sec BETWEEN ${LENGTHS[0]} AND ${LENGTHS.at(-1)} AND length_sec % 10 = 0)`), "lengths in the table checks");
-  const first = readFileSync(new URL("../supabase/migrations/20261201100000_blocky_worlds.sql", import.meta.url), "utf8");
-  for (const s of [60, 90, 120]) assert.ok(first.includes(`('blocky-worlds:video-${s}', NULL, ${PRICES[s]}, NULL,`), `${s} s unchanged since the first migration`);
+  const lengths = readFileSync(new URL("../supabase/migrations/20261205100000_blocky_worlds_lengths.sql", import.meta.url), "utf8");
+  assert.ok(lengths.includes(`CHECK (length_sec BETWEEN ${LENGTHS[0]} AND ${LENGTHS.at(-1)} AND length_sec % 10 = 0)`), "lengths in the table checks");
 });
 
 test("script: every length from 30 s to 3 min fits all seven parts (budgets add up; the sized mock passes its checks)", () => {
