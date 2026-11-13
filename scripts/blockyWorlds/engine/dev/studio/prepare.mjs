@@ -22,10 +22,13 @@ const argv = process.argv.slice(2), arg = (k, d = null) => (argv.includes(`--${k
 const out = path.resolve(arg("out")), LEN = Number(arg("length", 60));
 const L = ledger(out, { capUsd: Number(arg("cap", 5)) });
 const LIB = JSON.parse(fs.readFileSync(path.join(ROOT, "src/components/viral-tools/blocky-worlds/dev/libraryFixture.json"), "utf8"));
-const row = LIB.find((r) => r.id.startsWith(arg("idea"))); if (!row) throw new Error("no such library idea");
-const card = row.idea;
+// --topic "<the user's own topic>": the production "Your topic" writer (llm.js topicScript: 3 idea cards, beats, the
+// script, the library judge + up to 2 rewrites; the kit list is on in every writing path) instead of a library idea
+const TOPIC = arg("topic");
+const row = TOPIC ? { id: "topic", idea: { title: TOPIC } } : LIB.find((r) => r.id.startsWith(arg("idea"))); if (!row) throw new Error("no such library idea");
+let card = row.idea;
 const say = (m) => { const l = `[${new Date().toISOString().slice(11, 19)}] ${m}`; console.log(l); fs.appendFileSync(path.join(out, "run.log"), l + "\n"); };
-say(`idea "${card.title}" (${card.mood}, ${card.setting}), ${LEN} s; spent so far $${L.total()} of $${L.capUsd}`);
+say(`${TOPIC ? `topic "${TOPIC}"` : `idea "${card.title}" (${card.mood}, ${card.setting})`}, ${LEN} s; spent so far $${L.total()} of $${L.capUsd}`);
 if (!argv.includes("--yes")) { say("dry run: nothing paid (add --yes)"); process.exit(0); }
 
 const LLM = await import(pathToFileURL(path.join(SHARED, "llm.js")).href);
@@ -44,7 +47,20 @@ if (arg("from")) {
 // 1. the script (worst case = the meter's cap)
 const resFile = path.join(out, "results.json");
 let script;
-if (fs.existsSync(resFile)) { script = JSON.parse(fs.readFileSync(resFile, "utf8")).results[0].script; say("script: reused"); }
+if (fs.existsSync(resFile)) { const r0 = JSON.parse(fs.readFileSync(resFile, "utf8")).results[0]; script = r0.script; card = r0.card ?? card; say("script: reused"); }
+else if (TOPIC) {
+  const capScript = Number(arg("script-cap", 0.4)); L.check("script", capScript);
+  const apiKey = envKey("ANTHROPIC_KEY") ?? envKey("ANTHROPIC_API_KEY");
+  const meter = LLM.moneyMeter(capScript);
+  try {
+    const t = await L.step("script", () => LLM.topicScript({ apiKey, topic: TOPIC, lengthSec: LEN, meter }), { topic: TOPIC });
+    if (!t.script) throw new Error(`the topic writer stopped: ${t.stopped}`);
+    script = t.script; card = { ...(t.card ?? {}), topic: TOPIC };
+    say(`topic writer: judge ${JSON.stringify(t.verdict?.score ?? t.verdict ?? null).slice(0, 80)}, passed ${t.passed}, rewrites ${t.rewrites}, topic problems ${t.topicProblems?.length ?? 0}${t.stopped ? `, stopped: ${t.stopped}` : ""}`);
+    fs.writeFileSync(path.join(out, "topic-writer.json"), JSON.stringify(t, null, 1));
+  } finally { L.add("script", meter.spent); L.log({ step: "script", usd: meter.spent, calls: meter.calls }); }
+  fs.writeFileSync(resFile, JSON.stringify({ results: [{ script, card }] }, null, 1));
+}
 else {
   const capScript = Number(arg("script-cap", 0.12)); L.check("script", capScript);
   const apiKey = envKey("ANTHROPIC_KEY") ?? envKey("ANTHROPIC_API_KEY");

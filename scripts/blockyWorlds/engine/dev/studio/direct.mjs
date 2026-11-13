@@ -37,7 +37,7 @@ else {
   const jobs = Number(arg("jobs", 2)), nCuts = Math.round((tl0.duration / 60) * 58);
   const reserve = { finalUsd: finalLimits(tl0, jobs).worstUsd, previewUsd: +(sheetMaxSec(nCuts) * RATE).toFixed(4), checkUsd: 0.06, fixUsd: /opus/.test(model) ? 0.16 : 0.08 };
   say(`reserve: ${JSON.stringify(reserve)}`);
-  const r = await L.step("director", () => directVideo({ tl0, script, out, L, apiKey, model, rounds, minutes: Number(arg("minutes", 25)), effort: arg("effort", "medium"), reserve, log: say }));
+  const r = await L.step("director", () => directVideo({ tl0, script, out, L, apiKey, model, rounds, minutes: Number(arg("minutes", 25)), effort: arg("effort", "medium"), reserve, briefNote: arg("brief-note") ? fs.readFileSync(arg("brief-note"), "utf8") : null, maxTokens: Number(arg("max-tokens", /opus/.test(model) ? 32000 : 20000)), log: say }));
   plan = r.plan; dirReport = r.report;
   fs.writeFileSync(doneFile, JSON.stringify({ model, rounds, best: r.report.best, finished: r.report.finished, sec: r.report.sec }, null, 1));
   say(`directing: ${r.report.calls} model calls in ${r.report.sec} s (${r.report.finished?.reason ?? "stopped"}); best = round ${r.report.best?.round ?? "-"}: failing lines [${(r.report.best?.failingLines ?? []).join(",")}], ${r.report.best?.blocked ?? "?"} blocked frame(s), gate ${r.report.best?.gate ?? "?"}; model $${L.agentTotal()}`);

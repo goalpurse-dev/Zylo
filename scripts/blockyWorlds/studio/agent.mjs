@@ -59,7 +59,7 @@ export function lineNeeds(tl0, script) {
 /** the rule's constraints in the shape lib/storyboard.js checkRule reads (a constraint without "when" crashed it) */
 const cleanRule = (r) => ({ text: String(r?.text ?? ""), constraints: (Array.isArray(r?.constraints) ? r.constraints : []).filter((c) => Array.isArray(c?.when) && c.when.every((x) => typeof x === "string")).map((c) => ({ when: c.when, ...(c.outside ? { outside: c.outside } : {}), ...(c.people ? { people: c.people } : {}), except: Array.isArray(c.except) ? c.except.filter((e) => e?.who) : [], why: String(c.why ?? "") })) });
 
-export async function directVideo({ tl0, script, out, L, apiKey, model = MODELS.sonnet, rounds = 1, minutes = 25, effort = "medium", reserve = null, log = console.log }) {
+export async function directVideo({ tl0, script, out, L, apiKey, model = MODELS.sonnet, rounds = 1, minutes = 25, effort = "medium", reserve = null, briefNote = null, maxTokens: dirMax = MAX_TOKENS, log = console.log }) {
   const words = lineWordsOf(tl0), needs = lineNeeds(tl0, script);
   const P = PRICE[model] ?? PRICE["claude-sonnet-5-5"];
   const f = (n) => path.join(out, n);
@@ -256,12 +256,16 @@ export async function directVideo({ tl0, script, out, L, apiKey, model = MODELS.
   const sysFile = f("agent-system.txt");
   const systemText = fs.existsSync(sysFile) ? fs.readFileSync(sysFile, "utf8") : SYSTEM;
   if (!fs.existsSync(sysFile)) fs.writeFileSync(sysFile, systemText);
-  const brief = videoBrief({ script, tl: { ...tl0, __words: words }, ...needs, budgetUsd: L.agentCapUsd, minutes });
+  const brief0 = videoBrief({ script, tl: { ...tl0, __words: words }, ...needs, budgetUsd: L.agentCapUsd, minutes });
+  const brief = briefNote ? `${brief0}
+
+NOTE FOR THIS VIDEO (it overrides the cut-count targets above):
+${briefNote}` : brief0;
   fs.writeFileSync(f("agent-brief.txt"), brief);
   const messages = fs.existsSync(f("agent-messages.json")) ? JSON.parse(fs.readFileSync(f("agent-messages.json"), "utf8")) : [{ role: "user", content: [{ type: "text", text: brief }] }];
   for (let turn = 1; turn <= 40 && !finished; turn++) {
     let j;
-    try { j = await call({ label: `director ${turn}`, messages, system: systemText, tools: TOOLS }); }
+    try { j = await call({ label: `director ${turn}`, messages, system: systemText, tools: TOOLS, maxTokens: dirMax }); }
     catch (e) {
       // the writing room is spent: when every cut is written and the free checks pass, the orchestrator runs the round
       // itself (its reserve is kept for this); the result goes into the conversation for the fix round

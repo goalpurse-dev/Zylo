@@ -9,6 +9,7 @@
 // -> { problems: [{ id?, line?, rule, problem }], stats: { doingShare, emptyWides, emptyWideShare } }
 import { W, ownersOf } from "./world.js";
 import { assetInfo } from "./shotCheck.mjs";
+import { ANIMALS } from "./shotApi.js";
 
 export const MIX = Object.freeze({ doing: 0.75, emptyWide: 1 / 6, creatureBody: 6, creatureFace: 2 });
 
@@ -63,8 +64,11 @@ export function shotMix(plan, tl, shotRes) {
   for (const name of plan.creatures ?? []) for (const p of creatureProblems(name, plan.assets[name] ?? "", { homes: plan.bible?.homes ?? {}, cast: tl.cast ?? {} })) problems.push({ rule: "creature", problem: p });
   // the script NAMES a creature (owner 2026-11-13): it is BUILT for this story from the script's own description (a
   // creature asset with a body and a glowing face), never the engine's stock monster
+  // (a creature that IS an animal, "The Penthouse Pigeon", may be the kit animal scaled up, marked creature: true)
+  const species = ANIMALS.find((a) => String(tl.monster?.name ?? "").toLowerCase().split(/[^a-z]+/).includes(a));
+  const kitCreature = species && order.some((s) => s.creature && (shotRes[s.id]?.animalsDrawn || (s.animals ?? []).some((a) => a.species === species)));
   if (tl.monster) {
-    if (!(plan.creatures ?? []).length) problems.push({ rule: "creature", problem: `the script names "${tl.monster.name}": BUILD it as a creature asset from the script's own description (define_assets with creature: true: a body of 6+ parts and a glowing face) and draw it with api.asset` });
+    if (!(plan.creatures ?? []).length && !kitCreature) problems.push({ rule: "creature", problem: `the script names "${tl.monster.name}": BUILD it as a creature asset from the script's own description (define_assets with creature: true: a body of 6+ parts and a glowing face) and draw it with api.asset` });
     const stock = order.filter((s) => s.monster || s.codeMonster);
     if (stock.length) problems.push({ rule: "creature", problem: `these cuts use the engine's stock monster (api.monster / monster staging), not the story's own "${tl.monster.name}": draw your built creature asset instead: ${stock.map((s) => s.id).join(", ")}` });
     if (!order.some((s) => s.creature)) problems.push({ rule: "creature", problem: `"${tl.monster.name}" is never on screen: show your built creature (and mark those cuts creature: true)` });
