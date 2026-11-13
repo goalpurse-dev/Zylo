@@ -5,16 +5,17 @@ rendered on RunPod, fixes the bad cuts, then the final renders in parallel on Ru
 
 ## Flow
 1. `engine/dev/studio/prepare.mjs`: the production writer (llm.js writeScript, board mode) -> the narrator take
-   (Scruffy Duck on eleven_v3, silences over 0.15 s cut) re-processed at a speed fitted to THAT take so it lands at
-   255-280 wpm (`pace.mjs`, max 1.47x; reported when the narrator can't reach it) -> the base plan (planVideo with the
-   real word timings, the free mock director; `castFix.mjs` turns an animal the planner cast as a person back into a
-   pet) -> music A + the mix. `--from <run>` reuses another run's script and paid take.
-2. `engine/dev/studio/direct.mjs --model sonnet|haiku --rounds N`: the orchestrated director (`director.mjs`):
-   the world (one call) -> the scenes in parallel on one cached prefix (+ one repair from the free checks) -> each scene
-   rendered as a contact sheet -> BLOCKING frame checks (`pixel.mjs`: black, flat wall, one colour, dark slab, people
-   too small, the creature filling a wide / medium frame) + the vision checker (one call a round) -> at most N fix
-   rounds (v3 1, Sonnet tests 2, v4 3) -> the best version renders, what still fails is logged -> the final
-   (`render.mjs`) -> the contact sheet + the free frame check of the final (`finalize.mjs`) -> report.json.
+   (Scruffy Duck on eleven_v3) re-processed by `pace.mjs`: ALWAYS 1.25x at the same pitch, pauses cut to ~0.10 s inside
+   a sentence and ~0.22 s between sentences, no gap over 0.45 s (wpm reported, never a stop) -> the base plan
+   (planVideo with the real word timings, the free mock director; `castFix.mjs` turns an animal the planner cast as a
+   person back into a pet) -> music A + the mix. `--from <run>` reuses another run's script and paid take.
+2. `engine/dev/studio/direct.mjs --model sonnet|opus --rounds N`: ONE director for the whole story (`agent.mjs`, run 1's
+   setup, 2026-11-13): bible, assets and every cut in one conversation, the free checks answering each write (code,
+   timing, the engine checks, the SHOT MIX of `shotMix.mjs`) -> finish -> a round: contact sheets on RunPod, the BLOCKING
+   pixel check (`pixel.mjs`: black, flat wall, one colour, dark slab) and the ONE fixed Sonnet checker (`checker.mjs`) ->
+   the failures + the sheets back into the conversation, at most N fix rounds (v3 1, v4 up to 3) -> the best version
+   renders -> the final (`render.mjs`, parallel jobs) -> the contact sheet + the free frame check (`finalize.mjs`) ->
+   report.json. `checkFinal.mjs` runs the same fixed checker on any finished run's final frames (run-to-run comparison).
 
 ## Files
 | File | What |
@@ -23,17 +24,19 @@ rendered on RunPod, fixes the bad cuts, then the final renders in parallel on Ru
 | `validate.mjs` | the whitelist validator (esprima AST): no globals, no eval / Function / import / network, no `x[expr]`, bounded loops |
 | `shotCheck.mjs` | free Node pre-check: runs each cut against a stub API in a vm (timeout): runtime errors, unknown ids, camera motion, frame 0 mid-move |
 | `assemble.mjs` | the agent's plan -> a real engine timeline (set "board", `studio: <id>`); the cuts' declarations become the engine's shot fields, so checkTimeline / checkVisuals / checkSubjects / checkProduction / the storyboard rule + action checks run unchanged |
-| `page/studioBoard.js` | the page adapter shipped inside the job in place of `page/simple/board.js`: the real board stages the cut, then the validated code runs every frame; the night floor (key / rim / creature-face / sky fill at 0.12, calibrated on RunPod), the creature frame cap (60%: the lens backs off), built things blocking the lens hidden, per-frame geometry stats |
+| `page/studioBoard.js` | the page adapter shipped inside the job in place of `page/simple/board.js`: the real board stages the cut, then the validated code runs every frame; the night floor (key / rim / creature-face / sky fill at 0.12, calibrated on RunPod), built things blocking the lens hidden, per-frame stats; a still camera's safety push |
 | `bundle.mjs` | the page-code-in-job bundle (like `engine/dev/simple/bundle.mjs`): changed engine files + the adapter + the timeline + the code as base64 data |
 | `render.mjs` | RunPod endpoint `gm9eqdkuyc2ofs` only (asserted), the image's `simpleStills` role: preview contact sheets; the final as 2x2 full-size frame packs over K parallel jobs, then a local encode + mux |
-| `director.mjs`, `prompt.mjs` | the orchestrated director (world, parallel scenes, look checks, capped fix rounds; every call priced worst-case first, parallel calls reserve their worst case) |
+| `agent.mjs`, `prompt.mjs` | the one director (run 1's prompt + the shot-mix and creature rules; four tools; finish-driven rounds; every call priced worst-case first with the cached prefix at the read price and the output limit fitted to what is left; every answer saved on arrival; the best version kept) |
+| `checker.mjs` | the one fixed vision checker (Sonnet 5.5, low effort) for every tier |
+| `shotMix.mjs` | the shot-mix rules (75% doing something, empty wides at most 1 in 6, never the same building twice in a row, creatures with a body and a face) |
 | `pixel.mjs` | the blocking frame checks (thresholds calibrated on run 1's frames) |
-| `pace.mjs`, `castFix.mjs` | the fitted voice speed; the animal-cast fix on the base plan |
+| `pace.mjs`, `castFix.mjs` | the voice: 1.25x + the pause cut; the animal-cast fix on the base plan |
 | `ledger.mjs` | cost + time per step (`steps.jsonl`), the experiment cap and the agent cap |
 
 ## Security model
 - The customer topic / script is delimited DATA in the user message; the system prompt and the tools are fixed.
-- The model gets five tools and nothing else: no shell, no files, no network, no keys. The keys stay in the orchestrator
+- The model gets four tools and nothing else: no shell, no files, no network, no keys. The keys stay in the orchestrator
   (`.env.local` read by `engine/runpod/client.mjs` and the fetch headers).
 - Shot code is validated before anything runs it (laptop vm with a timeout for the pre-check; the page only after that),
   and in the page it can reach only `api` and `Math`. The page runs in the RunPod worker's headless Chrome, which holds no

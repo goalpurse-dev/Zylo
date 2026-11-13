@@ -56,13 +56,13 @@ function stubApi({ t, dur, night, homes, shot, cast, assets, rec }) {
       if (o.pose && !POSES.includes(o.pose)) rec.errors.add(`pose "${o.pose}" is not a pose`);
       if (o.face && !FACES.includes(o.face)) rec.errors.add(`face "${o.face}" is not a face`);
       if (o.hold && !PROPS.has(o.hold)) rec.errors.add(`hold "${o.hold}" is not a kit prop`);
-      num(o.yaw, "yaw"); rec.people.add(id); const pi = (rec.info[id] ??= {}); if (o.pose && o.pose !== "stand") pi.pose ??= o.pose; if (o.face) pi.face ??= o.face; if (o.hold) pi.hold ??= o.hold;
+      num(o.yaw, "yaw"); rec.people.add(id); rec.ent[`p:${id}`] = P[id]; const pi = (rec.info[id] ??= {}); if (o.pose && o.pose !== "stand") pi.pose ??= o.pose; if (o.face) pi.face ??= o.face; if (o.hold) pi.hold ??= o.hold;
     },
     hide: () => {},
-    monster(o = {}) { if (o.at) pt(o.at, "monster.at"); rec.monster = true; },
+    monster(o = {}) { if (o.at) pt(o.at, "monster.at"); rec.monster = true; rec.ent.m = o.at ?? [0, 0, 0]; if (o.state && o.state !== "lurk") rec.active = true; },
     asset(name, params = {}) {
       if (!assets[name]) { rec.errors.add(`asset "${name}" is not defined`); return; }
-      if (params.at) pt(params.at, `asset(${name}).at`); rec.assets.add(name);
+      if (params.at) pt(params.at, `asset(${name}).at`); rec.assets.add(name); rec.ent[`a:${name}#${rec.nAsset = (rec.nAsset ?? 0) + 1}`] = params.at ?? [0, 0, 0];
       if (rec.depth > 0) { rec.errors.add("an asset may not draw another asset"); return; }
       const sub = stubApi({ t, dur, night, homes, shot, cast, assets, rec }); sub.p = params; rec.depth++;
       try { vm.runInNewContext(`(function (api, Math) { "use strict";\n${assets[name]}\n})(api, Math)`, { api: sub, Math }, { timeout: 200 }); }
@@ -70,7 +70,7 @@ function stubApi({ t, dur, night, homes, shot, cast, assets, rec }) {
       finally { rec.depth--; }
     },
     prop(name, o = {}) { if (!PROPS.has(name)) rec.errors.add(`prop "${name}" is not a kit prop (build it from blocks or an asset)`); if (o.at) pt(o.at, `prop(${name}).at`); rec.props.add(name); },
-    animal(species, o = {}) { if (!ANIMALS.includes(species)) rec.errors.add(`animal "${species}" is not in the kit`); if (o.action && !ANIMAL_ACTIONS.includes(o.action)) rec.errors.add(`animal action "${o.action}" unknown`); if (o.at) pt(o.at, "animal.at"); rec.animals.add(species); },
+    animal(species, o = {}) { rec.ent[`n:${species}#${rec.nAnimal = (rec.nAnimal ?? 0) + 1}`] = o.at ?? [0, 0, 0]; if (o.action && !["idle", "sit", "sleep"].includes(o.action)) rec.active = true; if (!ANIMALS.includes(species)) rec.errors.add(`animal "${species}" is not in the kit`); if (o.action && !ANIMAL_ACTIONS.includes(o.action)) rec.errors.add(`animal action "${o.action}" unknown`); if (o.at) pt(o.at, "animal.at"); rec.animals.add(species); },
     block(size, at, c, o = {}) { pt(size, "block size"); pt(at, "block at"); rec.prims++; if ((o?.glow ?? 0) >= 1) rec.glow++; },
     ball(r, at, c, o = {}) { num(r, "ball r"); pt(at, "ball at"); rec.prims++; if ((o?.glow ?? 0) >= 1) rec.glow++; },
     cyl(a, b, h, at, c, o = {}) { pt(at, "cyl at"); rec.prims++; if ((o?.glow ?? 0) >= 1) rec.glow++; },
@@ -85,7 +85,7 @@ const camDelta = (a, b) => (!a || !b ? 0 : Math.hypot(...a.pos.map((x, i) => x -
 
 /** run one shot (or asset) body at time t; returns the record */
 function runAt(code, ctx, t) {
-  const rec = { errors: new Set(), people: new Set(), props: new Set(), animals: new Set(), assets: new Set(), prims: 0, monster: false, cam: null, depth: 0, info: {}, glow: 0 };
+  const rec = { errors: new Set(), people: new Set(), props: new Set(), animals: new Set(), assets: new Set(), prims: 0, monster: false, cam: null, depth: 0, info: {}, glow: 0, ent: {}, active: false };
   const api = stubApi({ ...ctx, t, rec });
   try { vm.runInNewContext(`(function (api, Math) { "use strict";\n${code}\n})(api, Math)`, { api, Math }, { timeout: 200 }); }
   catch (e) { rec.errors.add(`runtime at t=${t.toFixed(2)}: ${String(e.message ?? e).slice(0, 160)}`); }
@@ -114,8 +114,13 @@ export function checkShots({ shots, assets = {}, homes, cast, timing }) {
     const motion = camDelta(recs[0].cam, recs[3].cam), step = camDelta(recs[0].cam, recs[1].cam);
     if (recs[0].cam && motion < MIN_MOVE) errors.push(`the camera barely moves (${motion.toFixed(2)} over the cut; every shot needs a move > ${MIN_MOVE})`);
     if (recs[0].cam && step < MIN_STEP) errors.push("the camera is still at frame 0 (start the move already in motion: e.g. use 0.25 + 0.75 * k)");
+    // the SHOT MIX data (studio/shotMix.mjs): is someone / something DOING something (an act, an action pose, an
+    // animal action, the creature acting, anything that moves over 0.25 m in the cut), and where the camera looks
+    const moved = Object.keys(recs[0].ent).some((k) => recs[3].ent[k] && Math.hypot(...recs[0].ent[k].map((v, i) => v - recs[3].ent[k][i])) > 0.25);
+    const posed = Object.values(Object.assign({}, ...recs.map((r) => r.info))).some((x) => x.pose && !["stand", "sit", "sleep"].includes(x.pose)) || (s.people ?? []).some((p) => p.pose && !["stand", "sit", "sleep"].includes(p.pose));
+    const doing = (s.acts ?? []).length > 0 || posed || moved || recs.some((r) => r.active);
     const motionOnly = errors.length > 0 && errors.every((e) => /barely moves|still at frame 0/.test(e)); // a still camera: the adapter's safety push can save it
-    out[s.id] = { ok: errors.length === 0, motionOnly, errors: errors.slice(0, 8), motion: +motion.toFixed(3), midMove: step >= MIN_STEP, people: [...new Set(recs.flatMap((r) => [...r.people]))], info: Object.assign({}, ...recs.slice().reverse().map((r) => r.info)), props: [...new Set(recs.flatMap((r) => [...r.props]))], animals: [...new Set(recs.flatMap((r) => [...r.animals]))], assets: [...new Set(recs.flatMap((r) => [...r.assets]))], monster: recs.some((r) => r.monster) };
+    out[s.id] = { ok: errors.length === 0, motionOnly, doing, look: recs[2].cam?.look ?? null, animalsDrawn: recs.some((r) => r.nAnimal), errors: errors.slice(0, 8), motion: +motion.toFixed(3), midMove: step >= MIN_STEP, people: [...new Set(recs.flatMap((r) => [...r.people]))], info: Object.assign({}, ...recs.slice().reverse().map((r) => r.info)), props: [...new Set(recs.flatMap((r) => [...r.props]))], animals: [...new Set(recs.flatMap((r) => [...r.animals]))], assets: [...new Set(recs.flatMap((r) => [...r.assets]))], monster: recs.some((r) => r.monster) };
   }
   return out;
 }

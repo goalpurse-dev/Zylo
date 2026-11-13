@@ -10,9 +10,9 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { planVideo, checkTimeline, checkVisuals, checkSubjects } from "../../plan.mjs";
 import { directStory } from "../../lib/director/index.js";
-import { envKey, narratorFor, paceStats } from "../../voice/eleven.mjs";
+import { elevenVoice, envKey, narratorFor, paceStats } from "../../voice/eleven.mjs";
 import { ledger } from "../../../studio/ledger.mjs";
-import { fitPace } from "../../../studio/pace.mjs";
+import { processTake } from "../../../studio/pace.mjs";
 import { fixAnimalCast } from "../../../studio/castFix.mjs";
 
 const ENGINE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -60,19 +60,17 @@ const kc = kitCheck(script, { card, boardOnly: true });
 say(`script "${script.title}": ${script.lines.length} lines, ${words0} words; formula ${formulaProblems(script, LEN).length} problem(s); kitCheck(board-only) ${kc.ok ? "ok" : `misses ${kc.missing.map((m) => m.word).join(", ")}`} (studio mode builds missing things from blocks, so a miss is reported, not a stop)`);
 for (const [i, l] of script.lines.entries()) say(`  ${i}: [${l.part}] ${l.text}`);
 
-// 2. the voice (worst case: 0.5 ElevenLabs credits a character at $0.0002 a credit): the one paid take, then the speed
-// fitted to THIS take so it lands at 255-280 wpm after the silence cut (studio/pace.mjs; re-processing is free)
+// 2. the voice (worst case: 0.5 ElevenLabs credits a character at $0.0002 a credit): the one paid take (voice/eleven.mjs),
+// then re-processed by studio/pace.mjs: ALWAYS 1.25x at the same pitch, pauses cut to ~0.10 s inside a sentence and
+// ~0.22 s between sentences, no gap over 0.45 s (free). wpm is reported, never a reason to stop.
 const narrator = narratorFor("scruffy_duck");
 const chars = script.lines.map((l) => String(l.text).trim()).join("\n").length;
 const voiceDir = path.join(out, "voice");
 const hadTake = fs.existsSync(path.join(voiceDir, "take.json"));
 if (!hadTake) L.check("voice", +(chars * 0.5 * 0.0002).toFixed(4));
-const fit = await L.step("voice", () => fitPace({ lines: script.lines, outDir: voiceDir, narrator, allowPaid: !hadTake, log: say }), { chars, voice: narrator.voiceName, model: narrator.model, reused: hadTake });
-const v = fit.v;
+const v = await L.step("voice", async () => { if (!hadTake) await elevenVoice({ lines: script.lines, outDir: voiceDir, narrator }); return processTake({ outDir: voiceDir }); }, { chars, voice: narrator.voiceName, model: narrator.model, reused: hadTake });
 if (!hadTake) L.add("voice", v.costUsd ?? +(chars * 0.44 * 0.0002).toFixed(4));
-say(`voice: ${narrator.voiceName} ${narrator.model}, ${v.duration.toFixed(2)} s at ${fit.speed}x (1.25x gave ${fit.firstWpm} wpm), pace ${JSON.stringify(fit.pace)}${fit.inBand ? "" : `; OUT OF BAND: ${fit.note}`}, $${hadTake ? 0 : v.costUsd} (${hadTake ? "reused take" : "new take"})`);
-const wordsPerMin = Math.round(script.lines.reduce((a, l) => a + l.text.split(/\s+/).length, 0) / (LEN / 60));
-if (v.duration < LEN * 0.85) say(`NOTE (the writer's side): the script is short for ${LEN} s: at this pace it runs ${v.duration.toFixed(1)} s (${wordsPerMin} words a minute of target length)`);
+say(`voice: ${narrator.voiceName} ${narrator.model}, ${v.duration.toFixed(2)} s at ${v.speed}x, pauses 0.10 / 0.22 s (longest ${v.maxGap} s), pace ${JSON.stringify(v.pace)}, $${hadTake ? 0 : v.costUsd} (${hadTake ? "reused take" : "new take"})`);
 
 // 3. the base plan (free): the real word timings; the mock director (no paid call)
 const direction = await directStory({ script, idea: card, provider: "mock" });
@@ -94,5 +92,5 @@ await L.step("mix", async () => {
   const a = await mixAudio({ voice: v.wav, music, out: path.join(out, "mix.m4a"), duration: tl0.duration, sfxCues: cues, musicUnderVoiceDb: AUDIO_SIMPLE.musicUnderVoiceDb });
   say(`mix: ${a.lufs} LUFS, ${cues.length} cues`);
 });
-fs.writeFileSync(path.join(out, "prepared.json"), JSON.stringify({ idea: { id: row.id, title: card.title }, script: script.title, lines: script.lines.length, words: words0, duration: tl0.duration, voice: { wpm: v.wpm, pace: paceStats(v.words) }, kitCheck: { ok: kc.ok, missing: kc.missing.map((m) => m.word) } }, null, 1));
+fs.writeFileSync(path.join(out, "prepared.json"), JSON.stringify({ idea: { id: row.id, title: card.title }, script: script.title, lines: script.lines.length, words: words0, duration: tl0.duration, voice: { wpm: v.pace.wpm, speed: v.speed, maxGap: v.maxGap, pace: paceStats(v.words) }, kitCheck: { ok: kc.ok, missing: kc.missing.map((m) => m.word) } }, null, 1));
 say(`prepared; spent $${L.total()}`);

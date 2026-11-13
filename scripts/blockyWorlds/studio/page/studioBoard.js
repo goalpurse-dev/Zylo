@@ -170,12 +170,9 @@ function studioFrame(S, ctx, base) {
     aim();
     // the engine monster counts as the creature when it is on screen
     if (monster?.visible) creatures.push(monster);
-    // THE CREATURE NEVER FILLS THE FRAME in a wide / medium / low / two-shot / over-the-shoulder cut: the lens backs off
-    // along its own line of sight until the creature covers at most CREATURE_MAX of the frame (close-ups / inserts may)
-    const capped = !["closeup", "insert"].includes(shot.camera);
-    let cShare = creatures.length ? Math.max(...creatures.map((c) => screenShare(c, camera))) : 0;
-    const cR = creatures.length ? Math.max(...creatures.map((c) => new THREE.Box3().setFromObject(c).getSize(new THREE.Vector3()).length() / 2)) : 0;
-    for (let i = 0; capped && cShare > CREATURE_MAX && i < 8; i++) { const off = pos.clone().sub(look); const d = Math.max(0.5, off.length()); if (off.lengthSq() < 1e-6) off.set(0, 0.3, 1); pos.copy(look).addScaledVector(off.normalize(), Math.max(d * 1.25, d + 0.4 * cR)); aim(); cShare = Math.max(...creatures.map((c) => screenShare(c, camera))); } // steps sized by the creature: a lens under / inside it gets out
+    // (2026-11-13: the round-2 creature frame cap is gone: it moved the director's camera. The creature's share is only
+    // measured, for the stats)
+    const cShare = creatures.length ? Math.max(...creatures.map((c) => screenShare(c, camera))) : 0;
     // NO BLOCKED LENS: a built thing (block, prop, a non-creature asset) with the lens inside it, or nearer than the
     // subject and covering over half the frame, is left out of this frame
     const dl = pos.distanceTo(look), fwd = camera.getWorldDirection(new THREE.Vector3()), bx = new THREE.Box3(), c = new THREE.Vector3();
@@ -208,7 +205,7 @@ function studioFrame(S, ctx, base) {
   return base;
 }
 
-const CREATURE_MAX = 0.6;
+
 /** the share (0-1) of the frame a world box covers (its projected corners, clipped to the frame) */
 function boxShare(bx, camera) {
   let x0 = 1, x1 = -1, y0 = 1, y1 = -1, behind = 0;
