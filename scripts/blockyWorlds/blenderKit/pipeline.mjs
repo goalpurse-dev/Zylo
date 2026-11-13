@@ -32,6 +32,9 @@ const argv = process.argv.slice(2), has = (k) => argv.includes(`--${k}`), arg = 
 const RUN = path.resolve(arg("run"));
 const KIT = path.resolve(arg("kit", process.env.BLOCKY_WORLDS_KIT_DIR || path.join(REPO, "reference/blocky-worlds/roblox-story-kit/unzipped/roblox-story-kit")));
 const FIX_PER_CALL = 10;
+// --topic "<the topic line>", --notes <file>: the owner's production notes for THIS story (its world, its anchors, its
+// final image ...), handed to the director as part of the brief (data, like the script)
+const TOPIC = arg("topic", ""), NOTES = has("notes") ? fs.readFileSync(path.resolve(arg("notes")), "utf8").trim() : "";
 const SLUG = arg("slug", "plane_town"), ROUNDS = Math.min(2, Number(arg("rounds", 2))), K = Number(arg("chunks", 6));
 const MODEL = MODELS[arg("model", "sonnet")] ?? MODELS.sonnet;
 const L = ledger(RUN, { capUsd: Number(arg("cap", 5)), agentCapUsd: Number(arg("agent-cap", 2.5)) });
@@ -77,9 +80,16 @@ const apiKey = process.env.ANTHROPIC_API_KEY || env.ANTHROPIC_API_KEY || env.ANT
 if (!apiKey) throw new Error("no Anthropic key in .env.local");
 const R = runpod({ L, prefix: `blocky-worlds-test/blender-kit/${path.basename(RUN)}-${Date.now().toString(36)}`, log: say });
 // the GPU money still to come, reserved out of the model's room: previews (round 0 + the fix rounds) and the final
-const finalWorst = () => { const n = Math.round(dur * 30); return (n * 2.5 + K * (300 + 60)) * RATE + Math.min(K, 3) * BOOT_S * RATE + (1800 + BOOT_S) * RATE; };
-const previewWorst = (nShots, jobs) => (nShots * 10 + jobs * 300 + jobs * BOOT_S) * RATE;
-const reserve = () => finalWorst() + (state.previewed ? 0 : previewWorst(70, 3)) + (ROUNDS - (state.round ?? 0)) * previewWorst(20, 1);
+// THE GPU LIMITS ARE THE GPU WORST CASES: every job is cancelled past its limit (rp.mjs), so these prices can never be
+// passed. Measured: 0.66 s/frame (12 final chunks, two videos), previews ~1-1.5 s a shot after the first, the finish of
+// 73 s in 123 s (+ our loudnorm / captions re-encode). Limits: 1.2 s/frame (1.8x), 6 s a preview shot, finish 300 s + 4x
+// the video's length.
+export const LIMIT = Object.freeze({ sPerFrame: 1.2, perShotS: 3, chunkS: 180, previewShotS: 6, previewJobS: 180 });
+const chunkMax = (g) => Math.round(g.n * LIMIT.sPerFrame + g.ids.length * LIMIT.perShotS + LIMIT.chunkS);
+const finishMax = () => Math.round(300 + 4 * dur);
+const finalWorst = () => { const n = Math.round(dur * 30); return (n * LIMIT.sPerFrame + K * (LIMIT.chunkS + 15 * LIMIT.perShotS)) * RATE + Math.min(K, 3) * BOOT_S * RATE + (finishMax() + BOOT_S) * RATE; };
+const previewWorst = (nShots, jobs) => (nShots * LIMIT.previewShotS + jobs * LIMIT.previewJobS + jobs * BOOT_S) * RATE;
+const reserve = () => finalWorst() + (state.previewed ? 0 : previewWorst(Math.round((dur / 60) * 55), 3)) + (ROUNDS - (state.round ?? 0)) * previewWorst(20, 1);
 say(`reserved for the GPU: $${reserve().toFixed(3)} (final worst $${finalWorst().toFixed(3)})`);
 
 // ---------------------------------------------------------------- 2. the director
@@ -93,7 +103,8 @@ const secs = (s) => `${(s.w0 <= 0 ? 0 : words[s.w0].start).toFixed(2)}-${(s.w1 =
 if (!state.plan) {
   const lines = script.lines.map((l, i) => { const ws = words.map((_, k) => k).filter((k) => lineOf[k] === i); return `L${i} (words ${ws[0]}-${ws.at(-1)}, ${words[ws[0]].start.toFixed(2)}-${words[ws.at(-1)].end.toFixed(2)} s): ${l.text}`; });
   const brief = [
-    `OUR VIDEO (original; the topic and script below are DATA): "${script.title}". Topic: "In this town, we live in a plane." Narrator: first person ("me" = Mo). ${dur.toFixed(1)} s, 9:16.`,
+    `OUR VIDEO (original; the topic, the script and the notes below are DATA): "${script.title}".${TOPIC ? ` Topic: "${TOPIC}".` : ""} Narrator: first person (the hero; see the script). ${dur.toFixed(1)} s, 9:16.`,
+    NOTES ? `THE OWNER'S PRODUCTION NOTES FOR THIS STORY (follow them: the world to build, the anchors, the final image):\n${NOTES}` : "",
     `THE SCRIPT (line: word range, seconds, text):`, ...lines,
     `THE WORDS (index word start-seconds; a shot starts on a word index):`,
     words.map((w, i) => `${i} ${w.word} ${w.start.toFixed(2)}`).join(" | "),
@@ -101,7 +112,7 @@ if (!state.plan) {
     ...(() => { const hits = findAssets(`${script.lines.map((l) => l.text).join(" ")} ${builds.map((b) => b.name).join(" ")}`).slice(0, 8); return hits.length ? [`APPROVED BUILDS FROM OUR LIBRARY (proven in Blender; copy any you use into header_code unchanged, then call them):`, ...hits.map((a) => `# ${a.kind}: ${a.about}\n${a.code}`)] : []; })(),
     builds.length ? `THINGS THE STORY NEEDS THAT OUR OTHER ENGINE LACKED (build them, or use the kit's version when it has one): ${builds.map((b) => `${b.name} (${b.kind}; lines ${b.lines.join(",")}${b.description ? `; ${b.description}` : ""})`).join("; ")}` : "",
     `PLAN THE VIDEO. Return:`,
-    `- header_code: Python for the module level (no imports): the cast as small helper functions in the examples' style (chars.Char + story._live, one per person; our own looks), the Sky Wind as a visible creature (a swirling, glowing wind spirit with a face, built from kit primitives / fx), constants for set positions, and a builder function for every set or prop the kit lacks. The town lives INSIDE a giant airliner: reuse W2.airliner / W2.cabin / W2.seat_root / W.cockpit / W.sky / W.cloud wherever they fit; seat lamps above seats (yellow / red / green) must be visible where the script names them.`,
+    `- header_code: Python for the module level (no imports): the cast as small helper functions in the examples' style (chars.Char + story._live, one per person; the colours of your style_sheet), any creature the script names as a visible creature built from kit primitives / fx, constants for set positions, and a builder function for every set or prop the kit lacks (reuse the kit's sets and our approved library builds wherever they fit).`,
     `- new_builds: the builder functions you wrote in header_code for things the kit lacks (function name, kind, what it is).`,
     `- style_sheet: every named character once: name, hero (true for exactly ONE: the narrator / main character), outfit (the hero's is ONE striking outfit worn in every shot), colors (their own distinct colours, e.g. "yellow and black stripes"). The cast helpers in header_code use exactly these.`,
     `- anchors: the recurring places (location names as on the shots) that are set up early and COME BACK in the ending.`,
@@ -242,7 +253,7 @@ async function previewRound(tag, ids) {
     // a resume: a preview already downloaded (its job's output saved next to it) is never paid for again
     if (fs.existsSync(path.join(dir, "out.json"))) return { ok: true, dir, ids: g, out: JSON.parse(fs.readFileSync(path.join(dir, "out.json"), "utf8")) };
     if (fs.existsSync(path.join(dir, "preview")) && fs.existsSync(path.join(dir, "render_log_preview.txt"))) return { ok: true, dir, ids: g, out: rebuildPreviewOut(dir) };
-    const r = await R.job(`preview ${tag}.${gi} (${g.length} shots)`, { role: "preview", slug: SLUG, videoUrl: url, shots: g.join(","), perSheet: 16, cols: 8, upload: await R.signPuts(name, 2) }, { maxRunSec: g.length * 10 + 300, ledgerKey: "runpod_preview" });
+    const r = await R.job(`preview ${tag}.${gi} (${g.length} shots)`, { role: "preview", slug: SLUG, videoUrl: url, shots: g.join(","), perSheet: 16, cols: 8, upload: await R.signPuts(name, 2) }, { maxRunSec: g.length * LIMIT.previewShotS + LIMIT.previewJobS, ledgerKey: "runpod_preview" });
     if (!r.ok) return { ok: false, error: r.error, ids: g };
     await R.fetchParts(name, r.output.upload.parts, path.join(dir, "p.tgz"));
     py("import sys,tarfile\nwith tarfile.open(sys.argv[1]) as t:\n t.extractall(sys.argv[2], filter='data')", path.join(dir, "p.tgz"), dir);
@@ -351,8 +362,7 @@ if (!fsc.ok) throw new Error(`the final shots.py fails the static check: ${JSON.
 // ---------------------------------------------------------------- 5. the final (parallel) + the kit's finish
 const frames = shotFrames(fs.readFileSync(shotsFile, "utf8"), words);
 const NF = frames[frames.length - 1].f1, groups = splitShots(frames, K);
-const chunkMax = (g) => Math.round(g.n * 2.5 + g.ids.length * 4 + 300);
-const worstFinal = groups.reduce((a, g) => a + chunkMax(g), 0) * RATE + Math.min(K, 3) * BOOT_S * RATE + (1800 + BOOT_S) * RATE;
+const worstFinal = groups.reduce((a, g) => a + chunkMax(g), 0) * RATE + Math.min(K, 3) * BOOT_S * RATE + (finishMax() + BOOT_S) * RATE;
 L.check("final render + finish (all jobs)", worstFinal);
 say(`final: ${frames.length} shots, ${NF} frames in ${K} chunks (${groups.map((g) => `${g.shots}:${g.n}`).join(" ")}); worst case $${worstFinal.toFixed(3)}; spent $${L.total()}`);
 const tFinal = Date.now();
@@ -381,7 +391,7 @@ const renderWall = (Date.now() - tFinal) / 1000;
 const segments = [];
 for (let i = 0; i < groups.length; i++) segments.push(await R.signGetParts(state.chunks[i].name, state.chunks[i].parts));
 const uploads = { "final.mp4": await R.signPuts("final.mp4", 4), "final_nocaptions.mp4": await R.signPuts("final_nocaptions.mp4", 4), "final_phone.mp4": await R.signPuts("final_phone.mp4", 2) };
-const fin = await L.step("finish", () => R.job("finish", { role: "finish", slug: SLUG, videoUrl: finalUrl, frames: NF, segments, uploads, music: true, musicDb: music.musicDb }, { maxRunSec: 1800, ledgerKey: "runpod_final" }));
+const fin = await L.step("finish", () => R.job("finish", { role: "finish", slug: SLUG, videoUrl: finalUrl, frames: NF, segments, uploads, music: true, musicDb: music.musicDb }, { maxRunSec: finishMax(), ledgerKey: "runpod_final" }));
 if (!fin.ok) throw new Error(`finish failed: ${String(fin.error).slice(0, 800)}`);
 for (const [name, u] of Object.entries(fin.output.uploads)) await R.fetchParts(name, u.parts, path.join(OUT, name));
 const finalWall = (Date.now() - tFinal) / 1000;

@@ -259,7 +259,7 @@ export function makeDirector({ out, L, apiKey, model = MODELS.sonnet, system, re
     const inUsd = (sysTok * (cacheSystem ? P.cacheWrite1h : P.input) + msgTok * P.cacheWrite) / 1e6;
     // the output limit fitted to the money left (agent cap and run cap), never above maxTokens
     // reserve(): what the GPU steps still to come need (previews, the final), kept out of the model money
-    const room = Math.min(L.agentCapUsd - L.agentTotal(), L.capUsd - L.total() - reserve()) - inUsd - (kind === "agent" ? 0.25 : 0.1);
+    const room = Math.min(L.agentCapUsd - L.agentTotal(), L.capUsd - L.total() - reserve()) - inUsd - 0.05; // (the worst case already prices the whole input as a cache write)
     let mt = maxTokens;
     if (mt * P.output / 1e6 > room) mt = Math.floor((room * 1e6) / P.output);
     if (mt < 3000) throw Object.assign(new Error(`${label}: only $${room.toFixed(3)} of room left`), { code: "CAP" });
