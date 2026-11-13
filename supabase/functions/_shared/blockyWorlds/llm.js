@@ -26,6 +26,7 @@ import { pickRecipe } from "./recipes.js";
 import { ANGLES, BROAD_SCRIPT_SYSTEM, broadScriptSchema, examplesBlock, PLAN_SYSTEM, planPrompt, planSchema } from "./broad.js";
 import { skeletonProblems } from "./skeleton.js";
 import { buttonFallback } from "./formula.js";
+import { pickBest, readStoryScores, STORY_JUDGE_SYSTEM, storyJudgePrompt, storyJudgeSchema, VERSION_NOTES } from "./storyJudge.js";
 import { HYBRID_LINES_SYSTEM, HYBRID_PLAN_SYSTEM, hybridLinesSystem, hybridPlanSystem, hybridChecks, hybridLinesPrompt, hybridLinesSchema, hybridPlanPrompt, hybridPlanSchema, planCard, planNotes, withParts } from "./hybrid.js";
 import { beatBudgets, plantedShare } from "./beatSheet.js";
 import { copyProblems, copyReasons } from "./antiCopy.js";
@@ -774,8 +775,18 @@ function trimHybrid({ script, skeleton, card, examples, lengthSec, checks, board
  * Returns { topic, recipe, references, plan, card, planNotes, script, skeleton, checks, fixed, firstHard, feedback,
  * calls: { plan, lines, fix, judge } (each { model, usd, usage }), costUsd, stopped, failure }.
  */
-export async function writeHybrid({ apiKey = "", topic, recipe = null, examples = [], lengthSec = 90, meter = null, judge = true, idea = null, ttl = HYBRID.cacheTtl, steps = {}, note = "", board = false }) {
-  const s = { writeHybridPlan, writeHybridLines, repairOpener, judgeScript, ...steps };
+/**
+ * The STORY JUDGE (storyJudge.js): one cheap call (Haiku, the shared rules in the cached system prompt) scores every version on the
+ * formula's criteria (a simple rule, jokes with punchlines, a clever rule-based solution, win + holy twist, the hook, every line
+ * visible). Returns { scores: [{ version, scores, total, note }], best, costUsd, usage }.
+ */
+export async function judgeStories({ apiKey = "", scripts, topic = "", meter = null, maxTokens = 2500 }) {
+  const reply = await callJson({ apiKey, model: MODELS.opener, system: [STORY_JUDGE_SYSTEM], user: storyJudgePrompt(scripts, { topic }), schema: storyJudgeSchema(), effort: "low", maxTokens, meter });
+  return { scores: readStoryScores(reply.data, scripts.length), best: Number(reply.data?.best) || null, costUsd: reply.costUsd, usage: reply.usage ?? null };
+}
+
+export async function writeHybrid({ apiKey = "", topic, recipe = null, examples = [], lengthSec = 90, meter = null, judge = true, idea = null, ttl = HYBRID.cacheTtl, steps = {}, note = "", board = false, versions = board === "prefer" ? 3 : 1 }) {
+  const s = { writeHybridPlan, writeHybridLines, repairOpener, judgeScript, judgeStories, ...steps };
   const out = { topic, recipe, references: examples.map((e) => ({ id: e.id, firstLine: e.firstLine ?? String(e.text).split(/(?<=[.!?])\s/)[0] })), plan: null, card: null, planNotes: [], script: null, skeleton: {}, checks: null, fixed: null, firstHard: [], trimmed: [], feedback: null, calls: { plan: null, lines: null, fix: null, judge: null }, costUsd: 0, stopped: null, failure: null };
   const log = (what, model, r) => { out.calls[what] = { model, usd: Number(r?.costUsd ?? 0), usage: r?.usage ?? null }; out.costUsd = Number((out.costUsd + Number(r?.costUsd ?? 0)).toFixed(5)); };
   const check = () => hybridChecks({ script: out.script, skeleton: out.skeleton, card: out.card, examples, lengthSec, board });
@@ -784,8 +795,26 @@ export async function writeHybrid({ apiKey = "", topic, recipe = null, examples 
     const p = await s.writeHybridPlan({ apiKey, topic, recipe, examples, lengthSec, meter, idea, ttl, ...(note ? { note } : {}), ...(board ? { board } : {}) });
     log("plan", HYBRID.plan.model, p);
     Object.assign(out, { plan: p.plan, card: p.card, planNotes: p.notes ?? [] });
-    const w = await s.writeHybridLines({ apiKey, plan: out.plan, topic, examples, lengthSec, meter, ttl, ...(board ? { board } : {}) });
-    log("lines", HYBRID.lines.model, w);
+    let w;
+    if (versions > 1) {
+      // THREE versions of the lines from the one plan (the first writes the cache, the others read it), one cheap judge call, the best kept
+      const make = (vnote) => s.writeHybridLines({ apiKey, plan: out.plan, topic, examples, lengthSec, meter, ttl, ...(vnote ? { note: vnote } : {}), ...(board ? { board } : {}) });
+      const notes = VERSION_NOTES.slice(0, Math.min(versions, VERSION_NOTES.length));
+      const first = await make(notes[0]);
+      const rest = await Promise.all(notes.slice(1).map(make));
+      const drafts = [first, ...rest];
+      log("lines", HYBRID.lines.model, { costUsd: drafts.reduce((a, d) => a + Number(d.costUsd ?? 0), 0), usage: first.usage ?? null });
+      const checked = drafts.map((d) => hybridChecks({ script: d.script, skeleton: d.skeleton, card: out.card, examples, lengthSec, board }));
+      const j = await s.judgeStories({ apiKey, scripts: drafts.map((d) => d.script), topic, meter });
+      log("storyJudge", MODELS.opener, j);
+      const pick = pickBest(drafts.map((_, i) => ({ hard: checked[i].hard.length, advisory: checked[i].advisory.length, total: j.scores[i]?.total ?? 0 })));
+      out.versions = drafts.map((d, i) => ({ version: i + 1, scores: j.scores[i]?.scores ?? {}, total: j.scores[i]?.total ?? 0, note: j.scores[i]?.note ?? "", hard: checked[i].hard.length, advisory: checked[i].advisory.length, words: checked[i].words, picked: i === pick }));
+      out.pick = pick + 1;
+      w = drafts[pick];
+    } else {
+      w = await s.writeHybridLines({ apiKey, plan: out.plan, topic, examples, lengthSec, meter, ttl, ...(board ? { board } : {}) });
+      log("lines", HYBRID.lines.model, w);
+    }
     out.script = w.script; out.skeleton = w.skeleton;
     // LENGTH-V2: the writer's own draft length (before any trim or fix) and its self-count
     out.draftWords = w.script.lines.reduce((a, l) => a + l.text.split(/\s+/).filter(Boolean).length, 0);

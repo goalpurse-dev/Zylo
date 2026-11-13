@@ -22,15 +22,15 @@ import { FORMULA_TEXT } from "./formula.js";
 
 /** The beats, in order: [start, end] in % of the video, the engine part, the job (the prompts quote it). */
 export const BEATS = Object.freeze([
-  Object.freeze({ id: "rule", part: "rule", span: [0, 3], target: "0%", job: 'line 1: the rule as plain fact, starting with exactly "In this town, "' }),
-  Object.freeze({ id: "origin", part: "tour", span: [3, 8], target: "0-6 s", job: "line 2 is the RESULT-FIRST HOOK (the craziest consequence the narrator is in right now, first person, an exclamation, inside the first 5 seconds, filmable); then how the rule works and what it costs, in one or two quick lines; the RULE VISUAL is seen here for the first time" }),
-  Object.freeze({ id: "neighbours", part: "tour", span: [8, 19], target: "6-15 s", job: "two or three NAMED neighbours living the rule, one quick joke each, each in its OWN place (a kitchen, the school, the bus stop) and SHOWN by the rule visual (their height, their house, their cloud); about 70 words in the first 15 seconds" }),
+  Object.freeze({ id: "rule", part: "rule", span: [0, 6], target: "0-5 s", job: "TWO lines. Line 1 is the RESULT-FIRST HOOK: the craziest result or moment of the whole story, in the narrator's mouth, right now, one sentence, filmable (\"And I just sneezed in the cockpit of a flying plane!\"). Line 2 is the RULE: \"You see, in this town, [the ONE simple rule].\" (or \"in this world\"); that phrase is REQUIRED, inside the first 2 sentences" }),
+  Object.freeze({ id: "origin", part: "tour", span: [6, 9], target: "~5 s", job: "what the rule costs or how it works, in one or two quick lines (a kid gets it in 2 seconds); the RULE VISUAL is seen here for the first time" }),
+  Object.freeze({ id: "neighbours", part: "tour", span: [9, 19], target: "6-15 s", job: "2 or 3 SOCIETY EXAMPLES that are real jokes, each one a vignette with a named neighbour in its OWN place (a kitchen, the school, the bus stop), each ENDING ON A PUNCHLINE (a short last line), each SHOWN by the rule visual; about 70 words in the first 15 seconds" }),
   Object.freeze({ id: "me", part: "me", span: [19, 27], target: "~15 s", job: 'the "But..." PIVOT, a line that starts with "But" and puts the narrator in the worst case of the rule WITH A NUMBER ("But I had ten minutes and four hundred stairs."); "Then there\'s me." The hero is the WORST at the rule (the lowest, the smallest, the quietest), seen in the rule visual; their flaw is plain' }),
   Object.freeze({ id: "ally", part: "me", span: [27, 35], target: "~30%", job: "an ally (a friend, a grandparent, a sibling) says ONE line, quoted, that sounds like a throwaway joke or odd advice; the hero needs it later" }),
   Object.freeze({ id: "trigger", part: "until", span: [35, 42], target: "~38%", job: "the trouble arrives: the rule breaks or the threat comes, visible to everyone. The threat comes from the rule's own world (the rule, its rule visual or something already shown), never from nowhere. Open it in your own words, never \"Until one night the...\" (the references open their trouble that way; a copied phrase is thrown away)" }),
   Object.freeze({ id: "adults", part: "until", span: [42, 66], target: "45-65%", job: "the ADULTS TRY AND FAIL, the ESCALATION: two or three named grown-ups (neighbours from the tour count) each try their fix, each failing in a funny, visible way; it DOUBLES every 8 to 12 seconds (one, ten, a hundred), in short sentences of 3 to 10 words, with a SOUND WORD (Boom! Crash! Poof!) as its own short fragment on every hit, at least one every 12 seconds" }),
-  Object.freeze({ id: "save", part: "climax", span: [66, 94], target: "70-90%", job: "start with the line \"Then I noticed something.\"; the hero remembers the ally's line, and the very flaw that made them the worst at the rule is what saves everyone; the planted line is said again here" }),
-  Object.freeze({ id: "callback", part: "closer", span: [94, 100], target: "last line", job: "the world after, then a last line of 2 to 6 words that is a callback JOKE to something from the first half (a neighbour's joke, the ally's line, the rule) and reopens the loop" }),
+  Object.freeze({ id: "save", part: "climax", span: [66, 94], target: "70-90%", job: "start with the line \"Then I noticed something.\"; the narrator wins with the rule ITSELF, cleverly (the town's own rule turned against the trouble), a clear BIG WIN everyone can see; the planted line is said again here" }),
+  Object.freeze({ id: "callback", part: "closer", span: [94, 100], target: "last 1-2 lines", job: "the HOLY TWIST: right after the win, the last 1 or 2 lines FLIP it or RESTART THE CHAOS, a callback to the hook or to an example, funny and visual, never soft, sentimental or abstract; the very last line is 2 to 6 words" }),
 ]);
 export const BEAT_IDS = Object.freeze(BEATS.map((b) => b.id));
 export const BEAT_PART = Object.freeze(Object.fromEntries(BEATS.map((b) => [b.id, b.part])));
@@ -63,13 +63,13 @@ const MIN_BEAT_WORDS = Object.freeze({ origin: 24 });
 export function beatBudgets(lengthSec) {
   const total = aimWords(lengthSec);
   const span = (b) => b.span[1] - b.span[0];
-  const rule = Math.max(RULE_MIN_WORDS, Math.round((total * span(BEATS[0])) / 100));
+  const rule = Math.max(RULE_MIN_WORDS + 10, Math.round((total * span(BEATS[0])) / 100)); // the hook + the rule line
   const restSpan = 100 - span(BEATS[0]), rest = total - rule;
   const out = BEATS.map((b) => ({ id: b.id, words: b.id === "rule" ? rule : Math.max(MIN_BEAT_WORDS[b.id] ?? 6, Math.round((rest * span(b)) / restSpan)) }));
   for (let over = out.reduce((a, b) => a + b.words, 0) - total; over > 0; over--) out.reduce((m, b) => (b.id !== "rule" && b.words > m.words ? b : m), out[1]).words--;
   // three neighbours want a line each at least, two each when the words allow (a name line + its joke)
-  const minLines = (b) => (b.id === "neighbours" ? (b.words >= 40 ? 6 : 3) : 1);
-  return out.map((b) => ({ ...b, lines: b.id === "rule" ? 1 : Math.max(minLines(b), Math.round(b.words / BEAT_WORDS_PER_LINE)) }));
+  const minLines = (b) => (b.id === "neighbours" ? (b.words >= 30 ? 6 : 3) : 1); // 3 examples: a setup and a PUNCHLINE line each
+  return out.map((b) => ({ ...b, lines: b.id === "rule" ? 2 : Math.max(minLines(b), Math.round(b.words / BEAT_WORDS_PER_LINE)) }));
 }
 
 /** The beat sheet as prompt text (both system prompts quote it; the same bytes every call, so it caches). */

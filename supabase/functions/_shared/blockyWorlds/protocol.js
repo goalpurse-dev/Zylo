@@ -165,6 +165,8 @@ export function problemSpots(script, problems) {
   const spot = (problem, part, idx, fix = "part") => ({ problem, part, lines: idx, fix });
   return (problems ?? []).map((p) => {
     if (/^The first line must start/.test(p) && lines.length) return spot(p, lines[0].part, [0], "opener");
+    // the formula's rule line (opener.js ruleLineProblem): Fix it rewrites the hook and the line after it
+    if (/^The rule line is missing/.test(p) && lines.length) return spot(p, lines[0].part, lines.length > 1 ? [0, 1] : [0]);
     const lineNo = p.match(/^Line (\d+) has/);
     if (lineNo && lines[Number(lineNo[1]) - 1]) { const i = Number(lineNo[1]) - 1; return spot(p, lines[i].part, [i]); }
     if (/never shown before the trouble starts/.test(p)) { const part = partLines("me").length ? "me" : "tour"; return spot(p, part, partLines(part)); }

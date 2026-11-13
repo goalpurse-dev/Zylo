@@ -18,6 +18,8 @@ import { wordCount } from "./script.js";
 import { PACE } from "./config.js";
 import { sfxTags } from "./sfxTags.js";
 import { SOUND_ALLOWED } from "./soundLibrary.js";
+import { ruleLineIndex } from "./opener.js";
+import { namesIn } from "./antiCopy.js";
 
 export const FORMULA_PREFIX = "Formula:";
 export const FORMULA = Object.freeze({
@@ -32,14 +34,15 @@ export const FORMULA = Object.freeze({
 });
 
 /** The formula as prompt text (both writers quote it; the same bytes every call, so it caches). */
-export const FORMULA_TEXT = `THE STORY FORMULA (every script follows it; free checks read it):
-- Line 1 is ALWAYS "In this town, [rule]." (8 to 14 words).
-- Line 2 is the RESULT-FIRST HOOK, inside the first 5 seconds: the craziest consequence the narrator is in RIGHT NOW, first person, 5 to 12 words, ending on the most visual word and an exclamation mark ("And I just sneezed in the cockpit of a flying plane!"). It must be something our blocky world can film, and it opens a question the viewer wants answered. Never a summary, never a question.
-- Then 2 or 3 VIGNETTES of the rule, each in its OWN place (a kitchen, the school, the bus stop...) with its own named neighbour and one quick joke. About 70 words in the first 15 seconds in all.
-- Then the "But..." PIVOT, a line that starts with "But" and puts the narrator in the worst case of the rule, WITH A NUMBER ("But I had ten minutes and four hundred stairs.").
-- Then the ESCALATION: it doubles every 8 to 12 seconds (one, ten, a hundred; two, four, eight). Sentences of 3 to 10 words. Hits get a SOUND WORD as its own short fragment of at most three words ("Boom!", "Knock. Knock.", "Crash, bang, thud!"), at least one every 12 seconds; the engine puts an effect on every one. Use ONLY these sound words, the ones we have a sound for (any other sound word is flagged): ${SOUND_ALLOWED.join(", ")}.
-- Then a line that says "Then I noticed something." and the narrator WINS using the town's OWN rule (and the ally's planted line), no new magic.
-- The LAST line is a BUTTON of 2 to 6 words that reopens the loop (a callback to something earlier, with a new twist on it).`;
+export const FORMULA_TEXT = `THE STORY FORMULA (owner, 2026-11-13: the style of the viral blocky story videos; every script follows it; free checks read it):
+- LINE 1 IS THE HOOK, the craziest result or moment of the whole story, in the narrator's mouth RIGHT NOW, first person, 5 to 12 words, an exclamation, filmable, inside the first 5 seconds ("And I just sneezed in the cockpit of a flying plane!"). It opens a question the viewer wants answered. Never a summary, never a question.
+- LINE 2 IS THE RULE: "You see, in this town, [the ONE simple rule]." (or "in this world"). That phrase is REQUIRED within the first 2 sentences; it does not have to be the first words. The rule is ONE simple thing a kid gets in 2 seconds, tied to an everyday thing (a sneeze, a laugh, a hiccup, a lie, a yawn, buckling a seatbelt). If the customer's topic is a place or a setting ("we live in a plane"), turn it into ONE simple rule about an everyday action inside it.
+- Then 2 or 3 SOCIETY EXAMPLES that are real JOKES, each in its OWN place (a kitchen, the school, the bus stop), each a named neighbour, each ENDING ON A PUNCHLINE (a short last line that makes the joke land: "Pilots aren't allowed to watch cartoons."). About 70 words in the first 15 seconds in all.
+- At most 3 NAMED characters in the whole script, plus "me" (first person). The ally and the grown-ups who fail are the same 3 people.
+- The "But..." PIVOT: a line that starts with "But" and puts the narrator in the worst case of the rule, WITH A NUMBER ("But I had ten minutes and four hundred stairs.").
+- The ESCALATION: each step BIGGER and FUNNIER than the last (it doubles every 8 to 12 seconds: one, ten, a hundred), and EVERY LINE IS SOMETHING WE CAN SEE (a thing happening, never a feeling or an explanation). Sentences of 3 to 10 words. Hits get a SOUND WORD as its own short fragment of at most three words ("Boom!", "Knock. Knock.", "Crash, bang, thud!"), at least one every 12 seconds; the engine puts an effect on every one. Use ONLY these sound words, the ones we have a sound for (any other sound word is flagged): ${SOUND_ALLOWED.join(", ")}.
+- "Then I noticed something." The narrator SOLVES it by using the RULE ITSELF, cleverly (the rule turned against the trouble), and wins BIG: a clear win everyone can see. No outside help, no new magic.
+- THE ENDING (the most important part): right after the big win, the LAST 1 OR 2 LINES are a HOLY TWIST that FLIPS the win or RESTARTS THE CHAOS, ideally a callback to the hook or to an example ("Then the cat sneezed. Poof! Now we were all on the moon."). Never soft, sentimental or abstract (no peace, love, learning, togetherness, family, hope, lessons, "everyone smiled"). The very last line is a BUTTON of 2 to 6 words.`;
 
 const NUM_WORD = /\b(zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|million|dozen|double|twice)\b/i;
 const NUM_VAL = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12, thirteen: 13, fourteen: 14, fifteen: 15, sixteen: 16, seventeen: 17, eighteen: 18, nineteen: 19, twenty: 20, thirty: 30, forty: 40, fifty: 50, sixty: 60, seventy: 70, eighty: 80, ninety: 90, dozen: 12 };
@@ -88,19 +91,19 @@ export function formulaProblems(script, lengthSec = 90) {
   const idxOf = (id) => lines.map((l, i) => (l.beat === id ? i : -1)).filter((i) => i >= 0);
   const pct = (i) => (before(counts, i) / Math.max(1, total)) * 100;
 
-  // 1. the hook: line 2 (or 3), first person, an exclamation, started by 5 s and done by ~6 s
-  const hookAt = [1, 2].find((i) => i < n && FIRST_PERSON.test(lines[i].text) && /!["']?$/.test(lines[i].text.trim()));
-  if (hookAt === undefined) bad("there is no result-first hook after the opener: line 2 should be the craziest consequence the narrator is in right now, first person, ending with an exclamation mark.", [1]);
+  // 1. the hook: LINE 1 (or 2), first person, an exclamation, started by 5 s and done by ~6 s
+  const hookAt = [0, 1].find((i) => i < n && FIRST_PERSON.test(lines[i].text) && /!["']?$/.test(lines[i].text.trim()));
+  if (hookAt === undefined) bad("there is no result-first hook: line 1 should be the craziest result or moment of the story, in the narrator's mouth right now, first person, ending with an exclamation mark.", [0]);
   else {
     const start = before(counts, hookAt), end = start + counts[hookAt];
-    if (start > FORMULA.hookStartsByWords || end > FORMULA.hookByWords) bad(`the hook comes too late: it ends at ${fmt(secs(end))} s (it should be inside the first 5 s). Shorten the opener or the hook.`, [hookAt]);
+    if (start > FORMULA.hookStartsByWords || end > FORMULA.hookByWords) bad(`the hook comes too late: it ends at ${fmt(secs(end))} s (it should be inside the first 5 s). Shorten the hook.`, [hookAt]);
     if (counts[hookAt] > FORMULA.hookMaxWords) bad(`the hook is ${counts[hookAt]} words; keep it under ${FORMULA.hookMaxWords + 1}.`, [hookAt]);
     if (/\?$/.test(lines[hookAt].text.trim())) bad("the hook is a question; make it the result.", [hookAt]);
   }
 
   // 2. the "But..." pivot: starts with But, has a number, lands near 15 s (about 70 words in)
   const lo = Math.min(55, Math.round(total * 0.15)), hi = Math.min(95, Math.round(total * 0.28));
-  const pivotAt = lines.findIndex((l, i) => i > 1 && /^but\b/i.test(l.text.trim()) && pct(i) < 50);
+  const pivotAt = lines.findIndex((l, i) => i > 2 && /^but\b/i.test(l.text.trim()) && pct(i) < 50);
   if (pivotAt < 0) bad('there is no "But..." pivot line in the first half that puts the narrator in the worst case of the rule.');
   else {
     if (!hasNumber(lines[pivotAt].text)) bad('the "But..." pivot has no number; put a number on the worst case ("ten thousand runners", "four hundred stairs").', [pivotAt]);
@@ -109,7 +112,7 @@ export function formulaProblems(script, lengthSec = 90) {
   }
 
   // 3. two or three vignettes, each in its own place (before the pivot, after the hook)
-  const vig = hasBeats && idxOf("neighbours").length ? idxOf("neighbours") : lines.map((_, i) => i).filter((i) => i > 1 && (pivotAt < 0 ? pct(i) < 25 : i < pivotAt));
+  const vig = hasBeats && idxOf("neighbours").length ? idxOf("neighbours") : lines.map((_, i) => i).filter((i) => i > 2 && (pivotAt < 0 ? pct(i) < 25 : i < pivotAt));
   if (vig.length >= 2) {
     const places = vig.map((i) => new Set((lines[i].text.match(PLACE) ?? []).map((p) => p.toLowerCase())));
     const distinct = new Set(places.flatMap((s) => [...s]));
@@ -145,8 +148,12 @@ export function formulaProblems(script, lengthSec = 90) {
   // 5. "Then I noticed something": a win from the town's own rule, late
   if (noticedAt < 0 && !lines.some((l, i) => /\bnoticed something\b/i.test(l.text) && pct(i) > 45)) bad('there is no "Then I noticed something." line where the narrator wins with the town\'s own rule.');
 
-  // 6. the button: 2 to 6 words that call back the rule or the hook
+  // 6. the ending: a big win, then a holy twist (no soft ending), and the button: 2 to 6 words that call back
+  out.push(...endingProblems(script));
   out.push(...buttonProblems(script));
+  // 6b. at most 3 named characters (plus the narrator)
+  const names = new Set(namesIn(lines.map((l) => l.text).join("\n"), { anyPosition: true }).map((x) => x.toLowerCase()).filter((x) => !SOUND_ALLOWED.includes(x)));
+  if (names.size > 4) bad(`too many named characters (${names.size}: ${[...names].slice(0, 6).join(", ")}); keep at most 3 named characters plus "me", and let the same people do the examples, the failed fixes and the ally's line.`);
   // 7. a sound should fit the thing that makes it ("blew her whistle. Beep!" is a whistle with a beep)
   out.push(...soundObjectProblems(script));
   return out;
@@ -156,7 +163,7 @@ const STOP = new Set("this that with from have then they them their there were w
 const stem = (w) => w.replace(/(?:ing|ed|es|s)$/, "");
 const keyWords = (t) => new Set(String(t ?? "").toLowerCase().split(/[^a-z]+/).filter((w) => w.length >= 3 && !STOP.has(w)).map(stem).filter((w) => w.length >= 3));
 /** The hook line index (line 2 or 3: first person, ends with "!"), else 1. */
-const hookIndex = (lines) => { const i = [1, 2].find((k) => k < lines.length && FIRST_PERSON.test(lines[k].text) && /!["']?$/.test(lines[k].text.trim())); return i ?? 1; };
+const hookIndex = (lines) => { const i = [0, 1].find((k) => k < lines.length && FIRST_PERSON.test(lines[k].text) && /!["']?$/.test(lines[k].text.trim())); return i ?? 0; };
 
 /**
  * The BUTTON checks (HARD in the hybrid writer, hybrid.js): the last line is 2 to 6 words AND calls back the rule (line 1)
@@ -167,10 +174,12 @@ export function buttonProblems(script) {
   if (lines.length < 4) return [];
   const n = lines.length, [lo, hi] = FORMULA.buttonWords, last = lines[n - 1].text, w = wordCount(last);
   const out = [];
-  const rule = lines[0].text, hook = lines[hookIndex(lines)]?.text ?? "";
+  const ri = ruleLineIndex(lines), rule = (ri >= 0 ? lines[ri] : lines[0]).text, hook = lines[hookIndex(lines)]?.text ?? "";
+  // the button calls back the rule, the hook or one of the examples (the neighbours' lines)
+  const examples = lines.filter((l, i) => (l.beat ? l.beat === "neighbours" : i > 1 && i < 9)).map((l) => l.text).join(" ");
   if (w < lo || w > hi) out.push(`${FORMULA_PREFIX} the last line is a ${w}-word line; the button must be ${lo} to ${hi} words that reopen the loop and call back the rule ("${rule.slice(0, 60)}") or the hook ("${hook.slice(0, 60)}"). ${lineTag([n - 1])}`);
-  const target = new Set([...keyWords(rule), ...keyWords(hook)]);
-  if (![...keyWords(last)].some((k) => target.has(k))) out.push(`${FORMULA_PREFIX} the button does not call back the rule or the hook: reuse a word or picture from "${rule.slice(0, 60)}" or "${hook.slice(0, 60)}". ${lineTag([n - 1])}`);
+  const target = new Set([...keyWords(rule), ...keyWords(hook), ...keyWords(examples)]);
+  if (![...keyWords(last)].some((k) => target.has(k))) out.push(`${FORMULA_PREFIX} the button does not call back the hook, the rule or an example: reuse a word or picture from "${hook.slice(0, 60)}", "${rule.slice(0, 60)}" or one of the examples. ${lineTag([n - 1])}`);
   return out;
 }
 
@@ -229,4 +238,26 @@ export function soundCues(script) {
 export function formulaLines(note) {
   const m = String(note ?? "").match(/\(lines? ([\d, ]+)\)\s*$/);
   return m ? m[1].split(",").map((x) => Number(x.trim()) - 1).filter((i) => i >= 0) : [];
+}
+
+// ---------- the ENDING: a clear big win, then a HOLY TWIST; never soft, sentimental or abstract (owner, 2026-11-13) ----------
+/** Words that make an ending soft, sentimental or abstract (the last three lines are read for them). */
+export const SOFT_ENDING = /\b(peace|peaceful|peacefully|together|togetherness|love|loved|loving|family|families|friendship|friends forever|forever|learn|learned|learning|lesson|lessons|realiz\w*|grateful|thankful|gratitude|hug|hugs|hugged|warm|warmth|smiled|smiling|happily|happiness|hope|hoped|hopeful|dream|dreams|heart|hearts|cherish\w*|special|believe|believed|belief|brave|bravery|courage|kindness|joy|joyful|belong\w*|meaning|meaningful|truth|sunshine|safe and sound|all along|at last|finally home|better place|never alone)\b/i;
+/** A flip: the last two lines turn the win around or restart the chaos (an exclamation, a sound word, "again", "uh oh", a question...). */
+const TWIST_MARK = /(!|\?|\b(again|uh oh|oops|but|until|except|still|wait|turns out|twice|restart|once more|back|too|now it|now we|now everyone)\b)/i;
+
+/**
+ * The ending notes. SOFT (HARD in the hybrid writer, hybrid.js): the last three lines hold a soft / sentimental / abstract
+ * word. NO TWIST (advisory): the last two lines show no flip or restart. Both name their lines for Fix it.
+ */
+export function endingProblems(script) {
+  const lines = script?.lines ?? [];
+  if (lines.length < 6) return [];
+  const n = lines.length, out = [];
+  const tail = lines.slice(-3).map((l, k) => ({ i: n - 3 + k, t: l.text }));
+  const soft = tail.filter((x) => SOFT_ENDING.test(x.t));
+  if (soft.length) out.push(`${FORMULA_PREFIX} the ending is soft or abstract ("${soft[0].t.match(SOFT_ENDING)[0]}"): after the big win, the last 1 or 2 lines must be a HOLY TWIST that flips it or restarts the chaos with something we can SEE, never a feeling, a lesson or a moral. ${lineTag(soft.map((x) => x.i))}`);
+  const last2 = lines.slice(-2);
+  if (!last2.some((l) => TWIST_MARK.test(l.text) || sfxTags(l.text).length)) out.push(`${FORMULA_PREFIX} no holy twist at the end: the last 1 or 2 lines should flip the win or restart the chaos (a callback to the hook or an example). ${lineTag([n - 2, n - 1])}`);
+  return out;
 }

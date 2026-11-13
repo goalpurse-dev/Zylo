@@ -14,15 +14,15 @@ import { PACE, targetWords } from "../supabase/functions/_shared/blockyWorlds/co
 const clone = (x) => JSON.parse(JSON.stringify(x));
 // our own test story (a keyhole town), ~370 words: every formula part present
 const RAW = [
-  ["rule", "In this town, you must never knock on a door after sunset."],
-  ["origin", "And right now I'm hanging from a chimney, screaming at a goat!"],
-  ["origin", "You see, every door in town remembers who knocked."],
+  ["rule", "And right now I'm hanging from a chimney, screaming at a goat!"],
+  ["rule", "You see, in this town, you must never knock on a door after sunset."],
+  ["origin", "Every door in town remembers who knocked."],
   ["neighbours", "Mrs. Dobb hides in her kitchen and answers through the letterbox."],
   ["neighbours", "Mr. Fitch sleeps in his garage, behind eleven locks."],
-  ["neighbours", "Old Tamsin sells soup in the market and never opens the hatch."],
+  ["neighbours", "Tamsin sells soup in the market and never opens the hatch."],
   ["me", "But I live in a house with fifty doors."],
   ["me", "Then there's me, Pip, the clumsiest knocker in town."],
-  ["ally", "My aunt Bea caught me tapping on a wall."],
+  ["ally", "Mrs. Dobb caught me tapping on a wall."],
   ["ally", "She said, \"A door only hears what you say twice.\""],
   ["trigger", "Then one sunset the wind blew my door open."],
   ["trigger", "Knock. Knock. Something knocked back."],
@@ -31,7 +31,7 @@ const RAW = [
   ["adults", "The doors laughed at his locks."],
   ["adults", "Mrs. Dobb stuffed her letterbox with socks."],
   ["adults", "Pop! The socks flew out."],
-  ["adults", "Old Tamsin threw soup at the hatch."],
+  ["adults", "Tamsin threw soup at the hatch."],
   ["adults", "Splat! The hatch opened anyway."],
   ["adults", "Two hundred doors rattled at once."],
   ["adults", "Thud! The whole street shook."],
@@ -40,13 +40,13 @@ const RAW = [
   ["save", "A door only hears what you say twice."],
   ["save", "So I knocked twice on the biggest door."],
   ["save", "Knock. Knock."],
-  ["save", "Then I said, \"Goodnight.\" Twice."],
-  ["save", "Goodnight. Goodnight."],
+  ["save", "Then I whispered goodnight. Twice."],
+  ["save", "goodnight, goodnight."],
   ["save", "Every door sighed and went quiet."],
   ["save", "The goats stopped screaming."],
   ["save", "The street was so still I heard a snail."],
   ["save", "Nobody knocked. Nobody was knocked at."],
-  ["callback", "Aunt Bea's door? Still knocking."],
+  ["callback", "Mrs. Dobb's door? Still knocking."],
 ];
 const SCRIPT = normalizeScript({ title: "t", lines: RAW.map(([beat, text]) => ({ beat, part: BEAT_PART[beat], text })) });
 const edit = (fn) => { const s = clone(SCRIPT); fn(s.lines); return s; };
@@ -91,14 +91,13 @@ test("formula: a script that does every part has no note", () => {
   assert.deepEqual(formulaProblems({ lines: [] }, 90), [], "too short to judge");
 });
 
-test("formula: the hook (line 2): first person, an exclamation, inside the first 5 seconds", () => {
-  assert.equal(text(edit((l) => { l[1].text = "The goats screamed at the chimney."; }), /no result-first hook/).length, 1);
-  assert.equal(text(edit((l) => { l[1].text = "Is that a goat on the chimney?"; }), /no result-first hook/).length, 1);
-  // a long opener pushes the hook past 6 s
-  const late = text(edit((l) => { l[0].text = "In this town, you must never knock on any door at all after the sun has gone down for the night."; }), /hook comes too late/);
+test("formula: the hook (LINE 1): first person, an exclamation, inside the first 5 seconds", () => {
+  assert.equal(text(edit((l) => { l[0].text = "The goats screamed at the chimney."; }), /no result-first hook/).length, 1);
+  assert.equal(text(edit((l) => { l[0].text = "Is that a goat on the chimney?"; }), /no result-first hook/).length, 1);
+  const late = text(edit((l) => { l[0].text = "And right now I am hanging from a chimney far above the whole sleepy little town, screaming my head off at a very angry goat who is eating my left sock and my favourite hat!"; }), /hook comes too late/);
   assert.equal(late.length, 1);
-  assert.match(late[0], /\(line 2\)$/);
-  assert.equal(text(edit((l) => { l[1].text = "And right now I'm hanging from a chimney far above the whole sleepy town, screaming at a goat!"; }), /hook is \d+ words/).length, 1);
+  assert.match(late[0], /\(line 1\)$/);
+  assert.equal(text(edit((l) => { l[0].text = "And right now I'm hanging from a chimney far above the whole sleepy town, screaming at a goat!"; }), /hook is \d+ words/).length, 1);
 });
 
 test("formula: the 'But' pivot: present, with a number, about 15 s in", () => {
@@ -130,7 +129,7 @@ test("formula: 'Then I noticed something' and the 2 to 6 word button", () => {
 });
 
 test("formula notes ride the existing checks: advisory (the button is HARD), and Fix it finds their lines", () => {
-  const bad = edit((l) => { l[1].text = "The goats screamed at the chimney."; l[32].text = "Aunt Bea's door is still knocking on everybody else's house tonight."; });
+  const bad = edit((l) => { l[0].text = "The goats screamed at the chimney."; l[32].text = "Mrs. Dobb's door is still knocking on everybody else's house tonight."; });
   const c = hybridChecks({ script: bad, skeleton: {}, card: null, examples: [], lengthSec: 90 });
   const notes = c.advisory.filter((x) => x.startsWith(FORMULA_PREFIX));
   assert.equal(notes.length, 1, "the hook note is advisory");
@@ -138,7 +137,7 @@ test("formula notes ride the existing checks: advisory (the button is HARD), and
   assert.equal(hard.length, 1, "the button length is hard");
   assert.match(hard[0], /the button must be 2 to 6 words/);
   const spots = problemSpots(bad, [...notes, ...hard]);
-  assert.deepEqual(spots.map((s) => [s.part, s.fix, s.lines]), [["tour", "part", [1]], ["closer", "part", [32]]]);
+  assert.deepEqual(spots.map((s) => [s.part, s.fix, s.lines]), [["rule", "part", [0]], ["closer", "part", [32]]]);
   assert.deepEqual(formulaLines("Formula: x (lines 9, 10)"), [8, 9]);
   assert.deepEqual(formulaLines("Formula: no lines here"), []);
   // a note without lines goes to the whole-script rewrite
@@ -154,7 +153,7 @@ test("prompts: both writers carry the formula, the plan asks for the hook, place
   }
   assert.ok(BEAT_SHEET_TEXT.includes("SOUND WORD"));
   assert.match(HYBRID_PLAN_SYSTEM, /2 to 6 word BUTTON/);
-  assert.match(HYBRID_LINES_SYSTEM, /Line two is the RESULT-FIRST HOOK/);
+  assert.match(HYBRID_LINES_SYSTEM, /Line 1 is the result-first HOOK/);
   assert.doesNotMatch(HYBRID_LINES_SYSTEM, /Line two usually starts "You see,"/);
   const props = hybridPlanSchema().properties;
   assert.ok(props.hook && props.pivot);
@@ -206,8 +205,8 @@ test("button: 2 to 6 words AND a call back to the rule or the hook, hard in the 
   const dogs = edit((l) => { l[0].text = "In this town, the dogs walk us."; l[1].text = "And right now I'm being dragged by a huge dog!"; l[32].text = "Now Big Moss walks with me, and the dogs walk no one."; });
   assert.equal(buttonProblems(dogs).length, 1, "11 words: too long");
   const noEcho = edit((l) => { l[32].text = "Sit, Big Moss. Good boy."; });
-  assert.match(buttonProblems(noEcho).join(), /does not call back the rule or the hook/);
-  assert.equal(buttonProblems(edit((l) => { l[1].text = "And right now I'm being dragged by a huge dog!"; l[32].text = "Sit, Big Moss. Good dog."; })).length, 0, "dog echoes the hook");
+  assert.match(buttonProblems(noEcho).join(), /does not call back the hook, the rule or an example/);
+  assert.equal(buttonProblems(edit((l) => { l[0].text = "And right now I'm being dragged by a huge dog!"; l[32].text = "Sit, Big Moss. Good dog."; })).length, 0, "dog echoes the hook");
   const c = hybridChecks({ script: dogs, skeleton: {}, card: null, examples: [], lengthSec: 90 });
   assert.ok(c.hard.some((x) => /the button must be 2 to 6 words/.test(x)));
 });
@@ -310,4 +309,42 @@ test("library-idea script writer: the kit + sound words ride in its SYSTEM promp
   assert.doesNotMatch(sys(sent.find((_, i) => i === sent.findIndex((b) => !/THE WORLD WE CAN FILM/.test(sys(b))))), /THE WORLD WE CAN FILM/);
   assert.ok(sent.some((b) => /THE WORLD WE CAN FILM/.test(sys(b)) && /beat sheet/i.test(sys(b))), "beat planner");
   assert.match(sys(sent.at(-1)), /THE WORLD WE CAN FILM/, "library batch ideas");
+});
+
+// ---------- the 2026-11-13 story rules: hook first, "You see, in this town" within 2 sentences, no soft ending, max 3 names ----------
+import { endingProblems } from "../supabase/functions/_shared/blockyWorlds/formula.js";
+import { ruleLineIndex, ruleLineProblem } from "../supabase/functions/_shared/blockyWorlds/opener.js";
+import { checkScript } from "../supabase/functions/_shared/blockyWorlds/script.js";
+
+test("rule line: 'You see, in this town/world, ...' inside the first 2 sentences replaces the 'first line starts In this town' rule for formula scripts", () => {
+  assert.equal(ruleLineIndex(SCRIPT.lines), 1);
+  assert.equal(ruleLineProblem(SCRIPT.lines), null);
+  assert.equal(ruleLineIndex([{ text: "I just sneezed in a plane! You see, in this world, sneezing teleports you." }]), 0, "same line, second sentence");
+  assert.equal(ruleLineIndex([{ text: "Wow!" }, { text: "I fell." }, { text: "You see, in this town, x." }]), -1, "third sentence is too late");
+  assert.match(ruleLineProblem([{ text: "Wow!" }, { text: "In this town, sneezing teleports you." }]), /rule line is missing/);
+  // checkScript: a beat script is judged by the rule line, an older script by the opener
+  const noRule = clone(SCRIPT); noRule.lines[1] = { ...noRule.lines[1], text: "Nobody knocks after sunset." };
+  assert.match(checkScript(noRule, 90).problems.join(), /The rule line is missing/);
+  assert.ok(!/The first line must start/.test(checkScript(SCRIPT, 90).problems.join()), "the hook does not have to say In this town");
+  assert.equal(checkScript({ lines: [{ part: "rule", text: "Once upon a time." }] }, 90).problems.some((p) => /The first line must start/.test(p)), true, "older scripts keep the old opener");
+  // the rule line is hard, and Fix it rewrites the hook + the rule line
+  const c = hybridChecks({ script: noRule, skeleton: {}, card: null, examples: [], lengthSec: 90 });
+  assert.ok(c.hard.some((x) => /The rule line is missing/.test(x)));
+  assert.deepEqual(problemSpots(noRule, c.hard.filter((x) => /rule line/.test(x)))[0].lines, [0, 1]);
+});
+
+test("ending: soft, sentimental or abstract endings are HARD; no flip is a note; a real holy twist passes", () => {
+  const soft = edit((l) => { l[31].text = "We learned that love and family keep us together."; l[32].text = "Everyone smiled forever."; });
+  const p = endingProblems(soft);
+  assert.ok(p.some((x) => /the ending is soft or abstract/.test(x)));
+  const c = hybridChecks({ script: soft, skeleton: {}, card: null, examples: [], lengthSec: 90 });
+  assert.ok(c.hard.some((x) => /the ending is soft or abstract/.test(x)), "hard in the hybrid writer");
+  const flat = edit((l) => { l[31].text = "The street went quiet."; l[32].text = "The town was calm."; });
+  assert.ok(endingProblems(flat).some((x) => /no holy twist/.test(x)));
+  assert.deepEqual(endingProblems(SCRIPT), [], "the test story ends on a flip (Mrs. Dobb's door? Still knocking.)");
+});
+
+test("names: at most 3 named characters plus the narrator", () => {
+  const many = edit((l) => { l[3].text = "Dottie Pell hides in her kitchen behind forty bulging curtains."; l[4].text = "Mr. Hollis stacks bricks in his hallway, one for every window."; l[5].text = "Mrs. Fenwick sells bread in her bakery behind three thin curtains."; });
+  assert.ok(text(many, /too many named characters/).length === 1);
 });

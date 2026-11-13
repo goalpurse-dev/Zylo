@@ -7,7 +7,7 @@
 // (paceClean) and sizes the script to the length (targetWords).
 import { LENGTHS, PACE, targetWords } from "./config.js";
 import { FORMULAS, MOODS, TWISTS } from "./formulas.js";
-import { fixOpener, hasOpener, openerProblem } from "./opener.js";
+import { fixOpener, hasOpener, openerProblem, ruleLineProblem } from "./opener.js";
 import { safetyProblems } from "./safety.js";
 import { EXAMPLE_SCRIPT } from "./examples.js";
 import { topicBlock } from "./topic.js";
@@ -221,7 +221,9 @@ export function checkScript(script, lengthSec, kind = "written") {
   const lines = script?.lines ?? [];
   if (!LENGTHS.includes(lengthSec)) problems.push(`The length must be ${LENGTHS[0]} to ${LENGTHS.at(-1)} seconds, in 10 s steps.`);
   if (!lines.length) return { problems: ["The script is empty."], warnings, words: 0, seconds: 0 };
-  const op = openerProblem(lines[0].text);
+  // the story formula (2026-11-13): a script whose lines carry beats opens with the HOOK and says "You see, in this town, [rule]" within
+  // its first two sentences; an older 7-part script keeps the "In this town" opener
+  const op = lines.some((l) => l.beat) ? ruleLineProblem(lines) : openerProblem(lines[0].text);
   if (op) problems.push(op);
   const total = lines.reduce((a, l) => a + wordCount(l.text), 0);
   const target = targetWords(lengthSec), [lo, hi] = BAND[kind] ?? BAND.written;

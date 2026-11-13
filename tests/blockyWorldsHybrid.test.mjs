@@ -72,8 +72,8 @@ const B = (beat, ...texts) => texts.map((text) => ({ part: BEAT_PART[beat], beat
 const SCRIPT = {
   title: "Low Houses Hear",
   lines: [
-    ...B("rule", "In this town, poorer people live on the ground and richer people live higher up."),
-    ...B("origin", "And right now my doormat is underground, with everyone watching!", "You see, every coin you earn lifts your house a little.", "Go broke and it sinks right back down where everyone can see."),
+    ...B("rule", "And right now my doormat is underground, with everyone watching!", "You see, in this town, poorer people live on the ground and richer people live higher up."),
+    ...B("origin", "Every coin you earn lifts your house a little.", "Go broke and it sinks right back down where everyone can see."),
     ...B("neighbours", "Mr. Pell's house floats ten floors up, above the bakery.", "He waves at birds like they owe him money.",
       "Captain Huxworth's house is so high it has snow on the roof.", "In July.",
       "Mrs. Quibble's house floats just above the school fence.", "She tiptoes to look richer."),
@@ -88,7 +88,7 @@ const SCRIPT = {
       "I heard water. Underground water.", "It was rushing under the hill like a bathtub.", "I'm the lowest kid in town.",
       "So I'm the only one who could reach the drain.", "I crawled under our house and pulled the old plug.",
       "Glug! The water drained out with a giant burp.", "The hill stopped sliding.", "Every house stayed tied and safe.", "Nobody floated away. Nobody sank.", "The whole street cheered for the mud."),
-    ...B("callback", "Now everyone visits the lowest house to listen.", "Now Quibble tiptoes on the ground."),
+    ...B("callback", "Then the hill burped again. Thud!", "Quibble tiptoes on the ground."),
   ],
   post: { title: "t", description: "d", hashtags: ["#a"] },
 };
@@ -182,8 +182,8 @@ test("hybrid checks: the good script has no hard problem; soft misses are adviso
 
 test("hybrid checks: opener, length, real copying and a lost premise are hard", () => {
   const s = clone(SCRIPT);
-  s.lines[0] = { part: "rule", text: "Poorer people live on the ground here." };
-  assert.ok(hybridChecks({ script: s, skeleton: MAP, card: card(), lengthSec: 90 }).hard.some((x) => /^The first line must start/.test(x)));
+  s.lines[1] = { part: "rule", beat: "rule", text: "Poorer people live on the ground here." };
+  assert.ok(hybridChecks({ script: s, skeleton: MAP, card: card(), lengthSec: 90 }).hard.some((x) => /^The rule line is missing/.test(x)), "the rule line (You see, in this town, ...) is required, the hook comes first");
   const short = { ...clone(SCRIPT), lines: SCRIPT.lines.slice(0, 20) };
   assert.ok(hybridChecks({ script: short, skeleton: MAP, card: card(), lengthSec: 90 }).hard.some((x) => /^Too short/.test(x)));
   const ref = { id: "ref9", text: "Old Huxworth said his house is so high it has snow on the roof all year." };
@@ -329,8 +329,8 @@ test("length v2: budgets sized to the aim (middle of the band), 9-word lines, th
     globalThis.fetch = async (_u, init) => { const b = JSON.parse(init.body); const data = b.model === "claude-opus-5-5" ? PLAN : /verdicts/.test(JSON.stringify(b.output_config)) ? { verdicts: [{ scores: Object.fromEntries(RUBRIC.map((c) => [c.id, 4])), safe: true, better: "x" }] } : { title: "t", lines, post: SCRIPT.post, map: MAP }; return { ok: true, json: async () => ({ model: b.model, usage: { input_tokens: 10, output_tokens: 10 }, stop_reason: "end_turn", content: [{ type: "text", text: JSON.stringify(data) }] }) }; };
     try { return { result: await writeHybrid({ apiKey: "x", topic: TOPIC, lengthSec: 90, judge: false }) }; } finally { globalThis.fetch = real; }
   })();
-  assert.equal(r.draftWords, 366);
-  assert.deepEqual(r.selfCount, { stated: 366 + SCRIPT.lines.length, real: 366 });
+  assert.equal(r.draftWords, 363);
+  assert.deepEqual(r.selfCount, { stated: 363 + SCRIPT.lines.length, real: 363 });
   assert.ok(r.script.lines.every((l) => !("words" in l)));
 });
 
@@ -399,7 +399,7 @@ test("writeHybrid: a hard failure gets exactly ONE cheap fix (low effort), even 
   const short = { ...clone(SCRIPT), lines: SCRIPT.lines.slice(0, 20) };
   const r = await writeHybrid({ topic: TOPIC, lengthSec: 90, steps: fakes([short, short], calls) });
   // 3 hard notes: too short, and the cut-off last line is no 2-6 word button that calls back the rule or the hook
-  assert.deepEqual(calls, ["plan", "lines", `fix:${HYBRID.fix.effort}:3`, "judge:true"]);
+  assert.deepEqual(calls, ["plan", "lines", `fix:${HYBRID.fix.effort}:2`, "judge:true"]);
   assert.equal(r.fixed, false);
   assert.ok(r.firstHard.some((x) => /^Too short/.test(x)));
   const calls2 = [];
@@ -408,11 +408,11 @@ test("writeHybrid: a hard failure gets exactly ONE cheap fix (low effort), even 
   assert.equal(calls2.filter((c) => c.startsWith("fix")).length, 1);
 });
 
-test("writeHybrid: an opener-only miss goes to the small opener call; a capped call stops the topic", async () => {
+test("writeHybrid: a missing rule line goes to the one cheap lines fix; a capped call stops the topic", async () => {
   const calls = [];
-  const s = clone(SCRIPT); s.lines[0] = { part: "rule", text: "Poorer people live on the ground and richer people live higher up." };
-  const r = await writeHybrid({ topic: TOPIC, lengthSec: 90, steps: fakes([s], calls) });
-  assert.deepEqual(calls, ["plan", "lines", "opener", "judge:true"]);
+  const s = clone(SCRIPT); s.lines[1] = { part: "rule", beat: "rule", text: "Poorer people live on the ground and richer people live higher up." };
+  const r = await writeHybrid({ topic: TOPIC, lengthSec: 90, steps: fakes([s, SCRIPT], calls) });
+  assert.deepEqual(calls, ["plan", "lines", "fix:low:1", "judge:true"]);
   assert.equal(r.fixed, true);
   const r2 = await writeHybrid({ topic: TOPIC, steps: { writeHybridPlan: async () => { throw Object.assign(new Error("cap"), { cap: true, costUsd: 0 }); } } });
   assert.match(r2.stopped, /^money cap/);
@@ -595,4 +595,58 @@ test("app: the plan stays with the draft (not on the run, not in the library); b
   const worst = worstCaseUsd(HYBRID.plan.model, HYBRID.plan.maxTokens, 8000) + worstCaseUsd(HYBRID.lines.model, HYBRID.lines.maxTokens, 10000) + worstCaseUsd(HYBRID.fix.model, HYBRID.fix.maxTokens, 12000) + worstCaseUsd("claude-sonnet-5-5", HYBRID.judge.maxTokens, 4000);
   assert.ok(worst < APP_HYBRID.capUsd, `worst ${worst}`);
   assert.equal(APP_HYBRID.judge, true);
+});
+
+// ---------- the story judge: three versions, one cheap judge call, the best kept, every score logged (owner, 2026-11-13) ----------
+import { CRITERIA_IDS, pickBest, readStoryScores, STORY_JUDGE_SYSTEM, storyJudgePrompt, storyJudgeSchema, VERSION_NOTES } from "../supabase/functions/_shared/blockyWorlds/storyJudge.js";
+
+test("story judge: criteria, schema, prompt, scores read and clamped, the pick prefers a draft the checks accept", () => {
+  assert.deepEqual([...CRITERIA_IDS], ["rule", "examples", "solution", "ending", "hook", "visible"]);
+  for (const id of CRITERIA_IDS) assert.match(STORY_JUDGE_SYSTEM, new RegExp(`- ${id}:`));
+  assert.deepEqual(storyJudgeSchema().properties.versions.items.required, ["version", ...CRITERIA_IDS, "note"]);
+  assert.match(storyJudgePrompt([SCRIPT, SCRIPT], { topic: "t" }), /VERSION 1[\s\S]*VERSION 2/);
+  const sc = readStoryScores({ versions: [{ version: 1, rule: 9, examples: 99, solution: -3, ending: 8, hook: 7, visible: 6, note: "n" }, { version: 3, rule: 5, examples: 5, solution: 5, ending: 5, hook: 5, visible: 5, note: "" }] }, 3);
+  assert.equal(sc[0].scores.examples, 10);
+  assert.equal(sc[0].scores.solution, 0);
+  assert.equal(sc[1].total, 0, "a version the judge left out scores 0");
+  assert.equal(sc[2].total, 50);
+  // the pick: no hard problem beats a higher score; then the total; then fewer advisory notes
+  assert.equal(pickBest([{ hard: 1, advisory: 0, total: 99 }, { hard: 0, advisory: 3, total: 40 }]), 1);
+  assert.equal(pickBest([{ hard: 0, advisory: 0, total: 60 }, { hard: 0, advisory: 0, total: 80 }, { hard: 0, advisory: 0, total: 70 }]), 1);
+  assert.equal(pickBest([{ hard: 0, advisory: 2, total: 70 }, { hard: 0, advisory: 1, total: 70 }]), 1);
+  assert.equal(pickBest([{ hard: 2, advisory: 0, total: 10 }, { hard: 1, advisory: 0, total: 5 }]), 1, "all refused: the fewest hard problems");
+  assert.equal(VERSION_NOTES.length, 3);
+});
+
+test("writeHybrid with versions: 3 (the default for board 'prefer', the Studio engine): three drafts, ONE judge call, the best kept, per-criterion scores logged", async () => {
+  const calls = [];
+  const drafts = [clone(SCRIPT), clone(SCRIPT), clone(SCRIPT)];
+  drafts[2].lines = drafts[2].lines.map((l) => (l.text.startsWith("Rumble!") ? { ...l, text: "Rumble! The hill slid and every house leaned over the river." } : l));
+  const notes = [];
+  const steps = {
+    ...fakes([], calls),
+    writeHybridLines: async ({ note }) => { notes.push(note ?? ""); calls.push("lines"); return { script: clone(drafts.shift()), skeleton: clone(MAP), costUsd: 0.04, usage: {} }; },
+    judgeStories: async ({ scripts }) => { calls.push("storyJudge"); assert.equal(scripts.length, 3); return { scores: readStoryScores({ versions: [
+      { version: 1, rule: 6, examples: 5, solution: 5, ending: 4, hook: 6, visible: 6, note: "soft end" },
+      { version: 2, rule: 8, examples: 7, solution: 8, ending: 9, hook: 8, visible: 8, note: "ok" },
+      { version: 3, rule: 7, examples: 7, solution: 7, ending: 7, hook: 7, visible: 7, note: "ok" }] }, 3), best: 2, costUsd: 0.008, usage: {} }; },
+  };
+  const r = await writeHybrid({ topic: TOPIC, examples: [], lengthSec: 90, board: "prefer", steps });
+  assert.deepEqual(calls.filter((c) => c !== "lines"), ["plan", "storyJudge", "judge:true"]);
+  assert.equal(calls.filter((c) => c === "lines").length, 3);
+  assert.equal(notes[0], "", "the first version has no angle");
+  assert.ok(notes[1].includes("punchier") && notes[2].includes("ending"));
+  assert.equal(r.versions.length, 3);
+  assert.deepEqual(r.versions.map((v) => v.picked), [false, true, false]);
+  assert.equal(r.pick, 2);
+  for (const v of r.versions) for (const id of CRITERIA_IDS) assert.equal(typeof v.scores[id], "number", `${v.version}.${id}`);
+  assert.ok(r.versions[1].total > r.versions[0].total);
+  assert.equal(r.calls.storyJudge.usd, 0.008);
+  // cost = plan + 3 lines + the story judge + the library judge
+  assert.equal(r.costUsd, Number((0.06 + 0.12 + 0.008 + 0.01).toFixed(5)));
+  // versions: 1 (the default outside Studio) keeps the old single-draft flow
+  const calls1 = [];
+  const r1 = await writeHybrid({ topic: TOPIC, examples: [], lengthSec: 90, steps: fakes([SCRIPT], calls1) });
+  assert.deepEqual(calls1, ["plan", "lines", "judge:true"]);
+  assert.equal(r1.versions, undefined);
 });
