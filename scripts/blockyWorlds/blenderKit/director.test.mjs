@@ -1,7 +1,32 @@
 // node --test scripts/blockyWorlds/blenderKit/director.test.mjs   (pure helpers only: no model call, no key)
 import test from "node:test";
 import assert from "node:assert/strict";
-import { planLocations, tileShots, salvageJson, MIN_LOCATIONS } from "./director.mjs";
+import { planLocations, tileShots, salvageJson, planProblems, MIN_LOCATIONS } from "./director.mjs";
+
+const shotsAt = (locs) => locs.map((location, i) => ({ id: i + 1, w0: i, desc: "x", location }));
+const good = {
+  shots: shotsAt([...Array(25).fill("hero room"), ...Array(15).fill("main street"), ...Array(14).fill("big hall"), ...Array(6).fill("hero room")]),
+  style_sheet: [{ name: "Mo", hero: true, outfit: "yellow-black stripes", colors: "yellow and black stripes" }, { name: "Pip", hero: false, outfit: "orange", colors: "orange shirt" }],
+  anchors: ["Hero room"],
+};
+
+test("the plan check passes a plan with 3+ locations, ~50 cuts a minute, one hero, distinct colours and a returning anchor", () => {
+  assert.deepEqual(planProblems(good, 72), []);
+});
+
+test("the plan check names every broken rule", () => {
+  const p = planProblems({ shots: shotsAt(Array(30).fill("cabin")), style_sheet: [{ name: "A", hero: true, colors: "red" }, { name: "B", hero: true, colors: "Red" }], anchors: [] }, 72);
+  assert.ok(p.some((x) => /location/.test(x)));
+  assert.ok(p.some((x) => /cuts a minute/.test(x)));
+  assert.ok(p.some((x) => /2 hero/.test(x)));
+  assert.ok(p.some((x) => /share the colours/.test(x)));
+  assert.ok(p.some((x) => /no anchors/.test(x)));
+});
+
+test("an anchor that never comes back in the last 15% fails", () => {
+  const plan = { ...good, shots: shotsAt([...Array(30).fill("hero room"), ...Array(15).fill("main street"), ...Array(15).fill("big hall")]) };
+  assert.ok(planProblems(plan, 72).some((x) => /comes back in the ending/.test(x)));
+});
 
 const words = Array.from({ length: 12 }, (_, i) => ({ word: `w${i}`, start: i * 0.5, end: i * 0.5 + 0.4 }));
 

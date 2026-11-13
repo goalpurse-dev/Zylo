@@ -19,7 +19,8 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { ledger, stepTimes } from "../studio/ledger.mjs";
 import { loadEnv } from "../engine/runpod/client.mjs";
-import { makeDirector, systemPrompt, tileShots, assemble, staticCheck, wordLines, planLocations, MODELS, BATCH, MIN_LOCATIONS } from "./director.mjs";
+import { makeDirector, systemPrompt, tileShots, assemble, staticCheck, wordLines, planLocations, planProblems, MODELS, BATCH, MIN_LOCATIONS } from "./director.mjs";
+import { captionColors } from "./speakers.mjs";
 import { runpod, RATE, BOOT_S } from "./rp.mjs";
 import { shotFrames, splitShots } from "./plan.mjs";
 import { saveAsset, functionSource, findAssets } from "./library.mjs";
@@ -102,21 +103,25 @@ if (!state.plan) {
     `PLAN THE VIDEO. Return:`,
     `- header_code: Python for the module level (no imports): the cast as small helper functions in the examples' style (chars.Char + story._live, one per person; our own looks), the Sky Wind as a visible creature (a swirling, glowing wind spirit with a face, built from kit primitives / fx), constants for set positions, and a builder function for every set or prop the kit lacks. The town lives INSIDE a giant airliner: reuse W2.airliner / W2.cabin / W2.seat_root / W.cockpit / W.sky / W.cloud wherever they fit; seat lamps above seats (yellow / red / green) must be visible where the script names them.`,
     `- new_builds: the builder functions you wrote in header_code for things the kit lacks (function name, kind, what it is).`,
-    `- shots: about ${Math.round((dur / 60) * 55)} shots (50-60 a minute, 0.4-2.5 s each), in order; each = { id (1, 2, ...), w0 = the index of its first word (the first shot 0), desc = what we see, location = the set it is in (short name) }. Use at least ${MIN_LOCATIONS} different locations. A shot lasts until the next shot's first word; the last shot ends with the audio. Cut on the word that brings a new image; every named thing gets its own shot; reaction close-ups after surprises; the first shot is mid-action.`,
+    `- style_sheet: every named character once: name, hero (true for exactly ONE: the narrator / main character), outfit (the hero's is ONE striking outfit worn in every shot), colors (their own distinct colours, e.g. "yellow and black stripes"). The cast helpers in header_code use exactly these.`,
+    `- anchors: the recurring places (location names as on the shots) that are set up early and COME BACK in the ending.`,
+    `- shots: about ${Math.round((dur / 60) * 50)} shots (about 50 a minute, 0.4-2.5 s each), in order; each = { id (1, 2, ...), w0 = the index of its first word (the first shot 0), desc = what we see (the line's key noun / action LITERALLY), location = the set it is in (short name) }. Use at least ${MIN_LOCATIONS} different locations. A shot lasts until the next shot's first word; the last shot ends with the audio. Cut on the word that brings a new image; every named thing gets its own shot; reaction close-ups on the big beats (the twist: the hero's face up close); the first shot is mid-action; the last shot shows the consequence of the last line.`,
     `You will then write the shot bodies in batches of ${BATCH}. Keep the header complete now: later batches can only add small helpers.`,
   ].filter(Boolean).join("\n");
   let r = await L.step("director_plan", () => D.plan({ brief }));
-  // THE PLAN CHECK (owner, first test: almost every shot in the same cabin aisle): at least MIN_LOCATIONS locations;
-  // one re-plan, then a stop (before any GPU money)
-  let locs = planLocations(r.data.shots ?? []);
-  if (locs.n < MIN_LOCATIONS) {
-    say(`plan check: ${locs.n} location(s) (${locs.list.join(", ") || "none named"}); asking for at least ${MIN_LOCATIONS}`);
-    r = await L.step("director_plan", () => D.plan({ brief: `PLAN CHECK FAILED: your plan uses ${locs.n} location(s) (${locs.list.join(", ") || "none named"}). Re-plan the WHOLE video (same answer format: header_code, new_builds, every shot with id, w0, desc, location) with at least ${MIN_LOCATIONS} clearly different locations, each used for a real stretch of the story (add the set builders to header_code).` }));
-    locs = planLocations(r.data.shots ?? []);
-    if (locs.n < MIN_LOCATIONS) throw new Error(`plan check: still ${locs.n} location(s) after a re-plan (${locs.list.join(", ")}): stopped before any render`);
+  // THE PLAN CHECK (director.mjs planProblems): 3+ locations (first test: almost every shot in the same cabin aisle),
+  // ~50 cuts a minute, one hero + distinct colours per character, anchors that come back in the ending; one re-plan,
+  // then a stop (before any GPU money)
+  let probs = planProblems(r.data, dur);
+  if (probs.length) {
+    say(`plan check: ${probs.length} problem(s): ${probs.join(" | ")}`);
+    r = await L.step("director_plan", () => D.plan({ brief: `PLAN CHECK FAILED:\n${probs.map((x) => `- ${x}`).join("\n")}\nRe-plan the WHOLE video (same answer format: title, header_code, new_builds, style_sheet, anchors, every shot with id, w0, desc, location) so every point above is met (add any set builders to header_code).` }));
+    probs = planProblems(r.data, dur);
+    if (probs.length) throw new Error(`plan check: still failing after a re-plan: ${probs.join(" | ")}: stopped before any render`);
   }
+  const locs = planLocations(r.data.shots ?? []);
   const t = tileShots(r.data.shots ?? [], words);
-  state.plan = { title: r.data.title ?? script.title, header: r.data.header_code ?? "", newBuilds: r.data.new_builds ?? [], shots: t.shots, mergedAtPlan: t.merged, cutOff: r.cutOff, locations: locs.list };
+  state.plan = { title: r.data.title ?? script.title, header: r.data.header_code ?? "", newBuilds: r.data.new_builds ?? [], shots: t.shots, mergedAtPlan: t.merged, cutOff: r.cutOff, locations: locs.list, styleSheet: r.data.style_sheet ?? [], anchors: r.data.anchors ?? [] };
   state.bodies = {};
   state.convo = D.convo; // a resume continues the same conversation (the batches need the plan turn)
   save();
@@ -126,6 +131,17 @@ if (!state.plan) {
 
 const plan = state.plan;
 const shotById = (id) => plan.shots.find((s) => s.id === id);
+// AN INTENTIONAL BLACK SCREEN (owner 2026-11-14): up to 2 s, only on a shot whose words or line say black / dark /
+// lights out / blackout; the black-frame checks (previews, the final scan) let exactly those through
+const DARK = /\b(black(?:ness|out)?|dark(?:ness)?|pitch[- ]black|lights?\s+(?:went\s+|go\s+|goes\s+)?(?:out|off))\b/i;
+const t0Of = (s) => (s.w0 <= 0 ? 0 : words[s.w0].start), t1Of = (s) => (s.w1 == null ? dur : words[s.w1].start);
+const darkOk = (s) => t1Of(s) - t0Of(s) <= 2.0 && (DARK.test(wordsText(s)) || words.slice(s.w0, s.w1 ?? words.length).some((_, k) => DARK.test(script.lines[lineOf[s.w0 + k]]?.text ?? "")));
+/** the lines each shot covers -> per line: { line, text, shots } */
+const linesOfShots = (shots) => {
+  const m = new Map();
+  for (const s of shots) for (let k = s.w0; k < (s.w1 ?? words.length); k++) { const li = lineOf[k]; if (!m.has(li)) m.set(li, new Set()); m.get(li).add(s.id); }
+  return [...m.entries()].sort((a, b) => a[0] - b[0]).map(([line, ids]) => ({ line, text: script.lines[line]?.text ?? "", shots: [...ids] }));
+};
 /** shots that cannot render join their neighbour: the shot before runs on to the next shot's first word (the new first
  *  shot starts at word 0); never a hole in the timeline */
 function mergeOut(ids, why) {
@@ -186,7 +202,7 @@ say(`static check: ${sc.ok ? "ok" : `${sc.problems.length} problem(s)`}, ${plan.
 // ---------------------------------------------------------------- 3. previews + checks + fix rounds
 const tarVideo = (name) => {
   const file = path.join(OUT, name);
-  py("import sys,tarfile,os\nout,root=sys.argv[1],sys.argv[2]\nwith tarfile.open(out,'w:gz') as t:\n for f in sys.argv[3:]:\n  t.add(os.path.join(root,f),arcname=f)", file, vdir, "shots.py", "script.txt", "audio/words.json", "audio/voice.wav", ...(fs.existsSync(path.join(vdir, "audio", "music_bed.wav")) ? ["audio/music_bed.wav"] : []));
+  py("import sys,tarfile,os\nout,root=sys.argv[1],sys.argv[2]\nwith tarfile.open(out,'w:gz') as t:\n for f in sys.argv[3:]:\n  t.add(os.path.join(root,f),arcname=f)", file, vdir, "shots.py", "script.txt", "audio/words.json", "audio/voice.wav", ...["audio/music_bed.wav", "audio/caption_colors.json"].filter((f) => fs.existsSync(path.join(vdir, f))));
   return file;
 };
 async function uploadVideo(tag) {
@@ -246,14 +262,25 @@ async function previewRound(tag, ids) {
   // ids that did not render at all (no png) count as crashed
   for (const id of ids) if (!pixel[id] && !failed[id]) failed[id] = "no preview frame was rendered";
   const slabs = Object.fromEntries(Object.entries(pixel).filter(([id, p]) => slabSuspect(p) && !failed[id]).map(([id, p]) => [id, p]));
-  const pixBad = Object.fromEntries(Object.entries(pixel).filter(([, p]) => p.mean < 12 || p.std < 4).map(([id, p]) => [id, p.mean < 12 ? `the frame is black (mean ${p.mean})` : `the frame is one flat colour (std ${p.std})`]));
+  const pixBad = Object.fromEntries(Object.entries(pixel).filter(([id, p]) => (p.mean < 12 || p.std < 4) && !(shotById(Number(id)) && darkOk(shotById(Number(id))))).map(([id, p]) => [id, p.mean < 12 ? `the frame is black (mean ${p.mean})` : `the frame is one flat colour (std ${p.std})`]));
   return { failed, sheets, pixel, pixBad, slabs, renderS: outs.reduce((a, o) => a + (o.out.renderS ?? 0), 0) };
 }
 async function vision(tag, sheets, ids, suspects = {}) {
   if (!sheets.length) return {};
   const shots = plan.shots.filter((s) => ids.includes(s.id));
-  const r = await L.step("vision_check", () => D.check({ label: `check_${tag}`, sheets, shots, wordsText, suspects }));
-  return Object.fromEntries((r.data.shots ?? []).filter((x) => !x.ok).map((x) => [x.id, x.problem]));
+  // EVERY LINE LITERALLY: the lines whose every shot is on these sheets (round 0: all of them)
+  const seen = new Set(sheets.flatMap((x) => x.shots));
+  const lines = linesOfShots(plan.shots).filter((l) => l.shots.every((id) => seen.has(id)));
+  const last = plan.shots[plan.shots.length - 1];
+  const r = await L.step("vision_check", () => D.check({ label: `check_${tag}`, sheets, shots, wordsText, suspects, lines, lastShot: ids.includes(last.id) ? last.id : null, darkOk: shots.filter(darkOk).map((s) => s.id) }));
+  const out = Object.fromEntries((r.data.shots ?? []).filter((x) => !x.ok).map((x) => [x.id, x.problem]));
+  for (const l of r.data.lines ?? []) {
+    if (l.ok) continue;
+    const L0 = lines.find((x) => x.line === l.line); if (!L0) continue;
+    const id = L0.shots.includes(l.fix_shot) ? l.fix_shot : L0.shots[0];
+    out[id] = `${out[id] ? `${out[id]}; ` : ""}line ${l.line} "${L0.text}" is not shown literally: its key thing "${l.key}" must be clearly on screen in this shot`;
+  }
+  return out;
 }
 
 state.rounds ??= [];
@@ -332,6 +359,12 @@ const tFinal = Date.now();
 // OUR music (music.mjs): the engine's bed A at the voice's pace, the level of our #2 video (14 LU under the voice); free
 const music = await L.step("music_bed", async () => { await makeBed({ seconds: dur, out: path.join(vdir, "audio", "music_bed.wav") }); return kitMusicDb({ voice: path.join(vdir, "audio", "voice.wav"), bed: path.join(vdir, "audio", "music_bed.wav") }); });
 state.music = music; save();
+// CAPTIONS PER SPEAKER (speakers.mjs): the narrator white, each speaking character their own colour (the script's
+// line.speaker + quotes); the finish burns them in the kit's caption style (finishx.py)
+const cap = captionColors(script, words);
+fs.writeFileSync(path.join(vdir, "audio", "caption_colors.json"), JSON.stringify(cap.colors));
+state.captions = { legend: cap.legend, exact: cap.exact }; save();
+say(`captions: narrator white${Object.keys(cap.legend).length ? `, ${Object.entries(cap.legend).map(([k, v]) => `${k} ${v}`).join(", ")}` : ""}${cap.exact ? "" : " (the words do not match the lines: all white)"}`);
 say(`music: engine bed A x1.25, kit --music-db ${music.musicDb} (voice ${music.voiceLufs} LUFS, bed ${music.bedLufs} LUFS)`);
 const finalUrl = await uploadVideo("final");
 state.chunks ??= {};
@@ -360,6 +393,7 @@ const sheet = path.join(OUT, "contact.jpg");
 spawnSync("python", [path.join(HERE, "contact.py"), path.join(OUT, "final.mp4"), sheet], { encoding: "utf8" });
 const SCAN = "import sys,json,subprocess\nfrom PIL import Image, ImageStat\nimport io\nsrc=sys.argv[1]\nraw=subprocess.run(['ffmpeg','-v','error','-i',src,'-vf','fps=4,scale=108:192,format=gray','-f','rawvideo','-'],capture_output=True).stdout\nn=108*192\nout=[]\nfor k in range(len(raw)//n):\n im=Image.frombytes('L',(108,192),raw[k*n:(k+1)*n])\n st=ImageStat.Stat(im)\n m,s=st.mean[0],st.stddev[0]\n if m<12 or s<4:\n  out.append({'t':round(k/4,2),'mean':round(m,1),'std':round(s,1)})\nprint(json.dumps({'samples':len(raw)//n,'bad':out}))";
 const scan = JSON.parse(py(SCAN, path.join(OUT, "final_nocaptions.mp4")));
+{ const ok = plan.shots.filter(darkOk).map((s) => [t0Of(s), t1Of(s)]); const allowed = scan.bad.filter((b) => ok.some(([a, z]) => b.t >= a - 0.1 && b.t <= z + 0.1)); scan.allowedDark = allowed.map((b) => b.t); scan.bad = scan.bad.filter((b) => !allowed.includes(b)); }
 say(`frame scan (4 per second, no captions): ${scan.bad.length} black / flat of ${scan.samples}${scan.bad.length ? `: ${scan.bad.map((b) => b.t).join(", ")} s` : ""}`);
 const passed = new Set(plan.shots.map((s) => s.id).filter((id) => !failing[id]));
 const saved = [];

@@ -46,7 +46,7 @@ RUN useradd --create-home --uid 1001 --shell /usr/sbin/nologin render
 # the kit (read-only for the render user) + our music bed + our glue
 COPY kit /app/kit
 COPY music /app/music
-COPY handler.py boot.py gpucheck.py netblock.py shotcheck.py /app/
+COPY handler.py boot.py gpucheck.py netblock.py shotcheck.py finishx.py /app/
 RUN chmod -R a+rX,go-w /app && /opt/blender/blender -b --factory-startup --version | head -1
 
 WORKDIR /app

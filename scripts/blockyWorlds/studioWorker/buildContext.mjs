@@ -34,6 +34,10 @@ export function contextFiles() {
   for (const f of ["client.mjs", "simpleRole.mjs", "stillsRole.mjs", "stillRendererRunpod.mjs", "endpoint.json"]) add(path.join(ENGINE, "runpod", f));
   add(path.join(ENGINE, "dev/simple/bundle.mjs"));
   for (const f of walk(path.join(ROOT, "scripts/blockyWorlds/studio"))) add(f);
+  // the Blender kit engine option (worker.mjs imports blenderKit/workerSteps.mjs; it runs blenderKit/pipeline.mjs): our
+  // glue code, endpoint.json and the library entries (not the thumbnails). The kit itself is not in the repo: the option
+  // also needs BLOCKY_WORLDS_KIT_DIR in the image (off by default; README.md)
+  for (const f of walk(path.join(ROOT, "scripts/blockyWorlds/blenderKit")).filter((f) => /\.(mjs|js|py|json)$/.test(f) && !f.includes(`${path.sep}thumbs${path.sep}`))) add(f);
   for (const f of walk(HERE).filter((f) => /\.(mjs|js)$/.test(f) && !f.includes(`${path.sep}dev${path.sep}`))) add(f);
   for (const f of fs.readdirSync(path.join(ROOT, "supabase/functions/_shared/blockyWorlds")).filter((f) => f.endsWith(".js"))) add(path.join(ROOT, "supabase/functions/_shared/blockyWorlds", f));
   add(path.join(ROOT, "supabase/functions/_shared/contentMachine/adminGuard.js"));

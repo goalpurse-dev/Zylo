@@ -21,6 +21,8 @@ import urllib.request
 
 import runpod
 
+import finishx  # OUR step after the kit's finish (-14 LUFS, captions per speaker)
+
 KIT = "/app/kit"
 APP = "/app"
 BLENDER = "/opt/blender/blender"
@@ -164,7 +166,7 @@ def run_sandboxed(cmd, cwd, timeout, extra_env=None, sandboxed=True):
 
 
 VIDEO_FILES = {"shots.py": 2_000_000, "script.txt": 100_000, "audio/words.json": 2_000_000, "audio/voice.wav": 60_000_000,
-               "audio/cues.json": 2_000_000, "audio/sentences.json": 2_000_000, "audio/music_bed.wav": 60_000_000}
+               "audio/cues.json": 2_000_000, "audio/sentences.json": 2_000_000, "audio/music_bed.wav": 60_000_000, "audio/caption_colors.json": 1_000_000}
 
 
 def fetch_video(url, dest_dir):
@@ -461,7 +463,8 @@ def role_finish(inp, job_id):
             for x in dirs + files:
                 os.chown(os.path.join(root, x), uid, gid)
         unpack_s = round(time.time() - t0, 1)
-        args = ["python3", os.path.join(ws, "tools", "finish.py"), slug]
+        # the kit's finish WITHOUT its captions: ours follow (finishx.py: -14 LUFS + the kit's caption style per speaker)
+        args = ["python3", os.path.join(ws, "tools", "finish.py"), slug, "--no-captions"]
         bed = os.path.join(vdir, "audio", "music_bed.wav")
         if inp.get("music", True) and os.path.exists(bed) and inp.get("musicDb") is not None:
             # OUR track (music.mjs: the engine's bed A at the voice's pace, as our #2 video) at the level that puts it 14 LU
@@ -474,6 +477,9 @@ def role_finish(inp, job_id):
         rc, out, secs, _ = run_sandboxed(args, ws, 1800)
         if rc != 0:
             raise RuntimeError(f"finish.py rc {rc}: " + out[-1500:])
+        tp = time.time()
+        post = finishx.post_finish(vdir, json.load(open(os.path.join(KIT, "config.json"))).get("caption_font", "Archivo Black"))
+        post["seconds"] = round(time.time() - tp, 1)
         odir = os.path.join(vdir, "out")
         ups = {}
         for name in ("final.mp4", "final_nocaptions.mp4", "final_phone.mp4"):
@@ -481,7 +487,7 @@ def role_finish(inp, job_id):
                 ups[name] = put_parts(os.path.join(odir, name), inp["uploads"][name], "video/mp4")
         dur = sh(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", os.path.join(odir, "final.mp4")])[1]
         return {"ok": True, "role": "finish", "frames": n, "unpackS": unpack_s, "finishS": secs, "duration": dur, "uploads": ups, "cues": cues,
-                "finishLog": out.splitlines()[-8:], "sandbox": STATE["sandbox"]["name"]}
+                "finishLog": out.splitlines()[-8:], "post": post, "sandbox": STATE["sandbox"]["name"]}
     finally:
         shutil.rmtree(ws, ignore_errors=True)
 

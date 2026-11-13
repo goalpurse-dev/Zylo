@@ -86,3 +86,18 @@ fixed every crash (14 vision issues left); round 2 skipped by the cap.
   share + edge density, calibrated on the first test: 8 of 12 slab flags, 3 face close-ups) that the checker is asked to
   confirm (never blocking on its own); the approved library builds that match the story go into the plan brief.
 - LIBRARY: approved plane-ext, cabin-scene, belt, kite, hand-bell, oven, hat-on, rope; rejected seat-cake, sky-wind.
+
+## Director upgrade (2026-11-14, free; what goes on screen, learned from a 6M-view reference, never its look)
+- Prompt: the kit's look kept; every line shown LITERALLY; ~50 cuts a minute; ONE striking hero outfit + distinct colours per
+  character (a style_sheet in the plan); ANCHORS (recurring places) set up early and back in the ending; reaction close-ups
+  on the big beats (the twist: the hero's face); an intentional black screen (<= 2 s) only when the line says black / dark /
+  lights out; the final image shows the consequence of the last line.
+- Plan check (`planProblems`): 3+ locations, >= 42 cuts a minute, exactly one hero, distinct colours, an anchor set up early
+  and back in the last 15% of the shots; one re-plan, then a stop before any GPU money.
+- Checker: per line, the key noun / action must be on screen in one of its shots (fix_shot gets the fix); the final shot
+  must show the consequence; the black-screen shots are let through (also in the pixel and the final frame checks).
+- CAPTIONS PER SPEAKER (`speakers.mjs` + `finishx.py`): script.json `line.speaker = "Name"` colours the words inside double
+  quotes in that line (no quotes: the whole line); `script.speakers = { Name: "#RRGGBB" }` optional; the narrator white.
+  The kit's finish runs with --no-captions; finishx.py burns the kit's caption style with the colours, after normalising the
+  mix to -14 LUFS (two-pass loudnorm) and remakes the phone copy. Checked on the plane run (12 s): -16.4 -> -14.1 LUFS.
+  Needs an image rebuild before the next run.

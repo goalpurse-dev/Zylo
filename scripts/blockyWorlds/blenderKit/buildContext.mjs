@@ -44,7 +44,7 @@ const m = spawnSync(process.execPath, [path.join(repo, "scripts/blockyWorlds/eng
 if (m.status !== 0) throw new Error(`music.mjs failed: ${m.stderr.slice(-400)}`);
 fs.renameSync(path.join(out, "music", "music_funny.wav"), path.join(out, "music", "zyvo_music.wav"));
 
-for (const f of ["Dockerfile", "handler.py", "boot.py", "gpucheck.py", "netblock.py", "shotcheck.py"]) fs.copyFileSync(path.join(here, f), path.join(out, f));
+for (const f of ["Dockerfile", "handler.py", "boot.py", "gpucheck.py", "netblock.py", "shotcheck.py", "finishx.py"]) fs.copyFileSync(path.join(here, f), path.join(out, f));
 fs.writeFileSync(path.join(out, "fly.toml"), 'app = "zyvo-cutaway-render-staging"\nprimary_region = "fra"\n\n[build]\n  dockerfile = "Dockerfile"\n');
 fs.writeFileSync(path.join(out, ".dockerignore"), "fly.toml\n");
 
