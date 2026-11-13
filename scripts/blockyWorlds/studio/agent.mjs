@@ -40,6 +40,39 @@ const TOOLS = [
   { name: "finish", description: "Done writing: the engine renders a contact sheet of the cuts and a checker reviews every tile. Refused while a free check fails.", input_schema: { type: "object", properties: { notes: { type: "string" } }, required: ["notes"] } },
 ];
 
+/** a streamed Messages reply (server-sent events) rebuilt into the message object a non-streaming call returns:
+ *  { model, content: [blocks], stop_reason, usage }; thinking blocks keep their signature (passed back unchanged) */
+async function readStream(res) {
+  const msg = { model: null, content: [], stop_reason: null, usage: {} };
+  const dec = new TextDecoder(); let buf = "", json = {};
+  const handle = (ev) => {
+    if (ev.type === "message_start") { msg.model = ev.message.model; msg.usage = { ...ev.message.usage }; msg.id = ev.message.id; }
+    else if (ev.type === "content_block_start") { msg.content[ev.index] = { ...ev.content_block }; if (ev.content_block.type === "tool_use") { json[ev.index] = ""; msg.content[ev.index].input = {}; } }
+    else if (ev.type === "content_block_delta") {
+      const b = msg.content[ev.index], d = ev.delta;
+      if (d.type === "text_delta") b.text = (b.text ?? "") + d.text;
+      else if (d.type === "thinking_delta") b.thinking = (b.thinking ?? "") + d.thinking;
+      else if (d.type === "signature_delta") b.signature = (b.signature ?? "") + d.signature;
+      else if (d.type === "input_json_delta") json[ev.index] += d.partial_json;
+    } else if (ev.type === "content_block_stop") { if (json[ev.index] != null) { try { msg.content[ev.index].input = json[ev.index] ? JSON.parse(json[ev.index]) : {}; } catch { msg.content[ev.index].input = {}; msg.content[ev.index].truncated = true; } } }
+    else if (ev.type === "message_delta") { if (ev.delta?.stop_reason) msg.stop_reason = ev.delta.stop_reason; if (ev.usage) Object.assign(msg.usage, ev.usage); }
+    else if (ev.type === "error") throw Object.assign(new Error(`stream error: ${JSON.stringify(ev.error).slice(0, 300)}`), { usage: msg.usage });
+  };
+  try {
+    for await (const chunk of res.body) {
+      buf += dec.decode(chunk, { stream: true });
+      let k;
+      while ((k = buf.indexOf("\n\n")) >= 0) {
+        const block = buf.slice(0, k); buf = buf.slice(k + 2);
+        const data = block.split("\n").filter((l) => l.startsWith("data:")).map((l) => l.slice(5).trim()).join("");
+        if (data) handle(JSON.parse(data));
+      }
+    }
+  } catch (e) { throw Object.assign(e, { usage: e.usage ?? msg.usage }); } // a broken stream still books what it used
+  msg.content = msg.content.filter(Boolean);
+  return msg;
+}
+
 /** what the cuts' CODE draws (people + pose / face / hold, the engine monster, pets), set on each shot -> check results */
 export function derive(plan, tl0) {
   for (const s of plan.shots) s.codeAnimals = (s.pets ?? []).map((id) => ({ species: tl0.pets?.[id]?.species ?? "dog", pet: id }));
@@ -104,10 +137,14 @@ export async function directVideo({ tl0, script, out, L, apiKey, model = MODELS.
     const body = { model: m, max_tokens: maxTokens, ...(system ? { system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }] } : {}), messages, ...(tools ? { tools } : {}), thinking: { type: "adaptive" }, output_config: { effort: eff, ...(schema ? { format: { type: "json_schema", schema } } : {}) }, ...(kind === "agent" ? { cache_control: { type: "ephemeral" } } : {}), ...(FALLBACK.has(m) ? { fallbacks: "default" } : {}) };
     const a = Date.now();
     let res, j;
-    for (let tries = 0; tries < 2; tries++) { // one resend only for an overload / network error (unbilled)
-      try { res = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json", ...(FALLBACK.has(m) ? { "anthropic-beta": "server-side-fallback-2026-07-01" } : {}) }, body: JSON.stringify(body), signal: AbortSignal.timeout(15 * 60_000) }); j = await res.json(); }
-      catch (e) { j = { error: { message: String(e.message) } }; res = { ok: false, status: 0 }; }
-      if (res.ok || ![0, 429, 500, 502, 503, 529].includes(res.status)) break;
+    // STREAMED (2026-11-13: a non-streaming Opus call over 5 min died on Node's 300 s header timeout, and the automatic
+    // resend repeated it): the reply arrives as server-sent events and is rebuilt into the same message object. A resend
+    // happens only for a refusal to start (429 / 5xx / 529: nothing generated, nothing billed), never after a network
+    // failure mid-answer (that one may be billed: the run stops instead).
+    for (let tries = 0; tries < 2; tries++) {
+      try { res = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json", ...(FALLBACK.has(m) ? { "anthropic-beta": "server-side-fallback-2026-07-01" } : {}) }, body: JSON.stringify({ ...body, stream: true }), signal: AbortSignal.timeout(20 * 60_000) }); j = res.ok ? await readStream(res) : await res.json(); }
+      catch (e) { j = { error: { message: String(e.message) }, usage: e.usage ?? null, model: m }; res = { ok: false, status: 0 }; }
+      if (res.ok || ![429, 500, 502, 503, 529].includes(res.status)) break;
       await new Promise((r) => setTimeout(r, 6000));
     }
     const usd = costOf(j?.model ?? m, j?.usage ?? {});

@@ -44,6 +44,7 @@ else {
 }
 
 // 2. the final timeline + every check (invalid code or a line without a cut never renders; the rest is logged)
+if (!plan?.bible?.homes || !plan.shots?.length) { say("STOPPED: the director wrote no bible / no cuts (nothing to render)"); process.exit(1); }
 const shotRes = derive(plan, tl0);
 const badCode = Object.entries(shotRes).filter(([, r]) => !r.ok && !r.motionOnly);
 const pushed = Object.entries(shotRes).filter(([, r]) => r.motionOnly).map(([id]) => id);
