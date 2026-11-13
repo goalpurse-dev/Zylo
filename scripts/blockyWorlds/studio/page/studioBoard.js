@@ -14,8 +14,10 @@ import { houseInfo, roomPoint, placePoint, streetPoint } from "/studio/world.js"
 
 const ST = window.__STUDIO ?? { shots: {}, assets: {}, homes: {} };
 // THE NIGHT GRADE (owner 2026-11-13: "night looks like night"), outdoors only; the board's own night is skyTop #071440,
-// skyHor #22408a, moon 0.7, hemisphere 0.8, lamps 22. Calibrated on RunPod on test A2's night cuts (studio README).
-const NIGHT = Object.freeze({ skyTop: "#01030c", skyHor: "#0b1530", moon: 0.3, hemi: 0.4, skyFill: 0.15, lamp: 34, lampColor: "#ffb866", lampReach: 20, windows: 1.8, lampHead: 3, key: 1.2 });
+// skyHor #22408a, moon 0.7, hemisphere 0.8, lamps 22, and the night floor's key / rim / creature fill reached the house
+// walls. Calibrated on RunPod 2026-11-13 on test A2's night cuts (4 sheets, $0.0085): frame luminance 45-82 (the black
+// check is 28), faces and the creature's eyes still lit, the walls behind them dark, the lamps warm.
+const NIGHT = Object.freeze({ skyTop: "#000209", skyHor: "#060c20", moon: 0.1, hemi: 0.15, skyFill: 0.05, lamp: 10, lampColor: "#ffb866", lampReach: 20, windows: 1.8, lampHead: 3, key: 1.2, keyReach: 1.0, rimBack: 1.2, rimReach: 6, rim: 0.5, faceReach: 9 });
 const dec = (b64) => new TextDecoder().decode(Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)));
 const FN = new Map();
 function compiled(kind, key) {
@@ -192,7 +194,7 @@ function studioFrame(S, ctx, base) {
     const Lt = SD.lights, dir = look.clone().sub(pos).normalize();
     const ls = shot.studioLight ?? ST.lightScale ?? 0.12; // the floor's strength: 0.12 calibrated on RunPod 2026-11-13 (0.25 washes out, 1 blows out)
     if (night && ls > 0) {
-      Lt.key.position.copy(pos).add(new THREE.Vector3(0, 1.2, 0)); Lt.key.intensity = ls * (26 + 2.5 * dl);
+      Lt.key.position.copy(pos).add(new THREE.Vector3(0, 1.2, 0)); Lt.key.intensity = ls * (26 + 2.5 * dl); Lt.key.distance = 70; Lt.rim.distance = 60; Lt.face.distance = 40;
       Lt.rim.position.copy(look).addScaledVector(dir, 4).add(new THREE.Vector3(0, 4, 0)); Lt.rim.intensity = ls * 45;
       Lt.sky.intensity = Math.min(0.55, ls * 2.5);
       if (creatures.length) { const cb = new THREE.Box3().setFromObject(creatures[0]), top = cb.getCenter(new THREE.Vector3()); top.y = cb.min.y + 0.8 * (cb.max.y - cb.min.y); Lt.face.position.copy(top).addScaledVector(dir, -4); Lt.face.intensity = ls * (60 + 4 * top.distanceTo(pos)); }
@@ -212,8 +214,10 @@ function studioFrame(S, ctx, base) {
       const seen = new Set();
       for (const H of Object.values(S.houses ?? {})) for (const w of H.wins ?? []) if (w.glowM && !seen.has(w.glowM)) { seen.add(w.glowM); w.glowM.emissiveIntensity *= NG.windows; w.lamp.emissiveIntensity *= NG.windows; }
       for (const h of S.lampHeads ?? []) if (h.emissiveIntensity > 0) h.emissiveIntensity = NG.lampHead; // a lamp still off (lights_on) stays off
-      // the faces stay lit: the key light a little stronger than the plain night floor
-      Lt.key.intensity *= NG.key;
+      // the faces stay lit, the walls behind them stay dark: the key reaches just past the subject, the rim sits close
+      // behind the subject (it lit the house walls behind)
+      Lt.key.intensity *= NG.key; Lt.key.distance = dl * NG.keyReach + 2;
+      Lt.rim.position.copy(look).addScaledVector(dir, NG.rimBack).add(new THREE.Vector3(0, 3, 0)); Lt.rim.distance = NG.rimReach; Lt.rim.intensity *= NG.rim; Lt.face.distance = NG.faceReach;
     }
     S.camFill?.position.copy(pos).add(new THREE.Vector3(0, 0.4, 0));
     S.weather?.update(shot.board?.weather ?? null, t, camera, night);

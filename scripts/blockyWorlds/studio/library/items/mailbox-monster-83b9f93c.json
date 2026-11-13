@@ -32,5 +32,6 @@
  },
  "createdAt": "2026-11-13T17:35:11.927Z",
  "updatedAt": "2026-11-13T17:35:11.928Z",
- "reviewedAt": null
+ "reviewedAt": null,
+ "previewKind": "showcase"
 }

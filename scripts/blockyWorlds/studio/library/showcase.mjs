@@ -11,7 +11,7 @@ import { renderSheets } from "../render.mjs";
 import { assetInfo } from "../shotCheck.mjs";
 import { LIB, listAssets, writeReview } from "./library.mjs";
 
-const ANGLES = [{ ang: 0.45, light: "day" }, { ang: -0.6, light: "day" }, { ang: 0.1, light: "night" }];
+const ANGLES = [{ ang: 0.45, light: "day" }, { ang: 1.05, light: "day" }, { ang: 0.1, light: "night" }];
 
 /** one cut's code: the build at the origin of the street, the camera orbiting slowly round its centre */
 function showCode(codeName, info, ang) {
@@ -36,7 +36,7 @@ export async function renderShowcase({ ids, template, L, scratch }) {
     assets[name] = a.code; if (a.creature) creatures.push(name);
     for (const [j, v] of ANGLES.entries()) {
       const id = `x${k}_${j}`;
-      shots.push({ ...JSON.parse(JSON.stringify(base)), start: t, end: t + 1, studio: id, light: v.light, camera: "medium", actors: [], objects: [], board: { ...JSON.parse(JSON.stringify(base.board)), people: [], monster: null, acts: [] }, text: a.name });
+      shots.push({ ...JSON.parse(JSON.stringify(base)), start: t, end: t + 1, studio: id, light: v.light, camera: "medium", actors: [], objects: [], focus: "group", subject: null, board: { ...JSON.parse(JSON.stringify(base.board)), people: [], monster: null, acts: [] }, text: a.name });
       code[id] = showCode(name, info, v.ang);
       t += 1;
     }
