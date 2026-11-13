@@ -19,7 +19,6 @@ import { PACE } from "./config.js";
 import { sfxTags } from "./sfxTags.js";
 import { SOUND_ALLOWED } from "./soundLibrary.js";
 import { ruleLineIndex } from "./opener.js";
-import { namesIn } from "./antiCopy.js";
 
 export const FORMULA_PREFIX = "Formula:";
 export const FORMULA = Object.freeze({
@@ -66,7 +65,7 @@ export function biggestNumber(t) {
   return best;
 }
 
-const PLACE = /\b(kitchen|bedroom|bathroom|attic|cellar|basement|garage|garden|yard|backyard|porch|roof|hallway|hall|stairs|classroom|school|playground|gym|library|shop|store|market|bakery|cafe|diner|bus stop|bus|station|train|park|pond|lake|river|bridge|hill|field|farm|barn|woods|forest|street|road|alley|square|church|clinic|office|factory|pool|beach|window|living room|dining room|fence|corner)\b/gi;
+const PLACE = /\b(galley|cockpit|aisle|cabin|lavatory|wing|kitchen|bedroom|bathroom|attic|cellar|basement|garage|garden|yard|backyard|porch|roof|hallway|hall|stairs|classroom|school|playground|gym|library|shop|store|market|bakery|cafe|diner|bus stop|bus|station|train|park|pond|lake|river|bridge|hill|field|farm|barn|woods|forest|street|road|alley|square|church|clinic|office|factory|pool|beach|window|living room|dining room|fence|corner)\b/gi;
 const FIRST_PERSON = /\b(I|I'm|I've|I'd|I'll|my|me|we|we're|our|us)\b/;
 
 const secs = (w) => w / FORMULA.wordsPerSec;
@@ -152,7 +151,7 @@ export function formulaProblems(script, lengthSec = 90) {
   out.push(...endingProblems(script));
   out.push(...buttonProblems(script));
   // 6b. at most 3 named characters (plus the narrator)
-  const names = new Set(namesIn(lines.map((l) => l.text).join("\n"), { anyPosition: true }).map((x) => x.toLowerCase()).filter((x) => !SOUND_ALLOWED.includes(x)));
+  const names = namedCharacters(lines.map((l) => l.text).join("\n"));
   if (names.size > 4) bad(`too many named characters (${names.size}: ${[...names].slice(0, 6).join(", ")}); keep at most 3 named characters plus "me", and let the same people do the examples, the failed fixes and the ally's line.`);
   // 7. a sound should fit the thing that makes it ("blew her whistle. Beep!" is a whistle with a beep)
   out.push(...soundObjectProblems(script));
@@ -244,7 +243,7 @@ export function formulaLines(note) {
 /** Words that make an ending soft, sentimental or abstract (the last three lines are read for them). */
 export const SOFT_ENDING = /\b(peace|peaceful|peacefully|together|togetherness|love|loved|loving|family|families|friendship|friends forever|forever|learn|learned|learning|lesson|lessons|realiz\w*|grateful|thankful|gratitude|hug|hugs|hugged|warm|warmth|smiled|smiling|happily|happiness|hope|hoped|hopeful|dream|dreams|heart|hearts|cherish\w*|special|believe|believed|belief|brave|bravery|courage|kindness|joy|joyful|belong\w*|meaning|meaningful|truth|sunshine|safe and sound|all along|at last|finally home|better place|never alone)\b/i;
 /** A flip: the last two lines turn the win around or restart the chaos (an exclamation, a sound word, "again", "uh oh", a question...). */
-const TWIST_MARK = /(!|\?|\b(again|uh oh|oops|but|until|except|still|wait|turns out|twice|restart|once more|back|too|now it|now we|now everyone)\b)/i;
+const TWIST_MARK = /(!|\?|\b(again|uh oh|oops|but|until|except|still|wait|turns out|twice|restart|once more|back|too|then|now it|now we|now everyone)\b)/i;
 
 /**
  * The ending notes. SOFT (HARD in the hybrid writer, hybrid.js): the last three lines hold a soft / sentimental / abstract
@@ -259,5 +258,27 @@ export function endingProblems(script) {
   if (soft.length) out.push(`${FORMULA_PREFIX} the ending is soft or abstract ("${soft[0].t.match(SOFT_ENDING)[0]}"): after the big win, the last 1 or 2 lines must be a HOLY TWIST that flips it or restarts the chaos with something we can SEE, never a feeling, a lesson or a moral. ${lineTag(soft.map((x) => x.i))}`);
   const last2 = lines.slice(-2);
   if (!last2.some((l) => TWIST_MARK.test(l.text) || sfxTags(l.text).length)) out.push(`${FORMULA_PREFIX} no holy twist at the end: the last 1 or 2 lines should flip the win or restart the chaos (a callback to the hook or an example). ${lineTag([n - 2, n - 1])}`);
+  return out;
+}
+
+const TITLE_NAME = /\b(?:Mr|Mrs|Ms|Miss|Dr|Captain|Coach|Grandpa|Grandma|Aunt|Uncle|Teacher|Mayor|Officer|Chief|Principal|Pilot|Nurse|Baker)\.?\s+([A-Z][a-z]+)/g;
+/**
+ * The named characters of a text (lowercase first names / surnames): a name after a title ("Mrs. Pell", "Captain Dorn"), or a
+ * capitalised word in the MIDDLE of a sentence ("Then there's me, Turbulence"). A capital at the start of a sentence is not a
+ * name ("Cake hit the ceiling.") and neither is a sound word.
+ */
+export function namedCharacters(text) {
+  const out = new Set();
+  const t = String(text ?? "");
+  for (const m of t.matchAll(TITLE_NAME)) out.add(m[1].toLowerCase());
+  for (const sentence of t.split(/(?<=[.!?])\s+|\n+/)) {
+    // skip the first word and anything after a title word already counted
+    const words = sentence.replace(/"/g, " ").split(/\s+/).slice(1);
+    for (const w of words) {
+      const c = w.replace(/[^A-Za-z]/g, "");
+      if (/^[A-Z][a-z]{2,}$/.test(c) && !/^(Mr|Mrs|Ms|Miss|Dr|Captain|Coach|Grandpa|Grandma|Aunt|Uncle|Teacher|Mayor|Officer|Chief|Principal|Pilot|Nurse|Baker|I|The|And|But|Then|Now|Old)$/.test(c)) out.add(c.toLowerCase());
+    }
+  }
+  for (const x of [...out]) if (SOUND_ALLOWED.includes(x)) out.delete(x);
   return out;
 }
