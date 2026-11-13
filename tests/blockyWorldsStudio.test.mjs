@@ -464,6 +464,12 @@ test("config: missing secrets are named (never a value), the Cutaway endpoint is
   fs.writeFileSync(bad, JSON.stringify({ endpointId: "other123" }));
   assert.throws(() => checkEndpoint(bad), /not the Blocky endpoint/);
   assert.throws(() => loadConfig({ ...env, SUPABASE_URL: "https://evil.example.com" }), /not a Supabase project URL/);
+  // BLOCKY_WORLDS_STUDIO_ENDPOINT wins (a separate production endpoint), as in studio/render.mjs; never Cutaway's, never malformed
+  assert.equal(loadConfig({ ...env, BLOCKY_WORLDS_STUDIO_ENDPOINT: "prodblocky12345" }).endpoint, "prodblocky12345");
+  assert.equal(checkEndpoint(bad, { BLOCKY_WORLDS_STUDIO_ENDPOINT: "prodblocky12345" }), "prodblocky12345", "the setting wins over endpoint.json");
+  assert.throws(() => loadConfig({ ...env, BLOCKY_WORLDS_STUDIO_ENDPOINT: "f66astc0vrus92" }), /Cutaway/);
+  assert.throws(() => loadConfig({ ...env, BLOCKY_WORLDS_STUDIO_ENDPOINT: "bad id!" }), /not a RunPod endpoint id/);
+  assert.equal(describeConfig({ BLOCKY_WORLDS_STUDIO_ENDPOINT: "prodblocky12345" }).BLOCKY_WORLDS_STUDIO_ENDPOINT, "set");
 });
 
 // ---------------------------------------------------------------- the build context

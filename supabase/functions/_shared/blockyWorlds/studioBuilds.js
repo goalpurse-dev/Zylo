@@ -116,6 +116,25 @@ const kindFor = (e) => {
 };
 const clean = (s, n) => String(s ?? "").replace(/[<>\u0000-\u001F]/g, " ").replace(/\s+/g, " ").trim().slice(0, n);
 
+// a build is a THING: never a verb or a sound ("her cake exploded" put "explode" on the plane story's list, test6)
+export const NOT_A_BUILD = Object.freeze([
+  "explode", "crash", "boom", "bang", "clang", "splash", "smash", "pop", "crack", "thud", "whoosh", "zap", "fly", "fall",
+  "glow", "burn", "break", "shout", "scream", "yell", "land", "landing", "crash-land", "flicker", "blaze", "shudder",
+  "purr", "flinch", "tip", "glide", "rise", "sink", "melt", "freeze", "vanish", "disappear", "shake", "spin", "roll",
+  "whistle", "hum", "whisper", "turbulence", "recess", "dark", "darkness", "light", "noise", "sound", "loud", "soft",
+]);
+const NOT_A_BUILD_SET = new Set(NOT_A_BUILD);
+// a word is used as a thing when, in one of its lines, a determiner, a possessive or a number comes right before it
+// (up to two words between: "the tail bus", "Mrs. Talbot's badge", "two more rows"); a verb never has one ("cake exploded")
+const DET = String.raw`(?:a|an|the|my|his|her|its|our|their|your|this|that|these|those|every|each|some|any|no|one|two|three|four|five|six|seven|eight|nine|ten|hundred|many|more|[0-9]+|[a-z]+'s)`;
+export function usedAsThing(word, lines = []) {
+  const w = String(word ?? "").toLowerCase();
+  if (!w || NOT_A_BUILD_SET.has(w)) return false;
+  const stem = esc(w.replace(/e$/, ""));
+  const re = new RegExp(String.raw`\b${DET}\s+(?:[a-z'-]+\s+){0,2}${stem}(?:e|es|s|'s)?\b`, "i");
+  return lines.some((l) => re.test(String(l).replace(/[’]/g, "'").replace(/\./g, "")));
+}
+
 /**
  * THE STUDIO BUILDS LIST (the format the worker hands to the director, stored on the run as studio_builds):
  *   [{ name: "plane", kind: "creature" | "prop" | "set" | "vehicle", lines: [0-based line indexes],
@@ -127,7 +146,7 @@ export function studioBuilds(script, card = null, { max = 20 } = {}) {
   const lines = (script?.lines ?? []).map((l) => String(l?.text ?? l ?? ""));
   if (!lines.length) return [];
   const kc = kitCheck({ lines: script.lines }, { card, boardOnly: true });
-  const items = [...kc.missing, ...kc.warnings].filter((e) => e?.word && !BRAND_RE.test(e.word) && !PERSON_WORD.test(String(e.word).toLowerCase()) && !ABSTRACT_RE.test(e.word));
+  const items = [...kc.missing, ...kc.warnings].filter((e) => e?.word && !BRAND_RE.test(e.word) && !PERSON_WORD.test(String(e.word).toLowerCase()) && !ABSTRACT_RE.test(e.word) && usedAsThing(e.word, (e.lines ?? []).map((i) => lines[i])));
   const seen = new Map();
   for (const e of items) {
     const name = clean(e.word, 40).toLowerCase();

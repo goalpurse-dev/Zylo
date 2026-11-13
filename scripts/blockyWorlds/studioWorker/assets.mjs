@@ -1,29 +1,28 @@
-// Blocky Worlds STUDIO WORKER: the Studio builds of a run (studioBuilds.js) -> the Studio asset library -> the director's
-// brief note. The asset library is built by the Studio session in scripts/blockyWorlds/studio/; it will export ONE lookup
-// function. Until its name is known this adapter is a stub: no asset is found, so the director builds every thing itself
-// (exactly what it does today). To wire it: set LIBRARY below to { module, fn } (the module path relative to this file and
-// the export's name); the call is lookup(name, kind) -> { id, ... } | null, and a failing lookup is never a failed run.
-import { pathToFileURL } from "node:url";
+// Blocky Worlds STUDIO WORKER: the Studio builds of a run (studioBuilds.js) + the Studio asset library -> the director.
+// The library is the Studio session's (scripts/blockyWorlds/studio/library/library.mjs): lookup(name, kind) returns an
+// APPROVED entry { id, name, kind, size: { w, h, d }, code, creature, about, score, ... } or null. Each build goes to
+// directVideo({ builds }) with its entry when found; the director's brief then lists the builds as delimited DATA plus each
+// approved build's CODE (agent.mjs libraryBrief). A failing lookup is never a failed run: that thing is built from scratch.
 import path from "node:path";
-import { fileURLToPath } from "node:url";
-import { studioBuilds, studioBuildsNote } from "../../../supabase/functions/_shared/blockyWorlds/studioBuilds.js";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { studioBuilds } from "../../../supabase/functions/_shared/blockyWorlds/studioBuilds.js";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-/** the Studio asset library's lookup: null = the stub (no library yet) */
-export const LIBRARY = null; // e.g. { module: "../studio/assets.mjs", fn: "findAsset" }
+/** the Studio asset library's lookup (module relative to this file, export name) */
+export const LIBRARY = Object.freeze({ module: "../studio/library/library.mjs", fn: "lookup" });
 
-let lookupFn;
+let cached = { library: null, fn: undefined };
 async function lookup(library = LIBRARY) {
-  if (lookupFn !== undefined && library === LIBRARY) return lookupFn;
+  if (cached.library === library && cached.fn !== undefined) return cached.fn;
   let fn = null;
   if (library?.module && library?.fn) {
     try { fn = (await import(pathToFileURL(path.resolve(HERE, library.module)).href))[library.fn] ?? null; } catch { fn = null; }
   }
-  if (library === LIBRARY) lookupFn = fn;
+  cached = { library, fn };
   return fn;
 }
 
-/** { [build name]: asset } for the builds the library already has (never throws) */
+/** { [build name]: approved library entry } for the builds the library already has (never throws) */
 export async function findAssets(builds = [], { library = LIBRARY, find = null } = {}) {
   const fn = find ?? (await lookup(library));
   if (typeof fn !== "function") return {};
@@ -34,9 +33,13 @@ export async function findAssets(builds = [], { library = LIBRARY, find = null }
   return out;
 }
 
-/** the run's builds (stored at start; a run without them gets them computed from its own lines) and the director's note */
+/**
+ * The run's builds for the director: the list stored at start (a run without one gets it from its own lines), each with
+ * its approved library entry when the library has one: [{ name, kind, lines, description, entry? }]
+ */
 export async function buildsForRun(run, script, opts = {}) {
-  const builds = Array.isArray(run?.studio_builds) ? run.studio_builds : studioBuilds(script, run?.card ?? null);
-  const assets = await findAssets(builds, opts);
-  return { builds, assets, note: studioBuildsNote(builds, assets) };
+  const list = Array.isArray(run?.studio_builds) ? run.studio_builds : studioBuilds(script, run?.card ?? null);
+  const assets = await findAssets(list, opts);
+  const builds = list.map((b) => (assets[b.name] ? { ...b, entry: assets[b.name] } : { ...b }));
+  return { builds, assets };
 }

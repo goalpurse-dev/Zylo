@@ -55,9 +55,11 @@ With `BLOCKY_WORLDS_ENGINE=studio` "not in the kit" never blocks a story: not in
 approval, the customer's edits, Fix it, or quote / start. The kit is a PREFERENCE in the writers' prompts (`board:
 "prefer"`); board mode (`BLOCKY_WORLDS_LAUNCH`, the pipeline) is unchanged.
 - **Builds instead of refusals**: every thing the kit lacks goes on the run's `studio_builds` (written at start, in the
-  same update as the idea card, before a worker can claim the run), which the worker hands to the director as a note
-  after its brief (names + line numbers only; the sentences stay in the brief's data block), with a ready Studio-library
-  asset when the lookup finds one (`studioWorker/assets.mjs`: a stub until the Studio session exports its lookup).
+  same update as the idea card, before a worker can claim the run). The worker looks each one up in the Studio asset
+  library (`studio/library/library.mjs` `lookup(name, kind)`: owner-approved entries only; `studioWorker/assets.mjs`) and
+  hands the list to `directVideo({ builds })`, each with its approved entry when found; the director's brief lists them
+  as delimited data (`<story_builds>`) plus each approved build's code. Only things go on the list: verbs, sounds and
+  abstract words never (`usedAsThing`: a determiner, possessive or number before the word, plus a stop list).
   Format: `[{ name: "plane", kind: "creature" | "prop" | "set" | "vehicle", lines: [0-based], description: "the lines
   that name it, at most 240 characters" }]`.
 - **What still blocks** (the customer sees Fix it): a real brand or logo (`BRANDS`), a famous character / story / game
@@ -161,7 +163,8 @@ fly logs -a zyvo-blocky-studio                                      # "worker fl
 fly ssh console -a zyvo-blocky-studio -C "node scripts/blockyWorlds/studioWorker/worker.mjs --check"
 ```
 Worker secrets (names only): `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ANTHROPIC_API_KEY`, `ELEVENLABS_API_KEY`,
-`RUNPOD_API_KEY`. Optional: `BLOCKY_WORLDS_WORKER_VERSION` (shown in the worker table). `--check` prints which are set,
+`RUNPOD_API_KEY`. Optional: `BLOCKY_WORLDS_STUDIO_ENDPOINT` (the RunPod endpoint; default gm9eqdkuyc2ofs, see step 6),
+`BLOCKY_WORLDS_WORKER_VERSION` (shown in the worker table). `--check` prints which are set,
 never a value. Rebuild the context for every worker deploy (it copies the Studio code as it is at that moment).
 A worker redeploy fails + refunds a run in progress (SIGTERM): deploy only when step 0's query is empty.
 
@@ -189,8 +192,10 @@ Download each one afterwards and diff it against the branch (the deploy-only-com
 - One Studio video uses 1 preview job at a time, then 3 final jobs at once: with 6 workers, 2 Studio machines fit.
   Raise workersMax before adding a third worker machine.
 - **A separate production endpoint is advised before "everyone"**: today owner tests and customers share gm9eqdkuyc2ofs,
-  so a test burst slows customers and a test image change reaches them. It needs one change inside `studio/render.mjs`
-  (its `ENDPOINT` constant from an env value), which belongs to the Studio session.
+  so a test burst slows customers and a test image change reaches them. It is now a setting: create the endpoint from
+  the same template / image, then `fly secrets set -a zyvo-blocky-studio BLOCKY_WORLDS_STUDIO_ENDPOINT=<its id>` (the
+  setting wins over `engine/runpod/endpoint.json` in the worker's config and in `studio/render.mjs`; the Cutaway endpoint
+  and a malformed id are refused; unset = gm9eqdkuyc2ofs, which `endpoint.json` must then name).
 - **Low-balance alert**: ops-health's RunPod check now reads `BLOCKY_WORLDS_RUNPOD_API_KEY` or the Cutaway key (one
   account), and turns RED (instant alert + the daily email) once `BLOCKY_WORLDS_ACCESS` is allowlist or everyone, when the
   balance runs out within 3 days **or drops under $10**. Owner-only mode: shown, never red. Keep RunPod auto-pay on.
@@ -231,7 +236,6 @@ Download each one afterwards and diff it against the branch (the deploy-only-com
 - **Prices** (if applied): re-run `supabase/migrations/20261205100000_blocky_worlds_lengths.sql` (the old rows) and revert the patch.
 
 ## Needed inside scripts/blockyWorlds/studio/ (the Studio session's files; not changed here)
-- `render.mjs`: `ENDPOINT` from an env value, for a separate production endpoint.
 - `shotCheck.mjs`: the vm pre-check runs the director's (validated) code in the worker's process, which holds the service
   key; running it in a child process with an empty environment would make that boundary hard.
 - `render.mjs` / `client.mjs`: previews and frame packs go through the `generated` bucket's `blocky-worlds-test/` folder

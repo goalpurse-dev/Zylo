@@ -11,7 +11,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 /** the secrets the worker cannot run without (by name; the owner sets them with `fly secrets set`) */
 export const SECRET_NAMES = Object.freeze(["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "ANTHROPIC_API_KEY", "ELEVENLABS_API_KEY", "RUNPOD_API_KEY"]);
 /** optional settings (not secret) */
-export const OPTION_NAMES = Object.freeze(["BLOCKY_WORLDS_WORK_DIR", "BLOCKY_WORLDS_WORKER_VERSION", "BLOCKY_WORLDS_POLL_SEC", "BLOCKY_WORLDS_KEEP_WORK"]);
+export const OPTION_NAMES = Object.freeze(["BLOCKY_WORLDS_STUDIO_ENDPOINT", "BLOCKY_WORLDS_WORK_DIR", "BLOCKY_WORLDS_WORKER_VERSION", "BLOCKY_WORLDS_POLL_SEC", "BLOCKY_WORLDS_KEEP_WORK"]);
 
 const has = (env, k) => String(env[k] ?? "").trim().length > 0;
 
@@ -20,8 +20,18 @@ export function describeConfig(env = process.env) {
   return Object.fromEntries([...SECRET_NAMES, ...OPTION_NAMES].map((k) => [k, has(env, k) ? "set" : SECRET_NAMES.includes(k) ? "MISSING" : "default"]));
 }
 
-/** the endpoint the Studio render code will use (engine/runpod/endpoint.json): ONLY the Blocky endpoint, never Cutaway's */
-export function checkEndpoint(file = path.resolve(HERE, "../engine/runpod/endpoint.json")) {
+/**
+ * The RunPod endpoint the Studio render code will use, by the same rule as studio/render.mjs studioEndpoint: the setting
+ * BLOCKY_WORLDS_STUDIO_ENDPOINT wins (e.g. a separate production endpoint); never the Cutaway endpoint, never a malformed
+ * id. Without the setting, engine/runpod/endpoint.json must be the Blocky endpoint (the image the bundle is made for).
+ */
+export function checkEndpoint(file = path.resolve(HERE, "../engine/runpod/endpoint.json"), env = process.env) {
+  const set = String(env.BLOCKY_WORLDS_STUDIO_ENDPOINT ?? "").trim();
+  if (set) {
+    if (STUDIO.forbiddenEndpoints.includes(set)) throw Object.assign(new Error(`BLOCKY_WORLDS_STUDIO_ENDPOINT is ${set}, the Cutaway endpoint: refusing`), { code: "CONFIG" });
+    if (!/^[a-z0-9]{8,40}$/.test(set)) throw Object.assign(new Error(`BLOCKY_WORLDS_STUDIO_ENDPOINT "${set.slice(0, 40)}" is not a RunPod endpoint id: refusing`), { code: "CONFIG" });
+    return set;
+  }
   const id = JSON.parse(fs.readFileSync(file, "utf8")).endpointId;
   if (STUDIO.forbiddenEndpoints.includes(id)) throw Object.assign(new Error(`endpoint.json points at ${id}, the Cutaway endpoint: refusing`), { code: "CONFIG" });
   if (id !== STUDIO.endpoint) throw Object.assign(new Error(`endpoint.json points at ${id}, not the Blocky endpoint ${STUDIO.endpoint}: refusing`), { code: "CONFIG" });
@@ -35,7 +45,7 @@ export function loadConfig(env = process.env, { endpointFile } = {}) {
   if (!/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/i.test(String(env.SUPABASE_URL).trim()) && !/^http:\/\/(localhost|127\.0\.0\.1)/.test(String(env.SUPABASE_URL))) {
     throw Object.assign(new Error("SUPABASE_URL is not a Supabase project URL"), { code: "CONFIG" });
   }
-  const endpoint = checkEndpoint(endpointFile);
+  const endpoint = checkEndpoint(endpointFile, env);
   const machine = String(env.FLY_MACHINE_ID ?? "").trim();
   return Object.freeze({
     supabaseUrl: String(env.SUPABASE_URL).trim().replace(/\/$/, ""),

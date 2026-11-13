@@ -131,10 +131,11 @@ export async function runStudioRun(run, deps, cfg = STUDIO) {
     stopNow();
     await gate("before the director");
     await toStage("directing");
-    // the things the kit lacks (the run's Studio builds) + any ready asset from the Studio library -> the director's note
-    const builds = await (deps.buildsForRun ?? buildsForRun)(run, script).catch((e) => { log(`builds skipped: ${e?.message ?? e}`); return { builds: [], assets: {}, note: "" }; });
+    // the things the kit lacks (the run's Studio builds), each with its approved Studio-library entry when there is one:
+    // the director's brief lists them as delimited data + each approved build's code (agent.mjs libraryBrief)
+    const builds = await (deps.buildsForRun ?? buildsForRun)(run, script).catch((e) => { log(`builds skipped: ${e?.message ?? e}`); return { builds: [], assets: {} }; });
     if (builds.builds.length) log(`builds: ${builds.builds.map((b) => `${b.name} (${b.kind})`).join(", ")}; library hits: ${Object.keys(builds.assets).length}`);
-    const directed = await timed("direct", () => steps.direct({ tl0: base.tl0, script, dir, L, briefNote: builds.note || null, builds: builds.builds, assets: builds.assets, log: (m) => { if (/stopping/.test(String(m))) st.lastStop = String(m); log(m); } }));
+    const directed = await timed("direct", () => steps.direct({ tl0: base.tl0, script, dir, L, builds: builds.builds, log: (m) => { if (/stopping/.test(String(m))) st.lastStop = String(m); log(m); } }));
     await book();
     stopNow(); // the director stops quietly when a check refused its next call: the reason is here
     if (!directed?.plan?.shots?.length || !directed?.plan?.bible?.homes) {

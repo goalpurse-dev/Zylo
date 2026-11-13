@@ -7,7 +7,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import {
   abstractOnly, BUILD_KINDS, isStudioBlock, KIT_PREFER, kitHard, kitPrefer, kitPreferBlock, PREFER_TOPIC_LINE, STUDIO_BLOCK_PREFIX,
-  studioBlockLines, studioBlockProblems, studioBuilds, studioBuildsNote, studioIdeaOk,
+  studioBlockLines, studioBlockProblems, studioBuilds, studioBuildsNote, studioIdeaOk, usedAsThing,
 } from "../supabase/functions/_shared/blockyWorlds/studioBuilds.js";
 import { draftCheck, fixPart, hybridDraftCheck, scriptProtocolCheck } from "../supabase/functions/_shared/blockyWorlds/llm.js";
 import { BOARD_PREFIX, fittingWithSwap, kitFit, PREMISE_PREFIX } from "../supabase/functions/_shared/blockyWorlds/boardFit.js";
@@ -151,8 +151,14 @@ test("the director's note: names + lines only (the customer's sentences stay in 
   assert.doesNotMatch(evil, /<\/story_script>/);
   assert.match(evil, /\(prop; line 1\)/);
   // the asset library lookup: a stub until the Studio session exports one
-  assert.equal(LIBRARY, null);
-  assert.deepEqual(await findAssets(builds), {});
+  // the Studio asset library (studio/library/library.mjs lookup: APPROVED entries only); nothing approved matches these
+  assert.deepEqual(LIBRARY, { module: "../studio/library/library.mjs", fn: "lookup" });
+  assert.deepEqual(await findAssets([{ name: "zzqx-not-a-thing", kind: "prop" }]), {});
+  assert.equal(typeof (await import("../scripts/blockyWorlds/studio/library/library.mjs")).lookup, "function");
+  // an approved entry rides on its build (the director gets its code)
+  const withEntry = await buildsForRun({ studio_builds: builds }, PLANE, { find: async (name) => (name === "plane" ? { id: "plane-1", code: "api.box()", approved: true } : null) });
+  assert.deepEqual(withEntry.builds.find((b) => b.name === "plane").entry, { id: "plane-1", code: "api.box()", approved: true });
+  assert.equal(withEntry.builds.find((b) => b.name === "castle").entry, undefined);
   assert.deepEqual(Object.keys(await findAssets(builds, { find: async (name, kind) => (name === "castle" && kind === "set" ? { id: "c1" } : null) })), ["castle"]);
   assert.deepEqual(await findAssets(builds, { find: async () => { throw new Error("library down"); } }), {}, "a lookup error is never a failed run");
   // the run's stored list wins; a run without one gets it from its own lines
@@ -170,7 +176,50 @@ test("api + migration + worker: Studio passes \"prefer\" to every writer and che
   assert.match(api, /studio_builds: studioBuilds\(\{ lines: d\.lines \?\? \[\] \}, d\.card \?\? null\)/);
   assert.match(read("supabase/migrations/20261213100000_blocky_worlds_studio.sql"), /ADD COLUMN IF NOT EXISTS studio_builds jsonb/);
   const runner = read("scripts/blockyWorlds/studioWorker/runner.mjs"), steps = read("scripts/blockyWorlds/studioWorker/steps.mjs");
-  assert.match(runner, /briefNote: builds\.note \|\| null/);
-  assert.match(steps, /\.\.\.\(briefNote \? \{ briefNote \} : \{\}\)/);
+  assert.match(runner, /steps\.direct\(\{ tl0: base\.tl0, script, dir, L, builds: builds\.builds,/);
+  assert.match(steps, /\.\.\.\(builds\?\.length \? \{ builds \} : \{\}\)/, "the builds go to directVideo({ builds })");
+  assert.doesNotMatch(runner + steps, /briefNote/);
   assert.ok(STUDIO_BLOCK_PREFIX.length > 0);
+});
+
+// the owner's plane run (Studio test6, 2026-11-13): "Her cake exploded" put the verb "explode" on the builds list
+const TEST6 = [
+  ["rule", "In this town, we live in a plane, and nobody says landing."],
+  ["tour", "And I just whistled inside a falling plane's cockpit!"],
+  ["tour", "You see, the plane flies on our hum, and glowing propeller badges show it."],
+  ["tour", "Say landing and the engine dies, and the Cloud Crow takes anyone unseated."],
+  ["tour", "Mrs. Talbot's badge blazes gold in the galley, and her cake rises sideways."],
+  ["tour", "Coach Pemberly's badge flickers on the wing. He calls gym recess with turbulence."],
+  ["tour", "Mr. Oslo's badge is dim orange. He's waited forty years at the tail bus stop."],
+  ["me", "But I had one dented whistle and three hundred seats to wake."],
+  ["me", "Then there's me, seat 30B. My badge is grey."],
+  ["me", "Grandpa gave me his dented tin whistle."],
+  ["me", "\"The engine's name is Hush. She only hears soft.\""],
+  ["until", "Mr. Oslo got sick of waiting and yelled landing."],
+  ["until", "Badges died row by row. The plane tipped down."],
+  ["until", "Mrs. Talbot hummed as loud as she could."],
+  ["until", "Boom! Her cake exploded. Two more rows went dark."],
+  ["until", "Coach Pemberly blew his giant whistle. Ten kids shouted."],
+  ["until", "Crash! The engine shuddered. Ten more rows went dark."],
+  ["until", "Mr. Oslo rang a hundred bells."],
+  ["until", "Clang! A hundred badges died. Tap, tap, went the Crow."],
+  ["climax", "Then I noticed something."],
+  ["climax", "Every loud sound made the engine flinch."],
+  ["climax", "I remembered, \"She only hears soft.\""],
+  ["climax", "I walked to the engine and whistled, tiny, then whispered Hush."],
+  ["climax", "The engine purred. Badges glowed. The Crow fled."],
+  ["climax", "We glided down and landed together, arms linked, home."],
+  ["closer", "Now we don't say landing. We say we're home."],
+  ["closer", "Mr. Oslo finally caught his plane."],
+].map(([part, text]) => ({ part, text }));
+
+test("builds are THINGS only (the plane run test6): no verb like 'explode', no sound or abstract word; the plane, its engine and the badges stay", () => {
+  const names = studioBuilds({ lines: TEST6 }).map((b) => b.name);
+  for (const junk of ["explode", "exploded", "crash", "boom", "clang", "landing", "turbulence", "sound", "hum"]) assert.ok(!names.includes(junk), `${junk} is not a thing to build`);
+  for (const thing of ["plane", "engine", "badge"]) assert.ok(names.includes(thing), thing);
+  assert.equal(usedAsThing("explode", ["Boom! Her cake exploded."]), false);
+  assert.equal(usedAsThing("crash", ["Crash! The engine shuddered."]), false);
+  assert.equal(usedAsThing("plane", ["we live in a plane"]), true);
+  assert.equal(usedAsThing("badge", ["Mrs. Talbot's badge blazes gold"]), true);
+  assert.equal(usedAsThing("bus", ["at the tail bus stop"]), true);
 });
