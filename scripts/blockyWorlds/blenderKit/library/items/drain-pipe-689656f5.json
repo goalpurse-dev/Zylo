@@ -1,0 +1,19 @@
+{
+ "id": "drain-pipe-689656f5",
+ "name": "drain_pipe",
+ "kind": "set",
+ "about": "dark drain pipe, optionally bricked",
+ "code": "def drain_pipe(bricked=False):\n    world((0.35, 0.37, 0.45), 0.8)\n    plane('dp_ground', 60, 60, (0, 10, 0), mat('dp_gr', hexc('#6a6a70'), 0.8))\n    box('dp_wall', (30, 1.5, 12), (0, 12, 6), mat('dp_wallm', hexc('#8a8d94'), 0.7), 0.1)\n    cyl('dp_ring', 2.6, 0.6, (0, 11.2, 2.6), mat('dp_metal', hexc('#6a6a74'), 0.5, metal=0.4), 24, rot=(90, 0, 0))\n    cyl('dp_hole', 2.0, 0.7, (0, 11.1, 2.6), mat('dp_dark', hexc('#050506'), 0.9), 24, rot=(90, 0, 0))\n    light('dp_lamp', 'AREA', (2, -6, 8), 2500, (1.0, 0.9, 0.7), 6, target=(0, 11, 2.6))\n    if bricked:\n        for r in range(5):\n            for c in range(5):\n                box('dp_br%d_%d' % (r, c), (0.9, 0.5, 0.45), (-1.8 + c * 0.9, 10.8, 0.4 + r * 0.45), mat('dp_brick', hexc('#b8502a'), 0.8), 0.04)",
+ "source": {
+  "run": "tower1",
+  "shots": [
+   42,
+   50,
+   51
+  ],
+  "title": "The Lift Day"
+ },
+ "status": "pending",
+ "approved": false,
+ "createdAt": "2026-11-13T23:38:13.961Z"
+}

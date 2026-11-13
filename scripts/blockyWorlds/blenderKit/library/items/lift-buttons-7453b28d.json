@@ -1,0 +1,19 @@
+{
+ "id": "lift-buttons-7453b28d",
+ "name": "lift_buttons",
+ "kind": "prop",
+ "about": "real up button and flat painted down button",
+ "code": "def lift_buttons(z=3.0):\n    box('lb_up', (1.0, 0.3, 1.0), (POST[0] - 1.3, POST[1] - 0.95, z), mat('lb_upm', hexc('#3adf60'), 0.3, emit=hexc('#3adf60'), estr=2.0), 0.05)\n    card('lb_down', 1.0, 1.0, (POST[0] + 1.3, POST[1] - 0.95, z), mat('lb_downm', hexc('#b8b0a0'), 0.5), '-Y')\n    text('lb_down_a', 'v', (POST[0] + 1.3, POST[1] - 0.96, z - 0.3), 1.0, mat('lb_ink', hexc('#8a8272'), 0.5), rot=(90, 0, 0))",
+ "source": {
+  "run": "tower1",
+  "shots": [
+   11,
+   13,
+   31
+  ],
+  "title": "The Lift Day"
+ },
+ "status": "pending",
+ "approved": false,
+ "createdAt": "2026-11-13T23:38:13.780Z"
+}
