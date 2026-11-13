@@ -10,14 +10,14 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { SYSTEM, videoBrief } from "./prompt.mjs";
+import { SYSTEM, videoBrief, creatureLines } from "./prompt.mjs";
 import { validateShotCode } from "./validate.mjs";
 import { checkShots } from "./shotCheck.mjs";
 import { assemble, allChecks, lineWordsOf, CAM_TYPES } from "./assemble.mjs";
 import { makeStudioBundle } from "./bundle.mjs";
 import { renderSheets } from "./render.mjs";
-import { tileProblems } from "./pixel.mjs";
-import { shotMix, creatureProblems } from "./shotMix.mjs";
+import { tileProblems, cutFrameProblems } from "./pixel.mjs";
+import { shotMix, creatureProblems, climaxStart } from "./shotMix.mjs";
 import { checkSheets } from "./checker.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -59,7 +59,7 @@ export function lineNeeds(tl0, script) {
 /** the rule's constraints in the shape lib/storyboard.js checkRule reads (a constraint without "when" crashed it) */
 const cleanRule = (r) => ({ text: String(r?.text ?? ""), constraints: (Array.isArray(r?.constraints) ? r.constraints : []).filter((c) => Array.isArray(c?.when) && c.when.every((x) => typeof x === "string")).map((c) => ({ when: c.when, ...(c.outside ? { outside: c.outside } : {}), ...(c.people ? { people: c.people } : {}), except: Array.isArray(c.except) ? c.except.filter((e) => e?.who) : [], why: String(c.why ?? "") })) });
 
-export async function directVideo({ tl0, script, out, L, apiKey, model = MODELS.sonnet, rounds = 1, minutes = 25, effort = "medium", log = console.log }) {
+export async function directVideo({ tl0, script, out, L, apiKey, model = MODELS.sonnet, rounds = 1, minutes = 25, effort = "medium", reserve = null, log = console.log }) {
   const words = lineWordsOf(tl0), needs = lineNeeds(tl0, script);
   const P = PRICE[model] ?? PRICE["claude-sonnet-5-5"];
   const f = (n) => path.join(out, n);
@@ -72,7 +72,18 @@ export async function directVideo({ tl0, script, out, L, apiKey, model = MODELS.
   const ansDir = f("answers"); fs.mkdirSync(ansDir, { recursive: true });
   const t0 = Date.now(), deadline = t0 + minutes * 60_000;
   let finished = null, calls = fs.readdirSync(ansDir).length, lastIn = 0, checkerCalls = 0; // a resume keeps numbering the saved answers
-  const left = () => `budget left: $${(L.agentCapUsd - L.agentTotal()).toFixed(2)} of $${L.agentCapUsd}; time left: ${Math.max(0, Math.round((deadline - Date.now()) / 60000))} min; fix rounds left: ${Math.max(0, rounds - Math.max(0, st.round))}`;
+  // THE RESERVE (owner 2026-11-13: the in-loop round must always run): what the rest of the pipeline still needs, kept
+  // out of the director's room: the final render (worst case), every preview + checker pass to come, every fix call to
+  // come (the call being made is not counted). Run-cap items: final + previews; model-cap items: checker passes + fixes.
+  const R = { finalUsd: 0.1, previewUsd: 0.035, checkUsd: 0.06, fixUsd: 0.08, ...(reserve ?? {}) };
+  const reserveFor = (kind) => {
+    const passes = rounds - st.round; // round 0 not run yet: rounds + 1 passes to come; after round r: rounds - r
+    const fixes = st.round < 0 ? rounds : Math.max(0, rounds - st.round - 1); // the fix calls after this one
+    if (kind === "agent_check") return { run: R.finalUsd + Math.max(0, passes - 1) * R.previewUsd, model: Math.max(0, passes - 1) * R.checkUsd + fixes * R.fixUsd };
+    return { run: R.finalUsd + passes * (R.previewUsd + R.checkUsd) + fixes * R.fixUsd, model: passes * R.checkUsd + fixes * R.fixUsd };
+  };
+  const writingRoom = () => { const r = reserveFor("agent"); return Math.min(L.capUsd - L.total() - r.run, L.agentCapUsd - L.agentTotal() - r.model); };
+  const left = () => `budget left for your writing: $${Math.max(0, writingRoom()).toFixed(2)} (the checks, the fix round and the render are already reserved); time left: ${Math.max(0, Math.round((deadline - Date.now()) / 60000))} min; fix rounds left: ${Math.max(0, rounds - Math.max(0, st.round))}`;
 
   // one priced model call (the director's, or the checker's with its own model); the answer is saved at once
   async function call({ label, model: m = model, messages, system = null, tools = null, schema = null, maxTokens = MAX_TOKENS, eff = effort, kind = "agent" }) {
@@ -80,9 +91,14 @@ export async function directVideo({ tl0, script, out, L, apiKey, model = MODELS.
     const est = Math.ceil(((system ?? "").length + JSON.stringify(messages).replace(/"data":"[^"]+"/g, '"data":""').length) / 3.2) + JSON.stringify(messages).split('"type":"image"').length * 1700;
     const cached = kind === "agent" ? Math.min(est, lastIn) : 0; // the conversation prefix the last call cached
     const inCost = (cached * PP.cacheRead + (est - cached) * PP.cacheWrite) / 1e6;
-    // the output limit fitted to what is left (a finish / fix call is small): never more than the remaining budget allows
-    const room = Math.min(L.capUsd - L.total(), L.agentCapUsd - L.agentTotal()) - inCost;
-    if (maxTokens * PP.output / 1e6 > room) maxTokens = Math.max(4000, Math.floor((room * 1e6) / PP.output));
+    // the output limit fitted to what is left after the reserve (a finish / fix / check call is small)
+    const rs = reserveFor(kind);
+    const room = Math.min(L.capUsd - L.total() - rs.run, L.agentCapUsd - L.agentTotal() - rs.model) - inCost;
+    const floor = kind === "agent" ? 4000 : 1500;
+    if (maxTokens * PP.output / 1e6 > room) {
+      maxTokens = Math.floor((room * 1e6) / PP.output);
+      if (maxTokens < floor) throw Object.assign(new Error(`${label}: $${room.toFixed(3)} of room after the reserve (the checks, the fix round and the render come first)`), { code: "RESERVE" });
+    }
     const worst = +(maxTokens * PP.output / 1e6 + inCost).toFixed(4);
     L.check(`${label} (${m})`, worst, { agent: true });
     const body = { model: m, max_tokens: maxTokens, ...(system ? { system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }] } : {}), messages, ...(tools ? { tools } : {}), thinking: { type: "adaptive" }, output_config: { effort: eff, ...(schema ? { format: { type: "json_schema", schema } } : {}) }, ...(kind === "agent" ? { cache_control: { type: "ephemeral" } } : {}), ...(FALLBACK.has(m) ? { fallbacks: "default" } : {}) };
@@ -131,7 +147,8 @@ export async function directVideo({ tl0, script, out, L, apiKey, model = MODELS.
     lines.push(`cuts: ${tl.shots.length}, ${ac.cuts.cutsPerMin} a minute, ${ac.cuts.first15} in the first 15 s, first cut ${ac.cuts.firstCut} s (target 50-60 a minute, 14-18 in 15 s); shot mix: ${Math.round(mix.stats.doingShare * 100)}% doing something, ${mix.stats.emptyWides} empty wide(s)`);
     lines.push(gate ? `GATE: ${gate} problem(s) left` : "GATE: clean (all free checks pass)");
     fs.writeFileSync(f("studio-checks.json"), JSON.stringify({ gate, hard, cuts: ac.cuts, mix, checks: c, shots: shotRes, problems }, null, 1));
-    return { text: lines.join("\n"), gate, hard, tl, shotRes, ac, mix, lineFails };
+    const renderable = bad.filter(([, r]) => !r.motionOnly).length === 0 && problems.length === 0; // every line has a cut, every cut valid code
+    return { text: lines.join("\n"), gate, hard, renderable, tl, shotRes, ac, mix, lineFails };
   }
 
   // ---------------------------------------------------------------- a round: preview + pixel + the fixed checker
@@ -150,14 +167,14 @@ export async function directVideo({ tl0, script, out, L, apiKey, model = MODELS.
       r.files.forEach((file, k) => {
         const ids = specs[k].frames.map((fr) => fr.label.split(" ")[0]);
         for (const id of ids) delete st.pixel[id];
-        for (const tile of file.tiles ?? []) { const id = String(tile.label ?? "").split(" ")[0]; const p = tileProblems(tile); if (p.length) st.pixel[id] = p; }
+        for (const tile of file.tiles ?? []) { const id = String(tile.label ?? "").split(" ")[0]; const cut = plan.shots.find((c) => c.id === id); const p = [...tileProblems(tile), ...cutFrameProblems(tile, cut, { climaxFrom: climaxStart(tl0) })]; if (p.length) st.pixel[id] = p; }
         sheets.push({ file: file.file, cuts: ids.map((id) => { const c = plan.shots.find((p) => p.id === id); return { id, line: c?.line, declares: [...(c?.people ?? []).map((p) => p.id), ...(c?.codePeople ?? []), ...(c?.shows ?? []), ...(c?.pets ?? []), c?.creature || c?.codeMonster ? "the creature" : null].filter(Boolean).join(", ") }; }) });
       });
       for (const e of r.pageErrors ?? []) { const id = String(e).split(":")[0]; (st.pixel[id] ??= []).push(`the code threw while rendering: ${String(e).slice(id.length + 2, 200)}`); }
       for (const s of todo) st.previewed[s.studio] = JSON.stringify(plan.shots.find((p) => p.id === s.studio));
       // the fixed checker on the new sheets (lines of the previewed cuts)
       const lineSet = [...new Set(todo.map((s) => s.line))];
-      const v = await checkSheets({ sheets, lines: Object.fromEntries(lineSet.map((n) => [n, { text: tl0.lines[n].text, mustShow: needs.mustShow[n] ?? [] }])), call, label: `checker ${st.round}` });
+      const v = await checkSheets({ sheets, lines: Object.fromEntries(lineSet.map((n) => [n, { text: tl0.lines[n].text, mustShow: needs.mustShow[n] ?? [] }])), call, label: `checker ${st.round}`, creature: tl0.monster ? { name: tl0.monster.name, lines: creatureLines(script, tl0) } : null });
       checkerCalls++;
       for (const [id, c] of Object.entries(v.cuts)) st.vision.cuts[id] = c;
       for (const n of lineSet) if (v.lines[n]) st.vision.lines[n] = v.lines[n];
@@ -217,18 +234,22 @@ export async function directVideo({ tl0, script, out, L, apiKey, model = MODELS.
     }
     if (name === "finish") {
       const ev = evaluate();
-      const outOf = Date.now() > deadline || L.agentCapUsd - L.agentTotal() < 0.25;
+      const outOf = Date.now() > deadline; // money is handled by the reserve (the round and its fix are kept funded)
       if (ev.hard && st.refusals < 3 && !outOf) { st.refusals++; saveSt(); return { text: `finish refused (${st.refusals}/3): the free checks must pass first.\n${ev.text}\n${left()}` }; }
       st.refusals = 0;
-      let r;
-      try { r = await runRound(ev); } catch (e) { if (["CAP", "AGENT_CAP"].includes(e.code)) { finished = { reason: `money: ${e.message}` }; return { text: "finished (money cap)" }; } throw e; }
-      if (!r.fails.length && !ev.gate) { finished = { reason: "clean" }; return { text: "finished: every check passes" }; }
-      if (st.round >= rounds || outOf) { finished = { reason: st.round >= rounds ? "fix-round cap" : "time / money" }; return { text: "finished (the fix-round cap): the best version renders" }; }
-      const content = [{ type: "text", text: `ROUND ${st.round} (fix round ${st.round + 1} of ${rounds} follows): the render is blocked until these pass.\n${r.fails.join("\n") || "- (the checker passed every tile)"}\n${ev.gate ? `\nTHE FREE CHECKS:\n${ev.text}` : ""}\nThe contact sheet(s) of the cuts previewed this round are attached: LOOK at every tile. Fix the failing cuts with write_shots, then finish again. ${left()}` }];
-      for (const file of r.sheets.map((s) => s.file)) content.push({ type: "image", source: { type: "base64", media_type: "image/jpeg", data: fs.readFileSync(file).toString("base64") } });
-      return { content };
+      return roundStep(ev, outOf);
     }
     return { text: `unknown tool ${name}` };
+  }
+  /** a round + what the director gets back (or the end): shared by finish and the orchestrator's own round */
+  async function roundStep(ev, outOf = false) {
+    let r;
+    try { r = await runRound(ev); } catch (e) { if (["CAP", "AGENT_CAP", "RESERVE"].includes(e.code)) { finished = { reason: `money: ${e.message}` }; return { text: "finished (money cap)" }; } throw e; }
+    if (!r.fails.length && !ev.gate) { finished = { reason: "clean" }; return { text: "finished: every check passes" }; }
+    if (st.round >= rounds || outOf) { finished = { reason: st.round >= rounds ? "fix-round cap" : "time / money" }; return { text: "finished (the fix-round cap): the best version renders" }; }
+    const content = [{ type: "text", text: `ROUND ${st.round} (fix round ${st.round + 1} of ${rounds} follows): the render is blocked until these pass.\n${r.fails.join("\n") || "- (the checker passed every tile)"}\n${ev.gate ? `\nTHE FREE CHECKS:\n${ev.text}` : ""}\nThe contact sheet(s) of the cuts previewed this round are attached: LOOK at every tile. Fix the failing cuts with write_shots, then finish again. ${left()}` }];
+    for (const file of r.sheets.map((s) => s.file)) content.push({ type: "image", source: { type: "base64", media_type: "image/jpeg", data: fs.readFileSync(file).toString("base64") } });
+    return { content };
   }
 
   // ---------------------------------------------------------------- the loop (one conversation, like run 1)
@@ -241,7 +262,23 @@ export async function directVideo({ tl0, script, out, L, apiKey, model = MODELS.
   for (let turn = 1; turn <= 40 && !finished; turn++) {
     let j;
     try { j = await call({ label: `director ${turn}`, messages, system: systemText, tools: TOOLS }); }
-    catch (e) { log(`director: ${e.message}: stopping cleanly`); L.log({ step: "director_stop", reason: e.message }); break; }
+    catch (e) {
+      // the writing room is spent: when every cut is written and the free checks pass, the orchestrator runs the round
+      // itself (its reserve is kept for this); the result goes into the conversation for the fix round
+      const last = messages.at(-1);
+      if (e.code === "RESERVE" && last?.role === "user" && plan.bible?.homes && plan.shots.length) {
+        const ev = evaluate();
+        if (ev.renderable) {
+          log(`director: ${e.message}: the orchestrator calls finish${ev.hard ? " (the free-check problems go to the fix round)" : ""}`);
+          const r = await roundStep(ev);
+          if (finished) break;
+          last.content.push(...(r.content ?? [{ type: "text", text: r.text }]));
+          fs.writeFileSync(f("agent-messages.json"), JSON.stringify(messages));
+          continue;
+        }
+      }
+      log(`director: ${e.message}: stopping cleanly`); L.log({ step: "director_stop", reason: e.message }); break;
+    }
     if (L.agentTotal() > L.agentCapUsd) { log("director: over the model cap after the call: stopping"); break; }
     messages.push({ role: "assistant", content: j.content });
     fs.writeFileSync(f("agent-messages.json"), JSON.stringify(messages));

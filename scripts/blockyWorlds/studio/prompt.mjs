@@ -30,11 +30,24 @@ faces, props, block-built things, and a moving camera). You then look at rendere
    something (an act, an action pose, walking / running, the creature moving, the thing flying or falling...). Empty
    wides / establishing cuts (no person, animal or creature in them) at most 1 in 6, and never the same building twice
    in a row.
-10. EVERY NAMED CREATURE OR ANIMAL IS A REAL CHARACTER with a body and a face, never just lights: a kit animal
-   (api.animal, scaled up for a giant one) or the engine monster, or an asset with a body (at least 6 solid parts: torso,
-   head, legs / paws...) AND a face that reads at night (glowing eyes, glow 1.5-3, plus a mouth / grin). Mark it
-   creature: true in define_assets. The engine lights the night for you (a key light from the lens, a rim, a fill on the
-   creature's face).
+10. EVERY NAMED CREATURE OR ANIMAL IS A REAL CHARACTER with a body and a face, never just lights. A named ANIMAL can be
+   a kit animal (api.animal, scaled up for a giant one). The story's named CREATURE / MONSTER is always BUILT for this
+   story as an asset, from the script's own words about it (what it is made of, its shape, its size): a body of at
+   least 6 solid parts AND a face that reads at night (glowing eyes, glow 1.5-3, plus a mouth / grin), recognizably the
+   thing the script describes. Mark it creature: true in define_assets. NEVER the engine's stock monster (api.monster /
+   monster staging) when the script names a creature. The engine lights the night for you (a key light from the lens, a
+   rim, a fill on the creature's face).
+11. NO FOREGROUND SLABS: never a roof, wall, plane or giant prop slicing across the frame or filling it in front of
+   the subject (a camera on or against a roof, a giant bowl right at the lens). Frames like that are flagged and block
+   the render.
+12. PROP SCALE: props (bowls, toast, toasters, mailboxes, cups...) are a believable size next to a person (toast ~0.12 m,
+   a toaster ~0.3 m, a mailbox ~1.2 m): never giant or floating unless the line says so. Built small things drawn over
+   1.5 m are flagged.
+13. NO EMPTY FRAMES: every cut shows a character or the thing its line names; a frame of only walls, roofs or
+   background blocks the render.
+14. THE CLIMAX (from the line that turns the story with "But", else the climax part, to the end) is the payoff: the
+   hero ("me") AND the creature / main thing together in at least 60% of its cuts, close-ups for the reactions, no
+   plain building wides, and the hero never tiny on screen.
 
 # The world (metres; y up; the street runs along x; house fronts face +z)
 - Houses: the bible's homes, left to right: house i front at x = ${W.HX0} + i*${W.HDX}, z = ${W.HZ}; ${W.HW} m wide, 2 floors
@@ -141,6 +154,13 @@ Each line = what we SEE happening, the line's own nouns and verbs on screen:
   fingers at their windows, then the eyelid twitches, it blinks and backs away down the street.
 Notice: a cut for each listed person or thing, the verb happening in frame, reaction faces, and the camera always moving.`;
 
+/** the script lines that name or describe the story's creature (its name's words, or creature words) */
+export function creatureLines(script, tl) {
+  if (!tl.monster) return [];
+  const words = String(tl.monster.name ?? "").toLowerCase().replace(/^the\s+/, "").split(/\s+/).filter((w) => w.length > 2);
+  return script.lines.map((l) => String(l.text)).filter((t) => words.some((w) => t.toLowerCase().includes(w)) || /\b(shape|monster|creature|beast|made of|huge|giant|tall)\b/i.test(t)).slice(0, 8);
+}
+
 /** the per-video brief: the script as delimited DATA + the timings, cast, creature, pets and what each line must show */
 export function videoBrief({ script, tl, mustShow, verbs, subjects, budgetUsd, minutes }) {
   const cast = Object.entries(tl.cast ?? {}).map(([id, c]) => `- ${id}: "${c.name}" (${c.role}${c.look?.outfitVariant ? `, ${c.look.outfitVariant}` : ""}${c.look?.top ? `, top ${c.look.top}` : ""})`).join("\n");
@@ -161,7 +181,8 @@ ${JSON.stringify({ title: script.title, lines: script.lines.map((l) => l.text) }
 
 THE CAST (ids to use in code and records; "me" is the narrator):
 ${cast}
-THE CREATURE: ${tl.monster ? `"${tl.monster.name}" (the engine's monster draws a tall dark ${tl.creature?.variant ?? "shadow"} figure; if the script describes it differently, build it as an asset and set "creature": true)` : "none"}
+THE CREATURE: ${tl.monster ? `"${tl.monster.name}": BUILD it for this story (creature: true), from what the script says about it:
+${creatureLines(script, tl).map((t) => `  - "${t}"`).join("\n") || "  - (the script gives no more detail: make it fit the title and the story)"}` : "none"}
 PETS:
 ${pets}
 ${tl.openingWorld ? `THE OPENING: cut 1 or 2 must show "${tl.openingWorld.name}" (build it, and list "${tl.openingWorld.name}" in that cut's "shows"), with no people cut before it.` : ""}

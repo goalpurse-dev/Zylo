@@ -65,18 +65,25 @@ function stubApi({ t, dur, night, homes, shot, cast, assets, rec }) {
       if (params.at) pt(params.at, `asset(${name}).at`); rec.assets.add(name); rec.ent[`a:${name}#${rec.nAsset = (rec.nAsset ?? 0) + 1}`] = params.at ?? [0, 0, 0];
       if (rec.depth > 0) { rec.errors.add("an asset may not draw another asset"); return; }
       const sub = stubApi({ t, dur, night, homes, shot, cast, assets, rec }); sub.p = params; rec.depth++;
+      rec.box = { min: [Infinity, Infinity, Infinity], max: [-Infinity, -Infinity, -Infinity] }; // the asset's own extent (PROP SCALE)
       try { vm.runInNewContext(`(function (api, Math) { "use strict";\n${assets[name]}\n})(api, Math)`, { api: sub, Math }, { timeout: 200 }); }
       catch (e) { rec.errors.add(`asset ${name} runtime: ${String(e.message ?? e).slice(0, 160)}`); }
-      finally { rec.depth--; }
+      finally {
+        rec.depth--;
+        const b = rec.box; rec.box = null;
+        if (b && Number.isFinite(b.min[0])) { const natural = Math.max(...b.max.map((v, i) => v - b.min[i])); (rec.sizes ??= []).push({ name, natural: +natural.toFixed(2), world: +(natural * Number(params.scale ?? 1)).toFixed(2), y: Number(params.at?.[1] ?? 0) }); }
+      }
     },
-    prop(name, o = {}) { if (!PROPS.has(name)) rec.errors.add(`prop "${name}" is not a kit prop (build it from blocks or an asset)`); if (o.at) pt(o.at, `prop(${name}).at`); rec.props.add(name); },
+    prop(name, o = {}) { if (!PROPS.has(name)) rec.errors.add(`prop "${name}" is not a kit prop (build it from blocks or an asset)`); if (o.at) pt(o.at, `prop(${name}).at`); rec.props.add(name); (rec.propScales ??= []).push({ name, scale: Number(o.scale ?? 1) }); },
     animal(species, o = {}) { rec.ent[`n:${species}#${rec.nAnimal = (rec.nAnimal ?? 0) + 1}`] = o.at ?? [0, 0, 0]; if (o.action && !["idle", "sit", "sleep"].includes(o.action)) rec.active = true; if (!ANIMALS.includes(species)) rec.errors.add(`animal "${species}" is not in the kit`); if (o.action && !ANIMAL_ACTIONS.includes(o.action)) rec.errors.add(`animal action "${o.action}" unknown`); if (o.at) pt(o.at, "animal.at"); rec.animals.add(species); },
-    block(size, at, c, o = {}) { pt(size, "block size"); pt(at, "block at"); rec.prims++; if ((o?.glow ?? 0) >= 1) rec.glow++; },
-    ball(r, at, c, o = {}) { num(r, "ball r"); pt(at, "ball at"); rec.prims++; if ((o?.glow ?? 0) >= 1) rec.glow++; },
-    cyl(a, b, h, at, c, o = {}) { pt(at, "cyl at"); rec.prims++; if ((o?.glow ?? 0) >= 1) rec.glow++; },
+    block(size, at, c, o = {}) { pt(size, "block size"); pt(at, "block at"); rec.prims++; if ((o?.glow ?? 0) >= 1) rec.glow++; grow(at, size.map((v) => Number(v) / 2)); },
+    ball(r, at, c, o = {}) { num(r, "ball r"); pt(at, "ball at"); rec.prims++; if ((o?.glow ?? 0) >= 1) rec.glow++; const s = o?.scale ?? [1, 1, 1]; grow(at, s.map((v) => Number(r) * Number(v))); },
+    cyl(a, b, h, at, c, o = {}) { pt(at, "cyl at"); rec.prims++; if ((o?.glow ?? 0) >= 1) rec.glow++; const r = Math.max(Number(a), Number(b)); grow(at, [r, Number(h) / 2, r]); },
     camera(c = {}) { if (pt(c.pos, "camera.pos") && pt(c.look, "camera.look")) rec.cam = { pos: c.pos.map(Number), look: c.look.map(Number), fov: Number(c.fov ?? 50), roll: Number(c.roll ?? 0) }; },
     shake: () => {},
   };
+  // an asset's extent grows with each primitive it draws (its own space; only while an asset runs)
+  function grow(at, half) { const b = rec.box; if (!b || !Array.isArray(at)) return; for (let i = 0; i < 3; i++) { const c = Number(at[i]), h = Math.abs(Number(half[i]) || 0); if (!Number.isFinite(c)) continue; b.min[i] = Math.min(b.min[i], c - h); b.max[i] = Math.max(b.max[i], c + h); } }
   for (const k of API_NAMES) if (!(k in api)) throw new Error(`stub api misses ${k}`);
   return api;
 }
@@ -120,7 +127,7 @@ export function checkShots({ shots, assets = {}, homes, cast, timing }) {
     const posed = Object.values(Object.assign({}, ...recs.map((r) => r.info))).some((x) => x.pose && !["stand", "sit", "sleep"].includes(x.pose)) || (s.people ?? []).some((p) => p.pose && !["stand", "sit", "sleep"].includes(p.pose));
     const doing = (s.acts ?? []).length > 0 || posed || moved || recs.some((r) => r.active);
     const motionOnly = errors.length > 0 && errors.every((e) => /barely moves|still at frame 0/.test(e)); // a still camera: the adapter's safety push can save it
-    out[s.id] = { ok: errors.length === 0, motionOnly, doing, look: recs[2].cam?.look ?? null, animalsDrawn: recs.some((r) => r.nAnimal), errors: errors.slice(0, 8), motion: +motion.toFixed(3), midMove: step >= MIN_STEP, people: [...new Set(recs.flatMap((r) => [...r.people]))], info: Object.assign({}, ...recs.slice().reverse().map((r) => r.info)), props: [...new Set(recs.flatMap((r) => [...r.props]))], animals: [...new Set(recs.flatMap((r) => [...r.animals]))], assets: [...new Set(recs.flatMap((r) => [...r.assets]))], monster: recs.some((r) => r.monster) };
+    out[s.id] = { ok: errors.length === 0, motionOnly, doing, look: recs[2].cam?.look ?? null, animalsDrawn: recs.some((r) => r.nAnimal), sizes: recs[2].sizes ?? [], propScales: recs[2].propScales ?? [], errors: errors.slice(0, 8), motion: +motion.toFixed(3), midMove: step >= MIN_STEP, people: [...new Set(recs.flatMap((r) => [...r.people]))], info: Object.assign({}, ...recs.slice().reverse().map((r) => r.info)), props: [...new Set(recs.flatMap((r) => [...r.props]))], animals: [...new Set(recs.flatMap((r) => [...r.animals]))], assets: [...new Set(recs.flatMap((r) => [...r.assets]))], monster: recs.some((r) => r.monster) };
   }
   return out;
 }

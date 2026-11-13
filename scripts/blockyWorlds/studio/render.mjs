@@ -56,6 +56,13 @@ export async function renderSheets({ code, sheets, out, L, label = "preview" }) 
   return oneJob({ code, specs, out, prefix: `blocky-worlds-test/studio/${path.basename(path.dirname(out))}-${label}-${Date.now()}`, maxSec, L, label });
 }
 
+/** the final's per-job limit (measured 2026-11-13: ~0.13 s a frame incl. the upload, plus start-up; x1.5 margin) and the
+ *  worst case of K jobs: jobs x maxSec x RATE (a job is cancelled at maxSec) */
+export function finalLimits(tl, jobs, fps = 24) {
+  const packs = Math.ceil(Math.round(tl.duration * fps) / 4), per = Math.ceil(packs / jobs), maxSec = Math.round(100 + per * 4 * 0.2);
+  return { per, maxSec, worstUsd: +(jobs * maxSec * RATE).toFixed(4) };
+}
+
 /** the final: frame packs of 4 (2 x 2 at full size), split over `jobs` parallel jobs; then local split + encode + mux */
 export async function renderFinal({ code, tl, out, mix, jobs = 6, L, fps = 24 }) {
   fs.mkdirSync(out, { recursive: true });
@@ -63,7 +70,7 @@ export async function renderFinal({ code, tl, out, mix, jobs = 6, L, fps = 24 })
   for (let i = 0; i < n; i += 4) packs.push({ label: `p${String(i / 4).padStart(4, "0")}`, sheet: true, frames: [0, 1, 2, 3].map((j) => ({ t: Math.min(tl.duration - 1e-3, (i + j) / fps) })), cols: 2, tw: 1080, th: 1920, labels: false, quality: 0.86 });
   // the per-job limit from the measured final (run 1: ~21 s render + ~28 s upload for ~280 frames, plus start-up): 100 s +
   // 0.3 s a frame; a job is cancelled there, so jobs x maxSec bounds the spend
-  const per = Math.ceil(packs.length / jobs), maxSec = Math.round(100 + per * 4 * 0.3);
+  const { maxSec, per } = finalLimits(tl, jobs, fps);
   L?.check("runpod final", +(jobs * maxSec * RATE).toFixed(4));
   const t0 = Date.now();
   const parts = await Promise.all(Array.from({ length: jobs }, (_, j) => packs.slice(j * per, (j + 1) * per)).filter((x) => x.length).map((specs, j) =>

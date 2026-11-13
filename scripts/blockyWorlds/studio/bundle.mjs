@@ -84,6 +84,7 @@ window.renderSheet = (spec) => {
   const tiles = [];
   const pc = document.createElement("canvas"); pc.width = 72; pc.height = 128;
   const pg = pc.getContext("2d", { willReadFrequently: true });
+  window.__studioFg = !!spec.stats; // the foreground-slab measure on preview / check sheets only (never the final)
   frames.forEach((f, i) => {
     let r = window.renderAt(f.t);
     for (let k = 0; k < 6 && !(r.mean >= 3); k++) r = window.renderAt(f.t); // the blank-frame guard (render.mjs: a black first frame after a light change is re-rendered)
@@ -102,6 +103,7 @@ window.renderSheet = (spec) => {
     }
     if (lab) { g.fillStyle = "#111"; g.fillRect(x, y + th, tw, lab); g.fillStyle = "#fff"; g.font = "bold 15px sans-serif"; g.fillText(String(f.label ?? "").slice(0, 28), x + 4, y + th + 14); g.font = "12px sans-serif"; g.fillText(String(f.sub ?? "").slice(0, 34), x + 4, y + th + 29); }
   });
+  window.__studioFg = false;
   const e = (window.__studioErrsList?.() ?? []).slice(0, 30);
   // lut carries the page's own report back (the role copies that field): the shot-code errors + each tile's stats
   return { data: c.toDataURL("image/jpeg", spec.quality ?? 0.88), mean: +(mean / Math.max(1, frames.length)).toFixed(1), ms: Math.round(performance.now() - t0), lut: JSON.stringify({ errors: e, tiles }) };

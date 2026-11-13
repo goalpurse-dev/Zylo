@@ -173,15 +173,16 @@ function studioFrame(S, ctx, base) {
     // (2026-11-13: the round-2 creature frame cap is gone: it moved the director's camera. The creature's share is only
     // measured, for the stats)
     const cShare = creatures.length ? Math.max(...creatures.map((c) => screenShare(c, camera))) : 0;
-    // NO BLOCKED LENS: a built thing (block, prop, a non-creature asset) with the lens inside it, or nearer than the
-    // subject and covering over half the frame, is left out of this frame
+    // NO BLOCKED LENS (owner 2026-11-13: a foreground slab = a blocked lens): a built thing (block, prop, a non-creature
+    // asset) with the lens inside it, or nearer than the subject and covering over ~35% of the frame, is left out of
+    // this frame
     const dl = pos.distanceTo(look), fwd = camera.getWorldDirection(new THREE.Vector3()), bx = new THREE.Box3(), c = new THREE.Vector3();
     for (const o of SD.live) {
       if (!o.visible || o.userData.held || o.userData.creature || o.isLight || o.parent?.userData?.creature) continue;
       bx.setFromObject(o); if (bx.isEmpty()) continue;
       if (bx.clone().expandByScalar(0.25).containsPoint(pos)) { o.visible = false; continue; }
       bx.getCenter(c);
-      if (c.distanceTo(pos) < dl - 0.8 && c.clone().sub(pos).dot(fwd) > 0 && boxShare(bx, camera) > 0.5) o.visible = false;
+      if (c.distanceTo(pos) < dl - 0.8 && c.clone().sub(pos).dot(fwd) > 0 && boxShare(bx, camera) > 0.35) o.visible = false;
     }
     // THE NIGHT FLOOR: key from the lens side, rim behind the subject, a warm fill on the creature's face, a sky fill
     const Lt = SD.lights, dir = look.clone().sub(pos).normalize();
@@ -198,7 +199,31 @@ function studioFrame(S, ctx, base) {
     // the frame's geometry stats for the checks: each visible cast member's on-screen height share, the creature's share
     const ppl = {};
     for (const [id, P] of Object.entries(people)) if (P.obj.visible) { const h = heightShare(P.obj, camera); if (h > 0) ppl[id] = +h.toFixed(3); }
-    SD.stats = { people: ppl, creature: +cShare.toFixed(3), camera: shot.camera };
+    // THE FOREGROUND SLAB measure (preview frames only: window.__studioFg, set by the bundle's sheet renderer): a grid of
+    // rays from the lens; the share that first hits set or built geometry well in front of the subject (nearer than 60%
+    // of the subject distance), not the ground (a near-horizontal surface), not a person and not the creature
+    let fg = null;
+    if (window.__studioFg) {
+      const rc = new THREE.Raycaster(), nx = 8, ny = 14, N = nx * ny, view = camera.getWorldDirection(new THREE.Vector3());
+      const shown = (o) => { for (let p = o; p; p = p.parent) { if (!p.visible) return false; if (p.userData?.creature) return false; } return true; };
+      const per = new Map(); let near = 0;
+      for (let i = 0; i < nx; i++) for (let j = 0; j < ny; j++) {
+        rc.setFromCamera(new THREE.Vector2(-1 + (2 * i + 1) / nx, -1 + (2 * j + 1) / ny), camera); rc.far = 80;
+        const h = rc.intersectObject(S.root, true).find((x) => x.object.isMesh && shown(x.object));
+        if (!h || !h.face) continue;
+        const n = h.face.normal.clone().transformDirection(h.object.matrixWorld);
+        if (Math.abs(n.y) > 0.9) continue; // the ground / a floor / a table top
+        if (h.distance < Math.min(3, 0.8 * dl)) near++; // right in front of the lens
+        let top = h.object; while (top.parent && top.parent !== S.root && top.parent !== SD.root) top = top.parent; // the whole thing: a house, a built asset
+        if (Math.abs(n.dot(view)) < 0.6) per.set(top, (per.get(top) ?? 0) + 1); // a surface seen at a slant
+      }
+      const slab = per.size ? Math.max(...per.values()) / N : 0;
+      fg = +Math.max(slab, near / N).toFixed(3); SD.fgx = { slab: +slab.toFixed(3), near: +(near / N).toFixed(3), dl: +dl.toFixed(2) };
+    }
+    // the largest built thing / prop / animal in view (the EMPTY-frame check: nobody and nothing named on screen)
+    let things = 0;
+    for (const o of SD.root.children) if (o.visible && !o.isLight && !o.userData?.creature) { const sh = screenShare(o, camera); if (sh > things) things = sh; }
+    SD.stats = { people: ppl, creature: +cShare.toFixed(3), things: +things.toFixed(3), camera: shot.camera, ...(fg != null ? { fg, ...SD.fgx } : {}) };
     return { focus: pos.distanceTo(look) };
   }
   SD.stats = { people: {}, creature: 0, camera: shot.camera, noCamera: true };

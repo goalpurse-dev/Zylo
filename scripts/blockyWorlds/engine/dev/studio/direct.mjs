@@ -13,7 +13,7 @@ import { directVideo, derive, MODELS } from "../../../studio/agent.mjs";
 import { assemble, allChecks } from "../../../studio/assemble.mjs";
 import { shotMix } from "../../../studio/shotMix.mjs";
 import { makeStudioBundle } from "../../../studio/bundle.mjs";
-import { renderFinal } from "../../../studio/render.mjs";
+import { renderFinal, finalLimits, sheetMaxSec, RATE } from "../../../studio/render.mjs";
 import { contactSheet, finalFrameCheck } from "../../../studio/finalize.mjs";
 import { envKey, paceStats } from "../../voice/eleven.mjs";
 
@@ -33,7 +33,11 @@ let plan, dirReport = null;
 const doneFile = path.join(out, "directed.json");
 if (fs.existsSync(doneFile)) { plan = JSON.parse(fs.readFileSync(path.join(out, "studio.json"), "utf8")); dirReport = JSON.parse(fs.readFileSync(path.join(out, "director-report.json"), "utf8")); say("directing: reused"); }
 else {
-  const r = await L.step("director", () => directVideo({ tl0, script, out, L, apiKey, model, rounds, minutes: Number(arg("minutes", 25)), effort: arg("effort", "medium"), log: say }));
+  // the reserve kept out of the director's writing: the final render (worst case), each preview + checker pass, each fix
+  const jobs = Number(arg("jobs", 2)), nCuts = Math.round((tl0.duration / 60) * 58);
+  const reserve = { finalUsd: finalLimits(tl0, jobs).worstUsd, previewUsd: +(sheetMaxSec(nCuts) * RATE).toFixed(4), checkUsd: 0.06, fixUsd: /opus/.test(model) ? 0.16 : 0.08 };
+  say(`reserve: ${JSON.stringify(reserve)}`);
+  const r = await L.step("director", () => directVideo({ tl0, script, out, L, apiKey, model, rounds, minutes: Number(arg("minutes", 25)), effort: arg("effort", "medium"), reserve, log: say }));
   plan = r.plan; dirReport = r.report;
   fs.writeFileSync(doneFile, JSON.stringify({ model, rounds, best: r.report.best, finished: r.report.finished, sec: r.report.sec }, null, 1));
   say(`directing: ${r.report.calls} model calls in ${r.report.sec} s (${r.report.finished?.reason ?? "stopped"}); best = round ${r.report.best?.round ?? "-"}: failing lines [${(r.report.best?.failingLines ?? []).join(",")}], ${r.report.best?.blocked ?? "?"} blocked frame(s), gate ${r.report.best?.gate ?? "?"}; model $${L.agentTotal()}`);
@@ -58,7 +62,7 @@ const finalDir = path.join(out, "final");
 let fin = fs.existsSync(path.join(finalDir, "final.mp4")) ? { ok: true, final: path.join(finalDir, "final.mp4"), reused: true } : null;
 if (!fin) {
   const code = await makeStudioBundle({ timeline: tl, shots: Object.fromEntries(plan.shots.map((s) => [s.id, s.code])), assets: plan.assets, homes: plan.bible.homes, creatures: plan.creatures ?? [], captions: true });
-  fin = await L.step("final_render", () => renderFinal({ code, tl, out: finalDir, mix: path.join(out, "mix.m4a"), jobs: Number(arg("jobs", 4)), L }));
+  fin = await L.step("final_render", () => renderFinal({ code, tl, out: finalDir, mix: path.join(out, "mix.m4a"), jobs: Number(arg("jobs", 2)), L }));
   say(`final: ${fin.ok ? `${fin.final} (${fin.frames} frames, ${fin.jobs} jobs, wall ${fin.wallSec} s, $${fin.billed?.toFixed(4)})` : `FAILED ${fin.error}`}${fin.pageErrors?.length ? `; page errors ${fin.pageErrors.slice(0, 8).join(" | ")}` : ""}`);
   if (!fin.ok) process.exit(1);
 }

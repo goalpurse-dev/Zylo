@@ -9,6 +9,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { ledger } from "../../../studio/ledger.mjs";
 import { checkSheets, CHECKER_MODEL } from "../../../studio/checker.mjs";
 import { lineNeeds } from "../../../studio/agent.mjs";
+import { creatureLines } from "../../../studio/prompt.mjs";
 import { envKey } from "../../voice/eleven.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -49,7 +50,7 @@ const call = async ({ label, model, messages, schema, maxTokens, eff, kind }) =>
   return j;
 };
 const lines = Object.fromEntries(tl.lines.map((l, n) => [n, { text: l.text, mustShow: needs.mustShow[n] ?? [] }]));
-const v = await checkSheets({ sheets, lines, call, label: "final checker" });
+const v = await checkSheets({ sheets, lines, call, label: "final checker", creature: tl0.monster ? { name: tl0.monster.name, lines: creatureLines(script, tl0) } : null });
 const failingLines = Object.entries(v.lines).filter(([, l]) => !l.ok).map(([n, l]) => ({ line: Number(n), missing: l.missing }));
 const badCuts = Object.entries(v.cuts).filter(([, c]) => !c.ok).map(([id, c]) => ({ id, problem: c.problem }));
 fs.writeFileSync(path.join(out, "final-check.json"), JSON.stringify({ failingLines, badCuts, lines: v.lines, cuts: v.cuts }, null, 1));
