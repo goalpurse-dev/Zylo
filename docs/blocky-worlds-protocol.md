@@ -191,3 +191,10 @@ The plan for production:
 | R9 | **The climax is a reaction chain ending on a punchline.** The planted prop is used (with an effect: sound rings), then one shot per giant reaction, then the physical resolution (bite the chain, SNAP), then an affection beat, then a gag between the two creatures. | | Prompt + `lib/caps.js` (sound rings, snap, nuzzle, headbutt) |
 | R10 | **Dense worlds.** The creature walks through forest, grass, rocks and dust, and the town on it is many houses with named places. Ours was a bare pale plain with a small cluster. | | Prompt (ask for the landscape and named places). Engine work: dense landscape dressing (open) |
 | R11 | **Close, low cameras on giants.** Ours sat wider and farther. The reference lives 2-15 m from a body part: a foot, an eye, a jaw on a shell, a chain link. Lit night cities must read (windows and silhouette, never a black shape). | | Code: `styleReport` R8 (>= 35% of giant-focus shots are giant_close / hero_low) + `page/cameraEpic.js` (giant_close frames the face). Engine work: part-focus camera, night fill light on dark giants (open) |
+
+## 9. The Studio engine (soft launch, 2026-11-13)
+With `BLOCKY_WORLDS_ENGINE=studio` a video is not made by the pipeline above: one Sonnet director hand-writes the shot code
+of the whole story (`scripts/blockyWorlds/studio/`), previews on RunPod, one fixed Sonnet checker, one fix round, then the
+final renders on RunPod. It runs in a small CPU worker (`scripts/blockyWorlds/studioWorker/`) that takes queued runs from
+the database. The script review, the kit checks and the single charge at "Make my video" are the same. Rules, caps, price
+table and the launch checklist: `docs/blocky-worlds-launch.md`.

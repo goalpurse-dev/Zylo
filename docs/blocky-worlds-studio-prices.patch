@@ -1,0 +1,91 @@
+diff --git a/supabase/functions/_shared/blockyWorlds/pricing.js b/supabase/functions/_shared/blockyWorlds/pricing.js
+index 7ba7b55..34aead8 100644
+--- a/supabase/functions/_shared/blockyWorlds/pricing.js
++++ b/supabase/functions/_shared/blockyWorlds/pricing.js
+@@ -10,6 +10,10 @@
+ // the runs measured (the cost ledger: blocky_worlds_cost_ledger) and keep the migration's tool_prices rows equal to
+ // PRICE_ROWS (tests/blockyWorlds.test.mjs holds them together).
+ import { LENGTHS, NARRATOR } from "./config.js";
++// 2026-11-13 (the owner's go on the table in docs/blocky-worlds-launch.md): the Studio engine's MEASURED cost model
++// (studio.js, from run1, run2, testA, testA2, testB) prices every length; attemptCost below is the old pipeline
++// estimate, kept for reference only
++import { studioAttemptCost, studioFullCostUsd } from "./studio.js";
+ 
+ export const CREDIT = Object.freeze({ ourUsd: 0.01, userUsd: 0.02 });
+ 
+@@ -57,10 +61,10 @@ export function failedCost(lengthSec) {
+ /** Our full real cost of one delivered video (USD): its attempt plus its share of the refunded failures. */
+ export function fullCostUsd(lengthSec) {
+   if (!LENGTHS.includes(lengthSec)) throw new Error(`no Blocky Worlds cost for ${lengthSec} s`);
+-  return Number((sum(attemptCost(lengthSec)) + (failedCost(lengthSec) * (1 - PASS_RATE)) / PASS_RATE).toFixed(4));
++  return studioFullCostUsd(lengthSec);
+ }
+ /** What one attempt is expected to cost us: the emergency cap counts this before a start (guard.js). */
+-export const costBasisUsd = (lengthSec) => Number(sum(attemptCost(lengthSec)).toFixed(4));
++export const costBasisUsd = (lengthSec) => Number(sum(studioAttemptCost(lengthSec)).toFixed(4));
+ 
+ export const toolKey = (lengthSec) => `blocky-worlds:video-${lengthSec}`;
+ export const PRICES = Object.freeze(Object.fromEntries(LENGTHS.map((s) => [s, Math.ceil(fullCostUsd(s) / CREDIT.ourUsd - 1e-9)])));
+diff --git a/supabase/migrations/20261214100000_blocky_worlds_studio_prices.sql b/supabase/migrations/20261214100000_blocky_worlds_studio_prices.sql
+new file mode 100644
+index 0000000..dd7100a
+--- /dev/null
++++ b/supabase/migrations/20261214100000_blocky_worlds_studio_prices.sql
+@@ -0,0 +1,32 @@
++-- Blocky Worlds: the STUDIO ENGINE prices (the owner's go: docs/blocky-worlds-launch.md, "Price"). 1 credit = $0.01 of
++-- our full cost; the user pays $0.02 a credit (2x). The numbers come from _shared/blockyWorlds/studio.js studioCredits
++-- (the measured Studio runs); pricing.js PRICES equals them (tests/blockyWorlds.test.mjs holds the two together).
++-- Run by the owner (never db push), right AFTER deploying blocky-worlds-api with the new pricing.js (the page shows
++-- PRICES, the charge reads these rows through compute_tool_price):
++--   npx supabase db query --linked -f supabase/migrations/20261214100000_blocky_worlds_studio_prices.sql
++--   npx supabase migration repair --linked --status applied 20261214100000
++BEGIN;
++INSERT INTO public.tool_prices (tool_key, credits_per_second, flat_credits, allowed_durations, notes) VALUES
++  ('blocky-worlds:video-30', NULL, 66, NULL, 'Blocky Worlds 30 s (Studio engine): our full cost ~$0.65 (measured model, 2026-11-13)'),
++  ('blocky-worlds:video-40', NULL, 80, NULL, 'Blocky Worlds 40 s (Studio engine): our full cost ~$0.79 (measured model, 2026-11-13)'),
++  ('blocky-worlds:video-50', NULL, 94, NULL, 'Blocky Worlds 50 s (Studio engine): our full cost ~$0.94 (measured model, 2026-11-13)'),
++  ('blocky-worlds:video-60', NULL, 108, NULL, 'Blocky Worlds 60 s (Studio engine): our full cost ~$1.08 (measured model, 2026-11-13)'),
++  ('blocky-worlds:video-70', NULL, 122, NULL, 'Blocky Worlds 70 s (Studio engine): our full cost ~$1.21 (measured model, 2026-11-13)'),
++  ('blocky-worlds:video-80', NULL, 136, NULL, 'Blocky Worlds 80 s (Studio engine): our full cost ~$1.35 (measured model, 2026-11-13)'),
++  ('blocky-worlds:video-90', NULL, 150, NULL, 'Blocky Worlds 90 s (Studio engine): our full cost ~$1.49 (measured model, 2026-11-13)'),
++  ('blocky-worlds:video-100', NULL, 164, NULL, 'Blocky Worlds 100 s (Studio engine): our full cost ~$1.63 (measured model, 2026-11-13)'),
++  ('blocky-worlds:video-110', NULL, 178, NULL, 'Blocky Worlds 110 s (Studio engine): our full cost ~$1.77 (measured model, 2026-11-13)'),
++  ('blocky-worlds:video-120', NULL, 192, NULL, 'Blocky Worlds 120 s (Studio engine): our full cost ~$1.91 (measured model, 2026-11-13)'),
++  ('blocky-worlds:video-130', NULL, 206, NULL, 'Blocky Worlds 130 s (Studio engine): our full cost ~$2.05 (measured model, 2026-11-13)'),
++  ('blocky-worlds:video-140', NULL, 220, NULL, 'Blocky Worlds 140 s (Studio engine): our full cost ~$2.19 (measured model, 2026-11-13)'),
++  ('blocky-worlds:video-150', NULL, 234, NULL, 'Blocky Worlds 150 s (Studio engine): our full cost ~$2.33 (measured model, 2026-11-13)'),
++  ('blocky-worlds:video-160', NULL, 248, NULL, 'Blocky Worlds 160 s (Studio engine): our full cost ~$2.47 (measured model, 2026-11-13)'),
++  ('blocky-worlds:video-170', NULL, 262, NULL, 'Blocky Worlds 170 s (Studio engine): our full cost ~$2.61 (measured model, 2026-11-13)'),
++  ('blocky-worlds:video-180', NULL, 276, NULL, 'Blocky Worlds 180 s (Studio engine): our full cost ~$2.75 (measured model, 2026-11-13)')
++ON CONFLICT (tool_key) DO UPDATE SET
++  credits_per_second = EXCLUDED.credits_per_second,
++  flat_credits = EXCLUDED.flat_credits,
++  allowed_durations = EXCLUDED.allowed_durations,
++  notes = EXCLUDED.notes,
++  active = true;
++COMMIT;
+diff --git a/tests/blockyWorlds.test.mjs b/tests/blockyWorlds.test.mjs
+index eb9d005..d17a8e2 100644
+--- a/tests/blockyWorlds.test.mjs
++++ b/tests/blockyWorlds.test.mjs
+@@ -234,15 +234,15 @@ test("pricing: 1 credit = $0.01 of our full cost, whole credits, and the migrati
+   for (let i = 1; i < LENGTHS.length; i++) assert.ok(PRICES[LENGTHS[i - 1]] < PRICES[LENGTHS[i]], "longer costs more");
+   // the slider: 30 s to 3 min in 10 s steps; the first three lengths' prices are pinned (the owner applied them)
+   assert.deepEqual(LENGTHS, [30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180]);
+-  assert.deepEqual([PRICES[60], PRICES[90], PRICES[120]], [47, 62, 78]);
++  // the Studio prices (2026-11-13, studio.js's measured model): 1 min 108, 1:30 150 (the owner's ~150), 2 min 192
++  assert.deepEqual([PRICES[60], PRICES[90], PRICES[120]], [108, 150, 192]);
+   assert.throws(() => videoCredits(20));
+   assert.throws(() => videoCredits(95));
+-  const sql = readFileSync(new URL("../supabase/migrations/20261205100000_blocky_worlds_lengths.sql", import.meta.url), "utf8");
++  const sql = readFileSync(new URL("../supabase/migrations/20261214100000_blocky_worlds_studio_prices.sql", import.meta.url), "utf8");
+   for (const r of PRICE_ROWS) assert.ok(new RegExp(`\\('${r.tool_key}', NULL, ${r.flat_credits}, NULL,`).test(sql), `${r.tool_key} = ${r.flat_credits} in the migration`);
+   assert.equal(PRICE_ROWS.length, LENGTHS.length);
+-  assert.ok(sql.includes(`CHECK (length_sec BETWEEN ${LENGTHS[0]} AND ${LENGTHS.at(-1)} AND length_sec % 10 = 0)`), "lengths in the table checks");
+-  const first = readFileSync(new URL("../supabase/migrations/20261201100000_blocky_worlds.sql", import.meta.url), "utf8");
+-  for (const s of [60, 90, 120]) assert.ok(first.includes(`('blocky-worlds:video-${s}', NULL, ${PRICES[s]}, NULL,`), `${s} s unchanged since the first migration`);
++  const lengths = readFileSync(new URL("../supabase/migrations/20261205100000_blocky_worlds_lengths.sql", import.meta.url), "utf8");
++  assert.ok(lengths.includes(`CHECK (length_sec BETWEEN ${LENGTHS[0]} AND ${LENGTHS.at(-1)} AND length_sec % 10 = 0)`), "lengths in the table checks");
+ });
+ 
+ test("script: every length from 30 s to 3 min fits all seven parts (budgets add up; the sized mock passes its checks)", () => {
