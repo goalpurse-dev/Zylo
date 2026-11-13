@@ -1,8 +1,8 @@
 {
  "name": "zyvo-blender-kit",
- "image": "registry.fly.io/zyvo-cutaway-render-staging@sha256:b054b8e3c95976845653dfa0307a541c8d46ddc5e821bd2cfc2a371cad06fa9c",
+ "image": "registry.fly.io/zyvo-cutaway-render-staging@sha256:ba3a4da7944342f37c0ade3bca68d5376a6197cd853f020a7f3dfbc3b146717d",
  "registryAuthId": "cmvlelgjk00593mjx9gycdtjw",
- "templateId": "kr8n681440",
+ "templateId": "zspm3jc8u6",
  "endpointId": "sp338bavcw2gtn",
  "gpus": [
   "NVIDIA RTX 4000 Ada Generation",
@@ -16,5 +16,5 @@
  "blockyEndpoint": "gm9eqdkuyc2ofs",
  "blockyWorkersMaxBefore": 6,
  "blockyWorkersMaxNow": 3,
- "updatedAt": "2026-11-13T20:33:30.016Z"
+ "updatedAt": "2026-11-13T21:34:16.704Z"
 }
