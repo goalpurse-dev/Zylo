@@ -14,6 +14,7 @@ import os
 import re
 import shutil
 import subprocess
+import tarfile
 import threading
 import time
 import urllib.request
@@ -162,8 +163,42 @@ def run_sandboxed(cmd, cwd, timeout, extra_env=None, sandboxed=True):
     return rc, out, round(time.time() - t, 1), gw.summary()
 
 
-def workspace(job_id, slug):
-    """/tmp/bk/<job>: the kit's code + assets linked read-only (root-owned), the video folder copied and owned by render"""
+VIDEO_FILES = {"shots.py": 2_000_000, "script.txt": 100_000, "audio/words.json": 2_000_000, "audio/voice.wav": 60_000_000,
+               "audio/cues.json": 2_000_000, "audio/sentences.json": 2_000_000}
+
+
+def fetch_video(url, dest_dir):
+    """a generated video folder (tar.gz from the dispatcher's signed URL): only the known files, size-capped, no links;
+    then the static pre-check of its shots.py (shotcheck.py) before any Blender sees it"""
+    tgz = dest_dir + ".tgz"
+    get_parts([url] if isinstance(url, str) else url, tgz)
+    os.makedirs(dest_dir, exist_ok=True)
+    with tarfile.open(tgz, "r:gz") as tf:
+        for m in tf.getmembers():
+            name = m.name.lstrip("./")
+            if m.isdir():
+                continue
+            if name not in VIDEO_FILES or not m.isfile() or m.size > VIDEO_FILES[name]:
+                raise RuntimeError(f"video tar: refused member {m.name!r} ({m.size} bytes)")
+            os.makedirs(os.path.join(dest_dir, os.path.dirname(name)), exist_ok=True)
+            with tf.extractfile(m) as src, open(os.path.join(dest_dir, name), "wb") as dst:
+                shutil.copyfileobj(src, dst)
+    os.remove(tgz)
+    for need in ("shots.py", "audio/words.json", "audio/voice.wav"):
+        if not os.path.exists(os.path.join(dest_dir, need)):
+            raise RuntimeError(f"video tar: {need} missing")
+    rc, out = sh(["python3", "-I", f"{APP}/shotcheck.py", os.path.join(dest_dir, "shots.py")], timeout=60)
+    if rc != 0:
+        raise ShotCheck(out[-2000:])
+
+
+class ShotCheck(Exception):
+    pass
+
+
+def workspace(job_id, slug, video_url=None):
+    """/tmp/bk/<job>: the kit's code + assets linked read-only (root-owned), the video folder copied and owned by render
+    (a generated video: downloaded from video_url, validated and statically checked)"""
     ws = f"/tmp/bk/{re.sub(r'[^A-Za-z0-9_-]', '', job_id)[:60]}"
     shutil.rmtree(ws, ignore_errors=True)
     os.makedirs(os.path.join(ws, "videos"), exist_ok=True)
@@ -173,7 +208,10 @@ def workspace(job_id, slug):
     for name in ("assets", "sfx"):
         os.symlink(os.path.join(KIT, name), os.path.join(ws, name))
     shutil.copy2(os.path.join(KIT, "config.json"), os.path.join(ws, "config.json"))
-    shutil.copytree(os.path.join(KIT, "videos", slug), os.path.join(ws, "videos", slug))
+    if video_url:
+        fetch_video(video_url, os.path.join(ws, "videos", slug))
+    else:
+        shutil.copytree(os.path.join(KIT, "videos", slug), os.path.join(ws, "videos", slug))
     uid, gid = uid_gid()
     for root, dirs, files in os.walk(ws):
         for n in dirs + files:
@@ -252,16 +290,36 @@ def get_parts(urls, dest):
     return os.path.getsize(dest)
 
 
-def kit_render(ws, slug, mode, shots, samples=None):
+def shot_failures(log_text):
+    """render_log_<kind>.txt -> {shot id: the traceback's last lines} (the kit writes "shot XX FAILED" + the traceback)"""
+    out, cur = {}, None
+    for l in log_text.splitlines():
+        m = re.match(r"shot (\d+) (ok|FAILED)", l)
+        if m:
+            cur = int(m.group(1)) if m.group(2) == "FAILED" else None
+            if cur is not None:
+                out[cur] = []
+            continue
+        if cur is not None and l.strip():
+            out[cur].append(l)
+    return {k: "\n".join(v[-6:])[:900] for k, v in out.items()}
+
+
+def kit_render(ws, slug, mode, shots, samples=None, kind="final", timeout=3000):
     # through the workspace's linked tools/: the kit takes its studio root from the script's path (shotkit.STUDIO),
     # so the videos it reads and writes are the workspace's, never /app/kit's
-    args = ["-P", os.path.join(ws, "tools", "render.py"), "--", slug, "final", shots] + ([str(samples)] if samples else [])
+    args = ["-P", os.path.join(ws, "tools", "render.py"), "--", slug, kind, shots] + ([str(samples)] if samples else [])
     cmd, extra = blender_cmd(mode, args)
-    rc, out, secs, gw = run_sandboxed(cmd, ws, 3000, extra)
+    rc, out, secs, gw = run_sandboxed(cmd, ws, timeout, extra)
     vdir = os.path.join(ws, "videos", slug)
-    lines = open(os.path.join(vdir, "render_log_final.txt"), encoding="utf-8").read().splitlines() if os.path.exists(os.path.join(vdir, "render_log_final.txt")) else []
+    lp = os.path.join(vdir, f"render_log_{kind}.txt")
+    text = open(lp, encoding="utf-8").read() if os.path.exists(lp) else ""
+    lines = text.splitlines()
     shot_s = {int(m.group(1)): float(m.group(2)) for m in (re.match(r"shot (\d+) ok ([\d.]+)s", l) for l in lines) if m}
-    failed = [l for l in lines if "FAILED" in l or "Traceback" in l]
+    fails = shot_failures(text)
+    failed = [f"shot {k} FAILED: {v}" for k, v in fails.items()] + [l for l in lines if l.startswith("TIMELINE:")]
+    if rc != 0 and not lines:
+        failed.append("blender rc %s: %s" % (rc, "\n".join(out.splitlines()[-8:])[-800:]))
     return rc, out, secs, gw, shot_s, failed
 
 
@@ -313,12 +371,12 @@ def role_probe(inp, job_id):
 
 def role_render(inp, job_id):
     slug, shots, f0, f1 = inp["slug"], inp["shots"], int(inp["f0"]), int(inp["f1"])
-    ws = workspace(job_id, slug)
+    ws = workspace(job_id, slug, inp.get("videoUrl"))
     try:
         gpu = ensure_gpu(ws, inp.get("modes", ["egl", "vgl", "vulkan"]))
         t0 = time.time()
         rc, out, secs, gw, shot_s, failed = kit_render(ws, slug, gpu["mode"], shots, inp.get("samples"))
-        if failed or rc != 0:
+        if [x for x in failed if not x.startswith("TIMELINE:")] or rc != 0:
             raise RuntimeError(f"kit render rc {rc}: " + " | ".join(failed[:2])[:1200] + " :: " + "\n".join(out.splitlines()[-15:])[-1500:])
         seg = os.path.join(ws, "segment.mp4")
         te = time.time()
@@ -332,11 +390,55 @@ def role_render(inp, job_id):
         shutil.rmtree(ws, ignore_errors=True)
 
 
+def role_preview(inp, job_id):
+    """the kit's preview mode (middle frame of each shot, 25% res) + the kit's contact sheets (tools/contact.py, groups of
+    `perSheet` shots); returns a tar of the previews, the sheets and the per-shot failures"""
+    slug = inp["slug"]
+    ws = workspace(job_id, slug, inp.get("videoUrl"))
+    try:
+        gpu = ensure_gpu(ws, inp.get("modes", ["egl", "vgl", "vulkan"]))
+        rc, out, secs, gw, shot_s, failed = kit_render(ws, slug, gpu["mode"], inp.get("shots", "all"), inp.get("samples"), kind="preview", timeout=1500)
+        vdir = os.path.join(ws, "videos", slug)
+        pdir = os.path.join(vdir, "preview")
+        have = sorted(int(f[5:-4]) for f in os.listdir(pdir) if re.match(r"shot_\d+\.png$", f)) if os.path.isdir(pdir) else []
+        sheets, per, cols = [], int(inp.get("perSheet", 16)), int(inp.get("cols", 8))
+        for k in range(0, len(have), per):
+            grp = have[k:k + per]
+            name = f"sheet_{grp[0]:02d}_{grp[-1]:02d}"
+            run_sandboxed(["python3", os.path.join(ws, "tools", "contact.py"), slug, ",".join(map(str, grp)), str(cols), name], ws, 120)
+            if os.path.exists(os.path.join(vdir, name + ".jpg")):
+                sheets.append({"file": name + ".jpg", "shots": grp})
+        tgz = os.path.join(ws, "preview.tgz")
+        lp = os.path.join(vdir, "render_log_preview.txt")
+        with tarfile.open(tgz, "w:gz") as tf:
+            for f in (sorted(os.listdir(pdir)) if os.path.isdir(pdir) else []):
+                tf.add(os.path.join(pdir, f), arcname=f"preview/{f}")
+            for sh_ in sheets:
+                tf.add(os.path.join(vdir, sh_["file"]), arcname=sh_["file"])
+            if os.path.exists(lp):
+                tf.add(lp, arcname="render_log_preview.txt")
+        up = put_parts(tgz, inp["upload"], "application/gzip")
+        fails = shot_failures(open(lp, encoding="utf-8").read()) if os.path.exists(lp) else {}
+        return {"ok": True, "role": "preview", "rendered": have, "failed": {str(k): v for k, v in fails.items()},
+                "timeline": [x for x in failed if x.startswith("TIMELINE:")][:10], "renderS": secs, "shotS": shot_s, "sheets": sheets,
+                "upload": up, "gpu": {"mode": gpu["mode"], **gpu["info"]}, "gpuWatch": gw, "sandbox": STATE["sandbox"]["name"],
+                "tail": [] if have else out.splitlines()[-12:]}
+    finally:
+        shutil.rmtree(ws, ignore_errors=True)
+
+
 def role_finish(inp, job_id):
     slug, frames = inp["slug"], int(inp["frames"])
-    ws = workspace(job_id, slug)
+    ws = workspace(job_id, slug, inp.get("videoUrl"))
     try:
         vdir = os.path.join(ws, "videos", slug)
+        cues = None
+        if inp.get("videoUrl") or not os.path.exists(os.path.join(vdir, "audio", "cues.json")):
+            gpu = ensure_gpu(ws, inp.get("modes", ["egl", "vgl", "vulkan"]))
+            rc, out, secs, _, _, failed = kit_render(ws, slug, gpu["mode"], "all", kind="cues", timeout=900)
+            if not os.path.exists(os.path.join(vdir, "audio", "cues.json")):
+                raise RuntimeError(f"kit cues rc {rc}: " + " | ".join(failed[:3])[:1000])
+            cues = {"seconds": secs, "count": len(json.load(open(os.path.join(vdir, "audio", "cues.json")))), "failed": failed[:5]}
         segs = []
         t0 = time.time()
         for i, urls in enumerate(inp["segments"]):
@@ -373,7 +475,7 @@ def role_finish(inp, job_id):
             if name in inp["uploads"] and os.path.exists(os.path.join(odir, name)):
                 ups[name] = put_parts(os.path.join(odir, name), inp["uploads"][name], "video/mp4")
         dur = sh(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", os.path.join(odir, "final.mp4")])[1]
-        return {"ok": True, "role": "finish", "frames": n, "unpackS": unpack_s, "finishS": secs, "duration": dur, "uploads": ups,
+        return {"ok": True, "role": "finish", "frames": n, "unpackS": unpack_s, "finishS": secs, "duration": dur, "uploads": ups, "cues": cues,
                 "finishLog": out.splitlines()[-8:], "sandbox": STATE["sandbox"]["name"]}
     finally:
         shutil.rmtree(ws, ignore_errors=True)
@@ -389,7 +491,11 @@ def handler(job):
             return role_render(inp, jid)
         if role == "finish":
             return role_finish(inp, jid)
+        if role == "preview":
+            return role_preview(inp, jid)
         return {"ok": False, "code": "BAD_ROLE", "error": f"unknown role {role!r}"}
+    except ShotCheck as e:
+        return {"ok": False, "code": "SHOT_CHECK", "error": str(e)[:3000]}
     except NoGpu as e:
         return {"ok": False, "code": "NO_GPU", "error": str(e)[:3000], "refresh_worker": True}
     except Exception as e:  # noqa: BLE001

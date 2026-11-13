@@ -48,6 +48,11 @@ const { ledger } = await import("../studio/ledger.mjs");
 const db = restDb({ url: cfg.supabaseUrl, key: cfg.serviceKey });
 const storage = restStorage({ url: cfg.supabaseUrl, key: cfg.serviceKey });
 const steps = makeSteps({ anthropicKey: cfg.anthropicKey, elevenKey: cfg.elevenKey });
+// the Blender kit engine (blenderKit/workerSteps.mjs): OFF by default, owner-only. Used for a run only when
+// BLOCKY_WORLDS_RENDER_ENGINE=blender AND the run's user is in BLOCKY_WORLDS_BLENDER_OWNER_IDS; everyone else keeps Studio
+const { makeBlenderSteps, pickSteps } = await import("../blenderKit/workerSteps.mjs");
+const blenderSteps = makeBlenderSteps({ base: steps, anthropicKey: cfg.anthropicKey, cfg: STUDIO });
+if (String(process.env.BLOCKY_WORLDS_RENDER_ENGINE ?? "").trim().toLowerCase() === "blender") say(`Blender kit engine ON for ${String(process.env.BLOCKY_WORLDS_BLENDER_OWNER_IDS ?? "").split(",").filter((s) => s.trim()).length} owner id(s); every other run stays on Studio`);
 fs.mkdirSync(cfg.workDir, { recursive: true });
 
 const control = { stop: null };
@@ -83,7 +88,7 @@ while (!stopping) {
     // the hello keeps going during the run (the heartbeat on the run row is the runner's)
     const keep = setInterval(() => { db.workerSeen(cfg.workerId, { version: cfg.version, busyRun: run.id }).catch(() => {}); }, STUDIO.heartbeatSec * 1000);
     try {
-      const r = await runStudioRun(run, { db, steps, storage, makeLedger: ledger, workerId: cfg.workerId, workDir: cfg.workDir, control, keepWork: cfg.keepWork });
+      const r = await runStudioRun(run, { db, steps: pickSteps(run, { studio: steps, blender: blenderSteps }), storage, makeLedger: ledger, workerId: cfg.workerId, workDir: cfg.workDir, control, keepWork: cfg.keepWork });
       say(`run ${run.id}: ${r.ok ? "done" : `failed ${r.code}`} ($${r.costUsd})`);
     } finally { clearInterval(keep); current = null; hello = 0; }
     if (argv.includes("--once")) break;

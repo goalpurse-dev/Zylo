@@ -11,7 +11,9 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 /** the secrets the worker cannot run without (by name; the owner sets them with `fly secrets set`) */
 export const SECRET_NAMES = Object.freeze(["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "ANTHROPIC_API_KEY", "ELEVENLABS_API_KEY", "RUNPOD_API_KEY"]);
 /** optional settings (not secret) */
-export const OPTION_NAMES = Object.freeze(["BLOCKY_WORLDS_STUDIO_ENDPOINT", "BLOCKY_WORLDS_WORK_DIR", "BLOCKY_WORLDS_WORKER_VERSION", "BLOCKY_WORLDS_POLL_SEC", "BLOCKY_WORLDS_KEEP_WORK"]);
+export const OPTION_NAMES = Object.freeze(["BLOCKY_WORLDS_STUDIO_ENDPOINT", "BLOCKY_WORLDS_WORK_DIR", "BLOCKY_WORLDS_WORKER_VERSION", "BLOCKY_WORLDS_POLL_SEC", "BLOCKY_WORLDS_KEEP_WORK",
+  // the Blender kit engine (blenderKit/workerSteps.mjs): off unless BOTH are set; owner ids only
+  "BLOCKY_WORLDS_RENDER_ENGINE", "BLOCKY_WORLDS_BLENDER_OWNER_IDS", "BLOCKY_WORLDS_KIT_DIR"]);
 
 const has = (env, k) => String(env[k] ?? "").trim().length > 0;
 

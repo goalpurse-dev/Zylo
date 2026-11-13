@@ -1,0 +1,30 @@
+{
+ "id": "sky-wind-f058810d",
+ "name": "sky_wind",
+ "kind": "creature",
+ "about": "Glowing cyan wind spirit with a face and three counter-rotating rings of orbs",
+ "code": "def sky_wind(name, loc, t0, t1, s=1.0):\n    root = empty(name, loc)\n    glow = mat('wind_core', hexc('#c8f4ff'), 0.2, emit=hexc(WIND_C), estr=2.5)\n    sphere(name + '_core', 1.1 * s, (0, 0, 0), glow, parent=root, seg=24)\n    em = mat('wind_eye', hexc('#10202a'), 0.3)\n    for sx in (-1, 1):\n        sphere(name + '_eye%d' % sx, 0.17 * s, (sx * 0.38 * s, -0.98 * s, 0.22 * s), em, parent=root, seg=12)\n    box(name + '_mouth', (0.45 * s, 0.08 * s, 0.13 * s), (0, -1.04 * s, -0.25 * s), em, 0.03, parent=root)\n    for k in range(3):\n        piv = empty(name + '_sw%d' % k, (0, 0, (k - 1) * 0.6 * s), parent=root)\n        for j in range(5):\n            a = j / 5 * math.tau\n            R = (1.7 + 0.35 * k) * s\n            sphere(name + '_sp%d_%d' % (k, j), (0.26 - 0.03 * j) * s, (math.cos(a) * R, math.sin(a) * R, 0), glow, parent=piv, seg=10)\n        piv.rotation_euler[2] = 0\n        piv.keyframe_insert('rotation_euler', index=2, frame=F(t0))\n        piv.rotation_euler[2] = math.tau * (3 + k) * (1 if k % 2 else -1)\n        piv.keyframe_insert('rotation_euler', index=2, frame=F(t1))\n        set_interp(piv, 'rotation_euler', F(t0), 'LINEAR')\n    return root",
+ "source": {
+  "run": "plane1",
+  "shots": [
+   1,
+   5,
+   19,
+   20,
+   31,
+   35,
+   36,
+   37,
+   41,
+   55,
+   56,
+   63,
+   64,
+   69
+  ],
+  "title": "The Town That Lives in a Plane"
+ },
+ "status": "pending",
+ "approved": false,
+ "createdAt": "2026-11-13T20:58:50.964Z"
+}
