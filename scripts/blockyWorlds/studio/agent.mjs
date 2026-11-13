@@ -19,6 +19,7 @@ import { renderSheets } from "./render.mjs";
 import { tileProblems, cutFrameProblems } from "./pixel.mjs";
 import { shotMix, creatureProblems, climaxStart } from "./shotMix.mjs";
 import { checkSheets } from "./checker.mjs";
+import { libraryBrief, findBuilds } from "./library/library.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const SHARED = path.resolve(HERE, "../../../supabase/functions/_shared/blockyWorlds");
@@ -92,7 +93,7 @@ export function lineNeeds(tl0, script) {
 /** the rule's constraints in the shape lib/storyboard.js checkRule reads (a constraint without "when" crashed it) */
 const cleanRule = (r) => ({ text: String(r?.text ?? ""), constraints: (Array.isArray(r?.constraints) ? r.constraints : []).filter((c) => Array.isArray(c?.when) && c.when.every((x) => typeof x === "string")).map((c) => ({ when: c.when, ...(c.outside ? { outside: c.outside } : {}), ...(c.people ? { people: c.people } : {}), except: Array.isArray(c.except) ? c.except.filter((e) => e?.who) : [], why: String(c.why ?? "") })) });
 
-export async function directVideo({ tl0, script, out, L, apiKey, model = MODELS.sonnet, rounds = 1, minutes = 25, effort = "medium", reserve = null, briefNote = null, maxTokens: dirMax = MAX_TOKENS, log = console.log }) {
+export async function directVideo({ tl0, script, out, L, apiKey, model = MODELS.sonnet, rounds = 1, minutes = 25, effort = "medium", reserve = null, briefNote = null, maxTokens: dirMax = MAX_TOKENS, builds = null, libraryOpts = {}, log = console.log }) {
   const words = lineWordsOf(tl0), needs = lineNeeds(tl0, script);
   const P = PRICE[model] ?? PRICE["claude-sonnet-5-5"];
   const f = (n) => path.join(out, n);
@@ -252,7 +253,7 @@ export async function directVideo({ tl0, script, out, L, apiKey, model = MODELS.
         const v = validateShotCode(a.code);
         if (!v.ok) { res.push(`${a.name}: REFUSED ${v.errors.join("; ")}`); continue; }
         if (a.creature) { const cp = creatureProblems(a.name, a.code, { homes: plan.bible?.homes ?? {}, cast: tl0.cast ?? {} }); if (cp.length) { res.push(`${a.name}: REFUSED ${cp.join("; ")}`); continue; } }
-        plan.assets[a.name] = a.code; plan.creatures = plan.creatures.filter((x) => x !== a.name); if (a.creature) plan.creatures.push(a.name);
+        plan.assets[a.name] = a.code; if (a.about) (plan.about ??= {})[a.name] = String(a.about).slice(0, 300); plan.creatures = plan.creatures.filter((x) => x !== a.name); if (a.creature) plan.creatures.push(a.name);
         res.push(`${a.name}: ok${a.creature ? " (creature)" : ""}`);
       }
       save();
@@ -293,7 +294,14 @@ export async function directVideo({ tl0, script, out, L, apiKey, model = MODELS.
   const sysFile = f("agent-system.txt");
   const systemText = fs.existsSync(sysFile) ? fs.readFileSync(sysFile, "utf8") : SYSTEM;
   if (!fs.existsSync(sysFile)) fs.writeFileSync(sysFile, systemText);
-  const brief0 = videoBrief({ script, tl: { ...tl0, __words: words }, ...needs, budgetUsd: L.agentCapUsd, minutes });
+  // THE STUDIO BUILDS (the worker's studioBuilds: { name, kind, lines, description }) + the APPROVED library builds for them
+  // (studio/library: owner-approved only, unless libraryOpts.includePending on the owner's own runs). Without a build
+  // list the story's named creature is looked up, and the section is added only when an approved build matches.
+  const auto = !builds && tl0.monster ? [{ name: String(tl0.monster.name), kind: "creature", lines: tl0.lines.map((l, n) => (creatureLines(script, tl0).includes(String(l.text)) ? n : -1)).filter((n) => n >= 0), description: "" }] : [];
+  const buildList = builds ?? auto, matches = findBuilds(buildList, libraryOpts);
+  const buildsText = builds?.length || matches.some((m) => m.match) ? libraryBrief(buildList, libraryOpts) : "";
+  if (matches.some((m) => m.match)) L.log({ step: "library", matches: matches.filter((m) => m.match).map((m) => ({ build: m.build.name, id: m.match.id, score: m.match.score })) });
+  const brief0 = videoBrief({ script, tl: { ...tl0, __words: words }, ...needs, budgetUsd: L.agentCapUsd, minutes, builds: buildsText });
   const brief = briefNote ? `${brief0}
 
 NOTE FOR THIS VIDEO (it overrides the cut-count targets above):

@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Studio Asset Library</title>
+<style>
+:root { --bg: #f6f5f2; --card: #ffffff; --ink: #1d1d1f; --muted: #6b6b70; --line: #e2e0da; --pending: #b7791f; --approved: #2f855a; --rejected: #c53030; }
+@media (prefers-color-scheme: dark) { :root { --bg: #17171a; --card: #222226; --ink: #ececf0; --muted: #a0a0a8; --line: #34343a; } }
+* { box-sizing: border-box; }
+body { margin: 0; padding: 24px 16px 48px; background: var(--bg); color: var(--ink); font: 15px/1.5 system-ui, sans-serif; }
+main { max-width: 980px; margin: 0 auto; }
+h1 { font-size: 22px; margin: 0 0 4px; } .lead { color: var(--muted); margin: 0 0 20px; }
+.card { display: flex; gap: 16px; background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--pending); border-radius: 10px; padding: 14px; margin-bottom: 14px; }
+.card.approved { border-left-color: var(--approved); } .card.rejected { border-left-color: var(--rejected); opacity: 0.7; }
+.card img, .noimg { width: 324px; max-width: 45%; height: auto; border-radius: 6px; align-self: flex-start; background: #111; }
+.noimg { height: 192px; display: grid; place-items: center; color: #888; }
+.body { min-width: 0; flex: 1; } h2 { font-size: 17px; margin: 0 0 6px; }
+.tag { font-size: 12px; font-weight: 600; border: 1px solid var(--line); border-radius: 99px; padding: 1px 8px; color: var(--muted); }
+.st { color: var(--pending); } .approved .st { color: var(--approved); } .rejected .st { color: var(--rejected); }
+.meta { color: var(--muted); font-size: 13px; margin: 4px 0; } .cmd { font-size: 13px; }
+code { font-size: 12px; background: var(--bg); padding: 1px 4px; border-radius: 4px; word-break: break-all; }
+pre { white-space: pre-wrap; word-break: break-word; font-size: 11px; max-height: 260px; overflow: auto; background: var(--bg); padding: 8px; border-radius: 6px; }
+@media (max-width: 640px) { .card { flex-direction: column; } .card img, .noimg { max-width: 100%; width: 100%; } }
+</style></head>
+<body><main>
+<h1>Studio Asset Library</h1>
+<p class="lead">2 built thing(s): 2 pending, 0 approved, 0 rejected. Customers' videos only reuse APPROVED builds. Run a command below, then reload this page.</p>
+<article class="card pending">
+  <img src="thumbs/mailbox-monster-9e900cc7.jpg" alt="Mailbox Monster" loading="lazy">
+  <div class="body">
+    <h2>Mailbox Monster <span class="tag">creature</span> <span class="tag st">pending</span></h2>
+    <p class="meta">3.68 &times; 3.2 &times; 2.2 m (w &times; h &times; d) &middot; 22 parts, 2 glowing &middot; code name <code>monster</code></p>
+    <p>Mailbox monster</p>
+    <p class="meta">From studio testA2 (2026-11-13) (claude-sonnet-5-5), &ldquo;The Mailbox Monster (mailbox script)&rdquo; &middot; 36 of 41 cuts passed the checker</p>
+    <p class="cmd">Approve: <code>node scripts/blockyWorlds/studio/library/approve.mjs mailbox-monster-9e900cc7</code><br>Reject: <code>node scripts/blockyWorlds/studio/library/approve.mjs mailbox-monster-9e900cc7 --reject</code></p>
+    <details><summary>Build code</summary><pre>const o=api.p.open||0;api.block([2.2,1.2,1.8],[0,1.0,0],'#6b7480');api.block([1.6,1.0,1.2],[0,2.0,0.2],'#8a94a0');api.block([0.7,0.6,1.0],[-1.45,1.5,0],'#c0392b');api.cyl(0.35,0.35,1.0,[-1.45,1.8,0],'#c0392b',{rot:[1.5708,0,0]});api.block([0.06,0.5,0.06],[-1.85,2.0,0.3],'#f1c40f');api.block([0.3,0.15,0.04],[-1.7,2.2,0.3],'#f1c40f');api.block([0.7,0.6,1.0],[1.45,1.5,0],'#2e86de');api.cyl(0.35,0.35,1.0,[1.45,1.8,0],'#2e86de',{rot:[1.5708,0,0]});api.block([2.0,1.6,0.1],[0,1.6,-1.0],'#e8e8e8',{rot:[0.2,0,0]});api.block([0.5,0.4,0.6],[0.4,3.0,0.2],'#27ae60');api.cyl(0.25,0.25,0.6,[0.4,3.25,0.2],'#27ae60',{rot:[1.5708,0,0]});api.ball(0.17,[-0.4,2.2,0.82],'#fff7a0',{glow:2.5});api.ball(0.17,[0.4,2.2,0.82],'#fff7a0',{glow:2.5});api.block([0.9,0.2,0.1],[0,1.7,0.82],'#2a1a1a');api.block([0.1,0.12,0.06],[-0.3,1.78,0.84],'#fff');api.block([0.1,0.12,0.06],[0.3,1.78,0.84],'#fff');api.block([0.5,0.4,0.06],[0.5,0.95,0.93],'#e67e22');api.block([0.4,0.35,0.05],[0.5,0.95,0.99],'#c0392b',{rot:[0,-o*1.4,0]});for(let i=0;i&lt;4;i++){api.cyl(0.5,0.5,0.3,[i&lt;2?-1.1:1.1,0.5,i%2==0?0.6:-0.6],'#222',{rot:[0,0,1.5708]});}</pre></details>
+  </div>
+</article>
+<article class="card pending">
+  <img src="thumbs/mailbox-monster-83b9f93c.jpg" alt="Mailbox Monster" loading="lazy">
+  <div class="body">
+    <h2>Mailbox Monster <span class="tag">creature</span> <span class="tag st">pending</span></h2>
+    <p class="meta">4.3 &times; 6 &times; 2.41 m (w &times; h &times; d) &middot; 27 parts, 3 glowing &middot; code name <code>mmon</code></p>
+    <p>Mailbox Monster: huge metal body of mailboxes on wheels, mailbox head, glowing eyes, mouth slot, chest mailbox door</p>
+    <p class="meta">From studio testC (2026-11-13) (claude-opus-5-5), &ldquo;The Mailbox Monster (mailbox script)&rdquo; &middot; 38 of 38 cuts passed the checker</p>
+    <p class="cmd">Approve: <code>node scripts/blockyWorlds/studio/library/approve.mjs mailbox-monster-83b9f93c</code><br>Reject: <code>node scripts/blockyWorlds/studio/library/approve.mjs mailbox-monster-83b9f93c --reject</code></p>
+    <details><summary>Build code</summary><pre>const p=api.p;const s=p.sit||0;const ln=p.lean||0;const o=p.open||0;const m=p.mouth||0;const r=p.roll||0;const y=-1.1*s;const B='#3d6cb9';const G='#9aa3ad';const D='#2b2f36';const R='#d63031';for(let i=0;i&lt;2;i++){const sd=i*2-1;api.cyl(0.75,0.75,0.6,[sd*1.4,0.75,0],D,{rot:[r,0,1.5708]});api.block([0.62,0.2,1.2],[sd*1.4,0.75,0],'#777',{rot:[r,0,0]});for(let j=0;j&lt;3;j++){api.block([0.8,0.55,0.7],[sd*1.6,3.4+y-j*0.6,0.3],j==1?R:G);}api.ball(0.3,[sd*1.6,1.6+y,0.4],D);}api.block([2.2,2.2,2],[0,2.6+y,0],B);api.cyl(1.1,1.1,2,[0,3.7+y,0],B,{rot:[1.5708,0,0]});api.block([0.9,0.7,0.3],[0,2.7+y,1.1],G);api.block([0.7,0.5,0.05],[0,2.7+y,1.24],'#ffd36b',{glow:2*o});const a=o*1.4;api.block([0.8,0.6,0.06],[0,2.4+y+0.3*Math.cos(a),1.28+0.3*Math.sin(a)],'#c0c4cc',{rot:[a,0,0]});const hy=5.1+y-3*ln;const hz=2.6*ln;api.block([0.8,0.8,0.8],[0,4.5+y-1.5*ln,1.2*ln],D);api.block([1.8,1.1,1.6],[0,hy,hz],G);api.cyl(0.9,0.9,1.6,[0,hy+0.55,hz],G,{rot:[1.5708,0,0]});for(let i=0;i&lt;2;i++){const sd=i*2-1;api.ball(0.24,[sd*0.45,hy+0.3,hz+0.8],'#fff3a0',{glow:2.5});api.ball(0.1,[sd*0.45,hy+0.3,hz+1.02],'#111111');}api.block([1.1,0.14+0.4*m,0.06],[0,hy-0.28,hz+0.81],'#ff8c2a',{glow:1.8});api.block([0.1,0.9,0.1],[1.0,hy+0.9,hz],R);api.block([0.5,0.3,0.08],[1.25,hy+1.2,hz],R);</pre></details>
+  </div>
+</article>
+</main></body></html>

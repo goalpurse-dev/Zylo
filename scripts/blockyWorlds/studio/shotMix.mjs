@@ -56,9 +56,10 @@ export function shotMix(plan, tl, shotRes) {
   if (empty.length > maxEmpty) problems.push({ rule: "emptyWide", problem: `${empty.length} empty wide / establishing cuts (no person, animal or creature; at most ${maxEmpty} for ${n} cuts): put the story's people / creature in some of them: ${empty.map((s) => s.id).join(", ")}` });
   for (let i = 1; i < order.length; i++) {
     const a = order[i - 1], b = order[i];
-    if (hasCharacter(a) || hasCharacter(b)) continue;
+    const wides = ["wide", "low"].includes(a.camType) && ["wide", "low"].includes(b.camType); // (owner 2026-11-13: no same house in back-to-back wides, people or not)
+    if (!wides && (hasCharacter(a) || hasCharacter(b))) continue;
     const ha = houseAimed(shotRes[a.id]?.look, plan.bible?.homes ?? {}), hb = houseAimed(shotRes[b.id]?.look, plan.bible?.homes ?? {});
-    if (ha && ha === hb) problems.push({ id: b.id, line: b.line, rule: "sameBuilding", problem: `${a.id} and ${b.id} both show ${ha}'s house with nobody in it: never the same building twice in a row` });
+    if (ha && ha === hb) problems.push({ id: b.id, line: b.line, rule: "sameBuilding", problem: wides ? `${a.id} and ${b.id} are back-to-back wides of ${ha}'s house: never the same house in two wides in a row (another house, another angle, or a closer cut)` : `${a.id} and ${b.id} both show ${ha}'s house with nobody in it: never the same building twice in a row` });
   }
   // 3. creatures built as characters
   for (const name of plan.creatures ?? []) for (const p of creatureProblems(name, plan.assets[name] ?? "", { homes: plan.bible?.homes ?? {}, cast: tl.cast ?? {} })) problems.push({ rule: "creature", problem: p });

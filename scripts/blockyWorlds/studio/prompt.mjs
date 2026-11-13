@@ -28,8 +28,8 @@ faces, props, block-built things, and a moving camera). You then look at rendere
    inserts (close on a thing) for key props. A reaction close-up after a shock word.
 9. THE SHOT MIX (checked before any render): at least 3 of every 4 cuts show a character or the named thing DOING
    something (an act, an action pose, walking / running, the creature moving, the thing flying or falling...). Empty
-   wides / establishing cuts (no person, animal or creature in them) at most 1 in 6, and never the same building twice
-   in a row.
+   wides / establishing cuts (no person, animal or creature in them) at most 1 in 6, never the same building twice
+   in a row, and never the same house in two wides back to back (people or not).
 10. EVERY NAMED CREATURE OR ANIMAL IS A REAL CHARACTER with a body and a face, never just lights. A named ANIMAL can be
    a kit animal (api.animal, scaled up for a giant one). The story's named CREATURE / MONSTER is always BUILT for this
    story as an asset, from the script's own words about it (what it is made of, its shape, its size): a body of at
@@ -47,7 +47,8 @@ faces, props, block-built things, and a moving camera). You then look at rendere
    background blocks the render.
 14. THE CLIMAX (from the line that turns the story with "But", else the climax part, to the end) is the payoff: the
    hero ("me") AND the creature / main thing together in at least 60% of its cuts, close-ups for the reactions, no
-   plain building wides, and the hero never tiny on screen.
+   plain building wides, and the hero never tiny on screen: with the creature in frame the hero is at least about a third
+   of its on-screen height (put the hero near the lens: over the shoulder toward the creature, low angles past the hero).
 
 # The world (metres; y up; the street runs along x; house fronts face +z)
 - Houses: the bible's homes, left to right: house i front at x = ${W.HX0} + i*${W.HDX}, z = ${W.HZ}; ${W.HW} m wide, 2 floors
@@ -61,7 +62,8 @@ faces, props, block-built things, and a moving camera). You then look at rendere
   Furniture from the bible (bed, shelf, rug, table, counter, sofa, lamp, nightstand...). Marks: window (-1.2,-2.2),
   center (0.4,-0.2), door (-2.6,1.6), bed (0.6,-0.9). Point the camera from lz ~ +1.5..2.6 toward lz -3 to see the room.
 - Places (only if the story needs them): api.place("school"|"woods"|"park"|"shop", mark).
-- Light per cut: day | dusk | night | dawn | warm. Night = deep blue sky, lit windows and lamps.
+- Light per cut: day | dusk | night | dawn | warm. Night outdoors = a dark night sky and street, warm lamps and lit
+  windows; the engine keeps faces and the creature lit.
 - People are ~1.85 m tall blocky figures (head ~0.35 m). A medium shot: camera 2.5-4 m from the person at head height;
   a close-up: 1.2-2 m from the head, fov 35-45. The creature (engine monster) is ~11.6 m tall.
 
@@ -162,7 +164,7 @@ export function creatureLines(script, tl) {
 }
 
 /** the per-video brief: the script as delimited DATA + the timings, cast, creature, pets and what each line must show */
-export function videoBrief({ script, tl, mustShow, verbs, subjects, budgetUsd, minutes }) {
+export function videoBrief({ script, tl, mustShow, verbs, subjects, budgetUsd, minutes, builds = "" }) {
   const cast = Object.entries(tl.cast ?? {}).map(([id, c]) => `- ${id}: "${c.name}" (${c.role}${c.look?.outfitVariant ? `, ${c.look.outfitVariant}` : ""}${c.look?.top ? `, top ${c.look.top}` : ""})`).join("\n");
   const pets = Object.values(tl.pets ?? {}).map((p) => `- pet ${p.id}: "${p.name}", a ${p.species} (draw it with api.animal("${p.species}", ...) and list "${p.id}" in the cut's "pets")`).join("\n") || "- none";
   const words = tl.lines.map((l, n) => {
@@ -185,7 +187,8 @@ THE CREATURE: ${tl.monster ? `"${tl.monster.name}": BUILD it for this story (cre
 ${creatureLines(script, tl).map((t) => `  - "${t}"`).join("\n") || "  - (the script gives no more detail: make it fit the title and the story)"}` : "none"}
 PETS:
 ${pets}
-${tl.openingWorld ? `THE OPENING: cut 1 or 2 must show "${tl.openingWorld.name}" (build it, and list "${tl.openingWorld.name}" in that cut's "shows"), with no people cut before it.` : ""}
+${builds ? `${builds}
+` : ""}${tl.openingWorld ? `THE OPENING: cut 1 or 2 must show "${tl.openingWorld.name}" (build it, and list "${tl.openingWorld.name}" in that cut's "shows"), with no people cut before it.` : ""}
 
 THE LINES (words with their index and start time; "must show" = what the checks look for on screen during the line):
 ${words}`;

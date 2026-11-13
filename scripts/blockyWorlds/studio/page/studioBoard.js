@@ -13,6 +13,9 @@ import { makeAnimal, animateAnimal } from "/page/kit/animals/index.js";
 import { houseInfo, roomPoint, placePoint, streetPoint } from "/studio/world.js";
 
 const ST = window.__STUDIO ?? { shots: {}, assets: {}, homes: {} };
+// THE NIGHT GRADE (owner 2026-11-13: "night looks like night"), outdoors only; the board's own night is skyTop #071440,
+// skyHor #22408a, moon 0.7, hemisphere 0.8, lamps 22. Calibrated on RunPod on test A2's night cuts (studio README).
+const NIGHT = Object.freeze({ skyTop: "#01030c", skyHor: "#0b1530", moon: 0.3, hemi: 0.4, skyFill: 0.15, lamp: 34, lampColor: "#ffb866", lampReach: 20, windows: 1.8, lampHead: 3, key: 1.2 });
 const dec = (b64) => new TextDecoder().decode(Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)));
 const FN = new Map();
 function compiled(kind, key) {
@@ -173,6 +176,7 @@ function studioFrame(S, ctx, base) {
     // (2026-11-13: the round-2 creature frame cap is gone: it moved the director's camera. The creature's share is only
     // measured, for the stats)
     const cShare = creatures.length ? Math.max(...creatures.map((c) => screenShare(c, camera))) : 0;
+    const cHeight = creatures.length ? Math.max(...creatures.map((c) => heightShare(c, camera))) : 0; // (the hero-vs-creature size check)
     // NO BLOCKED LENS (owner 2026-11-13: a foreground slab = a blocked lens): a built thing (block, prop, a non-creature
     // asset) with the lens inside it, or nearer than the subject and covering over ~35% of the frame, is left out of
     // this frame
@@ -192,6 +196,24 @@ function studioFrame(S, ctx, base) {
       Lt.rim.position.copy(look).addScaledVector(dir, 4).add(new THREE.Vector3(0, 4, 0)); Lt.rim.intensity = ls * 45;
       Lt.sky.intensity = Math.min(0.55, ls * 2.5);
       if (creatures.length) { const cb = new THREE.Box3().setFromObject(creatures[0]), top = cb.getCenter(new THREE.Vector3()); top.y = cb.min.y + 0.8 * (cb.max.y - cb.min.y); Lt.face.position.copy(top).addScaledVector(dir, -4); Lt.face.intensity = ls * (60 + 4 * top.distanceTo(pos)); }
+    }
+    // NIGHT LOOKS LIKE NIGHT (owner 2026-11-13): outdoors at night a darker sky and street, warm lamps and windows; the
+    // night floor above keeps faces and the creature lit (the dark-frame check must still pass)
+    const NG = shot.studioNight === false ? null : { ...NIGHT, ...(ST.night ?? {}), ...(shot.studioNight ?? {}) };
+    const outdoors = /^(street|place:(park|woods))/.test(String(shot.board?.loc ?? shot.loc ?? "street"));
+    if (shot.light === "night" && NG && outdoors) { // (dusk keeps the board's dusk)
+      const scene = S.root.parent;
+      if (S.sky?.uniforms) { S.sky.uniforms.top.value.set(NG.skyTop); S.sky.uniforms.hor.value.set(NG.skyHor); }
+      if (scene?.background?.isColor) scene.background.set(NG.skyHor);
+      if (S.__sun) S.__sun.intensity = NG.moon;
+      for (const o of scene?.children ?? []) if (o.isHemisphereLight) o.intensity = NG.hemi;
+      Lt.sky.intensity = Math.min(Lt.sky.intensity, NG.skyFill);
+      for (const p of S.__points ?? []) { p.userData.on = NG.lamp; p.color.set(NG.lampColor); p.distance = NG.lampReach; }
+      const seen = new Set();
+      for (const H of Object.values(S.houses ?? {})) for (const w of H.wins ?? []) if (w.glowM && !seen.has(w.glowM)) { seen.add(w.glowM); w.glowM.emissiveIntensity *= NG.windows; w.lamp.emissiveIntensity *= NG.windows; }
+      for (const h of S.lampHeads ?? []) if (h.emissiveIntensity > 0) h.emissiveIntensity = NG.lampHead; // a lamp still off (lights_on) stays off
+      // the faces stay lit: the key light a little stronger than the plain night floor
+      Lt.key.intensity *= NG.key;
     }
     S.camFill?.position.copy(pos).add(new THREE.Vector3(0, 0.4, 0));
     S.weather?.update(shot.board?.weather ?? null, t, camera, night);
@@ -223,7 +245,7 @@ function studioFrame(S, ctx, base) {
     // the largest built thing / prop / animal in view (the EMPTY-frame check: nobody and nothing named on screen)
     let things = 0;
     for (const o of SD.root.children) if (o.visible && !o.isLight && !o.userData?.creature) { const sh = screenShare(o, camera); if (sh > things) things = sh; }
-    SD.stats = { people: ppl, creature: +cShare.toFixed(3), things: +things.toFixed(3), camera: shot.camera, ...(fg != null ? { fg, ...SD.fgx } : {}) };
+    SD.stats = { people: ppl, creature: +cShare.toFixed(3), creatureH: +cHeight.toFixed(3), things: +things.toFixed(3), camera: shot.camera, ...(fg != null ? { fg, ...SD.fgx } : {}) };
     return { focus: pos.distanceTo(look) };
   }
   SD.stats = { people: {}, creature: 0, camera: shot.camera, noCamera: true };

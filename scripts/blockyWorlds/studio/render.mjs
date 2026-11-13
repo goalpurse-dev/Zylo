@@ -1,4 +1,4 @@
-// STUDIO MODE: renders on RunPod, endpoint gm9eqdkuyc2ofs ONLY (asserted), through the image's simpleStills role with
+// STUDIO MODE: renders on RunPod, endpoint BLOCKY_WORLDS_STUDIO_ENDPOINT (default gm9eqdkuyc2ofs; never Cutaway's), through the image's simpleStills role with
 // the studio bundle as the job's page code (no new role, no image rebuild). The keys stay here (engine/runpod/client.mjs
 // reads .env.local when a job is sent); the agent never sees them.
 //   renderSheets({ code, sheets, out, label, L })  one job: each sheet = a contact sheet of labelled frames -> JPEG files
@@ -13,9 +13,22 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ENGINE = path.resolve(HERE, "../engine");
 const { rpClient, storage, loadEnv, billed, RATE, endpointInfo } = await import(pathToFileURL(path.join(ENGINE, "runpod/client.mjs")).href);
 const { simpleFileNames } = await import(pathToFileURL(path.join(ENGINE, "runpod/simpleRole.mjs")).href);
-export const ENDPOINT = "gm9eqdkuyc2ofs";
+// THE ENDPOINT (owner 2026-11-13): a setting, BLOCKY_WORLDS_STUDIO_ENDPOINT, default the Blocky endpoint gm9eqdkuyc2ofs;
+// the Cutaway endpoint is refused whatever the setting says. Without the setting, runpod/endpoint.json must agree with
+// the default (the image the endpoint runs is the one the bundle was made for).
+export const DEFAULT_ENDPOINT = "gm9eqdkuyc2ofs";
+export const FORBIDDEN_ENDPOINTS = Object.freeze(["f66astc0vrus92"]); // Cutaway
+export function studioEndpoint(env = process.env) {
+  const set = String(env.BLOCKY_WORLDS_STUDIO_ENDPOINT ?? "").trim();
+  const id = set || DEFAULT_ENDPOINT;
+  if (FORBIDDEN_ENDPOINTS.includes(id)) throw new Error(`the Studio endpoint is set to ${id}, the Cutaway endpoint: refusing`);
+  if (!/^[a-z0-9]{8,40}$/.test(id)) throw new Error(`the Studio endpoint setting "${id.slice(0, 40)}" is not a RunPod endpoint id: refusing`);
+  if (!set && endpointInfo().endpointId !== id) throw new Error(`runpod/endpoint.json points at ${endpointInfo().endpointId}, not ${id}: refusing (set BLOCKY_WORLDS_STUDIO_ENDPOINT to choose)`);
+  return id;
+}
+export const ENDPOINT = studioEndpoint();
 export { RATE };
-const client = () => { if (endpointInfo().endpointId !== ENDPOINT) throw new Error(`runpod/endpoint.json points at ${endpointInfo().endpointId}, not ${ENDPOINT}: refusing`); return rpClient({ endpointId: ENDPOINT }); };
+const client = () => rpClient({ endpointId: studioEndpoint() });
 
 /** worst-case seconds of a stills job (the job is cancelled at maxSec, so this bounds the spend) */
 export const sheetMaxSec = (frames) => Math.round(120 + frames * 1.2);

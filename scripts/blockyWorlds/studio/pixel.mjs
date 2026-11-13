@@ -3,7 +3,7 @@
 // (owner 2026-11-13): black, a flat wall, one colour, a dark slab; no framing rules.
 // Thresholds calibrated on run 1's final frames (2026-11-12): they catch its black frames (#24 m6, #27 m23), blank walls
 // (#17 e0.026, #46 e0.026) and dark creature slabs (#43, #49, #53) and pass its normal night and close-up frames.
-export const PX = Object.freeze({ blackMean: 28, minEdge: 0.03, maxFlat: 0.72, slab: { mean: 45, flat: 0.4, edge: 0.06 }, slab25: 0.25, near: 0.18 });
+export const PX = Object.freeze({ blackMean: 28, minEdge: 0.03, maxFlat: 0.72, slab: { mean: 45, flat: 0.4, edge: 0.06 }, slab25: 0.25, near: 0.18, heroVsCreature: 0.35 });
 
 /** a tile's blocking problems: [string] (empty = fine) */
 export function tileProblems(tile) {
@@ -31,5 +31,8 @@ export function cutFrameProblems(tile, cut, { climaxFrom = Infinity, hero = "me"
   const heroIn = (cut.people ?? []).some((p) => p.id === hero) || (cut.codePeople ?? []).includes(hero);
   const min = ["wide", "low"].includes(cut.camType) ? 0.08 : 0.12;
   if (cut.line >= climaxFrom && heroIn && (g.people?.[hero] ?? 0) < min) out.push(`the hero is tiny or out of frame in a climax cut (${Math.round((g.people?.[hero] ?? 0) * 100)}% of the frame height, needs ${Math.round(min * 100)}%)`);
+  // NEVER TINY NEXT TO THE CREATURE (owner 2026-11-13, test A2's night): in a climax cut with both on screen, the hero's
+  // on-screen height is at least PX.heroVsCreature of the creature's (put the hero nearer the lens: over the shoulder)
+  else if (cut.line >= climaxFrom && heroIn && (g.people?.[hero] ?? 0) > 0 && (g.creatureH ?? 0) > 0.05 && g.people[hero] < PX.heroVsCreature * g.creatureH) out.push(`the hero is tiny next to the creature (${Math.round(g.people[hero] * 100)}% of the frame height vs the creature's ${Math.round(g.creatureH * 100)}%; needs at least ${Math.round(PX.heroVsCreature * 100)}% of its size on screen: bring the hero nearer the lens, over the shoulder toward the creature)`);
   return out;
 }
