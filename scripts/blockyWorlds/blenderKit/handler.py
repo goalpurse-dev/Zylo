@@ -164,7 +164,7 @@ def run_sandboxed(cmd, cwd, timeout, extra_env=None, sandboxed=True):
 
 
 VIDEO_FILES = {"shots.py": 2_000_000, "script.txt": 100_000, "audio/words.json": 2_000_000, "audio/voice.wav": 60_000_000,
-               "audio/cues.json": 2_000_000, "audio/sentences.json": 2_000_000}
+               "audio/cues.json": 2_000_000, "audio/sentences.json": 2_000_000, "audio/music_bed.wav": 60_000_000}
 
 
 def fetch_video(url, dest_dir):
@@ -462,7 +462,12 @@ def role_finish(inp, job_id):
                 os.chown(os.path.join(root, x), uid, gid)
         unpack_s = round(time.time() - t0, 1)
         args = ["python3", os.path.join(ws, "tools", "finish.py"), slug]
-        if inp.get("music", True):
+        bed = os.path.join(vdir, "audio", "music_bed.wav")
+        if inp.get("music", True) and os.path.exists(bed) and inp.get("musicDb") is not None:
+            # OUR track (music.mjs: the engine's bed A at the voice's pace, as our #2 video) at the level that puts it 14 LU
+            # under the voice after the kit's duck; already at the voice's pace, so no further speed-up
+            args += ["--music", bed, "--music-speed", "1", "--music-db", "%.2f" % float(inp["musicDb"])]
+        elif inp.get("music", True):
             args += ["--music", MUSIC]
         else:
             args += ["--no-music"]

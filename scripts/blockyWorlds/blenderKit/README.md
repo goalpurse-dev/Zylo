@@ -71,3 +71,18 @@ First test (owner, "In this town, we live in a plane.", Sonnet 5.5): 69 shots, 7
 voice $0.13 (80.6 s take, 3 lines trimmed -> 72.9 s), director $2.09 (three avoidable cache rewrites: plan / batch / fix
 schemas differed), vision checker $0.06, GPU previews $0.05, GPU final $0.27. Round 0: 18 crashed, 2 pixel, 18 vision; round 1
 fixed every crash (14 vision issues left); round 2 skipped by the cap.
+
+## After the first test (2026-11-13, free changes)
+- MUSIC (`music.mjs`): the finish uses OUR track, the one our #2 video used: the engine's bed A (audio/backrooms.mjs via
+  bedFromLoop, at the voice's 1.25x pace) at #2's level: 14 LU under the voice after ducking. The kit's mix.py works by
+  peaks, so the orchestrator measures the voice and the bed (stereo) and passes `--music <bed> --music-speed 1
+  --music-db <calibrated>` to finish.py (the bed travels in the video tar). Check on the plane voice:
+  #2's way (engine mixV2) voice -16.0 / music -30.0 LUFS (14.0 LU), the kit with our bed voice -16.5 / music -29.6 LUFS
+  (13.1 LU); the kit's mix has no loudnorm: -16.4 LUFS overall vs #2's -14. `node music.mjs --voice <wav> --out <dir>`.
+  Needs an image rebuild (handler.py) before the next run.
+- DIRECTOR: at least 3 locations (every shot names its location; the plan check asks once more, then stops before any
+  GPU money); close-ups framed wider (medium shot with head and shoulders, small props scaled up, the camera 3.5+ units
+  from the subject and 2+ from walls / seats / boxes); a FOREGROUND-SLAB pixel suspect (centre box: biggest 16-level
+  share + edge density, calibrated on the first test: 8 of 12 slab flags, 3 face close-ups) that the checker is asked to
+  confirm (never blocking on its own); the approved library builds that match the story go into the plan brief.
+- LIBRARY: approved plane-ext, cabin-scene, belt, kite, hand-bell, oven, hat-on, rope; rejected seat-cake, sky-wind.

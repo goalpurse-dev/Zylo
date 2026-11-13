@@ -19,10 +19,11 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { ledger, stepTimes } from "../studio/ledger.mjs";
 import { loadEnv } from "../engine/runpod/client.mjs";
-import { makeDirector, systemPrompt, tileShots, assemble, staticCheck, wordLines, MODELS, BATCH } from "./director.mjs";
+import { makeDirector, systemPrompt, tileShots, assemble, staticCheck, wordLines, planLocations, MODELS, BATCH, MIN_LOCATIONS } from "./director.mjs";
 import { runpod, RATE, BOOT_S } from "./rp.mjs";
 import { shotFrames, splitShots } from "./plan.mjs";
-import { saveAsset, functionSource } from "./library.mjs";
+import { saveAsset, functionSource, findAssets } from "./library.mjs";
+import { makeBed, kitMusicDb } from "./music.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, "../../..");
@@ -95,20 +96,31 @@ if (!state.plan) {
     `THE SCRIPT (line: word range, seconds, text):`, ...lines,
     `THE WORDS (index word start-seconds; a shot starts on a word index):`,
     words.map((w, i) => `${i} ${w.word} ${w.start.toFixed(2)}`).join(" | "),
+    // the owner-APPROVED library builds that match this story (library.mjs findAssets: approved only), as reusable code
+    ...(() => { const hits = findAssets(`${script.lines.map((l) => l.text).join(" ")} ${builds.map((b) => b.name).join(" ")}`).slice(0, 8); return hits.length ? [`APPROVED BUILDS FROM OUR LIBRARY (proven in Blender; copy any you use into header_code unchanged, then call them):`, ...hits.map((a) => `# ${a.kind}: ${a.about}\n${a.code}`)] : []; })(),
     builds.length ? `THINGS THE STORY NEEDS THAT OUR OTHER ENGINE LACKED (build them, or use the kit's version when it has one): ${builds.map((b) => `${b.name} (${b.kind}; lines ${b.lines.join(",")}${b.description ? `; ${b.description}` : ""})`).join("; ")}` : "",
     `PLAN THE VIDEO. Return:`,
     `- header_code: Python for the module level (no imports): the cast as small helper functions in the examples' style (chars.Char + story._live, one per person; our own looks), the Sky Wind as a visible creature (a swirling, glowing wind spirit with a face, built from kit primitives / fx), constants for set positions, and a builder function for every set or prop the kit lacks. The town lives INSIDE a giant airliner: reuse W2.airliner / W2.cabin / W2.seat_root / W.cockpit / W.sky / W.cloud wherever they fit; seat lamps above seats (yellow / red / green) must be visible where the script names them.`,
     `- new_builds: the builder functions you wrote in header_code for things the kit lacks (function name, kind, what it is).`,
-    `- shots: about ${Math.round((dur / 60) * 55)} shots (50-60 a minute, 0.4-2.5 s each), in order; each = { id (1, 2, ...), w0 = the index of its first word (the first shot 0), desc = what we see }. A shot lasts until the next shot's first word; the last shot ends with the audio. Cut on the word that brings a new image; every named thing gets its own shot; reaction close-ups after surprises; the first shot is mid-action.`,
+    `- shots: about ${Math.round((dur / 60) * 55)} shots (50-60 a minute, 0.4-2.5 s each), in order; each = { id (1, 2, ...), w0 = the index of its first word (the first shot 0), desc = what we see, location = the set it is in (short name) }. Use at least ${MIN_LOCATIONS} different locations. A shot lasts until the next shot's first word; the last shot ends with the audio. Cut on the word that brings a new image; every named thing gets its own shot; reaction close-ups after surprises; the first shot is mid-action.`,
     `You will then write the shot bodies in batches of ${BATCH}. Keep the header complete now: later batches can only add small helpers.`,
   ].filter(Boolean).join("\n");
-  const r = await L.step("director_plan", () => D.plan({ brief }));
+  let r = await L.step("director_plan", () => D.plan({ brief }));
+  // THE PLAN CHECK (owner, first test: almost every shot in the same cabin aisle): at least MIN_LOCATIONS locations;
+  // one re-plan, then a stop (before any GPU money)
+  let locs = planLocations(r.data.shots ?? []);
+  if (locs.n < MIN_LOCATIONS) {
+    say(`plan check: ${locs.n} location(s) (${locs.list.join(", ") || "none named"}); asking for at least ${MIN_LOCATIONS}`);
+    r = await L.step("director_plan", () => D.plan({ brief: `PLAN CHECK FAILED: your plan uses ${locs.n} location(s) (${locs.list.join(", ") || "none named"}). Re-plan the WHOLE video (same answer format: header_code, new_builds, every shot with id, w0, desc, location) with at least ${MIN_LOCATIONS} clearly different locations, each used for a real stretch of the story (add the set builders to header_code).` }));
+    locs = planLocations(r.data.shots ?? []);
+    if (locs.n < MIN_LOCATIONS) throw new Error(`plan check: still ${locs.n} location(s) after a re-plan (${locs.list.join(", ")}): stopped before any render`);
+  }
   const t = tileShots(r.data.shots ?? [], words);
-  state.plan = { title: r.data.title ?? script.title, header: r.data.header_code ?? "", newBuilds: r.data.new_builds ?? [], shots: t.shots, mergedAtPlan: t.merged, cutOff: r.cutOff };
+  state.plan = { title: r.data.title ?? script.title, header: r.data.header_code ?? "", newBuilds: r.data.new_builds ?? [], shots: t.shots, mergedAtPlan: t.merged, cutOff: r.cutOff, locations: locs.list };
   state.bodies = {};
   state.convo = D.convo; // a resume continues the same conversation (the batches need the plan turn)
   save();
-  say(`plan: ${t.shots.length} shots (${t.merged.length} too short, merged), ${state.plan.newBuilds.length} new builds (${state.plan.newBuilds.map((b) => b.function).join(", ")}), header ${state.plan.header.length} chars${r.cutOff ? " (CUT OFF)" : ""}`);
+  say(`plan: ${t.shots.length} shots in ${locs.n} locations (${locs.list.join(", ")}) (${t.merged.length} too short, merged), ${state.plan.newBuilds.length} new builds (${state.plan.newBuilds.map((b) => b.function).join(", ")}), header ${state.plan.header.length} chars${r.cutOff ? " (CUT OFF)" : ""}`);
   if (!state.plan.header.trim() || !t.shots.length) throw new Error("the plan came back without a header or shots");
 } else D.convo.push(...(state.convo ?? []));
 
@@ -174,7 +186,7 @@ say(`static check: ${sc.ok ? "ok" : `${sc.problems.length} problem(s)`}, ${plan.
 // ---------------------------------------------------------------- 3. previews + checks + fix rounds
 const tarVideo = (name) => {
   const file = path.join(OUT, name);
-  py("import sys,tarfile,os\nout,root=sys.argv[1],sys.argv[2]\nwith tarfile.open(out,'w:gz') as t:\n for f in sys.argv[3:]:\n  t.add(os.path.join(root,f),arcname=f)", file, vdir, "shots.py", "script.txt", "audio/words.json", "audio/voice.wav");
+  py("import sys,tarfile,os\nout,root=sys.argv[1],sys.argv[2]\nwith tarfile.open(out,'w:gz') as t:\n for f in sys.argv[3:]:\n  t.add(os.path.join(root,f),arcname=f)", file, vdir, "shots.py", "script.txt", "audio/words.json", "audio/voice.wav", ...(fs.existsSync(path.join(vdir, "audio", "music_bed.wav")) ? ["audio/music_bed.wav"] : []));
   return file;
 };
 async function uploadVideo(tag) {
@@ -183,7 +195,11 @@ async function uploadVideo(tag) {
   await R.putFile(`video_${tag}.tgz`, tgz, "application/gzip");
   return R.signGet(`video_${tag}.tgz`);
 }
-const PIX = "import sys,json,os\nfrom PIL import Image, ImageStat\nres={}\nfor f in sorted(os.listdir(sys.argv[1])):\n if f.startswith('shot_') and f.endswith('.png'):\n  im=Image.open(os.path.join(sys.argv[1],f)).convert('L')\n  st=ImageStat.Stat(im)\n  res[int(f[5:-4])]={'mean':round(st.mean[0],1),'std':round(st.stddev[0],1)}\nprint(json.dumps(res))";
+// per preview frame: mean / spread (blocking: black, one flat colour) + the centre box's biggest 16-level share and edge
+// density (a FOREGROUND-SLAB suspect for the checker: calibrated on the first test's 69 previews, it caught 8 of the 12
+// slab-type shots the checker flagged and 3 big face close-ups, so it only asks the checker to look, it never blocks)
+const PIX = "import sys,json,os\nfrom PIL import Image, ImageStat, ImageFilter\nres={}\nfor f in sorted(os.listdir(sys.argv[1])):\n if f.startswith('shot_') and f.endswith('.png'):\n  im=Image.open(os.path.join(sys.argv[1],f)).convert('L')\n  st=ImageStat.Stat(im)\n  c=im.resize((72,128)).crop((14,26,58,102))\n  px=c.tobytes()\n  b=[0]*16\n  for v in px: b[v//16]+=1\n  ed=c.filter(ImageFilter.FIND_EDGES).tobytes()\n  res[int(f[5:-4])]={'mean':round(st.mean[0],1),'std':round(st.stddev[0],1),'cflat':round(max(b)/len(px),2),'cedge':round(sum(1 for v in ed if v>24)/len(px),3)}\nprint(json.dumps(res))";
+export const slabSuspect = (p) => (p.cflat >= 0.45 && p.cedge < 0.14) || (p.cflat >= 0.35 && p.cedge < 0.11);
 
 /** a downloaded preview folder -> the job output it came with (the worker's own rules: failures from the kit's log, sheets of
  *  16 rendered shots in order) */
@@ -229,13 +245,14 @@ async function previewRound(tag, ids) {
   }
   // ids that did not render at all (no png) count as crashed
   for (const id of ids) if (!pixel[id] && !failed[id]) failed[id] = "no preview frame was rendered";
+  const slabs = Object.fromEntries(Object.entries(pixel).filter(([id, p]) => slabSuspect(p) && !failed[id]).map(([id, p]) => [id, p]));
   const pixBad = Object.fromEntries(Object.entries(pixel).filter(([, p]) => p.mean < 12 || p.std < 4).map(([id, p]) => [id, p.mean < 12 ? `the frame is black (mean ${p.mean})` : `the frame is one flat colour (std ${p.std})`]));
-  return { failed, sheets, pixel, pixBad, renderS: outs.reduce((a, o) => a + (o.out.renderS ?? 0), 0) };
+  return { failed, sheets, pixel, pixBad, slabs, renderS: outs.reduce((a, o) => a + (o.out.renderS ?? 0), 0) };
 }
-async function vision(tag, sheets, ids) {
+async function vision(tag, sheets, ids, suspects = {}) {
   if (!sheets.length) return {};
   const shots = plan.shots.filter((s) => ids.includes(s.id));
-  const r = await L.step("vision_check", () => D.check({ label: `check_${tag}`, sheets, shots, wordsText }));
+  const r = await L.step("vision_check", () => D.check({ label: `check_${tag}`, sheets, shots, wordsText, suspects }));
   return Object.fromEntries((r.data.shots ?? []).filter((x) => !x.ok).map((x) => [x.id, x.problem]));
 }
 
@@ -243,7 +260,7 @@ state.rounds ??= [];
 let failing = {};
 if (!state.previewed) {
   const p = await L.step("preview_round0", () => previewRound("r0", plan.shots.map((s) => s.id)));
-  const vis = await vision("r0", p.sheets, plan.shots.map((s) => s.id).filter((id) => !p.failed[id]));
+  const vis = await vision("r0", p.sheets, plan.shots.map((s) => s.id).filter((id) => !p.failed[id]), p.slabs);
   failing = mergeProblems(p, vis);
   state.previewed = true; state.round = 0;
   state.rounds.push({ round: 0, shots: plan.shots.length, crashed: Object.keys(p.failed).length, pixel: Object.keys(p.pixBad).length, vision: Object.keys(vis).length, failing: Object.keys(failing).length, sheets: p.sheets.map((s) => s.file) });
@@ -267,7 +284,7 @@ for (let round = (state.round ?? 0) + 1; round <= ROUNDS && Object.keys(failing)
   let skipped = null;
   for (let k = 0; k < order.length && !skipped; k += FIX_PER_CALL) {
     const part = order.slice(k, k + FIX_PER_CALL);
-    const text = [`FIX ROUND ${round} of ${ROUNDS} (part ${k / FIX_PER_CALL + 1} of ${Math.ceil(order.length / FIX_PER_CALL)}). These shots failed in the preview (the kit's preview mode, middle frame at 25% res). Rewrite each body so it renders and reads clearly. Crashes first: read the traceback and use only kit functions and parameters from the toolkit map. If a header helper is broken, fix it in the added header code (it may redefine the function).`,
+    const text = [`FIX ROUND ${round} of ${ROUNDS} (part ${k / FIX_PER_CALL + 1} of ${Math.ceil(order.length / FIX_PER_CALL)}). These shots failed in the preview (the kit's preview mode, middle frame at 25% res). Rewrite each body so it renders and reads clearly; a slab / blocked / cropped frame: pull the camera back to a medium shot with the character's head and shoulders, make the small prop bigger, keep the camera 3.5+ units from the subject and 2+ units from any wall, seat or box. Crashes first: read the traceback and use only kit functions and parameters from the toolkit map. If a header helper is broken, fix it in the added header code (it may redefine the function).`,
       ...part.map((id) => { const s = shotById(id); return `shot ${id} (${secs(s)}; words "${wordsText(s)}"; desc: ${s.desc})\nPROBLEM: ${failing[id].text}\nCURRENT BODY:\n${state.bodies[id]}`; })].join("\n\n");
     let r;
     try { r = await L.step(`director_fix_${round}`, () => D.fix({ label: `fix_round_${round}_${k / FIX_PER_CALL + 1}`, text })); }
@@ -289,7 +306,7 @@ for (let round = (state.round ?? 0) + 1; round <= ROUNDS && Object.keys(failing)
   }
   save();
   const p = await L.step(`preview_round${round}`, () => previewRound(`r${round}`, ids));
-  const vis = await vision(`r${round}`, p.sheets, ids.filter((id) => !p.failed[id]));
+  const vis = await vision(`r${round}`, p.sheets, ids.filter((id) => !p.failed[id]), p.slabs);
   failing = mergeProblems(p, vis);
   state.round = round;
   state.rounds.push({ round, fixed: ids.length, crashed: Object.keys(p.failed).length, pixel: Object.keys(p.pixBad).length, vision: Object.keys(vis).length, failing: Object.keys(failing).length, sheets: p.sheets.map((s) => s.file) });
@@ -312,6 +329,10 @@ const worstFinal = groups.reduce((a, g) => a + chunkMax(g), 0) * RATE + Math.min
 L.check("final render + finish (all jobs)", worstFinal);
 say(`final: ${frames.length} shots, ${NF} frames in ${K} chunks (${groups.map((g) => `${g.shots}:${g.n}`).join(" ")}); worst case $${worstFinal.toFixed(3)}; spent $${L.total()}`);
 const tFinal = Date.now();
+// OUR music (music.mjs): the engine's bed A at the voice's pace, the level of our #2 video (14 LU under the voice); free
+const music = await L.step("music_bed", async () => { await makeBed({ seconds: dur, out: path.join(vdir, "audio", "music_bed.wav") }); return kitMusicDb({ voice: path.join(vdir, "audio", "voice.wav"), bed: path.join(vdir, "audio", "music_bed.wav") }); });
+state.music = music; save();
+say(`music: engine bed A x1.25, kit --music-db ${music.musicDb} (voice ${music.voiceLufs} LUFS, bed ${music.bedLufs} LUFS)`);
 const finalUrl = await uploadVideo("final");
 state.chunks ??= {};
 const res = await L.step("final_render", () => Promise.all(groups.map(async (g, i) => {
@@ -327,7 +348,7 @@ const renderWall = (Date.now() - tFinal) / 1000;
 const segments = [];
 for (let i = 0; i < groups.length; i++) segments.push(await R.signGetParts(state.chunks[i].name, state.chunks[i].parts));
 const uploads = { "final.mp4": await R.signPuts("final.mp4", 4), "final_nocaptions.mp4": await R.signPuts("final_nocaptions.mp4", 4), "final_phone.mp4": await R.signPuts("final_phone.mp4", 2) };
-const fin = await L.step("finish", () => R.job("finish", { role: "finish", slug: SLUG, videoUrl: finalUrl, frames: NF, segments, uploads, music: true }, { maxRunSec: 1800, ledgerKey: "runpod_final" }));
+const fin = await L.step("finish", () => R.job("finish", { role: "finish", slug: SLUG, videoUrl: finalUrl, frames: NF, segments, uploads, music: true, musicDb: music.musicDb }, { maxRunSec: 1800, ledgerKey: "runpod_final" }));
 if (!fin.ok) throw new Error(`finish failed: ${String(fin.error).slice(0, 800)}`);
 for (const [name, u] of Object.entries(fin.output.uploads)) await R.fetchParts(name, u.parts, path.join(OUT, name));
 const finalWall = (Date.now() - tFinal) / 1000;

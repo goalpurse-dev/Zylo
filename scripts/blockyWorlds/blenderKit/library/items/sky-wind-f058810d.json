@@ -24,7 +24,8 @@
   ],
   "title": "The Town That Lives in a Plane"
  },
- "status": "pending",
+ "status": "rejected",
  "approved": false,
- "createdAt": "2026-11-13T20:58:50.964Z"
+ "createdAt": "2026-11-13T20:58:50.964Z",
+ "decidedAt": "2026-11-13T21:32:09.856Z"
 }
