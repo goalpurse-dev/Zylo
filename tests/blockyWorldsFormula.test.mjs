@@ -17,21 +17,21 @@ const RAW = [
   ["rule", "And right now I'm hanging from a chimney, screaming at a goat!"],
   ["rule", "You see, in this town, you must never knock on a door after sunset."],
   ["origin", "Every door in town remembers who knocked."],
-  ["neighbours", "Mrs. Dobb hides in her kitchen and answers through the letterbox."],
-  ["neighbours", "Mr. Fitch sleeps in his garage, behind eleven locks."],
-  ["neighbours", "Tamsin sells soup in the market and never opens the hatch."],
+  ["neighbours", "Mrs. Fable hides in her kitchen and answers through the letterbox."],
+  ["neighbours", "Mr. Hobart sleeps in his garage, behind eleven locks."],
+  ["neighbours", "Teague sells soup in the market and never opens the hatch."],
   ["me", "But I live in a house with fifty doors."],
-  ["me", "Then there's me, Pip, the clumsiest knocker in town."],
-  ["ally", "Mrs. Dobb caught me tapping on a wall."],
+  ["me", "Then there's me, Kestrel, the clumsiest knocker in town."],
+  ["ally", "Mrs. Fable caught me tapping on a wall."],
   ["ally", "She said, \"A door only hears what you say twice.\""],
   ["trigger", "Then one sunset the wind blew my door open."],
   ["trigger", "Knock. Knock. Something knocked back."],
   ["trigger", "One door rattled. Then ten. Then a hundred!"],
-  ["adults", "Mr. Fitch bolted his garage. Bang! Bang!"],
+  ["adults", "Mr. Hobart bolted his garage. Bang! Bang!"],
   ["adults", "The doors laughed at his locks."],
-  ["adults", "Mrs. Dobb stuffed her letterbox with socks."],
+  ["adults", "Mrs. Fable stuffed her letterbox with socks."],
   ["adults", "Pop! The socks flew out."],
-  ["adults", "Tamsin threw soup at the hatch."],
+  ["adults", "Teague threw soup at the hatch."],
   ["adults", "Splat! The hatch opened anyway."],
   ["adults", "Two hundred doors rattled at once."],
   ["adults", "Thud! The whole street shook."],
@@ -46,7 +46,7 @@ const RAW = [
   ["save", "The goats stopped screaming."],
   ["save", "The street was so still I heard a snail."],
   ["save", "Nobody knocked. Nobody was knocked at."],
-  ["callback", "Mrs. Dobb's door? Still knocking."],
+  ["callback", "Mrs. Fable's door? Still knocking."],
 ];
 const SCRIPT = normalizeScript({ title: "t", lines: RAW.map(([beat, text]) => ({ beat, part: BEAT_PART[beat], text })) });
 const edit = (fn) => { const s = clone(SCRIPT); fn(s.lines); return s; };
@@ -107,14 +107,14 @@ test("formula: the 'But' pivot: present, with a number, about 15 s in", () => {
 });
 
 test("formula: the vignettes need their own places", () => {
-  const same = edit((l) => { l[3].text = "Mrs. Dobb hides in her kitchen and answers through the letterbox."; l[4].text = "Mr. Fitch sleeps in his kitchen, behind eleven locks."; l[5].text = "Old Tamsin sells soup from her kitchen and never opens the hatch."; });
+  const same = edit((l) => { l[3].text = "Mrs. Fable hides in her kitchen and answers through the letterbox."; l[4].text = "Mr. Hobart sleeps in his kitchen, behind eleven locks."; l[5].text = "Old Teague sells soup from her kitchen and never opens the hatch."; });
   const p = text(same, /OWN places/);
   assert.equal(p.length, 1);
   assert.match(p[0], /\(lines 4, 5, 6\)$/);
 });
 
 test("formula: the escalation: short sentences, a sound word every 12 s, numbers that grow", () => {
-  assert.equal(text(edit((l) => { l[13].text = "Mr. Fitch bolted his garage door with every single lock he owned and then some more locks too."; }), /short sentences/).length, 1);
+  assert.equal(text(edit((l) => { l[13].text = "Mr. Hobart bolted his garage door with every single lock he owned and then some more locks too."; }), /short sentences/).length, 1);
   const quiet = edit((l) => { l.forEach((x) => { if (x.beat === "adults" || x.beat === "trigger") { x.text = x.text.replace(/\b(Bang|Pop|Splat|Thud|Knock)[.!]/g, "Oh."); delete x.sfx; } }); });
   assert.equal(text(quiet, /sound word/).length, 1);
   const flat = edit((l) => { l[12].text = "One door rattled. Then one. Then one."; l[17].text = "One bowl of soup flew."; l[19].text = "One door rattled at once."; });
@@ -129,7 +129,7 @@ test("formula: 'Then I noticed something' and the 2 to 6 word button", () => {
 });
 
 test("formula notes ride the existing checks: advisory (the button is HARD), and Fix it finds their lines", () => {
-  const bad = edit((l) => { l[0].text = "The goats screamed at the chimney."; l[32].text = "Mrs. Dobb's door is still knocking on everybody else's house tonight."; });
+  const bad = edit((l) => { l[0].text = "The goats screamed at the chimney."; l[32].text = "Mrs. Fable's door is still knocking on everybody else's house tonight."; });
   const c = hybridChecks({ script: bad, skeleton: {}, card: null, examples: [], lengthSec: 90 });
   const notes = c.advisory.filter((x) => x.startsWith(FORMULA_PREFIX));
   assert.equal(notes.length, 1, "the hook note is advisory");
@@ -237,7 +237,7 @@ test("fixPart: names the button length and target, and falls back to the split w
 });
 
 test("sound fits its object: a whistle with a beep is flagged for Fix it; a door with a slam is fine", () => {
-  const whistle = edit((l) => { l[13].text = "Coach Tamsin blew her whistle."; l[14].text = "Beep!"; });
+  const whistle = edit((l) => { l[13].text = "Coach Teague blew her whistle."; l[14].text = "Beep!"; });
   const p = soundObjectProblems(whistle);
   assert.equal(p.length, 1);
   assert.match(p[0], /"beep" does not fit the whistle/);
@@ -341,7 +341,7 @@ test("ending: soft, sentimental or abstract endings are HARD; no flip is a note;
   assert.ok(c.hard.some((x) => /the ending is soft or abstract/.test(x)), "hard in the hybrid writer");
   const flat = edit((l) => { l[31].text = "The street went quiet."; l[32].text = "The town was calm."; });
   assert.ok(endingProblems(flat).some((x) => /no holy twist/.test(x)));
-  assert.deepEqual(endingProblems(SCRIPT), [], "the test story ends on a flip (Mrs. Dobb's door? Still knocking.)");
+  assert.deepEqual(endingProblems(SCRIPT), [], "the test story ends on a flip (Mrs. Fable's door? Still knocking.)");
 });
 
 test("names: at most 3 named characters plus the narrator", () => {

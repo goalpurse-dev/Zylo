@@ -19,6 +19,7 @@ import { norm } from "./antiCopy.js";
 import { isException, MAGIC } from "./skeleton.js";
 import { wordCount, estimateSeconds, RULE_MIN_WORDS } from "./script.js";
 import { FORMULA_TEXT } from "./formula.js";
+import { setupsSchemaProps, SETUPS_TEXT } from "./plantPayoff.js";
 
 /** The beats, in order: [start, end] in % of the video, the engine part, the job (the prompts quote it). */
 export const BEATS = Object.freeze([
@@ -125,10 +126,11 @@ export function beatMapSchema() {
     worst: s, ally_name: s, ally_line: s, payoff: s,
     adults: { type: "array", items: obj({ who: s, quote: s }) },
     flaw: s, save: s, callback_to: s,
+    ...setupsSchemaProps(),
   });
 }
 
-export const BEAT_MAP_TEXT = `THE BEAT MAP (return it with the lines): for each job a SHORT EXACT QUOTE (3 to 10 words, word for word) from the line that does it: neighbours (the three names, each with a quote of its joke line), worst (the "me" line that makes the hero the worst at the rule), ally_name and ally_line (the planted line exactly as the ally says it), payoff (the save line where the planted line comes back), adults (each grown-up who tries, with a quote of the failed attempt), flaw (the hero's flaw in a few words), save (the line where the flaw saves everyone), callback_to (what the last line calls back, in a few words).`;
+export const BEAT_MAP_TEXT = `THE BEAT MAP (return it with the lines): for each job a SHORT EXACT QUOTE (3 to 10 words, word for word) from the line that does it: neighbours (the three names, each with a quote of its joke line), worst (the "me" line that makes the hero the worst at the rule), ally_name and ally_line (the planted line exactly as the ally says it), payoff (the save line where the planted line comes back), adults (each grown-up who tries, with a quote of the failed attempt), flaw (the hero's flaw in a few words), save (the line where the flaw saves everyone), callback_to (what the last line calls back, in a few words).\n${SETUPS_TEXT}`;
 
 /**
  * The advisory beat-sheet notes of a script (empty = every beat does its job). map: the writer's beat map ({} for a saved

@@ -26,6 +26,10 @@ import { pickRecipe } from "./recipes.js";
 import { ANGLES, BROAD_SCRIPT_SYSTEM, broadScriptSchema, examplesBlock, PLAN_SYSTEM, planPrompt, planSchema } from "./broad.js";
 import { skeletonProblems } from "./skeleton.js";
 import { buttonFallback } from "./formula.js";
+import { freshNames, freshNamesBlock, namesUsedBy } from "./bans.js";
+import { DARK_PLAN_SYSTEM, DARK_LINES_SYSTEM, DARK_VERSION_NOTES, darkLinesPrompt, darkLinesSchema, darkPlanPrompt, darkPlanSchema, darkProblems, darkWithParts } from "./dark.js";
+import { plantPayoffProblems, plantPayoffTable } from "./plantPayoff.js";
+import { cardFromPoolIdea, defaultCorpus, filterIdeas, IDEA_JUDGE_SYSTEM, IDEA_POOL_SYSTEM, ideaJudgePrompt, ideaJudgeSchema, ideaPoolPrompt, ideaPoolSchema, POOL_SIZE, readIdeaScores, topIdeas } from "./ideaEngine.js";
 import { pickBest, readStoryScores, STORY_JUDGE_SYSTEM, storyJudgePrompt, storyJudgeSchema, VERSION_NOTES } from "./storyJudge.js";
 import { HYBRID_LINES_SYSTEM, HYBRID_PLAN_SYSTEM, hybridLinesSystem, hybridPlanSystem, hybridChecks, hybridLinesPrompt, hybridLinesSchema, hybridPlanPrompt, hybridPlanSchema, planCard, planNotes, withParts } from "./hybrid.js";
 import { beatBudgets, plantedShare } from "./beatSheet.js";
@@ -704,6 +708,81 @@ export const HYBRID = Object.freeze({
   cacheTtl: "5m",
 });
 
+/**
+ * The IDEA ENGINE (ideaEngine.js): Opus (the best model, HYBRID.plan.model) writes a pool of ~40 ideas, free code rejects the banned
+ * pieces and every near-duplicate of the corpus (the idea library, past scripts, the references, the kit's examples) and of the log
+ * of ideas already given out, one judge call scores the rest, and the best `count` are kept (1 for "AI can decide"). Returns
+ * { ideas: [{ hook, rule, style, twist, source, visual, scores, total, card }], pool, kept, rejected, costUsd, calls }.
+ */
+export async function writeIdeaPool({ apiKey = "", count = 10, style = null, topic = "", corpus = [], given = [], meter = null, poolSize = POOL_SIZE, steps = {} }) {
+  const out = { ideas: [], pool: 0, kept: 0, rejected: [], costUsd: 0, calls: {} };
+  const log = (what, model, r) => { out.calls[what] = { model, usd: Number(r?.costUsd ?? 0), usage: r?.usage ?? null }; out.costUsd = Number((out.costUsd + Number(r?.costUsd ?? 0)).toFixed(5)); };
+  try {
+    const gen = steps.pool ?? ((a) => callJson(a));
+    const r = await gen({ apiKey, model: HYBRID.plan.model, system: [IDEA_POOL_SYSTEM], user: ideaPoolPrompt({ count: poolSize, style, avoid: given.slice(-40), topic }), schema: ideaPoolSchema(), effort: "low", maxTokens: 9000, meter });
+    log("pool", HYBRID.plan.model, r);
+    const pool = Array.isArray(r.data?.ideas) ? r.data.ideas.filter((x) => x?.rule && x?.hook) : [];
+    out.pool = pool.length;
+    const f = filterIdeas(pool, { corpus: [...defaultCorpus(), ...corpus], given });
+    out.kept = f.kept.length; out.rejected = f.rejected;
+    if (!f.kept.length) return out;
+    const judge = steps.judge ?? ((a) => callJson(a));
+    const j = await judge({ apiKey, model: MODELS.judge, system: [IDEA_JUDGE_SYSTEM], user: ideaJudgePrompt(f.kept), schema: ideaJudgeSchema(), effort: "low", maxTokens: 6000, meter });
+    log("judge", MODELS.judge, j);
+    const scores = readIdeaScores(j.data, f.kept.length);
+    out.ideas = topIdeas(f.kept, scores, count).map((x) => ({ ...x, card: cardFromPoolIdea(x) }));
+  } catch (e) {
+    out.costUsd = Number((out.costUsd + Number(e?.costUsd ?? 0)).toFixed(5));
+    out.stopped = stoppedText(e);
+    out.failure = failureOf(e);
+  }
+  return out;
+}
+
+/**
+ * The DARK TWIST writer (dark.js; owner, 2026-11-14): Opus plans, Sonnet writes THREE versions of the lines, the story judge scores
+ * all three per criterion and the best is kept (every version is saved on the run: out.versions with its text and scores).
+ * Returns { topic, style: "dark", plan, script, skeleton (the map), versions, pick, setups, checks, names, calls, costUsd }.
+ */
+export async function writeDark({ apiKey = "", topic, lengthSec = 150, meter = null, versions = 3, ttl = HYBRID.cacheTtl, usedNames = [], note = "", steps = {} }) {
+  const s = { judgeStories, ...steps };
+  const out = { topic, style: "dark", lengthSec, plan: null, script: null, skeleton: {}, versions: [], pick: null, setups: [], checks: null, names: [], calls: {}, costUsd: 0 };
+  const log = (what, model, r) => { out.calls[what] = { model, usd: Number(r?.costUsd ?? 0), usage: r?.usage ?? null }; out.costUsd = Number((out.costUsd + Number(r?.costUsd ?? 0)).toFixed(5)); };
+  try {
+    out.names = freshNames({ n: 4, seed: `${topic}|${Date.now()}|${Math.random()}`, used: usedNames });
+    const p = await callJson({ apiKey, model: HYBRID.plan.model, system: [DARK_PLAN_SYSTEM], user: darkPlanPrompt({ topic, lengthSec, note: [note, freshNamesBlock(out.names)].filter(Boolean).join("\n\n") }), schema: darkPlanSchema(), effort: HYBRID.plan.effort, maxTokens: HYBRID.plan.maxTokens, meter, ttl });
+    log("plan", HYBRID.plan.model, p);
+    out.plan = p.data;
+    const make = (vnote) => callJson({ apiKey, model: HYBRID.lines.model, system: [DARK_LINES_SYSTEM], user: darkLinesPrompt({ plan: out.plan, topic, lengthSec, note: vnote }), schema: darkLinesSchema(), effort: HYBRID.lines.effort, maxTokens: 12000, meter, ttl });
+    const notes = DARK_VERSION_NOTES.slice(0, Math.min(versions, DARK_VERSION_NOTES.length));
+    const first = await make(notes[0]);
+    const rest = await Promise.all(notes.slice(1).map(make));
+    const drafts = [first, ...rest].map((r) => {
+      const script = normalizeScript(darkWithParts(r.data));
+      const map = r.data?.map ?? {};
+      const c = darkProblems(script, lengthSec, { topic });
+      const pp = plantPayoffProblems(script, map.setups);
+      return { script, map, hard: c.hard, advisory: [...c.advisory, ...pp], costUsd: r.costUsd, usage: r.usage };
+    });
+    log("lines", HYBRID.lines.model, { costUsd: drafts.reduce((a, d) => a + Number(d.costUsd ?? 0), 0), usage: drafts[0].usage });
+    const j = await s.judgeStories({ apiKey, scripts: drafts.map((d) => d.script), topic, meter });
+    log("storyJudge", MODELS.opener, j);
+    const pick = pickBest(drafts.map((d, i) => ({ hard: d.hard.length, advisory: d.advisory.length, total: j.scores[i]?.total ?? 0 })));
+    out.versions = drafts.map((d, i) => ({ version: i + 1, scores: j.scores[i]?.scores ?? {}, total: j.scores[i]?.total ?? 0, note: j.scores[i]?.note ?? "", hard: d.hard, advisory: d.advisory, words: d.script.lines.reduce((a, l) => a + l.text.split(/\s+/).filter(Boolean).length, 0), picked: i === pick, script: d.script, setups: plantPayoffTable(d.script, d.map.setups) }));
+    out.pick = pick + 1;
+    out.script = drafts[pick].script;
+    out.skeleton = drafts[pick].map;
+    out.setups = out.versions[pick].setups;
+    out.checks = { hard: drafts[pick].hard, advisory: drafts[pick].advisory };
+    out.usedNames = namesUsedBy(out.script.lines.map((x) => x.text));
+  } catch (e) {
+    out.costUsd = Number((out.costUsd + Number(e?.costUsd ?? 0)).toFixed(5));
+    out.stopped = stoppedText(e);
+    out.failure = failureOf(e);
+  }
+  return out;
+}
+
 /** The plan call's request parts (system blocks + user message), exported so the tests can compare them byte for byte. */
 export function hybridPlanRequest({ topic, recipe = null, examples = [], lengthSec = 90, note = "", idea = null, board = false }) {
   return { system: [examplesBlock(examples), board ? hybridPlanSystem({ board }) : HYBRID_PLAN_SYSTEM], user: hybridPlanPrompt({ topic, recipe, lengthSec, note, idea }) };
@@ -785,14 +864,18 @@ export async function judgeStories({ apiKey = "", scripts, topic = "", meter = n
   return { scores: readStoryScores(reply.data, scripts.length), best: Number(reply.data?.best) || null, costUsd: reply.costUsd, usage: reply.usage ?? null };
 }
 
-export async function writeHybrid({ apiKey = "", topic, recipe = null, examples = [], lengthSec = 90, meter = null, judge = true, idea = null, ttl = HYBRID.cacheTtl, steps = {}, note = "", board = false, versions = board === "prefer" ? 3 : 1 }) {
+export async function writeHybrid({ apiKey = "", topic, recipe = null, examples = [], lengthSec = 90, meter = null, judge = true, idea = null, ttl = HYBRID.cacheTtl, steps = {}, note = "", board = false, versions = board === "prefer" ? 3 : 1, usedNames = [] }) {
   const s = { writeHybridPlan, writeHybridLines, repairOpener, judgeScript, judgeStories, ...steps };
   const out = { topic, recipe, references: examples.map((e) => ({ id: e.id, firstLine: e.firstLine ?? String(e.text).split(/(?<=[.!?])\s/)[0] })), plan: null, card: null, planNotes: [], script: null, skeleton: {}, checks: null, fixed: null, firstHard: [], trimmed: [], feedback: null, calls: { plan: null, lines: null, fix: null, judge: null }, costUsd: 0, stopped: null, failure: null };
   const log = (what, model, r) => { out.calls[what] = { model, usd: Number(r?.costUsd ?? 0), usage: r?.usage ?? null }; out.costUsd = Number((out.costUsd + Number(r?.costUsd ?? 0)).toFixed(5)); };
   const check = () => hybridChecks({ script: out.script, skeleton: out.skeleton, card: out.card, examples, lengthSec, board });
   const trimmed = () => { const t = trimHybrid({ script: out.script, skeleton: out.skeleton, card: out.card, examples, lengthSec, checks: out.checks, board }); out.script = t.script; out.checks = t.checks; out.trimmed.push(...t.changes); };
   try {
-    const p = await s.writeHybridPlan({ apiKey, topic, recipe, examples, lengthSec, meter, idea, ttl, ...(note ? { note } : {}), ...(board ? { board } : {}) });
+    // fresh names every time (bans.js): none of the examples', none in the used-names log
+    const names = freshNames({ n: 4, seed: `${topic}|${Date.now()}|${Math.random()}`, used: usedNames });
+    out.names = names;
+    const planNote = [note, freshNamesBlock(names)].filter(Boolean).join("\n\n");
+    const p = await s.writeHybridPlan({ apiKey, topic, recipe, examples, lengthSec, meter, idea, ttl, note: planNote, ...(board ? { board } : {}) });
     log("plan", HYBRID.plan.model, p);
     Object.assign(out, { plan: p.plan, card: p.card, planNotes: p.notes ?? [] });
     let w;

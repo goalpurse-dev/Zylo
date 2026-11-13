@@ -42,7 +42,8 @@ import { MOODS } from "../_shared/blockyWorlds/formulas.js";
 import { cardOf, DAILY_IDEA_BATCHES, FREE_IDEA_BATCHES, IDEAS_PER_BATCH } from "../_shared/blockyWorlds/ideas.js";
 import { checkScript, narrationOf, normalizeScript, PART_IDS, scriptFromText } from "../_shared/blockyWorlds/script.js";
 import { topicProblem } from "../_shared/blockyWorlds/safety.js";
-import { cardFromScript, CACHE_TTLS, draftCheck, fixPart, HYBRID, moneyMeter, providerFrom, repairOpener, rewriteHybrid, writeBeats, writeHybrid, writeIdeas, writeScript, writeTopicIdeas } from "../_shared/blockyWorlds/llm.js";
+import { cardFromScript, CACHE_TTLS, draftCheck, fixPart, HYBRID, moneyMeter, providerFrom, repairOpener, rewriteHybrid, writeBeats, writeHybrid, writeIdeaPool, writeIdeas, writeScript, writeTopicIdeas } from "../_shared/blockyWorlds/llm.js";
+import { ideaKey } from "../_shared/blockyWorlds/ideaEngine.js";
 import { pickRecipe, RECIPES } from "../_shared/blockyWorlds/recipes.js";
 import { examplesByIds, examplesFor } from "../_shared/blockyWorlds/referenceTexts.js";
 import { APP_HYBRID, callLogLines, hybridCard, hybridChecksRow, hybridBeats, runCard, stripForLibrary } from "../_shared/blockyWorlds/hybridApp.js";
@@ -75,6 +76,10 @@ const envGet = (k: string) => Deno.env.get(k) ?? "";
 // A run records its engine at the charge (blocky_worlds_start_run p_engine), so a switch never moves a running video.
 const ENGINE = engineFrom(envGet);
 const STUDIO_ON = ENGINE === "studio";
+// THE IDEA ENGINE (ideaEngine.js, owner 2026-11-14): Opus writes a pool of ~40 ideas, a judge keeps the best 10 (the best 1 for "AI can decide"),
+// near-duplicates of the library, the examples and the log of ideas already given out (db blocky_worlds_idea_log) are rejected. On by default
+// with the Studio engine, BLOCKY_WORLDS_IDEA_ENGINE=on|off overrides.
+const IDEA_ENGINE = (flag("BLOCKY_WORLDS_IDEA_ENGINE") === "on" || (STUDIO_ON && flag("BLOCKY_WORLDS_IDEA_ENGINE") !== "off")) && PROVIDER === "anthropic";
 // BLOCKY_WORLDS_READY_EMAIL=on: the sweeper emails "your video is ready" (studioSupabase.ts); the page says so
 const READY_EMAIL = readyEmailOn(envGet);
 // on only when it says runpod AND everything a run needs is configured: a half-configured renderer never charges anyone.
@@ -306,7 +311,18 @@ async function handle(req: Request, trace: Trace) {
     const seed = Math.floor((count ?? 0) / IDEAS_PER_BATCH) + (body?.more ? 1 : 0);
     let written: any;
     try {
-      written = topic != null
+      if (IDEA_ENGINE && topic == null) {
+        // the idea engine: the log of ideas already given out + the library's openers are the corpus the new ideas must differ from
+        const { data: logRows } = await admin.from("blocky_worlds_idea_log").select("rule").order("given_at", { ascending: false }).limit(300);
+        const { data: libRows } = await admin.from("blocky_worlds_library").select("idea").limit(300);
+        const decideOne = body?.decide === true;
+        const pool: any = await writeIdeaPool({ apiKey: ANTHROPIC_KEY, count: decideOne ? 1 : IDEAS_PER_BATCH, style: body?.style === "dark" || body?.style === "funny" ? body.style : null, corpus: [...avoid, ...(libRows ?? []).map((r: any) => `${r.idea?.opener ?? ""} ${r.idea?.price ?? ""}`)], given: (logRows ?? []).map((r: any) => r.rule), meter: moneyMeter(0.6) });
+        if (pool.ideas.length) {
+          await admin.from("blocky_worlds_idea_log").upsert(pool.ideas.map((x: any) => ({ rule_key: ideaKey(x), rule: x.rule, hook: x.hook, style: x.style, twist: x.twist, source: x.source, total: x.total, scores: x.scores, given_to: who.user.id })), { onConflict: "rule_key", ignoreDuplicates: true });
+          written = { ideas: pool.ideas.map((x: any) => x.card), costUsd: pool.costUsd };
+        }
+      }
+      if (!written) written = topic != null
         ? await writeTopicIdeas({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, topic, mood: moodOf(body?.mood), seed, avoid, board: KIT })
         : await writeIdeas({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, seed, mood: moodOf(body?.mood), avoid, board: KIT });
     } catch (e: any) {

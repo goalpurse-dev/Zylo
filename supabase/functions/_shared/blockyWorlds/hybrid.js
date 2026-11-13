@@ -28,6 +28,8 @@ import { mentions, ruleMissing, topicBlock, topicElements, topicProblems } from 
 import { blockedWordsRule } from "./safety.js";
 import { targetWords } from "./config.js";
 import { buttonProblems, endingProblems, formulaProblems } from "./formula.js";
+import { bannedProblems } from "./bans.js";
+import { plantPayoffProblems } from "./plantPayoff.js";
 import { BOARD_KIT } from "./boardKit.js";
 import { boardFitProblems, kitBlock, swapHint } from "./boardFit.js";
 import { kitHard, kitPrefer, kitPreferBlock, studioBlockProblems } from "./studioBuilds.js";
@@ -289,6 +291,8 @@ THE LENGTH IS A HARD RULE AT BOTH ENDS: the request gives the minimum and the ma
 
 ${BEAT_MAP_TEXT}
 
+SPEAKERS (the captions color each voice): when a line holds a character's spoken words, set the line's "speaker" to that character's NAME (exactly as written in the story); the words inside the double quotes get that character's color and the rest stays the narrator's white. A line the narrator says alone has speaker "". A line that is only one character's words (no narrator part) is colored in full.
+
 ${TRAP_WORDS}
 
 Return only the JSON object: the title, the lines (each with its beat), the post, and the beat map.`);
@@ -296,7 +300,7 @@ Return only the JSON object: the title, the lines (each with its beat), the post
 /** The line writer's schema: the lines carry a beat (the part follows from it), plus the beat map. */
 export function hybridLinesSchema() {
   const base = scriptSchema(), s = { type: "string" };
-  const lines = { type: "array", items: { type: "object", additionalProperties: false, required: ["beat", "text", "words"], properties: { beat: { type: "string", enum: [...BEAT_IDS] }, text: s, words: { type: "integer" } } } };
+  const lines = { type: "array", items: { type: "object", additionalProperties: false, required: ["beat", "text", "words", "speaker"], properties: { beat: { type: "string", enum: [...BEAT_IDS] }, text: s, words: { type: "integer" }, speaker: s } } };
   return { ...base, required: [...base.required, "map"], properties: { ...base.properties, lines, map: beatMapSchema() } };
 }
 
@@ -363,7 +367,7 @@ export function hybridChecks({ script, skeleton = {}, card, examples = [], lengt
   // famous names and unsafe words are the safety checks every mode runs)
   const kit = kitHard(board) ? boardFitProblems(script, card) : kitPrefer(board) ? { problems: studioBlockProblems(script, card), warnings: [] } : { problems: [], warnings: [] };
   // the button (formula.js) is HARD for a beat-sheet draft: the last line is 2 to 6 words and calls back the rule or the hook
-  const button = beatDraft(script, skeleton, card) ? [...buttonProblems(script), ...endingProblems(script).filter((p) => /the ending is soft or abstract/.test(p))] : [];
+  const button = beatDraft(script, skeleton, card) ? [...buttonProblems(script), ...endingProblems(script).filter((p) => /the ending is soft or abstract/.test(p)), ...bannedProblems(script, card?.topic ?? "")] : [];
   const hard = [...base.problems.filter((p) => HARD_SCRIPT.test(p) && !slightlyShort(p)), ...copyReasons(copy), ...(lost ? [lost] : []), ...kit.problems, ...button];
   const advisory = [
     ...kit.warnings,
@@ -374,7 +378,9 @@ export function hybridChecks({ script, skeleton = {}, card, examples = [], lengt
     ...(beatDraft(script, skeleton, card) ? beatSheetProblems(script, skeleton ?? {}, card, lengthSec) : [...(card ? propProblems(card, script) : []), ...(card && callbackProblem(card, script) ? [callbackProblem(card, script)] : []), ...skeletonProblems(script, skeleton ?? {}, card)]),
     ...base.warnings,
     // the story formula (formula.js): the hook, the places, the "But" pivot, the escalation, "Then I noticed", the button
-    ...formulaProblems(script, lengthSec),
+    ...formulaProblems(script, lengthSec, { topic: card?.topic ?? "" }),
+    // plant & payoff (plantPayoff.js): every setup returns; at least 3 in the ending; unpaid ones go to Fix it
+    ...plantPayoffProblems(script, skeleton?.setups),
   ];
   return { hard, advisory: [...new Set(advisory)].filter((x) => !hard.includes(x)), copy, words: base.words, seconds: base.seconds };
 }

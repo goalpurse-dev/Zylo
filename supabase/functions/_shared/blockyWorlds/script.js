@@ -183,7 +183,7 @@ export function scriptPrompt({ idea, lengthSec, previous = null, note = "", beat
 export function normalizeScript(raw) {
   const lines = (Array.isArray(raw?.lines) ? raw.lines : [])
     // the hybrid writer's beat (beatSheet.js) rides along on the line; the part stays one of the seven
-    .map((l) => ({ part: PART_IDS.includes(l?.part) ? l.part : "own", text: mapNearSounds(paceClean(l?.text)), ...(typeof l?.beat === "string" && /^[a-z]{2,12}$/.test(l.beat) ? { beat: l.beat } : {}) }))
+    .map((l) => ({ part: PART_IDS.includes(l?.part) ? l.part : "own", text: mapNearSounds(paceClean(l?.text)), ...(typeof l?.beat === "string" && /^[a-z]{2,12}$/.test(l.beat) ? { beat: l.beat } : {}), ...(typeof l?.speaker === "string" && l.speaker.trim() ? { speaker: l.speaker.trim().slice(0, 24) } : {}) }))
     .filter((l) => l.text && l.text !== ".")
     // the sound-word tags the engine reads (sfxTags.js): always taken from the text, so they never drift from it
     .map((l) => { const sfx = sfxTags(l.text); return sfx.length ? { ...l, sfx } : l; });

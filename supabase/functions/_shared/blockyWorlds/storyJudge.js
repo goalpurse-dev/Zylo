@@ -6,14 +6,19 @@
 // scores of all three are logged on the run (out.versions). The judge never rewrites: it only scores and picks.
 import { SOUND_ALLOWED } from "./soundLibrary.js";
 
-/** The criteria, 0-10 each; weight = how much of the total it carries (the ending and the hook carry the most). */
+/**
+ * The criteria, 0-10 each, for BOTH story styles (funny chaos / dark twist); weight = how much of the total it carries.
+ * (2026-11-14: hook, rule, examples/details, emotional stake, plant & payoff, twist strength, last line, visibility.)
+ */
 export const STORY_CRITERIA = Object.freeze([
-  Object.freeze({ id: "rule", weight: 1, ask: "ONE simple rule a ten-year-old gets in 2 seconds, tied to an everyday thing (a sneeze, a laugh, a hiccup, a lie, a seatbelt), said as 'You see, in this town, ...' right after the hook" }),
-  Object.freeze({ id: "examples", weight: 1.5, ask: "2 or 3 society examples that are real JOKES, each in its own place with a named neighbour and ENDING ON A PUNCHLINE" }),
-  Object.freeze({ id: "solution", weight: 1.5, ask: "'Then I noticed something': the narrator solves it CLEVERLY by using the rule ITSELF (the rule turned against the trouble), no outside help, no new magic" }),
-  Object.freeze({ id: "ending", weight: 2, ask: "a clear BIG WIN, then in the last 1 or 2 lines a HOLY TWIST that flips it or restarts the chaos, ideally a callback to the hook or an example; never soft, sentimental or abstract" }),
-  Object.freeze({ id: "hook", weight: 1.5, ask: "line 1 is the craziest result or moment of the story, first person, instantly visual, makes you need the explanation" }),
-  Object.freeze({ id: "visible", weight: 1.5, ask: "EVERY line is something a camera can SEE (an action, an object, a reaction); the escalation gets bigger and funnier each step; at most 3 named characters" }),
+  Object.freeze({ id: "hook", weight: 1.5, ask: "line 1 is the craziest result (funny) or a secret plus a danger (dark), first person, instantly visual, makes you need the explanation" }),
+  Object.freeze({ id: "rule", weight: 1, ask: "ONE simple rule a ten-year-old gets in 2 seconds, said as 'You see, in this town, ...' within the first 2 sentences" }),
+  Object.freeze({ id: "examples", weight: 1.5, ask: "FUNNY: 2 or 3 society examples that are real jokes, each ending on a PUNCHLINE. DARK: 3 or 4 short visual details of a world that is slightly wrong" }),
+  Object.freeze({ id: "stake", weight: 1.5, ask: "emotional stake: FUNNY, we care what happens to the narrator and the rule really bites. DARK: ONE character to love, built with small specific kindnesses, plus a gut punch in the middle and a ticking clock" }),
+  Object.freeze({ id: "plantpay", weight: 1.5, ask: "plant and payoff: small setups early (a detail, an object, a line, a kindness) that all pay off, at least 3 returning in the ending; nothing planted is left unpaid" }),
+  Object.freeze({ id: "twist", weight: 2, ask: "twist strength: FUNNY, the solution uses the rule itself, cleverly, then a big win and a holy twist. DARK, false hope, then a HOLY TWIST that changes the meaning of earlier moments" }),
+  Object.freeze({ id: "lastline", weight: 1.5, ask: "the last line (and the final image): a quotable callback, funny or chilling, never soft, sentimental or abstract; in the dark style a line of dialogue whose final image shows the consequence" }),
+  Object.freeze({ id: "visible", weight: 1.5, ask: "EVERY line is something a camera can SEE; the escalation gets bigger each step; at most 3 named characters plus 'me'; nothing reuses the examples' rule, props, characters or twist" }),
 ]);
 export const CRITERIA_IDS = Object.freeze(STORY_CRITERIA.map((c) => c.id));
 
@@ -21,9 +26,9 @@ export const CRITERIA_IDS = Object.freeze(STORY_CRITERIA.map((c) => c.id));
 export const STORY_JUDGE_SYSTEM = `You are a tough judge of short story scripts for a viral vertical video format: a kid narrates one impossible rule in a blocky toy town ("In this town, sneezing teleports you"). You get several VERSIONS of the same story (same plan, different wording). Score EACH version, from 0 to 10, on these criteria, and be harsh: 5 is flat, 7 is good, 9 is great, 10 is rare. A version that hits the criterion only in words but not in picture (a feeling, an explanation) scores low.
 ${STORY_CRITERIA.map((c) => `- ${c.id}: ${c.ask}.`).join("\n")}
 
-THE FORMULA (what a good script does): line 1 the hook; line 2 "You see, in this town, [the one simple rule]."; 2-3 jokes with punchlines; a "But" pivot with a number; an escalation, each step bigger and funnier, in short sentences with sound words (${SOUND_ALLOWED.slice(0, 12).join(", ")}...); "Then I noticed something" and a clever rule-based win; then a holy twist in the last 1-2 lines and a 2-6 word button.
+TWO STYLES. FUNNY CHAOS: line 1 the hook; "You see, in this town, [one simple rule]." in the first 2 sentences; 2-3 society examples that are real jokes with punchlines; escalation (each step bigger and funnier, sound words); "Then I noticed something" with a clever solution that uses the rule; a big win, then a holy twist in the last 1-2 lines. DARK TWIST: line 1 a secret plus a danger; the world in 3-4 slightly wrong visual details; the hero's own rules; ONE character to love built from small kindnesses that secretly become clues; a ticking clock; a mid-story gut punch; false hope, then a holy twist that changes the meaning of earlier moments; the last line a chilling callback in dialogue. Both: at most 3 named characters plus "me", every line showable, nothing reused from the examples.
 
-Judge only what is written. Give each version a one-sentence note (its biggest weakness). Return only the JSON object: { "versions": [ { "version": 1, "rule": n, "examples": n, "solution": n, "ending": n, "hook": n, "visible": n, "note": "..." }, ... ], "best": <the number of the best version> }.`;
+Judge only what is written. Give each version a one-sentence note (its biggest weakness). Return only the JSON object: { "versions": [ { "version": 1, "hook": n, "rule": n, "examples": n, "stake": n, "plantpay": n, "twist": n, "lastline": n, "visible": n, "note": "..." }, ... ], "best": <the number of the best version> }.`;
 
 export function storyJudgeSchema() {
   const n = { type: "integer" }, s = { type: "string" };

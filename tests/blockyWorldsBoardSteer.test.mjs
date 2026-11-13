@@ -83,11 +83,12 @@ test("writeHybrid passes the board switch and the move note to the plan and the 
   };
   await writeHybrid({ topic: "t", steps, board: true, note: "Move the story into the world we can film" });
   assert.equal(seen.plan.board, true);
-  assert.equal(seen.plan.note, "Move the story into the world we can film");
+  assert.ok(seen.plan.note.startsWith("Move the story into the world we can film"), "the move note first, then the fresh names");
+  assert.match(seen.plan.note, /FRESH NAMES FOR THIS STORY/);
   assert.equal(seen.lines.board, true);
   await writeHybrid({ topic: "t", steps });
   assert.equal(seen.plan.board, undefined, "off: the call is as before");
-  assert.equal(seen.plan.note, undefined);
+  assert.match(seen.plan.note, /^FRESH NAMES FOR THIS STORY/, "only the fresh names without a note");
 });
 
 test("the free kit check blocks in the hybrid checks, draftCheck (written, own, hybrid) only in launch mode", () => {

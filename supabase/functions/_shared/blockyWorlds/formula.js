@@ -19,6 +19,7 @@ import { PACE } from "./config.js";
 import { sfxTags } from "./sfxTags.js";
 import { SOUND_ALLOWED } from "./soundLibrary.js";
 import { ruleLineIndex } from "./opener.js";
+import { bannedProblems, BANNED_TEXT } from "./bans.js";
 
 export const FORMULA_PREFIX = "Formula:";
 export const FORMULA = Object.freeze({
@@ -34,6 +35,7 @@ export const FORMULA = Object.freeze({
 
 /** The formula as prompt text (both writers quote it; the same bytes every call, so it caches). */
 export const FORMULA_TEXT = `THE STORY FORMULA (owner, 2026-11-13: the style of the viral blocky story videos; every script follows it; free checks read it):
+- ${BANNED_TEXT}
 - LINE 1 IS THE HOOK, the craziest result or moment of the whole story, in the narrator's mouth RIGHT NOW, first person, 5 to 12 words, an exclamation, filmable, inside the first 5 seconds ("And I just sneezed in the cockpit of a flying plane!"). It opens a question the viewer wants answered. Never a summary, never a question.
 - LINE 2 IS THE RULE: "You see, in this town, [the ONE simple rule]." (or "in this world"). That phrase is REQUIRED within the first 2 sentences; it does not have to be the first words. The rule is ONE simple thing a kid gets in 2 seconds, tied to an everyday thing (a sneeze, a laugh, a hiccup, a lie, a yawn, buckling a seatbelt). If the customer's topic is a place or a setting ("we live in a plane"), turn it into ONE simple rule about an everyday action inside it.
 - Then 2 or 3 SOCIETY EXAMPLES that are real JOKES, each in its OWN place (a kitchen, the school, the bus stop), each a named neighbour, each ENDING ON A PUNCHLINE (a short last line that makes the joke land: "Pilots aren't allowed to watch cartoons."). About 70 words in the first 15 seconds in all.
@@ -79,7 +81,7 @@ const before = (counts, i) => counts.slice(0, i).reduce((a, b) => a + b, 0);
  * The formula's free checks of a script: an array of notes (empty = the script follows the formula). Every note starts with
  * FORMULA_PREFIX and names its lines. lengthSec sizes the 15-second window for short videos.
  */
-export function formulaProblems(script, lengthSec = 90) {
+export function formulaProblems(script, lengthSec = 90, { topic = "" } = {}) {
   const lines = script?.lines ?? [];
   if (lines.length < 4) return [];
   const out = [];
@@ -150,6 +152,8 @@ export function formulaProblems(script, lengthSec = 90) {
   // 6. the ending: a big win, then a holy twist (no soft ending), and the button: 2 to 6 words that call back
   out.push(...endingProblems(script));
   out.push(...buttonProblems(script));
+  // 6a. never reuse the examples' pieces (bans.js): their rule, props, characters, twist, names
+  out.push(...bannedProblems(script, topic));
   // 6b. at most 3 named characters (plus the narrator)
   const names = namedCharacters(lines.map((l) => l.text).join("\n"));
   if (names.size > 4) bad(`too many named characters (${names.size}: ${[...names].slice(0, 6).join(", ")}); keep at most 3 named characters plus "me", and let the same people do the examples, the failed fixes and the ally's line.`);
