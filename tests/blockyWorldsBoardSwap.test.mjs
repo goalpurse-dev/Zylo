@@ -79,7 +79,7 @@ test("the writers get the swap as a hint (the plan writer's picked idea, the lib
   const llm = readFileSync(new URL("../supabase/functions/_shared/blockyWorlds/llm.js", import.meta.url), "utf8");
   assert.match(llm, /idea\?\.swap \? swapHint\(idea\.swap\) : ""/);
   const index = readFileSync(new URL("../supabase/functions/blocky-worlds-api/index.ts", import.meta.url), "utf8");
-  assert.match(index, /pickForUser\(LAUNCH_BOARD \? fittingWithSwap\(cands \?\? \[\]\) : cands \?\? \[\], IDEAS_PER_BATCH, mood\)/);
+  assert.match(index, /pickForUser\(STUDIO_ON \? \(cands \?\? \[\]\)\.filter\(\(c: any\) => studioIdeaOk\(c\.idea\)\) : LAUNCH_BOARD \? fittingWithSwap\(cands \?\? \[\]\) : cands \?\? \[\], IDEAS_PER_BATCH, mood\)/);
   assert.ok(BOARD_KIT.props.length > 0);
 });
 

@@ -36,6 +36,7 @@ import { canGenerate, canRemoveEndCard, canWrite, endCardFor } from "../_shared/
 import { accessModeFrom, blockyOwners, closedReply, guestAllowed, viewerAccess } from "../_shared/blockyWorlds/gate.js";
 import { costBasisUsd, PRICES, toolKey } from "../_shared/blockyWorlds/pricing.js";
 import { studioFullCostUsd } from "../_shared/blockyWorlds/studio.js";
+import { KIT_PREFER, studioBuilds, studioIdeaOk } from "../_shared/blockyWorlds/studioBuilds.js";
 import { DEFAULT_SETTINGS, decide, WRITING } from "../_shared/blockyWorlds/guard.js";
 import { MOODS } from "../_shared/blockyWorlds/formulas.js";
 import { cardOf, DAILY_IDEA_BATCHES, FREE_IDEA_BATCHES, IDEAS_PER_BATCH } from "../_shared/blockyWorlds/ideas.js";
@@ -84,8 +85,12 @@ const BUCKET = "blocky-worlds-renders";
 // library ideas the board kit can film, gives the writers the kit as hard rules and checks every script against the kit
 // before the charge; BLOCKY_WORLDS_BOARD_ONLY=on adds the strict render (no old-planner lines: a miss is refunded) and
 // implies launch mode. Both off by default; a secret change switches them (no code deploy).
-// The Studio engine always runs with it: an edited script goes through the same kit checks (with Fix it) before the charge.
-const LAUNCH_BOARD = launchModeFrom(envGet) || STUDIO_ON;
+const LAUNCH_BOARD = launchModeFrom(envGet) && !STUDIO_ON;
+// THE KIT for every writer and check (owner, 2026-11-13, studioBuilds.js): the Studio engine never refuses a story for
+// "not in the kit": the kit is a PREFERENCE ("prefer"), unknown things go on the run's Studio builds list, and only a
+// brand, a famous name, unsafe words or a story with nothing to show blocks (with Fix it). Otherwise the board mode
+// (true: hard kit rules + checks) or nothing, as before.
+const KIT: boolean | "prefer" = STUDIO_ON ? KIT_PREFER : LAUNCH_BOARD;
 /** the library rows the picker may show: in launch mode only those the board kit can film (computed at read time) */
 const LIBRARY_LIMIT = LAUNCH_BOARD ? 200 : 60;
 
@@ -157,6 +162,8 @@ function draftView(d: any) {
     credits: PRICES[d.length_sec] ?? null,
     check: { problems: check.problems ?? [], warnings: check.warnings ?? [], words: check.words ?? 0, seconds: check.seconds ?? 0, spots: problemSpots({ lines: d.lines ?? [] }, check.problems ?? []) },
     ready: !(check.problems ?? []).length, updatedAt: d.updated_at,
+    // Studio: the things the kit does not have, which the director builds (never a block)
+    ...(STUDIO_ON ? { studioBuilds: studioBuilds({ lines: d.lines ?? [] }, d.card ?? null) } : {}),
     // the hybrid writer's judge: a score and notes as feedback only (never a block)
     feedback: check.feedback ? { score: check.feedback.score ?? null, notes: check.feedback.notes ?? [] } : null,
   };
@@ -206,7 +213,7 @@ function recheck(d: any, lengthSec = d.length_sec) {
   // the mock writer's sample script doesn't follow the card, so mock mode checks it without the card (like writeScript)
   // launch mode: what the board kit can't film blocks here too (boardFit.js on kitCheck.js): quote and start run this
   // BEFORE the charge, so a story the board can't film never reaches the paid render
-  return { ...draftCheck(script, lengthSec, kindOf(d), PROVIDER === "mock" ? null : d.card ?? null, { board: LAUNCH_BOARD }), kind: kindOf(d) };
+  return { ...draftCheck(script, lengthSec, kindOf(d), PROVIDER === "mock" ? null : d.card ?? null, { board: KIT }), kind: kindOf(d) };
 }
 /** Launch mode: what the planner moved from the user's idea to fit the kit, in one line (null when nothing moved). */
 const movedNotice = (card: any) => (card?.moved ? `We moved your story into our town: ${String(card.moved).slice(0, 200)}` : null);
@@ -280,7 +287,8 @@ async function handle(req: Request, trace: Trace) {
       // hidden rows keep their stats and come back when the filter is lifted (nothing stored, nothing retired)
       const { data: cands, error: cErr } = await admin.rpc("blocky_worlds_library_candidates", { p_user: who.user.id, p_mood: mood, p_limit: LIBRARY_LIMIT });
       if (cErr) console.error("[blocky-worlds-api] library:", cErr.message);
-      const chosen = pickForUser(LAUNCH_BOARD ? fittingWithSwap(cands ?? []) : cands ?? [], IDEAS_PER_BATCH, mood);
+      // Studio: never hidden for a kit miss, only for its blocks (a brand, a famous name, unsafe words)
+      const chosen = pickForUser(STUDIO_ON ? (cands ?? []).filter((c: any) => studioIdeaOk(c.idea)) : LAUNCH_BOARD ? fittingWithSwap(cands ?? []) : cands ?? [], IDEAS_PER_BATCH, mood);
       if (chosen.length >= IDEAS_PER_BATCH) {
         const { data: rows, error } = await admin.from("blocky_worlds_ideas").insert(chosen.map((c: any) => ({ user_id: who.user.id, source: "library", library_id: c.id, idea: c.idea }))).select("id, idea");
         if (error) throw new ApiError("SERVER", undefined, {}, error.message);
@@ -299,8 +307,8 @@ async function handle(req: Request, trace: Trace) {
     let written: any;
     try {
       written = topic != null
-        ? await writeTopicIdeas({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, topic, mood: moodOf(body?.mood), seed, avoid, board: LAUNCH_BOARD })
-        : await writeIdeas({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, seed, mood: moodOf(body?.mood), avoid, board: LAUNCH_BOARD });
+        ? await writeTopicIdeas({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, topic, mood: moodOf(body?.mood), seed, avoid, board: KIT })
+        : await writeIdeas({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, seed, mood: moodOf(body?.mood), avoid, board: KIT });
     } catch (e: any) {
       await logCall(who.user.id, "ideas", e?.costUsd ?? 0, false);
       throw writerError(e);
@@ -353,7 +361,7 @@ async function handle(req: Request, trace: Trace) {
       trace.step = "writer";
       let fix: any;
       try {
-        fix = await fixPart({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, script: { title: d.title, lines: d.lines, post: d.post }, indexes, reasons: spots.map((s: any) => s.problem), card: PROVIDER === "mock" ? null : d.card ?? null, lengthSec: d.length_sec, kind: kindOf(d), board: LAUNCH_BOARD });
+        fix = await fixPart({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, script: { title: d.title, lines: d.lines, post: d.post }, indexes, reasons: spots.map((s: any) => s.problem), card: PROVIDER === "mock" ? null : d.card ?? null, lengthSec: d.length_sec, kind: kindOf(d), board: KIT });
       } catch (e: any) { await logCall(who.user.id, "script", e?.costUsd ?? 0, false); throw writerError(e); }
       await logCall(who.user.id, "script", fix.costUsd);
       // saved only when it's better than before (fewer problems); otherwise the draft stays as it was
@@ -399,7 +407,7 @@ async function handle(req: Request, trace: Trace) {
       const meter = moneyMeter(APP_HYBRID.capUsd);
       const picked = pickRecipe({ topic: d.card.topic, card: d.card });
       const recipe = { ...picked, what: (RECIPES as any)[picked.id]?.what };
-      const r: any = await writeHybrid({ apiKey: ANTHROPIC_KEY, topic: d.card.topic, recipe, examples: examplesFor(recipe.id), lengthSec, meter, judge: APP_HYBRID.judge, idea: d.card, ttl: CACHE_TTL, note, board: LAUNCH_BOARD });
+      const r: any = await writeHybrid({ apiKey: ANTHROPIC_KEY, topic: d.card.topic, recipe, examples: examplesFor(recipe.id), lengthSec, meter, judge: APP_HYBRID.judge, idea: d.card, ttl: CACHE_TTL, note, board: KIT });
       for (const line of callLogLines({ userId: who.user.id, draftId: d.id, action: "move", calls: r.calls })) console.log(JSON.stringify(line));
       if (!r.script?.lines?.length) {
         await logCall(who.user.id, "script", r.costUsd, false);
@@ -418,11 +426,11 @@ async function handle(req: Request, trace: Trace) {
       if (hybridWrite) {
         const picked = pickRecipe({ topic: topicText, card });
         const recipe = { ...picked, what: (RECIPES as any)[picked.id]?.what };
-        r = await writeHybrid({ apiKey: ANTHROPIC_KEY, topic: topicText, recipe, examples: examplesFor(recipe.id), lengthSec, meter, judge: APP_HYBRID.judge, idea: card, ttl: CACHE_TTL, board: LAUNCH_BOARD });
+        r = await writeHybrid({ apiKey: ANTHROPIC_KEY, topic: topicText, recipe, examples: examplesFor(recipe.id), lengthSec, meter, judge: APP_HYBRID.judge, idea: card, ttl: CACHE_TTL, board: KIT });
         if (r.script?.lines?.length) row = { title: r.script.title, length_sec: lengthSec, lines: r.script.lines, post: r.script.post, checks: hybridChecksRow(r), card: hybridCard(r, recipe), beats: hybridBeats(r.plan, lengthSec) };
       } else {
         const failed = recheck(d, lengthSec).problems;
-        r = await rewriteHybrid({ apiKey: ANTHROPIC_KEY, plan: d.card.hybrid.plan, card: d.card, examples: examplesByIds(d.card.hybrid.refs ?? []), lengthSec, previous: { lines: d.lines }, failed, note, meter, ttl: CACHE_TTL, board: LAUNCH_BOARD });
+        r = await rewriteHybrid({ apiKey: ANTHROPIC_KEY, plan: d.card.hybrid.plan, card: d.card, examples: examplesByIds(d.card.hybrid.refs ?? []), lengthSec, previous: { lines: d.lines }, failed, note, meter, ttl: CACHE_TTL, board: KIT });
         if (r.script?.lines?.length) row = { title: r.script.title || d.title, length_sec: lengthSec, lines: r.script.lines, post: r.script.post, checks: hybridChecksRow(r, { flow: "hybrid rewrite", previous: d.checks }) };
       }
       for (const line of callLogLines({ userId: who.user.id, draftId: d?.id ?? null, action, calls: r.calls })) console.log(JSON.stringify(line));
@@ -449,7 +457,7 @@ async function handle(req: Request, trace: Trace) {
     // (a move to our town plans the beats again: the old ones are set in the world that has to move)
     let beats: any = d?.beats && d.length_sec === lengthSec && !move ? d.beats : null;
     if (!beats) {
-      try { const b = await writeBeats({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, card, lengthSec, board: LAUNCH_BOARD }); costUsd += b.costUsd; beats = b.beats; } catch (e: any) { await logCall(who.user.id, "script", (e?.costUsd ?? 0) + costUsd, false); throw writerError(e); }
+      try { const b = await writeBeats({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, card, lengthSec, board: KIT }); costUsd += b.costUsd; beats = b.beats; } catch (e: any) { await logCall(who.user.id, "script", (e?.costUsd ?? 0) + costUsd, false); throw writerError(e); }
     }
     // step 3: the script, following the beats
     trace.step = "writer";
@@ -457,7 +465,7 @@ async function handle(req: Request, trace: Trace) {
     try {
       // a rewrite is told exactly which checks the current version fails (writeScript re-checks and retries once)
       const failed = d ? recheck(d, lengthSec).problems : [];
-      written = await writeScript({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, idea: card, lengthSec, previous: d ? { lines: d.lines } : null, note, beats, failed, board: LAUNCH_BOARD });
+      written = await writeScript({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, idea: card, lengthSec, previous: d ? { lines: d.lines } : null, note, beats, failed, board: KIT });
     } catch (e: any) {
       await logCall(who.user.id, "script", (e?.costUsd ?? 0) + costUsd, false);
       throw writerError(e);
@@ -491,7 +499,8 @@ async function handle(req: Request, trace: Trace) {
       try { const c = await cardFromScript({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, lines: script.lines }); card = c.card; await logCall(who.user.id, "script", c.costUsd); } catch (e: any) { console.error("[blocky-worlds-api] card from script:", e?.message ?? e); }
     }
     // launch mode: a pasted script that needs a cave is told so here, with Fix it / Move it to our town (never after the charge)
-    const checked = LAUNCH_BOARD ? { ...draftCheck(script, lengthSec, "own", card, { board: true }), kind: "own" } : checks;
+    // (Studio: the same checks without any kit miss; only its blocks, studioBuilds.js)
+    const checked = KIT ? { ...draftCheck(script, lengthSec, "own", card, { board: KIT }), kind: "own" } : checks;
     const row = { title: script.title || script.post.title, length_sec: lengthSec, lines: script.lines, post: script.post, checks: checked, card, updated_at: new Date().toISOString() };
     const saved = d
       ? await admin.from("blocky_worlds_drafts").update(row).eq("id", d.id).select("*").single()
@@ -556,7 +565,7 @@ async function handle(req: Request, trace: Trace) {
       throw new ApiError("SERVER", "Couldn't start. Nothing was charged.", {}, error?.message ?? "no run returned");
     }
     const ideaLib = d.idea_id ? (await admin.from("blocky_worlds_ideas").select("library_id").eq("id", d.idea_id).maybeSingle()).data?.library_id ?? null : null;
-    await admin.from("blocky_worlds_runs").update({ card: runCard(d.card ?? null), library_id: ideaLib }).eq("id", run.id);
+    await admin.from("blocky_worlds_runs").update({ card: runCard(d.card ?? null), library_id: ideaLib, ...(STUDIO_ON ? { studio_builds: studioBuilds({ lines: d.lines ?? [] }, d.card ?? null) } : {}) }).eq("id", run.id);
     if (ideaLib) await countEvent(who.user.id, ideaLib, "generated", { draftId: d.id, runId: run.id });
     // the pipeline (docs/blocky-worlds-pipeline.md): the prepare job goes to RunPod now; a run that can't be sent is
     // failed and refunded by the runtime; anything else that goes wrong here is picked up by the sweeper within a minute

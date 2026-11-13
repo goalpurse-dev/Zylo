@@ -9,6 +9,7 @@ import { REFERENCE_RULE } from "./references.js";
 import { conflictLines, topicElements } from "./topic.js";
 import { BOARD_KIT } from "./boardKit.js";
 import { kitBlock, kitView } from "./boardFit.js";
+import { kitHard, kitPrefer, kitPreferBlock, PREFER_TOPIC_LINE } from "./studioBuilds.js";
 
 export const IDEAS_PER_BATCH = 6;
 export const TOPIC_IDEAS = 3;
@@ -76,6 +77,8 @@ Return only the JSON object.`;
  */
 export function ideasSystem({ board = false } = {}) {
   if (!board) return IDEAS_SYSTEM;
+  // the Studio engine: the kit as a preference; the user's own world and things are kept (the director builds them)
+  if (kitPrefer(board)) return IDEAS_SYSTEM.replace(/\n\nReturn only the JSON object\.$/, `\n\n${kitPreferBlock("ideas")}\n\nReturn only the JSON object.`);
   return IDEAS_SYSTEM
     .replace(/\nSETTINGS: [^\n]*\n/, `\nSETTINGS: ${kitView().places.map((p) => p.label).join("; ")} (the only places we can film).\n`)
     .replace(/\n\nReturn only the JSON object\.$/, `\n\n${kitBlock(BOARD_KIT, "ideas")}\n\nReturn only the JSON object.`);
@@ -123,7 +126,7 @@ export function topicPrompt({ topic, mood = null, seed = 0, avoid = [], board = 
 - The opener states the user's idea itself as the world's rule${setting ? `, naming ${setting.label} and the threat` : ""} (the shape: "In this town, we live inside X, and if Y ever ..."). Never swap it for a new invented gimmick (a mark on everyone's wrist, a sticker, a number over their head) that pushes the idea into the background.
 - The formula of each slot only shapes HOW the idea is told (who the exception is, what the price is). The price, the narrator's exception, the planted object and the twist all come from the user's idea, and the twist pays it off.${conflictLines(topic).length ? `\n${conflictLines(topic).join("\n")}\n- So the opener names the threat doing the conflict ("In this town, we live inside a giant turtle, and the big bad wolf's army is hunting it" shape), and the twist ENDS that conflict.` : ""}
 - The ideas differ in their angle on the SAME idea, not in their world. The usual rule against "we all live inside giant Z" reskins does not apply here: the user's own world is the point.
-- If the idea names a real game, film, brand or person, keep the idea behind it and drop the name.${board ? `\n${BOARD_TOPIC_LINE}` : ""}
+- If the idea names a real game, film, brand or person, keep the idea behind it and drop the name.${kitHard(board) ? `\n${BOARD_TOPIC_LINE}` : kitPrefer(board) ? `\n${PREFER_TOPIC_LINE}` : ""}
 One idea per slot, in this order:\n${slotText(slots)}` +
       (avoid.length ? `\n\nAlready used (never repeat these):\n${avoid.slice(0, 40).map((a) => `- ${a}`).join("\n")}` : ""),
   };

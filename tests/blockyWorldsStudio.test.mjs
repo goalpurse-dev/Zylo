@@ -499,9 +499,10 @@ test("migration: the engine column, the worker table, the atomic claim, and star
   assert.doesNotMatch(sql, /TO (anon|authenticated)/);
 });
 
-test("api: the Studio engine charges once at start with p_engine, never dispatches to the pipeline, refuses (nothing charged) without a live worker, and always runs the kit checks", () => {
+test("api: the Studio engine charges once at start with p_engine, never dispatches to the pipeline, refuses (nothing charged) without a live worker, and checks with the kit as a preference", () => {
   const src = read("supabase/functions/blocky-worlds-api/index.ts");
-  assert.match(src, /const LAUNCH_BOARD = launchModeFrom\(envGet\) \|\| STUDIO_ON;/);
+  // (2026-11-13: Studio checks with the kit as a PREFERENCE, never a kit refusal: tests/blockyWorldsStudioBuilds.test.mjs)
+  assert.match(src, /const KIT: boolean \| "prefer" = STUDIO_ON \? KIT_PREFER : LAUNCH_BOARD;/);
   assert.match(src, /\.\.\.\(STUDIO_ON \? \{ p_engine: "studio" \} : \{\}\)/);
   const worker = src.indexOf("studioWorkerAlive(admin)"), charge = src.indexOf('rpc("blocky_worlds_start_run"');
   assert.ok(worker > 0 && charge > worker, "the worker check comes before the charge");

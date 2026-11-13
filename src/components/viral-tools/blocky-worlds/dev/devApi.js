@@ -30,7 +30,8 @@ const BLOCKED = Q.get("blocked") === "1", FAIL = Q.get("fail");
 const QUEUE = Math.max(0, Math.min(9, Number(Q.get("queue")) || 0)), LATE = Q.get("eta") === "late";
 // the board-only launch mode (the server's BLOCKY_WORLDS_LAUNCH=board), on by default here so localhost shows what launch
 // customers see: only library ideas the board kit can film, "What we can film", "Move it to our town". &launch=off: as before
-const LAUNCH = Q.get("launch") !== "off", KIT_SIM = ["premise", "line"].includes(Q.get("kit")) ? Q.get("kit") : null;
+// (&engine=studio: no board mode: the Studio engine never refuses a story for the kit, studioBuilds.js)
+const LAUNCH = Q.get("launch") !== "off" && Q.get("engine") !== "studio", KIT_SIM = ["premise", "line"].includes(Q.get("kit")) ? Q.get("kit") : null;
 const PLACE_S = 8, PLACE_ETA = 90;
 const STUDIO = Q.get("engine") === "studio", EMAIL = Q.get("email") === "1", STUDIO_STEP_S = 3;
 // the mock script is the example script, whose planted object is this card's (Grandpa's whistle): the real checks run on it

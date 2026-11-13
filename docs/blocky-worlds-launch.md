@@ -47,13 +47,28 @@ Already there before this change, and kept:
   `blocky_worlds_start_run` deducts the credits and creates the run in ONE transaction. The voice and everything after it
   are bought only after that, by the worker.
 
-Closed gaps (this change): the Studio engine forces the kit checks on (`LAUNCH_BOARD || STUDIO_ON`), the button says
-**"Make my video"**, and the script step says "Nothing is charged until you press Make my video."
+Closed gaps (this change): the button says **"Make my video"**, and the script step says "Nothing is charged until you
+press Make my video."
 
-## Price (requirement 4): the table, for the owner's decision
+### No kit refusals with Studio (owner, 2026-11-13; `_shared/blockyWorlds/studioBuilds.js`)
+With `BLOCKY_WORLDS_ENGINE=studio` "not in the kit" never blocks a story: not in the writers, the idea filter, script
+approval, the customer's edits, Fix it, or quote / start. The kit is a PREFERENCE in the writers' prompts (`board:
+"prefer"`); board mode (`BLOCKY_WORLDS_LAUNCH`, the pipeline) is unchanged.
+- **Builds instead of refusals**: every thing the kit lacks goes on the run's `studio_builds` (written at start, in the
+  same update as the idea card, before a worker can claim the run), which the worker hands to the director as a note
+  after its brief (names + line numbers only; the sentences stay in the brief's data block), with a ready Studio-library
+  asset when the lookup finds one (`studioWorker/assets.mjs`: a stub until the Studio session exports its lookup).
+  Format: `[{ name: "plane", kind: "creature" | "prop" | "set" | "vehicle", lines: [0-based], description: "the lines
+  that name it, at most 240 characters" }]`.
+- **What still blocks** (the customer sees Fix it): a real brand or logo (`BRANDS`), a famous character / story / game
+  and unsafe words (safety.js, as in every mode), and a story with nothing physical to show (`abstractOnly`, a
+  rewrite). Library ideas are hidden only for the first three.
+
+## Price (requirement 4): APPLIED locally (owner OK 2026-11-13, commit b31ff0e5; not deployed)
 
 1 credit = $0.01 of our full cost, the user pays $0.02 a credit (2x our cost). From `studio.js studioPriceTable` (the
-measured Studio runs: run1, run2, testA, testA2, testB). **pricing.js is NOT changed** (prices today: 60 s 47, 90 s 62).
+measured Studio runs: run1, run2, testA, testA2, testB). pricing.js now prices with it; live still charges the old rows
+(60 s 47, 90 s 62) until the deploy + migration below.
 
 | Selected length | Real video* | Cuts | Writing | Voice | Director | Checker | Previews | Final | Worker+storage | Attempt | Full cost** | **Credits** |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -80,9 +95,8 @@ Assumptions:
 - Failures: 90% pass; a refunded failure costs ~voice + director + checker + previews; its share is in "Full cost".
 - Not in the table: the old pipeline's estimates; the test-only `checkFinal` / vision audit calls (not in production).
 
-**To apply the prices after the owner's go** (ready-to-apply, checked with `git apply --check` and against the pricing
-test's rules): `git apply docs/blocky-worlds-studio-prices.patch` (pricing.js uses `studioFullCostUsd`, a new migration
-`20261214100000_blocky_worlds_studio_prices.sql` with the 16 rows, the pricing test pinned to 108 / 150 / 192). Then:
+**Applied** from `docs/blocky-worlds-studio-prices.patch` (kept as the record: pricing.js uses `studioFullCostUsd`, migration
+`20261214100000_blocky_worlds_studio_prices.sql` with the 16 rows, the pricing test pinned to 108 / 150 / 192). To go live:
 deploy `blocky-worlds-api` (the page shows PRICES) and right after it run the migration (the charge reads the rows):
 `npx supabase db query --linked -f supabase/migrations/20261214100000_blocky_worlds_studio_prices.sql` and
 `npx supabase migration repair --linked --status applied 20261214100000`.
@@ -126,7 +140,7 @@ Files of this change (the rest of the list is Blocky Worlds work already on lapt
 `BlockyWorldsStudio.jsx`, `api/blockyWorldsApi.js`, `dev/devApi.js`), `opsHealth.js`, `ops-health/index.ts`, the tests,
 this doc and the patch. Never: `scripts/blockyWorlds/engine/lib/vision/replan.js` (another session's edit), `reference/`.
 
-### 2. The migration
+### 2. The migrations (20261213100000 now; 20261214100000, the prices, right after the blocky-worlds-api deploy in step 4)
 ```
 npx supabase db query --linked -f supabase/migrations/20261213100000_blocky_worlds_studio.sql
 npx supabase migration repair --linked --status applied 20261213100000

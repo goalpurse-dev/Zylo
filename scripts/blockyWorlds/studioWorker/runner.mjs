@@ -20,6 +20,7 @@ import { sanitizeScript, STUDIO, STUDIO_STATUS, studioPct, stageForStep } from "
 import { makeStudioRuns } from "../../../supabase/functions/_shared/blockyWorlds/studioRuns.js";
 import { paths } from "../../../supabase/functions/_shared/blockyWorlds/render.js";
 import { decide } from "../../../supabase/functions/_shared/blockyWorlds/guard.js";
+import { buildsForRun } from "./assets.mjs";
 
 /** a stop the runner means (its code is the run's error_code) */
 export class StudioStop extends Error {
@@ -130,7 +131,10 @@ export async function runStudioRun(run, deps, cfg = STUDIO) {
     stopNow();
     await gate("before the director");
     await toStage("directing");
-    const directed = await timed("direct", () => steps.direct({ tl0: base.tl0, script, dir, L, log: (m) => { if (/stopping/.test(String(m))) st.lastStop = String(m); log(m); } }));
+    // the things the kit lacks (the run's Studio builds) + any ready asset from the Studio library -> the director's note
+    const builds = await (deps.buildsForRun ?? buildsForRun)(run, script).catch((e) => { log(`builds skipped: ${e?.message ?? e}`); return { builds: [], assets: {}, note: "" }; });
+    if (builds.builds.length) log(`builds: ${builds.builds.map((b) => `${b.name} (${b.kind})`).join(", ")}; library hits: ${Object.keys(builds.assets).length}`);
+    const directed = await timed("direct", () => steps.direct({ tl0: base.tl0, script, dir, L, briefNote: builds.note || null, builds: builds.builds, assets: builds.assets, log: (m) => { if (/stopping/.test(String(m))) st.lastStop = String(m); log(m); } }));
     await book();
     stopNow(); // the director stops quietly when a check refused its next call: the reason is here
     if (!directed?.plan?.shots?.length || !directed?.plan?.bible?.homes) {

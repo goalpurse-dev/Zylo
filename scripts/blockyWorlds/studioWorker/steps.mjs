@@ -58,10 +58,11 @@ export function makeSteps({ anthropicKey, elevenKey, cfg = STUDIO }) {
     },
     /** ONE Sonnet director for the whole story, ONE fix round (studio/agent.mjs); the reserve keeps the checks, the fix
      *  round and the final render funded inside the caps */
-    async direct({ tl0, script, dir, L, log }) {
+    async direct({ tl0, script, dir, L, log, briefNote = null }) {
       const nCuts = Math.round((tl0.duration / 60) * 58);
       const reserve = { finalUsd: finalLimits(tl0, cfg.finalJobs).worstUsd, previewUsd: +(sheetMaxSec(nCuts) * RATE).toFixed(4), checkUsd: 0.06, fixUsd: 0.08 };
-      return directVideo({ tl0, script, out: dir, L, apiKey: anthropicKey, model: cfg.model, rounds: cfg.rounds, minutes: cfg.directorMinutes, effort: cfg.effort, reserve, log });
+      // briefNote: the Studio builds (assets.mjs: names + lines only, marked as DATA) after the brief
+      return directVideo({ tl0, script, out: dir, L, apiKey: anthropicKey, model: cfg.model, rounds: cfg.rounds, minutes: cfg.directorMinutes, effort: cfg.effort, reserve, log, ...(briefNote ? { briefNote } : {}) });
     },
     /** the final timeline + every check; a line without a cut or a cut with invalid code never renders; then the final
      *  on RunPod (parallel frame-pack jobs) + the local encode and mux */

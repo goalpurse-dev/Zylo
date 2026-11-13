@@ -9,6 +9,16 @@ import { EXAMPLE_IDEAS, EXAMPLE_SCRIPT } from "./examples.js";
 import { batchPrompt, ideasSchema, ideasSystem, IDEAS_SYSTEM, REVISE_SYSTEM, revisePrompt, slotsPrompt, topicPrompt, usableIdeas, normalizeIdea } from "./ideas.js";
 import { BOARD_PREFIX, boardFitProblems, canFilmLine, fittingWithSwap, kitBlock, kitFit, swapHint, swapIdea } from "./boardFit.js";
 import { BOARD_KIT } from "./boardKit.js";
+// the Studio engine (2026-11-13): board = "prefer" -> the kit is a preference, no kit check blocks (studioBuilds.js)
+import { kitHard, kitPrefer, kitPreferBlock, STUDIO_BLOCK_PREFIX, studioBlockProblems } from "./studioBuilds.js";
+/** a writer's system prompt with the kit: HARD rules (board mode), a PREFERENCE (Studio), or none */
+const kitSystem = (base, board, who) => (kitHard(board) ? `${base}\n\n${kitBlock(BOARD_KIT, who)}` : kitPrefer(board) ? `${base}\n\n${kitPreferBlock(who)}` : base);
+/** the kit check of a draft: board mode's kit misses (unchanged), or Studio's four blocks (brands, nothing to show) */
+function kitProblems(check, script, card, board) {
+  if (kitHard(board)) { const b = boardFitProblems(script, card); check.problems.push(...b.problems); check.warnings.push(...b.warnings); }
+  else if (kitPrefer(board)) check.problems.push(...studioBlockProblems(script, card));
+  return check;
+}
 import { checkScript, normalizeScript, OPENER_SYSTEM, PART_FIX_SYSTEM, partFixPrompt, partFixSchema, openerOk, openerPrompt, openerSchema, paceClean, PART_IDS, partBudgets, scriptPrompt, scriptSchema, SCRIPT_SYSTEM, trimScript } from "./script.js";
 import { fixOpener, hasOpener } from "./opener.js";
 import { judgePrompt, judgeReasons, judgeSchema, judgeScriptPrompt, JUDGE_SYSTEM, RUBRIC, scoreVerdict } from "./library.js";
@@ -214,7 +224,7 @@ export async function writeIdeas({ apiKey = "", provider = "anthropic", seed = 0
     : await callJson({ apiKey, model: MODELS.ideas, system: ideasSystem({ board }), user: text, schema: ideasSchema(), effort: "low" });
   const ideas = usableIdeas(reply.data, slots, provider === "mock" ? [] : avoid);
   // the board-only launch mode: only ideas the board kit can film (the mock's samples are kept: the free flow test)
-  return { ideas: board && provider !== "mock" ? fittingWithSwap(ideas) : ideas, costUsd: reply.costUsd };
+  return { ideas: kitHard(board) && provider !== "mock" ? fittingWithSwap(ideas) : ideas, costUsd: reply.costUsd };
 }
 
 /**
@@ -230,7 +240,7 @@ export async function writeTopicIdeas({ apiKey = "", provider = "anthropic", top
   let ideas = rankTopicIdeas(topic, usableIdeas(reply.data, slots, provider === "mock" ? [] : avoid));
   // the board-only launch mode: only worlds the board kit can film; none left -> what the topic needs (the page says it)
   let unfit = null;
-  if (board && provider !== "mock") {
+  if (kitHard(board) && provider !== "mock") {
     const fits = ideas.map((i) => { const fit = kitFit(i); const swapped = fit.fit ? i : swapIdea(i); return swapped !== i && kitFit(swapped).fit ? { idea: swapped, fit: { fit: true, need: [] } } : { idea: i, fit }; });
     unfit = fits.some((x) => x.fit.fit) ? null : { needs: [...new Set(fits.flatMap((x) => x.fit.need.flatMap((n) => n.words.map((w) => String(w).toLowerCase()))))].slice(0, 4), canFilm: canFilmLine() };
     ideas = fits.filter((x) => x.fit.fit).map((x) => x.idea);
@@ -307,7 +317,7 @@ export async function writeBeats({ apiKey = "", provider = "anthropic", card, le
   for (let attempt = 1; attempt <= 2; attempt++) {
     const reply = provider === "mock"
       ? await MOCK.beats({ card, lengthSec })
-      : await callJson({ apiKey, model: MODELS.beats, system: board ? `${BEATS_SYSTEM}\n\n${kitBlock(BOARD_KIT, "plan")}` : BEATS_SYSTEM, user: beatsPrompt(card, lengthSec) + (problems.length ? `\n\nFIX THESE PROBLEMS:\n${problems.map((p) => `- ${p}`).join("\n")}` : ""), schema: beatsSchema(), effort: "low", meter, maxTokens });
+      : await callJson({ apiKey, model: MODELS.beats, system: kitSystem(BEATS_SYSTEM, board, "plan"), user: beatsPrompt(card, lengthSec) + (problems.length ? `\n\nFIX THESE PROBLEMS:\n${problems.map((p) => `- ${p}`).join("\n")}` : ""), schema: beatsSchema(), effort: "low", meter, maxTokens });
     costUsd += reply.costUsd;
     beats = reply.data?.beats ?? [];
     problems = beatProblems(beats);
@@ -332,7 +342,7 @@ export async function repairOpener({ apiKey = "", provider = "anthropic", line, 
 export function scriptProtocolCheck(script, lengthSec, card, { board = false } = {}) {
   const check = checkScript(script, lengthSec, "written");
   // the board-only launch mode: what the board kit can't film (boardFit.js on kitCheck.js), before anything is charged
-  if (board) { const b = boardFitProblems(script, card); check.problems.push(...b.problems); check.warnings.push(...b.warnings); }
+  kitProblems(check, script, card, board);
   if (card) {
     check.problems.push(...propProblems(card, script));
     const cb = callbackProblem(card, script);
@@ -367,8 +377,8 @@ export function trimForLength(script, lengthSec, card = null, { board = false } 
 export async function writeScript({ apiKey = "", provider = "anthropic", idea, lengthSec, previous = null, note = "", beats = null, failed = [], meter = null, maxTokens = 16000, board = false }) {
   // the board-only launch mode: the kit as hard rules for the writer, and the kit checks with the others
   // 2026-11-12: the kit (places, creature looks, animals, props, weather, SOUND WORDS) rides in the SYSTEM prompt, as in the formula writer
-  const opts = { board }, baseNote = board ? [note, idea?.swap ? swapHint(idea.swap) : ""].filter(Boolean).join("\n\n") : note;
-  const system = board ? `${SCRIPT_SYSTEM}\n\n${kitBlock(BOARD_KIT, "lines")}` : SCRIPT_SYSTEM;
+  const opts = { board }, baseNote = kitHard(board) ? [note, idea?.swap ? swapHint(idea.swap) : ""].filter(Boolean).join("\n\n") : note;
+  const system = kitSystem(SCRIPT_SYSTEM, board, "lines");
   let costUsd = 0, attempts = 0, script = null, check = null, prev = previous, extra = baseNote, trimmed = [];
   for (let round = 1; round <= 2; round++) {
     attempts++;
@@ -409,7 +419,7 @@ export function draftCheck(script, lengthSec, kind = "written", card = null, { b
   if (kind === "written") return scriptProtocolCheck(script, lengthSec, card, { board });
   const own = checkScript(script, lengthSec, "own");
   // a pasted script in launch mode: the same kit check (a story that needs a cave fails here, never after the charge)
-  if (board) { const b = boardFitProblems(script, card); own.problems.push(...b.problems); own.warnings.push(...b.warnings); }
+  kitProblems(own, script, card, board);
   return own;
 }
 
@@ -428,6 +438,7 @@ function mockFixPart({ script, indexes, reasons, card }) {
         : [`It was all about the ${named}.`, ...out.slice(1)];
     }
     else if (/^Line \d+ has/.test(r)) out = out.flatMap((t) => { const w = t.split(/\s+/); if (w.length <= 12) return [t]; const h = Math.ceil(w.length / 2); return [`${w.slice(0, h).join(" ").replace(/[,.]$/, "")}.`, w.slice(h).join(" ").replace(/^./, (c) => c.toUpperCase())]; });
+    else if (r.startsWith(STUDIO_BLOCK_PREFIX)) { const word = r.match(/"([^"]+)"/)?.[1]; if (word) out = out.map((t) => t.replace(new RegExp(word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"), "a snack")); }
     else if (r.startsWith(BOARD_PREFIX)) { const word = r.match(/"([^"]+)"/)?.[1]; if (word) out = out.map((t) => t.replace(new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\w*`, "gi"), "lantern")); }
     else if (/^Uses "([^"]+)"/.test(r)) { const word = r.match(/^Uses "([^"]+)"/)[1]; out = out.map((t) => t.replace(new RegExp(word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"), "something")); }
   }
@@ -455,7 +466,7 @@ export async function fixPart({ apiKey = "", provider = "anthropic", script, ind
     attempts++;
     const reply = provider === "mock"
       ? mockFixPart({ script, indexes: span, reasons: why, card })
-      : await callJson({ apiKey, model: MODELS.opener, system: board ? `${PART_FIX_SYSTEM}\n\n${kitBlock(BOARD_KIT, "lines")}` : PART_FIX_SYSTEM, user: partFixPrompt({ script, indexes: span, reasons: why, card }), schema: partFixSchema(), effort: "low", maxTokens: 4000, timeoutMs: 90_000 });
+      : await callJson({ apiKey, model: MODELS.opener, system: kitSystem(PART_FIX_SYSTEM, board, "lines"), user: partFixPrompt({ script, indexes: span, reasons: why, card }), schema: partFixSchema(), effort: "low", maxTokens: 4000, timeoutMs: 90_000 });
     costUsd += reply.costUsd;
     let fresh = (Array.isArray(reply.data?.lines) ? reply.data.lines : []).map((t) => paceClean(t)).filter((t) => t && t !== ".").slice(0, span.length + 6);
     // the free fallback (formula.js): when the span ends the script and the model's last line is too long for the button, split off its last short sentence

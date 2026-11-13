@@ -30,6 +30,7 @@ import { targetWords } from "./config.js";
 import { buttonProblems, formulaProblems } from "./formula.js";
 import { BOARD_KIT } from "./boardKit.js";
 import { boardFitProblems, kitBlock, swapHint } from "./boardFit.js";
+import { kitHard, kitPrefer, kitPreferBlock, studioBlockProblems } from "./studioBuilds.js";
 
 /**
  * Every word the safety check throws out (safety.js: famous names, a game platform's terms, gore), named in BOTH system
@@ -117,17 +118,20 @@ Return only the JSON object.`;
  */
 export function hybridPlanSystem({ board = false } = {}) {
   if (!board) return HYBRID_PLAN_SYSTEM;
+  // the Studio engine: the kit as a preference (no world / moved fields: nothing is moved)
+  if (kitPrefer(board)) return HYBRID_PLAN_SYSTEM.replace(`${RULE_VISUAL_TEXT}\n`, `${RULE_VISUAL_TEXT}\n\n${kitPreferBlock("plan")}\n`);
   return HYBRID_PLAN_SYSTEM.replace(`${RULE_VISUAL_TEXT}\n`, `${RULE_VISUAL_TEXT}\nThe rule visual must be filmable with the kit below: its parameter shown with the kit's places, props and actions.\n\n${kitBlock(BOARD_KIT, "plan")}\n\nWORLD AND MOVED: "world" lists the places, the creature look (one of ${BOARD_KIT.creatures.map((c) => c.id).join(", ")}, or "none"), the animals and the weather the story uses, all from the kit. "moved" says in one plain sentence what you changed from the user's idea to fit the kit ("" when nothing moved).\n`);
 }
 export function hybridLinesSystem({ board = false } = {}) {
   if (!board) return HYBRID_LINES_SYSTEM;
+  if (kitPrefer(board)) return HYBRID_LINES_SYSTEM.replace(/\n\nReturn only the JSON object: /, `\n\n${kitPreferBlock("lines")}\n\nReturn only the JSON object: `);
   return HYBRID_LINES_SYSTEM.replace(/\n\nReturn only the JSON object: /, `\n\n${kitBlock(BOARD_KIT, "lines")}\n\nReturn only the JSON object: `);
 }
 
 export function hybridPlanSchema({ board = false } = {}) {
   const s = { type: "string" };
   const obj = (props, req = Object.keys(props)) => ({ type: "object", additionalProperties: false, required: req, properties: props });
-  const world = board ? {
+  const world = kitHard(board) ? {
     world: obj({ places: { type: "array", items: { type: "string", enum: BOARD_KIT.places.map((p) => p.id) } }, creature_look: { type: "string", enum: [...BOARD_KIT.creatures.map((c) => c.id), "none"] }, animals: { type: "array", items: s }, weather: { type: "array", items: s } }),
     moved: s,
   } : {};
@@ -354,7 +358,9 @@ export function hybridChecks({ script, skeleton = {}, card, examples = [], lengt
   const flagged = base.problems.filter(slightlyShort).map(() => `A bit short: ${base.words} words, the band is ${lo} to ${hi} (the video runs about ${base.seconds} s).`);
   // the board-only launch mode: what the board kit can't film blocks (a must-have miss; boardFit.js on kitCheck.js); a
   // one-off mention is a note
-  const kit = board ? boardFitProblems(script, card) : { problems: [], warnings: [] };
+  // the Studio engine ("prefer"): never a kit miss; only its four blocks (studioBuilds.js: brands, nothing to show; the
+  // famous names and unsafe words are the safety checks every mode runs)
+  const kit = kitHard(board) ? boardFitProblems(script, card) : kitPrefer(board) ? { problems: studioBlockProblems(script, card), warnings: [] } : { problems: [], warnings: [] };
   // the button (formula.js) is HARD for a beat-sheet draft: the last line is 2 to 6 words and calls back the rule or the hook
   const button = beatDraft(script, skeleton, card) ? buttonProblems(script) : [];
   const hard = [...base.problems.filter((p) => HARD_SCRIPT.test(p) && !slightlyShort(p)), ...copyReasons(copy), ...(lost ? [lost] : []), ...kit.problems, ...button];

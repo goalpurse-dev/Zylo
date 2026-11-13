@@ -7,7 +7,8 @@
 -- blocky_worlds_start_run gets ONE more parameter with a default (the old 11-argument call keeps working).
 --
 -- 1. blocky_worlds_runs: engine ('pipeline' | 'studio'), studio_stage (the progress screen's stage), worker_id +
---    claimed_at (which Studio worker holds the run), notified_at ("your video is ready" sent).
+--    claimed_at (which Studio worker holds the run), notified_at ("your video is ready" sent), studio_builds (what the
+--    director builds that the kit does not have).
 -- 2. blocky_worlds_workers: each Studio worker says hello every ~30 s; start refuses before any charge when none did lately.
 -- 3. blocky_worlds_start_run(..., p_engine): the run is created with its engine in the same transaction as the charge,
 --    so the pipeline's sweeper can never see a Studio run as its own.
@@ -26,6 +27,8 @@ ALTER TABLE public.blocky_worlds_runs ADD COLUMN IF NOT EXISTS studio_stage text
 ALTER TABLE public.blocky_worlds_runs ADD COLUMN IF NOT EXISTS worker_id text;
 ALTER TABLE public.blocky_worlds_runs ADD COLUMN IF NOT EXISTS claimed_at timestamptz;
 ALTER TABLE public.blocky_worlds_runs ADD COLUMN IF NOT EXISTS notified_at timestamptz;
+-- the things the board kit does not have, which the Studio director builds (studioBuilds.js; [{ name, kind, lines, description }])
+ALTER TABLE public.blocky_worlds_runs ADD COLUMN IF NOT EXISTS studio_builds jsonb;
 CREATE INDEX IF NOT EXISTS blocky_worlds_runs_studio_line ON public.blocky_worlds_runs (created_at) WHERE engine = 'studio' AND status = 'queued';
 CREATE INDEX IF NOT EXISTS blocky_worlds_runs_studio_live ON public.blocky_worlds_runs (engine) WHERE engine = 'studio' AND status NOT IN ('done', 'failed');
 

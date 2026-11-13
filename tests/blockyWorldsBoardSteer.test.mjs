@@ -100,8 +100,9 @@ test("the free kit check blocks in the hybrid checks, draftCheck (written, own, 
   }
   // the endpoint re-checks with the switch at quote / start (before the charge) and passes it to every writer
   const src = readFileSync(new URL("../supabase/functions/blocky-worlds-api/index.ts", import.meta.url), "utf8");
-  assert.match(src, /draftCheck\(script, lengthSec, kindOf\(d\), PROVIDER === "mock" \? null : d\.card \?\? null, \{ board: LAUNCH_BOARD \}\)/);
-  for (const fn of ["writeTopicIdeas", "writeIdeas", "writeHybrid", "rewriteHybrid", "writeScript", "fixPart"]) assert.ok(src.split("\n").some((l) => l.includes(`${fn}({`) && l.includes("board: LAUNCH_BOARD")), fn);
+  assert.match(src, /draftCheck\(script, lengthSec, kindOf\(d\), PROVIDER === "mock" \? null : d\.card \?\? null, \{ board: KIT \}\)/); // KIT = LAUNCH_BOARD unless the Studio engine ("prefer")
+  for (const fn of ["writeTopicIdeas", "writeIdeas", "writeHybrid", "rewriteHybrid", "writeScript", "fixPart"]) assert.ok(src.split("\n").some((l) => l.includes(`${fn}({`) && l.includes("board: KIT")), fn);
+  assert.match(src, /const KIT: boolean \| "prefer" = STUDIO_ON \? KIT_PREFER : LAUNCH_BOARD;/);
   assert.match(src, /const move = action === "rewrite" && body\?\.move === true;/);
 });
 

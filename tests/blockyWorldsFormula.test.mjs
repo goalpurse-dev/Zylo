@@ -288,7 +288,7 @@ test("kit list: launch (kit) mode is on by default; plan, lines and Fix it get t
   for (const call of ["writeTopicIdeas(", "writeIdeas(", "fixPart(", "writeHybrid(", "rewriteHybrid(", "writeScript("]) {
     const at = []; for (let i = api.indexOf(call); i >= 0; i = api.indexOf(call, i + 1)) at.push(i);
     assert.ok(at.length, call);
-    for (const i of at) assert.match(api.slice(i, i + 700).split("\n")[0], /board: LAUNCH_BOARD/, `${call} gets board: LAUNCH_BOARD`);
+    for (const i of at) assert.match(api.slice(i, i + 700).split("\n")[0], /board: KIT\b/, `${call} gets board: KIT (LAUNCH_BOARD, or "prefer" with the Studio engine)`);
   }
 });
 

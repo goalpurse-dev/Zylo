@@ -9,6 +9,7 @@ import { PART_IDS, PARTS, partBudgets, wordCount } from "./script.js";
 import { contentWords } from "./library.js";
 import { conflictLines, TOPIC_PREFIX } from "./topic.js";
 import { BOARD_PREFIX, boardProblemLines, isPremiseProblem } from "./boardFit.js";
+import { isStudioBlock, studioBlockLines } from "./studioBuilds.js";
 import { FORMULA_PREFIX, formulaLines } from "./formula.js";
 
 // ---------- step 1: the idea card ----------
@@ -185,6 +186,13 @@ export function problemSpots(script, problems) {
       return spot(p, part, idx.filter((i) => lines[i].part === part));
     }
     if (isPremiseProblem(p)) return spot(p, null, [], "move");
+    // the Studio engine's blocks (studioBuilds.js): a brand on its lines -> Fix it on that part; a whole-story one -> rewrite
+    if (isStudioBlock(p)) {
+      const idx = studioBlockLines(p).filter((i) => lines[i]);
+      if (!idx.length) return spot(p, null, [], "rewrite");
+      const part = lines[idx[0]].part;
+      return spot(p, part, idx.filter((i) => lines[i].part === part));
+    }
     if (p.startsWith(BOARD_PREFIX)) {
       const idx = boardProblemLines(p).filter((i) => lines[i]);
       if (!idx.length) return spot(p, null, [], "rewrite");
