@@ -4,7 +4,7 @@ Status 2026-11-14: 1387 CC0 assets from 15 packs, built into the RunPod image `b
 (`/app/zyvo_assets/zyvo_assets.blend`, 12.2 MB) and used by the world pack v3 (`scripts/blockyWorlds/blenderKit/worlds/worlds.py`).
 Not deployed to the app; the Blender endpoint `sp338bavcw2gtn` points at the new image.
 
-## 1. Licences (the owner's policy: CC0 / free for commercial use without credit or share-alike = use; CC-BY = needs credit, owner decides; GPL / CC-BY-SA = excluded; no licence text = ask)
+## 1. Licences (the owner's policy: CC0 / free for commercial use without credit or share-alike = use; CC-BY = needs credit, owner decides; GPL / CC-BY-SA = excluded; no licence text = excluded)
 
 | Pack | Licence | Evidence | Decision |
 |---|---|---|---|
@@ -26,11 +26,11 @@ Not deployed to the app; the Blender endpoint `sp338bavcw2gtn` points at the new
 | chicken | CC0 | `license.txt` (Čestmír Dammer) | KEPT, NOT IMPORTED: .blend only (foreign .blend files are never opened by our build) + photo texture, not our look |
 | forest-monster | CC0 | `Licenses.txt` (Čestmír Dammer) | KEPT, NOT IMPORTED: same |
 | booksOGA_GPL.blend | GPL (file name), no CC0 dual licence found | none inside | EXCLUDED |
-| Animals.zip (Fox.dae, ShibaInu.dae) | no licence text | none | ASK THE OWNER (not used) |
-| CWU_player-spaceship.zip | no licence text | none | ASK THE OWNER (not used) |
-| clouds1.zip (skybox bmp) | no licence text | none | ASK THE OWNER (not used) |
-| modular_village_collection.zip | no licence text | none | ASK THE OWNER (not used) |
-| pinetree0.png | no licence text | none | ASK THE OWNER (not used) |
+| Animals.zip (Fox.dae, ShibaInu.dae) | no licence text | none | EXCLUDED (owner 2026-11-14: skip) |
+| CWU_player-spaceship.zip | no licence text | none | EXCLUDED (owner 2026-11-14: skip) |
+| clouds1.zip (skybox bmp) | no licence text | none | EXCLUDED (owner 2026-11-14: skip) |
+| modular_village_collection.zip | no licence text | none | EXCLUDED (owner 2026-11-14: skip) |
+| pinetree0.png | no licence text | none | EXCLUDED (owner 2026-11-14: skip) |
 
 No CC-BY packs arrived. Real brands / logos: none found (a name filter in `catalog.py` also drops brand-like names).
 Nothing from Roblox. The raw packs stay in `reference/blocky-worlds/assets-incoming/` (git-excluded); nothing from them is

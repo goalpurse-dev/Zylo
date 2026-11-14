@@ -29,6 +29,11 @@ for (const loc of LOCATIONS) {
   for (const spot of loc.spots) if (!onlySpots || onlySpots.includes(spot)) shots.push({ desc: `${loc.id} ${spot}`, place: loc.id, spot, dress: {} });
 }
 for (const place of times) for (const time of ["sunset", "night"]) shots.push({ desc: `${place} wide ${time}`, place, spot: "wide", dress: { time } });
+// --pick place:spot[:time],...  exactly these shots (a fix sheet), nothing else
+if (arg("pick")) {
+  shots.length = 0;
+  for (const p of arg("pick").split(",")) { const [place, spot, time] = p.split(":"); shots.push({ desc: `fix: ${place} ${spot}${time ? ` ${time}` : ""}`, place, spot, dress: time ? { time } : {} }); }
+}
 if (!has("no-dress") && (!only || only.includes("dress"))) {
   shots.push({ desc: "dress: city hall + blimp, sunset", place: "downtown_landmark", spot: "wide", dress: { landmark: "city_hall", landmark_text: "CITY HALL", time: "sunset", props: ["cars", "blimp"], blimp_text: "VOTE" } });
   shots.push({ desc: "dress: clock tower at night", place: "downtown_landmark", spot: "wide", dress: { landmark: "tower", landmark_text: "1890", time: "night" } });

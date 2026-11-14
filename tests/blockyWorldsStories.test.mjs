@@ -21,11 +21,13 @@ const L = (...texts) => texts.map((text) => ({ text }));
 test("bans: the examples' pieces (sneezing, cat allergy, pepper, teleporting, laughing floats, face-wearing monsters, spy and wall, radio to mom) fail; the topic's own words are exempt", () => {
   const cases = {
     sneezing: "Every sneeze makes the plane jump.", "cat allergy": "I'm allergic to the cat.", pepper: "A pepper jar fell.", teleporting: "Sneezing teleports you.",
-    "laughing floats": "When you laugh you float up.", "face-wearing monsters": "At the door they take off their faces and hang them on hooks.",
+    "laughing floats": "When you laugh you float up.", "human chain": "We made a human chain to pull him down.", "the kid who never laughs": "Except Dot, who never laughs.", "face-wearing monsters": "At the door they take off their faces and hang them on hooks.",
     "spy behind the wall": "They sent me as a spy.", "radio to mom": "Every night I radio my mom.", "hunters and cage": "The hunters come back with a cage.",
   };
   for (const [id, text] of Object.entries(cases)) assert.ok(bannedConcepts(L(text)).some((c) => c.id === id), `${id}: ${text}`);
   assert.deepEqual(bannedConcepts(L("The plane hummed. Seat belts clicked.")), []);
+  // laughing as a trigger is fine (owner topic 2026-11-14): a laugh that makes you GROW, rising above the roofs
+  assert.deepEqual(bannedConcepts(L("Every time you laugh, you grow.", "I laughed so hard my head rose above the bank."), "In this town, every time you laugh, you grow."), []);
   assert.deepEqual(bannedConcepts(L("Every sneeze makes the plane jump."), "In this town, sneezing is a sport."), [], "the customer's own topic may sneeze");
   const p = bannedProblems({ lines: L("Opening.", "Mrs. Pell sneezed. Achoo!") });
   assert.equal(p.length, 2);

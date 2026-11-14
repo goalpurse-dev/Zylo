@@ -39,6 +39,8 @@ PACKS = [
     ("nweeds", "tiny_weeds", "CC0", "readme.txt (Nobiax, CC0 1.0 Universal)", ["*/*.obj", "*.obj"], 0.01, ["nature", "weeds"], "weeds"),
 ]
 # kept by licence but not imported: .blend-only (untrusted files are never opened by our build) and photo-textured
+# excluded (owner 2026-11-14): no licence text found, never used: Animals, CWU_player-spaceship, clouds1, modular_village_collection, pinetree0; booksOGA_GPL (GPL)
+EXCLUDED = {"Animals": "no licence text", "CWU_player-spaceship": "no licence text", "clouds1": "no licence text", "modular_village_collection": "no licence text", "pinetree0": "no licence text", "booksOGA_GPL": "GPL"}
 NOT_IMPORTED = {"chicken": "CC0 (license.txt); .blend only + photo texture: not our look, not opened", "forest-monster": "CC0 (Licenses.txt); .blend only + photo textures: not our look, not opened"}
 SKIP = re.compile(r"withoutBase|_LOD|lod\d|collision", re.I)
 BRANDS = re.compile(r"coca|cola|pepsi|mcdonald|starbucks|nike|adidas|roblox|lego|disney|ikea|shell|bp_|toyota|ford|bmw|audi|mercedes|ferrari|tesla", re.I)
@@ -172,7 +174,7 @@ def main():
             stats.setdefault(key, []).append((name, size))
     cat = {"version": 1, "units": "one character = 5.2 tall; origin = bottom centre; z up",
            "packs": [{"key": k, "folder": fo, "license": li, "evidence": ev, "factor": fa, "tags": ba, "use": us, "assets": len(stats.get(k, []))} for k, fo, li, ev, _, fa, ba, us in PACKS],
-           "not_imported": NOT_IMPORTED, "assets": out}
+           "not_imported": NOT_IMPORTED, "excluded": EXCLUDED, "assets": out}
     with open(os.path.join(HERE, "catalog.json"), "w", encoding="utf-8", newline="\n") as f:
         json.dump(cat, f, indent=0, separators=(",", ":"))
     print("catalog: %d assets, %d previews" % (len(out), sum(1 for a in out if a["preview"])))

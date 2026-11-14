@@ -14,7 +14,11 @@ export const BANNED_CONCEPTS = Object.freeze([
   { id: "cat allergy", re: /\ballerg\w*[^.!?]{0,40}\bcats?\b|\bcats?\b[^.!?]{0,40}\ballerg\w*/i, why: "the cat allergy is the kit's example" },
   { id: "pepper", re: /\bpepper\w*\b/i, why: "pepper is the kit's example prop" },
   { id: "teleporting", re: /\bteleport\w*\b/i, why: "teleporting is the kit's example rule" },
-  { id: "laughing floats", re: /\b(laugh\w*|giggl\w*)\b[^.!?]{0,50}\b(float\w*|lighter than air|rise|rose)\b|\b(float\w*)\b[^.!?]{0,50}\b(laugh\w*|giggl\w*)\b/i, why: "laughing makes you float is the kit's example rule" },
+  // laughing as a TRIGGER is allowed (owner 2026-11-14: "every time you laugh, you grow"); laughing that makes you FLOAT is not
+  // ("rise" / "rose" left this pattern: a growing kid rises above the roofs)
+  { id: "laughing floats", re: /\b(laugh\w*|giggl\w*)\b[^.!?]{0,50}\b(float\w*|lighter than air|drift\w* up)\b|\b(float\w*)\b[^.!?]{0,50}\b(laugh\w*|giggl\w*)\b/i, why: "laughing makes you float is the kit's example rule" },
+  { id: "human chain", re: /\bhuman chain\b|\bchain of (people|kids|bodies|hands|neighbou?rs)\b|\b(form|formed|make|made) a chain\b/i, why: "the human chain is the kit's laugh_float example" },
+  { id: "the kid who never laughs", re: /\bnever (laughs?|laughed|giggles?|smiles?|smiled)\b|\b(doesn't|didn't|can't|couldn't|won't|wouldn't) (ever )?(laugh|smile)\b|\bhasn't laughed\b/i, why: "the kid who never laughs is the kit's laugh_float example" },
   { id: "face-wearing monsters", re: /\b(take|took|taking|pull|pulled|peel|peeled)s?\s+(off\s+)?(its|his|her|their|my|your)?\s*faces?\s+off\b|\bfaces?\s+(on|off)\s+(the\s+)?hooks?\b|\b(wear|wore|wearing|worn)\s+(our|my|your|their|stolen|borrowed)\s+faces?\b|\bfaces?\s+they\s+(ate|stole)\b|\blooks? like (one|us|a human)\b[^.!?]{0,40}\b(monster|ate)\b|\bhang\w*\s+(it|them|their faces?)\s+on\s+(a\s+)?(nails?|hooks?)\b/i, why: "monsters wearing human faces is the 6M reference" },
   { id: "spy behind the wall", re: /\b(spy|spies|spied)\b|\bbehind the wall\b|\bthe wall (can|could|will|would) shut\b|\bthe wall\b[^.!?]{0,30}\b(gate|hunters?)\b/i, why: "the spy and the wall is the 6M reference" },
   { id: "radio to mom", re: /\bradio\w*\b[^.!?]{0,40}\b(mom|mum|mother|mama)\b|\b(mom|mum|mother)\b[^.!?]{0,40}\bradio\b/i, why: "the radio to mom is the 6M reference" },

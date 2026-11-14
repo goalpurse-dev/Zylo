@@ -210,6 +210,14 @@
 "chicken":"CC0 (license.txt); .blend only + photo texture: not our look, not opened",
 "forest-monster":"CC0 (Licenses.txt); .blend only + photo textures: not our look, not opened"
 },
+"excluded":{
+"Animals":"no licence text",
+"CWU_player-spaceship":"no licence text",
+"clouds1":"no licence text",
+"modular_village_collection":"no licence text",
+"pinetree0":"no licence text",
+"booksOGA_GPL":"GPL"
+},
 "assets":[
 {
 "id":"kcity_building_a",
