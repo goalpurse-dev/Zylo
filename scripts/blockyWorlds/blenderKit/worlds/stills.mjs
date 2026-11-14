@@ -1,7 +1,9 @@
 // Blender kit engine: TEST every place of the world library from every camera spot (and the dressing system) with stills
 // on the Blender endpoint: one shot per place x spot (+ dressing demos) in a generated shots.py, the kit's preview mode
 // (middle frame, 25 %), the kit's contact sheets. Priced first on its own ledger (--cap, default $1.50).
-//   node worlds/stills.mjs --out <dir> [--only downtown,suburb] [--cap 1.5] [--yes]
+//   node worlds/stills.mjs --out <dir> [--only downtown,suburb] [--spots wide,close] [--times downtown_street,suburb_street]
+//                          [--no-dress] [--jobs 1] [--cap 1.5] [--yes]
+//   --spots: only these spots; --times: + a sunset and a night wide of these places; --jobs: how many GPU jobs (each boots)
 import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
@@ -16,15 +18,18 @@ const argv = process.argv.slice(2), has = (k) => argv.includes(`--${k}`), arg = 
 const OUT = path.resolve(arg("out")); fs.mkdirSync(OUT, { recursive: true });
 const L = ledger(OUT, { capUsd: Number(arg("cap", 1.5)), agentCapUsd: 0 });
 const only = arg("only") ? arg("only").split(",") : null;
+const onlySpots = arg("spots") ? arg("spots").split(",") : null;
+const times = arg("times") ? arg("times").split(",") : [];
 const say = (m) => { const l = `[${new Date().toISOString().slice(11, 19)}] ${m}`; console.log(l); fs.appendFileSync(path.join(OUT, "stills.log"), l + "\n"); };
 
 // the shots: every place x spot, a kid standing at the close-up target (scale), + the dressing demos
 const shots = [];
 for (const loc of LOCATIONS) {
   if (only && !only.some((o) => loc.id.startsWith(o))) continue;
-  for (const spot of loc.spots) shots.push({ desc: `${loc.id} ${spot}`, place: loc.id, spot, dress: {} });
+  for (const spot of loc.spots) if (!onlySpots || onlySpots.includes(spot)) shots.push({ desc: `${loc.id} ${spot}`, place: loc.id, spot, dress: {} });
 }
-if (!only || only.includes("dress")) {
+for (const place of times) for (const time of ["sunset", "night"]) shots.push({ desc: `${place} wide ${time}`, place, spot: "wide", dress: { time } });
+if (!has("no-dress") && (!only || only.includes("dress"))) {
   shots.push({ desc: "dress: city hall + blimp, sunset", place: "downtown_landmark", spot: "wide", dress: { landmark: "city_hall", landmark_text: "CITY HALL", time: "sunset", props: ["cars", "blimp"], blimp_text: "VOTE" } });
   shots.push({ desc: "dress: clock tower at night", place: "downtown_landmark", spot: "wide", dress: { landmark: "tower", landmark_text: "1890", time: "night" } });
   shots.push({ desc: "dress: giant screen + rain", place: "downtown_landmark", spot: "wide", dress: { landmark: "screen", landmark_text: "PRICES UP", weather: "rain", time: "day" } });
@@ -46,7 +51,8 @@ const words = Array.from({ length: N + 1 }, (_, i) => ({ word: `w${i}`, start: i
 fs.writeFileSync(path.join(vdir, "audio", "words.json"), JSON.stringify(words));
 fs.writeFileSync(path.join(vdir, "script.txt"), "stills\n");
 spawnSync("ffmpeg", ["-v", "error", "-y", "-f", "lavfi", "-i", "anullsrc=r=44100:cl=mono", "-t", String(N + 1), path.join(vdir, "audio", "voice.wav")]);
-const groups = N > 24 ? [0, 1, 2].map((g) => shots.map((_, i) => i + 1).filter((id) => id % 3 === g)) : [shots.map((_, i) => i + 1)];
+const J = Number(arg("jobs", N > 24 ? 3 : 1));
+const groups = Array.from({ length: J }, (_, g) => shots.map((_, i) => i + 1).filter((id) => id % J === g)).filter((g) => g.length);
 const limit = (g) => g.length * 12 + 240;
 const worst = groups.reduce((a, g) => a + (limit(g) + BOOT_S) * RATE, 0);
 say(`stills: ${N} shots (${new Set(shots.map((s) => s.place)).size} places) in ${groups.length} jobs; static check ok; worst case $${worst.toFixed(3)}; spent $${L.total()} of $${L.capUsd}`);
