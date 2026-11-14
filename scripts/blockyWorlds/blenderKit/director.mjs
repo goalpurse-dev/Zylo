@@ -386,6 +386,32 @@ export function staticCheck(text, file) {
 }
 
 // ---------------------------------------------------------------- the director
+// ---------------------------------------------------------------- AUTO-CONTINUE (owner 2026-11-14)
+// A director answer cut off by the output limit continues in the same conversation (the cut answer goes back unchanged,
+// a new user turn asks for ONLY what is missing; no prefill), at most CONTINUE_DIRECTOR.max times; the parts are merged.
+export const CONTINUE_DIRECTOR = Object.freeze({ max: 2 });
+const idsOf = (d) => (Array.isArray(d?.shots) ? d.shots.map((s) => s?.id).filter(Number.isInteger) : []);
+/** the user turn that continues a cut answer: the last complete shot, ONLY the rest */
+export function continueText(data) {
+  const ids = idsOf(data);
+  return `YOUR LAST ANSWER WAS CUT OFF AT THE OUTPUT LIMIT. CONTINUE IT in the same answer format: return ONLY what is missing${ids.length ? `: the shots AFTER shot ${Math.max(...ids)} (shots ${ids.join(", ")} are complete and kept)` : " (no shot was complete: return every shot)"} and any field that was empty or cut; repeat nothing that is complete. Keep your thinking short.`;
+}
+/** a cut answer + its continuation -> one answer: the first answer's complete parts win; arrays of shots join by id */
+export function mergeAnswers(a = {}, b = {}) {
+  const out = { ...b, ...a };
+  for (const k of new Set([...Object.keys(a), ...Object.keys(b)])) {
+    const x = a[k], y = b[k];
+    if (Array.isArray(x) || Array.isArray(y)) {
+      const xs = Array.isArray(x) ? x : [], ys = Array.isArray(y) ? y : [];
+      const has = new Set(xs.map((v) => (v && typeof v === "object" && "id" in v ? `id:${v.id}` : JSON.stringify(v))));
+      out[k] = [...xs, ...ys.filter((v) => !has.has(v && typeof v === "object" && "id" in v ? `id:${v.id}` : JSON.stringify(v)))];
+      if (out[k].every((v) => v && typeof v === "object" && Number.isInteger(v.id))) out[k].sort((p, q) => p.id - q.id);
+    } else if (x === undefined || x === null || x === "") out[k] = y;
+    else out[k] = x;
+  }
+  return out;
+}
+
 export function makeDirector({ out, L, apiKey, model = MODELS.sonnet, system, reserve = () => 0, log = console.log, tokens = {} }) {
   const TK = { plan: 24000, batch: 16000, fix: 16000, ...tokens };
   const ans = path.join(out, "answers"); fs.mkdirSync(ans, { recursive: true });
@@ -452,12 +478,22 @@ export function makeDirector({ out, L, apiKey, model = MODELS.sonnet, system, re
     return { j, data, cutOff: j.stop_reason === "max_tokens", text };
   }
 
-  /** one director turn in the shared conversation (the assistant content goes back unchanged, thinking included) */
+  /** one director turn in the shared conversation (the assistant content goes back unchanged, thinking included); an
+   *  answer cut off by the output limit CONTINUES (at most CONTINUE_DIRECTOR.max turns, each priced by call() first) */
   async function turn(label, userText, schema, { maxTokens, effort }) {
     convo.push({ role: "user", content: userText });
-    const r = await call({ label, messages: convo, schema, maxTokens, effort, kind: "agent" });
+    let r = await call({ label, messages: convo, schema, maxTokens, effort, kind: "agent" });
     convo.push({ role: "assistant", content: r.j.content });
-    return r;
+    let data = r.data ?? {}, k = 0;
+    while (r.cutOff && k < CONTINUE_DIRECTOR.max) {
+      k++;
+      log(`${label}: cut off at the output limit: continuing (${k} of ${CONTINUE_DIRECTOR.max})`);
+      convo.push({ role: "user", content: continueText(data) });
+      r = await call({ label: `${label}_continue${k}`, messages: convo, schema, maxTokens, effort, kind: "agent" });
+      convo.push({ role: "assistant", content: r.j.content });
+      data = mergeAnswers(data, r.data ?? {});
+    }
+    return k ? { ...r, data, continued: k } : r;
   }
 
   return {

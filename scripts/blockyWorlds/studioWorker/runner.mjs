@@ -42,6 +42,8 @@ export function failCode(e) {
   if (e instanceof StudioStop) return code;
   if (/credit balance|insufficient_quota|quota_exceeded|payment required|\b402\b/i.test(msg)) return "PROVIDER_BALANCE";
   if (["CAP", "AGENT_CAP", "RESERVE"].includes(code)) return "CAP";
+  // a model answer cut off by the output limit (after its continuations): the director failed; refunded once like any failure
+  if (e?.truncated || code === "TRUNCATED" || /output truncated|cut off at the output limit/i.test(msg)) return "DIRECTOR_FAILED";
   if (code === "MODEL" || code === "REFUSED") return "DIRECTOR_FAILED";
   if (code === "PREVIEW") return "PREVIEW_FAILED";
   return "STUDIO_FAILED";

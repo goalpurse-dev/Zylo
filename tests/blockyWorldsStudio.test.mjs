@@ -309,6 +309,27 @@ test("runner: a step that fails -> the run is failed once and refunded once, not
   assert.equal(failReason(row.error_code).kind, "ours");
 });
 
+test("runner: a model answer cut off by the output limit (after its continuations) fails ONCE as DIRECTOR_FAILED and is refunded ONCE; the sweeper can't refund it again", async () => {
+  for (const thrown of [Object.assign(new Error("output truncated"), { truncated: true, costUsd: 0.08 }), new Error("the director wrote no cut: plan: cut off at the output limit")]) {
+    const db = studioDb();
+    const run = studioRun(db);
+    const { deps, uploads } = fakes({ db, over: { async direct({ L }) { L.check("director 1 (claude-sonnet-5-5)", 0.3, { agent: true }); L.add("agent", 0.08); throw thrown; } } });
+    const r = await runStudioRun(clone(run), deps);
+    assert.equal(r.ok, false);
+    assert.equal(r.code, "DIRECTOR_FAILED");
+    assert.equal(db.runs.get(run.id).status, "failed");
+    assert.equal(db.refunds.filter((x) => x === run.id).length, 1);
+    // the sweeper (or a restart) tries to fail it again: nothing happens, no second refund
+    const runs = makeStudioRuns({ db, now: () => T0, log: () => {} });
+    assert.equal(await runs.failRun(db.runs.get(run.id), "STUDIO_FAILED", "sweeper"), false);
+    assert.equal(db.refunds.filter((x) => x === run.id).length, 1, "never refunded twice");
+    assert.equal(uploads.length, 0);
+    assert.ok(db.ledgerRows.some((l) => l.stage === "director" && l.usd === 0.08), "what the cut call cost is booked");
+    assert.equal(failReason(r.code).kind, "ours");
+  }
+  assert.equal(failCode(Object.assign(new Error("x"), { code: "TRUNCATED" })), "DIRECTOR_FAILED");
+});
+
 test("runner: the per-video caps hold (a cap refusal fails + refunds as CAP); the agent cap is the Studio $3", async () => {
   const db = studioDb();
   const run = studioRun(db);

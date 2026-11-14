@@ -4,6 +4,9 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import os from "node:os";
+import { ledger } from "../studio/ledger.mjs";
+import { makeDirector, mergeAnswers, continueText, CONTINUE_DIRECTOR } from "./director.mjs";
 import { planLocations, tileShots, salvageJson, planProblems, MIN_LOCATIONS, shotCamera, shotProblems, mentionsHero, heroOf, cameraWallProblem, cameraPositions, giantSuspect, HERO_MIN_SHARE, SCREEN_SHARE_CAP, bodyCharacters, giantCameraProblems, CHAR_BOX } from "./director.mjs";
 
 // the hero is named in most shot descs (the plan check wants the hero in at least half the shots)
@@ -195,4 +198,57 @@ test("worlds.py: zw_giant_cam keeps every view outside the character's box at ev
   assert.match(src, /raise RuntimeError\("CAMERA INSIDE A CHARACTER/);
   assert.match(src, /V\.build = zw_guarded_build/);
   assert.equal(CHAR_BOX.z, 5.4);
+});
+
+// ---------------------------------------------------------------- auto-continue (owner 2026-11-14)
+test("continue: a cut answer and its continuation merge: complete shots kept, the rest added by id, empty fields filled", () => {
+  const a = { title: "Giggle", header_code: "", shots: [{ id: 1, body: "a" }, { id: 2, body: "b" }], anchors: ["bank"] };
+  const b = { title: "", header_code: "def zo(): pass", shots: [{ id: 2, body: "B again" }, { id: 3, body: "c" }], anchors: ["bank", "school"] };
+  const m = mergeAnswers(a, b);
+  assert.equal(m.title, "Giggle");
+  assert.equal(m.header_code, "def zo(): pass");
+  assert.deepEqual(m.shots, [{ id: 1, body: "a" }, { id: 2, body: "b" }, { id: 3, body: "c" }]);
+  assert.deepEqual(m.anchors, ["bank", "school"]);
+  assert.match(continueText(a), /the shots AFTER shot 2 \(shots 1, 2 are complete and kept\)/);
+  assert.match(continueText({}), /no shot was complete: return every shot/);
+  assert.equal(CONTINUE_DIRECTOR.max, 2);
+});
+
+const sse = (stop, text) => {
+  const ev = [
+    { type: "message_start", message: { id: "m", model: "claude-sonnet-5-5", usage: { input_tokens: 1000, output_tokens: 0 } } },
+    { type: "content_block_start", index: 0, content_block: { type: "thinking", thinking: "", signature: "" } },
+    { type: "content_block_start", index: 1, content_block: { type: "text", text: "" } },
+    { type: "content_block_delta", index: 1, delta: { type: "text_delta", text } },
+    { type: "message_delta", delta: { stop_reason: stop }, usage: { output_tokens: 4000 } },
+    { type: "message_stop" },
+  ];
+  const body = new ReadableStream({ start(c) { c.enqueue(new TextEncoder().encode(ev.map((e) => `event: ${e.type}\ndata: ${JSON.stringify(e)}\n\n`).join(""))); c.close(); } });
+  return new Response(body, { status: 200 });
+};
+
+test("continue: a director turn cut off at the output limit continues in the same conversation (priced, at most 2) and returns the merged answer", async (t) => {
+  const sent = [];
+  const answers = [
+    sse("max_tokens", '{"title":"G","header_code":"","new_builds":[],"style_sheet":[],"anchors":[],"dress":"","shots":[{"id":1,"w0":0,"desc":"Zo","location":"x","body":"a"},{"id":2,"w0":3,"de'),
+    sse("end_turn", '{"title":"","header_code":"","new_builds":[],"style_sheet":[],"anchors":[],"dress":"","shots":[{"id":2,"w0":3,"desc":"Zo grows","location":"x","body":"b"}]}'),
+  ];
+  t.mock.method(globalThis, "fetch", async (url, init) => { sent.push(JSON.parse(init.body)); return answers[sent.length - 1]; });
+  const out = fs.mkdtempSync(path.join(os.tmpdir(), "dir-cont-"));
+  const L = ledger(out, { capUsd: 5, agentCapUsd: 3 });
+  const D = makeDirector({ out, L, apiKey: "k", system: "SYS", log: () => {} });
+  const r = await D.plan({ brief: "PLAN IT" });
+  assert.equal(sent.length, 2);
+  assert.equal(r.continued, 1);
+  assert.deepEqual(r.data.shots.map((s) => s.id), [1, 2]);
+  assert.equal(r.data.shots[1].body, "b");
+  // the second request: the cut answer went back unchanged (thinking included), then the continue turn: no prefill
+  const msgs = sent[1].messages;
+  assert.deepEqual(msgs.map((m) => m.role), ["user", "assistant", "user"]);
+  assert.equal(msgs[1].content[0].type, "thinking");
+  assert.match(msgs[2].content, /CUT OFF AT THE OUTPUT LIMIT.*AFTER shot 1/);
+  // both calls were priced and booked on the ledger
+  const steps = fs.readFileSync(path.join(out, "steps.jsonl"), "utf8").trim().split("\n").map((l) => JSON.parse(l)).filter((s) => s.step === "model_call");
+  assert.deepEqual(steps.map((s) => s.label), ["plan", "plan_continue1"]);
+  assert.ok(L.agentTotal() > 0);
 });

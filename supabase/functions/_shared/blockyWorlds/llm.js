@@ -73,7 +73,7 @@ export function systemBlocks(texts, { cache = true, ttl = "5m" } = {}) {
  * The library job's output ceilings (tokens, thinking included). They bound what one call can cost, so the job can stop
  * before any call that could pass its money cap (libraryJob.js worstCaseUsd).
  */
-export const LIBRARY_MAX_TOKENS = Object.freeze({ write: 8000, judge: 6000 });
+export const LIBRARY_MAX_TOKENS = Object.freeze({ write: 16000, judge: 6000 });
 /** The most one call can cost (USD): every output token used, plus a generous input. */
 export const worstCaseUsd = (model, maxTokens, inputTokens = 12000, ttl = "5m") => { const p = PRICE[model] ?? PRICE["claude-sonnet-5-5"]; return Number(((maxTokens * p.output + inputTokens * (ttl === "1h" ? p.cacheWrite1h : p.cacheWrite)) / 1e6).toFixed(4)); };
 
@@ -95,14 +95,39 @@ export function requestBody({ model, system, user, schema, effort, maxTokens, ca
   };
 }
 
-/** One call that returns JSON matching `schema`. Thinking stays adaptive; effort keeps it short. */
-async function callJson({ apiKey, model, system, user, schema, effort = "low", maxTokens = 16000, timeoutMs = 120_000, meter = null, cache = true, ttl = "5m" }) {
+/**
+ * AUTO-CONTINUE (owner, 2026-11-14: the first "laugh -> grow" script lost three paid line drafts to an 8000-token limit):
+ * a reply cut off by the output limit (stop_reason max_tokens) is RESUMED instead of failing: a new request (the same system
+ * blocks, so a cache read) gets the original message plus the JSON written so far and asks for the COMPLETE object, with
+ * 1.5x the room (at most CONTINUE.maxTokens). Structured outputs return whole objects and these models take no assistant
+ * prefill, so a resume re-sends the finished part rather than appending to it. At most CONTINUE.max resumes; each one is
+ * priced on the meter before it is sent, exactly like the first call (a cap refusal stops the step).
+ */
+export const CONTINUE = Object.freeze({ max: 2, grow: 1.5, maxTokens: 32000 });
+export function resumeUser(user, partial) {
+  const done = String(partial ?? "").trim();
+  return `${user}\n\nRESUME: your previous answer was cut off at the output limit ${done ? `after this much of the JSON:\n<<<\n${done.slice(0, 60000)}\n>>>\nReturn the COMPLETE JSON object now: keep every finished part word for word and finish the rest.` : "before any of the JSON was written. Return the COMPLETE JSON object now."} Keep your thinking short.`;
+}
+
+/** One call that returns JSON matching `schema`. Thinking stays adaptive; effort keeps it short. A cut-off reply is resumed (CONTINUE). */
+export async function callJson({ apiKey, model, system, user, schema, effort = "low", maxTokens = 16000, timeoutMs = 120_000, meter = null, cache = true, ttl = "5m", continues = CONTINUE.max }) {
   const sonnet = FALLBACK_MODELS.some((m) => model.startsWith(m)); // (name kept: any model with the fallback)
-  // a money cap: the call is never sent when its worst case (every output token, input at the cache-write price) could
-  // pass it; what a call cost (failed ones too) is added to the meter
-  if (meter) meter.check(worstCaseUsd(model, maxTokens, Math.ceil(([system].flat().join("").length + user.length) / 3) + 200, cache ? ttl : "5m"), model);
-  try { return await sendJson({ apiKey, model, system, user, schema, effort, maxTokens, timeoutMs, sonnet, meter, cache, ttl }); }
-  catch (e) { if (meter && !e?.counted) meter.add(e?.costUsd ?? 0); throw e; }
+  let ask = user, mt = maxTokens, spent = 0;
+  for (let k = 0; ; k++) {
+    // a money cap: the call is never sent when its worst case (every output token, input at the cache-write price) could
+    // pass it; what a call cost (failed ones too) is added to the meter
+    if (meter) meter.check(worstCaseUsd(model, mt, Math.ceil(([system].flat().join("").length + ask.length) / 3) + 200, cache ? ttl : "5m"), model);
+    try {
+      const r = await sendJson({ apiKey, model, system, user: ask, schema, effort, maxTokens: mt, timeoutMs, sonnet, meter, cache, ttl });
+      return k ? { ...r, costUsd: Number((spent + r.costUsd).toFixed(5)), continued: k } : r;
+    } catch (e) {
+      if (meter && !e?.counted) meter.add(e?.costUsd ?? 0);
+      spent += Number(e?.costUsd ?? 0);
+      if (!e?.truncated || k >= continues) throw Object.assign(e, { costUsd: Number(spent.toFixed(5)), continued: k });
+      ask = resumeUser(user, e.partial);
+      mt = Math.min(CONTINUE.maxTokens, Math.ceil(mt * CONTINUE.grow));
+    }
+  }
 }
 async function sendJson({ apiKey, model, system, user, schema, effort, maxTokens, timeoutMs, sonnet, meter, cache = true, ttl = "5m" }) {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -124,8 +149,8 @@ async function sendJson({ apiKey, model, system, user, schema, effort, maxTokens
     throw Object.assign(new Error(`anthropic ${res.status} ${JSON.stringify(body?.error ?? body).slice(0, 300)}`), { costUsd, balance, counted });
   }
   if (body?.stop_reason === "refusal") throw Object.assign(new Error("REFUSED: the writer declined this one"), { costUsd, refused: true, counted });
-  if (body?.stop_reason === "max_tokens") throw Object.assign(new Error("output truncated"), { costUsd, counted });
   const text = (body?.content ?? []).filter((b) => b?.type === "text").map((b) => b.text).join("");
+  if (body?.stop_reason === "max_tokens") throw Object.assign(new Error("output truncated"), { costUsd, counted, truncated: true, partial: text });
   try {
     return { data: JSON.parse(text), costUsd, usage: usageOf(body?.usage) };
   } catch {
@@ -602,7 +627,7 @@ export async function topicScript({ apiKey = "", provider = "anthropic", topic, 
 
 // ---------- broad topics with reference examples (owner, 2026-11-08) ----------
 /** Output ceilings of the broad flow (each call's worst case is bounded by them). */
-export const BROAD_MAX_TOKENS = Object.freeze({ plan: 7000, script: 10000, judge: LIBRARY_MAX_TOKENS.judge });
+export const BROAD_MAX_TOKENS = Object.freeze({ plan: 12000, script: 16000, judge: LIBRARY_MAX_TOKENS.judge });
 
 /** The plan: an idea card (with its twist clue) and the 7 beats, from the topic, recipe and angle. */
 // model/effort/maxTokens/note: overrides for a model comparison (the defaults are the production flow); note is added
@@ -702,9 +727,11 @@ export async function broadTopic({ apiKey = "", topic, recipe = null, examples =
  * The app can switch it (BLOCKY_WORLDS_CACHE_TTL = 5m | 1h | off).
  */
 export const HYBRID = Object.freeze({
-  plan: Object.freeze({ model: "claude-opus-5-5", effort: "low", maxTokens: 9000 }),
-  lines: Object.freeze({ model: "claude-sonnet-5-5", effort: "low", maxTokens: 8000 }),
-  fix: Object.freeze({ model: "claude-sonnet-5-5", effort: "low", maxTokens: 6000 }),
+  // 2026-11-14: lines 16000, plan / fix 12000 (the lines call of an 85 s script with the Studio notes used all of 8000 on thinking + JSON:
+  // three paid drafts lost); a cut-off reply is resumed anyway (CONTINUE)
+  plan: Object.freeze({ model: "claude-opus-5-5", effort: "low", maxTokens: 12000 }),
+  lines: Object.freeze({ model: "claude-sonnet-5-5", effort: "low", maxTokens: 16000 }),
+  fix: Object.freeze({ model: "claude-sonnet-5-5", effort: "low", maxTokens: 12000 }),
   judge: Object.freeze({ maxTokens: 2500 }),
   cacheTtl: "5m",
 });
@@ -756,7 +783,7 @@ export async function writeDark({ apiKey = "", topic, lengthSec = 150, meter = n
     const p = await callJson({ apiKey, model: HYBRID.plan.model, system: [DARK_PLAN_SYSTEM, patternNotes("plan")], user: darkPlanPrompt({ topic, lengthSec, note: [note, freshNamesBlock(out.names)].filter(Boolean).join("\n\n") }), schema: darkPlanSchema(), effort: HYBRID.plan.effort, maxTokens: HYBRID.plan.maxTokens, meter, ttl });
     log("plan", HYBRID.plan.model, p);
     out.plan = p.data;
-    const make = (vnote) => callJson({ apiKey, model: HYBRID.lines.model, system: [DARK_LINES_SYSTEM, patternNotes("lines")], user: darkLinesPrompt({ plan: out.plan, topic, lengthSec, note: vnote }), schema: darkLinesSchema(), effort: HYBRID.lines.effort, maxTokens: 12000, meter, ttl });
+    const make = (vnote) => callJson({ apiKey, model: HYBRID.lines.model, system: [DARK_LINES_SYSTEM, patternNotes("lines")], user: darkLinesPrompt({ plan: out.plan, topic, lengthSec, note: vnote }), schema: darkLinesSchema(), effort: HYBRID.lines.effort, maxTokens: 16000, meter, ttl });
     const notes = DARK_VERSION_NOTES.slice(0, Math.min(versions, DARK_VERSION_NOTES.length));
     const first = await make(notes[0]);
     const rest = await Promise.all(notes.slice(1).map(make));
