@@ -405,22 +405,47 @@ def zw_person_src(mode, j, t0, t1):
             ch.pose(t0, loc=(x, 0, 0), rot=r)
             ch.blink(t0, t1)
             ch.talk(t0 + 0.15 + k * 0.45, t1)
-            ch.wiggle(t0, t1, part="armR" if k else "armL", amp=(22, 10), rate=2.0 + k * 0.7, base=(55, 18))
+            ch.pose(t0, head=(0, -6 + k * 10, 4 - k * 8), torso=(0, 4, 3 - k * 6), armL=(8, 10), armR=(8, 10))
+            ch.wiggle(t0, t1, part="armR" if k else "armL", amp=(30, 14), rate=1.8 + k * 0.7, base=(70 - k * 15, 24))
+            ch.nod(t0 + 0.35 + k * 0.5, 2, 10, 5.0)
     else:
         ch = chars.kid(b, coll=src)
         ch.pose(t0, loc=(0, 0, 0), rot=0)
         ch.blink(t0, t1)
         if mode == "walk":
-            ch.walk(t0, t1, (0, 0, 0), (0, -0.001, 0), face_dir=False, start_phase=j)
+            ch.walk(t0, t1, (0, 0, 0), (0, -0.001, 0), face_dir=False, start_phase=j, swing=38, arm=34, bob=0.16)
+            ch.pose(t0, torso=(0, 5, 0), head=((-1) ** j * 12, -4, 0))
         elif mode == "sit":
-            ch.pose(t0, legL=(85, 3), legR=(85, -3), armL=(14, 8), armR=(14, 8), hipz=-0.8)
+            ch.pose(t0, legL=(85, 3 + j * 6), legR=(85, -3 - j * 6), armL=(30, 10), armR=(55 if j else 20, 12), torso=(0, -4, 0), head=(15 - j * 30, 0, 0), hipz=-0.8)
+            ch.talk(t0 + 0.2, t1)
             ch.idle()
         else:
+            # three natural standing poses: hands on hips, a wave, pointing and looking
+            ch.pose(t0, **[dict(armL=(-12, 42), armR=(-12, 42), torso=(0, 0, 4), head=(18, 0, 0)),
+                           dict(armL=(6, 8), armR=(160, 30), head=(-10, -6, 0)),
+                           dict(armL=(10, 6), armR=(88, -8), head=(-25, 4, 0), torso=(-10, 0, 0))][j % 3])
             ch.idle(1.5)
-            if j % 2:
-                ch.wiggle(t0, t1, part="armR", amp=(16, 8), rate=1.6, base=(30, 12))
+            if j % 3 == 1:
+                ch.wiggle(t0, t1, part="armR", amp=(14, 24), rate=2.4, base=(160, 30))
     hide_coll_from_layer(src)
     return src
+
+
+def zw_off_lane(x, y, pad=0.9):
+    """a point inside a traffic lane (ZW_T["lanes"], minus the crosswalks ZW_T["xwalks"]) moves to the nearest sidewalk side"""
+    for (x0, x1), (y0, y1) in ZW_T.get("lanes", ()):
+        if x0 - pad < x < x1 + pad and y0 - pad < y < y1 + pad:
+            if any(c0 <= y <= c1 for c0, c1 in ZW_T.get("xwalks", ())):
+                continue
+            if (x1 - x0) <= (y1 - y0):
+                x = x0 - pad - 0.6 if x < (x0 + x1) / 2 else x1 + pad + 0.6
+            else:
+                y = y0 - pad - 0.6 if y < (y0 + y1) / 2 else y1 + pad + 0.6
+    return x, y
+
+
+def zw_in_lane(x, y, pad=0.9):
+    return zw_off_lane(x, y, pad) != (x, y)
 
 
 def zw_people(t0, t1, n, areas, seed=7, modes=("walk", "walk", "stand", "talk", "walk")):
@@ -434,7 +459,7 @@ def zw_people(t0, t1, n, areas, seed=7, modes=("walk", "walk", "stand", "talk", 
         mode = modes[i % len(modes)]
         ar = areas[i % len(areas)]
         z = ar[2] if len(ar) > 2 else 0.0
-        x, y = rnd.uniform(*ar[0]), rnd.uniform(*ar[1])
+        x, y = zw_off_lane(rnd.uniform(*ar[0]), rnd.uniform(*ar[1]))
         along_y = (ar[1][1] - ar[1][0]) >= (ar[0][1] - ar[0][0])
         src = zw_person_src(mode, (i // len(modes)) % 3, t0, t1)
         name = "zw_person%d_%d" % (seed, i)
@@ -443,6 +468,8 @@ def zw_people(t0, t1, n, areas, seed=7, modes=("walk", "walk", "stand", "talk", 
             rot = (180 if sgn > 0 else 0) if along_y else (90 if sgn > 0 else -90)
             dist = min(2.8 * (t1 - t0), 6.0)
             dx, dy = (0.0, sgn * dist) if along_y else (sgn * dist, 0.0)
+            if zw_in_lane(x - dx / 2, y - dy / 2) or zw_in_lane(x + dx / 2, y + dy / 2):
+                dx, dy = 0.0, 0.0      # never walk into the traffic lane
             ob = instance(name, src, (x - dx / 2, y - dy / 2, z), rot=(0, 0, rot))
             ob.keyframe_insert("location", frame=F(t0))
             ob.location = (x + dx / 2, y + dy / 2, z)
@@ -656,6 +683,7 @@ def zw_landmark(kind, label, y=178.0):
 
 def zw_downtown(t0, t1, dress):
     zw_sky_time(dress.get("time", "day"), dress.get("weather", "clear"))
+    ZW_T["lanes"], ZW_T["xwalks"] = [((-7.3, 7.3), (-2.0, 182.0))], [(-0.2, 3.2), (151.3, 154.7)]
     zw_backdrop((0, 90))
     rnd = random.Random(11)
     # ground: plaza tiles + the street + the sidewalks
@@ -859,6 +887,7 @@ def zw_house(i, x, side, col):
 def zw_suburb(t0, t1, dress):
     zw_sky_time(dress.get("time", "day"), dress.get("weather", "clear"))
     zw_backdrop((0, 20))
+    ZW_T["lanes"], ZW_T["xwalks"] = [((-160.0, 160.0), (-6.2, 6.2))], []
     za_load(["ktown_tree", "ktown_tree_high_round", "ktown_tree_high"] + ZA_CARS)
     g = ZW_SKY.get(zw_time(), ZW_SKY["day"])["grass"]
     box("zw_lawn", (400, 400, 0.4), (0, 0, -0.2), zw_m("grass" + g[1:], g, 0.9), 0)
@@ -958,6 +987,7 @@ def zw_brick_city(t0, t1, dress):
     zw_sky_time(dress.get("time", "day"), dress.get("weather", "clear"))
     zw_backdrop((0, 90))
     za_load(["kaykit_box_a", "kaykit_box_b", "kaykit_trash_a", "kaykit_dumpster"])
+    ZW_T["lanes"], ZW_T["xwalks"] = [((-7.2, 7.2), (-30.0, 200.0))], []
     box("zw_bground", (400, 400, 0.4), (0, 80, -0.2), zw_m("bc_ground", "#8f8a84", 0.9), 0)
     box("zw_broad", (14, 220, 0.06), (0, 80, 0.03), zw_m("cobble", "#55555c", 0.9), 0)
     for k in range(22):
@@ -1583,9 +1613,9 @@ ZW_SPOTS = {
     "suburb_porch": {"wide": ((8, -2, 6), (0, 18, 4), 24), "street": ((4, 6, 3.4), (0, 16, 3.6), 28), "close": ((2.6, 7.5, 4.8), (0, 15.5, 6.2), 28)},
     "brick_street": {"wide": ((0, -16, 10), (0, 80, 14), 22), "street": ((4, 10, 3.4), (-2, 50, 6), 26), "close": ((4.6, 31.5, 5.0), (8.0, 39.5, 6.2), 28), "skyline": ((-4, -30, 30), (0, 120, 25), 30)},
     "brick_alley": {"wide": ((4, 58, 6), (-20, 74, 3), 24), "street": ((-5, 66, 3.8), (-20, 74, 3.2), 26), "close": ((-10.5, 70.5, 5.0), (-18, 74, 6.2), 28)},
-    "living_room": {"wide": ((5.6, -7.4, 6.6), (-1.5, 3, 2.4), 20), "street": ((1.2, -4.6, 3.8), (2, 3.0, 2.8), 24), "close": ((-0.6, -3.6, 4.8), (2, 3.0, 5.8), 28)},
-    "bedroom": {"wide": ((3.0, -7.4, 6.6), (-2, 3.5, 2.4), 20), "street": ((1, -3.6, 3.6), (4.5, 2, 2.4), 24), "close": ((1.8, -4.6, 4.8), (4.5, 1.5, 5.8), 28)},
-    "kitchen": {"wide": ((7.4, -7.4, 6.2), (-1, 4.2, 2.4), 20), "street": ((0, -6.4, 3.6), (0, 3, 3), 24), "close": ((1.5, -9.6, 5.0), (0, -2, 5.8), 28)},
+    "living_room": {"wide": ((5.6, -7.4, 6.6), (-1.5, 3, 2.4), 20), "street": ((1.2, -4.6, 3.8), (2, 3.0, 2.8), 24), "close": ((3.5, -5.5, 4.6), (-1.0, 0.0, 4.4), 35)},
+    "bedroom": {"wide": ((3.0, -7.4, 6.6), (-2, 3.5, 2.4), 20), "street": ((1, -3.6, 3.6), (4.5, 2, 2.4), 24), "close": ((3.0, -5.6, 4.6), (-0.5, 0.5, 4.4), 35)},
+    "kitchen": {"wide": ((7.4, -7.4, 6.2), (-1, 4.2, 2.4), 20), "street": ((0, -6.4, 3.6), (0, 3, 3), 24), "close": ((1.4, -9.0, 4.6), (0, -2, 4.4), 35)},
     "shop": {"wide": ((-9.4, -8.6, 7.6), (2, 4, 2.2), 20), "street": ((0, -8.4, 3.8), (0, 4, 3.2), 24), "close": ((0.8, -4.6, 4.8), (0, 2.6, 5.8), 28)},
     "big_hall": {"wide": ((-16, -20, 10), (0, 12, 3), 22), "street": ((0, -14, 4), (0, 16, 5), 24), "close": ((1.5, 8.8, 7.2), (0, 16, 8.4), 28)},
     # the kit's sets: the cameras its own example videos use (close: head and shoulders)
@@ -1617,4 +1647,94 @@ def zw_spot(cam, place, spot, t0, t1, push=0.08, lens=None):
     cam.key(t0, tuple(loc), tuple(tgt), lens=lens or ln)
     cam.key(t1, tuple(end), tuple(tgt), lens=lens or ln)
     return loc, tgt
+
+
+# ---------------------------------------------------------------- GIANT CAMERA RULES (owner 2026-11-14)
+# Growing / shrinking characters: zw_grow scales a character over a shot (feet stay on the ground). zw_giant_cam gives a
+# SAFE camera for a character of any size: distance and height scale with the size, the face framed from outside with
+# a longer lens, never closer than the head's own size. zw_cam_guard BLOCKS any shot whose camera is inside or touching a
+# character's body (every 6th frame + the last; world bounding box of the character's meshes, scale animation included):
+# the shot fails with "CAMERA INSIDE A CHARACTER" and goes to the fix round.
+def zw_grow(ch, t0, t1, s0, s1, interp="BEZIER"):
+    """the character's size from s0 to s1 between t0 and t1 (1.0 = a kid, 5.2 tall)"""
+    ch.root.scale = (s0, s0, s0)
+    ch.root.keyframe_insert("scale", frame=F(t0))
+    ch.root.scale = (s1, s1, s1)
+    ch.root.keyframe_insert("scale", frame=F(t1))
+    set_interp(ch.root, "scale", F(t0), interp)
+    return ch
+
+
+def zw_giant_cam(cam, ch, size, t0, t1, view="hero", yaw=0.0, push=0.06):
+    """a safe camera for a character `size` times a kid at its root position:
+    view "face": the face from outside (longer lens, 4.4 x size away: over 3 head sizes), "hero": street level looking UP at the
+    giant (people, cars, buildings at his feet), "full": the whole body; yaw turns the camera round the character"""
+    p = Vector(ch.root.location)
+    head = p + Vector((0, 0, 4.6 * size))
+    a = math.radians(yaw)
+    fwd = Vector((math.sin(a), -math.cos(a), 0))
+    if view == "face":
+        d, z, tgt, lens = max(4.5, 4.4 * size), 4.6 * size, head, 50
+    elif view == "full":
+        d, z, tgt, lens = 9.0 * size + 6, 2.6 * size + 2, p + Vector((0, 0, 2.6 * size)), 30
+    else:
+        d, z, tgt, lens = 4.5 * size + 8, 2.2, p + Vector((0, 0, 3.6 * size)), 22
+    loc = p + fwd * d + Vector((0, 0, z - p.z))
+    end = loc + (tgt - loc) * push
+    cam.key(t0, tuple(loc), tuple(tgt), lens=lens)
+    cam.key(t1, tuple(end), tuple(tgt), lens=lens)
+    return loc, tgt
+
+
+def zw_cast_boxes():
+    """(name, lo, hi) world bounding boxes of every visible kit character (a "<name>_root" empty with a "_hip" child)"""
+    out = []
+    for o in D.objects:
+        if o.type != "EMPTY" or not o.name.endswith("_root") or not any(c.name.endswith("_hip") for c in o.children):
+            continue
+        lo, hi = Vector((1e9, 1e9, 1e9)), Vector((-1e9, -1e9, -1e9))
+        for m in o.children_recursive:
+            if m.type != "MESH" or not m.visible_get():
+                continue
+            for c in m.bound_box:
+                w = m.matrix_world @ Vector(c)
+                lo = Vector((min(lo.x, w.x), min(lo.y, w.y), min(lo.z, w.z)))
+                hi = Vector((max(hi.x, w.x), max(hi.y, w.y), max(hi.z, w.z)))
+        if lo.x < 1e8:
+            out.append((o.name[:-5], lo, hi))
+    return out
+
+
+def zw_cam_guard(t0, t1, step=6):
+    """BLOCK the shot if the camera is inside or touching any character's body at any checked frame"""
+    sc = bpy.context.scene
+    if sc.camera is None:
+        return
+    f0, f1 = F(t0), max(F(t0), F(t1) - 1)
+    frames = list(range(f0, f1 + 1, step)) + [f1]
+    for f in frames:
+        sc.frame_set(f)
+        c = sc.camera.matrix_world.translation
+        for name, lo, hi in zw_cast_boxes():
+            m = 0.12 * max(1.0, (hi.z - lo.z) / 5.2)
+            if lo.x - m <= c.x <= hi.x + m and lo.y - m <= c.y <= hi.y + m and lo.z - m <= c.z <= hi.z + m:
+                raise RuntimeError("CAMERA INSIDE A CHARACTER: the camera at (%.1f, %.1f, %.1f) is inside %s's body at frame %d; pull it back (zw_giant_cam)" % (c.x, c.y, c.z, name, f))
+    sc.frame_set(f0)
+
+
+ZW_BUILD0 = []
+try:
+    ZW_BUILD0.append(V.build)
+except NameError:
+    pass
+
+
+def zw_guarded_build(i, *a, **k):
+    S = ZW_BUILD0[0](i, *a, **k)
+    zw_cam_guard(S["t0"], S["t1"])
+    return S
+
+
+if ZW_BUILD0:
+    V.build = zw_guarded_build
 # ===== END OF THE ZYVO WORLD LIBRARY =====================================================================

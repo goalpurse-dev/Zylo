@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { planLocations, tileShots, salvageJson, planProblems, MIN_LOCATIONS, shotCamera, shotProblems, mentionsHero, heroOf, cameraWallProblem, cameraPositions, giantSuspect, HERO_MIN_SHARE, SCREEN_SHARE_CAP } from "./director.mjs";
+import { planLocations, tileShots, salvageJson, planProblems, MIN_LOCATIONS, shotCamera, shotProblems, mentionsHero, heroOf, cameraWallProblem, cameraPositions, giantSuspect, HERO_MIN_SHARE, SCREEN_SHARE_CAP, bodyCharacters, giantCameraProblems, CHAR_BOX } from "./director.mjs";
 
 // the hero is named in most shot descs (the plan check wants the hero in at least half the shots)
 const shotsAt = (locs) => locs.map((location, i) => ({ id: i + 1, w0: i, desc: i % 3 === 2 ? "the crowd gasps" : "Mo runs", location }));
@@ -145,4 +145,54 @@ test("the giant-prop suspect: one flat region over the screen-share cap with few
   assert.ok(!giantSuspect({ lflat: 0.56, ledge: 0.2 }));    // a face close-up (measured on the v2 world stills)
   assert.ok(!giantSuspect({ lflat: 0.3, ledge: 0.05 }));
   assert.ok(!giantSuspect({ cflat: 0.9 }));                  // old preview stats without the lower-frame numbers
+});
+
+// ---------------------------------------------------------------- giant camera rules (owner 2026-11-14)
+test("the characters of a body: sizes from scale=, root.scale and zw_grow (the bigger size), positions from pose(loc=)", () => {
+  const c = bodyCharacters([
+    "zo = chars.kid(3)", "zo.pose(t0, loc=(0, 40, 0), rot=0)", "zw_grow(zo, t0, t1, 1.0, 6.0)",
+    "bob = Char(\"Bob\", shirt=\"#ff0000\", scale=2.5)", "bob.pose(t0, loc=(10, 40, 0))",
+    "kid2 = chars.kid(4)", "kid2.root.scale = (0.5, 0.5, 0.5)", "kid2.pose(t0, loc=(-6, 30, 0.3))",
+  ].join("\n"));
+  assert.equal(c.zo.size, 6);
+  assert.deepEqual(c.zo.locs, [[0, 40, 0]]);
+  assert.equal(c.bob.size, 2.5);
+  assert.equal(c.kid2.size, 1);           // a shrink below 1 keeps the kid box (the bigger size counts)
+});
+
+test("the giant camera check BLOCKS a camera inside a grown character and too close to a giant's face, never a safe one", () => {
+  const giant = "zo = chars.kid(3)\nzo.pose(t0, loc=(0, 40, 0))\nzw_grow(zo, t0, t1, 1.0, 6.0)\ncam = Cam()\n";
+  // the old kid-size close-up camera, 5 units in front: inside a size-6 body (box x +-9.6, y +-6, z 0..32.4)
+  assert.match(giantCameraProblems(`${giant}cam.key(t0, (1.0, 35.0, 4.6), (0, 40, 4.4), lens=30)`)[0], /INSIDE zo \(size 6\)/);
+  // outside the box but 12 units from a size-6 face (3 head sizes = 25.2): too close
+  assert.match(giantCameraProblems(`${giant}cam.key(t0, (0, 25, 27.6), (0, 40, 27.6), lens=50)`)[0], /from zo's face .* at least 25\.2 away/);
+  // the zw_giant_cam "face" distance (4.4 x size = 26.4 at the face height) and further: fine
+  assert.deepEqual(giantCameraProblems(`${giant}cam.key(t0, (0, 8, 27.6), (0, 40, 27.6), lens=50)`), []);
+  // street level looking up from 35 units: fine
+  assert.deepEqual(giantCameraProblems(`${giant}cam.key(t0, (4, 5, 2.2), (0, 40, 21.6), lens=22)`), []);
+  // a kid-size character keeps the old rules: 5 units in front at head height is fine
+  assert.deepEqual(giantCameraProblems("k = chars.kid(3)\nk.pose(t0, loc=(0, 40, 0))\ncam.key(t0, (1.0, 35.0, 4.6), (0, 40, 4.4))"), []);
+  assert.match(giantCameraProblems("k = chars.kid(3)\nk.pose(t0, loc=(0, 40, 0))\ncam.key(t0, (0.5, 40.3, 4.6), (0, 45, 4.4))")[0], /INSIDE k/);
+});
+
+test("the shot check blocks the shot that puts the camera inside a character", () => {
+  const body = "zo = chars.kid(3)\nzo.pose(t0, loc=(0, 40, 0))\nzw_grow(zo, t0, t1, 1.0, 6.0)\ncam = Cam()\ncam.key(t0, (1.0, 35.0, 4.6), (0, 40, 4.4))";
+  const p = shotProblems({ shots: [{ id: 1, desc: "Zo grows", location: "downtown_street" }], bodies: { 1: body }, hero: "Zo" });
+  assert.match(p[1], /BLOCKED \(camera inside/);
+});
+
+test("worlds.py: zw_giant_cam keeps every view outside the character's box at every size; the Blender guard wraps V.build", () => {
+  // the same distances as worlds.py zw_giant_cam (face: max(4.5, 4.4 s) at the face height; hero: 4.5 s + 8 at z 2.2; full: 9 s + 6)
+  for (const s of [0.5, 1, 2, 4, 6, 10, 16]) {
+    const views = { face: [Math.max(4.5, 4.4 * s), 4.6 * s], hero: [4.5 * s + 8, 2.2], full: [9 * s + 6, 2.6 * s + 2] };
+    for (const [v, [d, z]] of Object.entries(views)) {
+      assert.deepEqual(giantCameraProblems(`g = chars.kid(1)\ng.pose(t0, loc=(0, 0, 0))\nzw_grow(g, t0, t1, ${s}, ${s})\ncam.key(t0, (0, ${-d}, ${z}), (0, 0, 1))`), [], `${v} at size ${s}`);
+    }
+  }
+  const src = fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "worlds", "worlds.py"), "utf8");
+  assert.match(src, /d, z, tgt, lens = max\(4\.5, 4\.4 \* size\), 4\.6 \* size, head, 50/);
+  assert.match(src, /d, z, tgt, lens = 4\.5 \* size \+ 8, 2\.2,/);
+  assert.match(src, /raise RuntimeError\("CAMERA INSIDE A CHARACTER/);
+  assert.match(src, /V\.build = zw_guarded_build/);
+  assert.equal(CHAR_BOX.z, 5.4);
 });
