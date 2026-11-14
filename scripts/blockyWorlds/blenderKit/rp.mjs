@@ -14,6 +14,28 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 // RunPod serverless 16 GB tier (RTX 4000 Ada / A4500 / A4000 / 2000 Ada), per second (engine/runpod/client.mjs RATE)
 export const RATE = 0.58 / 3600;
 export const BOOT_S = 95; // a new worker's boot, billed (measured 53-72 s delay on this image + idle 5 s; rounded up)
+// MEASURED GPU PRICING (owner 2026-11-14): the reserves for GPU work still to come are priced from the MEASURED rates x a
+// margin (the old reserve used the cancel limits: 1.2 s a frame against the measured 0.66, $0.94 reserved for a $0.45
+// final). The HARD STOP stays in the job limits: every job is cancelled past its limit, and before the final the limits
+// are fitted to the money left (fitLimits), never below the measured time x a margin.
+//   measured: 0.64-0.69 s a final frame (4 videos, 18 chunks); previews ~9.6 s a shot (76 shots of world-library shots
+//   in 3 jobs of 230-240 s); the kit's finish ~60 s + ~1.6 s per video second (+ our loudnorm / captions)
+export const GPU = Object.freeze({ sPerFrame: 0.66, previewShotS: 10, finishS: (dur) => 60 + 2 * dur, margin: 1.5 });
+/** the final's priced GPU cost (chunks + boots + the finish) */
+export const finalEstimate = ({ frames, chunks, dur, g = GPU }) => +((frames * g.sPerFrame * g.margin + Math.min(chunks, 3) * BOOT_S + g.finishS(dur) * g.margin + BOOT_S) * RATE).toFixed(4);
+/** a preview round's priced GPU cost */
+export const previewEstimate = ({ shots, jobs, g = GPU }) => +((shots * g.previewShotS * g.margin + jobs * BOOT_S) * RATE).toFixed(4);
+/** job time limits (s) fitted to the money left: each job is booked at (limit + a boot) x RATE; the hard limits when they
+ *  fit, else every limit between its floor (the measured time x a margin) and its hard limit, scaled alike; null when
+ *  even the floors do not fit (the caller stops: never a job that the money cannot cover) */
+export function fitLimits({ hard, floor, roomUsd }) {
+  const roomS = roomUsd / RATE - hard.length * BOOT_S;
+  const sumH = hard.reduce((a, b) => a + b, 0), sumF = floor.reduce((a, b) => a + b, 0);
+  if (sumH <= roomS) return { limits: hard.slice(), f: 1 };
+  if (sumF > roomS) return null;
+  const f = (roomS - sumF) / Math.max(1e-9, sumH - sumF);
+  return { limits: hard.map((h, i) => Math.floor(Math.min(h, floor[i] + (h - floor[i]) * f))), f: +f.toFixed(3) };
+}
 const CUTAWAY = "f66astc0vrus92";
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 export const endpointInfo = () => JSON.parse(fs.readFileSync(path.join(here, "endpoint.json"), "utf8"));

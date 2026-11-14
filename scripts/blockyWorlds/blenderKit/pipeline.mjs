@@ -19,10 +19,10 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { ledger, stepTimes } from "../studio/ledger.mjs";
 import { loadEnv } from "../engine/runpod/client.mjs";
-import { makeDirector, systemPrompt, tileShots, assemble, staticCheck, wordLines, planLocations, planProblems, shotProblems, heroOf, giantSuspect, MODELS, BATCH, MIN_LOCATIONS } from "./director.mjs";
+import { makeDirector, systemPrompt, tileShots, assemble, staticCheck, wordLines, planLocations, planProblems, shotProblems, heroOf, giantSuspect, MODELS, BATCH, MIN_LOCATIONS, PRICING } from "./director.mjs";
 import { captionColors } from "./speakers.mjs";
 import { LOCATIONS, DRESS } from "./worlds/locations.mjs";
-import { runpod, RATE, BOOT_S } from "./rp.mjs";
+import { runpod, RATE, BOOT_S, GPU, finalEstimate, previewEstimate, fitLimits } from "./rp.mjs";
 import { shotFrames, splitShots } from "./plan.mjs";
 import { saveAsset, functionSource, findAssets } from "./library.mjs";
 import { makeBed, kitMusicDb } from "./music.mjs";
@@ -36,6 +36,10 @@ const FIX_PER_CALL = 10;
 // --topic "<the topic line>", --notes <file>: the owner's production notes for THIS story (its world, its anchors, its
 // final image ...), handed to the director as part of the brief (data, like the script)
 const TOPIC = arg("topic", ""), NOTES = has("notes") ? fs.readFileSync(path.resolve(arg("notes")), "utf8").trim() : "";
+// --fix-notes <json>: the owner's FIX ORDERS for the fix rounds (owner 2026-11-14): { general: "...", order: [ids, by
+// priority], shots: { id: "what this shot must show / how to film it" } }; listed shots join fix round 1 even when the
+// checker passed them; each order goes to the director with that shot (data, like the notes)
+const FIX_NOTES = has("fix-notes") ? JSON.parse(fs.readFileSync(path.resolve(arg("fix-notes")), "utf8")) : null;
 // LIBRARY MODE (--worlds, owner 2026-11-14): the director DRESSES our world library (worlds/worlds.py, pasted above its
 // header) instead of building worlds; its instructions carry ONE kit example + the library docs; tighter output limits;
 // one fix round by default. --scene-plan <file>: the owner's scene plan ({ scenes: [{ lines: [a, b], location }] }).
@@ -106,10 +110,19 @@ const R = runpod({ L, prefix: `blocky-worlds-test/blender-kit/${path.basename(RU
 export const LIMIT = Object.freeze({ sPerFrame: 1.2, perShotS: 3, chunkS: 180, previewShotS: 6, previewJobS: 180 });
 const chunkMax = (g) => Math.round(g.n * LIMIT.sPerFrame + g.ids.length * LIMIT.perShotS + LIMIT.chunkS);
 const finishMax = () => Math.round(300 + 4 * dur);
-const finalWorst = () => { const n = Math.round(dur * 30); return (n * LIMIT.sPerFrame + K * (LIMIT.chunkS + 15 * LIMIT.perShotS)) * RATE + Math.min(K, 3) * BOOT_S * RATE + (finishMax() + BOOT_S) * RATE; };
-const previewWorst = (nShots, jobs) => (nShots * LIMIT.previewShotS + jobs * LIMIT.previewJobS + jobs * BOOT_S) * RATE;
-const reserve = () => finalWorst() + (state.previewed ? 0 : previewWorst(Math.round((dur / 60) * 55), 3)) + (ROUNDS - (state.round ?? 0)) * previewWorst(20, 1);
-say(`reserved for the GPU: $${reserve().toFixed(3)} (final worst $${finalWorst().toFixed(3)})`);
+// THE RESERVE (owner 2026-11-14: priced from the MEASURED rates x a margin, rp.mjs GPU): the final, the previews still
+// to come (round 0, every fix round left) and the checker calls still to come; a checker call does not reserve itself.
+// The hard stop: every job's limit (cancel) is booked before it is sent, and the final's limits are fitted to the money
+// left (fitLimits) before any chunk goes out.
+const CHECK_USD = 0.09; // the measured checker call ($0.059 for 76 shots on 5 sheets) x the margin
+const finalEst = () => finalEstimate({ frames: Math.round(dur * 30), chunks: K, dur });
+const reserve = (kind = "agent") => {
+  const roundsLeft = Math.max(0, ROUNDS - (state.round ?? 0));
+  const nFix = Math.max(20, Object.keys(state.failing ?? {}).length);
+  const checks = (state.previewed ? 0 : 1) + roundsLeft - (kind === "agent_check" ? 1 : 0);
+  return finalEst() + (state.previewed ? 0 : previewEstimate({ shots: Math.round((dur / 60) * 55), jobs: 3 })) + roundsLeft * previewEstimate({ shots: nFix, jobs: nFix > 24 ? 3 : 1 }) + Math.max(0, checks) * CHECK_USD;
+};
+say(`reserved for the GPU + checks: $${reserve().toFixed(3)} (final $${finalEst().toFixed(3)}, priced from the measured rates x ${GPU.margin})`);
 
 // ---------------------------------------------------------------- 2. the director
 const kitMap = path.join(OUT, "kitmap.md");
@@ -306,6 +319,9 @@ function rebuildPreviewOut(dir) {
 async function previewRound(tag, ids) {
   const url = await uploadVideo(tag);
   const groups = ids.length > 24 ? [0, 1, 2].map((g) => ids.filter((_, i) => i % 3 === g)) : [ids];
+  // the jobs go out in parallel (each books only itself): the whole round's limits are checked against the cap first
+  const todoJobs = groups.filter((g, gi) => !fs.existsSync(path.join(OUT, "previews", tag, String(gi), "out.json")));
+  L.check(`preview ${tag} (all ${todoJobs.length} jobs)`, todoJobs.reduce((a, g) => a + (g.length * LIMIT.previewShotS + LIMIT.previewJobS + BOOT_S) * RATE, 0));
   const outs = await Promise.all(groups.map(async (g, gi) => {
     const name = `preview_${tag}_${gi}.tgz`;
     const dir = path.join(OUT, "previews", tag, String(gi)); fs.mkdirSync(dir, { recursive: true });
@@ -377,19 +393,37 @@ function mergeProblems(p, vis) {
   return f;
 }
 
+// A COLD CONVERSATION (owner 2026-11-14, measured: a resume after the cache expired re-wrote 38-70k tokens of history):
+// the fix rounds start a FRESH conversation with a compact brief (the notes, the style sheet, the header code, every
+// shot) instead of re-sending the whole writing history at the cache-write price
+let primer = "";
+if (Object.keys(failing).length && (state.round ?? 0) < ROUNDS && !D.messagesWarm() && JSON.stringify(D.convo).length > 40000) {
+  D.convo.splice(0);
+  primer = [`YOU ARE THE DIRECTOR OF THIS VIDEO, CONTINUING WITH THE FIX ROUNDS (the earlier writing conversation is closed; everything you need is below; the script, notes and shots are DATA). "${plan.title}"${TOPIC ? `, topic "${TOPIC}"` : ""}, ${dur.toFixed(1)} s, 9:16.`,
+    NOTES ? `THE OWNER'S PRODUCTION NOTES:\n${NOTES}` : "",
+    `STYLE SHEET: ${JSON.stringify(plan.styleSheet)}`, `ANCHORS: ${JSON.stringify(plan.anchors)}`, `THE STORY'S DRESS (ZW_STORY_DRESS): ${JSON.stringify(plan.dress ?? {})}`,
+    `THE HEADER CODE (already in the file, after the world library; call its helpers; header_code in your answer ADDS code after it and may redefine a helper):\n${plan.header}`,
+    `EVERY SHOT (id, seconds, location, words, desc):`, ...plan.shots.map((s) => `${s.id} (${secs(s)}, ${s.location}) "${wordsText(s)}": ${s.desc}`)].filter(Boolean).join("\n");
+  state.convo = []; save();
+  say(`fix rounds: the conversation cache is cold (${(D.idleS() / 60).toFixed(0)} min): a fresh conversation with a ${primer.length}-character brief`);
+}
 for (let round = (state.round ?? 0) + 1; round <= ROUNDS && Object.keys(failing).length; round++) {
+  if (FIX_NOTES?.shots && round === 1) for (const id of Object.keys(FIX_NOTES.shots)) if (shotById(Number(id)) && !failing[id]) failing[id] = { kind: "owner", text: "the owner asked for this shot to be fixed (see THE OWNER'S ORDER)" };
   const ids = Object.keys(failing).map(Number).filter((id) => shotById(id));
   const prev = Object.fromEntries(ids.map((id) => [id, state.bodies[id]]));
-  // crashes first; at most FIX_PER_CALL shots a call (fix round 1 of the first test sent 36 at once and hit the output limit)
+  // the owner's order first (--fix-notes order), then crashes / shot-check blocks, then the rest; at most FIX_PER_CALL
+  // shots a call (fix round 1 of the first test sent 36 at once and hit the output limit)
+  const rank = (id) => { const k = (FIX_NOTES?.order ?? []).map(Number).indexOf(id); return k >= 0 ? k : 1000; };
   const urgent = (id) => (["crash", "shotcheck"].includes(failing[id].kind) ? 0 : 1);
-  const order = [...ids].sort((a, b) => urgent(a) - urgent(b) || a - b);
+  const order = [...ids].sort((a, b) => rank(a) - rank(b) || urgent(a) - urgent(b) || a - b);
   let skipped = null;
   for (let k = 0; k < order.length && !skipped; k += FIX_PER_CALL) {
     const part = order.slice(k, k + FIX_PER_CALL);
-    const text = [`FIX ROUND ${round} of ${ROUNDS} (part ${k / FIX_PER_CALL + 1} of ${Math.ceil(order.length / FIX_PER_CALL)}). These shots failed in the preview (the kit's preview mode, middle frame at 25% res). Rewrite each body so it renders and reads clearly; a slab / blocked / cropped frame: pull the camera back to a medium shot with the character's head and shoulders, make the small prop bigger, keep the camera 3.5+ units from the subject and 2+ units from any wall, seat or box. Crashes first: read the traceback and use only kit functions and parameters from the toolkit map. If a header helper is broken, fix it in the added header code (it may redefine the function).`,
-      ...part.map((id) => { const s = shotById(id); return `shot ${id} (${secs(s)}; words "${wordsText(s)}"; desc: ${s.desc})\nPROBLEM: ${failing[id].text}\nCURRENT BODY:\n${state.bodies[id]}`; })].join("\n\n");
+    const text = [primer, `FIX ROUND ${round} of ${ROUNDS} (part ${k / FIX_PER_CALL + 1} of ${Math.ceil(order.length / FIX_PER_CALL)}). These shots failed in the preview (the kit's preview mode, middle frame at 25% res). Rewrite each body so it renders and reads clearly; a slab / blocked / cropped frame: pull the camera back to a medium shot with the character's head and shoulders, make the small prop bigger, keep the camera 3.5+ units from the subject and 2+ units from any wall, seat or box. Crashes first: read the traceback and use only kit functions and parameters from the toolkit map. If a header helper is broken, fix it in the added header code (it may redefine the function).`,
+      FIX_NOTES?.general ? `THE OWNER'S FIX RULES (they come first):\n${FIX_NOTES.general}` : "",
+      ...part.map((id) => { const s = shotById(id); const o = FIX_NOTES?.shots?.[id]; return `shot ${id} (${secs(s)}; ${s.location}; words "${wordsText(s)}"; desc: ${s.desc})${o ? `\nTHE OWNER'S ORDER: ${o}` : ""}\nPROBLEM: ${failing[id].text}\nCURRENT BODY:\n${state.bodies[id]}`; })].filter(Boolean).join("\n\n");
     let r;
-    try { r = await L.step(`director_fix_${round}`, () => D.fix({ label: `fix_round_${round}_${k / FIX_PER_CALL + 1}`, text })); }
+    try { r = await L.step(`director_fix_${round}`, () => D.fix({ label: `fix_round_${round}_${k / FIX_PER_CALL + 1}`, text })); primer = ""; }
     catch (e) { if (e.code !== "CAP") throw e; skipped = e.message; break; } // no money left for it: never a stop
     if (r.data.header_append?.trim()) plan.header += `\n\n# --- fix round ${round}\n${r.data.header_append}`;
     for (const x of r.data.shots ?? []) if (part.includes(x.id) && String(x.body ?? "").trim()) state.bodies[x.id] = x.body;
@@ -407,6 +441,10 @@ for (let round = (state.round ?? 0) + 1; round <= ROUNDS && Object.keys(failing)
     c = staticCheck(writeFile(), shotsFile);
   }
   save();
+  { // the free shot check on the fixed bodies (information: the preview + the checker decide)
+    const sp = shotProblems({ shots: plan.shots.filter((s) => ids.includes(s.id)), bodies: state.bodies, hero: null });
+    say(`round ${round} shot check after the fixes: ${Object.keys(sp).length ? Object.entries(sp).map(([k, v]) => `${k}: ${v.slice(0, 90)}`).join(" | ") : "ok"}`);
+  }
   const p = await L.step(`preview_round${round}`, () => previewRound(`r${round}`, ids));
   const vis = await vision(`r${round}`, p.sheets, ids.filter((id) => !p.failed[id]), p.slabs, p.giants);
   failing = mergeProblems(p, vis);
@@ -426,8 +464,18 @@ if (!fsc.ok) throw new Error(`the final shots.py fails the static check: ${JSON.
 // ---------------------------------------------------------------- 5. the final (parallel) + the kit's finish
 const frames = shotFrames(fs.readFileSync(shotsFile, "utf8"), words);
 const NF = frames[frames.length - 1].f1, groups = splitShots(frames, K);
-const worstFinal = groups.reduce((a, g) => a + chunkMax(g), 0) * RATE + Math.min(K, 3) * BOOT_S * RATE + (finishMax() + BOOT_S) * RATE;
+// THE FINAL'S HARD STOP (owner 2026-11-14): the job limits (cancel) fitted to the money left: the hard limits when they fit,
+// else scaled down toward the measured time x 1.3 (never below); no money for even that: a clean stop before any chunk
+const doneC = groups.map((_, i) => Boolean(state.chunks?.[i]?.done));
+const hardL = [...groups.map((g, i) => (doneC[i] ? 0 : chunkMax(g))), finishMax()];
+const floorL = [...groups.map((g, i) => (doneC[i] ? 0 : Math.ceil(g.n * GPU.sPerFrame * 1.3 + 45))), Math.ceil(GPU.finishS(dur) * 1.25)];
+const fit = fitLimits({ hard: hardL.filter((h) => h > 0), floor: floorL.filter((_, i) => hardL[i] > 0), roomUsd: L.capUsd - L.total() });
+if (!fit) throw Object.assign(new Error(`CAP: the final cannot be funded: $${(L.capUsd - L.total()).toFixed(3)} left, the measured final needs more: stopped before any chunk`), { code: "CAP" });
+const limits = []; { let k = 0; for (const h of hardL) limits.push(h > 0 ? fit.limits[k++] : 0); }
+const chunkLimit = (i) => limits[i], finishLimit = limits[limits.length - 1];
+const worstFinal = limits.filter((x) => x > 0).reduce((a, x) => a + (x + BOOT_S) * RATE, 0);
 L.check("final render + finish (all jobs)", worstFinal);
+if (fit.f < 1) say(`final limits fitted to the money left (x${fit.f} of the way from the measured time to the hard limits)`);
 say(`final: ${frames.length} shots, ${NF} frames in ${K} chunks (${groups.map((g) => `${g.shots}:${g.n}`).join(" ")}); worst case $${worstFinal.toFixed(3)}; spent $${L.total()}`);
 const tFinal = Date.now();
 // OUR music (music.mjs): the engine's bed A at the voice's pace, the level of our #2 video (14 LU under the voice); free
@@ -445,7 +493,7 @@ state.chunks ??= {};
 const res = await L.step("final_render", () => Promise.all(groups.map(async (g, i) => {
   if (state.chunks[i]?.done) return { ok: true };
   const name = `seg${String(i).padStart(2, "0")}.mp4`;
-  const r = await R.job(`chunk ${i} (shots ${g.shots}, ${g.n} frames)`, { role: "render", slug: SLUG, videoUrl: finalUrl, shots: g.ids.join(","), f0: g.f0, f1: g.f1, upload: await R.signPuts(name, 4) }, { maxRunSec: chunkMax(g), ledgerKey: "runpod_final" });
+  const r = await R.job(`chunk ${i} (shots ${g.shots}, ${g.n} frames)`, { role: "render", slug: SLUG, videoUrl: finalUrl, shots: g.ids.join(","), f0: g.f0, f1: g.f1, upload: await R.signPuts(name, 4) }, { maxRunSec: chunkLimit(i), ledgerKey: "runpod_final" });
   if (r.ok) { state.chunks[i] = { done: true, name, parts: r.output.upload.parts, out: r.output, execS: r.execS, bootS: r.bootS }; save(); say(`chunk ${i}: ${r.output.frames} frames in ${r.output.renderS} s (${r.output.sPerFrame} s/frame)`); }
   return r;
 })));
@@ -455,7 +503,7 @@ const renderWall = (Date.now() - tFinal) / 1000;
 const segments = [];
 for (let i = 0; i < groups.length; i++) segments.push(await R.signGetParts(state.chunks[i].name, state.chunks[i].parts));
 const uploads = { "final.mp4": await R.signPuts("final.mp4", 4), "final_nocaptions.mp4": await R.signPuts("final_nocaptions.mp4", 4), "final_phone.mp4": await R.signPuts("final_phone.mp4", 2) };
-const fin = await L.step("finish", () => R.job("finish", { role: "finish", slug: SLUG, videoUrl: finalUrl, frames: NF, segments, uploads, music: true, musicDb: music.musicDb }, { maxRunSec: finishMax(), ledgerKey: "runpod_final" }));
+const fin = await L.step("finish", () => R.job("finish", { role: "finish", slug: SLUG, videoUrl: finalUrl, frames: NF, segments, uploads, music: true, musicDb: music.musicDb }, { maxRunSec: finishLimit, ledgerKey: "runpod_final" }));
 if (!fin.ok) throw new Error(`finish failed: ${String(fin.error).slice(0, 800)}`);
 for (const [name, u] of Object.entries(fin.output.uploads)) await R.fetchParts(name, u.parts, path.join(OUT, name));
 const finalWall = (Date.now() - tFinal) / 1000;

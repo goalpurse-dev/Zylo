@@ -1671,10 +1671,14 @@ def zw_giant_cam(cam, ch, size, t0, t1, view="hero", yaw=0.0, push=0.06):
     giant (people, cars, buildings at his feet), "full": the whole body; yaw turns the camera round the character"""
     p = Vector(ch.root.location)
     head = p + Vector((0, 0, 4.6 * size))
-    a = math.radians(yaw)
+    # yaw counts from the character's FRONT (its root's turn; a kit character at rot 0 faces -y): the first test filmed
+    # the back of a giant's head from the fixed -y side
+    a = math.radians(yaw) + ch.root.rotation_euler[2]
     fwd = Vector((math.sin(a), -math.cos(a), 0))
     if view == "face":
-        d, z, tgt, lens = max(4.5, 4.4 * size), 4.6 * size, head, 50
+        # the WHOLE face in frame (owner 2026-11-14: never just the chin or a cheek): 4.4 x size away (over 3 head sizes),
+        # lens 30 on the kit's 24 mm vertical sensor = about 3.5 x size of frame height (the head about 45% of it)
+        d, z, tgt, lens = max(4.5, 4.4 * size), 4.5 * size, p + Vector((0, 0, 4.4 * size)), 30
     elif view == "full":
         d, z, tgt, lens = 9.0 * size + 6, 2.6 * size + 2, p + Vector((0, 0, 2.6 * size)), 30
     else:
@@ -1722,6 +1726,104 @@ def zw_cam_guard(t0, t1, step=6):
     sc.frame_set(f0)
 
 
+def zw_box_of(o):
+    """world AABB (lo, hi) of a mesh or of a collection instance (an instanced tree, lamp, asset ...), else None"""
+    pts = []
+    mw = o.matrix_world
+    if o.type == "MESH":
+        pts = [mw @ Vector(c) for c in o.bound_box]
+    elif o.type == "EMPTY" and o.instance_type == "COLLECTION" and o.instance_collection is not None:
+        off = Vector(o.instance_collection.instance_offset)
+        for m in o.instance_collection.all_objects:
+            if m.type == "MESH":
+                for c in m.bound_box:
+                    pts.append(mw @ (m.matrix_world @ Vector(c) - off))
+    if not pts:
+        return None
+    lo = Vector((min(q.x for q in pts), min(q.y for q in pts), min(q.z for q in pts)))
+    hi = Vector((max(q.x for q in pts), max(q.y for q in pts), max(q.z for q in pts)))
+    return lo, hi
+
+
+def zw_seg_hits(a, b, lo, hi):
+    """does the segment a -> b cross the box lo..hi (slab test)"""
+    u0, u1 = 0.0, 1.0
+    for k in range(3):
+        d = b[k] - a[k]
+        if abs(d) < 1e-9:
+            if a[k] < lo[k] or a[k] > hi[k]:
+                return False
+            continue
+        u, v = (lo[k] - a[k]) / d, (hi[k] - a[k]) / d
+        if u > v:
+            u, v = v, u
+        u0, u1 = max(u0, u), min(u1, v)
+        if u0 > u1:
+            return False
+    return True
+
+
+def zw_clear_view(t0, t1, step=12):
+    """NO TREE / PROP BETWEEN THE LENS AND THE CAST (owner 2026-11-14): at a few frames, the lines from the camera to the
+    characters in view; a library tree, lamp, bench, car, asset or small prop that crosses one (before the character)
+    is hidden for this shot. Buildings are never hidden (the static check keeps cameras in open space); the landmark, the
+    story's own builds and the characters are never touched. Best effort: never fails a shot."""
+    sc = bpy.context.scene
+    cam = sc.camera
+    if cam is None:
+        return 0
+    f0, f1 = F(t0), max(F(t0), F(t1) - 1)
+    cands = []
+    for o in D.objects:
+        n = o.name
+        if not (n.startswith("zw_") or n.startswith("za_")) or n.startswith("zw_lm_") or n.startswith("zw_src_") or "cloud" in n or "hill" in n:
+            continue
+        if o.hide_render:
+            continue
+        inst = o.type == "EMPTY" and o.instance_type == "COLLECTION"
+        if not inst and o.type != "MESH":
+            continue
+        bx = zw_box_of(o)
+        if bx is None:
+            continue
+        lo, hi = bx
+        h, w = hi.z - lo.z, max(hi.x - lo.x, hi.y - lo.y)
+        if h < 0.3 or w > 60 or (not inst and (h > 6.5 or w > 12)):
+            continue   # ground, roads, buildings, walls: never hidden
+        cands.append((o, lo, hi))
+    hidden = set()
+    for f in sorted(set([f0, (f0 + f1) // 2, f1])):
+        sc.frame_set(f)
+        tv = cam.data.sensor_height / (2.0 * cam.data.lens) * 1.05   # tan of half the vertical view (the lens is keyed)
+        th = tv * 9.0 / 16.0
+        c = cam.matrix_world.translation.copy()
+        inv = cam.matrix_world.inverted()
+        pts = []
+        for name, lo, hi in zw_cast_boxes():
+            for fz in (0.35, 0.8):
+                q = Vector(((lo.x + hi.x) / 2, (lo.y + hi.y) / 2, lo.z + fz * (hi.z - lo.z)))
+                v = inv @ q
+                if v.z < -0.5 and abs(v.y / -v.z) < tv and abs(v.x / -v.z) < th:
+                    pts.append(q)
+        for q in pts[:8]:
+            e = c + (q - c) * 0.9
+            for o, lo, hi in cands:
+                if o.name not in hidden and not (lo.x <= c.x <= hi.x and lo.y <= c.y <= hi.y and lo.z <= c.z <= hi.z) and zw_seg_hits(c, e, lo, hi):
+                    hidden.add(o.name)
+    for o, lo, hi in cands:
+        if o.name in hidden:
+            sc.frame_set(f1 + 1)
+            after = o.hide_render
+            o.hide_render = True
+            o.keyframe_insert("hide_render", frame=f0)
+            o.hide_render = after
+            o.keyframe_insert("hide_render", frame=f1 + 1)
+    sc.frame_set(f0)
+    if hidden:
+        print("zw_clear_view: hid %d object(s) in front of the lens: %s" % (len(hidden), ", ".join(sorted(hidden)[:12])))
+    return len(hidden)
+
+
 ZW_BUILD0 = []
 try:
     ZW_BUILD0.append(V.build)
@@ -1732,6 +1834,10 @@ except NameError:
 def zw_guarded_build(i, *a, **k):
     S = ZW_BUILD0[0](i, *a, **k)
     zw_cam_guard(S["t0"], S["t1"])
+    try:
+        zw_clear_view(S["t0"], S["t1"])
+    except Exception as e:   # best effort: a clear-view failure never fails a shot
+        print("zw_clear_view skipped: %s" % e)
     return S
 
 

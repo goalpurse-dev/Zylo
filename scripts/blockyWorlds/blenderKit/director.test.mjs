@@ -187,13 +187,15 @@ test("the shot check blocks the shot that puts the camera inside a character", (
 test("worlds.py: zw_giant_cam keeps every view outside the character's box at every size; the Blender guard wraps V.build", () => {
   // the same distances as worlds.py zw_giant_cam (face: max(4.5, 4.4 s) at the face height; hero: 4.5 s + 8 at z 2.2; full: 9 s + 6)
   for (const s of [0.5, 1, 2, 4, 6, 10, 16]) {
-    const views = { face: [Math.max(4.5, 4.4 * s), 4.6 * s], hero: [4.5 * s + 8, 2.2], full: [9 * s + 6, 2.6 * s + 2] };
+    const views = { face: [Math.max(4.5, 4.4 * s), 4.5 * s], hero: [4.5 * s + 8, 2.2], full: [9 * s + 6, 2.6 * s + 2] };
     for (const [v, [d, z]] of Object.entries(views)) {
       assert.deepEqual(giantCameraProblems(`g = chars.kid(1)\ng.pose(t0, loc=(0, 0, 0))\nzw_grow(g, t0, t1, ${s}, ${s})\ncam.key(t0, (0, ${-d}, ${z}), (0, 0, 1))`), [], `${v} at size ${s}`);
     }
   }
   const src = fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "worlds", "worlds.py"), "utf8");
-  assert.match(src, /d, z, tgt, lens = max\(4\.5, 4\.4 \* size\), 4\.6 \* size, head, 50/);
+  assert.match(src, /d, z, tgt, lens = max\(4\.5, 4\.4 \* size\), 4\.5 \* size, p \+ Vector\(\(0, 0, 4\.4 \* size\)\), 30/); // the whole face (2026-11-14)
+  assert.match(src, /a = math\.radians\(yaw\) \+ ch\.root\.rotation_euler\[2\]/); // from the character's front
+  assert.match(src, /zw_clear_view\(S\["t0"\], S\["t1"\]\)/);
   assert.match(src, /d, z, tgt, lens = 4\.5 \* size \+ 8, 2\.2,/);
   assert.match(src, /raise RuntimeError\("CAMERA INSIDE A CHARACTER/);
   assert.match(src, /V\.build = zw_guarded_build/);
@@ -251,4 +253,58 @@ test("continue: a director turn cut off at the output limit continues in the sam
   const steps = fs.readFileSync(path.join(out, "steps.jsonl"), "utf8").trim().split("\n").map((l) => JSON.parse(l)).filter((s) => s.step === "model_call");
   assert.deepEqual(steps.map((s) => s.label), ["plan", "plan_continue1"]);
   assert.ok(L.agentTotal() > 0);
+});
+
+// ---------------------------------------------------------------- MEASURED PRICING (owner 2026-11-14)
+import { estimateCall, fitMaxTokens, callHistory, expectedOut, callClass, PRICING, cameraRays, clearRayProblem } from "./director.mjs";
+const P = { input: 2.0, output: 10.0, cacheRead: 0.2, cacheWrite: 2.5, cacheWrite1h: 4.0 };
+
+test("a warm cache prices the prefix at the read price: a batch call ~ its measured $0.06, not the old $0.45", () => {
+  // measured batch_36_46: 88,442 read + 3,645 written + 3,355 out = $0.0604
+  const e = estimateCall({ P, sysTok: 49811, msgTok: 49811 + 38631 + 3645 - 49811, prefixTok: 38631, sysFresh: true, msgFresh: true, outTok: 4031 });
+  assert.ok(e.expected > 0.05 && e.expected < 0.08, `expected ${e.expected}`);
+  assert.equal(e.priced, +(PRICING.margin * e.expected).toFixed(5));
+  const cold = estimateCall({ P, sysTok: 49811, msgTok: 42276, prefixTok: 38631, sysFresh: false, msgFresh: false, outTok: 4031 });
+  assert.ok(cold.inUsd > 3 * e.inUsd, "a cold cache costs the write price on everything");
+});
+
+test("the floor, and the output limit that keeps a call inside the money left (the hard stop)", () => {
+  assert.equal(estimateCall({ P, msgTok: 10, outTok: 10, convo: false, cacheSystem: false }).priced, PRICING.floorUsd);
+  assert.equal(fitMaxTokens({ P, roomUsd: 0.2, inUsd: 0.05, maxTokens: 12000 }), 12000);
+  assert.equal(fitMaxTokens({ P, roomUsd: 0.08, inUsd: 0.05, maxTokens: 12000 }), 3000);
+  assert.equal(fitMaxTokens({ P, roomUsd: 0.04, inUsd: 0.05, maxTokens: 12000 }), 0);
+});
+
+test("the measured history from the saved answers: last call, system tokens, outputs per class", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "hist-"));
+  const w = (f, u, t) => { fs.writeFileSync(path.join(dir, f), JSON.stringify({ usage: u })); fs.utimesSync(path.join(dir, f), t, t); };
+  w("001_plan.json", { input_tokens: 27, cache_read_input_tokens: 0, cache_creation_input_tokens: 59949, cache_creation: { ephemeral_1h_input_tokens: 49811 }, output_tokens: 8384 }, 1000);
+  w("002_batch_1_8.json", { input_tokens: 27, cache_read_input_tokens: 68470, cache_creation_input_tokens: 8370, cache_creation: { ephemeral_5m_input_tokens: 8370 }, output_tokens: 4312 }, 2000);
+  w("003_check_r0.json", { input_tokens: 14212, output_tokens: 3041 }, 3000);
+  const h = callHistory(dir);
+  assert.equal(h.systemTokens, 49811);
+  assert.equal(h.last.inTok, 27 + 68470 + 8370);
+  assert.equal(h.last.msgTtl, "5m");
+  assert.equal(expectedOut(h.outs, "batch"), 4312);
+  assert.equal(expectedOut(h.outs, "check"), 3041);
+  assert.equal(expectedOut(h.outs, "fix"), PRICING.outDefault.fix);
+  assert.equal(callClass("fix_round_1_2_continue1"), "fix");
+  assert.equal(callClass("check_r1"), "check");
+});
+
+test("a director call is priced from the measured cost and refused only when that does not fit (CAP, nothing sent)", async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "dir-"));
+  const L = ledger(dir, { capUsd: 3, agentCapUsd: 3 });
+  L.add("spent", 2.9);
+  const D = makeDirector({ out: dir, L, apiKey: "x", system: "s".repeat(3000), reserve: () => 0 });
+  await assert.rejects(() => D.fix({ label: "fix_round_1_1", text: "fix shot 3" }), (e) => e.code === "CAP");
+});
+
+test("CLEAR RAY: a camera inside / looking through the downtown buildings at the bank is flagged; the open street is not", () => {
+  const body = "cam.key(t0, (30, 100, 6), (0, 172, 14), lens=24)\ncam.key(t1, (0, 150, 4), (0, 178, 12), lens=24)";
+  assert.deepEqual(cameraRays(body), [[[30, 100, 6], [0, 172, 14]], [[0, 150, 4], [0, 178, 12]]]);
+  assert.match(clearRayProblem("downtown_landmark", [30, 100, 6], [0, 172, 14]), /passes through a building/);
+  assert.equal(clearRayProblem("downtown_landmark", [0, 150, 4], [0, 178, 12]), "");
+  assert.equal(clearRayProblem("downtown_landmark", [8, 100, 3], [-20, 140, 6]).length > 0, true); // through the west row
+  assert.equal(clearRayProblem("living_room", [0, 0, 3], [9, 9, 3]), "");
 });

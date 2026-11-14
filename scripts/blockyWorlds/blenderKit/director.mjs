@@ -30,6 +30,61 @@ export const BATCH = 8;
 export const DIRECTOR_EFFORT = "low";
 const MIN_SHOT_S = 0.35;
 
+// ---------------------------------------------------------------- MEASURED PRICING (owner 2026-11-14)
+// Every model call was booked as a full cache MISS (the whole input at the cache-write price + the whole output limit):
+// ~$0.45 a call where the measured cost was ~$0.06, so the caps refused calls (and both fix rounds) that real money
+// covered. Now a call is PRICED from what it really costs: the cached prefix at the cache-READ price while the cache is
+// warm (its TTL is measured from the last call's time), only the new part at the write price (all of it when the cache
+// went cold), and the output measured on the last calls of the same kind; x a margin, with a floor. The HARD STOP stays:
+// a call never starts unless its priced cost fits the money left, and its output limit is cut so the call can never
+// spend more than the money left (input estimate + max_tokens x the output price).
+export const PRICING = Object.freeze({
+  margin: 1.5, floorUsd: 0.02,
+  // a cache entry lives this long after the START of the request that wrote / read it; we only trust a little less
+  // (the saved answer time is the END of the request: a long generation eats into the TTL)
+  fresh5mS: 150, fresh1hS: 3300,
+  outDefault: Object.freeze({ plan: 9000, batch: 4500, fix: 6000, check: 4000 }),
+  convoTtl: "1h", // the conversation's cache: fix rounds wait for GPU previews (often > 5 min): 1h keeps it warm
+});
+/** the class of a call (its measured output is reused for the next call of the same class) */
+export const callClass = (label) => (/^check/.test(label) ? "check" : /^(fix|shot_fix|static_fix)/.test(label) ? "fix" : /^batch/.test(label) ? "batch" : "plan");
+/** a call's priced cost: { inUsd, outUsd, expected, priced } (all USD). P = the model's prices per million tokens.
+ *  sysTok: the system prompt; msgTok: the messages (estimate); prefixTok: the messages part already cached by the last
+ *  call; sysFresh / msgFresh: the caches still warm; convo: the messages carry a cache breakpoint (1h writes);
+ *  cacheSystem: the system carries one (1h). outTok: the expected output tokens. */
+export function estimateCall({ P, sysTok = 0, msgTok = 0, prefixTok = 0, sysFresh = false, msgFresh = false, convo = true, cacheSystem = true, outTok = 0, margin = PRICING.margin, floorUsd = PRICING.floorUsd }) {
+  const write = convo ? (PRICING.convoTtl === "1h" ? P.cacheWrite1h : P.cacheWrite) : P.input;
+  const sysUsd = !sysTok ? 0 : cacheSystem ? sysTok * (sysFresh ? P.cacheRead : P.cacheWrite1h) : sysTok * P.input;
+  const pre = convo && msgFresh ? Math.min(prefixTok, msgTok) : 0;
+  const msgUsd = pre * P.cacheRead + Math.max(0, msgTok - pre) * write;
+  const inUsd = (sysUsd + msgUsd) / 1e6, outUsd = (outTok * P.output) / 1e6, expected = inUsd + outUsd;
+  return { inUsd: +inUsd.toFixed(5), outUsd: +outUsd.toFixed(5), expected: +expected.toFixed(5), priced: +Math.max(floorUsd, margin * expected).toFixed(5) };
+}
+/** the output limit that keeps a call inside the money left (never above maxTokens); 0 = no room */
+export const fitMaxTokens = ({ P, roomUsd, inUsd, maxTokens }) => Math.max(0, Math.min(maxTokens, Math.floor(((roomUsd - inUsd) * 1e6) / P.output)));
+/** the measured history of a run's model calls, from the saved answers (answers/NNN_label.json + their file times):
+ *  -> { last: { inTok, outTok, at, msgTtl } | null (the last director call), systemTokens, outs: { class: [tokens] } } */
+export function callHistory(dir) {
+  const out = { last: null, systemTokens: null, outs: {} };
+  if (!fs.existsSync(dir)) return out;
+  const files = fs.readdirSync(dir).filter((f) => f.endsWith(".json")).map((f) => ({ f, t: fs.statSync(path.join(dir, f)).mtimeMs })).sort((a, b) => a.t - b.t);
+  for (const { f, t } of files) {
+    let j; try { j = JSON.parse(fs.readFileSync(path.join(dir, f), "utf8")); } catch { continue; }
+    const u = j?.usage; if (!u) continue;
+    const label = f.replace(/^\d+_/, "").replace(/\.json$/, "");
+    const cls = callClass(label);
+    (out.outs[cls] ??= []).push(u.output_tokens ?? 0);
+    if (cls === "check") continue;
+    const oneH = u.cache_creation?.ephemeral_1h_input_tokens ?? 0;
+    if (!out.systemTokens && oneH && !u.cache_read_input_tokens) out.systemTokens = oneH; // the first call writes the system (1h)
+    // the messages were written with a 1h TTL when 1h tokens were written AFTER a system read
+    out.last = { inTok: (u.input_tokens ?? 0) + (u.cache_read_input_tokens ?? 0) + (u.cache_creation_input_tokens ?? 0), outTok: u.output_tokens ?? 0, at: t, msgTtl: u.cache_read_input_tokens && oneH ? "1h" : "5m" };
+  }
+  return out;
+}
+/** the expected output tokens of a call class: the largest of its last 3 measured calls, else the default */
+export const expectedOut = (outs, cls) => { const v = (outs?.[cls] ?? []).slice(-3); return v.length ? Math.max(...v) : PRICING.outDefault[cls]; };
+
 /** a cut-off JSON answer: the longest prefix that ends after a complete value, closed (studio/agent.mjs salvageJson) */
 export function salvageJson(src) {
   const s = String(src ?? "");
@@ -229,6 +284,26 @@ export function cameraPositions(body) {
   for (const m of String(body ?? "").matchAll(re)) out.push([Number(m[1]), Number(m[2]), Number(m[3])]);
   return out;
 }
+/** every literal camera key WITH its literal target: [[pos], [target]] (cam.key(t, (x, y, z), (tx, ty, tz), ...)) */
+export function cameraRays(body) {
+  const out = [];
+  const re = new RegExp(String.raw`cam\.key\(\s*[^,]+,\s*\(\s*${NUM}\s*,\s*${NUM}\s*,\s*${NUM}\s*\)\s*,\s*\(\s*${NUM}\s*,\s*${NUM}\s*,\s*${NUM}\s*\)`, "g");
+  for (const m of String(body ?? "").matchAll(re)) out.push([[+m[1], +m[2], +m[3]], [+m[4], +m[5], +m[6]]]);
+  return out;
+}
+/** CLEAR RAY (owner 2026-11-14: the bank shots were filmed from inside the buildings): the line from a literal camera to
+ *  its literal target must stay in open space (it may end inside the target's own building: the last 15% is not
+ *  checked) -> "" or why not */
+export function clearRayProblem(place, pos, tgt) {
+  const inside = BUILDINGS[place];
+  if (!inside) return "";
+  for (let k = 1; k <= 34; k++) {
+    const u = (k / 40);
+    const q = [0, 1, 2].map((i) => pos[i] + (tgt[i] - pos[i]) * u);
+    if (inside(q[0], q[1], q[2])) return `the line from the camera at (${pos.join(", ")}) to its target (${tgt.join(", ")}) passes through a building of ${place} near (${q.map((v) => v.toFixed(0)).join(", ")}): film from the OPEN street / plaza in front of the subject`;
+  }
+  return "";
+}
 const placeOf = (body, location) => String(body ?? "").match(/zw_build\(\s*["']([\w-]+)["']/)?.[1] ?? (OPEN[location] || BUILDINGS[location] ? location : null);
 
 // ---------------------------------------------------------------- GIANT CAMERA CHECK (owner 2026-11-14)
@@ -288,6 +363,7 @@ export function shotProblems({ shots = [], bodies = {}, hero = null }) {
     prev = { id: s.id, cam };
     const place = placeOf(bodies[s.id], s.location);
     if (place) for (const p of cameraPositions(bodies[s.id])) { const w = cameraWallProblem(place, p); if (w) { add(s.id, `blocked by a wall: ${w}`); break; } }
+    if (place && !(out[s.id] ?? "").includes("blocked by a wall")) for (const [p, q] of cameraRays(bodies[s.id])) { const w = clearRayProblem(place, p, q); if (w) { add(s.id, `blocked view: ${w}`); break; } }
     const g = giantCameraProblems(bodies[s.id]);
     if (g.length) add(s.id, `BLOCKED (camera inside / too close to a character): ${g[0]}`);
   }
@@ -417,7 +493,10 @@ export function makeDirector({ out, L, apiKey, model = MODELS.sonnet, system, re
   const ans = path.join(out, "answers"); fs.mkdirSync(ans, { recursive: true });
   let n = fs.readdirSync(ans).length;
   const convo = []; // the director's one conversation (user / assistant turns, assistant content as returned)
-  let systemCached = false, systemTokens = null, last = null;
+  // the MEASURED history (a resume reads the saved answers: the caches' age, the system's tokens, the outputs per class)
+  const hist = callHistory(ans);
+  let systemCached = Boolean(hist.last), systemTokens = hist.systemTokens, last = hist.last ? { ...hist.last, chars: null } : null;
+  const outs = hist.outs;
 
   async function call({ label, messages, sys = system, schema, maxTokens, effort, kind, m = model, cacheSystem = true }) {
     const P = PRICE[m] ?? PRICE[MODELS.sonnet];
@@ -429,24 +508,31 @@ export function makeDirector({ out, L, apiKey, model = MODELS.sonnet, system, re
     const sysTok = sys ? (sys === system && systemTokens ? systemTokens : Math.ceil(String(sys).length / 1.5)) : 0;
     const msgChars = JSON.stringify(messages).replace(/"data":"[^"]+"/g, '"data":""').length;
     let msgTok = Math.ceil(msgChars / 1.5) + (JSON.stringify(messages).split('"type":"image"').length - 1) * 1700;
-    if (kind === "agent" && last) msgTok = Math.max(msgTok, last.inTok - sysTok + last.outTok + Math.ceil((msgChars - last.chars) / 1.5));
-    // the WORST case prices the whole input as a cache write: a cache can always miss (the first test: the plan at effort
-    // medium and the first batch at low -> the effort change invalidated the cache, 0 tokens read, $0.43 for 8 bodies)
-    const inUsd = (sysTok * (cacheSystem ? P.cacheWrite1h : P.input) + msgTok * P.cacheWrite) / 1e6;
-    // the output limit fitted to the money left (agent cap and run cap), never above maxTokens
-    // reserve(): what the GPU steps still to come need (previews, the final), kept out of the model money
-    const room = Math.min(L.agentCapUsd - L.agentTotal(), L.capUsd - L.total() - reserve()) - inUsd - 0.05; // (the worst case already prices the whole input as a cache write)
-    let mt = maxTokens;
-    if (mt * P.output / 1e6 > room) mt = Math.floor((room * 1e6) / P.output);
-    if (mt < 3000) throw Object.assign(new Error(`${label}: only $${room.toFixed(3)} of room left`), { code: "CAP" });
-    const worst = +(mt * P.output / 1e6 + inUsd).toFixed(4);
+    const convoCall = kind === "agent";
+    // a director turn = the last call's measured input (its messages part is the cached prefix) + its output + the new
+    // text at 1.5 characters a token (a fresh conversation: just the text)
+    const prefixTok = convoCall && last && messages.length > 1 ? Math.max(0, last.inTok - sysTok) : 0;
+    if (convoCall && last && messages.length > 1 && last.chars != null) msgTok = Math.max(msgTok, prefixTok + last.outTok + Math.ceil((msgChars - last.chars) / 1.5));
+    const ageS = last ? (Date.now() - last.at) / 1000 : Infinity;
+    const sysFresh = Boolean(sys && sys === system && systemCached && ageS < PRICING.fresh1hS);
+    const msgFresh = Boolean(prefixTok && ageS < (last?.msgTtl === "1h" ? PRICING.fresh1hS : PRICING.fresh5mS));
+    const cls = callClass(label);
+    const outExp = Math.min(maxTokens, expectedOut(outs, cls));
+    const est = estimateCall({ P, sysTok, msgTok, prefixTok, sysFresh, msgFresh, convo: convoCall, cacheSystem: Boolean(sys) && cacheSystem, outTok: outExp });
+    // reserve(kind): what the GPU steps (and the checker calls) still to come need, kept out of the model money
+    const room = Math.min(L.agentCapUsd - L.agentTotal(), L.capUsd - L.total() - reserve(kind));
+    if (est.priced > room) throw Object.assign(new Error(`${label}: priced $${est.priced.toFixed(3)} (measured x ${PRICING.margin}), only $${room.toFixed(3)} of room left`), { code: "CAP" });
+    // THE HARD STOP: the output limit cut so even a full answer stays inside the money left
+    const mt = fitMaxTokens({ P, roomUsd: room, inUsd: est.inUsd, maxTokens });
+    if (mt < Math.min(maxTokens, Math.max(3000, outExp))) throw Object.assign(new Error(`${label}: only $${room.toFixed(3)} of room left (output limit ${mt})`), { code: "CAP" });
+    const worst = +(mt * P.output / 1e6 + est.inUsd).toFixed(4);
     L.check(`${label} (${m})`, worst, { agent: true });
     const body = {
       model: m, max_tokens: mt,
       ...(sys ? { system: [{ type: "text", text: sys, ...(cacheSystem ? { cache_control: { type: "ephemeral", ttl: "1h" } } : {}) }] } : {}),
       messages, thinking: { type: "adaptive" },
       output_config: { effort, format: { type: "json_schema", schema }, task_budget: { type: "tokens", total: Math.max(20000, mt) } },
-      ...(kind === "agent" ? { cache_control: { type: "ephemeral" } } : {}),
+      ...(kind === "agent" ? { cache_control: { type: "ephemeral", ...(PRICING.convoTtl === "1h" ? { ttl: "1h" } : {}) } } : {}),
       ...(FALLBACK.has(m) ? { fallbacks: "default" } : {}),
     };
     const betas = [...(FALLBACK.has(m) ? ["server-side-fallback-2026-07-01"] : []), "task-budgets-2026-03-13"];
@@ -463,14 +549,15 @@ export function makeDirector({ out, L, apiKey, model = MODELS.sonnet, system, re
     const usd = costOf(j?.model ?? m, j?.usage ?? {});
     L.add(kind, usd); n++;
     fs.writeFileSync(path.join(ans, `${String(n).padStart(3, "0")}_${label.replace(/[^a-zA-Z0-9]+/g, "_")}.json`), JSON.stringify(j));
-    if (res.ok && kind === "agent" && j?.usage) { const u = j.usage; last = { inTok: (u.input_tokens ?? 0) + (u.cache_read_input_tokens ?? 0) + (u.cache_creation_input_tokens ?? 0), outTok: u.output_tokens ?? 0, chars: JSON.stringify(messages).length }; }
+    if (res.ok && j?.usage) (outs[cls] ??= []).push(j.usage.output_tokens ?? 0);
+    if (res.ok && kind === "agent" && j?.usage) { const u = j.usage; last = { inTok: (u.input_tokens ?? 0) + (u.cache_read_input_tokens ?? 0) + (u.cache_creation_input_tokens ?? 0), outTok: u.output_tokens ?? 0, chars: msgChars, at: a, msgTtl: PRICING.convoTtl }; }
     if (res.ok && sys && cacheSystem) {
       systemCached = true;
       const u = j.usage ?? {}, oneH = u.cache_creation?.ephemeral_1h_input_tokens;
       if (sys === system && (oneH || u.cache_read_input_tokens) && !systemTokens) systemTokens = oneH || Math.min(u.cache_read_input_tokens, Math.ceil(String(sys).length / 1.5));
     }
-    L.log({ step: "model_call", label, kind, model: j?.model ?? m, ok: res.ok, sec: +((Date.now() - a) / 1000).toFixed(1), usd, worst, usage: j?.usage ?? null, stop: j?.stop_reason ?? null, ...(res.ok ? {} : { error: JSON.stringify(j?.error ?? j).slice(0, 400) }) });
-    log(`${label}: ${res.status} ${j?.stop_reason ?? ""} in ${((Date.now() - a) / 1000).toFixed(0)} s, $${usd} (worst $${worst}; model total $${L.agentTotal()})`);
+    L.log({ step: "model_call", label, kind, model: j?.model ?? m, ok: res.ok, sec: +((Date.now() - a) / 1000).toFixed(1), usd, priced: est.priced, expected: est.expected, worst, cacheWarm: { system: sysFresh, messages: msgFresh }, usage: j?.usage ?? null, stop: j?.stop_reason ?? null, ...(res.ok ? {} : { error: JSON.stringify(j?.error ?? j).slice(0, 400) }) });
+    log(`${label}: ${res.status} ${j?.stop_reason ?? ""} in ${((Date.now() - a) / 1000).toFixed(0)} s, $${usd} (priced $${est.priced}, hard max $${worst}; model total $${L.agentTotal()})`);
     if (!res.ok) throw Object.assign(new Error(`${label}: HTTP ${res.status} ${JSON.stringify(j?.error ?? j).slice(0, 300)}`), { code: "MODEL" });
     if (j.stop_reason === "refusal") throw Object.assign(new Error(`${label}: refused`), { code: "REFUSED" });
     const text = (j.content ?? []).filter((b) => b.type === "text").map((b) => b.text).join("");
@@ -519,5 +606,11 @@ export function makeDirector({ out, L, apiKey, model = MODELS.sonnet, system, re
       return call({ label, messages: [{ role: "user", content }], sys: null, schema: CHECK_SCHEMA, maxTokens: 8000, effort: "low", kind: "agent_check", m: CHECKER_MODEL, cacheSystem: false });
     },
     convo,
+    /** seconds since the last director call (Infinity: none): the caches' age */
+    idleS: () => (last ? (Date.now() - last.at) / 1000 : Infinity),
+    /** is the conversation's cache still warm (its TTL measured from the last director call) */
+    messagesWarm: () => Boolean(last && (Date.now() - last.at) / 1000 < (last.msgTtl === "1h" ? PRICING.fresh1hS : PRICING.fresh5mS)),
+    /** the measured output tokens per call class (for the reserve of the calls still to come) */
+    outs,
   };
 }
