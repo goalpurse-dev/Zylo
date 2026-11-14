@@ -44,6 +44,43 @@ const m = spawnSync(process.execPath, [path.join(repo, "scripts/blockyWorlds/eng
 if (m.status !== 0) throw new Error(`music.mjs failed: ${m.stderr.slice(-400)}`);
 fs.renameSync(path.join(out, "music", "music_funny.wav"), path.join(out, "music", "zyvo_music.wav"));
 
+// THE ASSET LIBRARY (assets/catalog.json): exactly the catalogued model files + the textures / buffers they reference
+// (glTF images + buffers, OBJ mtllib + map_* files), from the unpacked CC0 packs (git-excluded); the Dockerfile's
+// build-only stage turns them into /app/zyvo_assets/zyvo_assets.blend
+const assetsSrc = path.resolve(arg("assets", path.join(repo, "reference/blocky-worlds/assets-incoming/_unpacked")));
+const catalog = JSON.parse(fs.readFileSync(path.join(here, "assets", "catalog.json"), "utf8"));
+const copied = new Set();
+const take = (rel) => {
+  const norm = path.posix.normalize(rel.replace(/\\/g, "/"));
+  if (norm.startsWith("..") || copied.has(norm)) return;
+  const from = path.join(assetsSrc, norm);
+  if (!fs.existsSync(from) || !fs.statSync(from).isFile()) return;
+  copied.add(norm);
+  fs.mkdirSync(path.dirname(path.join(out, "assets_src", norm)), { recursive: true });
+  fs.copyFileSync(from, path.join(out, "assets_src", norm));
+};
+const near = (rel, uri) => path.posix.join(path.posix.dirname(rel), decodeURIComponent(String(uri).replace(/\\/g, "/")));
+for (const a of catalog.assets) {
+  take(a.file);
+  const full = path.join(assetsSrc, a.file);
+  if (!fs.existsSync(full)) throw new Error(`catalog file missing: ${a.file} (unpack the packs: README "Asset library")`);
+  if (/\.(glb|gltf)$/i.test(a.file)) {
+    const b = fs.readFileSync(full);
+    const j = /\.glb$/i.test(a.file) ? JSON.parse(b.subarray(20, 20 + b.readUInt32LE(12)).toString("utf8")) : JSON.parse(b.toString("utf8"));
+    for (const x of [...(j.images ?? []), ...(j.buffers ?? [])]) if (x.uri && !x.uri.startsWith("data:")) take(near(a.file, x.uri));
+  } else if (/\.obj$/i.test(a.file)) {
+    for (const m of fs.readFileSync(full, "utf8").matchAll(/^mtllib\s+(.+?)\s*$/gm)) {
+      const mtl = near(a.file, m[1]);
+      take(mtl);
+      const mf = path.join(assetsSrc, mtl);
+      if (fs.existsSync(mf)) for (const t of fs.readFileSync(mf, "utf8").matchAll(/^\s*map_\w+\s+(?:-\S+\s+\S+\s+)*(.+?)\s*$/gm)) take(near(mtl, t[1]));
+    }
+  }
+}
+fs.mkdirSync(path.join(out, "assets"), { recursive: true });
+for (const f of ["catalog.json", "build_assets.py"]) fs.copyFileSync(path.join(here, "assets", f), path.join(out, "assets", f));
+console.log(`assets: ${catalog.assets.length} models, ${copied.size} files copied`);
+
 for (const f of ["Dockerfile", "handler.py", "boot.py", "gpucheck.py", "netblock.py", "shotcheck.py", "finishx.py"]) fs.copyFileSync(path.join(here, f), path.join(out, f));
 fs.writeFileSync(path.join(out, "fly.toml"), 'app = "zyvo-cutaway-render-staging"\nprimary_region = "fra"\n\n[build]\n  dockerfile = "Dockerfile"\n');
 fs.writeFileSync(path.join(out, ".dockerignore"), "fly.toml\n");

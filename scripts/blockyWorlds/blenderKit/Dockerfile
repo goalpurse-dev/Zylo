@@ -1,7 +1,7 @@
 # Blender kit engine (phase 1): RunPod serverless GPU worker that renders a Blender story kit video with the kit's own
 # tools (EEVEE, as the kit's rbx/core.py setup_render). The build context comes from buildContext.mjs (outside the repo:
 # the kit's files are never committed). No secrets: nothing here reads a key; the handler gets signed URLs per job.
-FROM debian:trixie-slim
+FROM debian:trixie-slim AS base
 
 ENV DEBIAN_FRONTEND=noninteractive \
     NVIDIA_DRIVER_CAPABILITIES=all \
@@ -42,6 +42,16 @@ RUN pip3 install --no-cache-dir --break-system-packages "runpod>=1.7,<2"
 
 # the sandbox user: Blender and the kit's finish step run as this user (handler.py), never as root
 RUN useradd --create-home --uid 1001 --shell /usr/sbin/nologin render
+
+# THE ASSET LIBRARY (assets/build_assets.py): a build-only stage imports the catalogued CC0 models (glTF / GLB / OBJ) into
+# one .blend; only that file reaches the final image (the raw packs stay in the throw-away stage)
+FROM base AS assets
+COPY assets_src /tmp/assets_src
+COPY assets/catalog.json assets/build_assets.py /tmp/
+RUN /opt/blender/blender -b --factory-startup --offline-mode --python /tmp/build_assets.py -- /tmp/assets_src /tmp/catalog.json /out/zyvo_assets.blend  && cp /tmp/catalog.json /out/catalog.json
+
+FROM base
+COPY --from=assets /out /app/zyvo_assets
 
 # the kit (read-only for the render user) + our music bed + our glue
 COPY kit /app/kit
