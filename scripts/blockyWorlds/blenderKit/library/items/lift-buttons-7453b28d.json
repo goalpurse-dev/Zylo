@@ -13,7 +13,8 @@
   ],
   "title": "The Lift Day"
  },
- "status": "pending",
- "approved": false,
- "createdAt": "2026-11-13T23:38:13.780Z"
+ "status": "approved",
+ "approved": true,
+ "createdAt": "2026-11-13T23:38:13.780Z",
+ "decidedAt": "2026-11-14T13:23:36.680Z"
 }

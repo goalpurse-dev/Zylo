@@ -12,7 +12,8 @@
   ],
   "title": "Hiccup Time"
  },
- "status": "pending",
- "approved": false,
- "createdAt": "2026-11-14T11:32:16.427Z"
+ "status": "approved",
+ "approved": true,
+ "createdAt": "2026-11-14T11:32:16.427Z",
+ "decidedAt": "2026-11-14T13:23:35.240Z"
 }
