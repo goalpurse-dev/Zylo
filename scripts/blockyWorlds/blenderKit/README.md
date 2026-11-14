@@ -125,6 +125,25 @@ fixed every crash (14 vision issues left); round 2 skipped by the cap.
   - tighter output limits;
   - one fix round;
   - `--scene-plan` takes the owner's plan.
+- WORLD PACK v2 (2026-11-14, stills $0.042 in 3 rounds, no image rebuild: worlds.py travels in the video tar):
+  - LOOK: the camera sees a saturated blue gradient sky with instanced puffy clouds and far green hills; the scene is
+    lit by a neutral, weaker sky (Light Path "Is Camera Ray" split in `zw_world`) and a warm 3-degree sun: no blue cast,
+    deeper soft shadows; saturated pastels; brick / window grids on folded (x + y, z) coordinates (v1's bricks were
+    vertical stripes on X-facing walls).
+  - DENSITY: downtown (window displays, rooftop AC / tanks / antennas, 3 billboards, a back row of blocks, 24 glass
+    towers, 12 cars, 24 people, hydrants / planters / bins, an enclosed plaza); suburb (18 houses with 1-2 storeys,
+    garages, shutters, hedges, flowers, back tree rows, 10 people); brick city (lit windows, fire escapes, pipes, AC,
+    flower boxes, posters, small shopfronts, puddles, a dressed alley); furnished living room / bedroom / kitchen; a
+    shop with full shelves, gondolas, coolers, a snack wall and customers; a dressed moon (big Earth, flag, lander,
+    rocks, craters, stars); a backdrop in the big hall. Every prop that repeats is an instanced source collection.
+  - `worlds/stills.mjs --spots wide,close --times downtown_street,suburb_street --no-dress --jobs 1`; a free mock run
+    (kit stubs with the real signatures + socket names, every place x dress, ray checks of every tested spot) caught
+    the blocked spots before any render.
+- DIRECTOR RULES (2026-11-14, `director.mjs`, tests in `director.test.mjs`): never the same camera spot twice in a row,
+  the hero on screen in at least half the shots (plan check on the descs + the shot check on the bodies), giant props at
+  most 40% of the frame (`SCREEN_SHARE_CAP`: prompt, checker, a lower-frame pixel suspect), no shot blocked by a wall (a
+  literal camera inside a wall / building of a library place). `pipeline.mjs` runs `shotProblems` after the bodies and
+  gives ONE writing fix before any GPU money.
 - SCENE PLAN (owner-only), in `_shared/blockyWorlds/scenePlan.js`:
   - the API action `scenePlan` returns an automatic plan from the library words; `start` takes `scenePlan` and stores it in `run.card.scene_plan`;
   - the page's `ScenePlan.jsx` (on the script step) lets the owner change a scene's place: pick from the list, or type a place that maps to the closest one;

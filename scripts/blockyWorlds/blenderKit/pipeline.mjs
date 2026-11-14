@@ -19,7 +19,7 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { ledger, stepTimes } from "../studio/ledger.mjs";
 import { loadEnv } from "../engine/runpod/client.mjs";
-import { makeDirector, systemPrompt, tileShots, assemble, staticCheck, wordLines, planLocations, planProblems, MODELS, BATCH, MIN_LOCATIONS } from "./director.mjs";
+import { makeDirector, systemPrompt, tileShots, assemble, staticCheck, wordLines, planLocations, planProblems, shotProblems, heroOf, giantSuspect, MODELS, BATCH, MIN_LOCATIONS } from "./director.mjs";
 import { captionColors } from "./speakers.mjs";
 import { LOCATIONS, DRESS } from "./worlds/locations.mjs";
 import { runpod, RATE, BOOT_S } from "./rp.mjs";
@@ -246,6 +246,23 @@ if (!sc.ok) {
   sc = staticCheck(writeFile(), shotsFile);
 }
 say(`static check: ${sc.ok ? "ok" : `${sc.problems.length} problem(s)`}, ${plan.shots.length} shots`);
+// THE SHOT CHECK (director.mjs shotProblems, owner 2026-11-14): no camera spot twice in a row, the hero in at least
+// half the shots, no literal camera inside a wall / building of a library place; ONE writing fix before any GPU money
+let shp = shotProblems({ shots: plan.shots, bodies: state.bodies, hero: heroOf(plan.styleSheet) });
+if (Object.keys(shp).length && !state.shotFixed) {
+  state.shotFixed = true;
+  const ids = Object.keys(shp).map(Number).slice(0, 2 * BATCH);
+  const text = [`THE SHOT CHECK found these problems (never the same camera spot twice in a row; the hero ${heroOf(plan.styleSheet) ?? ""} on screen in at least half the shots; no camera inside or behind a wall / building). Rewrite ONLY these shots' bodies; header_append "" unless a helper must change.`,
+    ...ids.map((id) => `- shot ${id}: ${shp[id]}\n  current body:\n${state.bodies[id]}`)].join("\n");
+  const r = await L.step("director_shotfix", () => D.fix({ label: "shot_fix", text }));
+  if (r.data.header_append?.trim()) plan.header += `\n\n# --- fix (shot check)\n${r.data.header_append}`;
+  for (const x of r.data.shots ?? []) if (shotById(x.id) && String(x.body ?? "").trim()) state.bodies[x.id] = x.body;
+  state.convo = D.convo; save();
+  sc = staticCheck(writeFile(), shotsFile);
+  if (!sc.ok) mergeOut([...new Set(sc.problems.map((q) => q.shot).filter((x) => x != null))], "static after the shot fix");
+  shp = shotProblems({ shots: plan.shots, bodies: state.bodies, hero: heroOf(plan.styleSheet) });
+}
+say(`shot check: ${Object.keys(shp).length ? `${Object.keys(shp).length} left (${Object.entries(shp).slice(0, 4).map(([k, v]) => `${k}: ${v.slice(0, 60)}`).join(" | ")})` : "ok"}`);
 
 // ---------------------------------------------------------------- 3. previews + checks + fix rounds
 const tarVideo = (name) => {
@@ -262,7 +279,7 @@ async function uploadVideo(tag) {
 // per preview frame: mean / spread (blocking: black, one flat colour) + the centre box's biggest 16-level share and edge
 // density (a FOREGROUND-SLAB suspect for the checker: calibrated on the first test's 69 previews, it caught 8 of the 12
 // slab-type shots the checker flagged and 3 big face close-ups, so it only asks the checker to look, it never blocks)
-const PIX = "import sys,json,os\nfrom PIL import Image, ImageStat, ImageFilter\nres={}\nfor f in sorted(os.listdir(sys.argv[1])):\n if f.startswith('shot_') and f.endswith('.png'):\n  im=Image.open(os.path.join(sys.argv[1],f)).convert('L')\n  st=ImageStat.Stat(im)\n  c=im.resize((72,128)).crop((14,26,58,102))\n  px=c.tobytes()\n  b=[0]*16\n  for v in px: b[v//16]+=1\n  ed=c.filter(ImageFilter.FIND_EDGES).tobytes()\n  res[int(f[5:-4])]={'mean':round(st.mean[0],1),'std':round(st.stddev[0],1),'cflat':round(max(b)/len(px),2),'cedge':round(sum(1 for v in ed if v>24)/len(px),3)}\nprint(json.dumps(res))";
+const PIX = "import sys,json,os\nfrom PIL import Image, ImageStat, ImageFilter\nres={}\nfor f in sorted(os.listdir(sys.argv[1])):\n if f.startswith('shot_') and f.endswith('.png'):\n  im=Image.open(os.path.join(sys.argv[1],f)).convert('L')\n  st=ImageStat.Stat(im)\n  lo=im.resize((72,128)).crop((0,38,72,128))\n  lb=[0]*16\n  for v in lo.tobytes(): lb[v//16]+=1\n  le=lo.filter(ImageFilter.FIND_EDGES).tobytes()\n  c=im.resize((72,128)).crop((14,26,58,102))\n  px=c.tobytes()\n  b=[0]*16\n  for v in px: b[v//16]+=1\n  ed=c.filter(ImageFilter.FIND_EDGES).tobytes()\n  res[int(f[5:-4])]={'mean':round(st.mean[0],1),'std':round(st.stddev[0],1),'cflat':round(max(b)/len(px),2),'cedge':round(sum(1 for v in ed if v>24)/len(px),3),'lflat':round(max(lb)/(72*90),2),'ledge':round(sum(1 for v in le if v>24)/(72*90),3)}\nprint(json.dumps(res))";
 export const slabSuspect = (p) => (p.cflat >= 0.45 && p.cedge < 0.14) || (p.cflat >= 0.35 && p.cedge < 0.11);
 
 /** a downloaded preview folder -> the job output it came with (the worker's own rules: failures from the kit's log, sheets of
@@ -311,16 +328,18 @@ async function previewRound(tag, ids) {
   for (const id of ids) if (!pixel[id] && !failed[id]) failed[id] = "no preview frame was rendered";
   const slabs = Object.fromEntries(Object.entries(pixel).filter(([id, p]) => slabSuspect(p) && !failed[id]).map(([id, p]) => [id, p]));
   const pixBad = Object.fromEntries(Object.entries(pixel).filter(([id, p]) => (p.mean < 12 || p.std < 4) && !(shotById(Number(id)) && darkOk(shotById(Number(id))))).map(([id, p]) => [id, p.mean < 12 ? `the frame is black (mean ${p.mean})` : `the frame is one flat colour (std ${p.std})`]));
-  return { failed, sheets, pixel, pixBad, slabs, renderS: outs.reduce((a, o) => a + (o.out.renderS ?? 0), 0) };
+  // GIANT-PROP suspects (director.mjs giantSuspect: one flat region over the screen-share cap below the sky line)
+  const giants = Object.fromEntries(Object.entries(pixel).filter(([id, p]) => giantSuspect(p) && !failed[id] && !slabs[id]).map(([id, p]) => [id, p]));
+  return { failed, sheets, pixel, pixBad, slabs, giants, renderS: outs.reduce((a, o) => a + (o.out.renderS ?? 0), 0) };
 }
-async function vision(tag, sheets, ids, suspects = {}) {
+async function vision(tag, sheets, ids, suspects = {}, giants = {}) {
   if (!sheets.length) return {};
   const shots = plan.shots.filter((s) => ids.includes(s.id));
   // EVERY LINE LITERALLY: the lines whose every shot is on these sheets (round 0: all of them)
   const seen = new Set(sheets.flatMap((x) => x.shots));
   const lines = linesOfShots(plan.shots).filter((l) => l.shots.every((id) => seen.has(id)));
   const last = plan.shots[plan.shots.length - 1];
-  const r = await L.step("vision_check", () => D.check({ label: `check_${tag}`, sheets, shots, wordsText, suspects, lines, lastShot: ids.includes(last.id) ? last.id : null, darkOk: shots.filter(darkOk).map((s) => s.id) }));
+  const r = await L.step("vision_check", () => D.check({ label: `check_${tag}`, sheets, shots, wordsText, suspects, giants, lines, lastShot: ids.includes(last.id) ? last.id : null, darkOk: shots.filter(darkOk).map((s) => s.id) }));
   const out = Object.fromEntries((r.data.shots ?? []).filter((x) => !x.ok).map((x) => [x.id, x.problem]));
   for (const l of r.data.lines ?? []) {
     if (l.ok) continue;
@@ -335,7 +354,7 @@ state.rounds ??= [];
 let failing = {};
 if (!state.previewed) {
   const p = await L.step("preview_round0", () => previewRound("r0", plan.shots.map((s) => s.id)));
-  const vis = await vision("r0", p.sheets, plan.shots.map((s) => s.id).filter((id) => !p.failed[id]), p.slabs);
+  const vis = await vision("r0", p.sheets, plan.shots.map((s) => s.id).filter((id) => !p.failed[id]), p.slabs, p.giants);
   failing = mergeProblems(p, vis);
   state.previewed = true; state.round = 0;
   state.rounds.push({ round: 0, shots: plan.shots.length, crashed: Object.keys(p.failed).length, pixel: Object.keys(p.pixBad).length, vision: Object.keys(vis).length, failing: Object.keys(failing).length, sheets: p.sheets.map((s) => s.file) });
@@ -381,7 +400,7 @@ for (let round = (state.round ?? 0) + 1; round <= ROUNDS && Object.keys(failing)
   }
   save();
   const p = await L.step(`preview_round${round}`, () => previewRound(`r${round}`, ids));
-  const vis = await vision(`r${round}`, p.sheets, ids.filter((id) => !p.failed[id]), p.slabs);
+  const vis = await vision(`r${round}`, p.sheets, ids.filter((id) => !p.failed[id]), p.slabs, p.giants);
   failing = mergeProblems(p, vis);
   state.round = round;
   state.rounds.push({ round, fixed: ids.length, crashed: Object.keys(p.failed).length, pixel: Object.keys(p.pixBad).length, vision: Object.keys(vis).length, failing: Object.keys(failing).length, sheets: p.sheets.map((s) => s.file) });
