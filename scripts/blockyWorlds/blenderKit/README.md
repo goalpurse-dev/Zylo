@@ -144,6 +144,15 @@ fixed every crash (14 vision issues left); round 2 skipped by the cap.
   most 40% of the frame (`SCREEN_SHARE_CAP`: prompt, checker, a lower-frame pixel suspect), no shot blocked by a wall (a
   literal camera inside a wall / building of a library place). `pipeline.mjs` runs `shotProblems` after the bodies and
   gives ONE writing fix before any GPU money.
+- ASSET LIBRARY + WORLD PACK v3 (2026-11-14; plan, licence table and how to add a pack: `docs/blocky-worlds-assets.md`):
+  - `assets/catalog.py` -> `assets/catalog.json` (1387 CC0 assets from 15 packs, sizes in our units, tags, licences)
+    + `assets/previews/` (96 px, from the packs' own previews); the raw packs stay in reference/ (git-excluded).
+  - `buildContext.mjs` copies the catalogued models + their textures; the Dockerfile's build-only stage runs
+    `assets/build_assets.py` (import, scale, one collection per asset, pastel pass, packed textures) ->
+    `/app/zyvo_assets/zyvo_assets.blend` (12.2 MB). Image `blender-kit-6` (sha256:070b337d...), endpoint re-pointed.
+  - `worlds.py`: `za_load` / `zw_asset` / `zw_asset_fit` (one library read a shot, primitives when no library);
+    people WALK / TALK / SIT / stand, cars DRIVE (never into a tested spot); close spots wider (lens 28, the world above
+    the shoulders). `worlds/motion.mjs` renders 2 s clips (one `render` job) to show the motion.
 - SCENE PLAN (owner-only), in `_shared/blockyWorlds/scenePlan.js`:
   - the API action `scenePlan` returns an automatic plan from the library words; `start` takes `scenePlan` and stores it in `run.card.scene_plan`;
   - the page's `ScenePlan.jsx` (on the script step) lets the owner change a scene's place: pick from the list, or type a place that maps to the closest one;

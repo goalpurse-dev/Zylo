@@ -330,28 +330,170 @@ def zw_backdrop(c=(0, 60), n=18, seed=9, hills=True, rmin=230):
             sphere("zw_hill%d" % k, rnd.uniform(45, 80), (c[0] + math.cos(a) * r, c[1] + math.sin(a) * r, -6), Mh, (1.5, 1.0, 0.3), seg=16)
 
 
-# ---------------------------------------------------------------- people, cars, small props
-def zw_people(t0, t1, n, areas, seed=7):
-    """n background people (single kids, instanced: cheap) spread over areas [((x0, x1), (y0, y1), z), ...]"""
+# ---------------------------------------------------------------- THE ASSET LIBRARY (CC0 packs, assets/catalog.json)
+# The image holds /app/zyvo_assets/zyvo_assets.blend (built by assets/build_assets.py): one collection "za_<id>" per
+# asset, in our units (a character is 5.2 tall), origin at the bottom centre, pastel pass applied. Shot code LINKS the
+# collections it needs (one library read per shot) and instances them. No library (an older image): every helper
+# returns None and the worlds keep their primitive versions.
+ZA_LIB = "/app/zyvo_assets/zyvo_assets.blend"
+ZA = {"ok": None, "c": {}}
+
+
+def za_load(ids):
+    """link these assets' collections in ONE library read (unknown ids are skipped)"""
+    want = ["za_" + i for i in ids if i not in ZA["c"]]
+    if not want or ZA["ok"] is False:
+        return
+    try:
+        with D.libraries.load(ZA_LIB, link=True) as (src, dst):
+            have = set(src.collections)
+            dst.collections = [n for n in want if n in have]
+        ZA["ok"] = True
+    except Exception:
+        ZA["ok"] = False
+        return
+    for n in want:
+        ZA["c"][n[3:]] = D.collections.get(n)
+
+
+def za_size(aid):
+    c = ZA["c"].get(aid)
+    if c is None:
+        return (0.0, 0.0, 0.0)
+    s = c.get("zw_size")
+    return tuple(s) if s else (0.0, 0.0, 0.0)
+
+
+def zw_asset(aid, loc, rot=0, scale=1.0, coll=None):
+    """an instance of a library asset (bottom centre at loc), or None when the asset / the library is missing"""
+    if aid not in ZA["c"]:
+        za_load([aid])
+    c = ZA["c"].get(aid)
+    if c is None:
+        return None
+    ZW_N["n"] += 1
+    s = scale if isinstance(scale, (tuple, list)) else (scale, scale, scale)
+    return instance("za_%s_%d" % (aid[:24], ZW_N["n"]), c, loc, s, coll=coll, rot=(0, 0, rot))
+
+
+def zw_asset_fit(aid, loc, maxw, maxh, rot=0, coll=None, grow=1.5):
+    """an asset scaled to fit a footprint (maxw) and a height (maxh); returns (instance, fitted width)"""
+    if aid not in ZA["c"]:
+        za_load([aid])
+    sx, sy, sz = za_size(aid)
+    if sz <= 0:
+        return None, 0.0
+    k = min(grow, maxw / max(sx, sy, 1e-3), maxh / sz)
+    return zw_asset(aid, loc, rot, k, coll), max(sx, sy) * k
+
+
+# ---------------------------------------------------------------- people that MOVE (walk, talk, sit, stand) and cars that drive
+ZW_KID_BASE = {"walk": 11, "stand": 41, "sit": 71, "talk": 101}
+
+
+def zw_person_src(mode, j, t0, t1):
+    """a hidden source: one kid walking in place / standing / sitting, or a pair talking (instanced many times)"""
+    nm = "zw_ps_%s%d" % (mode, j)
+    src = D.collections.get(nm)
+    if src:
+        return src
+    src = collection(nm)
+    b = ZW_KID_BASE[mode] + j * 3
+    if mode == "talk":
+        for k, (x, r) in enumerate(((-1.15, 90), (1.15, -90))):
+            ch = chars.kid(b + k, coll=src)
+            ch.pose(t0, loc=(x, 0, 0), rot=r)
+            ch.blink(t0, t1)
+            ch.talk(t0 + 0.15 + k * 0.45, t1)
+            ch.wiggle(t0, t1, part="armR" if k else "armL", amp=(22, 10), rate=2.0 + k * 0.7, base=(55, 18))
+    else:
+        ch = chars.kid(b, coll=src)
+        ch.pose(t0, loc=(0, 0, 0), rot=0)
+        ch.blink(t0, t1)
+        if mode == "walk":
+            ch.walk(t0, t1, (0, 0, 0), (0, -0.001, 0), face_dir=False, start_phase=j)
+        elif mode == "sit":
+            ch.pose(t0, legL=(85, 3), legR=(85, -3), armL=(14, 8), armR=(14, 8), hipz=-0.8)
+            ch.idle()
+        else:
+            ch.idle(1.5)
+            if j % 2:
+                ch.wiggle(t0, t1, part="armR", amp=(16, 8), rate=1.6, base=(30, 12))
+    hide_coll_from_layer(src)
+    return src
+
+
+def zw_people(t0, t1, n, areas, seed=7, modes=("walk", "walk", "stand", "talk", "walk")):
+    """n background people over areas [((x0, x1), (y0, y1), z), ...]: walkers move along the area's long side (legs
+    swinging), talkers come in pairs facing each other, standers idle; a talking pair counts as two"""
     if n <= 0 or not areas:
         return
-    srcs = []
-    for j in range(min(8, n)):
-        nm = "zw_person_src%d" % j
-        src = D.collections.get(nm) or story.crowd_src(nm, t0, t1, [11 + j * 3], mode="idle", spread=0, seed=seed + j)
-        hide_coll_from_layer(src)
-        srcs.append(src)
     rnd = random.Random(seed)
-    for i in range(n):
+    i = made = 0
+    while made < n:
+        mode = modes[i % len(modes)]
         ar = areas[i % len(areas)]
-        x, y = rnd.uniform(*ar[0]), rnd.uniform(*ar[1])
         z = ar[2] if len(ar) > 2 else 0.0
-        instance("zw_person%d_%d" % (seed, i), srcs[i % len(srcs)], (x, y, z), rot=(0, 0, rnd.choice((0, 0, 25, -25, 180, 90, -90))))
+        x, y = rnd.uniform(*ar[0]), rnd.uniform(*ar[1])
+        along_y = (ar[1][1] - ar[1][0]) >= (ar[0][1] - ar[0][0])
+        src = zw_person_src(mode, (i // len(modes)) % 3, t0, t1)
+        name = "zw_person%d_%d" % (seed, i)
+        if mode == "walk":
+            sgn = rnd.choice((-1, 1))
+            rot = (180 if sgn > 0 else 0) if along_y else (90 if sgn > 0 else -90)
+            dist = min(2.8 * (t1 - t0), 6.0)
+            dx, dy = (0.0, sgn * dist) if along_y else (sgn * dist, 0.0)
+            ob = instance(name, src, (x - dx / 2, y - dy / 2, z), rot=(0, 0, rot))
+            ob.keyframe_insert("location", frame=F(t0))
+            ob.location = (x + dx / 2, y + dy / 2, z)
+            ob.keyframe_insert("location", frame=F(t1))
+            set_interp(ob, "location", F(t0), "LINEAR")
+        elif mode == "talk":
+            instance(name, src, (x, y, z), rot=(0, 0, (90 if along_y else 0) + rnd.choice((0, 180))))
+        else:
+            instance(name, src, (x, y, z), rot=(0, 0, rnd.choice((0, 0, 30, -30, 180, 90, -90))))
+        made += 2 if mode == "talk" else 1
+        i += 1
 
 
-def zw_cars(spots):
-    for k, (x, y, c, r) in enumerate(spots):
-        W.car("zw_car%d_%d" % (int(x), int(y)), (x, y, 0.06), c, rot=r)
+def zw_sitters(t0, t1, seats, seed=3):
+    """people sitting on benches: seats = [(x, y, z, rot)] at the bench's own location and rotation"""
+    for k, (x, y, z, r) in enumerate(seats):
+        a = math.radians(r)
+        instance("zw_sitter%d_%d" % (seed, k), zw_person_src("sit", k % 2, t0, t1), (x + math.sin(a) * 0.15, y - math.cos(a) * 0.15, z), rot=(0, 0, r))
+
+
+# library cars (front toward -Y at rot 0, the glTF / OBJ convention after import) + their pastel-ish colours
+ZA_CARS = ["kaykit_car_sedan", "rveh_car_hatchback_citrus", "kaykit_car_taxi", "rveh_car_coupe_red", "kaykit_car_stationwagon",
+           "rveh_car_mpv_violet", "kaykit_car_hatchback", "rveh_car_van_blue", "rveh_car_micro_green", "rveh_car_minibus_orange",
+           "rveh_car_normal_blue", "rveh_car_pickup_citrus"]
+ZA_CAR_FRONT = -1   # the models' front faces -Y before rotation
+ZA_CITY = ["kcity_building_a", "kcity_building_b", "kcity_building_d", "kcity_building_f", "kcity_building_g", "kcity_building_h", "kcity_building_c"]
+ZA_TALL = ["kcity_building_m", "kcity_building_skyscraper_e", "kcity_building_i"]
+ZA_SHELF = ["kfood_soda_bottle", "kfood_carton", "kfood_can", "kfood_bag", "kfood_bottle_ketchup", "kfood_honey", "kfood_peanut_butter",
+            "kfood_soda_can", "kfood_carton_small", "kfood_bottle_musterd", "kfood_can_small", "kfood_bottle_oil", "kfood_loaf", "kfood_soda"]
+ZA_FRUIT = ["kfood_apple", "kfood_orange", "kfood_lemon", "kfood_pear", "kfood_banana"]
+
+
+def zw_cars(spots, t0=None, t1=None, speed=8.0, reach=18.0):
+    """cars: spots = [(x, y, colour, heading, drive)] (heading 0 = toward +Y, 180 = -Y, 90 = -X, -90 = +X); a car with
+    drive=True moves along its heading during the shot (at most `reach` units); library cars when present, else W.car"""
+    za_load(ZA_CARS)
+    for k, sp in enumerate(spots):
+        x, y, c, r = sp[:4]
+        drive = sp[4] if len(sp) > 4 else False
+        aid = ZA_CARS[k % len(ZA_CARS)]
+        ob = zw_asset(aid, (x, y, 0.06), r + (180 if ZA_CAR_FRONT < 0 else 0)) if ZA["c"].get(aid) is not None else None
+        if ob is None:
+            ob = W.car("zw_car%d_%d" % (int(x), int(y)), (x, y, 0.06), c, rot=r)
+        if drive and t0 is not None and ob is not None:
+            a = math.radians(r)
+            d = min(speed * (t1 - t0), reach)
+            ob.location = (x, y, 0.06)
+            ob.keyframe_insert("location", frame=F(t0))
+            ob.location = (x - math.sin(a) * d, y + math.cos(a) * d, 0.06)
+            ob.keyframe_insert("location", frame=F(t1))
+            set_interp(ob, "location", F(t0), "LINEAR")
 
 
 def zw_blimp(text_body="ZYVO", loc=(-30, 90, 55)):
@@ -547,7 +689,10 @@ def zw_downtown(t0, t1, dress):
         yy = -4.0
         while yy < 172:
             w = rnd.choice([16, 18, 20])
-            zw_block(k, side * 34, yy + w / 2, w, 12, rnd.choice([24, 28, 32, 36]))
+            bh = rnd.choice([24, 28, 32, 36])
+            lib = ZA_CITY[(k // 4) % len(ZA_CITY)] if k % 4 == 0 else (ZA_TALL[(k // 4) % len(ZA_TALL)] if k % 4 == 2 else None)
+            if not (lib and zw_asset(lib, (side * 34, yy + w / 2, 0), -90 * side)):
+                zw_block(k, side * 34, yy + w / 2, w, 12, bh)
             k += 1
             yy += w + 1.5
     for t in range(18):
@@ -555,6 +700,12 @@ def zw_downtown(t0, t1, dress):
         zw_tower_bg(t, side * (54 + (t // 2 % 2) * 26 + rnd.uniform(-3, 3)), -8 + (t // 2) * 24 + rnd.uniform(-4, 4), rnd.choice([60, 75, 90, 105, 120]), rnd.choice([14, 16, 18]))
     for t in range(6):
         zw_tower_bg(18 + t, -45 + t * 18 + rnd.uniform(-3, 3), 222 + (t % 2) * 24, rnd.choice([80, 95, 110, 130]), rnd.choice([16, 18, 20]))
+    za_load(ZA_CITY + ZA_TALL + ["kaykit_trafficlight_a", "kcity_detail_parasol_a", "kcity_detail_parasol_b", "ktown_stall_red", "ktown_stall_green", "ktown_cart"] + ZA_FRUIT)
+    # traffic lights at both crossings, cafe parasols on the sidewalks
+    for tx, ty, r in ((7.9, -0.8, 180), (-7.9, 3.8, 0), (7.9, 151.0, 180), (-7.9, 155.0, 0)):
+        zw_asset("kaykit_trafficlight_a", (tx, ty, 0.3), r)
+    for k, (px, py) in enumerate(((-9.7, 18), (-9.7, 60), (9.7, 70), (-9.7, 112), (9.7, 124))):
+        zw_asset("kcity_detail_parasol_a" if k % 2 else "kcity_detail_parasol_b", (px, py, 0.3), 0, 1.0)
     # rooftop billboards (the story's line first)
     bb = [dress.get("billboard")] if dress.get("billboard") else []
     bb += ["MEGA SALE", "FRESH PIZZA", "GO TEAM"]
@@ -595,6 +746,12 @@ def zw_downtown(t0, t1, dress):
         zw_inst("flowers%d" % (k % 3), (bx, by, 0.8), k * 40)
     for k, (bx, by) in enumerate(((-28, -4), (28, -4), (-28, -44), (28, -44))):
         zw_inst("lamp", (bx, by, 0.12))
+    # market stalls with fruit, a hand cart
+    for k, (sx, sy, aid) in enumerate(((21, -40, "ktown_stall_red"), (21, -14, "ktown_stall_green"))):
+        if zw_asset(aid, (sx, sy, 0.12), -90):
+            for q in range(6):
+                zw_asset_fit(ZA_FRUIT[(q + k) % len(ZA_FRUIT)], (18.6, sy - 2.0 + q * 0.8, 2.2), 0.9, 0.9, q * 40)
+    zw_asset("ktown_cart", (-22, -33, 0.12), 20, 0.8)
     # an ice-cream cart
     box("zw_cart", (2.6, 4.0, 2.2), (16, -28, 1.5), zw_m("cart", "#ff9ec0", 0.6), 0.15)
     cyl("zw_cart_pole", 0.08, 4.6, (16, -28, 4.6), zw_m("lamppost", "#2f3a4a", 0.4, 0.6), 6)
@@ -604,15 +761,18 @@ def zw_downtown(t0, t1, dress):
             zw_block(40 + k + (side > 0) * 2, side * 37, yy, 19, 12, rnd.choice([18, 22, 26]))
     # cars on the street (the close-up spot's lane kept clear)
     if "cars" in (dress.get("props") or ["cars"]):
-        zw_cars(((-3.5, 21, "#e2405b", 0), (3.5, 58, "#3d8bfd", 180), (-3.5, 92, "#ffd23f", 0), (3.5, 108, "#22b5a3", 180),
-                 (-3.5, 50, "#7b5cf6", 0), (3.5, 80, "#ff8c2a", 180), (-3.5, 70, "#f6f1e7", 0), (3.5, 100, "#ff6fa8", 180),
-                 (-3.5, 104, "#4cbf45", 0), (-3.5, 150, "#e2405b", 0), (3.5, 96, "#2f86fd", 180), (-3.5, 14, "#22b5a3", 0)))
+        # west lane drives +Y, east lane -Y; nobody drives into a tested camera or a target (east-lane cars start at 66+)
+        zw_cars(((-3.5, 12, "#22b5a3", 0, False), (-3.5, 50, "#7b5cf6", 0, True), (-3.5, 66, "#f6f1e7", 0, True), (-3.5, 84, "#ffd23f", 0, True),
+                 (-3.5, 102, "#4cbf45", 0, True), (-3.5, 120, "#e2405b", 0, True), (-3.5, 146, "#e2405b", 0, False),
+                 (3.5, 66, "#3d8bfd", 180, True), (3.5, 82, "#ff8c2a", 180, True), (3.5, 98, "#2f86fd", 180, True), (3.5, 114, "#ff6fa8", 180, True),
+                 (3.5, 130, "#22b5a3", 180, True)), t0, t1)
     zw_landmark(dress.get("landmark", "bank"), (dress.get("landmark_text") or "").upper()[:16])
     if "blimp" in (dress.get("props") or []):
         zw_blimp((dress.get("blimp_text") or "ZYVO").upper()[:10])
     n = int(dress.get("people", 24))
-    zw_people(t0, t1, n, [((8.4, 11.6), (44, 140), 0.3), ((-11.6, -8.4), (14, 140), 0.3), ((8.4, 11.6), (8, 22), 0.3),
-                          ((8, 22), (-44, -6), 0.12), ((-26, -14), (-20, -6), 0.12), ((-13, -6), (-46, -40), 0.12), ((8.5, 11.5), (146, 166), 0.3)])
+    zw_people(t0, t1, n, [((8.4, 11.6), (46, 140), 0.3), ((-11.6, -8.4), (14, 140), 0.3), ((8.4, 11.6), (8, 22), 0.3),
+                          ((6, 13), (-44, -6), 0.12), ((-26, -14), (-20, -6), 0.12), ((8.5, 11.5), (146, 166), 0.3)])
+    zw_sitters(t0, t1, [(11.2, 31, 0.3, 90), (-11.2, 82, 0.3, -90), (11.2, 133, 0.3, 90), (-12, -16, 0.12, 90), (12, -34, 0.12, -90)])
     zw_weather(dress.get("weather", "clear"))
     if zw_night():
         for k in range(6):
@@ -692,12 +852,14 @@ def zw_house(i, x, side, col):
     for s in (-1, 1):
         box("zw_hhedge%d_%d" % (i, s), (3.0, 1.2, 1.6), (x + s * 4.6, fy - side * (4.4 if i % 4 != 3 else 1.0), 0.8), Mh, 0.4)
         zw_inst("flowers%d" % ((i + (s > 0)) % 3), (x + s * 3.6, fyy + side * 1.6, 0.0), i * 37 + s * 20, 0.9)
-    zw_inst("tree" if i % 2 else "tree2", (x - 7.5, y - side * 10, 0.0), 0, 1.15)
+    if not (i % 3 == 0 and zw_asset("ktown_tree_high_round" if i % 2 else "ktown_tree", (x - 7.5, y - side * 10, 0.0), i * 40, 0.55)):
+        zw_inst("tree" if i % 2 else "tree2", (x - 7.5, y - side * 10, 0.0), 0, 1.15)
 
 
 def zw_suburb(t0, t1, dress):
     zw_sky_time(dress.get("time", "day"), dress.get("weather", "clear"))
     zw_backdrop((0, 20))
+    za_load(["ktown_tree", "ktown_tree_high_round", "ktown_tree_high"] + ZA_CARS)
     g = ZW_SKY.get(zw_time(), ZW_SKY["day"])["grass"]
     box("zw_lawn", (400, 400, 0.4), (0, 0, -0.2), zw_m("grass" + g[1:], g, 0.9), 0)
     box("zw_sroad", (300, 12, 0.06), (0, 0, 0.03), zw_m("asphalt", "#474c5a", 0.85), 0)
@@ -712,16 +874,18 @@ def zw_suburb(t0, t1, dress):
     rnd = random.Random(21)
     for side in (-1, 1):
         for k in range(22):
-            zw_inst("tree2" if k % 3 else "tree", (-130 + k * 12 + rnd.uniform(-3, 3), side * rnd.uniform(42, 56), 0.0), rnd.uniform(0, 360), rnd.uniform(1.1, 1.6))
+            tx, ty, tr, ts = -130 + k * 12 + rnd.uniform(-3, 3), side * rnd.uniform(42, 56), rnd.uniform(0, 360), rnd.uniform(1.1, 1.6)
+            if not (k % 4 == 1 and zw_asset("ktown_tree_high", (tx, ty, 0.0), tr, ts * 0.5)):
+                zw_inst("tree2" if k % 3 else "tree", (tx, ty, 0.0), tr, ts)
     for k in range(12):
         zw_inst("lamp", (-110 + k * 20, 10.2, 0.2))
     if "cars" in (dress.get("props") or ["cars"]):
-        zw_cars(((-14, 3.2, "#e2405b", 90), (22, -3.2, "#3d8bfd", -90), (48, 3.2, "#ffcf1f", 90), (-52, -3.2, "#22b5a3", -90)))
+        zw_cars(((-14, 3.2, "#e2405b", 90, True), (22, -3.2, "#3d8bfd", -90, True), (48, 3.2, "#ffcf1f", 90, True), (-52, -3.2, "#22b5a3", -90, True)), t0, t1)
     if "blimp" in (dress.get("props") or []):
         zw_blimp((dress.get("blimp_text") or "ZYVO").upper()[:10], (20, 80, 50))
     n = int(dress.get("people", 10))
     zw_people(t0, t1, n, [((16, 60), (7.0, 9.0), 0.25), ((24, 36), (12, 14), 0.0), ((0, 60), (-9.0, -7.0), 0.25), ((-80, -20), (-9.0, -7.0), 0.25),
-                          ((-36, -24), (12, 14), 0.0), ((-70, -22), (7.0, 9.0), 0.25)], seed=12)
+                          ((-36, -24), (12, 14), 0.0), ((-70, -22), (7.0, 9.0), 0.25)], seed=12, modes=("walk", "talk", "stand", "walk"))
     zw_weather(dress.get("weather", "clear"), ((-60, 60), (-40, 40)))
     if zw_night():
         for k in range(5):
@@ -793,6 +957,7 @@ def zw_apartment(i, side, y, w, h):
 def zw_brick_city(t0, t1, dress):
     zw_sky_time(dress.get("time", "day"), dress.get("weather", "clear"))
     zw_backdrop((0, 90))
+    za_load(["kaykit_box_a", "kaykit_box_b", "kaykit_trash_a", "kaykit_dumpster"])
     box("zw_bground", (400, 400, 0.4), (0, 80, -0.2), zw_m("bc_ground", "#8f8a84", 0.9), 0)
     box("zw_broad", (14, 220, 0.06), (0, 80, 0.03), zw_m("cobble", "#55555c", 0.9), 0)
     for k in range(22):
@@ -832,6 +997,8 @@ def zw_brick_city(t0, t1, dress):
         for q in range(3):
             sphere("zw_bag%d_%d" % (k, q), 0.6, (bx + (q % 2) * 0.5, by + q * 0.7, 0.85), Mbag, (1, 1, 0.85), seg=10)
         box("zw_bcr%d" % k, (1.4, 1.4, 1.4), (bx, by - 1.6, 1.0), zw_m("crate", "#a07a4a", 0.8), 0.06)
+        zw_asset("kaykit_box_a" if k % 2 else "kaykit_box_b", (bx, by + 2.8, 0.3), k * 35)
+        zw_asset("kaykit_trash_a", (bx, by - 3.4, 0.3), k * 50)
     for k, (hx, hy) in enumerate(((8.3, 14), (-8.3, 46), (8.3, 112))):
         zw_inst("hydrant", (hx, hy, 0.3))
     # the alley: dumpsters, crates, trash, barrels, pipes, posters, a lit door, puddles, a fire escape
@@ -864,6 +1031,9 @@ def zw_brick_city(t0, t1, dress):
         sphere("zw_abag%d" % k, 0.7, (-31.0 + (k % 2) * 0.9, 69.6 - k * 0.7, 0.7), Mbag, (1, 1, 0.85), seg=10)
     for k in range(2):
         cyl("zw_barrel%d" % k, 0.8, 2.2, (-31.5 + k * 1.8, 66.0, 1.1), zw_m("barrel", "#c0552f", 0.6, 0.2), 14)
+    for k, (qx, qy, qz, aid) in enumerate(((-31.4, 77.6, 0.1, "kaykit_box_a"), (-31.4, 79.8, 0.1, "kaykit_box_b"), (-31.4, 78.6, 1.85, "kaykit_box_b"))):
+        zw_asset(aid, (qx, qy, qz), k * 25)
+    zw_asset("kaykit_dumpster", (-28.0, a0 + 2.4, 0.1), 0)
     box("zw_aldoor", (0.3, 2.8, 4.6), (-32.9, 74, 2.3), zw_m("aptdoor", "#2f4a3a", 0.5), 0.05)
     sphere("zw_aldlamp", 0.35, (-32.6, 74, 5.4), zw_m("plamp_on", "#fff3c4", 0.3, emit="#ffd27a", estr=5.0), seg=10)
     light("zw_aldlight", "POINT", (-31.8, 74, 5.2), 220, (1.0, 0.8, 0.55), 0.5)
@@ -898,7 +1068,7 @@ def zw_brick_city(t0, t1, dress):
         zw_blimp((dress.get("blimp_text") or "ZYVO").upper()[:10], (-25, 100, 60))
     n = int(dress.get("people", 16))
     zw_people(t0, t1, n, [((8.0, 10.6), (48, 140), 0.3), ((-10.6, -8.0), (12, 56), 0.3), ((-10.6, -8.0), (88, 140), 0.3),
-                          ((8.0, 10.6), (8, 28), 0.3), ((-27, -25), (79, 82), 0.1)], seed=9)
+                          ((8.0, 10.6), (8, 28), 0.3), ((-27, -25), (79, 82), 0.1)], seed=9, modes=("walk", "stand", "talk", "walk"))
     zw_weather(dress.get("weather", "clear"))
     if zw_night():
         for k in range(5):
@@ -1008,6 +1178,10 @@ def zw_living(t0, t1, dress):
             box("zw_ctl%d%d" % (int(sx * 10), int(sy * 10)), (0.2, 0.2, 0.95), (2 + sx, 1.8 + sy, 0.47), zw_m("wood", "#8a5a3a", 0.6), 0.02)
     cyl("zw_mug", 0.22, 0.45, (1.2, 1.6, 1.4), zw_m("mug", "#ffffff", 0.4), 12)
     sets.books("zw_liv_bk", (2.4, 1.9, 1.17), None, n=3, lie=True)
+    za_load(["kfood_plate", "kfood_cookie", "kfood_soda_can"])
+    if zw_asset_fit("kfood_plate", (3.4, 1.6, 1.18), 1.0, 0.2)[0]:
+        for k in range(3):
+            zw_asset_fit("kfood_cookie", (3.2 + (k % 2) * 0.4, 1.5 + k * 0.15, 1.24 + k * 0.07), 0.45, 0.1, k * 50)
     # the TV on its stand (left wall, facing the room), a plant beside it
     box("zw_tvstand", (1.8, 5.6, 1.8), (-8.0, 1.5, 0.9), zw_m("tvstand", "#5a3e2c", 0.6), 0.08)
     box("zw_tv", (0.3, 5.0, 3.0), (-7.95, 1.5, 3.6), zw_m("tvbody", "#15181e", 0.3), 0.08)
@@ -1065,6 +1239,7 @@ def zw_bedroom(t0, t1, dress):
     cyl("zw_dlamp", 0.1, 1.4, (-3.0, 6.9, 3.4), zw_m("lampmetal", "#39404d", 0.4, 0.5), 8)
     sphere("zw_dlshade", 0.45, (-3.0, 6.6, 4.1), zw_m("dlshade", "#22b5a3", 0.5), (1, 1, 0.7), seg=10)
     sets.books("zw_bed_bk", (-7.3, 6.5, 2.75), None, n=4)
+    zw_asset_fit("kfood_soda_can", (-3.9, 6.0, 2.75), 0.5, 0.7, 0)
     # posters, the closet, a toy shelf above the bed
     zw_frame_pic("zw_bposter0", (1.6, 7.82, 5.9), 2.0, 2.6, "#ff9f43", "-Y", "#ffffff")
     zw_frame_pic("zw_bposter3", (5.6, 7.82, 6.3), 3.0, 2.0, "#8fe0c4", "-Y", "#ffffff")
@@ -1143,6 +1318,11 @@ def zw_kitchen(t0, t1, dress):
     for k, c in enumerate(("#ff9ec0", "#8fe0c4", "#ffe680")):
         cyl("zw_jar%d" % k, 0.32, 0.9, (5.9 + k * 0.6, 7.4, 3.75), zw_m("jar" + c[1:], c, 0.4), 12)
     sets.plant("zw_kit_pl", (-5.3, 7.0, 3.3), None, 0.9)
+    za_load(["kfood_frying_pan", "kfood_cutting_board", "kfood_loaf", "kfood_knife_block", "kfood_pancakes", "kfood_salad", "kfood_pizza", "kfood_burger", "kfood_bottle_ketchup"])
+    zw_asset_fit("kfood_frying_pan", (4.7, 7.1, 3.47), 1.6, 0.5, 20)
+    zw_asset_fit("kfood_cutting_board", (2.2, 6.4, 3.3), 1.9, 0.3, 90)
+    zw_asset_fit("kfood_loaf", (2.2, 6.4, 3.45), 1.3, 1.0, 90)
+    zw_asset_fit("kfood_knife_block", (-2.5, 7.4, 3.3), 1.0, 1.3, 0)
     locs.wall_clock("zw_kclock", (0.3, 7.82, 7.0), None, "-Y")
     # the table: chairs, plates, cups, a vase
     Mwd = zw_m("wood", "#8a5a3a", 0.6)
@@ -1157,6 +1337,9 @@ def zw_kitchen(t0, t1, dress):
     for k, (px, py) in enumerate(((-1.4, -0.4), (1.4, -0.4), (-1.4, 1.4), (1.4, 1.4))):
         cyl("zw_plate%d" % k, 0.6, 0.08, (px, py + 0.0, 3.04), zw_m("plate", "#ffffff", 0.3), 20)
         cyl("zw_cup%d" % k, 0.2, 0.4, (px + 0.75, py, 3.2), zw_m("cup" + ("a" if k % 2 else "b"), "#3d8bfd" if k % 2 else "#ff8c2a", 0.4), 10)
+    for k, (aid, (px, py)) in enumerate(zip(("kfood_pancakes", "kfood_salad", "kfood_pizza", "kfood_burger"), ((-1.4, -0.4), (1.4, -0.4), (-1.4, 1.4), (1.4, 1.4)))):
+        zw_asset_fit(aid, (px, py, 3.09), 0.95, 0.8, k * 30)
+    zw_asset_fit("kfood_bottle_ketchup", (0.4, 0.6, 2.97), 0.5, 1.0, 0)
     cyl("zw_vase", 0.3, 0.9, (-0.6, 0.5, 3.45), zw_m("vase", "#7b5cf6", 0.3), 12)
     for k in range(3):
         sphere("zw_vfl%d" % k, 0.25, (-0.85 + k * 0.25, 0.5, 4.1 + (k % 2) * 0.2), zw_m("flowerff5fa2", "#ff5fa2", 0.5), seg=8)
@@ -1167,8 +1350,24 @@ def zw_kitchen(t0, t1, dress):
 
 
 def zw_b_products(src, nm):
-    """one shelf row of colourful products along +Y, 7 units long (instanced along every shelf)"""
+    """one shelf row of colourful products along +Y, 7 units long (instanced along every shelf): library food packs
+    when the library is there, else our own boxes / cans / bottles"""
     k = int(nm[-1])
+    za_load(ZA_SHELF)
+    if ZA["c"].get(ZA_SHELF[0]) is not None:
+        y, q = 0.15, 0
+        while y < 6.4:
+            aid = ZA_SHELF[(q * 5 + k * 3) % len(ZA_SHELF)]
+            sx, sy, sz = za_size(aid)
+            if sz <= 0:
+                q += 1
+                continue
+            f = min(2.5, 0.85 / max(sx, sy, 1e-3), 1.3 / sz)
+            wd = max(sx, sy) * f
+            zw_asset(aid, (0, y + wd / 2, 0), (q % 3) * 15, f, coll=src)
+            y += wd + 0.06
+            q += 1
+        return
     cols = ["#e2405b", "#ffcf1f", "#3d8bfd", "#22b5a3", "#7b5cf6", "#ff8c2a", "#ff6fa8", "#4cbf45", "#ffffff"]
     rnd = random.Random(60 + k)
     y, q = 0.15, 0
@@ -1258,7 +1457,10 @@ def zw_shop_in(t0, t1, dress):
     for k in range(10):
         c = ("#ff3b3b", "#ffcf1f", "#ff8c2a", "#4cbf45")[k % 4]
         sphere("zw_fs%d" % k, 0.38, (6.3 + (k % 2) * 0.9, -7.6 + (k // 2) * 0.6, 1.9), zw_m("fruit" + c[1:], c, 0.5), seg=10)
-    zw_people(t0, t1, 3, [((-7.2, -6.6), (0.5, 1.5), 0.0), ((6.8, 7.4), (1.0, 2.0), 0.0), ((-7.2, -6.6), (3.0, 4.0), 0.0)], seed=15)
+    za_load(ZA_FRUIT + ["kfood_watermelon"])
+    for k in range(8):
+        zw_asset_fit((ZA_FRUIT + ["kfood_watermelon"])[k % 6], (6.3 + (k % 2) * 1.0, -7.8 + (k // 2) * 0.8, 2.05), 0.8, 0.9, k * 45)
+    zw_people(t0, t1, 3, [((-7.2, -6.6), (0.5, 1.5), 0.0), ((6.8, 7.4), (1.0, 2.0), 0.0), ((-7.2, -6.6), (3.0, 4.0), 0.0)], seed=15, modes=("stand",))
     return dict(counter=(0, 2.6, 0.0), aisle=(7.0, -2, 0.0), center=(0, -2, 0.0))
 
 
@@ -1374,25 +1576,25 @@ ZW_PLACES = {
     "classroom": zw_kit_classroom, "hallway": zw_kit_hallway,
 }
 ZW_SPOTS = {
-    "downtown_street": {"wide": ((0, -14, 9), (0, 70, 8), 22), "street": ((5, 6, 3.4), (-3, 40, 5), 26), "close": ((2.6, 25.5, 4.6), (8.0, 28.0, 4.4), 30), "skyline": ((-6, -40, 26), (0, 90, 30), 30)},
-    "downtown_plaza": {"wide": ((-20, -48, 10), (0, -20, 3), 22), "street": ((-8, -40, 3.6), (0, -24, 3.5), 26), "close": ((-3, -17.5, 4.8), (0, -12, 4.4), 30)},
-    "downtown_landmark": {"wide": ((0, 112, 6), (0, 178, 16), 22), "street": ((4, 140, 3.4), (0, 178, 12), 24), "close": ((1.5, 154.6, 4.8), (0, 160, 4.4), 30)},
-    "suburb_street": {"wide": ((-40, -3, 7), (10, 16, 5), 22), "street": ((-12, -6, 3.4), (6, 14, 4), 26), "close": ((-2, 6, 4.8), (0, 11, 4.4), 30)},
-    "suburb_porch": {"wide": ((8, -2, 6), (0, 18, 4), 24), "street": ((4, 6, 3.4), (0, 16, 3.6), 28), "close": ((2, 9.6, 4.2), (0, 15.5, 4.4), 30)},
-    "brick_street": {"wide": ((0, -16, 10), (0, 80, 14), 22), "street": ((4, 10, 3.4), (-2, 50, 6), 26), "close": ((2.4, 35.6, 4.6), (7.6, 40, 4.4), 30), "skyline": ((-4, -30, 30), (0, 120, 25), 30)},
-    "brick_alley": {"wide": ((4, 58, 6), (-20, 74, 3), 24), "street": ((-5, 66, 3.8), (-20, 74, 3.2), 26), "close": ((-12.6, 72, 4.8), (-18, 74, 4.4), 30)},
-    "living_room": {"wide": ((5.6, -7.4, 6.6), (-1.5, 3, 2.4), 20), "street": ((1.2, -4.6, 3.8), (2, 3.0, 2.8), 24), "close": ((2.4, -2.4, 4.8), (2, 3.0, 4.4), 30)},
-    "bedroom": {"wide": ((3.0, -7.4, 6.6), (-2, 3.5, 2.4), 20), "street": ((1, -3.6, 3.6), (4.5, 2, 2.4), 24), "close": ((2.6, -3.8, 4.8), (4.5, 1.5, 4.4), 30)},
-    "kitchen": {"wide": ((7.4, -7.4, 6.2), (-1, 4.2, 2.4), 20), "street": ((0, -6.4, 3.6), (0, 3, 3), 24), "close": ((1, -7.4, 4.8), (0, -2, 4.4), 30)},
-    "shop": {"wide": ((-9.4, -8.6, 7.6), (2, 4, 2.2), 20), "street": ((0, -8.4, 3.8), (0, 4, 3.2), 24), "close": ((0.8, -2.8, 4.8), (0, 2.6, 4.4), 30)},
-    "big_hall": {"wide": ((-16, -20, 10), (0, 12, 3), 22), "street": ((0, -14, 4), (0, 16, 5), 24), "close": ((1, 10.6, 7.0), (0, 16, 6.8), 30)},
+    "downtown_street": {"wide": ((0, -14, 9), (0, 70, 8), 22), "street": ((5, 6, 3.4), (-3, 40, 5), 26), "close": ((5.4, 31.5, 5.0), (8.6, 39.0, 6.2), 28), "skyline": ((-6, -40, 26), (0, 90, 30), 30)},
+    "downtown_plaza": {"wide": ((-20, -48, 10), (0, -20, 3), 22), "street": ((-8, -40, 3.6), (0, -24, 3.5), 26), "close": ((-4.5, -19.5, 5.0), (0, -12, 6.2), 28)},
+    "downtown_landmark": {"wide": ((0, 112, 6), (0, 178, 16), 22), "street": ((4, 140, 3.4), (0, 178, 12), 24), "close": ((-4.5, 152.0, 3.0), (0, 160, 6.8), 28)},
+    "suburb_street": {"wide": ((-40, -3, 7), (10, 16, 5), 22), "street": ((-12, -6, 3.4), (6, 14, 4), 26), "close": ((-4.5, 4.0, 5.0), (3.0, 9.0, 6.2), 28)},
+    "suburb_porch": {"wide": ((8, -2, 6), (0, 18, 4), 24), "street": ((4, 6, 3.4), (0, 16, 3.6), 28), "close": ((2.6, 7.5, 4.8), (0, 15.5, 6.2), 28)},
+    "brick_street": {"wide": ((0, -16, 10), (0, 80, 14), 22), "street": ((4, 10, 3.4), (-2, 50, 6), 26), "close": ((4.6, 31.5, 5.0), (8.0, 39.5, 6.2), 28), "skyline": ((-4, -30, 30), (0, 120, 25), 30)},
+    "brick_alley": {"wide": ((4, 58, 6), (-20, 74, 3), 24), "street": ((-5, 66, 3.8), (-20, 74, 3.2), 26), "close": ((-10.5, 70.5, 5.0), (-18, 74, 6.2), 28)},
+    "living_room": {"wide": ((5.6, -7.4, 6.6), (-1.5, 3, 2.4), 20), "street": ((1.2, -4.6, 3.8), (2, 3.0, 2.8), 24), "close": ((-0.6, -3.6, 4.8), (2, 3.0, 5.8), 28)},
+    "bedroom": {"wide": ((3.0, -7.4, 6.6), (-2, 3.5, 2.4), 20), "street": ((1, -3.6, 3.6), (4.5, 2, 2.4), 24), "close": ((1.8, -4.6, 4.8), (4.5, 1.5, 5.8), 28)},
+    "kitchen": {"wide": ((7.4, -7.4, 6.2), (-1, 4.2, 2.4), 20), "street": ((0, -6.4, 3.6), (0, 3, 3), 24), "close": ((1.5, -9.6, 5.0), (0, -2, 5.8), 28)},
+    "shop": {"wide": ((-9.4, -8.6, 7.6), (2, 4, 2.2), 20), "street": ((0, -8.4, 3.8), (0, 4, 3.2), 24), "close": ((0.8, -4.6, 4.8), (0, 2.6, 5.8), 28)},
+    "big_hall": {"wide": ((-16, -20, 10), (0, 12, 3), 22), "street": ((0, -14, 4), (0, 16, 5), 24), "close": ((1.5, 8.8, 7.2), (0, 16, 8.4), 28)},
     # the kit's sets: the cameras its own example videos use (close: head and shoulders)
-    "plane_cabin": {"wide": ((0, -3, 6.5), (0, 16, 3.8), 22), "street": ((0, 2, 5.2), (0, 14, 3.8), 24), "close": ((0.8, 4.6, 4.8), (0, 10, 4.4), 30)},
-    "cockpit": {"wide": ((0.6, -7.5, 6.8), (-1.2, 1.5, 4.4), 20), "street": ((1.8, -4.6, 5.2), (-2.2, -0.5, 4.6), 22), "close": ((-0.4, -5.0, 5.4), (-2.2, -0.5, 5.0), 30)},
-    "moon": {"wide": ((8, -16, 5), (0, 2, 5), 24), "street": ((4, -10, 3.2), (0, 0, 3.0), 24), "close": ((1.4, -5.4, 4.8), (0, 0, 4.6), 30)},
+    "plane_cabin": {"wide": ((0, -3, 6.5), (0, 16, 3.8), 22), "street": ((0, 2, 5.2), (0, 14, 3.8), 24), "close": ((0.8, 3.0, 4.9), (0, 10, 5.6), 28)},
+    "cockpit": {"wide": ((0.6, -7.5, 6.8), (-1.2, 1.5, 4.4), 20), "street": ((1.8, -4.6, 5.2), (-2.2, -0.5, 4.6), 22), "close": ((0.6, -7.5, 6.2), (-1.2, 1.5, 5.4), 30)},
+    "moon": {"wide": ((8, -16, 5), (0, 2, 5), 24), "street": ((4, -10, 3.2), (0, 0, 3.0), 24), "close": ((2.0, -7.6, 4.6), (0, 0, 6.2), 28)},
     "sky_airliner": {"wide": ((30, -60, 10), (0, 10, 0), 26), "street": ((15, -30, 4), (0, 0, 0), 26), "close": ((10, -12, 3), (0, -2, 1), 30)},
-    "classroom": {"wide": ((7, -4, 8), (-2, 14, 4.5), 22), "street": ((0, 2, 4.2), (-2, 14, 4.5), 26), "close": ((-0.8, 4.2, 4.8), (-1.5, 9.6, 4.4), 30)},
-    "hallway": {"wide": ((1.5, -6, 5.5), (0, 10, 4), 22), "street": ((0.6, -1, 4.4), (0, 8, 4), 28), "close": ((0.6, 2.6, 4.8), (0, 8, 4.4), 30)},
+    "classroom": {"wide": ((7, -4, 8), (-2, 14, 4.5), 22), "street": ((0, 2, 4.2), (-2, 14, 4.5), 26), "close": ((-0.6, 2.6, 4.9), (-1.5, 9.6, 6.0), 28)},
+    "hallway": {"wide": ((1.5, -6, 5.5), (0, 10, 4), 22), "street": ((0.6, -1, 4.4), (0, 8, 4), 28), "close": ((0.6, 1.0, 4.9), (0, 8, 5.8), 28)},
 }
 ZW_DRESS_DEFAULT = {"downtown_street": {"landmark": "bank"}, "downtown_plaza": {"landmark": "bank"}, "downtown_landmark": {"landmark": "bank"}}
 
@@ -1403,6 +1605,7 @@ def zw_build(place, t0, t1, dress=None):
     ZW_T.clear()
     ZW_T.update(d)
     ZW_N["n"] = 0
+    ZA["c"].clear()
     return ZW_PLACES[place](t0, t1, d)
 
 
