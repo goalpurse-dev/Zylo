@@ -254,13 +254,18 @@ if (Object.keys(shp).length && !state.shotFixed) {
   const ids = Object.keys(shp).map(Number).slice(0, 2 * BATCH);
   const text = [`THE SHOT CHECK found these problems (never the same camera spot twice in a row; the hero ${heroOf(plan.styleSheet) ?? ""} on screen in at least half the shots; no camera inside or behind a wall / building). Rewrite ONLY these shots' bodies; header_append "" unless a helper must change.`,
     ...ids.map((id) => `- shot ${id}: ${shp[id]}\n  current body:\n${state.bodies[id]}`)].join("\n");
-  const r = await L.step("director_shotfix", () => D.fix({ label: "shot_fix", text }));
-  if (r.data.header_append?.trim()) plan.header += `\n\n# --- fix (shot check)\n${r.data.header_append}`;
-  for (const x of r.data.shots ?? []) if (shotById(x.id) && String(x.body ?? "").trim()) state.bodies[x.id] = x.body;
-  state.convo = D.convo; save();
-  sc = staticCheck(writeFile(), shotsFile);
-  if (!sc.ok) mergeOut([...new Set(sc.problems.map((q) => q.shot).filter((x) => x != null))], "static after the shot fix");
-  shp = shotProblems({ shots: plan.shots, bodies: state.bodies, hero: heroOf(plan.styleSheet) });
+  let r = null;
+  // the caps cannot fund the writing fix: never a stop; the problems ride into fix round 1 (as urgent as a crash)
+  try { r = await L.step("director_shotfix", () => D.fix({ label: "shot_fix", text })); }
+  catch (e) { if (e.code !== "CAP") throw e; state.shotFixed = "skipped"; state.shotLeft = shp; save(); say(`shot fix SKIPPED: the caps cannot fund it (${e.message}); ${Object.keys(shp).length} shot(s) go to fix round 1`); }
+  if (r) {
+    if (r.data.header_append?.trim()) plan.header += `\n\n# --- fix (shot check)\n${r.data.header_append}`;
+    for (const x of r.data.shots ?? []) if (shotById(x.id) && String(x.body ?? "").trim()) state.bodies[x.id] = x.body;
+    state.convo = D.convo; save();
+    sc = staticCheck(writeFile(), shotsFile);
+    if (!sc.ok) mergeOut([...new Set(sc.problems.map((q) => q.shot).filter((x) => x != null))], "static after the shot fix");
+    shp = shotProblems({ shots: plan.shots, bodies: state.bodies, hero: heroOf(plan.styleSheet) });
+  }
 }
 say(`shot check: ${Object.keys(shp).length ? `${Object.keys(shp).length} left (${Object.entries(shp).slice(0, 4).map(([k, v]) => `${k}: ${v.slice(0, 60)}`).join(" | ")})` : "ok"}`);
 
@@ -367,6 +372,8 @@ function mergeProblems(p, vis) {
   for (const [id, t] of Object.entries(p.failed)) f[id] = { kind: "crash", text: `the shot CRASHED in Blender: ${t}` };
   for (const [id, t] of Object.entries(p.pixBad)) if (!f[id]) f[id] = { kind: "pixel", text: t };
   for (const [id, t] of Object.entries(vis)) if (!f[id]) f[id] = { kind: "vision", text: `the checker saw: ${t}` };
+  // the shot check's problems when its writing fix was skipped by the caps (round 0 only; urgent like a crash)
+  if (state.shotFixed === "skipped" && !state.previewed) for (const [id, t] of Object.entries(state.shotLeft ?? {})) if (shotById(Number(id))) f[id] = { kind: f[id]?.kind === "crash" ? "crash" : "shotcheck", text: `${f[id] ? `${f[id].text}; ` : ""}THE SHOT CHECK: ${t}` };
   return f;
 }
 
@@ -374,7 +381,8 @@ for (let round = (state.round ?? 0) + 1; round <= ROUNDS && Object.keys(failing)
   const ids = Object.keys(failing).map(Number).filter((id) => shotById(id));
   const prev = Object.fromEntries(ids.map((id) => [id, state.bodies[id]]));
   // crashes first; at most FIX_PER_CALL shots a call (fix round 1 of the first test sent 36 at once and hit the output limit)
-  const order = [...ids].sort((a, b) => (failing[a].kind === "crash" ? 0 : 1) - (failing[b].kind === "crash" ? 0 : 1) || a - b);
+  const urgent = (id) => (["crash", "shotcheck"].includes(failing[id].kind) ? 0 : 1);
+  const order = [...ids].sort((a, b) => urgent(a) - urgent(b) || a - b);
   let skipped = null;
   for (let k = 0; k < order.length && !skipped; k += FIX_PER_CALL) {
     const part = order.slice(k, k + FIX_PER_CALL);
