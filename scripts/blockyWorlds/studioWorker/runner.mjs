@@ -135,7 +135,7 @@ export async function runStudioRun(run, deps, cfg = STUDIO) {
     // the director's brief lists them as delimited data + each approved build's code (agent.mjs libraryBrief)
     const builds = await (deps.buildsForRun ?? buildsForRun)(run, script).catch((e) => { log(`builds skipped: ${e?.message ?? e}`); return { builds: [], assets: {} }; });
     if (builds.builds.length) log(`builds: ${builds.builds.map((b) => `${b.name} (${b.kind})`).join(", ")}; library hits: ${Object.keys(builds.assets).length}`);
-    const directed = await timed("direct", () => steps.direct({ tl0: base.tl0, script, dir, L, builds: builds.builds, log: (m) => { if (/stopping/.test(String(m))) st.lastStop = String(m); log(m); } }));
+    const directed = await timed("direct", () => steps.direct({ tl0: base.tl0, script, dir, L, card, builds: builds.builds, log: (m) => { if (/stopping/.test(String(m))) st.lastStop = String(m); log(m); } }));
     await book();
     stopNow(); // the director stops quietly when a check refused its next call: the reason is here
     if (!directed?.plan?.shots?.length || !directed?.plan?.bible?.homes) {

@@ -1,0 +1,18 @@
+{
+ "id": "bus-d508e7d1",
+ "name": "bus",
+ "kind": "vehicle",
+ "about": "Yellow bus at the curb",
+ "code": "def bus(name, loc):\n    r = empty(name, loc)\n    box(name + '_b', (3.4, 9, 3.6), (0, 0, 2.4), mat('bus_yellow', hexc('#f2b41a'), 0.4), 0.2, parent=r)\n    box(name + '_w', (3.5, 7, 1.0), (0, 0, 3.0), mat('bus_win', hexc('#9ad0f0'), 0.2), 0.05, parent=r)\n    for i in (-1, 1):\n        for j in (-3, 3):\n            cyl(name + '_t%d%d' % (i, j), 0.7, 0.5, (i * 1.7, j, 0.7), mat('tire', hexc('#222222'), 0.8), 16, rot=(0, 90, 0), parent=r)\n    return r",
+ "source": {
+  "run": "run1",
+  "shots": [
+   21,
+   22
+  ],
+  "title": "Hiccup Time"
+ },
+ "status": "pending",
+ "approved": false,
+ "createdAt": "2026-11-14T11:32:16.557Z"
+}

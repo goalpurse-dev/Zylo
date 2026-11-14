@@ -77,7 +77,7 @@ async function readStream(res) {
 }
 
 // ---------------------------------------------------------------- the instructions
-export function systemPrompt({ kitDir, kitMapFile }) {
+export function systemPrompt({ kitDir, kitMapFile, worldDocs = "", examples = ["sneeze_teleport", "laugh_float"] }) {
   const eng = path.join(kitDir, "engine");
   const rd = (p) => fs.readFileSync(p, "utf8");
   return `You are the DIRECTOR of a vertical 9:16 Roblox-style 3D story short. It is built and rendered in Blender 5.2 by a Python kit (the "rbx" toolkit and "shotkit"). You write that kit's shots.py for OUR script and OUR voice timings. Below are the kit's own guide, its playbook, a map of every kit function, and two complete shots.py files by the kit's author. Copy their TECHNIQUE: shot density, camera grammar, acting, sound cues, how sets and casts are built. NEVER copy their stories, characters, names or jokes. Our story is original.
@@ -109,12 +109,8 @@ ${rd(path.join(eng, "PLAYBOOK.md"))}
 ===== TOOLKIT MAP (generated from engine/rbx/*.py) =====
 ${rd(kitMapFile)}
 
-===== WORKED EXAMPLE 1: videos/sneeze_teleport/shots.py (66 shots, 71 s) =====
-${rd(path.join(eng, "videos", "sneeze_teleport", "shots.py"))}
-
-===== WORKED EXAMPLE 2: videos/laugh_float/shots.py (73 shots, 88 s) =====
-${rd(path.join(eng, "videos", "laugh_float", "shots.py"))}
-`;
+${examples.map((ex, i) => `===== WORKED EXAMPLE ${i + 1}: videos/${ex}/shots.py =====\n${rd(path.join(eng, "videos", ex, "shots.py"))}\n`).join("\n")}
+${worldDocs ? `===== OUR WORLD LIBRARY (already in the file above your header: DRESS these worlds, never rebuild them) =====\n${worldDocs}\n` : ""}`;
 }
 
 const PLAN_SCHEMA = { type: "object", additionalProperties: false, required: ["title", "header_code", "new_builds", "shots"], properties: {
@@ -134,10 +130,11 @@ const FIX_SCHEMA = { type: "object", additionalProperties: false, required: ["he
 // rewrote the whole ~85k-token system cache at each switch (first test: plan -> batch 1 -> fix round 1, $0.34 each time).
 // plan: header_code, new_builds, shots[{ id, w0, desc, body: "" }]; batch: shots[{ id, body }] (w0 -1, desc ""); fix:
 // header_code = code to ADD after the header (or ""), shots[{ id, body }]. location: the shot's set (plan turns only).
-const DIRECTOR_SCHEMA = { type: "object", additionalProperties: false, required: ["title", "header_code", "new_builds", "style_sheet", "anchors", "shots"], properties: {
+const DIRECTOR_SCHEMA = { type: "object", additionalProperties: false, required: ["title", "header_code", "new_builds", "style_sheet", "anchors", "dress", "shots"], properties: {
   title: { type: "string" },
   style_sheet: { type: "array", items: { type: "object", additionalProperties: false, required: ["name", "hero", "outfit", "colors"], properties: { name: { type: "string" }, hero: { type: "boolean" }, outfit: { type: "string" }, colors: { type: "string" } } } },
   anchors: { type: "array", items: { type: "string" } },
+  dress: { type: "string", description: "plan turns in library mode: the story's dress as a JSON object; otherwise \"\"" },
   header_code: { type: "string" },
   new_builds: PLAN_SCHEMA.properties.new_builds,
   shots: { type: "array", items: { type: "object", additionalProperties: false, required: ["id", "w0", "desc", "location", "body"], properties: { id: { type: "integer" }, w0: { type: "integer" }, desc: { type: "string" }, location: { type: "string" }, body: { type: "string" } } } },
@@ -169,8 +166,12 @@ export const MIN_CUTS_PER_MIN = 42; // the target is ~50 (the 6M-view reference:
 const norm = (x) => String(x ?? "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 /** THE PLAN CHECK -> [problem]: 3+ locations, ~50 cuts a minute, one hero + distinct colours per character (the style
  *  sheet), anchors that come back in the ending */
-export function planProblems({ shots = [], style_sheet = [], anchors = [] }, durationSec) {
+export function planProblems({ shots = [], style_sheet = [], anchors = [] }, durationSec, { library = null } = {}) {
   const out = [];
+  if (library) {
+    const bad = [...new Set(shots.map((s) => s.location).filter((l) => !library.has(l)))];
+    if (bad.length) out.push(`locations not in the library: ${bad.slice(0, 6).join(", ")} (use exactly the library ids: ${[...library].join(", ")})`);
+  }
   const locs = planLocations(shots);
   if (locs.n < MIN_LOCATIONS) out.push(`${locs.n} location(s) (${locs.list.join(", ") || "none named"}): use at least ${MIN_LOCATIONS} clearly different locations`);
   const perMin = shots.length / Math.max(1e-9, durationSec / 60);
@@ -237,7 +238,8 @@ export function staticCheck(text, file) {
 }
 
 // ---------------------------------------------------------------- the director
-export function makeDirector({ out, L, apiKey, model = MODELS.sonnet, system, reserve = () => 0, log = console.log }) {
+export function makeDirector({ out, L, apiKey, model = MODELS.sonnet, system, reserve = () => 0, log = console.log, tokens = {} }) {
+  const TK = { plan: 24000, batch: 16000, fix: 16000, ...tokens };
   const ans = path.join(out, "answers"); fs.mkdirSync(ans, { recursive: true });
   let n = fs.readdirSync(ans).length;
   const convo = []; // the director's one conversation (user / assistant turns, assistant content as returned)
@@ -313,13 +315,13 @@ export function makeDirector({ out, L, apiKey, model = MODELS.sonnet, system, re
   return {
     async plan({ brief }) {
       // ONE effort for every turn of the conversation: an effort change mid-conversation invalidates the prompt cache
-      return turn("plan", brief, DIRECTOR_SCHEMA, { maxTokens: 24000, effort: DIRECTOR_EFFORT });
+      return turn("plan", brief, DIRECTOR_SCHEMA, { maxTokens: TK.plan, effort: DIRECTOR_EFFORT });
     },
     async bodies({ label, text }) {
-      return turn(label, `${text}\n(Answer format: title "", header_code "" unless a small new helper is needed, new_builds [], style_sheet [], anchors [], shots = one entry per shot with id, body; w0 -1, desc "", location "".)`, DIRECTOR_SCHEMA, { maxTokens: 16000, effort: DIRECTOR_EFFORT });
+      return turn(label, `${text}\n(Answer format: title "", header_code "" unless a small new helper is needed, new_builds [], style_sheet [], anchors [], dress "", shots = one entry per shot with id, body; w0 -1, desc "", location "".)`, DIRECTOR_SCHEMA, { maxTokens: TK.batch, effort: DIRECTOR_EFFORT });
     },
     async fix({ label, text }) {
-      const r = await turn(label, `${text}\n(Answer format: title "", header_code = code to ADD after the header (new or replaced helper functions) or "", new_builds [], style_sheet [], anchors [], shots = one entry per fixed shot with id, body; w0 -1, desc "", location "".)`, DIRECTOR_SCHEMA, { maxTokens: 16000, effort: DIRECTOR_EFFORT });
+      const r = await turn(label, `${text}\n(Answer format: title "", header_code = code to ADD after the header (new or replaced helper functions) or "", new_builds [], style_sheet [], anchors [], dress "", shots = one entry per fixed shot with id, body; w0 -1, desc "", location "".)`, DIRECTOR_SCHEMA, { maxTokens: TK.fix, effort: DIRECTOR_EFFORT });
       r.data.header_append = r.data.header_append ?? r.data.header_code ?? "";
       return r;
     },

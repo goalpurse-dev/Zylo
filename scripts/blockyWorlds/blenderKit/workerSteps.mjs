@@ -32,11 +32,15 @@ export function makeBlenderSteps({ base, anthropicKey, cfg, env = process.env, n
     mix: base.mix,
     outputs: base.outputs,
     /** the whole Blender pipeline; returns the shape the runner checks (plan.shots, plan.bible.homes) + the report */
-    async direct({ script, dir, L, log = console.log, builds = [] }) {
+    async direct({ script, dir, L, card = null, log = console.log, builds = [] }) {
       fs.writeFileSync(path.join(dir, "results.json"), JSON.stringify({ results: [{ script }] }));
       fs.writeFileSync(path.join(dir, "studio-builds.json"), JSON.stringify(builds ?? []));
-      const args = [path.join(HERE, "pipeline.mjs"), "--run", dir, "--voice-dir", path.join(dir, "voice"), "--model", cfg.blenderModel ?? "sonnet",
-        "--rounds", String(Math.min(2, cfg.blenderRounds ?? 2)), "--cap", String(cfg.runCapUsd), "--agent-cap", String(cfg.agentCapUsd), "--chunks", String(cfg.blenderChunks ?? 6), "--yes"];
+      // LIBRARY MODE (the world library + tested camera spots, one fix round) and the owner's scene plan when the run has one
+      const plan = card?.scene_plan?.scenes?.length ? path.join(dir, "scene-plan.json") : null;
+      if (plan) fs.writeFileSync(plan, JSON.stringify(card.scene_plan));
+      const args = [path.join(HERE, "pipeline.mjs"), "--run", dir, "--voice-dir", path.join(dir, "voice"), "--model", cfg.blenderModel ?? "sonnet", "--worlds",
+        "--rounds", String(Math.min(2, cfg.blenderRounds ?? 1)), "--cap", String(cfg.runCapUsd), "--agent-cap", String(cfg.agentCapUsd), "--chunks", String(cfg.blenderChunks ?? 6),
+        ...(plan ? ["--scene-plan", plan] : []), ...(card?.topic ? ["--topic", String(card.topic).slice(0, 200)] : []), "--yes"];
       const childEnv = { PATH: env.PATH, SystemRoot: env.SystemRoot, HOME: env.HOME, BLOCKY_WORLDS_KEYS_FROM_ENV: "1", ANTHROPIC_API_KEY: anthropicKey,
         RUNPOD_API_KEY: env.RUNPOD_API_KEY, SUPABASE_URL: env.SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY: env.SUPABASE_SERVICE_ROLE_KEY,
         ...(env.BLOCKY_WORLDS_KIT_DIR ? { BLOCKY_WORLDS_KIT_DIR: env.BLOCKY_WORLDS_KIT_DIR } : {}) };

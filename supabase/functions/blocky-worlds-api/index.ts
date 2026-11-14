@@ -52,6 +52,7 @@ import { cardProblems, problemSpots } from "../_shared/blockyWorlds/protocol.js"
 import { queueInfo, renderConfigured, renderRuntime } from "../_shared/blockyWorlds/renderSupabase.ts";
 import { canFilm, canFilmLine, fittingWithSwap, launchModeFrom, moveNote } from "../_shared/blockyWorlds/boardFit.js";
 import { boardOnlyBlocked, productionSettings, stageOf } from "../_shared/blockyWorlds/render.js";
+import { autoScenePlan, cleanScenePlan, PICKER } from "../_shared/blockyWorlds/scenePlan.js";
 import { engineFrom, readyEmailOn, STUDIO, studioEtaText, studioStageOf } from "../_shared/blockyWorlds/studio.js";
 import { studioQueueInfo, studioWorkerAlive } from "../_shared/blockyWorlds/studioSupabase.ts";
 
@@ -275,6 +276,8 @@ async function handle(req: Request, trace: Trace) {
       moods: Object.entries(MOODS).map(([id, m]: any) => ({ id, label: m.label })), ideaBatchesLeft,
       // launch mode: the page shows "What we can film" (generated from the kit list) and "Move it to our town"
       launch: LAUNCH_BOARD ? "board" : "off", film: LAUNCH_BOARD ? canFilm() : null,
+      // the SCENE PLAN (owner-only, the Blender kit engine): after the script, each scene's location from the library
+      scenePlan: Boolean(who?.owner),
     };
   }
 
@@ -532,6 +535,15 @@ async function handle(req: Request, trace: Trace) {
   }
 
   // ---------- 3-4. settings (the quote) and generate ----------
+  // ---------- the SCENE PLAN (owner-only; _shared/blockyWorlds/scenePlan.js): each scene's location from the library ----------
+  if (action === "scenePlan") {
+    trace.step = "sign-in";
+    const who = await requireWriter(req, trace);
+    if (!who.owner) throw new ApiError("NOT_FOUND", "Not available.");
+    const d = await loadDraft(who.user.id, body?.draftId);
+    return { ...autoScenePlan(d.lines ?? []), locations: PICKER };
+  }
+
   if (action === "quote" || action === "start") {
     trace.step = "sign-in";
     const who = await requireWriter(req, trace);
@@ -565,6 +577,13 @@ async function handle(req: Request, trace: Trace) {
     const busyMsg = "This script is already being made. Wait for it to finish.";
     const { data: active } = await admin.from("blocky_worlds_runs").select("id").eq("draft_id", d.id).not("status", "in", "(done,failed)").limit(1).maybeSingle();
     if (active) throw new ApiError("LIMIT", busyMsg, { runId: active.id });
+    // the owner's scene plan (checked; a bad one is refused before any charge); anyone else's is ignored
+    let scenePlan: any = null;
+    if (who.owner && body?.scenePlan) {
+      const c = cleanScenePlan(body.scenePlan, (d.lines ?? []).length);
+      if (!c.ok) throw new ApiError("BAD_INPUT", c.error);
+      scenePlan = c.plan;
+    }
     trace.step = "job creation";
     const script = { title: d.title, lines: d.lines };
     const { data: run, error } = await admin.rpc("blocky_worlds_start_run", {
@@ -581,7 +600,7 @@ async function handle(req: Request, trace: Trace) {
       throw new ApiError("SERVER", "Couldn't start. Nothing was charged.", {}, error?.message ?? "no run returned");
     }
     const ideaLib = d.idea_id ? (await admin.from("blocky_worlds_ideas").select("library_id").eq("id", d.idea_id).maybeSingle()).data?.library_id ?? null : null;
-    await admin.from("blocky_worlds_runs").update({ card: runCard(d.card ?? null), library_id: ideaLib, ...(STUDIO_ON ? { studio_builds: studioBuilds({ lines: d.lines ?? [] }, d.card ?? null) } : {}) }).eq("id", run.id);
+    await admin.from("blocky_worlds_runs").update({ card: scenePlan ? { ...(runCard(d.card ?? null) ?? {}), scene_plan: scenePlan } : runCard(d.card ?? null), library_id: ideaLib, ...(STUDIO_ON ? { studio_builds: studioBuilds({ lines: d.lines ?? [] }, d.card ?? null) } : {}) }).eq("id", run.id);
     if (ideaLib) await countEvent(who.user.id, ideaLib, "generated", { draftId: d.id, runId: run.id });
     // the pipeline (docs/blocky-worlds-pipeline.md): the prepare job goes to RunPod now; a run that can't be sent is
     // failed and refunded by the runtime; anything else that goes wrong here is picked up by the sweeper within a minute

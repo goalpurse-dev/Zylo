@@ -6,6 +6,7 @@ import { problemSpots } from "../../../../supabase/functions/_shared/blockyWorld
 import { clock } from "./api/blockyWorldsApi";
 import { useReducedMotion } from "./clips";
 import { ActionBar, ActionButton, CreditMark, StepBody } from "./StepShell";
+import ScenePlan from "./ScenePlan";
 import "./blockyWorlds.css";
 
 const LABEL = Object.fromEntries(PARTS.map((p) => [p.id, p.label]));
@@ -142,6 +143,7 @@ export default function ScriptStep({ flow, onGenerate, notice, onBack, made = fa
 
       <ActionBar above={<>
         {notice && <p className="mb-2 text-center text-[11px] font-semibold text-white/70" role="status">{notice}</p>}
+        {ready && !made && access?.scenePlan && <ScenePlan flow={flow} />}
         {ready && !made && !notice && <p className="mb-2 text-center text-[11px] leading-relaxed text-white/45" data-testid="bw-approve-note">Read it and change any line you like. Nothing is charged until you press Make my video.</p>}
         {problems.length > 0 && !made && (
           <p className="mb-2 flex items-center justify-center gap-1.5 text-center text-[11.5px] font-semibold text-rose-200/90"><AlertTriangle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />

@@ -21,6 +21,7 @@ import { ledger, stepTimes } from "../studio/ledger.mjs";
 import { loadEnv } from "../engine/runpod/client.mjs";
 import { makeDirector, systemPrompt, tileShots, assemble, staticCheck, wordLines, planLocations, planProblems, MODELS, BATCH, MIN_LOCATIONS } from "./director.mjs";
 import { captionColors } from "./speakers.mjs";
+import { LOCATIONS, DRESS } from "./worlds/locations.mjs";
 import { runpod, RATE, BOOT_S } from "./rp.mjs";
 import { shotFrames, splitShots } from "./plan.mjs";
 import { saveAsset, functionSource, findAssets } from "./library.mjs";
@@ -35,12 +36,30 @@ const FIX_PER_CALL = 10;
 // --topic "<the topic line>", --notes <file>: the owner's production notes for THIS story (its world, its anchors, its
 // final image ...), handed to the director as part of the brief (data, like the script)
 const TOPIC = arg("topic", ""), NOTES = has("notes") ? fs.readFileSync(path.resolve(arg("notes")), "utf8").trim() : "";
-const SLUG = arg("slug", "plane_town"), ROUNDS = Math.min(2, Number(arg("rounds", 2))), K = Number(arg("chunks", 6));
+// LIBRARY MODE (--worlds, owner 2026-11-14): the director DRESSES our world library (worlds/worlds.py, pasted above its
+// header) instead of building worlds; its instructions carry ONE kit example + the library docs; tighter output limits;
+// one fix round by default. --scene-plan <file>: the owner's scene plan ({ scenes: [{ lines: [a, b], location }] }).
+const WORLDS = has("worlds") ? fs.readFileSync(path.join(HERE, "worlds", "worlds.py"), "utf8") : "";
+const SCENE_PLAN = has("scene-plan") ? JSON.parse(fs.readFileSync(path.resolve(arg("scene-plan")), "utf8")) : null;
+const SLUG = arg("slug", "plane_town"), ROUNDS = Math.min(2, Number(arg("rounds", WORLDS ? 1 : 2))), K = Number(arg("chunks", 6));
 const MODEL = MODELS[arg("model", "sonnet")] ?? MODELS.sonnet;
 const L = ledger(RUN, { capUsd: Number(arg("cap", 5)), agentCapUsd: Number(arg("agent-cap", 2.5)) });
 const OUT = path.join(RUN, "blender"); fs.mkdirSync(OUT, { recursive: true });
 const say = (m) => { const l = `[${new Date().toISOString().slice(11, 19)}] ${m}`; console.log(l); fs.appendFileSync(path.join(OUT, "pipeline.log"), l + "\n"); };
 const py = (code, ...args) => { const r = spawnSync("python", ["-P", "-c", code, ...args], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }); if (r.status !== 0) throw new Error(`python: ${(r.stderr || r.stdout).slice(-600)}`); return r.stdout; };
+/** the plan's dress (a JSON string) -> only the known keys, plain values */
+function storyDress(raw) {
+  let d = {}; try { d = typeof raw === "string" ? (raw.trim() ? JSON.parse(raw) : {}) : (raw ?? {}); } catch { d = {}; }
+  const out = {};
+  for (const k of ["time", "weather", "landmark"]) if (DRESS[k].includes(d[k])) out[k] = d[k];
+  for (const k of ["landmark_text", "billboard", "blimp_text"]) if (typeof d[k] === "string" && d[k].trim()) out[k] = d[k].replace(/[^A-Za-z0-9 !?.,'&$#-]/g, "").slice(0, 24);
+  if (Array.isArray(d.signs)) out.signs = d.signs.filter((x) => typeof x === "string").map((x) => x.replace(/[^A-Za-z0-9 !?.,'&$#-]/g, "").slice(0, 12)).filter(Boolean).slice(0, 8);
+  if (Array.isArray(d.props)) out.props = d.props.filter((x) => DRESS.props.includes(x));
+  if (Number.isFinite(Number(d.people))) out.people = Math.max(0, Math.min(40, Math.round(Number(d.people))));
+  return out;
+}
+/** a plain JSON value -> a Python literal (strings, numbers, lists, dicts, booleans) */
+const pyLiteral = (v) => (Array.isArray(v) ? `[${v.map(pyLiteral).join(", ")}]` : v && typeof v === "object" ? `{${Object.entries(v).map(([k, x]) => `${JSON.stringify(k)}: ${pyLiteral(x)}`).join(", ")}}` : typeof v === "boolean" ? (v ? "True" : "False") : v == null ? "None" : JSON.stringify(v));
 const state = fs.existsSync(path.join(OUT, "state.json")) ? JSON.parse(fs.readFileSync(path.join(OUT, "state.json"), "utf8")) : {};
 const save = () => fs.writeFileSync(path.join(OUT, "state.json"), JSON.stringify(state, null, 1));
 
@@ -95,8 +114,22 @@ say(`reserved for the GPU: $${reserve().toFixed(3)} (final worst $${finalWorst()
 // ---------------------------------------------------------------- 2. the director
 const kitMap = path.join(OUT, "kitmap.md");
 spawnSync("python", ["-I", path.join(HERE, "kitmap.py"), path.join(KIT, "engine"), kitMap], { encoding: "utf8" });
-const system = systemPrompt({ kitDir: KIT, kitMapFile: kitMap });
-const D = makeDirector({ out: OUT, L, apiKey, model: MODEL, system, reserve, log: say });
+const worldDocs = WORLDS ? [
+  "HOW TO USE IT in a shot body (the library code is already in the file):",
+  "  ZW_INFO = zw_build(\"downtown_street\", t0, t1, ZW_STORY_DRESS)      # builds the place, dressed for the story; returns its marks",
+  "  ZW_INFO = zw_build(\"downtown_street\", t0, t1, dict(ZW_STORY_DRESS, time=\"night\"))   # a per-shot change of the dress",
+  "  cam = Cam(); zw_spot(cam, \"downtown_street\", \"close\", t0, t1)     # a TESTED camera spot (wide / street / close / skyline) with a push",
+  "  or your own cam.key / cam.push near a tested spot (same height range, never inside a wall); stand characters at ZW_INFO marks, e.g. p = ZW_INFO[\"sidewalk_east\"]",
+  "  NEVER rebuild a world or call the kit's set builders yourself for a library place; build ONLY the story's own new props / creatures (header_code functions) and place them in the dressed world.",
+  // (first library test: 19 of 21 crashes were chars.Char's default face "eddie", whose texture the kit does not ship)
+  "  EVERY chars.Char(...) passes face= one of: hero, kid, girl, mustache, plain, villain, hero_blood (the kit ships only these face textures; the default face crashes). Colours are \"#rrggbb\" strings (never empty).",
+  `DRESS (the story's look, one JSON object in "dress"): time ${DRESS.time.join(" | ")}; weather ${DRESS.weather.join(" | ")}; landmark ${DRESS.landmark.join(" | ")} (+ landmark_text); signs: up to 8 short shop sign words from the story; billboard: a short line; props: ${DRESS.props.join(", ")} (+ blimp_text); people: 0-40 background people.`,
+  "THE PLACES (id: what it is; spots; marks):",
+  ...LOCATIONS.map((l) => `- ${l.id}: ${l.label}: ${l.about}; spots ${l.spots.join(", ")}; marks ${l.marks.join(", ")}`),
+].join("\n") : "";
+const system = systemPrompt({ kitDir: KIT, kitMapFile: kitMap, worldDocs, ...(WORLDS ? { examples: ["sneeze_teleport"] } : {}) });
+const D = makeDirector({ out: OUT, L, apiKey, model: MODEL, system, reserve, log: say, ...(WORLDS ? { tokens: { plan: 16000, batch: 10000, fix: 12000 } } : {}) });
+const LIB_IDS = new Set(LOCATIONS.map((l) => l.id));
 const wordsText = (s) => words.slice(s.w0, s.w1 ?? words.length).map((w) => w.word).join(" ");
 const secs = (s) => `${(s.w0 <= 0 ? 0 : words[s.w0].start).toFixed(2)}-${(s.w1 == null ? dur : words[s.w1].start).toFixed(2)} s`;
 
@@ -116,6 +149,8 @@ if (!state.plan) {
     `- new_builds: the builder functions you wrote in header_code for things the kit lacks (function name, kind, what it is).`,
     `- style_sheet: every named character once: name, hero (true for exactly ONE: the narrator / main character), outfit (the hero's is ONE striking outfit worn in every shot), colors (their own distinct colours, e.g. "yellow and black stripes"). The cast helpers in header_code use exactly these.`,
     `- anchors: the recurring places (location names as on the shots) that are set up early and COME BACK in the ending.`,
+    ...(WORLDS ? [`- LIBRARY MODE: every shot's location is EXACTLY one library place id (${[...LIB_IDS].join(", ")}); a story may jump between places (street -> moon -> plane). dress: the story's dress JSON (landmark + landmark_text, the shop signs and billboard from the story, time, weather, props, people). header_code: ONLY the cast + the story's own new props / creatures (the worlds are already in the file).`] : []),
+    ...(SCENE_PLAN?.scenes?.length ? [`THE OWNER'S SCENE PLAN (use exactly these locations for these lines):`, ...SCENE_PLAN.scenes.map((sc) => `- lines ${sc.lines[0]}-${sc.lines[1]}: ${sc.location}`)] : []),
     `- shots: about ${Math.round((dur / 60) * 50)} shots (about 50 a minute, 0.4-2.5 s each), in order; each = { id (1, 2, ...), w0 = the index of its first word (the first shot 0), desc = what we see (the line's key noun / action LITERALLY), location = the set it is in (short name) }. Use at least ${MIN_LOCATIONS} different locations. A shot lasts until the next shot's first word; the last shot ends with the audio. Cut on the word that brings a new image; every named thing gets its own shot; reaction close-ups on the big beats (the twist: the hero's face up close); the first shot is mid-action; the last shot shows the consequence of the last line.`,
     `You will then write the shot bodies in batches of ${BATCH}. Keep the header complete now: later batches can only add small helpers.`,
   ].filter(Boolean).join("\n");
@@ -123,16 +158,16 @@ if (!state.plan) {
   // THE PLAN CHECK (director.mjs planProblems): 3+ locations (first test: almost every shot in the same cabin aisle),
   // ~50 cuts a minute, one hero + distinct colours per character, anchors that come back in the ending; one re-plan,
   // then a stop (before any GPU money)
-  let probs = planProblems(r.data, dur);
+  let probs = planProblems(r.data, dur, { library: WORLDS ? LIB_IDS : null });
   if (probs.length) {
     say(`plan check: ${probs.length} problem(s): ${probs.join(" | ")}`);
     r = await L.step("director_plan", () => D.plan({ brief: `PLAN CHECK FAILED:\n${probs.map((x) => `- ${x}`).join("\n")}\nRe-plan the WHOLE video (same answer format: title, header_code, new_builds, style_sheet, anchors, every shot with id, w0, desc, location) so every point above is met (add any set builders to header_code).` }));
-    probs = planProblems(r.data, dur);
+    probs = planProblems(r.data, dur, { library: WORLDS ? LIB_IDS : null });
     if (probs.length) throw new Error(`plan check: still failing after a re-plan: ${probs.join(" | ")}: stopped before any render`);
   }
   const locs = planLocations(r.data.shots ?? []);
   const t = tileShots(r.data.shots ?? [], words);
-  state.plan = { title: r.data.title ?? script.title, header: r.data.header_code ?? "", newBuilds: r.data.new_builds ?? [], shots: t.shots, mergedAtPlan: t.merged, cutOff: r.cutOff, locations: locs.list, styleSheet: r.data.style_sheet ?? [], anchors: r.data.anchors ?? [] };
+  state.plan = { title: r.data.title ?? script.title, header: r.data.header_code ?? "", newBuilds: r.data.new_builds ?? [], shots: t.shots, mergedAtPlan: t.merged, cutOff: r.cutOff, locations: locs.list, styleSheet: r.data.style_sheet ?? [], anchors: r.data.anchors ?? [], dress: storyDress(r.data.dress) };
   state.bodies = {};
   state.convo = D.convo; // a resume continues the same conversation (the batches need the plan turn)
   save();
@@ -165,7 +200,9 @@ function mergeOut(ids, why) {
   save();
   say(`merged ${ids.length} shot(s) into their neighbours (${why}): ${ids.join(", ")}`);
 }
-const writeFile = () => assemble({ title: plan.title, header: plan.header, shots: plan.shots, bodies: state.bodies, slug: SLUG });
+// library mode: the world library + the story's dress above the director's header
+const headerOf = () => (WORLDS ? `${WORLDS}\nZW_STORY_DRESS = ${pyLiteral(plan.dress ?? {})}\n\n` : "") + plan.header;
+const writeFile = () => assemble({ title: plan.title, header: headerOf(), shots: plan.shots, bodies: state.bodies, slug: SLUG });
 
 // batches of <= BATCH shots; a cut-off batch keeps its complete shots, the rest go into the next call
 for (let guard = 0; guard < 30; guard++) {

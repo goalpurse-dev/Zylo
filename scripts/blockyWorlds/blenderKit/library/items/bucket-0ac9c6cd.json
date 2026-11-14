@@ -1,0 +1,18 @@
+{
+ "id": "bucket-0ac9c6cd",
+ "name": "bucket",
+ "kind": "prop",
+ "about": "Blue bucket",
+ "code": "def bucket(name, loc, s=1.5):\n    r = empty(name, loc)\n    cyl(name + '_b', 0.8, 1.1, (0, 0, 0.55), mat('bucket_blue', hexc('#3a8ae0'), 0.4), 20, r2=0.6, parent=r)\n    r.scale = (s, s, s)\n    return r",
+ "source": {
+  "run": "run1",
+  "shots": [
+   12,
+   46
+  ],
+  "title": "Hiccup Time"
+ },
+ "status": "pending",
+ "approved": false,
+ "createdAt": "2026-11-14T11:32:16.427Z"
+}

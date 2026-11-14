@@ -36,6 +36,8 @@ export default function useBlockyWorlds({ enabled = true } = {}) {
   const [pickedIdea, setPickedIdea] = useState(null); // the idea card tapped into the prompt bar
   const [takes, setTakes] = useState([]); // the topic's other worlds: optional "Try another take" on the script step
   const [run, setRun] = useState(null);
+  // the SCENE PLAN (owner-only, access.scenePlan): each scene's location from the library; null until asked for
+  const [scenePlan, setScenePlan] = useState(null);
   const [recent, setRecent] = useState([]);
   const [removeWatermark, setRemoveWatermark] = useState(false);
   const poll = useRef(null);
@@ -228,13 +230,22 @@ export default function useBlockyWorlds({ enabled = true } = {}) {
     });
   }, [attempt, busy, removeWatermark]);
 
+  // the scene plan belongs to one script: a new draft (or an edit) asks for a fresh one
+  useEffect(() => { setScenePlan(null); }, [draft?.id]);
+  const loadScenePlan = useCallback(async () => {
+    if (!draft || !access?.scenePlan) return;
+    try { setScenePlan({ ...(await worldsCall("scenePlan", { draftId: draft.id })), draftId: draft.id }); } catch { setScenePlan(null); }
+  }, [draft, access]);
+  /** the owner changes one scene: { location } from the list, or { typed } (mapped to a library place on the server) */
+  const changeScene = useCallback((i, patch) => setScenePlan((p) => (p ? { ...p, scenes: p.scenes.map((sc, k) => (k === i ? { ...sc, ...patch, auto: false } : sc)) } : p)), []);
   const generate = useCallback(async () => {
     if (!draft) return { ok: false };
     if (edited) { const s = await saveEdits(); if (!s.ok) return s; }
-    const r = await attempt("starting", () => worldsCall("start", { draftId: draft.id, removeWatermark }));
+    const plan = access?.scenePlan && scenePlan?.draftId === draft.id && !edited ? { scenePlan: { scenes: scenePlan.scenes } } : {};
+    const r = await attempt("starting", () => worldsCall("start", { draftId: draft.id, removeWatermark, ...plan }));
     if (r.ok) { setRun(r.value); setRecent((list) => [r.value, ...list]); }
     return r;
-  }, [attempt, draft, edited, saveEdits, removeWatermark]);
+  }, [attempt, draft, edited, saveEdits, removeWatermark, access, scenePlan]);
 
   const sendEvent = useCallback((kind) => (run ? worldsCall("event", { runId: run.id, kind }).catch(() => {}) : null), [run]);
   const openRun = useCallback((r) => setRun(r), []);
@@ -245,5 +256,6 @@ export default function useBlockyWorlds({ enabled = true } = {}) {
     lengthSec, setLengthSec, draft, lines: edited ?? draft?.lines ?? [], edited: Boolean(edited), editLine, saveEdits,
     busy, pickedId, writeFromIdea, picked, pickIdea, continueStory, takes, tryTake, saveOwn, rewrite, moveToTown, fixOpener, fixPart, removeWatermark, setRemoveWatermark,
     run, recent, generate, retryRun, rewriteAndRetry, sendEvent, openRun, startOver,
+    scenePlan, loadScenePlan, changeScene,
   };
 }

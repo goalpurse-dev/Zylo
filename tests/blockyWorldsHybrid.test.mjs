@@ -364,7 +364,7 @@ test("the plan call: Opus 5.5 at low effort, examples first then the rules, both
   assert.equal(HYBRID.plan.effort, "low");
   assert.equal(body.max_tokens, HYBRID.plan.maxTokens);
   assert.match(body.system[0].text, /REFERENCE EXAMPLES/);
-  assert.equal(body.system[1].text, HYBRID_PLAN_SYSTEM);
+  assert.ok(body.system[1].text.startsWith(HYBRID_PLAN_SYSTEM) && /STYLE NOTES FROM 38 POPULAR VIDEOS/.test(body.system[1].text), "the rules, then the pattern bank (patternBank.js) in the same cached block");
   assert.deepEqual(body.system.map((b) => b.cache_control), [{ type: "ephemeral" }, { type: "ephemeral" }]);
   assert.equal(r.costUsd, 0.044); // 1000 in at $4 + 2000 out at $20 per million
   assert.equal(r.card.plantedLine, "Low houses hear everything first.");
@@ -470,7 +470,7 @@ test("cache: the cached prefix is byte-identical across calls (other topic, leng
   assert.equal(JSON.stringify(systemBlocks(l1.system)), JSON.stringify(systemBlocks(l2.system)));
   // examples first, then the rules; a breakpoint on each; 1 h only when asked, "off" none at all
   assert.match(l1.system[0], /^REFERENCE EXAMPLES/);
-  assert.equal(l1.system[1], HYBRID_LINES_SYSTEM);
+  assert.ok(l1.system[1].startsWith(HYBRID_LINES_SYSTEM) && /STYLE NOTES/.test(l1.system[1]), "the line rules + the pattern bank");
   assert.deepEqual(systemBlocks(l1.system, { ttl: "1h" }).map((x) => x.cache_control), [{ type: "ephemeral", ttl: "1h" }, { type: "ephemeral", ttl: "1h" }]);
   assert.ok(systemBlocks(l1.system, { ttl: "off" }).every((x) => !x.cache_control));
   assert.equal(HYBRID.cacheTtl, "5m");

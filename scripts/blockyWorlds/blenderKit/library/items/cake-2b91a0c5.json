@@ -1,0 +1,18 @@
+{
+ "id": "cake-2b91a0c5",
+ "name": "cake",
+ "kind": "prop",
+ "about": "Frosted pink cake",
+ "code": "def cake(name, loc, s=1.5):\n    r = empty(name, loc)\n    cyl(name + '_c', 0.9, 0.7, (0, 0, 0.35), mat('cake_pink', hexc('#f4a6c8'), 0.5), 24, parent=r)\n    cyl(name + '_t', 0.95, 0.2, (0, 0, 0.8), mat('cake_cream', hexc('#fff6ea'), 0.5), 24, parent=r)\n    r.scale = (s, s, s)\n    return r",
+ "source": {
+  "run": "run1",
+  "shots": [
+   15,
+   46
+  ],
+  "title": "Hiccup Time"
+ },
+ "status": "pending",
+ "approved": false,
+ "createdAt": "2026-11-14T11:32:16.363Z"
+}

@@ -101,3 +101,31 @@ fixed every crash (14 vision issues left); round 2 skipped by the cap.
   The kit's finish runs with --no-captions; finishx.py burns the kit's caption style with the colours, after normalising the
   mix to -14 LUFS (two-pass loudnorm) and remakes the phone copy. Checked on the plane run (12 s): -16.4 -> -14.1 LUFS.
   Needs an image rebuild before the next run.
+
+## World library v1 (2026-11-14): DRESS library worlds instead of building worlds per video
+- `worlds/worlds.py` holds our own base worlds, built from the kit's primitives:
+  - PASTEL DOWNTOWN: a street of shops with striped awnings and story signs, trees, lamps and benches, cars, skyscrapers,
+    a plaza with a fountain, and a LANDMARK slot (bank / city hall / clock tower / giant screen);
+  - SUBURB: porches, fences, mailboxes, trees; inside, a living room, a bedroom and a kitchen;
+  - BRICK CITY: brick apartments with balconies, bunting, a factory with smokestacks, a water tower and an alley;
+  - shared interiors: a shop and a big hall;
+  - the kit's own sets as library places: the classroom, hallway, plane cabin, cockpit, plane in the sky and the moon.
+- The pipeline pastes it above the director's header. The DRESS covers:
+  - time: day / sunset / night;
+  - weather: rain / snow;
+  - the landmark and its text, the shop signs and the billboard;
+  - props: blimp, bunting, cars; background people.
+  `zw_build(place, t0, t1, dress)` builds a place; `zw_spot(cam, place, "wide"|"street"|"close"|"skyline", t0, t1)` gives a TESTED camera spot.
+- `worlds/stills.mjs` renders every place x spot plus the dressing demos (the kit's preview mode and contact sheets); `worlds/sheet.py` makes one sheet per world.
+  - v1 → final: four rounds, 60 + 11 + 11 + 60 stills, about $0.10.
+  - Fixed along the way: close-ups too tight; awnings, porch roofs and balconies below head height; the alley; the night light.
+- The LOCATION LIBRARY is one list, `_shared/blockyWorlds/locations.js` (`worlds/locations.mjs` re-exports it). The director picks a place id per shot, and the plan check requires library ids.
+- `pipeline.mjs --worlds` runs LIBRARY MODE:
+  - ONE kit example plus the library docs in the instructions;
+  - tighter output limits;
+  - one fix round;
+  - `--scene-plan` takes the owner's plan.
+- SCENE PLAN (owner-only), in `_shared/blockyWorlds/scenePlan.js`:
+  - the API action `scenePlan` returns an automatic plan from the library words; `start` takes `scenePlan` and stores it in `run.card.scene_plan`;
+  - the page's `ScenePlan.jsx` (on the script step) lets the owner change a scene's place: pick from the list, or type a place that maps to the closest one;
+  - the worker passes the plan to the pipeline in library mode.

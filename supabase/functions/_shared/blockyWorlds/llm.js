@@ -27,6 +27,7 @@ import { ANGLES, BROAD_SCRIPT_SYSTEM, broadScriptSchema, examplesBlock, PLAN_SYS
 import { skeletonProblems } from "./skeleton.js";
 import { buttonFallback } from "./formula.js";
 import { freshNames, freshNamesBlock, namesUsedBy } from "./bans.js";
+import { patternNotes } from "./patternBank.js";
 import { DARK_PLAN_SYSTEM, DARK_LINES_SYSTEM, DARK_VERSION_NOTES, darkLinesPrompt, darkLinesSchema, darkPlanPrompt, darkPlanSchema, darkProblems, darkWithParts } from "./dark.js";
 import { plantPayoffProblems, plantPayoffTable } from "./plantPayoff.js";
 import { cardFromPoolIdea, defaultCorpus, filterIdeas, IDEA_JUDGE_SYSTEM, IDEA_POOL_SYSTEM, ideaJudgePrompt, ideaJudgeSchema, ideaPoolPrompt, ideaPoolSchema, POOL_SIZE, readIdeaScores, topIdeas } from "./ideaEngine.js";
@@ -719,7 +720,7 @@ export async function writeIdeaPool({ apiKey = "", count = 10, style = null, top
   const log = (what, model, r) => { out.calls[what] = { model, usd: Number(r?.costUsd ?? 0), usage: r?.usage ?? null }; out.costUsd = Number((out.costUsd + Number(r?.costUsd ?? 0)).toFixed(5)); };
   try {
     const gen = steps.pool ?? ((a) => callJson(a));
-    const r = await gen({ apiKey, model: HYBRID.plan.model, system: [IDEA_POOL_SYSTEM], user: ideaPoolPrompt({ count: poolSize, style, avoid: given.slice(-40), topic }), schema: ideaPoolSchema(), effort: "low", maxTokens: 9000, meter });
+    const r = await gen({ apiKey, model: HYBRID.plan.model, system: [IDEA_POOL_SYSTEM, patternNotes("ideas")], user: ideaPoolPrompt({ count: poolSize, style, avoid: given.slice(-40), topic }), schema: ideaPoolSchema(), effort: "low", maxTokens: 9000, meter });
     log("pool", HYBRID.plan.model, r);
     const pool = Array.isArray(r.data?.ideas) ? r.data.ideas.filter((x) => x?.rule && x?.hook) : [];
     out.pool = pool.length;
@@ -752,10 +753,10 @@ export async function writeDark({ apiKey = "", topic, lengthSec = 150, meter = n
   const log = (what, model, r) => { out.calls[what] = { model, usd: Number(r?.costUsd ?? 0), usage: r?.usage ?? null }; out.costUsd = Number((out.costUsd + Number(r?.costUsd ?? 0)).toFixed(5)); };
   try {
     out.names = freshNames({ n: 4, seed: `${topic}|${Date.now()}|${Math.random()}`, used: usedNames });
-    const p = await callJson({ apiKey, model: HYBRID.plan.model, system: [DARK_PLAN_SYSTEM], user: darkPlanPrompt({ topic, lengthSec, note: [note, freshNamesBlock(out.names)].filter(Boolean).join("\n\n") }), schema: darkPlanSchema(), effort: HYBRID.plan.effort, maxTokens: HYBRID.plan.maxTokens, meter, ttl });
+    const p = await callJson({ apiKey, model: HYBRID.plan.model, system: [DARK_PLAN_SYSTEM, patternNotes("plan")], user: darkPlanPrompt({ topic, lengthSec, note: [note, freshNamesBlock(out.names)].filter(Boolean).join("\n\n") }), schema: darkPlanSchema(), effort: HYBRID.plan.effort, maxTokens: HYBRID.plan.maxTokens, meter, ttl });
     log("plan", HYBRID.plan.model, p);
     out.plan = p.data;
-    const make = (vnote) => callJson({ apiKey, model: HYBRID.lines.model, system: [DARK_LINES_SYSTEM], user: darkLinesPrompt({ plan: out.plan, topic, lengthSec, note: vnote }), schema: darkLinesSchema(), effort: HYBRID.lines.effort, maxTokens: 12000, meter, ttl });
+    const make = (vnote) => callJson({ apiKey, model: HYBRID.lines.model, system: [DARK_LINES_SYSTEM, patternNotes("lines")], user: darkLinesPrompt({ plan: out.plan, topic, lengthSec, note: vnote }), schema: darkLinesSchema(), effort: HYBRID.lines.effort, maxTokens: 12000, meter, ttl });
     const notes = DARK_VERSION_NOTES.slice(0, Math.min(versions, DARK_VERSION_NOTES.length));
     const first = await make(notes[0]);
     const rest = await Promise.all(notes.slice(1).map(make));
@@ -787,11 +788,15 @@ export async function writeDark({ apiKey = "", topic, lengthSec = 150, meter = n
 
 /** The plan call's request parts (system blocks + user message), exported so the tests can compare them byte for byte. */
 export function hybridPlanRequest({ topic, recipe = null, examples = [], lengthSec = 90, note = "", idea = null, board = false }) {
-  return { system: [examplesBlock(examples), board ? hybridPlanSystem({ board }) : HYBRID_PLAN_SYSTEM], user: hybridPlanPrompt({ topic, recipe, lengthSec, note, idea }) };
+  return { system: [examplesBlock(examples), `${board ? hybridPlanSystem({ board }) : HYBRID_PLAN_SYSTEM}
+
+${patternNotes("plan")}`], user: hybridPlanPrompt({ topic, recipe, lengthSec, note, idea }) };
 }
 /** The lines call's request parts (the fix and a rewrite use the same system blocks: one cached prefix). */
 export function hybridLinesRequest({ plan, topic, examples = [], lengthSec = 90, previous = null, failed = [], note = "", board = false }) {
-  return { system: [examplesBlock(examples), board ? hybridLinesSystem({ board }) : HYBRID_LINES_SYSTEM], user: hybridLinesPrompt({ plan, topic, lengthSec, previous, failed, note }) };
+  return { system: [examplesBlock(examples), `${board ? hybridLinesSystem({ board }) : HYBRID_LINES_SYSTEM}
+
+${patternNotes("lines")}`], user: hybridLinesPrompt({ plan, topic, lengthSec, previous, failed, note }) };
 }
 
 /** Opus's plan: { plan, card, notes, costUsd, usage }. One call, never retried. idea: the card the user picked. */
