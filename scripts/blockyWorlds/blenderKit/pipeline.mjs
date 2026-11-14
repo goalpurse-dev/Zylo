@@ -101,7 +101,10 @@ const env = loadEnv();
 // the worker passes its key in the environment (workerSteps.mjs, BLOCKY_WORLDS_KEYS_FROM_ENV); the laptop reads .env.local
 const apiKey = process.env.ANTHROPIC_API_KEY || env.ANTHROPIC_API_KEY || env.ANTHROPIC_KEY;
 if (!apiKey) throw new Error("no Anthropic key in .env.local");
-const R = runpod({ L, prefix: `blocky-worlds-test/blender-kit/${path.basename(RUN)}-${Date.now().toString(36)}`, log: say });
+// the run's storage folder is KEPT in state: a resume after a failed finish reuses the paid final segments (the first
+// test lost them: every process made a new folder)
+state.rpPrefix ??= `blocky-worlds-test/blender-kit/${path.basename(RUN)}-${Date.now().toString(36)}`; save();
+const R = runpod({ L, prefix: state.rpPrefix, log: say });
 // the GPU money still to come, reserved out of the model's room: previews (round 0 + the fix rounds) and the final
 // THE GPU LIMITS ARE THE GPU WORST CASES: every job is cancelled past its limit (rp.mjs), so these prices can never be
 // passed. Measured: 0.66 s/frame (12 final chunks, two videos), previews ~1-1.5 s a shot after the first, the finish of
