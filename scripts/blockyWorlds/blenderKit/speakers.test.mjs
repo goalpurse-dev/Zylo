@@ -31,6 +31,17 @@ test("curly quotes and a one-word quote", () => {
   assert.deepEqual(colors, [null, null, PALETTE[0], null, null]);
 });
 
+test("an exchange inside one line: line.quotes gives each quoted part its speaker", () => {
+  const script = {
+    speakers: { Grandpa: "#FFB04D", Milo: "#7FE3FF" },
+    lines: [{ text: 'Too late. "What\'s taller than a skyscraper?" "...What?" "You. In five seconds."', speaker: "Grandpa", quotes: ["Grandpa", "Milo", "Grandpa"] }],
+  };
+  const { colors, legend } = captionColors(script, wordsOf(script));
+  const G = "#FFB04D", M = "#7FE3FF";
+  assert.deepEqual(colors, [null, null, G, G, G, G, G, M, G, G, G, G]);
+  assert.deepEqual(legend, { Grandpa: G, Milo: M });
+});
+
 test("words that do not match the lines: every caption white", () => {
   const script = { lines: [{ text: "One two three", speaker: "Ott" }] };
   const { colors, exact } = captionColors(script, [{ word: "one" }, { word: "two" }]);

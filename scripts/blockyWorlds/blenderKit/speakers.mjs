@@ -2,6 +2,7 @@
 // has their own colour, the same all video. THE SCRIPT FORMAT (script.json, what the writer marks):
 //   line.speaker = "Ott"            the words INSIDE double quotes in that line are Ott's ("..." or “...”); the rest of the
 //                                   line stays the narrator's. A line with a speaker and no quotes is all that speaker's.
+//   line.quotes = ["Gran", "Mo"]    optional: the speaker of each quoted part in order (an exchange inside one line)
 //   script.speakers = { "Ott": "#7FE3FF" }   optional fixed colours; anyone else gets the next palette colour in order of
 //                                   first appearance. "narrator" / "me" / no speaker = white.
 // The narrator still reads every word (one voice); only the caption colour changes.
@@ -29,14 +30,18 @@ export function captionColors(script, words) {
   lines.forEach((l, li) => {
     const toks = String(l.text).trim().split(/\s+/).filter(Boolean);
     const c = l.speaker ? colorOf(l.speaker) : NARRATOR;
+    // line.quotes = ["Grandpa", "Milo", "Grandpa"]: the speaker of each quoted part in order (a dialogue exchange inside
+    // one line); a part past the list keeps line.speaker
+    const qs = Array.isArray(l.quotes) ? l.quotes : [];
     const quoted = toks.some((t) => OPEN.test(t) || /["“”]/.test(t));
-    let inQ = false;
+    let inQ = false, q = -1, qc = c;
     toks.forEach((t, k) => {
       let mine;
       if (!quoted) mine = c;
       else {
-        const opens = OPEN.test(t), closes = CLOSE.test(t) && (inQ || opens);
-        mine = inQ || opens ? c : NARRATOR;
+        const opens = OPEN.test(t) && !inQ, closes = CLOSE.test(t) && (inQ || opens);
+        if (opens) { q++; qc = qs[q] ? colorOf(qs[q]) : c; }
+        mine = inQ || opens ? qc : NARRATOR;
         if (opens) inQ = true;
         if (closes) inQ = false;
       }
