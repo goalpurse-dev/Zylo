@@ -93,7 +93,8 @@ export default function BlockyWorldsStudio({ access: pageAccess, onSignUp, onUpg
   }
   // THE BLENDER MAKER (owner-only first, 2026-11-15): the server says who sees it (access.blenderUi); ?ui=classic keeps
   // the old page for a side-by-side look
-  if (flow.access.blenderUi && UI !== "classic") return <BlenderMaker flow={flow} pageAccess={pageAccess} onSignUp={onSignUp} onUpgrade={onUpgrade} onNoCredits={onNoCredits} balance={balance} />;
+  // (an older live server has no blenderUi flag: the owner flag decides)
+  if ((flow.access.blenderUi ?? flow.access.owner) && UI !== "classic") return <BlenderMaker flow={flow} pageAccess={pageAccess} onSignUp={onSignUp} onUpgrade={onUpgrade} onNoCredits={onNoCredits} balance={balance} />;
 
   const builder = (
     <section className="relative flex min-h-[560px] flex-col overflow-hidden rounded-2xl border border-lime-300/[0.13] bg-[#0C0F0D] shadow-[inset_0_1px_0_rgba(190,242,100,.05)] lg:h-full lg:min-h-0">

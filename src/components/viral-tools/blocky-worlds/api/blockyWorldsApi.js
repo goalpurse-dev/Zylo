@@ -44,10 +44,19 @@ export function errorFromReply(body, status = 0) {
   return new BlockyWorldsError(code, message || ERRORS[code].message, { status, credits: Number(body?.credits), problems: body?.problems, retryAfterSec: Number(body?.retryAfterSec), debug: body?.debug });
 }
 
-// LOCAL DEV ONLY (?api=local): the page talks to the blocky-worlds-api running on this laptop
-// (scripts/blockyWorlds/localApi.mjs, http://localhost:8000) with the signed-in user's token, so the owner can click
-// through server code that is not deployed yet. Read once at load; import.meta.env.DEV is false in every build.
-export const DEV_LOCAL_API = Boolean(import.meta.env.DEV) && new URLSearchParams(window.location.search).get("api") === "local" ? "http://localhost:8000" : null;
+// LOCAL DEV ONLY: when the blocky-worlds-api runs on this laptop (scripts/blockyWorlds/localApi.mjs, http://localhost:8000)
+// the page uses it AUTOMATICALLY (one quick probe per page load), with the signed-in user's token, so the owner clicks
+// through server code that is not deployed yet; not running -> the live API. ?api=live forces live. Production builds
+// (import.meta.env.DEV false) never probe and never use it.
+const DEV_LOCAL_API = "http://localhost:8000";
+let backendOnce = null;
+/** "mock" | "local" | "live": which server this page talks to */
+export function whichBackend() {
+  if (DEV_MOCK) return Promise.resolve("mock");
+  if (!import.meta.env.DEV || new URLSearchParams(window.location.search).get("api") === "live") return Promise.resolve("live");
+  backendOnce ??= fetch(DEV_LOCAL_API, { method: "OPTIONS", signal: AbortSignal.timeout(900) }).then((r) => (r.ok ? "local" : "live")).catch(() => "live");
+  return backendOnce;
+}
 
 async function localCall(action, body) {
   const { supabase } = await import("../../../../lib/supabaseClient");
@@ -70,7 +79,7 @@ export async function worldsCall(action, body = {}) {
     const { devCall } = await import("../dev/devApi");
     return devCall(action, body);
   }
-  if (DEV_LOCAL_API) return localCall(action, body);
+  if (import.meta.env.DEV && (await whichBackend()) === "local") return localCall(action, body);
   const { supabase } = await import("../../../../lib/supabaseClient");
   let data, error;
   try {

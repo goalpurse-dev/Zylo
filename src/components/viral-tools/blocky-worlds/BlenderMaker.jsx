@@ -1,6 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { AlertTriangle, ArrowLeft, ArrowRight, Bell, Check, Clapperboard, Download, ImagePlus, MapPin, Pencil, RefreshCw, Sparkles, Wand2, X } from "lucide-react";
-import { DEV_MOCK, isWorking, runStage } from "./api/blockyWorldsApi";
+import { DEV_MOCK, isWorking, runStage, whichBackend } from "./api/blockyWorldsApi";
+import ResultPanel from "./ResultPanel";
+import "./blockyWorlds.css";
 import { STUDIO_STAGES } from "../../../../supabase/functions/_shared/blockyWorlds/studioStages.js";
 import "./blenderMaker.css";
 
@@ -26,6 +28,16 @@ export default function BlenderMaker({ flow, pageAccess, onSignUp, onUpgrade, on
   const [notice, setNotice] = useState(null);
   const [confirm, setConfirm] = useState(false);
   const top = useRef(null);
+  // DEV ONLY: which server the page talks to (blockyWorldsApi.js whichBackend: the local API when it runs, else live)
+  const [backend, setBackend] = useState(null);
+  useEffect(() => { if (import.meta.env.DEV) whichBackend().then(setBackend); }, []);
+  // the right side (kept from the classic page): the live preview of the idea / script, and "Your videos"
+  const shown = flow.picked;
+  const preview = useMemo(() => {
+    if (flow.draft) return { lines: flow.lines.map((l) => l?.text ?? ""), label: "Your script", meta: `Read by ${flow.access?.narrator?.name ?? "the narrator"}` };
+    if (shown) return { lines: [shown.opener, shown.teaser], label: shown.title };
+    return { lines: null, label: "Preview", meta: "Narrated, captioned and built in blocks. Vertical, ready to post." };
+  }, [shown, flow.draft, flow.lines, flow.access]);
 
   useEffect(() => { if (flow.lengthSec !== TARGET_LENGTH) flow.setLengthSec(TARGET_LENGTH); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   // every step opens at its top (the page scrolls in a container on desktop, the window on phones)
@@ -72,13 +84,14 @@ export default function BlenderMaker({ flow, pageAccess, onSignUp, onUpgrade, on
   return (
     <div className="bwm h-full w-full overflow-y-auto" data-testid="bw-blender">
       {DEV_MOCK && <div className="sticky top-0 z-30 bg-[#ffd23f] px-4 py-2 text-center text-[15px] font-black text-black">TEST MODE: fake scripts and a fake video, nothing is charged</div>}
-      <div ref={top} className="mx-auto flex w-full max-w-[1120px] flex-col gap-5 px-4 pb-28 pt-5 sm:px-6 lg:pt-8">
+      <div ref={top} className="mx-auto flex w-full max-w-[1560px] flex-col gap-5 px-4 pb-28 pt-5 sm:px-6 lg:pt-8">
         <header className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-3">
             <span className="grid h-14 w-14 place-items-center rounded-2xl bg-[#bef264] text-[28px] shadow-[0_6px_0_#6f9a1f]" aria-hidden="true">🧱</span>
             <div>
               <h1 className="text-[30px] font-black leading-none tracking-[-0.03em] sm:text-[36px]">Blocky Worlds</h1>
               <p className="mt-1 text-[16px] font-bold text-white/80">Your story, built in blocks, in about 25 minutes.</p>
+              {backend && <p className="mt-1.5 inline-flex rounded-lg border border-white/25 bg-black/40 px-2 py-0.5 text-[12px] font-black uppercase tracking-[0.08em] text-white/85" data-testid="bwm-backend">dev · {backend === "local" ? "local API :8000" : backend === "mock" ? "mock" : "live API"}</p>}
             </div>
           </div>
           <ol className="flex flex-wrap gap-2" aria-label={`Step ${stepIdx + 1} of 4: ${STEPS[stepIdx][1]}`}>
@@ -90,6 +103,8 @@ export default function BlenderMaker({ flow, pageAccess, onSignUp, onUpgrade, on
           </ol>
         </header>
 
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_400px] lg:items-start">
+        <div className="flex min-w-0 flex-col gap-5">
         {notice && <div className="bwm-rise flex items-start gap-3 rounded-2xl border-2 border-[#ff6fa8] bg-[#2a1220] px-4 py-3 text-[17px] font-bold text-white" role="status"><AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[#ff6fa8]" />{notice}<button type="button" onClick={() => setNotice(null)} className="ml-auto" aria-label="Close"><X className="h-5 w-5" /></button></div>}
 
         {view === "topic" && (
@@ -103,6 +118,11 @@ export default function BlenderMaker({ flow, pageAccess, onSignUp, onUpgrade, on
         )}
         {view === "make" && (flow.run ? <RunStep flow={flow} onAgain={again} onRetry={() => guarded(() => flow.retryRun(flow.run))} />
           : flow.draft && <MakeStep flow={flow} onBack={() => setView("scenes")} onMake={() => (LOCAL ? setConfirm(true) : make())} />)}
+        </div>
+        <aside className="h-[720px] min-w-0 lg:sticky lg:top-4 lg:h-[calc(100vh-150px)] lg:min-h-[560px]" aria-label="Preview and your videos">
+          <ResultPanel run={null} recent={flow.recent} preview={preview} onOpen={(r) => flow.openRun(r)} onEvent={flow.sendEvent} />
+        </aside>
+        </div>
       </div>
       {confirm && <ConfirmDialog draft={flow.draft} onCancel={() => setConfirm(false)} onGo={make} />}
     </div>
@@ -135,7 +155,7 @@ function TopicStep({ flow, mode, setMode, story, setStory, writing, onWrite }) {
   const ideas = flow.shownIdeas.slice(0, 6);
   return (
     <>
-      <Card n={1} title="What's your story?" sub="One line is enough. Or tell us more and we'll shape it.">
+      <Card n={1} title={<>Every story starts with <span className="bw-mark whitespace-nowrap">&ldquo;In this town&hellip;&rdquo;</span></>} sub="One line is enough. Or tell us more and we'll shape it.">
         <div className="bwm-tabs mb-5" role="group" aria-label="How do you want to start?">
           <button type="button" className="bwm-tab" aria-pressed={mode === "topic"} onClick={() => setMode("topic")}><Sparkles className="mr-1.5 inline h-5 w-5" />Topic</button>
           <button type="button" className="bwm-tab" aria-pressed={mode === "explain"} onClick={() => setMode("explain")}><Pencil className="mr-1.5 inline h-5 w-5" />Explain more</button>
@@ -144,11 +164,17 @@ function TopicStep({ flow, mode, setMode, story, setStory, writing, onWrite }) {
           <>
             <label className="mb-2 block text-[18px] font-black" htmlFor="bwm-topic">Your topic</label>
             <input id="bwm-topic" className="bwm-input" value={flow.topic} onChange={(e) => flow.setTopic(e.target.value)} maxLength={160} placeholder="Every time you sneeze, you teleport" onKeyDown={(e) => { if (e.key === "Enter" && can) onWrite(); }} />
+            <button type="button" className="mt-3 text-[16px] font-black text-[#bef264] underline decoration-2 underline-offset-4" onClick={() => setMode("explain")}><Pencil className="mr-1.5 inline h-4 w-4" />Paste my own script</button>
             <div className="mt-6 flex items-center justify-between gap-3">
               <h3 className="text-[19px] font-black">Or tap a ready idea</h3>
               <button type="button" className="bwm-btn-2 !min-h-[44px] !px-4 !text-[15px]" onClick={() => flow.askIdeas({ more: true })} disabled={flow.ideas.status === "loading"}><RefreshCw className={cx("h-4 w-4", flow.ideas.status === "loading" && "animate-spin")} />More ideas</button>
             </div>
-            <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Idea moods">
+              {[{ id: null, label: "All" }, ...(flow.access?.moods ?? [])].map((m) => (
+                <button key={m.id ?? "all"} type="button" className="bwm-tab !min-h-[42px] border-2 border-white/15 !px-4 !text-[15.5px]" aria-pressed={(flow.mood ?? null) === m.id} onClick={() => flow.setMood(m.id)}>{m.label}</button>
+              ))}
+            </div>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2 2xl:grid-cols-3">
               {ideas.length ? ideas.map((c, i) => (
                 <button key={c.id} type="button" className="bwm-chip bwm-rise" style={{ "--i": i }} aria-pressed={flow.picked?.id === c.id} onClick={() => flow.pickIdea(c)}>
                   <span className="block text-[17px] font-black leading-snug text-[#bef264]">{c.title}</span>
@@ -168,7 +194,7 @@ function TopicStep({ flow, mode, setMode, story, setStory, writing, onWrite }) {
 
       <CharactersCard flow={flow} />
 
-      <div className="sticky bottom-24 z-20 flex justify-center sm:justify-end lg:bottom-4">
+      <div className="flex justify-center sm:justify-end">
         <button type="button" className="bwm-btn w-full sm:w-auto" disabled={!can} onClick={onWrite} data-testid="bwm-write">
           {writing ? <Blocks label="Writing your script…" /> : <><Wand2 className="h-6 w-6" />Write my script</>}
         </button>
@@ -269,7 +295,7 @@ function ScriptStep({ flow, onBack, onNext, onRewrite }) {
         {flow.lines.map((l, i) => (
           <li key={i} className="bwm-rise flex items-start gap-3" style={{ "--i": i }}>
             <span className="mt-3 w-7 shrink-0 text-right text-[15px] font-black text-white/60">{i + 1}</span>
-            <textarea className="bwm-line" rows={Math.max(1, Math.ceil((l.text?.length ?? 0) / 70))} value={l.text} onChange={(e) => flow.editLine(i, e.target.value)} aria-label={`Line ${i + 1}`} />
+            <AutoLine value={l.text} onChange={(v) => flow.editLine(i, v)} label={`Line ${i + 1}`} />
           </li>
         ))}
       </ol>
@@ -284,6 +310,15 @@ function ScriptStep({ flow, onBack, onNext, onRewrite }) {
       </div>
     </Card>
   );
+}
+
+/** a script line that is always as tall as its text (phones wrap a line into 3-4 rows) */
+function AutoLine({ value, onChange, label }) {
+  const ref = useRef(null);
+  const fit = () => { const el = ref.current; if (el) { el.style.height = "auto"; el.style.height = `${el.scrollHeight + 4}px`; } };
+  useLayoutEffect(fit, [value]);
+  useEffect(() => { window.addEventListener("resize", fit); return () => window.removeEventListener("resize", fit); }, []);
+  return <textarea ref={ref} rows={1} className="bwm-line overflow-hidden" value={value ?? ""} onChange={(e) => onChange(e.target.value)} aria-label={label} />;
 }
 
 function PriceTag({ credits, seconds, ready, edited }) {

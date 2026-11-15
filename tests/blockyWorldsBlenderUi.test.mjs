@@ -148,6 +148,12 @@ test("the page: four numbered steps, no length picker, the price confirm on loca
   assert.match(ui, /Start a real video for \{draft\?\.credits\} credits\?/);
   assert.match(css, /prefers-reduced-motion: reduce/);
   const studio = read("src/components/viral-tools/blocky-worlds/BlockyWorldsStudio.jsx");
-  assert.match(studio, /flow\.access\.blenderUi && UI !== "classic"/);
+  assert.match(studio, /\(flow\.access\.blenderUi \?\? flow\.access\.owner\) && UI !== "classic"/);
+  // the local API is used automatically in dev only (a probe), never in a production build
+  const api = read("src/components/viral-tools/blocky-worlds/api/blockyWorldsApi.js");
+  assert.match(api, /if \(!import\.meta\.env\.DEV \|\| new URLSearchParams\(window\.location\.search\)\.get\("api"\) === "live"\) return Promise\.resolve\("live"\);/);
+  assert.match(api, /if \(import\.meta\.env\.DEV && \(await whichBackend\(\)\) === "local"\) return localCall\(action, body\);/);
+  // kept from the classic page: the hero, the mood tabs, "Paste my own script", the preview + "Your videos"
+  for (const k of ["In this town&hellip;", "Idea moods", "Paste my own script", "<ResultPanel"]) assert.ok(ui.includes(k), k);
   for (const r of ROLES) assert.ok(ui.includes(`"${r}"`), r);
 });
