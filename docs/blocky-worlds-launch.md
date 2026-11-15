@@ -342,3 +342,30 @@ cannot render: it waits and is failed + refunded by the sweeper. Rollback:
 - Engine: unset `BLOCKY_WORLDS_RENDER_ENGINE` on the worker (three.js Studio again) AND move the workers back
   (`setup.mjs --move-workers --rollback --yes`).
 - Prices: nothing to roll back until the patch is applied.
+
+## 1-minute hide / rollback (owner-only go-live)
+- **Hide it from EVERYONE, the owner included (one secret, no deploy):**
+  `npx supabase secrets set BLOCKY_WORLDS_OWNER_EMAILS=closed@blocky-worlds.invalid`
+  (the secret REPLACES the owner list; nobody signs in with that address, so `access` answers `{ visible: false }` to all,
+  the route sends everyone home and every action is refused). Undo: `npx supabase secrets unset BLOCKY_WORLDS_OWNER_EMAILS`.
+  Note: `BLOCKY_WORLDS_ACCESS=off` is NOT a hide: an unknown value fails closed to `owner`, so the owner still sees it
+  (tests/blockyWorldsRollback.test.mjs holds both facts).
+- **Engine back to three.js Studio**: `fly secrets unset -a zyvo-blocky-studio BLOCKY_WORLDS_RENDER_ENGINE` (and the
+  Supabase secret of the same name for ops-health), then move the RunPod workers back:
+  `node scripts/blockyWorlds/blenderKit/setup.mjs --move-workers --rollback --yes`.
+- **Stop the worker**: `fly scale count 0 -a zyvo-blocky-studio` (a run in progress is failed + refunded once).
+- **Pay at Make my video again**: `npx supabase secrets unset BLOCKY_WORLDS_PREPAY` (open prepays still expire through
+  the hourly job, keeping 25).
+- **Code**: redeploy the downloaded backups of blocky-worlds-api / blocky-worlds-render / ops-health.
+
+## Go-live attempt 2026-11-15 (stopped at step a)
+- Live database, read-only check: the Blocky Worlds Studio migration `20261213100000` is NOT applied (no `engine` /
+  `studio_stage` columns, no `blocky_worlds_workers` table), nor 20261214100000 / 20261215100000 / 20261216100000 /
+  20261216200000 (the live 90 s price row is still 62). So going live needs all FIVE, in this order:
+  `20261213100000_blocky_worlds_studio.sql`, `20261214100000_blocky_worlds_studio_prices.sql`,
+  `20261215100000_blocky_worlds_idea_name_log.sql`, `20261216100000_blocky_worlds_blender_prices.sql`,
+  `20261216200000_blocky_worlds_prepay.sql` (each `npx supabase db query --linked --yes -f <file>` then
+  `npx supabase migration repair --linked --status applied <timestamp>`). No Blocky Worlds run was active (0).
+- The first `db query` was refused by this session's permission check (a production database change): nothing was
+  changed, and steps b-e (secrets, deploys, the scoped merge + push) were not started.
+- RunPod balance (read-only): **$4.19**: under the $15 Blender floor and under $30: top up before the first video.
