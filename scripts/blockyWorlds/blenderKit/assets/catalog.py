@@ -37,11 +37,36 @@ PACKS = [
     ("rveh", "vehicle_asset_v1", "CC0", "license.txt (eracoon, CC0 1.0)", ["obj/*.obj"], 4.8, ["vehicle", "car", "street"], "cars, vans, buses"),
     ("ngrass", "multi_stylized_grass", "CC0", "readme.txt (Nobiax, CC0 1.0 Universal)", ["*.obj"], 0.04, ["nature", "grass"], "grass tufts"),
     ("nweeds", "tiny_weeds", "CC0", "readme.txt (Nobiax, CC0 1.0 Universal)", ["*/*.obj", "*.obj"], 0.01, ["nature", "weeds"], "weeds"),
+    # ---- V2 packs (owner added 2026-11-15; licences read from each pack's own file; factors from a reference model:
+    # door ~7, car ~12 long, chair seat ~2.4, pet ~2.6 tall, our character 5.2; scratchpad measure.py). Worlds unchanged.
+    ("qdown", "Downtown_City_MegaKitStandard", "CC0", "License_Standard.txt (Quaternius, CC0 1.0 Universal)", ["Exports/glTF (Godot)/*.gltf"], 3.2, ["city", "downtown", "building", "street"], "modular downtown facades, doors, windows, street props (v2)"),
+    ("qnature", "Stylized_Nature_MegaKitStandard", "CC0", "License_Standard.txt (Quaternius, CC0 1.0 Universal)", ["glTF/*.gltf"], 3.0, ["nature", "park"], "stylized trees, bushes, rocks, flowers (v2)"),
+    ("qhome", "Ultimate_House_Interior_Pack_-_June_2020", "CC0", "License.txt (Quaternius, CC0 1.0 Universal)", ["*/OBJ/*.obj"], 2.0, ["interior", "home", "furniture"], "beds, chairs, couches, kitchen, bathroom (v2)"),
+    ("qnat19", "Ultimate_Nature_Pack_-_Jun_2019", "CC0", "License.txt (Quaternius, CC0 1.0 Universal)", ["*/OBJ/*.obj"], 4.0, ["nature", "forest"], "low-poly trees, rocks, plants (v2)"),
+    ("qspace", "Ultimate_Space_Kit_-_March_2023", "CC0", "License.txt (Quaternius, CC0 1.0 Universal)", ["*/*/GLTF/*.gltf"], 1.6, ["space", "moon", "sci-fi"], "astronauts, rovers, space houses, items (v2)"),
+    ("kbuild", "kenney_building-kit", "CC0", "License.txt (Kenney, CC0 1.0)", ["Models/GLB format/*.glb"], 3.3, ["building", "modular"], "walls, doors, windows, stairs, roofs (v2)"),
+    ("kcar", "kenney_car-kit", "CC0", "License.txt (Kenney, CC0 1.0)", ["Models/GLB format/*.glb"], 4.7, ["vehicle", "car", "street"], "sedans, taxis, police, firetruck, trucks, vans (v2)"),
+    ("kind", "kenney_city-kit-industrial_2.0", "CC0", "License.txt (Kenney, CC0 1.0)", ["Models/GLB format/*.glb"], 13.0, ["city", "industrial", "building"], "factories, chimneys, tanks (v2)"),
+    ("kroads", "kenney_city-kit-roads", "CC0", "License.txt (Kenney, CC0 1.0)", ["Models/GLB format/*.glb"], 13.0, ["road", "street"], "roads, crossings, bridges, street lights, signs (v2)"),
+    ("ksub", "kenney_city-kit-suburban_20", "CC0", "License.txt (Kenney, CC0 1.0)", ["Models/GLB format/*.glb"], 13.0, ["suburb", "house", "building"], "suburban houses, fences, trees, driveways (v2)"),
+    ("kpets", "kenney_cube-pets_1.0", "CC0", "License.txt (Kenney, CC0 1.0)", ["Models/GLB format/*.glb"], 1.65, ["animal", "pet"], "cube pets: dog, cat, pig, bee, beaver ... (v2)"),
+    ("kshop", "kenney_mini-shop_2.1", "CC0", "License.txt (Kenney, CC0 1.0)", ["Models/GLB format/*.glb"], 7.2, ["shop", "store", "interior"], "shelves, registers, fridges (v2)"),
+    ("kpirate", "kenney_pirate-kit", "CC0", "License.txt (Kenney, CC0 1.0)", ["Models/GLB format/*.glb"], 2.1, ["pirate", "ship", "sea"], "ships, barrels, chests, docks (v2)"),
+    ("kplat", "kenney_platformer-kit", "CC0", "License.txt (Kenney, CC0 1.0)", ["Models/GLB format/*.glb"], 5.7, ["platformer", "game", "prop"], "blocks, coins, flags, trees, platforms (v2)"),
+    ("kretro", "kenney_retro-fantasy-kit", "CC0", "License.txt (Kenney, CC0 1.0)", ["Models/GLB format/*.glb"], 9.0, ["castle", "fantasy", "building"], "castle walls, towers, gates, barrels (v2)"),
+    ("kstation", "kenney_space-station-kit", "CC0", "License.txt (Kenney, CC0 1.0)", ["Models/GLB format/*.glb"], 4.4, ["space", "interior", "sci-fi"], "station corridors, rooms, chairs, consoles (v2)"),
+    ("ktrain", "kenney_train-kit", "CC0", "License.txt (Kenney, CC0 1.0)", ["Models/GLB format/*.glb"], 8.0, ["train", "railway", "vehicle"], "locomotives, carriages, rails, stations (v2)"),
+    ("kboat", "kenney_watercraft-pack", "CC0", "License.txt (Kenney, CC0 1.0)", ["Models/GLB format/*.glb"], 3.6, ["boat", "sea", "vehicle"], "boats, buoys, docks (v2)"),
 ]
 # kept by licence but not imported: .blend-only (untrusted files are never opened by our build) and photo-textured
 # excluded (owner 2026-11-14): no licence text found, never used: Animals, CWU_player-spaceship, clouds1, modular_village_collection, pinetree0; booksOGA_GPL (GPL)
-EXCLUDED = {"Animals": "no licence text", "CWU_player-spaceship": "no licence text", "clouds1": "no licence text", "modular_village_collection": "no licence text", "pinetree0": "no licence text", "booksOGA_GPL": "GPL"}
-NOT_IMPORTED = {"chicken": "CC0 (license.txt); .blend only + photo texture: not our look, not opened", "forest-monster": "CC0 (Licenses.txt); .blend only + photo textures: not our look, not opened"}
+EXCLUDED = {"Animals": "no licence text", "CWU_player-spaceship": "no licence text", "clouds1": "no licence text", "modular_village_collection": "no licence text", "pinetree0": "no licence text", "booksOGA_GPL": "GPL",
+            # v2 (2026-11-15): no licence file in the zip (they look like Quaternius packs, but unclear = excluded)
+            "Blocks": "no licence text (v2)", "Characters": "no licence text (v2)", "Cube_World_-_Aug_2023": "no licence text (v2)", "Pixel_Blocks": "no licence text (v2)"}
+NOT_IMPORTED = {"chicken": "CC0 (license.txt); .blend only + photo texture: not our look, not opened", "forest-monster": "CC0 (Licenses.txt); .blend only + photo textures: not our look, not opened",
+                # v2: CC0 but not 3D models (2D textures / UI / sky images: kept for later, nothing to import here)
+                "kenney_pattern-pack-extra": "CC0; 2D patterns", "kenney_retro-textures-fantasy": "CC0; 2D textures", "kenney_skyboxes": "CC0; sky images (a later sky option)", "kenney_ui-pack-space-expansion": "CC0; 2D UI",
+                "kenney_blocky-characters_20 / kenney_mini-characters (zips)": "CC0; byte-identical to the packs already in the catalog"}
 SKIP = re.compile(r"withoutBase|_LOD|lod\d|collision", re.I)
 BRANDS = re.compile(r"coca|cola|pepsi|mcdonald|starbucks|nike|adidas|roblox|lego|disney|ikea|shell|bp_|toyota|ford|bmw|audi|mercedes|ferrari|tesla", re.I)
 

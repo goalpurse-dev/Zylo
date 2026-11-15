@@ -31,6 +31,31 @@ Not deployed to the app; the Blender endpoint `sp338bavcw2gtn` points at the new
 | clouds1.zip (skybox bmp) | no licence text | none | EXCLUDED (owner 2026-11-14: skip) |
 | modular_village_collection.zip | no licence text | none | EXCLUDED (owner 2026-11-14: skip) |
 | pinetree0.png | no licence text | none | EXCLUDED (owner 2026-11-14: skip) |
+| **V2 (owner added 2026-11-15; catalogued, the worlds NOT changed yet)** | | | |
+| Downtown City MegaKit [Standard] | CC0 1.0 | `License_Standard.txt` (Quaternius) | USE (153; no per-asset previews in the pack) |
+| Stylized Nature MegaKit [Standard] | CC0 1.0 | `License_Standard.txt` (Quaternius) | USE (68; no previews) |
+| Ultimate House Interior Pack (June 2020) | CC0 1.0 | `License.txt` (Quaternius) | USE (123, OBJ; no previews) |
+| Ultimate Nature Pack (Jun 2019) | CC0 1.0 | `License.txt` (Quaternius) | USE (150, OBJ; no previews) |
+| Ultimate Space Kit (March 2023) | CC0 1.0 | `License.txt` (Quaternius) | USE (92; no previews) |
+| kenney_building-kit | CC0 1.0 | `License.txt` (Kenney) | USE (79) |
+| kenney_car-kit | CC0 1.0 | `License.txt` (Kenney) | USE (50) |
+| kenney_city-kit-industrial_2.0 | CC0 1.0 | `License.txt` (Kenney) | USE (37) |
+| kenney_city-kit-roads | CC0 1.0 | `License.txt` (Kenney) | USE (95) |
+| kenney_city-kit-suburban_20 | CC0 1.0 | `License.txt` (Kenney) | USE (40) |
+| kenney_cube-pets_1.0 | CC0 1.0 | `License.txt` (Kenney) | USE (24) |
+| kenney_mini-shop_2.1 | CC0 1.0 | `License.txt` (Kenney) | USE (30) |
+| kenney_pirate-kit | CC0 1.0 | `License.txt` (Kenney) | USE (72) |
+| kenney_platformer-kit | CC0 1.0 | `License.txt` (Kenney) | USE (153) |
+| kenney_retro-fantasy-kit | CC0 1.0 | `License.txt` (Kenney) | USE (105) |
+| kenney_space-station-kit | CC0 1.0 | `License.txt` (Kenney) | USE (97) |
+| kenney_train-kit | CC0 1.0 | `License.txt` (Kenney) | USE (103) |
+| kenney_watercraft-pack | CC0 1.0 | `License.txt` (Kenney) | USE (46) |
+| kenney_pattern-pack-extra, kenney_retro-textures-fantasy, kenney_skyboxes, kenney_ui-pack-space-expansion | CC0 1.0 | `License.txt` (Kenney) | KEPT, NOT IMPORTED: 2D textures / sky images / UI, not 3D models (skyboxes: a later sky option) |
+| kenney_blocky-characters_20.zip, kenney_mini-characters.zip | CC0 1.0 | `License.txt` (Kenney) | SKIPPED: byte-identical to the packs already catalogued |
+| Animals (Nov 15 zip), Blocks, Characters, Cube World (Aug 2023), Pixel Blocks | no licence text in the zips | none | EXCLUDED (unclear: they look like Quaternius packs; re-add with the licence file) |
+V2 totals: 1517 new assets (2904 in all), 931 new previews (Kenney packs ship them; the Quaternius packs ship none).
+Factors from one reference model per pack (door ~7, car ~12 long, chair seat ~2.4, pet ~2.6, our character 5.2).
+No brand / logo / Roblox names found (the BRANDS filter in catalog.py runs on every name).
 
 No CC-BY packs arrived. Real brands / logos: none found (a name filter in `catalog.py` also drops brand-like names).
 Nothing from Roblox. The raw packs stay in `reference/blocky-worlds/assets-incoming/` (git-excluded); nothing from them is
