@@ -257,8 +257,8 @@ refunded once; the sweeper does the same for a dead worker).
 | Milo lessons (director rules + free checks) | `blenderKit/director.mjs` (MILO_RULES, storyPlanProblems, miloShotProblems), `pipeline.mjs`, `worlds/worlds.py` (zw_ground, zw_knock), `actions/actions.py` (zx_crowd on the sidewalks), `milo.test.mjs` |
 | Story shape in every writer | `_shared/blockyWorlds/storyShape.js`, `patternBank.js`, `hybrid.js`, `tests/blockyWorldsStoryShape.test.mjs` |
 | "Explain more" + character reference | `_shared/blockyWorlds/adapt.js`, `characterRef.js`, `blocky-worlds-api/index.ts` (actions `adaptStory`, `characterRef`; `start` takes `characters`), `pipeline.mjs --characters`, `tests/blockyWorldsBlenderUi.test.mjs` |
-| The page | `src/components/viral-tools/blocky-worlds/BlenderMaker.jsx`, `blenderMaker.css`, `hooks/useBlockyWorlds.js`, `dev/devApi.js` (`?mock=1&as=owner`), `api/blockyWorldsApi.js` (`?api=local`) |
-| Price model (NOT applied) | `_shared/blockyWorlds/blenderPricing.js`, `docs/blocky-worlds-blender-pricing.patch`, `tests/blockyWorldsBlenderPricing.test.mjs` |
+| The page | `src/components/viral-tools/blocky-worlds/BlenderMaker.jsx`, `blenderMaker.css`, `hooks/useBlockyWorlds.js`, `dev/devApi.js` (`?mock=1&as=owner`), `api/blockyWorldsApi.js` (dev: the local API when it runs), Recent creations, the floating showcase (`public/blocky-worlds/showcase/`: 8 s clips of our own Blender renders) |
+| Price model (APPLIED 2026-11-15) + one price at Write my script |  `_shared/blockyWorlds/blenderPricing.js`, `docs/blocky-worlds-blender-pricing.patch`, `tests/blockyWorldsBlenderPricing.test.mjs`, migrations 20261216100000 (rows) + 20261216200000 (prepay) |
 | Low-balance alert | `_shared/opsHealth.js` (BLENDER_FLOOR_USD $15, red for the owner when the engine is on), `ops-health/index.ts`, `tests/blockyWorldsRunpodAlert.test.mjs` |
 | Workers | `blenderKit/setup.mjs --move-workers` (done 2026-11-15, see below), `blenderKit/endpoint.json` |
 
@@ -272,10 +272,26 @@ per video-second; failure allowance = the refunded failures' spend (everything b
 | ~90 s | $0.25 | $0.16 | $1.47 | $0.11 | $0.29 | $0.46 | $0.40 | **$3.12** | **313** | $6.26 |
 | ~120 s | $0.25 | $0.21 | $1.96 | $0.14 | $0.38 | $0.61 | $0.52 | **$4.07** | **407** | $8.14 |
 
-Today's charge is still the Studio row (60 s 108, 90 s 150, 120 s 192): the Blender runs cost about 2x that. To switch:
-`git apply docs/blocky-worlds-blender-pricing.patch` (pricing.js -> blenderFullCostUsd), update the pinned numbers in
-`tests/blockyWorlds*.test.mjs`, write a prices migration from `PRICE_ROWS` (like 20261214100000), deploy blocky-worlds-api,
-then run the migration. The page shows ONE price after the script (the draft's `credits`); no length picker.
+APPROVED by the owner (2026-11-15) and APPLIED locally: `pricing.js` uses `blenderFullCostUsd` (the patch), the pinned
+test is 219 / 313 / 407, and `supabase/migrations/20261216100000_blocky_worlds_blender_prices.sql` holds the 16 rows
+(prepared, not applied). The Studio rows (108 / 150 / 192) stay live until that migration runs.
+
+## Charging on the Blender page: ONE price per video (owner 2026-11-15, like our other templates)
+- **One price: 313 credits** (`BLENDER_FLAT` in `blenderPricing.js` = the 90 s row). The writer is capped at ~90 s
+  (`writeSec` 80 = ~92 s at the voice's pace; `adapt.js` max 80), so the 90 s row covers every video this page makes. The
+  per-length table is our cost basis for the other paths (the classic page); the user of this page only ever sees 313.
+- **Charged at "Write my script"** (the price sits on the button with our credit symbol). Script rewrites, the voice and
+  the render are included; "Make my video" charges nothing more (it consumes the paid prepay).
+- **Refunds**: the writer fails -> everything back at once; the video fails -> everything back once
+  (`blocky_worlds_refund` on the run, which carries the prepaid credits); no "Make my video" within 7 days -> everything
+  but 25 back once (`blocky_worlds_prepay_expire`, hourly pg_cron). Each refund is idempotent (the row is marked in the
+  statement that picks it).
+- **Switch**: `BLOCKY_WORLDS_PREPAY=on` (function secret), ONLY after migration
+  `20261216200000_blocky_worlds_prepay.sql` (the `blocky_worlds_prepays` table, the RPCs, `start_run(p_prepay)`, the cron):
+  `npx supabase db query --linked -f supabase/migrations/20261216200000_blocky_worlds_prepay.sql` then
+  `npx supabase migration repair --linked --status applied 20261216200000`. Off (today, and on localhost): the same one
+  price is charged at "Make my video" instead, and the page says so.
+- Rollback: unset `BLOCKY_WORLDS_PREPAY` (open prepays still refund through the cron); the table can stay.
 
 ## Workers (done 2026-11-15, the owner's ask; only workersMax changed, images / templates untouched)
 | Endpoint | Before | After |
@@ -297,7 +313,8 @@ cannot render: it waits and is failed + refunded by the sweeper. Rollback:
    Never `reference/` (the kit) or `scripts/blockyWorlds/engine/lib/vision/replan.js`.
 3. Tests: `node --import ./tests/setup.mjs --test tests/blocky*.test.mjs` and
    `node --test scripts/blockyWorlds/blenderKit/*.test.mjs scripts/blockyWorlds/blenderKit/actions/*.test.mjs`.
-4. No migration is needed for this change (characters ride in the existing `card` jsonb; drafts use source `own`).
+4. Migrations, after the blocky-worlds-api deploy: 20261216100000 (the prices) and, before `BLOCKY_WORLDS_PREPAY=on`,
+   20261216200000 (the prepay). Characters ride in the existing `card` jsonb; drafts use source `own`.
 5. Functions: `npx supabase functions deploy blocky-worlds-api` and `npx supabase functions deploy ops-health`; download
    both afterwards and diff.
 6. The worker image: rebuild with `studioWorker/buildContext.mjs` (it copies `blenderKit/` with the new director, worlds.py,
@@ -315,7 +332,7 @@ cannot render: it waits and is failed + refunded by the sweeper. Rollback:
 ## Localhost click-through (before any deploy)
 - `npm run dev` (ONE vite on :5173) and `node scripts/blockyWorlds/localApi.mjs` (the undeployed blocky-worlds-api on
   :8000 with npx deno, real database, keys from .env.local as environment variables).
-- Open `http://localhost:5173/workspace/blocky-worlds?api=local`, signed in as an owner (the built-in owner list, or
+- Open `http://localhost:5173/workspace/blocky-worlds` (the page finds the local API by itself; a dev badge says which), signed in as an owner (the built-in owner list, or
   `BLOCKY_WORLDS_OWNER_EMAILS`). Paid only on clicks: a script ~$0.25, a picture ~$0.001; "Make my video" asks first
   (the localhost price confirm) and starts only when a worker is alive.
 - Free: `?mock=1&as=owner` (fake scripts and video, every screen; `&photo=1` a refused picture, `&fail=1` a failed video).
