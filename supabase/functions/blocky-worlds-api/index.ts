@@ -58,6 +58,7 @@ import { adaptLength, adaptStory, checkStoryText } from "../_shared/blockyWorlds
 import { characterSpec, charactersNote, checkUpload, cleanCharacters, readCharacter, ROLES, roleOf } from "../_shared/blockyWorlds/characterRef.js";
 import { engineFrom, readyEmailOn, STUDIO, studioEtaText, studioStageOf } from "../_shared/blockyWorlds/studio.js";
 import { studioQueueInfo, studioWorkerAlive } from "../_shared/blockyWorlds/studioSupabase.ts";
+import { progressView } from "../_shared/blockyWorlds/studioStages.js";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -195,6 +196,10 @@ async function runView(r: any, { owner = false, queue = null }: { owner?: boolea
     engine: r.engine === "studio" ? "studio" : "pipeline",
     stage: r.engine === "studio" ? studioStageOf(r) : stageOf(r.status, r.pct ?? 0),
     ...(r.engine === "studio" && working ? { etaText: studioEtaText(r.length_sec), emailWhenReady: READY_EMAIL } : {}),
+    // LIVE PROGRESS (the Blender pipeline, blenderKit/progress.mjs; the worker keeps it in the run's render jsonb): the
+    // stage, the percent, the ceiling the page may creep to, what is happening, and when it was written
+    ...(r.engine === "studio" && working && r.render?.progress ? { progress: progressView(r.render.progress) } : {}),
+    claimedAt: r.claimed_at ?? null,
     // the shared line (renderQueue.js): place in line + seconds until it starts while waiting, seconds until ready;
     // etaAt = when they were computed (the page counts down between polls)
     queuePosition: working ? queue?.queuePosition ?? null : null, etaSec: working ? queue?.etaSec ?? null : null,

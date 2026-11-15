@@ -55,3 +55,23 @@ export function studioEtaText(lengthSec) {
   const m = Math.max(10, Math.round(studioEtaSec(lengthSec) / 300) * 5);
   return `about ${m} minutes`;
 }
+
+// ---------------------------------------------------------------- LIVE PROGRESS (the Blender pipeline, 2026-11-15)
+/** the worker's progress (run.render.progress, blenderKit/progress.mjs) as the page sees it: checked and clamped */
+export function progressView(p) {
+  if (!p || typeof p !== "object" || !STAGE_BY[p.stage]) return null;
+  const pct = Math.max(0, Math.min(99.5, Number(p.pct) || 0));
+  const ceil = Math.max(pct, Math.min(99.5, Number(p.ceil) || pct));
+  return { stage: p.stage, pct, ceil, detail: String(p.detail ?? "").replace(/[<>]/g, "").slice(0, 120), at: typeof p.at === "string" ? p.at : null };
+}
+/** no new progress for this long in a step: the page says "taking longer than usual: still working" */
+export const STALE_SEC = 240;
+/** what the bar shows between two server updates: it creeps from the server's percent toward (never past) the step's
+ *  ceiling, about 0.1% every 2 s, slowing as it nears it; never below what it already showed */
+export function creepPct({ pct, ceil, sinceSec, shown = 0 }) {
+  const room = Math.max(0, ceil - 0.3 - pct);
+  const crept = room * (1 - Math.exp(-Math.max(0, sinceSec) / 180));
+  return +Math.max(shown, Math.min(ceil - 0.3, pct + crept)).toFixed(1);
+}
+/** "4 min 05 s" */
+export const elapsedText = (sec) => { const s = Math.max(0, Math.floor(sec)); const m = Math.floor(s / 60); return m ? `${m} min ${String(s % 60).padStart(2, "0")} s` : `${s} s`; };

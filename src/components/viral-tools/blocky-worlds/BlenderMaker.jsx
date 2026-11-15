@@ -1,10 +1,11 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { AlertTriangle, ArrowLeft, ArrowRight, Bell, Check, Clapperboard, Download, Film, ImagePlus, MapPin, Pencil, Play, RefreshCw, Sparkles, Wand2, X } from "lucide-react";
 import { CreditIcon } from "../../ui/zyvo";
+import { emitCreditRefund, emitCreditSpend } from "../../../lib/creditPopEvents";
 import { DEV_MOCK, isWorking, runStage, whichBackend } from "./api/blockyWorldsApi";
 import "./blockyWorlds.css";
 import useIsDesktop from "../cutaway-explainer/hooks/useIsDesktop";
-import { STUDIO_STAGES } from "../../../../supabase/functions/_shared/blockyWorlds/studioStages.js";
+import { creepPct, elapsedText, STALE_SEC, STUDIO_STAGES } from "../../../../supabase/functions/_shared/blockyWorlds/studioStages.js";
 import "./blenderMaker.css";
 
 /**
@@ -59,7 +60,10 @@ export default function BlenderMaker({ flow, pageAccess, onSignUp, onUpgrade, on
   };
   const write = async () => {
     if (flat.charge === "script" && balance > 0 && flat.credits && balance < flat.credits) { onNoCredits?.(flat.credits); return; }
+    const charged = flat.charge === "script" && flat.credits > 0 && pageAccess !== "guest";
+    if (charged) emitCreditSpend(flat.credits, "Blocky Worlds video");
     const r = await guarded(() => (mode === "explain" ? flow.adaptStory(story) : flow.continueStory()));
+    if (charged && !r?.ok) emitCreditRefund(flat.credits, "Blocky Worlds: refunded");
     if (r?.ok) setView("script");
   };
   const toScenes = async () => {
@@ -72,7 +76,9 @@ export default function BlenderMaker({ flow, pageAccess, onSignUp, onUpgrade, on
     const price = paidFor(flow.draft) ? 0 : flat.credits ?? flow.draft?.credits ?? 0;
     if (balance > 0 && balance < price) { onNoCredits?.(price); return; }
     try { if (typeof Notification !== "undefined" && Notification.permission === "default") Notification.requestPermission().catch(() => {}); } catch { /* no notifications */ }
-    await guarded(() => flow.generate());
+    if (price > 0) emitCreditSpend(price, "Blocky Worlds video");
+    const r = await guarded(() => flow.generate());
+    if (price > 0 && !r?.ok) emitCreditRefund(price, "Blocky Worlds: refunded");
   };
   const again = () => { flow.startOver(); setStory(""); setView("topic"); setNotice(null); };
 
@@ -98,7 +104,7 @@ export default function BlenderMaker({ flow, pageAccess, onSignUp, onUpgrade, on
           </div>
         </div>
       )}
-      <div ref={top} className={cx("relative z-10 mx-auto flex w-full flex-col gap-3 px-3 pb-4 pt-3 sm:px-6 lg:gap-4 lg:pt-4", hasRecent ? "max-w-[1300px]" : "max-w-[940px]")}>
+      <div ref={top} className={cx("relative z-10 mx-auto flex w-full flex-col gap-3 px-3 pb-[calc(96px+env(safe-area-inset-bottom))] pt-3 sm:px-6 lg:gap-4 lg:pb-6 lg:pt-4", hasRecent ? "max-w-[1300px]" : "max-w-[940px]")}>
         {!isDesktop && tab === "result" ? (
           <RecentCreations phone recent={flow.recent} onOpen={(r) => { flow.openRun(r); setTab("generate"); }} onDownload={() => flow.sendEvent("downloaded")} />
         ) : <>
@@ -462,10 +468,11 @@ function ConfirmDialog({ flat, draft, onCancel, onGo }) {
 function RunStep({ flow, onAgain, onRetry }) {
   const run = flow.run;
   const working = isWorking(run);
-  const stage = runStage(run);
-  const at = Math.max(0, STUDIO_STAGES.findIndex((s) => s.stage === stage));
-  const pct = run.status === "done" ? 100 : Math.max(3, run.pct ?? STUDIO_STAGES[at]?.pct ?? 0);
   const wasWorking = useRef(working);
+  const refundShown = useRef(null);
+  useEffect(() => {
+    if (run.status === "failed" && run.refunded && refundShown.current !== run.id && wasWorking.current) { refundShown.current = run.id; emitCreditRefund(run.credits, "Blocky Worlds: refunded"); }
+  }, [run.status, run.refunded, run.id, run.credits]);
   const [party, setParty] = useState(false);
   useEffect(() => {
     if (run.status === "done" && wasWorking.current) {
@@ -510,21 +517,49 @@ function RunStep({ flow, onAgain, onRetry }) {
     );
   }
   return (
+    <LiveProgress run={run} readyEmail={flow.access?.readyEmail} />
+  );
+}
+
+/** THE PROGRESS SCREEN (owner 2026-11-15: "never a frozen bar"): the server's live progress (run.progress: the stage, the
+ *  percent, the ceiling, what is happening, when) + a bar that creeps toward the step's ceiling between updates (every
+ *  2 s, never past it), the time elapsed, a "still working" pulse, and an honest note when a step takes long */
+function LiveProgress({ run, readyEmail }) {
+  const [now, setNow] = useState(() => Date.now());
+  const shown = useRef(0);
+  useEffect(() => { const t = setInterval(() => setNow(Date.now()), 2000); return () => clearInterval(t); }, []);
+  const p = run.progress ?? null;
+  const stage = p?.stage ?? runStage(run);
+  const at = Math.max(0, STUDIO_STAGES.findIndex((x) => x.stage === stage));
+  const floor = STUDIO_STAGES[at]?.pct ?? 0, next = STUDIO_STAGES[at + 1]?.pct ?? 99;
+  const base = Math.max(3, p?.pct ?? run.pct ?? floor, floor);
+  const ceil = Math.max(base, p?.ceil ?? next);
+  const sinceSec = (now - (Date.parse(p?.at ?? "") || run.stepAt || now)) / 1000;
+  const pct = creepPct({ pct: base, ceil, sinceSec, shown: shown.current });
+  shown.current = pct;
+  const startedAt = Date.parse(run.claimedAt ?? "") || Date.parse(run.createdAt ?? "") || now;
+  const stale = sinceSec > STALE_SEC;
+  return (
     <Card n={4} title="Making your video…" sub="About 25–30 minutes. You can leave this page: we'll let you know when it's ready.">
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-4" data-testid="bwm-progress">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <Blocks label={<span className="text-[20px] font-black">{STUDIO_STAGES[at]?.label ?? "Getting ready"}</span>} />
-          <span className="text-[28px] font-black text-[#bef264]">{pct}%</span>
+          <Blocks label={<span className="text-[19px] font-black">{STUDIO_STAGES[at]?.label ?? "Getting ready"}</span>} />
+          <span className="text-[26px] font-black tabular-nums text-[#bef264]" data-testid="bwm-pct">{pct.toFixed(1)}%</span>
         </div>
-        <div className="bwm-bar" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}><span style={{ width: `${pct}%` }} /></div>
+        <div className="bwm-bar" role="progressbar" aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100}><span style={{ width: `${pct}%` }} /></div>
+        <div className="flex flex-wrap items-center justify-between gap-2 text-[15.5px] font-bold">
+          <span className="inline-flex items-center gap-2 text-white" data-testid="bwm-detail"><span className="bwm-live-dot" aria-hidden="true" />{p?.detail || STUDIO_STAGES[at]?.label || "Working"}<span className="text-white/60">· still working…</span></span>
+          <span className="tabular-nums text-white/75">{elapsedText((now - startedAt) / 1000)} elapsed</span>
+        </div>
+        {stale && <p className="rounded-xl border-2 border-[#ffd23f] bg-[#2a2410] px-3 py-2 text-[15px] font-bold text-white" role="status">Taking longer than usual: still working. You can leave this page; nothing is lost.</p>}
         <ol className="grid gap-2 sm:grid-cols-3">
-          {STUDIO_STAGES.map((s, i) => (
-            <li key={s.stage} className={cx("flex items-center gap-3 rounded-2xl border-2 px-3 py-2.5 text-[16px] font-bold", i < at ? "border-[#bef264]/50 bg-[#18210f] text-white" : i === at ? "bwm-stage-now border-[#bef264] bg-[#22301a] text-white" : "border-white/12 bg-[#0f1415] text-white/70")}>
-              <span className={cx("grid h-8 w-8 shrink-0 place-items-center rounded-lg text-[15px] font-black", i <= at ? "bg-[#bef264] text-[#0d1208]" : "bg-white/10 text-white")}>{i < at ? <Check className="h-4 w-4" strokeWidth={3.5} /> : i + 1}</span>{s.label}
+          {STUDIO_STAGES.map((x, k) => (
+            <li key={x.stage} className={cx("flex items-center gap-3 rounded-2xl border-2 px-3 py-2 text-[15px] font-bold", k < at ? "border-[#bef264]/50 bg-[#18210f] text-white" : k === at ? "bwm-stage-now border-[#bef264] bg-[#22301a] text-white" : "border-white/12 bg-[#0f1415] text-white/70")}>
+              <span className={cx("grid h-7 w-7 shrink-0 place-items-center rounded-lg text-[14px] font-black", k <= at ? "bg-[#bef264] text-[#0d1208]" : "bg-white/10 text-white")}>{k < at ? <Check className="h-4 w-4" strokeWidth={3.5} /> : k + 1}</span>{x.label}
             </li>
           ))}
         </ol>
-        <p className="flex items-center gap-2 text-[16px] font-bold text-white/80"><Bell className="h-5 w-5 text-[#bef264]" />We'll send a notification{flow.access?.readyEmail ? " and an email" : ""} when it's done.</p>
+        <p className="flex items-center gap-2 text-[15.5px] font-bold text-white/85"><Bell className="h-5 w-5 shrink-0 text-[#bef264]" />We'll send a notification{readyEmail ? " and an email" : ""} when it's done.</p>
       </div>
     </Card>
   );
