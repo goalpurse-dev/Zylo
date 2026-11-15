@@ -40,6 +40,8 @@ export default function useBlockyWorlds({ enabled = true } = {}) {
   const [scenePlan, setScenePlan] = useState(null);
   const [recent, setRecent] = useState([]);
   const [removeWatermark, setRemoveWatermark] = useState(false);
+  // THE BLENDER UI (owner-only first): the user's character references (characterRef.js specs, never the pictures)
+  const [characters, setCharacters] = useState([]);
   const poll = useRef(null);
 
   useEffect(() => {
@@ -242,10 +244,19 @@ export default function useBlockyWorlds({ enabled = true } = {}) {
     if (!draft) return { ok: false };
     if (edited) { const s = await saveEdits(); if (!s.ok) return s; }
     const plan = access?.scenePlan && scenePlan?.draftId === draft.id && !edited ? { scenePlan: { scenes: scenePlan.scenes } } : {};
-    const r = await attempt("starting", () => worldsCall("start", { draftId: draft.id, removeWatermark, ...plan }));
+    const r = await attempt("starting", () => worldsCall("start", { draftId: draft.id, removeWatermark, ...plan, ...(characters.length ? { characters } : {}) }));
     if (r.ok) { setRun(r.value); setRecent((list) => [r.value, ...list]); }
     return r;
-  }, [attempt, draft, edited, saveEdits, removeWatermark, access, scenePlan]);
+  }, [attempt, draft, edited, saveEdits, removeWatermark, access, scenePlan, characters]);
+
+  /** "Explain more": the user's long description / full narration, adapted to our rules on the server (adapt.js) */
+  const adaptStory = useCallback(async (text) => {
+    const r = await attempt("adapting", () => worldsCall("adaptStory", { text, characters }));
+    if (r.ok) { setDraft(r.value); setEdited(null); setTakes([]); }
+    return r;
+  }, [attempt, characters]);
+  /** one character picture -> our kit spec (one cheap vision call); the picture goes to that call only */
+  const readCharacter = useCallback((image, role) => worldsCall("characterRef", { image, role }), []);
 
   const sendEvent = useCallback((kind) => (run ? worldsCall("event", { runId: run.id, kind }).catch(() => {}) : null), [run]);
   const openRun = useCallback((r) => setRun(r), []);
@@ -257,5 +268,6 @@ export default function useBlockyWorlds({ enabled = true } = {}) {
     busy, pickedId, writeFromIdea, picked, pickIdea, continueStory, takes, tryTake, saveOwn, rewrite, moveToTown, fixOpener, fixPart, removeWatermark, setRemoveWatermark,
     run, recent, generate, retryRun, rewriteAndRetry, sendEvent, openRun, startOver,
     scenePlan, loadScenePlan, changeScene,
+    characters, setCharacters, adaptStory, readCharacter,
   };
 }

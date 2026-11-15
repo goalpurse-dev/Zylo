@@ -4,6 +4,7 @@ import { Boxes, ChevronLeft, FlaskConical } from "lucide-react";
 import useIsDesktop from "../cutaway-explainer/hooks/useIsDesktop";
 import { DEV_MOCK } from "./api/blockyWorldsApi";
 import useBlockyWorlds from "./hooks/useBlockyWorlds";
+import BlenderMaker from "./BlenderMaker";
 import ResultPanel from "./ResultPanel";
 import ScriptStep from "./ScriptStep";
 import { ActionBar, ActionButton } from "./StepShell";
@@ -11,6 +12,7 @@ import StoryStep from "./StoryStep";
 import "./blockyWorlds.css";
 
 const STEPS = ["Story", "Script", "Video"];
+const UI = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("ui") : null;
 
 /**
  * The Blocky Worlds workspace, in Cartoon Drive By's layout: one calm builder panel on the left (a small header, the
@@ -89,6 +91,9 @@ export default function BlockyWorldsStudio({ access: pageAccess, onSignUp, onUpg
     if (!import.meta.env.DEV) return <Navigate to="/" replace />;
     return <Closed access={flow.access} signedOut={pageAccess === "guest"} onSignUp={onSignUp} />;
   }
+  // THE BLENDER MAKER (owner-only first, 2026-11-15): the server says who sees it (access.blenderUi); ?ui=classic keeps
+  // the old page for a side-by-side look
+  if (flow.access.blenderUi && UI !== "classic") return <BlenderMaker flow={flow} pageAccess={pageAccess} onSignUp={onSignUp} onUpgrade={onUpgrade} onNoCredits={onNoCredits} balance={balance} />;
 
   const builder = (
     <section className="relative flex min-h-[560px] flex-col overflow-hidden rounded-2xl border border-lime-300/[0.13] bg-[#0C0F0D] shadow-[inset_0_1px_0_rgba(190,242,100,.05)] lg:h-full lg:min-h-0">

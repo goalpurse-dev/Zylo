@@ -139,3 +139,15 @@ test("the API: both new actions are owner-only, the picture is never stored, cha
   assert.match(steps, /"--characters", chars/);
   assert.match(pipe, /THE USER'S CHARACTER REFERENCES/);
 });
+
+test("the page: four numbered steps, no length picker, the price confirm on localhost, reduced motion respected, owner-only switch", () => {
+  const ui = read("src/components/viral-tools/blocky-worlds/BlenderMaker.jsx"), css = read("src/components/viral-tools/blocky-worlds/blenderMaker.css");
+  assert.match(ui, /\["topic", "Topic"\], \["script", "Script"\], \["scenes", "Scenes"\], \["make", "Make my video"\]/);
+  assert.doesNotMatch(ui, /type="range"|lengthSec\s*=\s*\{/, "no length selector");
+  assert.match(ui, /LOCAL \? setConfirm\(true\) : make\(\)/);
+  assert.match(ui, /Start a real video for \{draft\?\.credits\} credits\?/);
+  assert.match(css, /prefers-reduced-motion: reduce/);
+  const studio = read("src/components/viral-tools/blocky-worlds/BlockyWorldsStudio.jsx");
+  assert.match(studio, /flow\.access\.blenderUi && UI !== "classic"/);
+  for (const r of ROLES) assert.ok(ui.includes(`"${r}"`), r);
+});
