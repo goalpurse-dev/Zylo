@@ -19,7 +19,7 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { ledger, stepTimes } from "../studio/ledger.mjs";
 import { loadEnv } from "../engine/runpod/client.mjs";
-import { makeDirector, systemPrompt, tileShots, assemble, staticCheck, wordLines, planLocations, planProblems, shotProblems, heroOf, giantSuspect, MODELS, BATCH, MIN_LOCATIONS, PRICING } from "./director.mjs";
+import { makeDirector, systemPrompt, tileShots, assemble, staticCheck, wordLines, planLocations, planProblems, storyPlanProblems, planLines, shotProblems, heroOf, giantSuspect, MODELS, BATCH, MIN_LOCATIONS, PRICING } from "./director.mjs";
 import { captionColors } from "./speakers.mjs";
 import { LOCATIONS, DRESS } from "./worlds/locations.mjs";
 import { runpod, RATE, BOOT_S, GPU, finalEstimate, previewEstimate, fitLimits, chunkLimitS, chunkFloorS, finishLimitS, finishFloorS } from "./rp.mjs";
@@ -140,6 +140,9 @@ const worldDocs = WORLDS ? [
   "  ZW_INFO = zw_build(\"downtown_street\", t0, t1, dict(ZW_STORY_DRESS, time=\"night\"))   # a per-shot change of the dress",
   "  cam = Cam(); zw_spot(cam, \"downtown_street\", \"close\", t0, t1)     # a TESTED camera spot (wide / street / close / skyline) with a push",
   "  or your own cam.key / cam.push near a tested spot (same height range, never inside a wall); stand characters at ZW_INFO marks, e.g. p = ZW_INFO[\"sidewalk_east\"]",
+  "  BACKGROUND WALKERS: x = ZW_INFO[\"sidewalk_east\"][0] (or west, the sidewalk's middle), walk ALONG y (x unchanged); cross the street only at a crosswalk",
+  "  zw_ground(ch, t, surface, x, y)        # stands ch ON a roof / table / shelf: surface = the object (its top is measured) or the top height",
+  "  zw_knock(ob, t0, t1, dx, dy, spin)     # a car / prop that is hit slides dx, dy and spins (a runaway vehicle PUSHES cars aside, never through)",
   "  NEVER rebuild a world or call the kit's set builders yourself for a library place; build ONLY the story's own new props / creatures (header_code functions) and place them in the dressed world.",
   // (first library test: 19 of 21 crashes were chars.Char's default face "eddie", whose texture the kit does not ship)
   "  EVERY chars.Char(...) passes face= one of: hero, kid, girl, mustache, plain, villain, hero_blood (the kit ships only these face textures; the default face crashes). Colours are \"#rrggbb\" strings (never empty).",
@@ -179,11 +182,11 @@ if (!state.plan) {
   // THE PLAN CHECK (director.mjs planProblems): 3+ locations (first test: almost every shot in the same cabin aisle),
   // ~50 cuts a minute, one hero + distinct colours per character, anchors that come back in the ending; one re-plan,
   // then a stop (before any GPU money)
-  let probs = planProblems(r.data, dur, { library: WORLDS ? LIB_IDS : null });
+  let probs = [...planProblems(r.data, dur, { library: WORLDS ? LIB_IDS : null }), ...storyPlanProblems(r.data ?? {}, planLines(r.data?.shots ?? [], lineOf, script.lines))];
   if (probs.length) {
     say(`plan check: ${probs.length} problem(s): ${probs.join(" | ")}`);
     r = await L.step("director_plan", () => D.plan({ brief: `PLAN CHECK FAILED:\n${probs.map((x) => `- ${x}`).join("\n")}\nRe-plan the WHOLE video (same answer format: title, header_code, new_builds, style_sheet, anchors, every shot with id, w0, desc, location) so every point above is met (add any set builders to header_code).` }));
-    probs = planProblems(r.data, dur, { library: WORLDS ? LIB_IDS : null });
+    probs = [...planProblems(r.data, dur, { library: WORLDS ? LIB_IDS : null }), ...storyPlanProblems(r.data ?? {}, planLines(r.data?.shots ?? [], lineOf, script.lines))];
     if (probs.length) throw new Error(`plan check: still failing after a re-plan: ${probs.join(" | ")}: stopped before any render`);
   }
   const locs = planLocations(r.data.shots ?? []);
@@ -273,7 +276,7 @@ let shp = shotProblems({ shots: plan.shots, bodies: state.bodies, hero: heroOf(p
 if (Object.keys(shp).length && !state.shotFixed) {
   state.shotFixed = true;
   const ids = Object.keys(shp).map(Number).slice(0, 2 * BATCH);
-  const text = [`THE SHOT CHECK found these problems (never the same camera spot twice in a row; the hero ${heroOf(plan.styleSheet) ?? ""} on screen in at least half the shots; no camera inside or behind a wall / building). Rewrite ONLY these shots' bodies; header_append "" unless a helper must change.`,
+  const text = [`THE SHOT CHECK found these problems (never the same camera spot twice in a row; the hero ${heroOf(plan.styleSheet) ?? ""} on screen in at least half the shots; no camera inside or behind a wall / building; background people only on sidewalks / crosswalks; no walk through a standing character; zw_ground for anyone on a roof / table / shelf; at most 2 near-identical shots in a row). Rewrite ONLY these shots' bodies; header_append "" unless a helper must change.`,
     ...ids.map((id) => `- shot ${id}: ${shp[id]}\n  current body:\n${state.bodies[id]}`)].join("\n");
   let r = null;
   // the caps cannot fund the writing fix: never a stop; the problems ride into fix round 1 (as urgent as a crash)

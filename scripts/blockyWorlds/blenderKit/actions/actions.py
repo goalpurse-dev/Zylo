@@ -27,6 +27,7 @@
 
 ZX_CATCH = {"pivot_y": 171.0, "edge_z": 24.0, "front": -0.5, "size": 7.0, "phi": 40.0}
 ZX_KNEEL = {"hip": 0.5, "shoulder": 1.55, "arm": 1.55, "hand": 0.5}
+ZX_LANE = (-7.3, 7.3)   # downtown's street lane (worlds.py ZW_T["lanes"]); the sidewalks are 7..12 on each side
 
 
 def zx_kneel_hand(size, phi):
@@ -95,17 +96,35 @@ def zx_person(name, t0, t1, expr="scream", seed=0, shirt=None, hair=None, face=N
                                   hair_color=rnd.choice(["#3a2a1a", "#5a3a22", "#d9a441", "#1c1c1c"]), face=face or rnd.choice(ZX_FACES)), t0, t1, expr)
 
 
-def zx_crowd(name, n, t0, t1, y0, y1, expr="scream", seed=0, xspan=9.0, run_t1=None, cheer=False):
-    """n small townsfolk running from y0 to y1 across the street (staggered, never in a line); on screen t0..t1, running
-    until run_t1 (default t1); cheer=True: arms up and a jump when they arrive"""
+def zx_crowd_x(x, avoid=None):
+    """a crowd member's x: never in the street (MILO LESSON, owner 2026-11-15: the crowd ran down the middle of the
+    street) -> the nearest sidewalk side (zw_off_lane, the same lanes as the background people); and it PARTS around
+    `avoid` = (ax, ay, r) (the hero): nobody runs through him"""
+    if avoid is not None and abs(x - avoid[0]) < avoid[2]:
+        x = avoid[0] + (avoid[2] if x >= avoid[0] else -avoid[2])
+    x0, x1 = ZX_LANE
+    if x0 - 0.9 < x < x1 + 0.9:      # in the street: onto the sidewalk on its side, spread over the sidewalk's width
+        x = x0 - 1.0 - (abs(x - x0) % 2.6) if x < (x0 + x1) / 2 else x1 + 1.0 + (abs(x1 - x) % 2.6)
+    return x
+
+
+def zx_crowd(name, n, t0, t1, y0, y1, expr="scream", seed=0, xspan=9.0, run_t1=None, cheer=False, avoid=None, street=False):
+    """n small townsfolk running from y0 to y1 (staggered, never in a line) ON THE SIDEWALKS (street=True only when the
+    line puts a crowd in the street); avoid=(x, y, r): the crowd parts around that point (the hero); on screen t0..t1,
+    running until run_t1 (default t1); cheer=True: arms up and a jump when they arrive"""
     out = []
     rnd = random.Random(seed)
     te = t1 if run_t1 is None else min(t1, run_t1)
     for i in range(n):
         x = -xspan + (2 * xspan) * (i + 0.5) / n + rnd.uniform(-0.8, 0.8)
+        x2 = x + rnd.uniform(-1.5, 1.5)
+        if not street:
+            x, x2 = zx_crowd_x(x, avoid), zx_crowd_x(x2, avoid)
+        elif avoid is not None:
+            x, x2 = zx_crowd_x(x, avoid) if abs(x - avoid[0]) < avoid[2] else x, zx_crowd_x(x2, avoid) if abs(x2 - avoid[0]) < avoid[2] else x2
         dy = rnd.uniform(-3, 3)
         k = zx_person("%s%d" % (name, i), t0, t1, expr, seed * 31 + i)
-        k.walk(t0, te, (x, y0 + dy, 0), (x + rnd.uniform(-1.5, 1.5), y1 + dy, 0), rate=3.6, swing=48, arm=55, bob=0.3)
+        k.walk(t0, te, (x, y0 + dy, 0), (x2, y1 + dy, 0), rate=3.6, swing=48, arm=55, bob=0.3)
         if cheer and te + 0.1 < t1:
             k.act(te + 0.03 * i, "cheer")
         out.append(k)

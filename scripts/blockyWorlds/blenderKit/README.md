@@ -157,3 +157,22 @@ fixed every crash (14 vision issues left); round 2 skipped by the cap.
   - the API action `scenePlan` returns an automatic plan from the library words; `start` takes `scenePlan` and stores it in `run.card.scene_plan`;
   - the page's `ScenePlan.jsx` (on the script step) lets the owner change a scene's place: pick from the list, or type a place that maps to the closest one;
   - the worker passes the plan to the pipeline in library mode.
+
+## The Milo lessons (2026-11-15, free; `director.mjs` MILO_RULES + checks, tests in `milo.test.mjs`)
+Eleven permanent director rules from the owner's review of "Every Laugh, I Grow" (collision, sidewalks, grounding,
+introducing named characters, vehicles push cars aside, landmarks readable from every angle, the gap close shot,
+important people never tiny, at most 2 near-identical shots in a row, no tree blobs, the last line literal). Checks:
+- plan (`storyPlanProblems`, with `planLines`): a named character's first line shows them (not a hand), a tiny-gap line
+  gets a close "gap" shot, nothing "through the cars / crowd", an emotional beat never "tiny", 3 near-identical planned
+  shots, the last shot's desc carries the last line's key words;
+- bodies (`miloShotProblems` inside `shotProblems`): background walkers in a street lane (literal or ZW_INFO-relative
+  coordinates; the hero is exempt), a walk path through a standing character, "on the roof / table / shelf" without
+  `zw_ground`, 3 near-identical shots (same place, camera kind and action);
+- checker: every rule that only shows on the frames (people in the street, floating, through, tiny, tree blob,
+  unreadable landmark).
+Why the lane guard missed in Milo: it only guarded the world's own background people (`zw_people`). The street crowds
+came from the action library's `zx_crowd` (x across +-9 = the whole street) and from the director's own walkers
+offset from `ZW_INFO['sidewalk_west']` (-8.0, 0.7 from the lane: -8 + 1 = -7 is in the street). Fixed: `zx_crowd` runs
+on the sidewalks (`avoid=` parts it around the hero; `street=True` only when the line says so), the sidewalk marks
+sit in the sidewalks' middle (+-9.5 downtown, +-9 brick), and the body check reads those offsets. New helpers in
+`worlds.py`: `zw_top`, `zw_ground` (feet on a surface's measured top), `zw_knock` (a hit car slides and spins away).

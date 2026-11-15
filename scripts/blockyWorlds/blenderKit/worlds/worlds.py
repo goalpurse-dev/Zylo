@@ -490,6 +490,44 @@ def zw_sitters(t0, t1, seats, seed=3):
         instance("zw_sitter%d_%d" % (seed, k), zw_person_src("sit", k % 2, t0, t1), (x + math.sin(a) * 0.15, y - math.cos(a) * 0.15, z), rot=(0, 0, r))
 
 
+# ---- the Milo lessons (owner 2026-11-15): GROUNDING + VEHICLES THAT PUSH CARS ASIDE
+def zw_top(ob):
+    """the world-space top (highest z) of an object and its children: what a character stands on"""
+    if ob is None:
+        return 0.0
+    top = None
+    for o in [ob] + list(ob.children_recursive):
+        if o.type != "MESH" and o is not ob:
+            continue
+        for c in o.bound_box:
+            z = (o.matrix_world @ Vector(c)).z
+            top = z if top is None or z > top else top
+    return 0.0 if top is None else top
+
+
+def zw_ground(ch, t, surface, x, y, **pose):
+    """stand ch ON a surface at (x, y): surface = an object (its top is measured) or a top height (a number); the feet
+    touch the top, never floating, never sunk in (a roof, a table, a shelf, a car)"""
+    z = float(surface) if isinstance(surface, (int, float)) else zw_top(surface)
+    ch.pose(t, loc=(x, y, z), **pose)
+    return z
+
+
+def zw_knock(ob, t0, t1, dx, dy, spin=90.0):
+    """a car / prop that is hit at t0 slides (dx, dy) and spins `spin` degrees by t1, easing out (pushed aside, never
+    driven through)"""
+    x, y, z = ob.location
+    rz = ob.rotation_euler[2]
+    ob.keyframe_insert("location", frame=F(t0))
+    ob.keyframe_insert("rotation_euler", index=2, frame=F(t0))
+    ob.location = (x + dx, y + dy, z)
+    ob.rotation_euler[2] = rz + math.radians(spin)
+    ob.keyframe_insert("location", frame=F(t1))
+    ob.keyframe_insert("rotation_euler", index=2, frame=F(t1))
+    set_interp(ob, "location", F(t0), "QUAD", "EASE_OUT")
+    return ob
+
+
 # library cars (front toward -Y at rot 0, the glTF / OBJ convention after import) + their pastel-ish colours
 ZA_CARS = ["kaykit_car_sedan", "rveh_car_hatchback_citrus", "kaykit_car_taxi", "rveh_car_coupe_red", "kaykit_car_stationwagon",
            "rveh_car_mpv_violet", "kaykit_car_hatchback", "rveh_car_van_blue", "rveh_car_micro_green", "rveh_car_minibus_orange",
@@ -805,7 +843,7 @@ def zw_downtown(t0, t1, dress):
     if zw_night():
         for k in range(6):
             light("zw_nl%d" % k, "POINT", ((-1) ** k * 9, 10 + k * 25, 7), 900, (1.0, 0.82, 0.55), 1.5)
-    return dict(street=(0, 40, 0), sidewalk_east=(8.0, 36, 0.3), sidewalk_west=(-8.0, 36, 0.3), plaza=(0, -12, 0.12), fountain=(0, -26, 0), landmark=(0, 165, 0))
+    return dict(street=(0, 40, 0), sidewalk_east=(9.5, 36, 0.3), sidewalk_west=(-9.5, 36, 0.3), plaza=(0, -12, 0.12), fountain=(0, -26, 0), landmark=(0, 165, 0))
 
 
 # ---------------------------------------------------------------- SUBURB (street along X)
@@ -1103,7 +1141,7 @@ def zw_brick_city(t0, t1, dress):
     if zw_night():
         for k in range(5):
             light("zw_bnl%d" % k, "POINT", ((-1) ** k * 9, 10 + k * 30, 7), 900, (1.0, 0.78, 0.5), 1.5)
-    return dict(street=(0, 40, 0), stoop=(7.6, 40, 0.3), alley=(-18, 74, 0), factory=(0, 170, 0))
+    return dict(street=(0, 40, 0), stoop=(7.6, 40, 0.3), alley=(-18, 74, 0), factory=(0, 170, 0), sidewalk_east=(9, 40, 0.3), sidewalk_west=(-9, 40, 0.3))
 
 
 # ---------------------------------------------------------------- INTERIORS (each at the origin; open toward -Y)

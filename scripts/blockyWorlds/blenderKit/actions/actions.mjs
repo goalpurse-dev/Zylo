@@ -57,6 +57,7 @@ export const ACTIONS = Object.freeze([
       "strain: the same hold; M.face(t0, eyes='squint', mouth='grimace'); zx_catch_spot(cam, 'face_kneel', plan, t0, t1)   # (zw_giant_cam assumes a standing giant)",
       "set:    zx_topple(piv, t0, t1, plan['theta'], 0, 'set'); zx_catch_pose(M, t0, plan); M.pose(t1, armL=(150, 10), armR=(150, 10)); zx_catch_spot(cam, 'front_left_high', plan, t0, t1)   # or 'side'",
       "cheer:  zx_stand(M, t0, plan); zx_crowd('out', 10, t0, t1, 168, 150, 'joy'); zx_hug(mom, t0, t1, (0.5 * plan['size'], plan['root'][1] + 0.5 * plan['size']), (0, 168)); zx_catch_spot(cam, 'door', plan, t0, t1)",
+      "zx_crowd runs the crowd ON THE SIDEWALKS (Milo lesson: never down the street); avoid=(x, y, r) parts it around the hero; street=True only when the line itself puts the crowd in the street",
       "every zx_ call takes the shot's t0 / t1; grow the giant with zw_grow(M, t0, t0 + 0.05, size, size) right after creating him",
     ],
   }),
