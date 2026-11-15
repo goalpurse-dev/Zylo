@@ -79,7 +79,7 @@ test("the user's text: at least 25 words, at most 8000 characters; the length co
   assert.equal(adaptLength(40), 80);
   assert.equal(adaptLength(1000), ADAPT.maxSec);
   assert.equal(adaptLength(200), 60);
-  assert.equal(adaptLength(380), 90);
+  assert.equal(adaptLength(380), 80, "capped: ~90 s of video");
 });
 
 test("the prompt keeps the user's story as DATA and carries every rule", () => {
@@ -145,7 +145,17 @@ test("the page: four numbered steps, no length picker, the price confirm on loca
   assert.match(ui, /\["topic", "Topic"\], \["script", "Script"\], \["scenes", "Scenes"\], \["make", "Make my video"\]/);
   assert.doesNotMatch(ui, /type="range"|lengthSec\s*=\s*\{/, "no length selector");
   assert.match(ui, /LOCAL \? setConfirm\(true\) : make\(\)/);
-  assert.match(ui, /Start a real video for \{draft\?\.credits\} credits\?/);
+  assert.match(ui, /Start a real video for <Cr n=\{flat\.credits\}/);
+  // ONE price with OUR credit symbol (the app's CreditIcon), on the Write my script button, and the rule in words
+  assert.match(ui, /import \{ CreditIcon \} from "\.\.\/\.\.\/ui\/zyvo";/);
+  assert.match(ui, /Write my script\{flat\.credits != null && <span[^>]*data-testid="bwm-write-price"><Cr n=\{flat\.credits\} \/>/);
+  assert.doesNotMatch(ui, /⚡|charged only when you press|\$\{credits\} credits|\{run\.credits\} credits/);
+  assert.match(ui, /Script rewrites, the voice and the render are included\. If the video fails, all of it comes back/);
+  // recent creations + the floating showcase (our own clips, 2xl only, paused for reduced motion)
+  assert.match(ui, /Recent creations/);
+  assert.match(ui, /\/blocky-worlds\/showcase\/\$\{k\}\.mp4/);
+  assert.match(ui, /sticky top-0 z-0 hidden h-0 2xl:block/);
+  assert.match(ui, /prefers-reduced-motion: reduce/);
   assert.match(css, /prefers-reduced-motion: reduce/);
   const studio = read("src/components/viral-tools/blocky-worlds/BlockyWorldsStudio.jsx");
   assert.match(studio, /\(flow\.access\.blenderUi \?\? flow\.access\.owner\) && UI !== "classic"/);
@@ -156,4 +166,27 @@ test("the page: four numbered steps, no length picker, the price confirm on loca
   // kept from the classic page: the hero, the mood tabs, "Paste my own script", the preview + "Your videos"
   for (const k of ["In this town&hellip;", "Idea moods", "Paste my own script", "<ResultPanel"]) assert.ok(ui.includes(k), k);
   for (const r of ROLES) assert.ok(ui.includes(`"${r}"`), r);
+});
+
+test("ONE price at Write my script (BLOCKY_WORLDS_PREPAY=on): the charge, the writer-failure refund, the start that uses it, the 7-day expiry", () => {
+  const api = read("supabase/functions/blocky-worlds-api/index.ts");
+  const fw = api.slice(api.indexOf("async function flatWrite"), api.indexOf("async function openPrepay"));
+  // capped at ~90 s, charged BEFORE the writer, everything back at once if the writer fails, linked to the draft
+  assert.match(fw, /lengthSec: Math\.min\(Number\(body\?\.lengthSec \?\? BLENDER_FLAT\.writeSec\) \|\| BLENDER_FLAT\.writeSec, BLENDER_FLAT\.writeSec\)/);
+  assert.ok(fw.indexOf('rpc("blocky_worlds_prepay"') < fw.indexOf("out = await route(req, inner, trace)"), "charged before the writer runs");
+  assert.match(fw, /blocky_worlds_prepay_refund", \{ p_prepay: pre\.id, p_keep: 0, p_why: "writer_failed" \}/);
+  assert.match(fw, /update\(\{ draft_id: out\.id \}\)/);
+  assert.match(api, /if \(\(trace\.action === "writeScript" \|\| trace\.action === "adaptStory"\) && body\?\.flat === true\) return await flatWrite/);
+  assert.match(api, /const prepayOn = \(who: any\) => PREPAY && Boolean\(who\?\.owner\);/);
+  // start: the paid prepay is consumed (no second charge); quote shows the one price
+  assert.match(api, /\.\.\.\(prepaid \? \{ p_prepay: prepaid\.id \} : \{\}\)/);
+  assert.match(api, /credits: flatDraft \? BLENDER_FLAT\.credits : PRICES\[lengthSec\]/);
+  const sql = read("supabase/migrations/20261216200000_blocky_worlds_prepay.sql");
+  assert.match(sql, /CREATE TABLE IF NOT EXISTS public\.blocky_worlds_prepays/);
+  assert.match(sql, /WHERE id = p_prepay AND refunded_at IS NULL AND run_id IS NULL/, "a single, idempotent refund; never after a run used it");
+  assert.match(sql, /blocky_worlds_prepay_refund\(r\.id, r\.keep_credits, 'expired_unused'\)/);
+  assert.match(sql, /expires_at < now\(\)/);
+  assert.match(sql, /p_prepay uuid DEFAULT NULL/);
+  assert.match(sql, /credits_charged, env, engine, prepay_id\)/, "the run carries the prepaid credits: blocky_worlds_refund gives the whole price back once");
+  assert.match(sql, /cron\.schedule\('blocky-worlds-prepay-expire'/);
 });

@@ -1,5 +1,5 @@
-// Blocky Worlds: THE BLENDER ENGINE'S MEASURED COST MODEL (2026-11-15). NOT the live price yet: pricing.js still prices
-// the Studio engine; docs/blocky-worlds-blender-pricing.patch switches it after the owner's go.
+// Blocky Worlds: THE BLENDER ENGINE'S MEASURED COST MODEL (2026-11-15). The owner approved it: pricing.js prices with it
+// (docs/blocky-worlds-blender-pricing.patch, applied 2026-11-15; the rows: migration 20261216100000).
 //
 // The rule (pricing.js): 1 credit = $0.01 of OUR full real cost; the user pays $0.02 a credit (2x our cost).
 // Measured on the four real Blender runs (report.json / costs.json of each run):
@@ -40,6 +40,13 @@ export const blenderCredits = (sec, R = BLENDER_RATES) => Math.ceil(blenderFullC
 export function blenderPriceTable(secs = [60, 90, 120], R = BLENDER_RATES) {
   return secs.map((sec) => ({ sec, parts: blenderAttemptCost(sec, R), allowanceUsd: blenderFailureAllowance(sec, R), costUsd: blenderFullCostUsd(sec, R), credits: blenderCredits(sec, R), userUsd: r4(blenderCredits(sec, R) * 0.02) }));
 }
+/** THE BLENDER PAGE'S ONE PRICE (owner 2026-11-15, like our other templates): a flat price per video = the 90 s row,
+ *  charged when the user presses "Write my script" (rewrites, voice and render included). The writer is capped so the
+ *  video stays at ~90 s (writeSec 80: realSeconds 80 = ~92 s at the voice's pace; checkScript refuses longer), so the
+ *  90 s row covers every video. Refunds: the whole price when the video fails (blocky_worlds_refund, once); all but
+ *  keepCredits (the script) when "Make my video" is never pressed within expireDays (blocky_worlds_prepay_expire). */
+export const BLENDER_FLAT = Object.freeze({ credits: blenderCredits(90), priceRowSec: 90, writeSec: 80, keepCredits: 25, expireDays: 7 });
+
 /** the ONE price the page shows after the script: the story's real length (its words at the voice's pace) rounded up
  *  to the next 10 s, within 30-180 s */
 export function blenderQuote(seconds, R = BLENDER_RATES) {

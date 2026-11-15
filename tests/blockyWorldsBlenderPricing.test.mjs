@@ -1,8 +1,8 @@
-// THE BLENDER ENGINE'S PRICE (blenderPricing.js, measured 2026-11-15): not live (pricing.js unchanged until the owner's go)
+// THE BLENDER ENGINE'S PRICE (blenderPricing.js, measured 2026-11-15; applied to pricing.js with the owner's go)
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { BLENDER_RATES, blenderFullCostUsd, blenderCredits, blenderPriceTable, blenderQuote, blenderAttemptCost } from "../supabase/functions/_shared/blockyWorlds/blenderPricing.js";
+import { BLENDER_FLAT, BLENDER_RATES, blenderFullCostUsd, blenderCredits, blenderPriceTable, blenderQuote, blenderAttemptCost } from "../supabase/functions/_shared/blockyWorlds/blenderPricing.js";
 import { PRICES } from "../supabase/functions/_shared/blockyWorlds/pricing.js";
 
 test("the table: 60 / 90 / 120 s, every part counted, 1 credit = $0.01 of our full cost", () => {
@@ -33,8 +33,12 @@ test("one quote after the script: the real length rounded up to 10 s, 30-180 s",
   assert.equal(blenderQuote(400).sec, 180);
 });
 
-test("pricing.js is NOT switched yet (the patch waits for the owner's go)", () => {
-  assert.notEqual(PRICES[90], blenderCredits(90));
+test("pricing.js now uses the Blender model (owner approved 2026-11-15), and the Blender page's one flat price is the 90 s row", () => {
+  for (const s of [60, 90, 120]) assert.equal(PRICES[s], blenderCredits(s));
+  assert.equal(BLENDER_FLAT.credits, 313);
+  assert.equal(BLENDER_FLAT.credits, PRICES[BLENDER_FLAT.priceRowSec]);
+  assert.ok(BLENDER_FLAT.writeSec <= BLENDER_FLAT.priceRowSec, "the writer stays under the priced length");
+  assert.ok(BLENDER_FLAT.keepCredits > 0 && BLENDER_FLAT.keepCredits < BLENDER_FLAT.credits && BLENDER_FLAT.expireDays === 7);
   const patch = readFileSync(new URL("../docs/blocky-worlds-blender-pricing.patch", import.meta.url), "utf8");
   assert.match(patch, /blenderFullCostUsd/);
 });

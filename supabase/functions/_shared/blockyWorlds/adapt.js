@@ -1,6 +1,6 @@
 // Blocky Worlds: "EXPLAIN MORE" (owner 2026-11-15, the Blender UI). The user writes a longer description or pastes a whole
 // narration; ONE writer call adapts it to OUR rules (the result-first hook, "You see, in this town", the story shape,
-// a 60-100 s length, things our worlds can film, the bans) while KEEPING the user's story, characters and twist. The
+// a length of at most ~90 s, things our worlds can film, the bans) while KEEPING the user's story, characters and twist. The
 // user's text is DATA (a delimited block), never instructions. adaptProblems is the free check of the answer.
 import { LENGTHS, PACE } from "./config.js";
 import { checkScript, normalizeScript } from "./script.js";
@@ -10,7 +10,7 @@ import { RULE_LINE_RE } from "./opener.js";
 import { callJson } from "./llm.js";
 import { LOCATIONS } from "./locations.js";
 
-export const ADAPT = Object.freeze({ model: "claude-sonnet-5-5", effort: "low", maxTokens: 12000, minWords: 25, maxChars: 8000, minSec: 60, maxSec: 100 });
+export const ADAPT = Object.freeze({ model: "claude-sonnet-5-5", effort: "low", maxTokens: 12000, minWords: 25, maxChars: 8000, minSec: 60, maxSec: 80 }); // maxSec 80: the Blender page's cap (~90 s of video, BLENDER_FLAT.writeSec)
 
 /** the user's text: { ok, text } | { ok: false, error } (checked before any call) */
 export function checkStoryText(text) {
@@ -22,7 +22,7 @@ export function checkStoryText(text) {
 }
 
 /** the length the story gets: the user's own narration's length when it is one (its words at our pace), else ~80 s,
- *  always 60-100 s, on a 10 s step (no length picker: the length comes from the story) */
+ *  always 60-80 s of script (~70-90 s of video), on a 10 s step (no length picker: the length comes from the story) */
 export function adaptLength(words) {
   const sec = (Number(words) / PACE.targetWpm) * 60;
   const want = words >= 120 ? sec : 80;
@@ -30,7 +30,7 @@ export function adaptLength(words) {
   return LENGTHS.includes(s) ? s : 80;
 }
 
-export const ADAPT_SYSTEM = `You adapt a user's story idea or narration into a Blocky Worlds video script: a vertical 60-100 second video narrated by one kid in a blocky toy-like town. You KEEP the user's story: its characters (their names and roles), its main events, its world's rule and its twist. You CHANGE only what our format needs:
+export const ADAPT_SYSTEM = `You adapt a user's story idea or narration into a Blocky Worlds video script: a vertical 60-90 second video narrated by one kid in a blocky toy-like town. You KEEP the user's story: its characters (their names and roles), its main events, its world's rule and its twist. You CHANGE only what our format needs:
 - LINE 1 is the RESULT-FIRST HOOK: the craziest moment of the user's own story, in the narrator's mouth, right now ("And I just ...").
 - Within the first 2 sentences: "You see, in this town, [the ONE simple rule of the user's world]."
 - ${storyShapeBlock().replace(/\n/g, "\n  ")}

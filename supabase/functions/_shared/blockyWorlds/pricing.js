@@ -14,6 +14,9 @@ import { LENGTHS, NARRATOR } from "./config.js";
 // (studio.js, from run1, run2, testA, testA2, testB) prices every length; attemptCost below is the old pipeline
 // estimate, kept for reference only
 import { studioAttemptCost, studioFullCostUsd } from "./studio.js";
+// 2026-11-15 (the owner's go on docs/blocky-worlds-launch.md, the Blender section): the Blender engine's MEASURED cost
+// model (blenderPricing.js, from the hiccup, plane, tower and Milo runs) prices every length
+import { blenderAttemptCost, blenderFullCostUsd } from "./blenderPricing.js";
 
 export const CREDIT = Object.freeze({ ourUsd: 0.01, userUsd: 0.02 });
 
@@ -61,10 +64,10 @@ export function failedCost(lengthSec) {
 /** Our full real cost of one delivered video (USD): its attempt plus its share of the refunded failures. */
 export function fullCostUsd(lengthSec) {
   if (!LENGTHS.includes(lengthSec)) throw new Error(`no Blocky Worlds cost for ${lengthSec} s`);
-  return studioFullCostUsd(lengthSec);
+  return blenderFullCostUsd(lengthSec);
 }
 /** What one attempt is expected to cost us: the emergency cap counts this before a start (guard.js). */
-export const costBasisUsd = (lengthSec) => Number(sum(studioAttemptCost(lengthSec)).toFixed(4));
+export const costBasisUsd = (lengthSec) => Number(sum(blenderAttemptCost(lengthSec)).toFixed(4));
 
 export const toolKey = (lengthSec) => `blocky-worlds:video-${lengthSec}`;
 export const PRICES = Object.freeze(Object.fromEntries(LENGTHS.map((s) => [s, Math.ceil(fullCostUsd(s) / CREDIT.ourUsd - 1e-9)])));

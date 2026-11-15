@@ -35,6 +35,7 @@ import { DEFAULT_LENGTH, LENGTHS, NARRATOR } from "../_shared/blockyWorlds/confi
 import { canGenerate, canRemoveEndCard, canWrite, endCardFor } from "../_shared/blockyWorlds/access.js";
 import { accessModeFrom, blockyOwners, closedReply, guestAllowed, viewerAccess } from "../_shared/blockyWorlds/gate.js";
 import { costBasisUsd, PRICES, toolKey } from "../_shared/blockyWorlds/pricing.js";
+import { BLENDER_FLAT } from "../_shared/blockyWorlds/blenderPricing.js";
 import { studioFullCostUsd } from "../_shared/blockyWorlds/studio.js";
 import { KIT_PREFER, studioBuilds, studioIdeaOk } from "../_shared/blockyWorlds/studioBuilds.js";
 import { DEFAULT_SETTINGS, decide, WRITING } from "../_shared/blockyWorlds/guard.js";
@@ -69,6 +70,8 @@ const OPEN = ACCESS === "everyone";
 const TESTERS = adminEmailList(Deno.env.get("BLOCKY_WORLDS_TEST_USERS"));
 const OWNERS = blockyOwners(Deno.env.get("BLOCKY_WORLDS_OWNER_EMAILS"));
 const PAID_OFF = flag("BLOCKY_WORLDS_PAID_CALLS") === "off";
+// BLOCKY_WORLDS_PREPAY=on (after migration 20261216200000): the Blender page charges its flat price at "Write my script"
+const PREPAY = flag("BLOCKY_WORLDS_PREPAY") === "on";
 const PROVIDER = providerFrom(Deno.env.get("BLOCKY_WORLDS_LLM"));
 // the hybrid writer for typed topics (default on; the mock provider keeps the free old path)
 const HYBRID_ON = flag("BLOCKY_WORLDS_HYBRID") !== "off" && PROVIDER === "anthropic";
@@ -253,8 +256,47 @@ async function scriptsLeft(userId: string, counts?: any) {
   return Math.max(0, WRITING.dailyScripts - Number(used));
 }
 
+// ---------- THE BLENDER PAGE'S ONE PRICE (owner 2026-11-15; blenderPricing.js BLENDER_FLAT, migration 20261216200000) ----------
+// "Write my script" from the Blender page (body.flat) writes at most BLENDER_FLAT.writeSec (the video stays at ~90 s) and,
+// with BLOCKY_WORLDS_PREPAY=on, CHARGES the flat price first (blocky_worlds_prepay): a writer failure gives it all back
+// at once; "Make my video" then consumes the prepay instead of charging (start below); a failed video gives the whole
+// price back (blocky_worlds_refund); no video within 7 days: all but 25 credits back (blocky_worlds_prepay_expire).
+// Owners only while the Blender page is owner-only. Off: the flat price is charged at start, as before.
+const prepayOn = (who: any) => PREPAY && Boolean(who?.owner);
+async function flatWrite(req: Request, body: any, trace: Trace) {
+  const who = await requireWriter(req, trace);
+  const inner = { ...body, flat: false, lengthSec: Math.min(Number(body?.lengthSec ?? BLENDER_FLAT.writeSec) || BLENDER_FLAT.writeSec, BLENDER_FLAT.writeSec) };
+  if (!prepayOn(who)) return { ...(await route(req, inner, trace)), flat: { credits: BLENDER_FLAT.credits, charge: "start" } };
+  trace.step = "prepay";
+  const { data: pre, error } = await admin.rpc("blocky_worlds_prepay", { p_user: who.user.id, p_credits: BLENDER_FLAT.credits, p_keep: BLENDER_FLAT.keepCredits, p_days: BLENDER_FLAT.expireDays });
+  if (error || !pre) {
+    if (/INSUFFICIENT_CREDITS/.test(error?.message ?? "")) throw new ApiError("CREDITS", `You need ${BLENDER_FLAT.credits} credits for this video.`, { credits: BLENDER_FLAT.credits });
+    throw new ApiError("SERVER", "Couldn't take the payment. Nothing was charged.", {}, error?.message ?? "no prepay row");
+  }
+  let out: any;
+  try { out = await route(req, inner, trace); }
+  catch (e) {
+    // the writer failed: the whole price back, once (a second call returns 0)
+    await admin.rpc("blocky_worlds_prepay_refund", { p_prepay: pre.id, p_keep: 0, p_why: "writer_failed" }).then(({ error: rErr }: any) => { if (rErr) console.error("[blocky-worlds-api] prepay refund FAILED, refund by hand:", pre.id, rErr.message); });
+    throw e;
+  }
+  await admin.from("blocky_worlds_prepays").update({ draft_id: out.id }).eq("id", pre.id);
+  return { ...out, flat: { credits: BLENDER_FLAT.credits, charge: "script", paidAt: pre.created_at, expiresAt: pre.expires_at, keepCredits: BLENDER_FLAT.keepCredits } };
+}
+/** the draft's open (paid, unused, not refunded) prepay, or null */
+async function openPrepay(userId: string, draftId: string) {
+  const { data } = await admin.from("blocky_worlds_prepays").select("id, credits").eq("user_id", userId).eq("draft_id", draftId).is("run_id", null).is("refunded_at", null).maybeSingle();
+  return data ?? null;
+}
+
 async function handle(req: Request, trace: Trace) {
   const body = await req.json().catch(() => ({}));
+  trace.action = String(body?.action ?? "");
+  if ((trace.action === "writeScript" || trace.action === "adaptStory") && body?.flat === true) return await flatWrite(req, body, trace);
+  return await route(req, body, trace);
+}
+
+async function route(req: Request, body: any, trace: Trace) {
   const action = String(body?.action ?? "");
   trace.action = action;
 
@@ -282,6 +324,8 @@ async function handle(req: Request, trace: Trace) {
       scenePlan: Boolean(who?.owner),
       // THE BLENDER UI (owner-only first, 2026-11-15): topic + "explain more" + character references, no length picker
       blenderUi: Boolean(who?.owner), roles: who?.owner ? ROLES : null,
+      // the Blender page's ONE price (BLENDER_FLAT): when it is charged ("script": at Write my script; "start": at Make my video)
+      flat: who?.owner ? { credits: BLENDER_FLAT.credits, charge: prepayOn(who) ? "script" : "start", keepCredits: BLENDER_FLAT.keepCredits, expireDays: BLENDER_FLAT.expireDays, maxSec: BLENDER_FLAT.priceRowSec } : null,
     };
   }
 
@@ -607,7 +651,10 @@ async function handle(req: Request, trace: Trace) {
     const lengthSec = action === "quote" ? lengthOf(body?.lengthSec, d.length_sec) : d.length_sec;
     trace.step = "script check";
     const checks = recheck(d, lengthSec);
-    if (action === "quote") return { credits: PRICES[lengthSec], lengthSec, ready: !checks.problems.length, problems: checks.problems };
+    // the Blender page (body.flat): ONE price per video, the 90 s row; a draft it already paid for costs nothing more
+    const flatDraft = body?.flat === true && who.owner;
+    const prepaid = flatDraft && prepayOn(who) ? await openPrepay(who.user.id, d.id) : null;
+    if (action === "quote") return { credits: flatDraft ? BLENDER_FLAT.credits : PRICES[lengthSec], lengthSec, ready: !checks.problems.length, problems: checks.problems, ...(prepaid ? { prepaid: true } : {}) };
     if (checks.problems.length) throw new ApiError("NOT_READY", checks.problems[0], { problems: checks.problems });
     const dryRun = body?.dryRun === true && (who.tester || who.owner);
     if (!RENDERER && !dryRun) throw new ApiError("RENDER_OFF", undefined, {}, "BLOCKY_WORLDS_RENDERER is not runpod, or RunPod / the callback secret is not configured");
@@ -623,7 +670,8 @@ async function handle(req: Request, trace: Trace) {
     // what one attempt is expected to cost us (the emergency cap counts it): the Studio model's or the pipeline's
     await guardFor(who.user.id, STUDIO_ON ? studioFullCostUsd(lengthSec) : costBasisUsd(lengthSec), "video");
     trace.step = "price";
-    const { data: price, error: pErr } = await admin.rpc("compute_tool_price", { p_tool_key: toolKey(lengthSec), p_input: {} });
+    const { data: price, error: pErr } = prepaid ? { data: prepaid.credits, error: null } : await admin.rpc("compute_tool_price", { p_tool_key: toolKey(flatDraft ? BLENDER_FLAT.priceRowSec : lengthSec), p_input: {} });
+    if (flatDraft && prepayOn(who) && !prepaid) throw new ApiError("NOT_READY", "This script's payment is not open any more (refunded or used). Write the script again.");
     if (pErr || price == null) throw new ApiError("SERVER", "Couldn't load the price. Please try again.", {}, pErr?.message ?? "no price row");
     const credits = Number(price), endCard = endCardFor(who.plan, body?.removeWatermark === true);
     if (dryRun) return { dryRun: true, credits, endCard, lengthSec, renderer: Boolean(RENDERER), checks };
@@ -650,11 +698,14 @@ async function handle(req: Request, trace: Trace) {
       // the engine is written with the charge (migration 20261213100000): the pipeline's sweeper never sees a Studio run.
       // Sent only for Studio, so the pipeline keeps working whether or not that migration is applied yet.
       ...(STUDIO_ON ? { p_engine: "studio" } : {}),
+      // the paid script: its prepay is consumed instead of a new charge (migration 20261216200000)
+      ...(prepaid ? { p_prepay: prepaid.id } : {}),
     });
     if (error || !run) {
       if (/INSUFFICIENT_CREDITS/.test(error?.message ?? "")) throw new ApiError("CREDITS", `You need ${credits} credits for this video.`, { credits });
       // the whole start (charge included) was rolled back: nothing was charged
       if (/one_active_per_draft|duplicate key/i.test(error?.message ?? "")) throw new ApiError("LIMIT", busyMsg, {}, error?.message);
+      if (/PREPAY_NOT_OPEN/.test(error?.message ?? "")) throw new ApiError("NOT_READY", "This script's payment is not open any more (refunded or used). Write the script again.", {}, error?.message);
       throw new ApiError("SERVER", "Couldn't start. Nothing was charged.", {}, error?.message ?? "no run returned");
     }
     const ideaLib = d.idea_id ? (await admin.from("blocky_worlds_ideas").select("library_id").eq("id", d.idea_id).maybeSingle()).data?.library_id ?? null : null;
