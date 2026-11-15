@@ -1,0 +1,18 @@
+{
+ "id": "clown-1453108c",
+ "name": "clown",
+ "kind": "prop",
+ "about": "block clown with red nose and rainbow wig",
+ "code": "def clown(t0, t1, expr='worried'):\n    ch = story._live(chars.Char('Clown', skin='#f4f0e8', shirt='#e8307a', pants='#2a6ae0', hair='messy', hair_color='#ff9a20', face='kid'), t0, t1, expr)\n    sphere('clown_nose', 0.18, (0, -0.64, -0.05), mat('clown_red', hexc('#e02020'), 0.3), parent=ch.head, coll=ch.coll)\n    return ch",
+ "source": {
+  "run": "run1",
+  "shots": [
+   12
+  ],
+  "title": "Every Laugh, I Grow"
+ },
+ "status": "approved",
+ "approved": true,
+ "createdAt": "2026-11-15T14:07:37.811Z",
+ "decidedAt": "2026-11-15T15:21:39.082Z"
+}

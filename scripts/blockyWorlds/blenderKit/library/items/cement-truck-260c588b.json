@@ -1,0 +1,20 @@
+{
+ "id": "cement-truck-260c588b",
+ "name": "cement_truck",
+ "kind": "vehicle",
+ "about": "driverless block cement truck with spinning striped drum",
+ "code": "def cement_truck(name, loc):\n    r = empty(name, loc)\n    box(name + '_cab', (5, 4, 5), (0, -5, 3.5), mat('truck_orange', hexc('#f08a1e'), 0.4), 0.2, parent=r)\n    box(name + '_ch', (4.4, 12, 1.2), (0, 1, 1.4), mat('truck_grey', hexc('#6a6e76'), 0.5), 0.1, parent=r)\n    drum = cyl(name + '_drum', 2.4, 8, (0, 3, 4.6), mat('drum_grey', hexc('#9a9ea6'), 0.5), 24, rot=(90, 0, 0), parent=r)\n    cyl(name + '_stripe', 2.45, 1.2, (0, 3, 4.6), mat('drum_or', hexc('#f08a1e'), 0.5), 24, rot=(90, 0, 0), parent=r)\n    for sx in (-1, 1):\n        for yy in (-5, 1, 5):\n            cyl(name + '_w%d%d' % (sx, yy), 1.0, 0.8, (sx * 2.4, yy, 1.0), mat('tire', hexc('#151515'), 0.8), 16, rot=(0, 90, 0), parent=r)\n    drum.rotation_euler[1] = 0\n    drum.keyframe_insert('rotation_euler', index=1, frame=1)\n    drum.rotation_euler[1] = math.radians(36000)\n    drum.keyframe_insert('rotation_euler', index=1, frame=F(100))\n    return r",
+ "source": {
+  "run": "run1",
+  "shots": [
+   38,
+   39,
+   44
+  ],
+  "title": "Every Laugh, I Grow"
+ },
+ "status": "approved",
+ "approved": true,
+ "createdAt": "2026-11-15T14:07:37.566Z",
+ "decidedAt": "2026-11-15T15:21:39.358Z"
+}

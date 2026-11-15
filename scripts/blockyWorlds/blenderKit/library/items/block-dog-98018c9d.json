@@ -1,0 +1,19 @@
+{
+ "id": "block-dog-98018c9d",
+ "name": "block_dog",
+ "kind": "creature",
+ "about": "small block dog for Dad's leash",
+ "code": "def block_dog(name, loc):\n    r = empty(name, loc)\n    m = mat('dog_brown', hexc('#8a5a32'), 0.6)\n    box(name + '_b', (1.4, 0.6, 0.6), (0, 0, 0.8), m, 0.05, parent=r)\n    box(name + '_h', (0.6, 0.6, 0.6), (0.9, 0, 1.1), m, 0.05, parent=r)\n    box(name + '_e', (0.2, 0.5, 0.3), (0.9, 0, 1.5), m, 0.03, parent=r)\n    box(name + '_t', (0.5, 0.15, 0.15), (-0.9, 0, 1.1), m, 0.03, parent=r, rot=(0, 30, 0))\n    for i, (x, y) in enumerate(((-0.5, -0.2), (-0.5, 0.2), (0.5, -0.2), (0.5, 0.2))):\n        box(name + '_l%d' % i, (0.2, 0.2, 0.6), (x, y, 0.3), m, 0.02, parent=r)\n    return r",
+ "source": {
+  "run": "run1",
+  "shots": [
+   20,
+   76
+  ],
+  "title": "Every Laugh, I Grow"
+ },
+ "status": "approved",
+ "approved": true,
+ "createdAt": "2026-11-15T14:07:37.645Z",
+ "decidedAt": "2026-11-15T15:21:39.267Z"
+}
