@@ -27,6 +27,7 @@ import { skeletonProblems } from "./skeleton.js";
 import { mentions, ruleMissing, topicBlock, topicElements, topicProblems } from "./topic.js";
 import { blockedWordsRule } from "./safety.js";
 import { targetWords } from "./config.js";
+import { storyShapeProblems } from "./storyShape.js";
 import { buttonProblems, endingProblems, formulaProblems } from "./formula.js";
 import { bannedProblems } from "./bans.js";
 import { plantPayoffProblems } from "./plantPayoff.js";
@@ -381,6 +382,8 @@ export function hybridChecks({ script, skeleton = {}, card, examples = [], lengt
     ...formulaProblems(script, lengthSec, { topic: card?.topic ?? "" }),
     // plant & payoff (plantPayoff.js): every setup returns; at least 3 in the ending; unpaid ones go to Fix it
     ...plantPayoffProblems(script, skeleton?.setups),
+    // THE STORY SHAPE (storyShape.js, owner 2026-11-15): rule, life under it, the one kid, but one day, the crisis, a twist, a cliffhanger / holy-twist ending
+    ...storyShapeProblems(script),
   ];
   return { hard, advisory: [...new Set(advisory)].filter((x) => !hard.includes(x)), copy, words: base.words, seconds: base.seconds };
 }

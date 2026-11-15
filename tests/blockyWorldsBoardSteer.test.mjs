@@ -11,6 +11,7 @@ import { EXAMPLE_IDEAS } from "../supabase/functions/_shared/blockyWorlds/exampl
 import { HYBRID_LINES_SYSTEM, HYBRID_PLAN_SYSTEM, hybridChecks, hybridLinesSystem, hybridPlanSchema, hybridPlanSystem, planCard } from "../supabase/functions/_shared/blockyWorlds/hybrid.js";
 import { draftCheck, fixPart, hybridLinesRequest, hybridPlanRequest, writeHybrid, writeTopicIdeas } from "../supabase/functions/_shared/blockyWorlds/llm.js";
 import { problemSpots } from "../supabase/functions/_shared/blockyWorlds/protocol.js";
+import { patternNotes } from "../supabase/functions/_shared/blockyWorlds/patternBank.js";
 
 const S = (...texts) => ({ title: "t", lines: texts.map((text, i) => ({ part: i === 0 ? "rule" : i < 4 ? "tour" : "climax", text })), post: { title: "t" } });
 const filler = (n) => Array.from({ length: n }, (_, i) => `Mrs. Pell waved at me ${i + 1} times.`);
@@ -61,9 +62,16 @@ test("the hybrid planner and line writer get the kit as hard rules in launch mod
   assert.ok(lines.includes(kitBlock(BOARD_KIT, "lines")));
   assert.match(lines, /Return only the JSON object: the title/);
   const req = hybridPlanRequest({ topic: "x", board: true }), off = hybridPlanRequest({ topic: "x" });
-  assert.equal(req.system[1], plan);
-  assert.equal(off.system[1], HYBRID_PLAN_SYSTEM);
-  assert.equal(hybridLinesRequest({ plan: {}, topic: "x", board: true }).system[1], lines);
+  // the pattern notes (patternBank.js, with the story shape) follow the system text
+  assert.equal(req.system[1], `${plan}
+
+${patternNotes("plan")}`);
+  assert.equal(off.system[1], `${HYBRID_PLAN_SYSTEM}
+
+${patternNotes("plan")}`);
+  assert.equal(hybridLinesRequest({ plan: {}, topic: "x", board: true }).system[1], `${lines}
+
+${patternNotes("lines")}`);
   // the plan says its kit world and what it moved; the look is one of the 5
   const schema = hybridPlanSchema({ board: true });
   assert.deepEqual(schema.properties.world.properties.creature_look.enum, [...BOARD_KIT.creatures.map((c) => c.id), "none"]);

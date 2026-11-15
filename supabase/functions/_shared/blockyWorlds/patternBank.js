@@ -3,6 +3,8 @@
 // SHAPES that made them work (hooks, rules, examples, twists, endings) in our own words; it never carries a reference's
 // lines, names or plots. The writers and the idea engine read it as style notes (patternNotes(kind)); the md summary is
 // docs/blocky-worlds-pattern-bank.md.
+import { storyShapeBlock } from "./storyShape.js";
+
 export const PATTERN_BANK = Object.freeze({
   source: { videos: 38, seconds: [66, 195], wordsPerSecond: 4.4, note: "style only: no line, name or plot of a reference is used" },
   hooks: [
@@ -52,6 +54,7 @@ export function patternNotes(kind = "plan") {
   const pick = (xs) => xs.map((x) => `- ${x.what} (${x.why})`).join("\n");
   const head = "STYLE NOTES FROM 38 POPULAR VIDEOS OF THIS FORMAT (shapes only: never copy any line, name or plot; our story stays original):";
   if (kind === "ideas") return `${head}\nRULES THAT WORK:\n${pick(B.rules)}\nTWISTS THAT WORK:\n${pick(B.twists)}`;
-  if (kind === "lines") return `${head}\nHOOKS:\n${pick(B.hooks)}\nEXAMPLES:\n${pick(B.examples)}\nENDINGS:\n${pick(B.endings)}\nPACE:\n${B.pacing.map((p) => `- ${p}`).join("\n")}`;
-  return `${head}\nHOOKS:\n${pick(B.hooks)}\nRULES:\n${pick(B.rules)}\nTWISTS:\n${pick(B.twists)}\nENDINGS:\n${pick(B.endings)}`;
+  // THE STORY SHAPE (storyShape.js, owner 2026-11-15) leads the plan and the lines notes of every writer
+  if (kind === "lines") return `${storyShapeBlock()}\n\n${head}\nHOOKS:\n${pick(B.hooks)}\nEXAMPLES:\n${pick(B.examples)}\nENDINGS:\n${pick(B.endings)}\nPACE:\n${B.pacing.map((p) => `- ${p}`).join("\n")}`;
+  return `${storyShapeBlock()}\n\n${head}\nHOOKS:\n${pick(B.hooks)}\nRULES:\n${pick(B.rules)}\nTWISTS:\n${pick(B.twists)}\nENDINGS:\n${pick(B.endings)}`;
 }

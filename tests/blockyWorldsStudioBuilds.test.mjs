@@ -176,7 +176,7 @@ test("api + migration + worker: Studio passes \"prefer\" to every writer and che
   assert.match(api, /studio_builds: studioBuilds\(\{ lines: d\.lines \?\? \[\] \}, d\.card \?\? null\)/);
   assert.match(read("supabase/migrations/20261213100000_blocky_worlds_studio.sql"), /ADD COLUMN IF NOT EXISTS studio_builds jsonb/);
   const runner = read("scripts/blockyWorlds/studioWorker/runner.mjs"), steps = read("scripts/blockyWorlds/studioWorker/steps.mjs");
-  assert.match(runner, /steps\.direct\(\{ tl0: base\.tl0, script, dir, L, builds: builds\.builds,/);
+  assert.match(runner, /steps\.direct\(\{ tl0: base\.tl0, script, dir, L, (card, )?builds: builds\.builds,/);
   assert.match(steps, /\.\.\.\(builds\?\.length \? \{ builds \} : \{\}\)/, "the builds go to directVideo({ builds })");
   assert.doesNotMatch(runner + steps, /briefNote/);
   assert.ok(STUDIO_BLOCK_PREFIX.length > 0);
