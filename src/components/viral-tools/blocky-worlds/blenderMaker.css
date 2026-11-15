@@ -120,3 +120,13 @@
   .bwm *, .bwm *::before, .bwm *::after { animation: none !important; transition: none !important; }
   .bwm-confetti { display: none; }
 }
+
+/* the floating showcase: two tilted columns of our own videos drifting slowly in the side margins (2xl only) */
+.bwm-reel { overflow: hidden; -webkit-mask-image: linear-gradient(transparent, #000 14%, #000 86%, transparent); mask-image: linear-gradient(transparent, #000 14%, #000 86%, transparent); }
+.bwm-reel.is-left { transform: rotate(-7deg); }
+.bwm-reel.is-right { transform: rotate(7deg); }
+.bwm-reel-track { display: flex; flex-direction: column; gap: 18px; animation: bwm-drift 70s linear infinite; }
+.bwm-reel-track.is-down { animation-direction: reverse; animation-duration: 84s; }
+@keyframes bwm-drift { from { transform: translateY(0); } to { transform: translateY(-50%); } }
+.bwm-reel-tile { width: 170px; aspect-ratio: 9 / 16; flex: none; overflow: hidden; border-radius: 22px; border: 3px solid rgba(190, 242, 100, .35); opacity: .5; box-shadow: 0 16px 40px rgba(0, 0, 0, .55); }
+.bwm-reel-tile video, .bwm-reel-tile img { width: 100%; height: 100%; object-fit: cover; display: block; }

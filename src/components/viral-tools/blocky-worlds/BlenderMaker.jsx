@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { AlertTriangle, ArrowLeft, ArrowRight, Bell, Check, Clapperboard, Download, ImagePlus, MapPin, Pencil, RefreshCw, Sparkles, Wand2, X } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ArrowRight, Bell, Check, Clapperboard, Download, Film, ImagePlus, MapPin, Pencil, Play, RefreshCw, Sparkles, Wand2, X } from "lucide-react";
+import { CreditIcon } from "../../ui/zyvo";
 import { DEV_MOCK, isWorking, runStage, whichBackend } from "./api/blockyWorldsApi";
 import ResultPanel from "./ResultPanel";
 import "./blockyWorlds.css";
@@ -39,7 +40,9 @@ export default function BlenderMaker({ flow, pageAccess, onSignUp, onUpgrade, on
     return { lines: null, label: "Preview", meta: "Narrated, captioned and built in blocks. Vertical, ready to post." };
   }, [shown, flow.draft, flow.lines, flow.access]);
 
-  useEffect(() => { if (flow.lengthSec !== TARGET_LENGTH) flow.setLengthSec(TARGET_LENGTH); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { flow.setFlat?.(true); if (flow.lengthSec !== TARGET_LENGTH) flow.setLengthSec(TARGET_LENGTH); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // THE ONE PRICE (the server's access.flat: BLENDER_FLAT): paid at "Write my script" ("script") or at "Make my video" ("start")
+  const flat = flow.access?.flat ?? { credits: flow.access?.prices?.[90] ?? null, charge: "start", keepCredits: 25, expireDays: 7 };
   // every step opens at its top (the page scrolls in a container on desktop, the window on phones)
   useEffect(() => { let el = top.current; while (el) { if (el.scrollTop) el.scrollTop = 0; el = el.parentElement; } window.scrollTo?.(0, 0); }, [view]);
   // a run (new or opened) shows step 4
@@ -60,6 +63,7 @@ export default function BlenderMaker({ flow, pageAccess, onSignUp, onUpgrade, on
     return r;
   };
   const write = async () => {
+    if (flat.charge === "script" && balance > 0 && flat.credits && balance < flat.credits) { onNoCredits?.(flat.credits); return; }
     const r = await guarded(() => (mode === "explain" ? flow.adaptStory(story) : flow.continueStory()));
     if (r?.ok) setView("script");
   };
@@ -70,7 +74,7 @@ export default function BlenderMaker({ flow, pageAccess, onSignUp, onUpgrade, on
   };
   const make = async () => {
     setConfirm(false);
-    const price = flow.draft?.credits ?? 0;
+    const price = paidFor(flow.draft) ? 0 : flat.credits ?? flow.draft?.credits ?? 0;
     if (balance > 0 && balance < price) { onNoCredits?.(price); return; }
     try { if (typeof Notification !== "undefined" && Notification.permission === "default") Notification.requestPermission().catch(() => {}); } catch { /* no notifications */ }
     await guarded(() => flow.generate());
@@ -84,7 +88,9 @@ export default function BlenderMaker({ flow, pageAccess, onSignUp, onUpgrade, on
   return (
     <div className="bwm h-full w-full overflow-y-auto" data-testid="bw-blender">
       {DEV_MOCK && <div className="sticky top-0 z-30 bg-[#ffd23f] px-4 py-2 text-center text-[15px] font-black text-black">TEST MODE: fake scripts and a fake video, nothing is charged</div>}
-      <div ref={top} className="mx-auto flex w-full max-w-[1560px] flex-col gap-5 px-4 pb-28 pt-5 sm:px-6 lg:pt-8">
+      {/* our own finished videos, slowly floating on both sides (big screens only, never over anything the user types in) */}
+      <ShowcaseReels />
+      <div ref={top} className="relative z-10 mx-auto flex w-full max-w-[1560px] flex-col gap-5 px-4 pb-28 pt-5 sm:px-6 lg:pt-8 2xl:max-w-[1240px]">
         <header className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-3">
             <span className="grid h-14 w-14 place-items-center rounded-2xl bg-[#bef264] text-[28px] shadow-[0_6px_0_#6f9a1f]" aria-hidden="true">🧱</span>
@@ -108,23 +114,24 @@ export default function BlenderMaker({ flow, pageAccess, onSignUp, onUpgrade, on
         {notice && <div className="bwm-rise flex items-start gap-3 rounded-2xl border-2 border-[#ff6fa8] bg-[#2a1220] px-4 py-3 text-[17px] font-bold text-white" role="status"><AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[#ff6fa8]" />{notice}<button type="button" onClick={() => setNotice(null)} className="ml-auto" aria-label="Close"><X className="h-5 w-5" /></button></div>}
 
         {view === "topic" && (
-          <TopicStep flow={flow} mode={mode} setMode={setMode} story={story} setStory={setStory} writing={writing} onWrite={write} />
+          <TopicStep flat={flat} flow={flow} mode={mode} setMode={setMode} story={story} setStory={setStory} writing={writing} onWrite={write} />
         )}
         {view === "script" && flow.draft && (
-          <ScriptStep flow={flow} onBack={() => setView("topic")} onNext={toScenes} onRewrite={() => guarded(() => flow.rewrite())} />
+          <ScriptStep flat={flat} flow={flow} onBack={() => setView("topic")} onNext={toScenes} onRewrite={() => guarded(() => flow.rewrite())} />
         )}
         {view === "scenes" && flow.draft && (
           <ScenesStep flow={flow} onBack={() => setView("script")} onNext={() => setView("make")} />
         )}
         {view === "make" && (flow.run ? <RunStep flow={flow} onAgain={again} onRetry={() => guarded(() => flow.retryRun(flow.run))} />
-          : flow.draft && <MakeStep flow={flow} onBack={() => setView("scenes")} onMake={() => (LOCAL ? setConfirm(true) : make())} />)}
+          : flow.draft && <MakeStep flat={flat} flow={flow} onBack={() => setView("scenes")} onMake={() => (LOCAL ? setConfirm(true) : make())} />)}
         </div>
-        <aside className="h-[720px] min-w-0 lg:sticky lg:top-4 lg:h-[calc(100vh-150px)] lg:min-h-[560px]" aria-label="Preview and your videos">
-          <ResultPanel run={null} recent={flow.recent} preview={preview} onOpen={(r) => flow.openRun(r)} onEvent={flow.sendEvent} />
+        <aside className="h-[720px] min-w-0 lg:sticky lg:top-4 lg:h-[calc(100vh-150px)] lg:min-h-[560px]" aria-label="Preview">
+          <ResultPanel run={null} recent={[]} preview={preview} onOpen={(r) => flow.openRun(r)} onEvent={flow.sendEvent} />
         </aside>
         </div>
+        <RecentCreations recent={flow.recent} onOpen={(r) => flow.openRun(r)} onDownload={() => flow.sendEvent("downloaded")} />
       </div>
-      {confirm && <ConfirmDialog draft={flow.draft} onCancel={() => setConfirm(false)} onGo={make} />}
+      {confirm && <ConfirmDialog flat={flat} draft={flow.draft} onCancel={() => setConfirm(false)} onGo={make} />}
     </div>
   );
 }
@@ -149,7 +156,7 @@ function Blocks({ label }) {
 }
 
 // ------------------------------------------------------------------ 1. topic
-function TopicStep({ flow, mode, setMode, story, setStory, writing, onWrite }) {
+function TopicStep({ flat, flow, mode, setMode, story, setStory, writing, onWrite }) {
   const words = story.trim().split(/\s+/).filter(Boolean).length;
   const can = !writing && (mode === "explain" ? words >= 25 : flow.topic.trim().length >= 3);
   const ideas = flow.shownIdeas.slice(0, 6);
@@ -194,10 +201,11 @@ function TopicStep({ flow, mode, setMode, story, setStory, writing, onWrite }) {
 
       <CharactersCard flow={flow} />
 
-      <div className="flex justify-center sm:justify-end">
+      <div className="flex flex-col items-stretch gap-3 sm:items-end">
         <button type="button" className="bwm-btn w-full sm:w-auto" disabled={!can} onClick={onWrite} data-testid="bwm-write">
-          {writing ? <Blocks label="Writing your script…" /> : <><Wand2 className="h-6 w-6" />Write my script</>}
+          {writing ? <Blocks label="Writing your script…" /> : <><Wand2 className="h-6 w-6" />Write my script{flat.credits != null && <span className="ml-1 inline-flex items-center gap-1.5 rounded-xl bg-[#0d1208]/15 px-2.5 py-1 text-[19px]" data-testid="bwm-write-price"><Cr n={flat.credits} />{flat.charge !== "script" && <span className="text-[14px]">at Make my video</span>}</span>}</>}
         </button>
+        <PriceRule flat={flat} className="max-w-[560px] text-center sm:text-right" />
       </div>
     </>
   );
@@ -285,7 +293,7 @@ function CharactersCard({ flow }) {
 }
 
 // ------------------------------------------------------------------ 2. script
-function ScriptStep({ flow, onBack, onNext, onRewrite }) {
+function ScriptStep({ flat, flow, onBack, onNext, onRewrite }) {
   const d = flow.draft;
   const ready = d.ready && !flow.edited;
   const sec = Math.round(d.check?.seconds || d.lengthSec);
@@ -301,7 +309,7 @@ function ScriptStep({ flow, onBack, onNext, onRewrite }) {
       </ol>
       {(d.check?.problems ?? []).length > 0 && <p className="mt-4 rounded-2xl border-2 border-[#ffd23f] bg-[#2a2410] px-4 py-3 text-[16px] font-bold text-white">{d.check.problems[0]}</p>}
       <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
-        <PriceTag credits={d.credits} seconds={sec} ready={ready} edited={flow.edited} />
+        <PriceTag flat={flat} paid={paidFor(d)} seconds={sec} ready={ready} edited={flow.edited} />
         <div className="flex flex-wrap gap-3">
           <button type="button" className="bwm-btn-2" onClick={onBack}><ArrowLeft className="h-5 w-5" />Back</button>
           <button type="button" className="bwm-btn-2" onClick={onRewrite} disabled={Boolean(flow.busy)}>{flow.busy === "rewriting" ? <Blocks label="Rewriting…" /> : <><RefreshCw className="h-5 w-5" />Rewrite</>}</button>
@@ -321,13 +329,28 @@ function AutoLine({ value, onChange, label }) {
   return <textarea ref={ref} rows={1} className="bwm-line overflow-hidden" value={value ?? ""} onChange={(e) => onChange(e.target.value)} aria-label={label} />;
 }
 
-function PriceTag({ credits, seconds, ready, edited }) {
+/** a credit amount with OUR credit symbol (the app's CreditIcon, as on the other templates' Generate buttons) */
+function Cr({ n, className = "h-5 w-5" }) {
+  return <span className="inline-flex items-center gap-1 tabular-nums"><CreditIcon className={className} />{n ?? "…"}<span className="sr-only"> credits</span></span>;
+}
+/** was this draft already paid for at "Write my script"? */
+const paidFor = (d) => d?.flat?.charge === "script" && Boolean(d.flat.paidAt);
+/** the rule, in one clear sentence (where the one price is paid, what is included, the refunds) */
+function PriceRule({ flat, className = "" }) {
+  return (
+    <p className={cx("text-[15.5px] font-bold leading-snug text-white/85", className)} data-testid="bwm-price-rule">
+      One price per video: <span className="text-[#bef264]"><Cr n={flat.credits} className="h-4 w-4" /></span>, paid when you press <b>{flat.charge === "script" ? "Write my script" : "Make my video"}</b>. Script rewrites, the voice and the render are included. If the video fails, all of it comes back{flat.charge === "script" ? <>; no video within {flat.expireDays} days: all but <Cr n={flat.keepCredits} className="h-4 w-4" /> comes back</> : ""}.
+    </p>
+  );
+}
+
+function PriceTag({ flat, paid, seconds, ready, edited }) {
   return (
     <div className="bwm-pop flex items-center gap-4 rounded-2xl border-2 border-[#bef264]/60 bg-[#18210f] px-5 py-4" data-testid="bwm-price">
-      <span className="grid h-12 w-12 place-items-center rounded-xl bg-[#bef264] text-[22px] font-black text-[#0d1208]">⚡</span>
+      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-[#bef264] text-[#0d1208]"><CreditIcon className="h-7 w-7" /></span>
       <div>
-        <p className="text-[24px] font-black leading-none">{credits != null ? `${credits} credits` : "…"}</p>
-        <p className="mt-1 text-[15.5px] font-bold text-white/80">{edited ? "Saved when you go on" : ready ? `About ${seconds} s of video · charged only when you press Make my video` : "Fix the note above first"}</p>
+        <p className="text-[24px] font-black leading-none"><Cr n={flat.credits} className="h-6 w-6" />{paid && <span className="ml-2 align-middle text-[15px] font-black text-[#bef264]"><Check className="mr-0.5 inline h-4 w-4" strokeWidth={3} />Paid</span>}</p>
+        <p className="mt-1 text-[15.5px] font-bold text-white/80">{edited ? "Saved when you go on" : !ready ? "Fix the note above first" : paid ? `About ${seconds} s of video · rewrites, voice and render included` : `About ${seconds} s of video · paid when you press ${flat.charge === "script" ? "Write my script" : "Make my video"}`}</p>
       </div>
     </div>
   );
@@ -366,7 +389,7 @@ function ScenesStep({ flow, onBack, onNext }) {
 }
 
 // ------------------------------------------------------------------ 4. make
-function MakeStep({ flow, onBack, onMake }) {
+function MakeStep({ flat, flow, onBack, onMake }) {
   const d = flow.draft;
   return (
     <Card n={4} title="Make my video" sub="We direct every shot, check every frame and render it in 3D.">
@@ -381,28 +404,30 @@ function MakeStep({ flow, onBack, onMake }) {
             <li className="rounded-xl bg-white/10 px-3 py-1.5">Ready in about 25–30 min</li>
           </ul>
         </div>
-        <PriceTag credits={d.credits} seconds={Math.round(d.check?.seconds || d.lengthSec)} ready={d.ready} />
+        <PriceTag flat={flat} paid={paidFor(d)} seconds={Math.round(d.check?.seconds || d.lengthSec)} ready={d.ready} />
       </div>
+      <PriceRule flat={flat} className="mt-4" />
       <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
         <button type="button" className="bwm-btn-2" onClick={onBack}><ArrowLeft className="h-5 w-5" />Back</button>
         <button type="button" className="bwm-btn !min-h-[72px] !px-10 !text-[24px]" onClick={onMake} disabled={Boolean(flow.busy) || !d.ready} data-testid="bwm-make">
-          {flow.busy === "starting" ? <Blocks label="Starting…" /> : <><Clapperboard className="h-7 w-7" />Make my video</>}
+          {flow.busy === "starting" ? <Blocks label="Starting…" /> : <><Clapperboard className="h-7 w-7" />Make my video{paidFor(d) ? <span className="ml-1 rounded-xl bg-[#0d1208]/15 px-2.5 py-1 text-[16px]">included</span> : <span className="ml-1 inline-flex items-center rounded-xl bg-[#0d1208]/15 px-2.5 py-1 text-[20px]"><Cr n={flat.credits} /></span>}</>}
         </button>
       </div>
     </Card>
   );
 }
 
-function ConfirmDialog({ draft, onCancel, onGo }) {
+function ConfirmDialog({ flat, draft, onCancel, onGo }) {
+  const paid = paidFor(draft);
   return (
     <div className="bwm-overlay" role="dialog" aria-modal="true" aria-labelledby="bwm-confirm-title">
       <div className="bwm-dialog bwm-card is-active p-6 sm:p-8">
         <p className="inline-block rounded-lg bg-[#ffd23f] px-2.5 py-1 text-[13px] font-black uppercase tracking-[0.1em] text-black">Localhost check</p>
-        <h2 id="bwm-confirm-title" className="mt-3 text-[28px] font-black leading-tight">Start a real video for {draft?.credits} credits?</h2>
-        <p className="mt-2 text-[17px] font-semibold text-white/85">This starts the real paid render (script, voice, director, GPU). It takes about 25–30 minutes. If it fails, the credits come back.</p>
+        <h2 id="bwm-confirm-title" className="mt-3 text-[28px] font-black leading-tight">{paid ? <>Start the real video? It is already paid (<Cr n={flat.credits} className="h-6 w-6" />).</> : <>Start a real video for <Cr n={flat.credits} className="h-6 w-6" />?</>}</h2>
+        <p className="mt-2 text-[17px] font-semibold text-white/85">This starts the real paid render (script, voice, director, GPU). It takes about 25–30 minutes. If it fails, all of it comes back.</p>
         <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <button type="button" className="bwm-btn-2" onClick={onCancel}>Not now</button>
-          <button type="button" className="bwm-btn" onClick={onGo} data-testid="bwm-confirm">Yes, make it · {draft?.credits} credits</button>
+          <button type="button" className="bwm-btn" onClick={onGo} data-testid="bwm-confirm">{paid ? "Yes, make it" : <>Yes, make it · <Cr n={flat.credits} /></>}</button>
         </div>
       </div>
     </div>
@@ -432,7 +457,7 @@ function RunStep({ flow, onAgain, onRetry }) {
   if (run.status === "failed") {
     return (
       <Card n={4} title="This video didn't make it" sub={run.reason ?? "Something went wrong on our side."}>
-        <p className="inline-flex items-center gap-2 rounded-2xl bg-[#18210f] px-4 py-3 text-[18px] font-black text-[#bef264]"><Check className="h-5 w-5" strokeWidth={3} />{run.refunded ? `Your ${run.credits} credits are back.` : "Your credits come back within a minute."}</p>
+        <p className="inline-flex items-center gap-2 rounded-2xl bg-[#18210f] px-4 py-3 text-[18px] font-black text-[#bef264]"><Check className="h-5 w-5" strokeWidth={3} />{run.refunded ? <>All of it is back: <Cr n={run.credits} /></> : <>All of it comes back within a minute: <Cr n={run.credits} /></>}</p>
         <div className="mt-6 flex flex-wrap justify-end gap-3">
           <button type="button" className="bwm-btn-2" onClick={onAgain}>New story</button>
           <button type="button" className="bwm-btn" onClick={onRetry} disabled={Boolean(flow.busy)}><RefreshCw className="h-6 w-6" />Try again</button>
@@ -483,4 +508,62 @@ function RunStep({ flow, onAgain, onRetry }) {
 function Confetti() {
   const bits = useMemo(() => Array.from({ length: 90 }, (_, i) => ({ left: Math.random() * 100, d: Math.random() * 0.6, t: 2.2 + Math.random() * 1.6, dx: (Math.random() - 0.5) * 240, r: 360 + Math.random() * 720, c: ["#bef264", "#5cc8ff", "#ff6fa8", "#ffd23f", "#ffffff"][i % 5] })), []);
   return <div className="bwm-confetti" aria-hidden="true">{bits.map((b, i) => <i key={i} style={{ left: `${b.left}%`, background: b.c, "--d": `${b.d}s`, "--t": `${b.t}s`, "--dx": `${b.dx}px`, "--r": `${b.r}deg` }} />)}</div>;
+}
+
+// ------------------------------------------------------------------ recent creations (like the other templates)
+const STATUS_OF = (r) => (r.status === "done" ? ["Ready", "bg-[#bef264] text-[#0d1208]"] : r.status === "failed" ? (r.refunded ? ["Refunded", "bg-[#5cc8ff] text-[#06202e]"] : ["Failed", "bg-[#ff6fa8] text-[#2a0716]"]) : ["Rendering", "bg-[#ffd23f] text-[#2a2000]"]);
+function RecentCreations({ recent, onOpen, onDownload }) {
+  if (!recent?.length) return null;
+  return (
+    <section className="bwm-card bwm-rise p-5 sm:p-7" aria-labelledby="bwm-recent-title" data-testid="bwm-recent">
+      <h2 id="bwm-recent-title" className="text-[24px] font-black tracking-[-0.02em]">Recent creations</h2>
+      <p className="mt-1 text-[16px] font-semibold text-white/75">Your Blocky Worlds videos. Pick up any of them where you left off.</p>
+      <ul className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {recent.slice(0, 12).map((r, i) => {
+          const [label, tone] = STATUS_OF(r);
+          const working = isWorking(r);
+          const pct = Math.max(3, Math.min(99, Number(r.pct) || STUDIO_STAGES.find((x) => x.stage === runStage(r))?.pct || 3));
+          return (
+            <li key={r.id} className="bwm-rise flex gap-3 rounded-2xl border-2 border-white/15 bg-[#0f1415] p-3" style={{ "--i": i }}>
+              <button type="button" onClick={() => onOpen(r)} className="relative h-[120px] w-[68px] shrink-0 overflow-hidden rounded-xl bg-black" aria-label={`Open ${r.title || "video"}`}>
+                {r.poster ? <img src={r.poster} alt="" className="h-full w-full object-cover" loading="lazy" /> : <span className="grid h-full place-items-center"><Film className="h-6 w-6 text-white/40" /></span>}
+                {r.status === "done" && <span className="absolute inset-0 grid place-items-center bg-black/25"><Play className="h-7 w-7 fill-white text-white" /></span>}
+              </button>
+              <div className="flex min-w-0 flex-1 flex-col">
+                <p className="truncate text-[17px] font-black">{r.title || "Untitled"}</p>
+                <p className="text-[14px] font-semibold text-white/70">{r.createdAt ? new Date(r.createdAt).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : ""}</p>
+                <span className={cx("mt-1.5 self-start rounded-lg px-2 py-0.5 text-[13px] font-black", tone)}>{working ? `${label} ${pct}%` : label}</span>
+                {working && <div className="bwm-bar mt-2 !h-3"><span style={{ width: `${pct}%` }} /></div>}
+                <div className="mt-auto flex gap-2 pt-2">
+                  <button type="button" className="bwm-btn-2 !min-h-[40px] !px-3 !text-[14.5px]" onClick={() => onOpen(r)}>{r.status === "done" ? <><Play className="h-4 w-4" />Play</> : "Open"}</button>
+                  {r.downloadUrl && <a href={r.downloadUrl} download onClick={onDownload} className="bwm-btn-2 !min-h-[40px] !px-3 !text-[14.5px]"><Download className="h-4 w-4" />Download</a>}
+                </div>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
+// ------------------------------------------------------------------ the floating showcase (our own finished videos)
+// Short muted loops cut from OUR Blender renders (public/blocky-worlds/showcase/: Milo, the tower, the plane, phase 1;
+// ~120-360 KB each, 360x640, 8 s). Two slowly drifting, tilted columns in the side margins: 2xl screens only (never on
+// phones or next to inputs), behind the cards, paused for people who ask for less motion (blenderMaker.css).
+const SHOWCASE = ["milo", "tower", "plane", "phase1"].map((k) => ({ src: `/blocky-worlds/showcase/${k}.mp4`, poster: `/blocky-worlds/showcase/${k}.jpg` }));
+function ShowcaseReels() {
+  const reduce = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+  const column = (items, side) => (
+    <div className={cx("bwm-reel absolute top-0 h-full w-[190px]", side === "left" ? "left-6 is-left" : "right-6 is-right")}>
+      <div className={cx("bwm-reel-track", side === "right" && "is-down")}>
+        {[...items, ...items].map((v, i) => (
+          <div key={i} className="bwm-reel-tile">
+            {reduce ? <img src={v.poster} alt="" /> : <video src={v.src} poster={v.poster} muted loop autoPlay playsInline preload="metadata" />}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+  return <div className="pointer-events-none sticky top-0 z-0 hidden h-0 2xl:block" aria-hidden="true"><div className="relative h-screen">{column(SHOWCASE, "left")}{column([SHOWCASE[2], SHOWCASE[3], SHOWCASE[0], SHOWCASE[1]], "right")}</div></div>;
 }

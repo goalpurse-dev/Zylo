@@ -42,6 +42,10 @@ export default function useBlockyWorlds({ enabled = true } = {}) {
   const [removeWatermark, setRemoveWatermark] = useState(false);
   // THE BLENDER UI (owner-only first): the user's character references (characterRef.js specs, never the pictures)
   const [characters, setCharacters] = useState([]);
+  // THE BLENDER PAGE (BlenderMaker sets it): its writes and start carry flat: the ONE price, at most ~90 s (BLENDER_FLAT)
+  const flatRef = useRef(false);
+  const setFlat = useCallback((on) => { flatRef.current = Boolean(on); }, []);
+  const flatBody = () => (flatRef.current ? { flat: true } : {});
   const poll = useRef(null);
 
   useEffect(() => {
@@ -121,7 +125,7 @@ export default function useBlockyWorlds({ enabled = true } = {}) {
 
   const writeFromIdea = useCallback(async (ideaId) => {
     setPickedId(ideaId);
-    const r = await attempt("writing", () => worldsCall("writeScript", { ideaId, lengthSec }));
+    const r = await attempt("writing", () => worldsCall("writeScript", { ideaId, lengthSec, ...flatBody() }));
     if (r.ok) { setDraft(r.value); setEdited(null); }
     return r;
   }, [attempt, lengthSec]);
@@ -143,7 +147,7 @@ export default function useBlockyWorlds({ enabled = true } = {}) {
       worlds = (await worldsCall("topicIdeas", { topic: words, mood })).ideas ?? [];
       if (!worlds.length) throw new BlockyWorldsError("WRITER", "We couldn't turn that into a story. Try other words.");
       setPickedId(worlds[0].id);
-      return worldsCall("writeScript", { ideaId: worlds[0].id, lengthSec });
+      return worldsCall("writeScript", { ideaId: worlds[0].id, lengthSec, ...flatBody() });
     });
     if (r.ok) { setDraft(r.value); setEdited(null); setTakes(worlds); setTopicIdeas(EMPTY_IDEAS); }
     // the worlds came but the script didn't: show them, so they can be picked once the problem is solved
@@ -154,7 +158,7 @@ export default function useBlockyWorlds({ enabled = true } = {}) {
   /** One of the topic's other worlds, written instead of the current script (optional). */
   const tryTake = useCallback(async (card) => {
     setPickedId(card.id);
-    const r = await attempt("writing", () => worldsCall("writeScript", { ideaId: card.id, lengthSec }));
+    const r = await attempt("writing", () => worldsCall("writeScript", { ideaId: card.id, lengthSec, ...flatBody() }));
     if (r.ok) { setDraft(r.value); setEdited(null); }
     return r;
   }, [attempt, lengthSec]);
@@ -244,14 +248,14 @@ export default function useBlockyWorlds({ enabled = true } = {}) {
     if (!draft) return { ok: false };
     if (edited) { const s = await saveEdits(); if (!s.ok) return s; }
     const plan = access?.scenePlan && scenePlan?.draftId === draft.id && !edited ? { scenePlan: { scenes: scenePlan.scenes } } : {};
-    const r = await attempt("starting", () => worldsCall("start", { draftId: draft.id, removeWatermark, ...plan, ...(characters.length ? { characters } : {}) }));
+    const r = await attempt("starting", () => worldsCall("start", { draftId: draft.id, removeWatermark, ...plan, ...(characters.length ? { characters } : {}), ...flatBody() }));
     if (r.ok) { setRun(r.value); setRecent((list) => [r.value, ...list]); }
     return r;
   }, [attempt, draft, edited, saveEdits, removeWatermark, access, scenePlan, characters]);
 
   /** "Explain more": the user's long description / full narration, adapted to our rules on the server (adapt.js) */
   const adaptStory = useCallback(async (text) => {
-    const r = await attempt("adapting", () => worldsCall("adaptStory", { text, characters }));
+    const r = await attempt("adapting", () => worldsCall("adaptStory", { text, characters, ...flatBody() }));
     if (r.ok) { setDraft(r.value); setEdited(null); setTakes([]); }
     return r;
   }, [attempt, characters]);
@@ -268,6 +272,6 @@ export default function useBlockyWorlds({ enabled = true } = {}) {
     busy, pickedId, writeFromIdea, picked, pickIdea, continueStory, takes, tryTake, saveOwn, rewrite, moveToTown, fixOpener, fixPart, removeWatermark, setRemoveWatermark,
     run, recent, generate, retryRun, rewriteAndRetry, sendEvent, openRun, startOver,
     scenePlan, loadScenePlan, changeScene,
-    characters, setCharacters, adaptStory, readCharacter,
+    characters, setCharacters, adaptStory, readCharacter, setFlat,
   };
 }

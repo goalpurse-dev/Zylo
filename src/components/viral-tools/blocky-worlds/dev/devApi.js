@@ -22,6 +22,7 @@ import { canFilm, fittingWithSwap } from "../../../../../supabase/functions/_sha
 import { STUDIO_STAGES, STUDIO_STATUS, studioEtaText } from "../../../../../supabase/functions/_shared/blockyWorlds/studioStages.js";
 import { autoScenePlan, PICKER } from "../../../../../supabase/functions/_shared/blockyWorlds/scenePlan.js";
 import { characterSpec, checkUpload, ROLES } from "../../../../../supabase/functions/_shared/blockyWorlds/characterRef.js";
+import { BLENDER_FLAT } from "../../../../../supabase/functions/_shared/blockyWorlds/blenderPricing.js";
 import { adaptLength, checkStoryText, namesIn } from "../../../../../supabase/functions/_shared/blockyWorlds/adapt.js";
 // the judged library's live ideas (scripts/blockyWorlds/devFixture.mjs), so localhost shows the real, varied ideas
 import LIBRARY from "./libraryFixture.json";
@@ -44,6 +45,9 @@ const mentions = (row, word) => JSON.stringify(row ?? {}).toLowerCase().includes
 const BLENDER_UI = AS === "owner" || Q.get("ui") === "blender";
 // &step=N (screenshots): each Studio stage lasts N s (default 3)
 const PAID = ["starter", "pro", "generative", "owner"].includes(AS);
+// the Blender page's ONE price: charged at "Write my script" (default here, the server's BLOCKY_WORLDS_PREPAY=on) or &charge=start
+const CHARGE = Q.get("charge") === "start" ? "start" : "script";
+const flatOf = (body) => (body?.flat ? { flat: { credits: BLENDER_FLAT.credits, charge: CHARGE, paidAt: CHARGE === "script" ? new Date().toISOString() : null, keepCredits: BLENDER_FLAT.keepCredits } } : {});
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const id = () => crypto.randomUUID();
 const state = { ideas: new Map(), drafts: new Map(), runs: [], seed: 0, served: new Set() };
@@ -95,7 +99,7 @@ const runView = (r) => {
 
 export async function devCall(action, body) {
   await wait(action === "writeScript" || action === "rewrite" ? 900 : 350);
-  if (action === "access") return { enabled: false, signedIn: AS !== "guest", plan: AS === "guest" ? null : AS, owner: AS === "owner", tester: true, visible: true, canWrite: PAID, canGenerate: PAID && RENDERER, canRemoveWatermark: AS === "pro" || AS === "generative", mock: true, renderer: RENDERER, lengths: LENGTHS, defaultLength: DEFAULT_LENGTH, prices: PRICES, narrator: { name: NARRATOR.voiceName }, moods: Object.entries(MOODS).map(([k, m]) => ({ id: k, label: m.label })), ideaBatchesLeft: PAID ? 20 : 3, launch: LAUNCH ? "board" : "off", film: LAUNCH ? canFilm() : null, engine: STUDIO ? "studio" : "pipeline", beta: STUDIO, scenePlan: BLENDER_UI, blenderUi: BLENDER_UI, roles: BLENDER_UI ? ROLES : null, readyEmail: EMAIL };
+  if (action === "access") return { enabled: false, signedIn: AS !== "guest", plan: AS === "guest" ? null : AS, owner: AS === "owner", tester: true, visible: true, canWrite: PAID, canGenerate: PAID && RENDERER, canRemoveWatermark: AS === "pro" || AS === "generative", mock: true, renderer: RENDERER, lengths: LENGTHS, defaultLength: DEFAULT_LENGTH, prices: PRICES, narrator: { name: NARRATOR.voiceName }, moods: Object.entries(MOODS).map(([k, m]) => ({ id: k, label: m.label })), ideaBatchesLeft: PAID ? 20 : 3, launch: LAUNCH ? "board" : "off", film: LAUNCH ? canFilm() : null, engine: STUDIO ? "studio" : "pipeline", beta: STUDIO, scenePlan: BLENDER_UI, blenderUi: BLENDER_UI, roles: BLENDER_UI ? ROLES : null, readyEmail: EMAIL, flat: BLENDER_UI ? { credits: BLENDER_FLAT.credits, charge: CHARGE, keepCredits: BLENDER_FLAT.keepCredits, expireDays: BLENDER_FLAT.expireDays, maxSec: BLENDER_FLAT.priceRowSec } : null };
   if (AS === "guest") fail("SIGN_IN");
   if (action === "ideas" || action === "topicIdeas") {
     // the library first (like the server); once a mood's library is used up, the mock writer, as the live writer would
@@ -135,7 +139,7 @@ export async function devCall(action, body) {
       d.notice = d.check.problems.length ? `It still needs one fix: ${d.check.problems[0]}` : null;
     }
     state.drafts.set(d.id, d);
-    return draftView(d);
+    return { ...draftView(d), ...(action === "writeScript" ? flatOf(body) : {}) };
   }
   if (action === "fixPart") {
     const d = state.drafts.get(body.draftId);
@@ -178,7 +182,7 @@ export async function devCall(action, body) {
     // one video at a time per script (like the server): a double-tapped Try again never charges twice
     const active = state.runs.find((x) => x.draftId === d.id && ["queued", "voice", "plan", "render"].includes(runView(x).status));
     if (active) fail("LIMIT", "This script is already being made. Wait for it to finish.", { runId: active.id });
-    const r = { id: id(), draftId: d.id, title: d.title, lengthSec: d.lengthSec, credits: PRICES[d.lengthSec], post: d.post, narration: narrationOf(d), startedAt: Date.now(), failCode: d.failing ?? null, queue: QUEUE };
+    const r = { id: id(), draftId: d.id, title: d.title, lengthSec: d.lengthSec, credits: body.flat ? BLENDER_FLAT.credits : PRICES[d.lengthSec], post: d.post, narration: narrationOf(d), startedAt: Date.now(), failCode: d.failing ?? null, queue: QUEUE };
     state.runs.unshift(r);
     return runView(r);
   }
@@ -200,7 +204,7 @@ export async function devCall(action, body) {
     const script = normalizeScript({ title: "Your Story", lines, post: { title: "Your Story" } });
     const d = { id: id(), source: "own", ideaId: null, card: { adapted: true, characters: body.characters ?? [] }, title: script.title, lengthSec, lines: script.lines, post: script.post, check: { ...checkScript(script, lengthSec, "own"), problems: [], kind: "own" }, updatedAt: new Date().toISOString() };
     state.drafts.set(d.id, d);
-    return { ...draftView(d), adapted: { kept: { characters: namesIn(t.text), twist: "" }, changed: ["mock"], stillOpen: [] } };
+    return { ...draftView(d), ...flatOf(body), adapted: { kept: { characters: namesIn(t.text), twist: "" }, changed: ["mock"], stillOpen: [] } };
   }
   if (action === "characterRef") {
     const up = checkUpload({ image: body.image, mediaType: body.mediaType });
