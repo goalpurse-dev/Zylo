@@ -165,6 +165,26 @@ const blockyNiche = {
   ], "Niko", { fullLinkText: true }),
 };
 
+// "In This Town" early access (owner's text, 2026-11-15): plain, no images, NO link but the unsubscribe;
+// replies ("me") go to Niko. TOWN_DAY is the owner's launch day for "It's coming ___."
+export const TOWN_DAY = "next week"; // owner, 2026-11-15
+const townEarly = {
+  from: ROOT_NIKO,
+  replyTo: REPLY_TO.niko,
+  subject: "i've been working on this for weeks",
+  why: CAMPAIGN_WHY,
+  plain: true,
+  opensTracked: true,
+  render: plainEmailNoLink([
+    "Hey,",
+    "It's Niko from Zyvo.",
+    "I've been working on the biggest thing we've ever made, and I wanted you to hear about it first.",
+    "It makes \"In This Town\" Roblox shorts, the ones blowing up on TikTok and YouTube right now. Instead of using AI video generators, it animates the whole story, so every scene looks clean and consistent from start to finish.",
+    `It's coming ${TOWN_DAY}.`,
+    "Want early access? Just reply \"me\" and I'll let you in before everyone else.",
+  ], "Niko"),
+};
+
 export const CAMPAIGNS = {
   // Day 1 (2026-10-11): the 200 newest people who are ON. Sent before open tracking was switched on.
   warmup_day1: warmup("You signed up recently"),
@@ -211,6 +231,8 @@ export const CAMPAIGNS = {
   // fewer than 2 real bounces and real opens of at least 5% by 11:00 Tuesday.
   blocky_niche4: blockyNiche,
   blocky_niche5: { ...blockyNiche, minRealOpenRateBefore: 0.05, maxRealBouncesBefore: 2 },
+  // Owner, 2026-11-15: Sun 15 Nov 18:00–21:00 Finnish, group 1 (real opens / came back since 4 Nov) then group 2.
+  town_early1: townEarly,
 };
 
 // The 12-hour open check (owner, 2026-10-29): opens of a day under its min_open_rate 12 hours after
