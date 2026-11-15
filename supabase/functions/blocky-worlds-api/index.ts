@@ -53,6 +53,8 @@ import { queueInfo, renderConfigured, renderRuntime } from "../_shared/blockyWor
 import { canFilm, canFilmLine, fittingWithSwap, launchModeFrom, moveNote } from "../_shared/blockyWorlds/boardFit.js";
 import { boardOnlyBlocked, productionSettings, stageOf } from "../_shared/blockyWorlds/render.js";
 import { autoScenePlan, cleanScenePlan, PICKER } from "../_shared/blockyWorlds/scenePlan.js";
+import { adaptLength, adaptStory, checkStoryText } from "../_shared/blockyWorlds/adapt.js";
+import { characterSpec, charactersNote, checkUpload, cleanCharacters, readCharacter, ROLES, roleOf } from "../_shared/blockyWorlds/characterRef.js";
 import { engineFrom, readyEmailOn, STUDIO, studioEtaText, studioStageOf } from "../_shared/blockyWorlds/studio.js";
 import { studioQueueInfo, studioWorkerAlive } from "../_shared/blockyWorlds/studioSupabase.ts";
 
@@ -278,6 +280,8 @@ async function handle(req: Request, trace: Trace) {
       launch: LAUNCH_BOARD ? "board" : "off", film: LAUNCH_BOARD ? canFilm() : null,
       // the SCENE PLAN (owner-only, the Blender kit engine): after the script, each scene's location from the library
       scenePlan: Boolean(who?.owner),
+      // THE BLENDER UI (owner-only first, 2026-11-15): topic + "explain more" + character references, no length picker
+      blenderUi: Boolean(who?.owner), roles: who?.owner ? ROLES : null,
     };
   }
 
@@ -534,6 +538,58 @@ async function handle(req: Request, trace: Trace) {
     return { drafts: (data ?? []).map(draftView), writesLeft: canWrite(who.plan) ? await scriptsLeft(who.user.id) : 0 };
   }
 
+  // ---------- "EXPLAIN MORE" (owner-only first, the Blender UI; _shared/blockyWorlds/adapt.js) ----------
+  // the user's long description / full narration -> OUR rules (hook, "You see, in this town", the story shape, 60-100 s,
+  // filmable things), keeping their story, characters and twist; one writer call (+ one fix when a hard check fails)
+  if (action === "adaptStory") {
+    trace.step = "sign-in";
+    const who = await requireWriter(req, trace);
+    if (!who.owner) throw new ApiError("NOT_FOUND", "Not available.");
+    const text: any = checkStoryText(body?.text);
+    if (!text.ok) throw new ApiError("BAD_INPUT", text.error);
+    const bad = topicProblem(text.text.slice(0, 2000));
+    if (bad) throw new ApiError("BAD_INPUT", bad);
+    const characters = cleanCharacters(body?.characters);
+    trace.step = "limits";
+    const { counts } = await guardFor(who.user.id, PROVIDER === "mock" ? 0 : 0.12, "writing");
+    if ((await scriptsLeft(who.user.id, counts)) <= 0) throw new ApiError("DAILY_LIMIT", "That's today's script writes. Come back tomorrow.");
+    trace.step = "writer";
+    let a: any;
+    try {
+      a = PROVIDER === "mock"
+        ? (() => { const s = scriptFromText(text.text, ""); return { script: s, lengthSec: adaptLength(text.words), check: { hard: [], advisory: [] }, kept: null, changed: ["mock: your text as written"], costUsd: 0 }; })()
+        : await adaptStory({ apiKey: ANTHROPIC_KEY, text: text.text, note: charactersNote(characters), meter: moneyMeter(0.4) });
+    } catch (e: any) { await logCall(who.user.id, "script", e?.costUsd ?? 0, false); throw writerError(e); }
+    await logCall(who.user.id, "script", a.costUsd);
+    const lengthSec = a.lengthSec;
+    const checks = { ...checkScript(a.script, lengthSec, "own"), kind: "own" };
+    const card = { adapted: true, topic: text.text.slice(0, 300), characters, kept: a.kept, changed: a.changed };
+    const row = { title: a.script.title || a.script.lines[0]?.text?.slice(0, 60) || "My story", length_sec: lengthSec, lines: a.script.lines, post: { ...(a.script.post ?? {}), title: a.script.post?.title || a.script.title || "" }, checks: { ...checks, warnings: [...(checks.warnings ?? []), ...a.check.advisory] }, card, updated_at: new Date().toISOString() };
+    const saved = await admin.from("blocky_worlds_drafts").insert({ ...row, user_id: who.user.id, source: "own" }).select("*").single();
+    if (saved.error) throw new ApiError("SERVER", undefined, {}, saved.error.message);
+    return { ...draftView(saved.data), adapted: { kept: a.kept, changed: a.changed, stillOpen: a.check.hard }, writesLeft: await scriptsLeft(who.user.id) };
+  }
+
+  // ---------- CHARACTER REFERENCE (owner-only first; _shared/blockyWorlds/characterRef.js) ----------
+  // ONE cheap vision call turns an avatar / cartoon picture into OUR blocky character spec; photos of real people, logos
+  // and brands are refused. The picture is read from this request, forwarded to that call only, and never stored.
+  if (action === "characterRef") {
+    trace.step = "sign-in";
+    const who = await requireWriter(req, trace);
+    if (!who.owner) throw new ApiError("NOT_FOUND", "Not available.");
+    const up: any = checkUpload({ image: body?.image, mediaType: body?.mediaType });
+    if (!up.ok) throw new ApiError("BAD_INPUT", up.error);
+    const role = roleOf(body?.role);
+    if (PROVIDER === "mock") return { spec: characterSpec({ kind: "roblox_avatar", name_hint: "Test Avatar", skin: "#f1dfc6", hair_style: "spiky", hair_color: "#3a2a1a", shirt: "#7ed321", shirt_pattern: "stripes", shirt_color2: "#ffe600", pants: "#3a3f55", accessories: [], summary: "mock: a green striped shirt" }, role).spec };
+    trace.step = "limits";
+    await guardFor(who.user.id, 0.01, "writing");
+    trace.step = "vision";
+    const r: any = await readCharacter({ apiKey: ANTHROPIC_KEY, image: up.data, mediaType: up.mediaType, role }).catch((e: any) => ({ ok: false, code: "WRITER", error: undefined, detail: e?.message ?? String(e), costUsd: 0 }));
+    await logCall(who.user.id, "ideas", r.costUsd ?? 0, r.ok || ["REAL_PERSON", "BRAND", "NOT_A_CHARACTER"].includes(r.code));
+    if (!r.ok) throw new ApiError(r.code === "WRITER" ? "WRITER" : "BAD_INPUT", r.error, {}, r.detail);
+    return { spec: r.spec };
+  }
+
   // ---------- 3-4. settings (the quote) and generate ----------
   // ---------- the SCENE PLAN (owner-only; _shared/blockyWorlds/scenePlan.js): each scene's location from the library ----------
   if (action === "scenePlan") {
@@ -584,6 +640,8 @@ async function handle(req: Request, trace: Trace) {
       if (!c.ok) throw new ApiError("BAD_INPUT", c.error);
       scenePlan = c.plan;
     }
+    // the owner's character references (characterRef.js specs, re-cleaned): they go to the director's style sheet
+    const characters = who.owner ? cleanCharacters(body?.characters ?? d.card?.characters) : [];
     trace.step = "job creation";
     const script = { title: d.title, lines: d.lines };
     const { data: run, error } = await admin.rpc("blocky_worlds_start_run", {
@@ -600,7 +658,7 @@ async function handle(req: Request, trace: Trace) {
       throw new ApiError("SERVER", "Couldn't start. Nothing was charged.", {}, error?.message ?? "no run returned");
     }
     const ideaLib = d.idea_id ? (await admin.from("blocky_worlds_ideas").select("library_id").eq("id", d.idea_id).maybeSingle()).data?.library_id ?? null : null;
-    await admin.from("blocky_worlds_runs").update({ card: scenePlan ? { ...(runCard(d.card ?? null) ?? {}), scene_plan: scenePlan } : runCard(d.card ?? null), library_id: ideaLib, ...(STUDIO_ON ? { studio_builds: studioBuilds({ lines: d.lines ?? [] }, d.card ?? null) } : {}) }).eq("id", run.id);
+    await admin.from("blocky_worlds_runs").update({ card: scenePlan || characters.length ? { ...(runCard(d.card ?? null) ?? {}), ...(scenePlan ? { scene_plan: scenePlan } : {}), ...(characters.length ? { characters } : {}) } : runCard(d.card ?? null), library_id: ideaLib, ...(STUDIO_ON ? { studio_builds: studioBuilds({ lines: d.lines ?? [] }, d.card ?? null) } : {}) }).eq("id", run.id);
     if (ideaLib) await countEvent(who.user.id, ideaLib, "generated", { draftId: d.id, runId: run.id });
     // the pipeline (docs/blocky-worlds-pipeline.md): the prepare job goes to RunPod now; a run that can't be sent is
     // failed and refunded by the runtime; anything else that goes wrong here is picked up by the sweeper within a minute

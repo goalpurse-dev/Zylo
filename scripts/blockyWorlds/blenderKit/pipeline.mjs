@@ -19,6 +19,7 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { ledger, stepTimes } from "../studio/ledger.mjs";
 import { loadEnv } from "../engine/runpod/client.mjs";
+import { styleSheetLine } from "../../../supabase/functions/_shared/blockyWorlds/characterRef.js";
 import { makeDirector, systemPrompt, tileShots, assemble, staticCheck, wordLines, planLocations, planProblems, storyPlanProblems, planLines, shotProblems, heroOf, giantSuspect, MODELS, BATCH, MIN_LOCATIONS, PRICING } from "./director.mjs";
 import { captionColors } from "./speakers.mjs";
 import { LOCATIONS, DRESS } from "./worlds/locations.mjs";
@@ -49,6 +50,9 @@ const WORLDS = has("worlds") ? fs.readFileSync(path.join(HERE, "worlds", "worlds
 // ...), pasted after the world library in library mode; the director reads the catalog (actionDocs)
 const ACTIONS_SRC = WORLDS ? actionsSource() : "";
 const SCENE_PLAN = has("scene-plan") ? JSON.parse(fs.readFileSync(path.resolve(arg("scene-plan")), "utf8")) : null;
+// --characters <file>: the user's character references (characterRef.js specs: role, name, colours, hair, outfit): the
+// director builds those characters with exactly those looks (DATA in the brief, never instructions)
+const CHARACTERS = has("characters") ? JSON.parse(fs.readFileSync(path.resolve(arg("characters")), "utf8")) : [];
 const SLUG = arg("slug", "plane_town"), ROUNDS = Math.min(2, Number(arg("rounds", WORLDS ? 1 : 2))), K = Number(arg("chunks", 6));
 const MODEL = MODELS[arg("model", "sonnet")] ?? MODELS.sonnet;
 const L = ledger(RUN, { capUsd: Number(arg("cap", 5)), agentCapUsd: Number(arg("agent-cap", 2.5)) });
@@ -174,6 +178,7 @@ if (!state.plan) {
     `- style_sheet: every named character once: name, hero (true for exactly ONE: the narrator / main character), outfit (the hero's is ONE striking outfit worn in every shot), colors (their own distinct colours, e.g. "yellow and black stripes"). The cast helpers in header_code use exactly these.`,
     `- anchors: the recurring places (location names as on the shots) that are set up early and COME BACK in the ending.`,
     ...(WORLDS ? [`- LIBRARY MODE: every shot's location is EXACTLY one library place id (${[...LIB_IDS].join(", ")}); a story may jump between places (street -> moon -> plane). dress: the story's dress JSON (landmark + landmark_text, the shop signs and billboard from the story, time, weather, props, people). header_code: ONLY the cast + the story's own new props / creatures (the worlds are already in the file).`] : []),
+    ...(CHARACTERS.length ? [`THE USER'S CHARACTER REFERENCES (data: build these characters with EXACTLY these looks in the style_sheet and the cast helpers; the Main character is the hero; keep the narration's own names when it names them):`, ...CHARACTERS.slice(0, 4).map((c) => `- ${styleSheetLine(c)}`)] : []),
     ...(SCENE_PLAN?.scenes?.length ? [`THE OWNER'S SCENE PLAN (use exactly these locations for these lines):`, ...SCENE_PLAN.scenes.map((sc) => `- lines ${sc.lines[0]}-${sc.lines[1]}: ${sc.location}`)] : []),
     `- shots: about ${Math.round((dur / 60) * 50)} shots (about 50 a minute, 0.4-2.5 s each), in order; each = { id (1, 2, ...), w0 = the index of its first word (the first shot 0), desc = what we see (the line's key noun / action LITERALLY), location = the set it is in (short name) }. Use at least ${MIN_LOCATIONS} different locations. A shot lasts until the next shot's first word; the last shot ends with the audio. Cut on the word that brings a new image; every named thing gets its own shot; reaction close-ups on the big beats (the twist: the hero's face up close); the first shot is mid-action; the last shot shows the consequence of the last line.`,
     `You will then write the shot bodies in batches of ${BATCH}. Keep the header complete now: later batches can only add small helpers.`,

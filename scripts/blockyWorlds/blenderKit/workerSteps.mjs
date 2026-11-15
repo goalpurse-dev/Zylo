@@ -38,9 +38,12 @@ export function makeBlenderSteps({ base, anthropicKey, cfg, env = process.env, n
       // LIBRARY MODE (the world library + tested camera spots, one fix round) and the owner's scene plan when the run has one
       const plan = card?.scene_plan?.scenes?.length ? path.join(dir, "scene-plan.json") : null;
       if (plan) fs.writeFileSync(plan, JSON.stringify(card.scene_plan));
+      // the user's character references (characterRef.js specs on the run card): the director's style sheet
+      const chars = Array.isArray(card?.characters) && card.characters.length ? path.join(dir, "characters.json") : null;
+      if (chars) fs.writeFileSync(chars, JSON.stringify(card.characters.slice(0, 4)));
       const args = [path.join(HERE, "pipeline.mjs"), "--run", dir, "--voice-dir", path.join(dir, "voice"), "--model", cfg.blenderModel ?? "sonnet", "--worlds",
         "--rounds", String(Math.min(2, cfg.blenderRounds ?? 1)), "--cap", String(cfg.runCapUsd), "--agent-cap", String(cfg.agentCapUsd), "--chunks", String(cfg.blenderChunks ?? 6),
-        ...(plan ? ["--scene-plan", plan] : []), ...(card?.topic ? ["--topic", String(card.topic).slice(0, 200)] : []), "--yes"];
+        ...(plan ? ["--scene-plan", plan] : []), ...(chars ? ["--characters", chars] : []), ...(card?.topic ? ["--topic", String(card.topic).slice(0, 200)] : []), "--yes"];
       const childEnv = { PATH: env.PATH, SystemRoot: env.SystemRoot, HOME: env.HOME, BLOCKY_WORLDS_KEYS_FROM_ENV: "1", ANTHROPIC_API_KEY: anthropicKey,
         RUNPOD_API_KEY: env.RUNPOD_API_KEY, SUPABASE_URL: env.SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY: env.SUPABASE_SERVICE_ROLE_KEY,
         ...(env.BLOCKY_WORLDS_KIT_DIR ? { BLOCKY_WORLDS_KIT_DIR: env.BLOCKY_WORLDS_KIT_DIR } : {}) };
