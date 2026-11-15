@@ -308,9 +308,9 @@ function ScriptStep({ flat, flow, onBack, onNext, onRewrite }) {
         ))}
       </ol>
       {(d.check?.problems ?? []).length > 0 && <p className="mt-4 rounded-2xl border-2 border-[#ffd23f] bg-[#2a2410] px-4 py-3 text-[16px] font-bold text-white">{d.check.problems[0]}</p>}
-      <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
+      <div className="mt-6 flex flex-col gap-4">
         <PriceTag flat={flat} paid={paidFor(d)} seconds={sec} ready={ready} edited={flow.edited} />
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap justify-end gap-3">
           <button type="button" className="bwm-btn-2" onClick={onBack}><ArrowLeft className="h-5 w-5" />Back</button>
           <button type="button" className="bwm-btn-2" onClick={onRewrite} disabled={Boolean(flow.busy)}>{flow.busy === "rewriting" ? <Blocks label="Rewriting…" /> : <><RefreshCw className="h-5 w-5" />Rewrite</>}</button>
           <button type="button" className="bwm-btn" onClick={onNext} disabled={Boolean(flow.busy) || (!d.ready && !flow.edited)} data-testid="bwm-to-scenes">Next: scenes<ArrowRight className="h-6 w-6" /></button>
@@ -393,7 +393,7 @@ function MakeStep({ flat, flow, onBack, onMake }) {
   const d = flow.draft;
   return (
     <Card n={4} title="Make my video" sub="We direct every shot, check every frame and render it in 3D.">
-      <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
+      <div className="flex flex-col gap-4">
         <div className="rounded-2xl border-2 border-white/15 bg-[#0f1415] p-5">
           <p className="text-[22px] font-black leading-tight">“{d.title}”</p>
           <ul className="mt-3 flex flex-wrap gap-2 text-[15.5px] font-bold">
