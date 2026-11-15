@@ -240,3 +240,88 @@ Download each one afterwards and diff it against the branch (the deploy-only-com
   key; running it in a child process with an empty environment would make that boundary hard.
 - `render.mjs` / `client.mjs`: previews and frame packs go through the `generated` bucket's `blocky-worlds-test/` folder
   (cleaned after each job); a production folder would separate them from the owner's tests.
+
+---
+
+# Blender engine launch (2026-11-15, owner-only first)
+
+The Studio worker makes a run with the **Blender kit engine** when `BLOCKY_WORLDS_RENDER_ENGINE=blender` AND the run's
+user is in `BLOCKY_WORLDS_BLENDER_OWNER_IDS` (`scripts/blockyWorlds/blenderKit/workerSteps.mjs`); everyone else keeps
+three.js Studio. The page shows the new **Blender Maker** (`BlenderMaker.jsx`) to owners (`access.blenderUi`);
+`?ui=classic` shows the old page. Same queue, stages, ledger and refund path (`studioRuns.js failRun`: failed once,
+refunded once; the sweeper does the same for a dead worker).
+
+## What is new (all on laptop-transfer, nothing deployed)
+| Piece | Files |
+|---|---|
+| Milo lessons (director rules + free checks) | `blenderKit/director.mjs` (MILO_RULES, storyPlanProblems, miloShotProblems), `pipeline.mjs`, `worlds/worlds.py` (zw_ground, zw_knock), `actions/actions.py` (zx_crowd on the sidewalks), `milo.test.mjs` |
+| Story shape in every writer | `_shared/blockyWorlds/storyShape.js`, `patternBank.js`, `hybrid.js`, `tests/blockyWorldsStoryShape.test.mjs` |
+| "Explain more" + character reference | `_shared/blockyWorlds/adapt.js`, `characterRef.js`, `blocky-worlds-api/index.ts` (actions `adaptStory`, `characterRef`; `start` takes `characters`), `pipeline.mjs --characters`, `tests/blockyWorldsBlenderUi.test.mjs` |
+| The page | `src/components/viral-tools/blocky-worlds/BlenderMaker.jsx`, `blenderMaker.css`, `hooks/useBlockyWorlds.js`, `dev/devApi.js` (`?mock=1&as=owner`), `api/blockyWorldsApi.js` (`?api=local`) |
+| Price model (NOT applied) | `_shared/blockyWorlds/blenderPricing.js`, `docs/blocky-worlds-blender-pricing.patch`, `tests/blockyWorldsBlenderPricing.test.mjs` |
+| Low-balance alert | `_shared/opsHealth.js` (BLENDER_FLOOR_USD $15, red for the owner when the engine is on), `ops-health/index.ts`, `tests/blockyWorldsRunpodAlert.test.mjs` |
+| Workers | `blenderKit/setup.mjs --move-workers` (done 2026-11-15, see below), `blenderKit/endpoint.json` |
+
+## Price (measured, 2x rule: 1 credit = $0.01 of our full cost, the user pays $0.02 a credit)
+From the four real Blender runs (hiccup 60.7 s, plane 72.9 s, tower 99.2 s, Milo 96.3 s); each rate the worst measured
+per video-second; failure allowance = the refunded failures' spend (everything but the final) at an 85% pass rate.
+
+| Video | Script | Voice | Director | Checker | GPU previews | GPU final + finish | Failure allowance | **Our cost** | **Credits** | User pays |
+|---|---|---|---|---|---|---|---|---|---|---|
+| ~60 s | $0.25 | $0.10 | $0.98 | $0.07 | $0.19 | $0.31 | $0.28 | **$2.18** | **219** | $4.38 |
+| ~90 s | $0.25 | $0.16 | $1.47 | $0.11 | $0.29 | $0.46 | $0.40 | **$3.12** | **313** | $6.26 |
+| ~120 s | $0.25 | $0.21 | $1.96 | $0.14 | $0.38 | $0.61 | $0.52 | **$4.07** | **407** | $8.14 |
+
+Today's charge is still the Studio row (60 s 108, 90 s 150, 120 s 192): the Blender runs cost about 2x that. To switch:
+`git apply docs/blocky-worlds-blender-pricing.patch` (pricing.js -> blenderFullCostUsd), update the pinned numbers in
+`tests/blockyWorlds*.test.mjs`, write a prices migration from `PRICE_ROWS` (like 20261214100000), deploy blocky-worlds-api,
+then run the migration. The page shows ONE price after the script (the draft's `credits`); no length picker.
+
+## Workers (done 2026-11-15, the owner's ask; only workersMax changed, images / templates untouched)
+| Endpoint | Before | After |
+|---|---|---|
+| three.js `gm9eqdkuyc2ofs` | 3 | **0** |
+| Blender `sp338bavcw2gtn` | 3 | **6** |
+| Cutaway `f66astc0vrus92` | 4 | 4 (never touched) |
+Account total 10 of 10. While three.js is at 0, a NON-owner Studio run (testers, if `BLOCKY_WORLDS_ACCESS=allowlist`)
+cannot render: it waits and is failed + refunded by the sweeper. Rollback:
+`node scripts/blockyWorlds/blenderKit/setup.mjs --move-workers --rollback --yes` (back to 3 / 3 from endpoint.json).
+
+## Deploy steps (owner)
+1. Read-only first: download the live `blocky-worlds-api` and `ops-health` (`npx supabase functions download <name> --use-api`)
+   into a folder outside the repo and diff against this branch (live may be ahead of every branch).
+2. The scoped merge: as in step 1 above, plus these paths: `scripts/blockyWorlds/blenderKit`, `scripts/blockyWorlds/localApi.mjs`,
+   `supabase/functions/_shared/blockyWorlds/{storyShape,adapt,characterRef,blenderPricing}.js`,
+   `src/components/viral-tools/blocky-worlds/{BlenderMaker.jsx,blenderMaker.css}`, the new tests
+   (`tests/blockyWorlds{StoryShape,BlenderUi,BlenderPricing,RunpodAlert}.test.mjs`, `scripts/blockyWorlds/blenderKit/milo.test.mjs`).
+   Never `reference/` (the kit) or `scripts/blockyWorlds/engine/lib/vision/replan.js`.
+3. Tests: `node --import ./tests/setup.mjs --test tests/blocky*.test.mjs` and
+   `node --test scripts/blockyWorlds/blenderKit/*.test.mjs scripts/blockyWorlds/blenderKit/actions/*.test.mjs`.
+4. No migration is needed for this change (characters ride in the existing `card` jsonb; drafts use source `own`).
+5. Functions: `npx supabase functions deploy blocky-worlds-api` and `npx supabase functions deploy ops-health`; download
+   both afterwards and diff.
+6. The worker image: rebuild with `studioWorker/buildContext.mjs` (it copies `blenderKit/` with the new director, worlds.py,
+   actions.py; the kit itself comes from `BLOCKY_WORLDS_KIT_DIR`, never the repo) and `fly deploy` as in step 3 above,
+   only when no run is in progress. The GPU image (`blender-kit-6`, sha256:070b337d...) needs NO rebuild: worlds.py and
+   actions.py travel in each video tar.
+
+## Secrets and switches (names only)
+- Worker (Fly): `BLOCKY_WORLDS_RENDER_ENGINE=blender`, `BLOCKY_WORLDS_BLENDER_OWNER_IDS=<owner user id>`,
+  `BLOCKY_WORLDS_KIT_DIR` (the kit inside the image), plus the Studio secrets above.
+- Function secrets: also set `BLOCKY_WORLDS_RENDER_ENGINE=blender` as a Supabase secret so ops-health turns the RunPod
+  balance red under $15 for the owner. `BLOCKY_WORLDS_ENGINE=studio` stays.
+- No new key: the character reference uses `ANTHROPIC_API_KEY` (Haiku, ~$0.0005 a picture); pictures are never stored.
+
+## Localhost click-through (before any deploy)
+- `npm run dev` (ONE vite on :5173) and `node scripts/blockyWorlds/localApi.mjs` (the undeployed blocky-worlds-api on
+  :8000 with npx deno, real database, keys from .env.local as environment variables).
+- Open `http://localhost:5173/workspace/blocky-worlds?api=local`, signed in as an owner (the built-in owner list, or
+  `BLOCKY_WORLDS_OWNER_EMAILS`). Paid only on clicks: a script ~$0.25, a picture ~$0.001; "Make my video" asks first
+  (the localhost price confirm) and starts only when a worker is alive.
+- Free: `?mock=1&as=owner` (fake scripts and video, every screen; `&photo=1` a refused picture, `&fail=1` a failed video).
+
+## Rollback
+- Page: unset nothing; owners can use `?ui=classic`. Code: redeploy the downloaded backups.
+- Engine: unset `BLOCKY_WORLDS_RENDER_ENGINE` on the worker (three.js Studio again) AND move the workers back
+  (`setup.mjs --move-workers --rollback --yes`).
+- Prices: nothing to roll back until the patch is applied.
