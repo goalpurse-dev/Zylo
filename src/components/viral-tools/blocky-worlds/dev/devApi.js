@@ -88,7 +88,7 @@ const runView = (r) => {
   if (STUDIO) {
     const i = Math.floor(t / STUDIO_STEP_S), s = STUDIO_STAGES[i] ?? null, end = STUDIO_STAGES.length * STUDIO_STEP_S;
     const done = !s;
-    return { id: r.id, draftId: r.draftId, title: r.title, lengthSec: r.lengthSec, credits: r.credits, createdAt: new Date(r.startedAt).toISOString(), doneAt: done ? new Date(r.startedAt + end * 1000).toISOString() : null, status: done ? "done" : STUDIO_STATUS[s.stage], stepAt: r.startedAt, engine: "studio", stage: done ? null : s.stage, ...(done ? {} : { etaText: studioEtaText(r.lengthSec), emailWhenReady: EMAIL }), queuePosition: null, etaSec: null, doneEtaSec: null, etaAt: Date.now(), pct: done ? 100 : s.pct, post: done ? r.post : null, finalUrl: done ? "/blocky-worlds/clips/street.mp4" : null, downloadUrl: done ? "/blocky-worlds/clips/street.mp4" : null, poster: done ? "/blocky-worlds/clips/street.jpg" : null, error: null, refunded: false };
+    return { id: r.id, draftId: r.draftId, title: r.title, lengthSec: r.lengthSec, credits: r.credits, createdAt: new Date(r.startedAt).toISOString(), doneAt: done ? new Date(r.startedAt + end * 1000).toISOString() : null, status: done ? "done" : STUDIO_STATUS[s.stage], stepAt: r.startedAt, engine: "studio", stage: done ? null : s.stage, ...(done ? {} : { etaText: studioEtaText(r.lengthSec), emailWhenReady: EMAIL }), queuePosition: null, etaSec: null, doneEtaSec: null, etaAt: Date.now(), pct: done ? 100 : s.pct, claimedAt: new Date(r.startedAt).toISOString(), ...(done ? {} : { progress: mockProgress(s, i, t) }), post: done ? r.post : null, finalUrl: done ? "/blocky-worlds/clips/street.mp4" : null, downloadUrl: done ? "/blocky-worlds/clips/street.mp4" : null, poster: done ? "/blocky-worlds/clips/street.jpg" : null, error: null, refunded: false };
   }
   const status = t < 3 ? "queued" : t < 7 ? "voice" : t < 12 ? "plan" : t < 22 ? "render" : "done";
   // the whole run's % like the server's (render.js reconcile): voice 3, the prepare stages 5-15 (storyboard, plan, prompts,
@@ -96,6 +96,17 @@ const runView = (r) => {
   const pct = status === "voice" ? 3 : status === "plan" ? Math.round(5 + ((t - 7) / 5) * 10) : status === "render" ? Math.round(15 + ((t - 12) / 10) * 85) : status === "done" ? 100 : 0;
   return { id: r.id, draftId: r.draftId, title: r.title, lengthSec: r.lengthSec, credits: r.credits, createdAt: new Date(r.startedAt).toISOString(), doneAt: status === "done" ? new Date(r.startedAt + 22000).toISOString() : null, status, stepAt: r.startedAt, queuePosition: null, etaSec: null, doneEtaSec: status === "done" ? null : Math.max(0, Math.round((22 - t) * 10)), etaAt: Date.now(), pct, post: status === "done" ? r.post : null, finalUrl: status === "done" ? "/blocky-worlds/clips/street.mp4" : null, downloadUrl: status === "done" ? "/blocky-worlds/clips/street.mp4" : null, poster: status === "done" ? "/blocky-worlds/clips/street.jpg" : null, error: null, refunded: false };
 };
+
+// LIVE PROGRESS in the mock (the worker's run.progress, blenderKit/progress.mjs): what is happening inside each stage;
+// &stale=1: the last update is 5 min old (the page says "taking longer than usual: still working")
+const STALE = Q.get("stale") === "1";
+function mockProgress(s, i, t) {
+  const f = Math.max(0, Math.min(0.95, (t - i * STUDIO_STEP_S) / STUDIO_STEP_S)), next = STUDIO_STAGES[i + 1]?.pct ?? 99, SH = 76, FR = 2800;
+  const detail = { queued: "Waiting for a director", voice: "Recording the narrator", plan: "Timing every line", directing: `Directing shot ${Math.max(1, Math.round(SH * f))} of ${SH}`,
+    previews: `Test-shooting ${SH} shots`, checking: `Checking every frame of ${SH} shots`, fixing: "Fixing 9 weak shots",
+    rendering: `Rendering frame ${Math.max(1, Math.round(FR * f)).toLocaleString("en-US")} of ${FR.toLocaleString("en-US")}`, finishing: "Adding sound and captions" }[s.stage];
+  return { stage: s.stage, pct: +(s.pct + (next - s.pct) * f).toFixed(1), ceil: next, detail, at: new Date(Date.now() - (STALE ? 300000 : 0)).toISOString() };
+}
 
 export async function devCall(action, body) {
   await wait(action === "writeScript" || action === "rewrite" ? 900 : 350);

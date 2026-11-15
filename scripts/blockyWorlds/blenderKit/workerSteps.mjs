@@ -15,6 +15,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { makeProgress } from "./progress.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 
@@ -32,7 +33,7 @@ export function makeBlenderSteps({ base, anthropicKey, cfg, env = process.env, n
     mix: base.mix,
     outputs: base.outputs,
     /** the whole Blender pipeline; returns the shape the runner checks (plan.shots, plan.bible.homes) + the report */
-    async direct({ script, dir, L, card = null, log = console.log, builds = [] }) {
+    async direct({ script, dir, L, card = null, log = console.log, builds = [], onProgress = null, progressEveryMs = 4000 }) {
       fs.writeFileSync(path.join(dir, "results.json"), JSON.stringify({ results: [{ script }] }));
       fs.writeFileSync(path.join(dir, "studio-builds.json"), JSON.stringify(builds ?? []));
       // LIBRARY MODE (the world library + tested camera spots, one fix round) and the owner's scene plan when the run has one
@@ -47,12 +48,25 @@ export function makeBlenderSteps({ base, anthropicKey, cfg, env = process.env, n
       const childEnv = { PATH: env.PATH, SystemRoot: env.SystemRoot, HOME: env.HOME, BLOCKY_WORLDS_KEYS_FROM_ENV: "1", ANTHROPIC_API_KEY: anthropicKey,
         RUNPOD_API_KEY: env.RUNPOD_API_KEY, SUPABASE_URL: env.SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY: env.SUPABASE_SERVICE_ROLE_KEY,
         ...(env.BLOCKY_WORLDS_KIT_DIR ? { BLOCKY_WORLDS_KIT_DIR: env.BLOCKY_WORLDS_KIT_DIR } : {}) };
+      // LIVE PROGRESS (progress.mjs): every line the pipeline prints feeds the tracker; its snapshot goes to the run row
+      // every few seconds (onProgress), so the page always moves
+      const tracker = makeProgress();
+      let lastSent = "";
+      const tick = () => {
+        if (!onProgress) return;
+        const p = tracker.snapshot(), k = `${p.stage}|${p.pct}|${p.detail}`;
+        if (k !== lastSent) { lastSent = k; Promise.resolve().then(() => onProgress(p)).catch(() => {}); }
+      };
+      const timer = onProgress ? setInterval(tick, progressEveryMs) : null;
+      tick();
       const code = await new Promise((resolve) => {
         const p = spawn(node, args, { env: childEnv, stdio: ["ignore", "pipe", "pipe"] });
-        p.stdout.on("data", (b) => String(b).split("\n").filter(Boolean).forEach((l) => log(`blender: ${l}`)));
+        p.stdout.on("data", (b) => String(b).split("\n").filter(Boolean).forEach((l) => { tracker.feed(l); log(`blender: ${l}`); }));
         p.stderr.on("data", (b) => log(`blender stderr: ${String(b).slice(0, 400)}`));
         p.on("close", resolve);
       });
+      if (timer) clearInterval(timer);
+      tick();
       // the child booked into the same costs.json: the runner's ledger picks it up (its book() turns it into ledger rows)
       try { Object.assign(L.costs, JSON.parse(fs.readFileSync(path.join(dir, "costs.json"), "utf8"))); } catch { /* nothing booked */ }
       const repFile = path.join(dir, "blender", "report.json");

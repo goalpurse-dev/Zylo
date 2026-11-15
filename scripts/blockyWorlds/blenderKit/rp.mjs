@@ -97,6 +97,8 @@ export function runpod({ L, endpoint = endpointInfo().endpointId, prefix, log = 
       L.log({ step: "runpod_job", label, job: sub.id, worker: s.workerId ?? null, status: s.status, execS: +execS.toFixed(1), delayS: +delayS.toFixed(1), bootS: +bootS.toFixed(1), usd });
       const out = s.output ?? {};
       const ok = s.status === "COMPLETED" && out.ok !== false;
+      // the worker's live progress reads this line (progress.mjs)
+      log(`${label}: done (${s.status}, ${execS.toFixed(0)} s)`);
       return { ok, id: sub.id, status: s.status, output: out, execS, delayS, bootS, usd, worker: s.workerId ?? null, error: ok ? null : (out.error ?? s.error ?? s.status) };
     },
     putFile: (name, file, type = "application/octet-stream") => st.put(name, fs.readFileSync(file), type),

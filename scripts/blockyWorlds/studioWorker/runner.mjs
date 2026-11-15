@@ -80,11 +80,25 @@ export async function runStudioRun(run, deps, cfg = STUDIO) {
     });
     return st.writing;
   };
+  const ORDER = Object.keys(STUDIO_STATUS);
   const toStage = (stage) => {
     if (stage === st.stage && st.stages.length) return st.writing;
+    // after live progress (the Blender pipeline) the stage only moves forward (the runner's own "rendering" after the
+    // pipeline's "finishing" is skipped)
+    if (st.progressed && ORDER.indexOf(stage) < ORDER.indexOf(st.stage)) return st.writing;
     st.stage = stage; st.stages.push(stage);
     log(`stage ${stage}`);
     return write({ studio_stage: stage, status: STUDIO_STATUS[stage], pct: studioPct(stage), stage_at: iso() });
+  };
+  // LIVE PROGRESS from the Blender pipeline (blenderKit/progress.mjs): the stage, a percent that only goes up, the
+  // ceiling the page may creep to and what is happening; kept in the run's `render` jsonb (unused by Studio runs: the
+  // old pipeline's state), written at most every few seconds by the steps' timer
+  const progress = (p) => {
+    if (!p?.stage || !STUDIO_STATUS[p.stage]) return st.writing;
+    const moved = p.stage !== st.stage;
+    if (moved) { st.stage = p.stage; st.stages.push(p.stage); log(`stage ${p.stage} (${p.pct}%)`); }
+    st.progressed = true;
+    return write({ studio_stage: p.stage, status: STUDIO_STATUS[p.stage], pct: Math.floor(p.pct), ...(moved ? { stage_at: iso() } : {}), render: { progress: { stage: p.stage, pct: p.pct, ceil: p.ceil, detail: String(p.detail ?? "").slice(0, 120), at: iso() } } });
   };
   // the Studio ledger every studio module gets: the same object (its caps, costs, log), with a check() that first stops
   // paid work once the run is over and moves the progress screen to the step being paid for
@@ -137,7 +151,7 @@ export async function runStudioRun(run, deps, cfg = STUDIO) {
     // the director's brief lists them as delimited data + each approved build's code (agent.mjs libraryBrief)
     const builds = await (deps.buildsForRun ?? buildsForRun)(run, script).catch((e) => { log(`builds skipped: ${e?.message ?? e}`); return { builds: [], assets: {} }; });
     if (builds.builds.length) log(`builds: ${builds.builds.map((b) => `${b.name} (${b.kind})`).join(", ")}; library hits: ${Object.keys(builds.assets).length}`);
-    const directed = await timed("direct", () => steps.direct({ tl0: base.tl0, script, dir, L, card, builds: builds.builds, log: (m) => { if (/stopping/.test(String(m))) st.lastStop = String(m); log(m); } }));
+    const directed = await timed("direct", () => steps.direct({ tl0: base.tl0, script, dir, L, card, builds: builds.builds, onProgress: progress, log: (m) => { if (/stopping/.test(String(m))) st.lastStop = String(m); log(m); } }));
     await book();
     stopNow(); // the director stops quietly when a check refused its next call: the reason is here
     if (!directed?.plan?.shots?.length || !directed?.plan?.bible?.homes) {
