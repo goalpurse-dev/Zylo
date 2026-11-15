@@ -1,0 +1,19 @@
+{
+ "id": "coin-230d6318",
+ "name": "coin",
+ "kind": "prop",
+ "about": "warm glowing coin and falling coin",
+ "code": "def coin(name, loc, s=1.0):\n    c = cyl(name, 0.55, 0.12, loc, mat('coin_warm', hexc('#ffc93a'), 0.2, metal=0.8, emit=hexc('#ffb000'), estr=2.5), 24, rot=(90, 0, 0))\n    c.scale = (s, s, s)\n    return c",
+ "source": {
+  "run": "tower1",
+  "shots": [
+   18,
+   38
+  ],
+  "title": "The Lift Day"
+ },
+ "status": "approved",
+ "approved": true,
+ "createdAt": "2026-11-13T23:38:14.156Z",
+ "decidedAt": "2026-11-14T13:23:35.704Z"
+}

@@ -36,6 +36,9 @@
 //   a failed run: reason = the plain-words why (failReason below), failKind "ours" | "busy" | "story" | "paused"
 //   start refuses a second run of a draft while one is being made (code LIMIT, extra runId): a retry can never charge twice
 //   status "queued" | "voice" | "plan" | "render" | "done" | "failed"
+//   engine "pipeline" | "studio" (2026-11-13, studio.js): a Studio run's stage is one of STUDIO_STAGES (queued, voice,
+//   plan, directing, previews, checking, fixing, rendering, finishing) and it carries etaText ("about 10 minutes")
+// Access (Studio): engine "pipeline" | "studio", beta (true with the Studio engine: the page shows the Beta label)
 
 export const STATUSES = Object.freeze(["queued", "voice", "plan", "render", "done", "failed"]);
 export const STATUS_LABELS = Object.freeze({
@@ -75,7 +78,8 @@ export const FAILED_MESSAGE = "We couldn't make this video. It's not your fault,
 const FAIL_KINDS = Object.freeze({
   busy: ["NO_GPU", "QUEUE_TIMEOUT"],
   story: ["VISUAL_CHECK", "SUBJECT_CHECK", "PRODUCTION_CHECK", "KIT_MISSING", "PLAN_FAILED", "TIMELINE_INVALID", "STORYBOARD_FAILED", "STORYBOARD_CHECKS", "KIT_UNSUPPORTED"],
-  paused: ["NOT_CONFIGURED", "VOICE_CONFIG", "PROVIDER_BALANCE"],
+  // PAUSED (Studio, 2026-11-13): paid calls switched off or the emergency cap reached while the run waited (refunded)
+  paused: ["NOT_CONFIGURED", "VOICE_CONFIG", "PROVIDER_BALANCE", "PAUSED"],
 });
 export const FAIL_TEXT = Object.freeze({
   ours: "Something broke on our side while building your video.",

@@ -1,0 +1,27 @@
+{
+ "id": "bank-build-b8f9e1b3",
+ "name": "bank_build",
+ "kind": "set",
+ "about": "our own tippable bank on one pivot at the front-bottom edge",
+ "code": "def bank_build(name='obank', y=178.0):\n    piv = empty(name + '_piv', (0, y - 7, 0))\n    wh = mat('bank_white', hexc('#f4f1ea'), 0.6)\n    gd = mat('bank_gold', hexc('#e2b23a'), 0.35, metal=0.6)\n    box(name + '_steps', (24, 4, 1.5), (0, -2, 0.75), wh, 0.05, parent=piv)\n    box(name + '_body', (36, 14, 20), (0, 7, 11.5), wh, 0.1, parent=piv)\n    box(name + '_band', (37, 15, 1.6), (0, 7, 22.2), gd, 0.05, parent=piv)\n    for i in range(6):\n        cyl(name + '_c%d' % i, 0.9, 18, (-12.5 + i * 5, -0.6, 10.5), wh, 16, parent=piv)\n    box(name + '_ped', (30, 3, 4), (0, 1, 25), wh, 0.05, parent=piv)\n    text(name + '_txt', 'BANK', (0, -0.8, 21.0), 3.0, gd, rot=(90, 0, 0), parent=piv)\n    return piv",
+ "source": {
+  "run": "run1",
+  "shots": [
+   1,
+   2,
+   44,
+   47,
+   68,
+   70,
+   71,
+   72,
+   73,
+   74
+  ],
+  "title": "Every Laugh, I Grow"
+ },
+ "status": "approved",
+ "approved": true,
+ "createdAt": "2026-11-15T14:07:37.480Z",
+ "decidedAt": "2026-11-15T15:21:39.441Z"
+}

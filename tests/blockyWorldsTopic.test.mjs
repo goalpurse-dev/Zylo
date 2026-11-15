@@ -144,7 +144,7 @@ test("topic: the real 'sandwich' drift (nouns kept, premise lost) now FAILS: des
 test("topic: the same story told faithfully (funny, the hunt kept and ended) passes every check", () => {
   assert.deepEqual(topicProblems(TOPIC, sandwichFaithful), []);
   const words = sandwichFaithful.lines.reduce((a, l) => a + l.text.split(/\s+/).length, 0);
-  const len = [60, 70, 80, 90].find((s) => words <= Math.round((s * 212) / 60) && words >= Math.round((s * 212) / 60 * 0.9));
+  const len = [60, 70, 80, 90].find((s) => words <= Math.round((s * 257) / 60) && words >= Math.round((s * 257) / 60 * 0.9));
   assert.ok(len, `${words} words fit a length`);
   assert.deepEqual(scriptProtocolCheck(sandwichFaithful, len, { ...sandwichCard, closer: "In this town, we live inside a giant turtle, and I'm the kid with the sandwich." }).problems, []);
 });

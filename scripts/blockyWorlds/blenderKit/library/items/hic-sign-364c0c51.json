@@ -1,0 +1,31 @@
+{
+ "id": "hic-sign-364c0c51",
+ "name": "hic_sign",
+ "kind": "prop",
+ "about": "Number sign floating over a head, orange when smoking",
+ "code": "def hic_sign(ch, n='1', smoke=False):\n    r = empty(ch.name + '_hsign', (0, 0, 2.2), parent=ch.head)\n    box(ch.name + '_hsb', (1.6, 0.12, 0.9), (0, 0, 0), mat('hsign_bg', hexc('#ff5a3a' if smoke else '#fff3c4'), 0.5), 0.05, parent=r)\n    text(ch.name + '_hst', n, (0, -0.1, -0.2), 0.7, mat('hsign_tx', hexc('#202020'), 0.5), parent=r)\n    return r",
+ "source": {
+  "run": "run1",
+  "shots": [
+   1,
+   4,
+   5,
+   16,
+   19,
+   20,
+   21,
+   24,
+   33,
+   35,
+   38,
+   43,
+   48,
+   52
+  ],
+  "title": "Hiccup Time"
+ },
+ "status": "rejected",
+ "approved": false,
+ "createdAt": "2026-11-14T11:32:16.228Z",
+ "decidedAt": "2026-11-14T13:23:37.146Z"
+}

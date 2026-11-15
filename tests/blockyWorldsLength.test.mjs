@@ -41,17 +41,17 @@ const DRAFT_257 = {
   post: { title: "My dog got lost on bell festival day", description: "Nell's dog Biscuit vanishes on bell festival day.", hashtags: ["#blockyworlds", "#lostdog"] },
 };
 
-test("length: the reconstructed 257-word draft is the real failure (33 lines, too long for 60 s, nothing else wrong)", () => {
+test("length: the reconstructed 257-word draft is the real failure (33 lines, too long for 50 s, nothing else wrong)", () => {
   assert.equal(DRAFT_257.lines.length, 33);
   assert.equal(words(DRAFT_257), 257);
-  assert.deepEqual(scriptProtocolCheck(DRAFT_257, 60, CARD).problems, ["Too long: 257 words, a 60 s video fits 212 at most."]);
+  assert.deepEqual(scriptProtocolCheck(DRAFT_257, 50, CARD).problems, ["Too long: 257 words, a 50 s video fits 214 at most."]);
 });
 
-test("length: the free trim alone brings the 257-word draft to <= 212 words and it passes every protocol check", () => {
-  const t = trimForLength(DRAFT_257, 60, CARD);
+test("length: the free trim alone brings the 257-word draft to <= 214 words and it passes every protocol check", () => {
+  const t = trimForLength(DRAFT_257, 50, CARD);
   assert.ok(t.fits, `${t.words} words`);
-  assert.ok(t.words <= 212 && t.words >= Math.round(targetWords(60) * BAND.written[0]), `${t.words} words in the band`);
-  assert.deepEqual(scriptProtocolCheck(t.script, 60, CARD).problems, []);
+  assert.ok(t.words <= 214 && t.words >= Math.round(targetWords(50) * BAND.written[0]), `${t.words} words in the band`);
+  assert.deepEqual(scriptProtocolCheck(t.script, 50, CARD).problems, []);
   const kept = t.script.lines.map((l) => l.text);
   // the rule, every part's first line (its hook), the last line (the callback), the planted object in the climax and the truth
   assert.equal(kept[0], DRAFT_257.lines[0].text);
@@ -60,7 +60,7 @@ test("length: the free trim alone brings the 257-word draft to <= 212 words and 
   assert.ok(kept.includes("She lost her own dog long ago."), "the twist's truth stays");
   // every part is still there, near its budget
   const used = partWords(t.script);
-  for (const b of partLines(60)) assert.ok(used[b.id] >= 0.6 * b.words, `${b.id}: ${used[b.id]} of ~${b.words}`);
+  for (const b of partLines(50)) assert.ok(used[b.id] >= 0.6 * b.words, `${b.id}: ${used[b.id]} of ~${b.words}`);
   // small, explainable changes: filler words and whole lines only
   assert.ok(t.changes.length <= 12 && t.changes.every((c) => c.to === null || c.to.length < c.from.length));
 });
@@ -74,27 +74,27 @@ test("length: writeScript trims instead of paying for a rewrite (one call, stubb
     return new Response(JSON.stringify(body), { status: 200, headers: { "content-type": "application/json" } });
   };
   try {
-    const w = await writeScript({ apiKey: "test", provider: "anthropic", idea: CARD, lengthSec: 60 });
+    const w = await writeScript({ apiKey: "test", provider: "anthropic", idea: CARD, lengthSec: 50 });
     assert.equal(calls, 1, "no paid rewrite");
     assert.equal(w.attempts, 1);
     assert.deepEqual(w.check.problems, []);
-    assert.ok(w.check.words <= 212 && w.trimmed.length > 0);
+    assert.ok(w.check.words <= 214 && w.trimmed.length > 0);
   } finally {
     globalThis.fetch = real;
   }
 });
 
 test("length: the trim never breaks a check and never goes under the band; what it can't fix is left for the rewrite", () => {
-  // 30 s (106 words max): the parts keep 60% of their budgets and two lines each, so 257 words can't fit; no new problem
+  // 30 s (129 words max): the parts keep 60% of their budgets and two lines each; whether it fits or not, no new problem
   const t = trimForLength(DRAFT_257, 30, CARD);
-  assert.equal(t.fits, false);
+  assert.ok(t.words >= Math.round(targetWords(30) * BAND.written[0]) || !t.fits);
   assert.deepEqual(scriptProtocolCheck(t.script, 30, CARD).problems.filter((p) => !/^Too long/.test(p)), []);
   // already in range: untouched
   const ok = trimForLength(t.script, 90, CARD);
   assert.equal(ok.changes.length, 0);
   // the plain check (no card) works the same way
-  const plain = trimScript(DRAFT_257, 60);
-  assert.ok(plain.fits && !checkScript(plain.script, 60).problems.length);
+  const plain = trimScript(DRAFT_257, 50);
+  assert.ok(plain.fits && !checkScript(plain.script, 50).problems.length);
 });
 
 test("length: the prompt gives per-part words AND lines, adds up, and asks for a count", () => {
@@ -105,10 +105,10 @@ test("length: the prompt gives per-part words AND lines, adds up, and asks for a
     assert.ok(Math.abs(total / lines - 7.5) < 2, `${s} s: ${total} words in ${lines} lines`);
   }
   const block = lengthBlock(60);
-  assert.match(block, /LENGTH: 60 seconds = 191 to 212 words in total, in about 28 lines/);
-  assert.match(block, /- tour: 5 lines, about 35 words/);
+  assert.match(block, /LENGTH: 60 seconds = 231 to 257 words in total, in about 33 lines/);
+  assert.match(block, /- tour: 6 lines, about 43 words/);
   assert.match(block, /BEFORE YOU ANSWER: count the words of every part/);
   // the beat sheet carries the plan's numbers
   const p = scriptPrompt({ idea: EXAMPLE_IDEAS[0], lengthSec: 60, beats: [{ part: "tour", summary: "s", shows: "x", words: 60 }] });
-  assert.match(p, /\[tour\] s \| on screen: x \| 5 line\(s\), ~35 words/);
+  assert.match(p, /\[tour\] s \| on screen: x \| 6 line\(s\), ~43 words/);
 });

@@ -68,3 +68,47 @@ test("the free replay: the Pigeon Mayor's unfilmable lines are reworded to kit t
   const r = await replay({ script: R.results[0].script, scenes: S, fixture: { unfilmable: ["statue", "fountain"], rewrites: {} }, maxFallback: 0 });
   assert.match(String(r.error), /^KIT_UNSUPPORTED/);
 });
+test("over its cap: the error carries the spend (the worker books it; shakedown 4 lost ~$0.12)", async () => {
+  await assert.rejects(directStoryboard({ apiKey: "x", script, cast, scenes, capUsd: 0.0000001, fetchFn: mock({}).fetchFn }), (e) => e.code === "STORYBOARD_FAILED" && e.costUsd > 0 && /spent \$/.test(e.message));
+});
+test("fixCameras: a street camera on a park shot becomes the place's wide camera before validation (shakedown 4 retry)", async () => {
+  const { fixCameras } = await import("../lib/storyboardDirector.js");
+  const board = { lines: [{ line: 0, shots: [{ loc: "place:park", cam: "street_wide" }, { loc: "street", cam: "place_wide" }, { loc: "place:park", cam: "face:me" }] }] };
+  assert.equal(fixCameras(board), 2);
+  assert.deepEqual(board.lines[0].shots.map((s) => s.cam), ["place_wide", "street_wide", "face:me"]);
+});
+test("board-only: a line the director KEPT for the old planner is a problem (repair, then KIT_UNSUPPORTED); not board-only it stays a kept line", async () => {
+  const keepMock = (fixOnRepair) => async (url, init) => {
+    const b = JSON.parse(init.body);
+    if (b.max_tokens === 1) return reply([]);
+    if (/WORLD BIBLE of a vertical/.test(b.system)) return reply({ homes: K.bible.homes, houses: K.bible.houses, events: K.bible.events, rule: K.bible.rule });
+    if (/You fix single narration lines/.test(b.system)) return reply([]);
+    const ask = b.messages[0].content.at(-1).text, ids = ask.match(/lines ([\d, ]+) only/)[1].split(",").map(Number), repair = /Fix these problems/.test(ask);
+    const filmed = (n) => { const e = JSON.parse(JSON.stringify(K.lines.find((l) => l.line === n))); if (!e.keep) return e; const z = JSON.parse(JSON.stringify(K.lines.find((l) => l.line === 0))); return { ...z, line: n, shots: z.shots.slice(0, 1) }; }; // #2 keeps a few lines itself: filmed here
+    return reply(ids.map((n) => (n === 3 && !(repair && fixOnRepair) ? { line: n, keep: true } : filmed(n))));
+  };
+  const relaxed = await directStoryboard({ apiKey: "x", script, cast, scenes, fetchFn: keepMock(false) });
+  assert.ok(relaxed.board.lines.find((l) => l.line === 3).keep);
+  await assert.rejects(directStoryboard({ apiKey: "x", script, cast, scenes, maxFallback: 0, fetchFn: keepMock(false) }), (e) => e.code === "KIT_UNSUPPORTED");
+  const fixed = await directStoryboard({ apiKey: "x", script, cast, scenes, maxFallback: 0, fetchFn: keepMock(true) });
+  assert.ok(!fixed.board.lines.find((l) => l.line === 3).keep);
+});
+test("every final check before the voice: an engine-check failure goes back to the director's repair (re-plan), and a clean fail if it stays", async () => {
+  let repairs = 0;
+  const fetchFn = async (url, init) => {
+    const b = JSON.parse(init.body);
+    if (b.max_tokens === 1) return reply([]);
+    if (/WORLD BIBLE of a vertical/.test(b.system)) return reply({ homes: K.bible.homes, houses: K.bible.houses, events: K.bible.events, rule: K.bible.rule });
+    if (/You fix single narration lines/.test(b.system)) return reply([]);
+    const ask = b.messages[0].content.at(-1).text, ids = ask.match(/lines ([\d, ]+) only/)[1].split(",").map(Number);
+    if (/Fix these problems/.test(ask)) { repairs++; assert.match(ask, /final check: subjects: Pip not on screen/); }
+    return reply(ids.map((n) => { const e = JSON.parse(JSON.stringify(K.lines.find((l) => l.line === n))); if (e.keep) { const z = JSON.parse(JSON.stringify(K.lines.find((l) => l.line === 0))); return { ...z, line: n, shots: z.shots.slice(0, 1) }; } return e; }));
+  };
+  // the engine check fails line 5 until the director has re-planned it once
+  let seen = 0;
+  const engineCheckFn = async () => (seen++ === 0 ? [{ line: 5, problem: "subjects: Pip not on screen" }] : []);
+  const ok = await directStoryboard({ apiKey: "x", script, cast, scenes, maxFallback: 0, fetchFn, engineCheckFn });
+  assert.equal(repairs, 1); assert.equal(ok.fellBack.length, 0);
+  // a failure that stays: the run fails cleanly (no voice is bought: onLinesFinal gets the lines, the throw follows)
+  await assert.rejects(directStoryboard({ apiKey: "x", script, cast, scenes, maxFallback: 0, fetchFn, engineCheckFn: async () => [{ line: 5, problem: "subjects: Pip not on screen" }] }), (e) => e.code === "KIT_UNSUPPORTED" && /final check/.test(JSON.stringify(e.problems)));
+});

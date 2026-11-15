@@ -1,7 +1,7 @@
 import { AlertTriangle, Check, Copy, Download, Music2, RotateCcw, ThumbsDown, ThumbsUp, Wand2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { FOCUS, cx } from "../../ui/zyvo";
-import { STAGES, STATUS_LABELS, clock, isWorking, runStage } from "./api/blockyWorldsApi";
+import { STATUS_LABELS, clock, isStudioRun, isWorking, runStage, stagesFor, studioEtaText } from "./api/blockyWorldsApi";
 import LivePreview, { Clip, PreviewBoundary } from "./LivePreview";
 import { ActionButton, CreditMark } from "./StepShell";
 import { CLIPS, useReducedMotion } from "./clips";
@@ -53,7 +53,7 @@ const CONFETTI = Array.from({ length: 34 }, (_, i) => ({ left: `${(i * 29) % 100
  * finish 95-100), never behind the stage it is at (render.js STAGES).
  */
 function progressOf(run, stage) {
-  const floor = (STAGES.find((s) => s.stage === stage)?.pct ?? 0) / 100;
+  const floor = (stagesFor(run).find((s) => s.stage === stage)?.pct ?? 0) / 100;
   return Math.min(0.98, Math.max(floor, (Number(run.pct) || 0) / 100));
 }
 
@@ -64,11 +64,15 @@ function Building({ run }) {
   const [seenAt, setSeenAt] = useState(() => Date.now());
   useEffect(() => { setSeenAt(Date.now()); }, [run.etaAt, run.etaSec, run.doneEtaSec, run.queuePosition]);
   const wait = waitInfo(run, Date.now(), seenAt);
-  // the server's stages (render.js STAGES): where the run is, and every step before it ticked off
+  // the server's stages (render.js STAGES, or studio.js STUDIO_STAGES for a run the Studio director makes): where the run
+  // is, and every step before it ticked off
+  const studio = isStudioRun(run);
+  const STAGES = stagesFor(run);
   const stage = runStage(run);
   const at = Math.max(0, STAGES.findIndex((s) => s.stage === stage));
   const p = progressOf(run, stage);
-  const line = wait.inLine ? wait.title : stage === "render" ? BUILD_LINES[tick % BUILD_LINES.length] : STAGES[at]?.label ?? STATUS_LABELS[run.status];
+  const line = wait.inLine ? wait.title : stage === "render" || stage === "rendering" ? BUILD_LINES[tick % BUILD_LINES.length] : STAGES[at]?.label ?? STATUS_LABELS[run.status];
+  const eta = run.etaText ?? studioEtaText(run.lengthSec ?? 60);
   return (
     <div className="relative flex min-h-[560px] flex-col items-center justify-center overflow-hidden px-2 py-6 text-center" aria-live="polite">
       {/* our clips drifting behind, dimmed, like the onboarding's "coming to life" */}
@@ -96,7 +100,8 @@ function Building({ run }) {
           {wait.inLine ? <span className="text-[30px] font-black tabular-nums text-[#11150D]" aria-hidden="true">#{wait.position}</span> : <span className="text-[24px] font-black tabular-nums text-[#11150D]">{Math.round(p * 100)}%</span>}
         </div>
       </div>
-      <p key={line} className="ob-enter relative mt-4 text-[21px] font-black leading-tight tracking-tight text-white" data-testid="bw-wait-title">{line}{wait.inLine ? "" : "…"}</p>
+      {studio && !wait.inLine && <p className="relative mt-4 text-[12px] font-black uppercase tracking-[0.14em] text-lime-300/85" data-testid="bw-studio-title">Your video is being directed</p>}
+      <p key={line} className={cx("ob-enter relative text-[21px] font-black leading-tight tracking-tight text-white", studio && !wait.inLine ? "mt-1" : "mt-4")} data-testid="bw-wait-title">{line}{wait.inLine ? "" : "…"}</p>
       {wait.inLine && <p className="relative mt-1 text-[15px] font-bold text-lime-200" data-testid="bw-wait-sub">{wait.sub}</p>}
       <p className="relative mt-1 max-w-[300px] truncate text-[13px] font-semibold text-lime-200">&ldquo;{run.title}&rdquo;</p>
       <ol className="relative mt-5 flex max-w-[420px] flex-wrap justify-center gap-1.5" aria-label="Progress" data-testid="bw-stages">
@@ -108,7 +113,14 @@ function Building({ run }) {
         ))}
       </ol>
       {wait.inLine && <p className="relative mt-4 max-w-[300px] rounded-2xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-[11.5px] leading-relaxed text-white/65">All our video machines are busy with other videos right now. Yours is saved in line and starts on its own.</p>}
-      <p className="relative mt-4 text-[11px] text-white/40">{wait.inLine ? "" : wait.done ? `${wait.done}.` : "About 3 to 4 minutes."} You can leave this page; it keeps going.</p>
+      {studio ? (
+        // the Studio engine (owner, 2026-11-13): "Your video is being directed, about 10 min, you can leave this page"
+        <p className="relative mt-4 max-w-[320px] text-[12px] leading-relaxed text-white/55" data-testid="bw-wait-note">
+          {wait.inLine ? "" : `${eta.charAt(0).toUpperCase()}${eta.slice(1)}. `}You can leave this page{run.emailWhenReady ? ": we'll email you when it's ready." : "; it keeps going."}
+        </p>
+      ) : (
+        <p className="relative mt-4 text-[11px] text-white/40">{wait.inLine ? "" : wait.done ? `${wait.done}.` : "About 3 to 4 minutes."} You can leave this page; it keeps going.</p>
+      )}
     </div>
   );
 }
@@ -164,6 +176,7 @@ function RunView({ run, onEvent, retry }) {
         <Music2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-lime-300" aria-hidden="true" />
         <span><b className="font-bold text-white/85">Tip:</b> for max reach, add a trending sound in TikTok when you post.</span>
       </p>
+      <p className="px-1 text-[10.5px] leading-relaxed text-white/40" data-testid="bw-sound-tip">Tip: add &lsquo;Numbers&rsquo; by TEMPOREX in TikTok when you post.</p>
     </div>
   );
 }

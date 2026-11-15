@@ -34,6 +34,37 @@ export const SFX = {
   door_slam: { dur: 0.6, anchor: 0, gainDb: -4, quality: "good", ...KENNEY("RPG Audio"), source: "Kenney RPG Audio doorClose_4 + synth thump", what: "door slam" },
   footsteps_walk: { dur: 2.0, anchor: 0, gainDb: -7, quality: "good", loop: true, ...KENNEY("Impact Sounds"), what: "walking on concrete, 2 steps/s, loops" },
   footsteps_run: { dur: 1.2, anchor: 0, gainDb: -6, quality: "good", loop: true, ...KENNEY("RPG Audio"), what: "running, 3.3 steps/s, loops" },
+  // the writer's SOUND WORDS (2026-11-12): Kenney CC0 files (lib/audioPlan.js SOUND_SFX)
+  bonk: { dur: 0.33, anchor: 0, gainDb: -6, quality: "ok", ...KENNEY("Impact Sounds"), source: "Kenney Impact Sounds impactWood_light_003 pitched down (CC0, picked by name for the sound word)", what: "a hollow bonk" },
+  clunk: { dur: 0.31, anchor: 0, gainDb: -6, quality: "ok", ...KENNEY("Impact Sounds"), source: "Kenney Impact Sounds impactWood_heavy_001 (CC0, picked by name for the sound word)", what: "a heavy wooden clunk" },
+  tap: { dur: 0.14, anchor: 0, gainDb: -6, quality: "ok", ...KENNEY("Impact Sounds"), source: "Kenney Impact Sounds impactGeneric_light_000 (CC0, picked by name for the sound word)", what: "a light tap" },
+  splat: { dur: 0.51, anchor: 0, gainDb: -6, quality: "ok", ...KENNEY("Sci-fi Sounds + Impact Sounds"), source: "Kenney Sci-fi Sounds + Impact Sounds slime_000 + impactSoft_heavy_000 (CC0, picked by name for the sound word)", what: "a wet splat" },
+  snap: { dur: 0.19, anchor: 0, gainDb: -6, quality: "ok", ...KENNEY("Impact Sounds"), source: "Kenney Impact Sounds impactWood_light_004 pitched up (CC0, picked by name for the sound word)", what: "a quick snap" },
+  click: { dur: 0.04, anchor: 0, gainDb: -6, quality: "ok", ...KENNEY("Interface Sounds"), source: "Kenney Interface Sounds click_001 (CC0, picked by name for the sound word)", what: "a click" },
+  ding: { dur: 0.12, anchor: 0, gainDb: -6, quality: "ok", ...KENNEY("Interface Sounds"), source: "Kenney Interface Sounds glass_002 (CC0, picked by name for the sound word)", what: "a glassy ding" },
+  zap: { dur: 0.23, anchor: 0, gainDb: -6, quality: "ok", ...KENNEY("Sci-fi Sounds"), source: "Kenney Sci-fi Sounds laserRetro_000 (CC0, picked by name for the sound word)", what: "a retro zap" },
+  twang: { dur: 0.09, anchor: 0, gainDb: -6, quality: "ok", ...KENNEY("Interface Sounds"), source: "Kenney Interface Sounds pluck_001 (CC0, picked by name for the sound word)", what: "a plucked twang" },
+  scratch: { dur: 0.12, anchor: 0, gainDb: -6, quality: "ok", ...KENNEY("Interface Sounds"), source: "Kenney Interface Sounds scratch_001 (CC0, picked by name for the sound word)", what: "a scratch" },
+  plop: { dur: 0.11, anchor: 0, gainDb: -6, quality: "ok", ...KENNEY("Interface Sounds"), source: "Kenney Interface Sounds drop_001 (CC0, picked by name for the sound word)", what: "a plop" },
+  drip: { dur: 0.13, anchor: 0, gainDb: -6, quality: "ok", ...KENNEY("Interface Sounds"), source: "Kenney Interface Sounds drop_002 pitched up (CC0, picked by name for the sound word)", what: "a drip" },
+  // the home-made sound words (owner, 2026-11-12: our own code, audio/sfxBuild.mjs)
+  beep: { dur: 0.18, anchor: 0, gainDb: -6, quality: "ok", ...OURS, what: "a 1 kHz beep" },
+  buzz: { dur: 0.7, anchor: 0, gainDb: -6, quality: "ok", ...OURS, what: "a buzz (bee / buzzer), 125 Hz saw with flutter" },
+  hiss: { dur: 0.6, anchor: 0, gainDb: -6, quality: "ok", ...OURS, what: "a high hiss (snake / tyre)" },
+  fizz: { dur: 0.9, anchor: 0, gainDb: -6, quality: "ok", ...OURS, what: "a soda fizz with tiny bubble pops" },
+  boing: { dur: 0.7, anchor: 0, gainDb: -6, quality: "ok", ...OURS, what: "a spring boing, wobbling pitch" },
+  squeak: { dur: 0.21, anchor: 0, gainDb: -6, quality: "ok", ...OURS, what: "a rising-falling squeak (mouse / rubber toy)" },
+  poof: { dur: 0.55, anchor: 0, gainDb: -6, quality: "ok", ...OURS, what: "a soft low puff of smoke" },
+  // the animal + eating sound words (ElevenLabs takes, owner OK 2026-11-12)
+  meow: { dur: 1.2, anchor: 0, gainDb: -6, quality: "good", source: "ElevenLabs Sound Effects (audio/elevenSfx.mjs; take in assets/sfx-src/eleven/)", license: "commercial use on the owner's paid ElevenLabs plan", what: "meow" },
+  woof: { dur: 0.96, anchor: 0, gainDb: -6, quality: "good", source: "ElevenLabs Sound Effects (audio/elevenSfx.mjs; take in assets/sfx-src/eleven/)", license: "commercial use on the owner's paid ElevenLabs plan", what: "woof" },
+  moo: { dur: 1.29, anchor: 0, gainDb: -6, quality: "good", source: "ElevenLabs Sound Effects (audio/elevenSfx.mjs; take in assets/sfx-src/eleven/)", license: "commercial use on the owner's paid ElevenLabs plan", what: "moo" },
+  quack: { dur: 1, anchor: 0, gainDb: -6, quality: "good", source: "ElevenLabs Sound Effects (audio/elevenSfx.mjs; take in assets/sfx-src/eleven/)", license: "commercial use on the owner's paid ElevenLabs plan", what: "quack" },
+  oink: { dur: 0.87, anchor: 0, gainDb: -6, quality: "good", source: "ElevenLabs Sound Effects (audio/elevenSfx.mjs; take in assets/sfx-src/eleven/)", license: "commercial use on the owner's paid ElevenLabs plan", what: "oink" },
+  ribbit: { dur: 0.91, anchor: 0, gainDb: -6, quality: "good", source: "ElevenLabs Sound Effects (audio/elevenSfx.mjs; take in assets/sfx-src/eleven/)", license: "commercial use on the owner's paid ElevenLabs plan", what: "ribbit" },
+  gulp: { dur: 0.68, anchor: 0, gainDb: -6, quality: "good", source: "ElevenLabs Sound Effects (audio/elevenSfx.mjs; take in assets/sfx-src/eleven/)", license: "commercial use on the owner's paid ElevenLabs plan", what: "gulp" },
+  munch: { dur: 1.36, anchor: 0, gainDb: -6, quality: "good", source: "ElevenLabs Sound Effects (audio/elevenSfx.mjs; take in assets/sfx-src/eleven/)", license: "commercial use on the owner's paid ElevenLabs plan", what: "munch" },
+  slurp: { dur: 1.07, anchor: 0, gainDb: -6, quality: "good", source: "ElevenLabs Sound Effects (audio/elevenSfx.mjs; take in assets/sfx-src/eleven/)", license: "commercial use on the owner's paid ElevenLabs plan", what: "slurp" },
 };
 export const SFX_NAMES = Object.keys(SFX);
 export const sfxPath = (name) => {

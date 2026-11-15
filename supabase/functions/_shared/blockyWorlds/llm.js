@@ -9,12 +9,29 @@ import { EXAMPLE_IDEAS, EXAMPLE_SCRIPT } from "./examples.js";
 import { batchPrompt, ideasSchema, ideasSystem, IDEAS_SYSTEM, REVISE_SYSTEM, revisePrompt, slotsPrompt, topicPrompt, usableIdeas, normalizeIdea } from "./ideas.js";
 import { BOARD_PREFIX, boardFitProblems, canFilmLine, fittingWithSwap, kitBlock, kitFit, swapHint, swapIdea } from "./boardFit.js";
 import { BOARD_KIT } from "./boardKit.js";
+// the Studio engine (2026-11-13): board = "prefer" -> the kit is a preference, no kit check blocks (studioBuilds.js)
+import { kitHard, kitPrefer, kitPreferBlock, STUDIO_BLOCK_PREFIX, studioBlockProblems } from "./studioBuilds.js";
+/** a writer's system prompt with the kit: HARD rules (board mode), a PREFERENCE (Studio), or none */
+const kitSystem = (base, board, who) => (kitHard(board) ? `${base}\n\n${kitBlock(BOARD_KIT, who)}` : kitPrefer(board) ? `${base}\n\n${kitPreferBlock(who)}` : base);
+/** the kit check of a draft: board mode's kit misses (unchanged), or Studio's four blocks (brands, nothing to show) */
+function kitProblems(check, script, card, board) {
+  if (kitHard(board)) { const b = boardFitProblems(script, card); check.problems.push(...b.problems); check.warnings.push(...b.warnings); }
+  else if (kitPrefer(board)) check.problems.push(...studioBlockProblems(script, card));
+  return check;
+}
 import { checkScript, normalizeScript, OPENER_SYSTEM, PART_FIX_SYSTEM, partFixPrompt, partFixSchema, openerOk, openerPrompt, openerSchema, paceClean, PART_IDS, partBudgets, scriptPrompt, scriptSchema, SCRIPT_SYSTEM, trimScript } from "./script.js";
 import { fixOpener, hasOpener } from "./opener.js";
 import { judgePrompt, judgeReasons, judgeSchema, judgeScriptPrompt, JUDGE_SYSTEM, RUBRIC, scoreVerdict } from "./library.js";
 import { pickRecipe } from "./recipes.js";
 import { ANGLES, BROAD_SCRIPT_SYSTEM, broadScriptSchema, examplesBlock, PLAN_SYSTEM, planPrompt, planSchema } from "./broad.js";
 import { skeletonProblems } from "./skeleton.js";
+import { buttonFallback } from "./formula.js";
+import { freshNames, freshNamesBlock, namesUsedBy } from "./bans.js";
+import { patternNotes } from "./patternBank.js";
+import { DARK_PLAN_SYSTEM, DARK_LINES_SYSTEM, DARK_VERSION_NOTES, darkLinesPrompt, darkLinesSchema, darkPlanPrompt, darkPlanSchema, darkProblems, darkWithParts } from "./dark.js";
+import { plantPayoffProblems, plantPayoffTable } from "./plantPayoff.js";
+import { cardFromPoolIdea, defaultCorpus, filterIdeas, IDEA_JUDGE_SYSTEM, IDEA_POOL_SYSTEM, ideaJudgePrompt, ideaJudgeSchema, ideaPoolPrompt, ideaPoolSchema, POOL_SIZE, readIdeaScores, topIdeas } from "./ideaEngine.js";
+import { pickBest, readStoryScores, STORY_JUDGE_SYSTEM, storyJudgePrompt, storyJudgeSchema, VERSION_NOTES } from "./storyJudge.js";
 import { HYBRID_LINES_SYSTEM, HYBRID_PLAN_SYSTEM, hybridLinesSystem, hybridPlanSystem, hybridChecks, hybridLinesPrompt, hybridLinesSchema, hybridPlanPrompt, hybridPlanSchema, planCard, planNotes, withParts } from "./hybrid.js";
 import { beatBudgets, plantedShare } from "./beatSheet.js";
 import { copyProblems, copyReasons } from "./antiCopy.js";
@@ -56,7 +73,7 @@ export function systemBlocks(texts, { cache = true, ttl = "5m" } = {}) {
  * The library job's output ceilings (tokens, thinking included). They bound what one call can cost, so the job can stop
  * before any call that could pass its money cap (libraryJob.js worstCaseUsd).
  */
-export const LIBRARY_MAX_TOKENS = Object.freeze({ write: 8000, judge: 6000 });
+export const LIBRARY_MAX_TOKENS = Object.freeze({ write: 16000, judge: 6000 });
 /** The most one call can cost (USD): every output token used, plus a generous input. */
 export const worstCaseUsd = (model, maxTokens, inputTokens = 12000, ttl = "5m") => { const p = PRICE[model] ?? PRICE["claude-sonnet-5-5"]; return Number(((maxTokens * p.output + inputTokens * (ttl === "1h" ? p.cacheWrite1h : p.cacheWrite)) / 1e6).toFixed(4)); };
 
@@ -78,14 +95,39 @@ export function requestBody({ model, system, user, schema, effort, maxTokens, ca
   };
 }
 
-/** One call that returns JSON matching `schema`. Thinking stays adaptive; effort keeps it short. */
-async function callJson({ apiKey, model, system, user, schema, effort = "low", maxTokens = 16000, timeoutMs = 120_000, meter = null, cache = true, ttl = "5m" }) {
+/**
+ * AUTO-CONTINUE (owner, 2026-11-14: the first "laugh -> grow" script lost three paid line drafts to an 8000-token limit):
+ * a reply cut off by the output limit (stop_reason max_tokens) is RESUMED instead of failing: a new request (the same system
+ * blocks, so a cache read) gets the original message plus the JSON written so far and asks for the COMPLETE object, with
+ * 1.5x the room (at most CONTINUE.maxTokens). Structured outputs return whole objects and these models take no assistant
+ * prefill, so a resume re-sends the finished part rather than appending to it. At most CONTINUE.max resumes; each one is
+ * priced on the meter before it is sent, exactly like the first call (a cap refusal stops the step).
+ */
+export const CONTINUE = Object.freeze({ max: 2, grow: 1.5, maxTokens: 32000 });
+export function resumeUser(user, partial) {
+  const done = String(partial ?? "").trim();
+  return `${user}\n\nRESUME: your previous answer was cut off at the output limit ${done ? `after this much of the JSON:\n<<<\n${done.slice(0, 60000)}\n>>>\nReturn the COMPLETE JSON object now: keep every finished part word for word and finish the rest.` : "before any of the JSON was written. Return the COMPLETE JSON object now."} Keep your thinking short.`;
+}
+
+/** One call that returns JSON matching `schema`. Thinking stays adaptive; effort keeps it short. A cut-off reply is resumed (CONTINUE). */
+export async function callJson({ apiKey, model, system, user, schema, effort = "low", maxTokens = 16000, timeoutMs = 120_000, meter = null, cache = true, ttl = "5m", continues = CONTINUE.max }) {
   const sonnet = FALLBACK_MODELS.some((m) => model.startsWith(m)); // (name kept: any model with the fallback)
-  // a money cap: the call is never sent when its worst case (every output token, input at the cache-write price) could
-  // pass it; what a call cost (failed ones too) is added to the meter
-  if (meter) meter.check(worstCaseUsd(model, maxTokens, Math.ceil(([system].flat().join("").length + user.length) / 3) + 200, cache ? ttl : "5m"), model);
-  try { return await sendJson({ apiKey, model, system, user, schema, effort, maxTokens, timeoutMs, sonnet, meter, cache, ttl }); }
-  catch (e) { if (meter && !e?.counted) meter.add(e?.costUsd ?? 0); throw e; }
+  let ask = user, mt = maxTokens, spent = 0;
+  for (let k = 0; ; k++) {
+    // a money cap: the call is never sent when its worst case (every output token, input at the cache-write price) could
+    // pass it; what a call cost (failed ones too) is added to the meter
+    if (meter) meter.check(worstCaseUsd(model, mt, Math.ceil(([system].flat().join("").length + ask.length) / 3) + 200, cache ? ttl : "5m"), model);
+    try {
+      const r = await sendJson({ apiKey, model, system, user: ask, schema, effort, maxTokens: mt, timeoutMs, sonnet, meter, cache, ttl });
+      return k ? { ...r, costUsd: Number((spent + r.costUsd).toFixed(5)), continued: k } : r;
+    } catch (e) {
+      if (meter && !e?.counted) meter.add(e?.costUsd ?? 0);
+      spent += Number(e?.costUsd ?? 0);
+      if (!e?.truncated || k >= continues) throw Object.assign(e, { costUsd: Number(spent.toFixed(5)), continued: k });
+      ask = resumeUser(user, e.partial);
+      mt = Math.min(CONTINUE.maxTokens, Math.ceil(mt * CONTINUE.grow));
+    }
+  }
 }
 async function sendJson({ apiKey, model, system, user, schema, effort, maxTokens, timeoutMs, sonnet, meter, cache = true, ttl = "5m" }) {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -107,8 +149,8 @@ async function sendJson({ apiKey, model, system, user, schema, effort, maxTokens
     throw Object.assign(new Error(`anthropic ${res.status} ${JSON.stringify(body?.error ?? body).slice(0, 300)}`), { costUsd, balance, counted });
   }
   if (body?.stop_reason === "refusal") throw Object.assign(new Error("REFUSED: the writer declined this one"), { costUsd, refused: true, counted });
-  if (body?.stop_reason === "max_tokens") throw Object.assign(new Error("output truncated"), { costUsd, counted });
   const text = (body?.content ?? []).filter((b) => b?.type === "text").map((b) => b.text).join("");
+  if (body?.stop_reason === "max_tokens") throw Object.assign(new Error("output truncated"), { costUsd, counted, truncated: true, partial: text });
   try {
     return { data: JSON.parse(text), costUsd, usage: usageOf(body?.usage) };
   } catch {
@@ -213,7 +255,7 @@ export async function writeIdeas({ apiKey = "", provider = "anthropic", seed = 0
     : await callJson({ apiKey, model: MODELS.ideas, system: ideasSystem({ board }), user: text, schema: ideasSchema(), effort: "low" });
   const ideas = usableIdeas(reply.data, slots, provider === "mock" ? [] : avoid);
   // the board-only launch mode: only ideas the board kit can film (the mock's samples are kept: the free flow test)
-  return { ideas: board && provider !== "mock" ? fittingWithSwap(ideas) : ideas, costUsd: reply.costUsd };
+  return { ideas: kitHard(board) && provider !== "mock" ? fittingWithSwap(ideas) : ideas, costUsd: reply.costUsd };
 }
 
 /**
@@ -229,7 +271,7 @@ export async function writeTopicIdeas({ apiKey = "", provider = "anthropic", top
   let ideas = rankTopicIdeas(topic, usableIdeas(reply.data, slots, provider === "mock" ? [] : avoid));
   // the board-only launch mode: only worlds the board kit can film; none left -> what the topic needs (the page says it)
   let unfit = null;
-  if (board && provider !== "mock") {
+  if (kitHard(board) && provider !== "mock") {
     const fits = ideas.map((i) => { const fit = kitFit(i); const swapped = fit.fit ? i : swapIdea(i); return swapped !== i && kitFit(swapped).fit ? { idea: swapped, fit: { fit: true, need: [] } } : { idea: i, fit }; });
     unfit = fits.some((x) => x.fit.fit) ? null : { needs: [...new Set(fits.flatMap((x) => x.fit.need.flatMap((n) => n.words.map((w) => String(w).toLowerCase()))))].slice(0, 4), canFilm: canFilmLine() };
     ideas = fits.filter((x) => x.fit.fit).map((x) => x.idea);
@@ -242,10 +284,10 @@ export async function writeTopicIdeas({ apiKey = "", provider = "anthropic", top
  * fail the code checks are dropped here (dedup and the judge come after, in the job).
  * @param {{apiKey?: string, provider?: string, slots: object[], avoid?: string[], seed?: number}} input
  */
-export async function writeLibraryIdeas({ apiKey = "", provider = "anthropic", slots, avoid = [], seed = 1 }) {
+export async function writeLibraryIdeas({ apiKey = "", provider = "anthropic", slots, avoid = [], seed = 1, board = true }) {
   const reply = provider === "mock"
     ? await MOCK.ideas({ seed, slots })
-    : await callJson({ apiKey, model: MODELS.library, system: IDEAS_SYSTEM, user: slotsPrompt(slots, avoid), schema: ideasSchema(), effort: "medium", timeoutMs: 180_000, maxTokens: LIBRARY_MAX_TOKENS.write });
+    : await callJson({ apiKey, model: MODELS.library, system: ideasSystem({ board }), user: slotsPrompt(slots, avoid), schema: ideasSchema(), effort: "medium", timeoutMs: 180_000, maxTokens: LIBRARY_MAX_TOKENS.write });
   const ideas = usableIdeas(reply.data, slots);
   return { ideas, dropped: Math.max(0, (reply.data?.ideas?.length ?? 0) - ideas.length), costUsd: reply.costUsd };
 }
@@ -301,12 +343,12 @@ export async function cardFromScript({ apiKey = "", provider = "anthropic", line
  * The 7-part beat sheet for a card; a sheet that fails the checks is retried once (this step only).
  * @param {{apiKey?: string, provider?: string, card: object, lengthSec: number}} input
  */
-export async function writeBeats({ apiKey = "", provider = "anthropic", card, lengthSec, meter = null, maxTokens = 16000 }) {
+export async function writeBeats({ apiKey = "", provider = "anthropic", card, lengthSec, meter = null, maxTokens = 16000, board = false }) {
   let costUsd = 0, beats = [], problems = [];
   for (let attempt = 1; attempt <= 2; attempt++) {
     const reply = provider === "mock"
       ? await MOCK.beats({ card, lengthSec })
-      : await callJson({ apiKey, model: MODELS.beats, system: BEATS_SYSTEM, user: beatsPrompt(card, lengthSec) + (problems.length ? `\n\nFIX THESE PROBLEMS:\n${problems.map((p) => `- ${p}`).join("\n")}` : ""), schema: beatsSchema(), effort: "low", meter, maxTokens });
+      : await callJson({ apiKey, model: MODELS.beats, system: kitSystem(BEATS_SYSTEM, board, "plan"), user: beatsPrompt(card, lengthSec) + (problems.length ? `\n\nFIX THESE PROBLEMS:\n${problems.map((p) => `- ${p}`).join("\n")}` : ""), schema: beatsSchema(), effort: "low", meter, maxTokens });
     costUsd += reply.costUsd;
     beats = reply.data?.beats ?? [];
     problems = beatProblems(beats);
@@ -331,7 +373,7 @@ export async function repairOpener({ apiKey = "", provider = "anthropic", line, 
 export function scriptProtocolCheck(script, lengthSec, card, { board = false } = {}) {
   const check = checkScript(script, lengthSec, "written");
   // the board-only launch mode: what the board kit can't film (boardFit.js on kitCheck.js), before anything is charged
-  if (board) { const b = boardFitProblems(script, card); check.problems.push(...b.problems); check.warnings.push(...b.warnings); }
+  kitProblems(check, script, card, board);
   if (card) {
     check.problems.push(...propProblems(card, script));
     const cb = callbackProblem(card, script);
@@ -365,13 +407,15 @@ export function trimForLength(script, lengthSec, card = null, { board = false } 
  */
 export async function writeScript({ apiKey = "", provider = "anthropic", idea, lengthSec, previous = null, note = "", beats = null, failed = [], meter = null, maxTokens = 16000, board = false }) {
   // the board-only launch mode: the kit as hard rules for the writer, and the kit checks with the others
-  const opts = { board }, baseNote = board ? [note, kitBlock(BOARD_KIT, "lines"), idea?.swap ? swapHint(idea.swap) : ""].filter(Boolean).join("\n\n") : note;
+  // 2026-11-12: the kit (places, creature looks, animals, props, weather, SOUND WORDS) rides in the SYSTEM prompt, as in the formula writer
+  const opts = { board }, baseNote = kitHard(board) ? [note, idea?.swap ? swapHint(idea.swap) : ""].filter(Boolean).join("\n\n") : note;
+  const system = kitSystem(SCRIPT_SYSTEM, board, "lines");
   let costUsd = 0, attempts = 0, script = null, check = null, prev = previous, extra = baseNote, trimmed = [];
   for (let round = 1; round <= 2; round++) {
     attempts++;
     const reply = provider === "mock"
       ? await MOCK.script({ lengthSec })
-      : await callJson({ apiKey, model: MODELS.script, system: SCRIPT_SYSTEM, user: scriptPrompt({ idea, lengthSec, previous: prev, note: extra, beats, failed: round === 1 ? failed : [] }), schema: scriptSchema(), effort: "medium", timeoutMs: 180_000, meter, maxTokens });
+      : await callJson({ apiKey, model: MODELS.script, system, user: scriptPrompt({ idea, lengthSec, previous: prev, note: extra, beats, failed: round === 1 ? failed : [] }), schema: scriptSchema(), effort: "medium", timeoutMs: 180_000, meter, maxTokens });
     costUsd += reply.costUsd;
     script = normalizeScript(reply.data);
     check = scriptProtocolCheck(script, lengthSec, provider === "mock" ? null : idea, opts);
@@ -406,7 +450,7 @@ export function draftCheck(script, lengthSec, kind = "written", card = null, { b
   if (kind === "written") return scriptProtocolCheck(script, lengthSec, card, { board });
   const own = checkScript(script, lengthSec, "own");
   // a pasted script in launch mode: the same kit check (a story that needs a cave fails here, never after the charge)
-  if (board) { const b = boardFitProblems(script, card); own.problems.push(...b.problems); own.warnings.push(...b.warnings); }
+  kitProblems(own, script, card, board);
   return own;
 }
 
@@ -425,6 +469,7 @@ function mockFixPart({ script, indexes, reasons, card }) {
         : [`It was all about the ${named}.`, ...out.slice(1)];
     }
     else if (/^Line \d+ has/.test(r)) out = out.flatMap((t) => { const w = t.split(/\s+/); if (w.length <= 12) return [t]; const h = Math.ceil(w.length / 2); return [`${w.slice(0, h).join(" ").replace(/[,.]$/, "")}.`, w.slice(h).join(" ").replace(/^./, (c) => c.toUpperCase())]; });
+    else if (r.startsWith(STUDIO_BLOCK_PREFIX)) { const word = r.match(/"([^"]+)"/)?.[1]; if (word) out = out.map((t) => t.replace(new RegExp(word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"), "a snack")); }
     else if (r.startsWith(BOARD_PREFIX)) { const word = r.match(/"([^"]+)"/)?.[1]; if (word) out = out.map((t) => t.replace(new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\w*`, "gi"), "lantern")); }
     else if (/^Uses "([^"]+)"/.test(r)) { const word = r.match(/^Uses "([^"]+)"/)[1]; out = out.map((t) => t.replace(new RegExp(word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"), "something")); }
   }
@@ -452,9 +497,11 @@ export async function fixPart({ apiKey = "", provider = "anthropic", script, ind
     attempts++;
     const reply = provider === "mock"
       ? mockFixPart({ script, indexes: span, reasons: why, card })
-      : await callJson({ apiKey, model: MODELS.opener, system: PART_FIX_SYSTEM, user: partFixPrompt({ script, indexes: span, reasons: why, card }), schema: partFixSchema(), effort: "low", maxTokens: 4000, timeoutMs: 90_000 });
+      : await callJson({ apiKey, model: MODELS.opener, system: kitSystem(PART_FIX_SYSTEM, board, "lines"), user: partFixPrompt({ script, indexes: span, reasons: why, card }), schema: partFixSchema(), effort: "low", maxTokens: 4000, timeoutMs: 90_000 });
     costUsd += reply.costUsd;
-    const fresh = (Array.isArray(reply.data?.lines) ? reply.data.lines : []).map((t) => paceClean(t)).filter((t) => t && t !== ".").slice(0, span.length + 6);
+    let fresh = (Array.isArray(reply.data?.lines) ? reply.data.lines : []).map((t) => paceClean(t)).filter((t) => t && t !== ".").slice(0, span.length + 6);
+    // the free fallback (formula.js): when the span ends the script and the model's last line is too long for the button, split off its last short sentence
+    if (to === script.lines.length - 1 && fresh.length) fresh = buttonFallback(fresh, [script.lines[0].text, script.lines[1]?.text, script.lines[2]?.text]);
     if (!fresh.length) { why = [...reasons, "Return the replacement lines (at least one)."]; continue; }
     const lines = [...script.lines.slice(0, from), ...fresh.map((text) => ({ part, text })), ...script.lines.slice(to + 1)];
     if (from === 0) { const fixed = fixOpener(lines[0].text); if (fixed) lines[0] = { ...lines[0], text: fixed }; }
@@ -580,7 +627,7 @@ export async function topicScript({ apiKey = "", provider = "anthropic", topic, 
 
 // ---------- broad topics with reference examples (owner, 2026-11-08) ----------
 /** Output ceilings of the broad flow (each call's worst case is bounded by them). */
-export const BROAD_MAX_TOKENS = Object.freeze({ plan: 7000, script: 10000, judge: LIBRARY_MAX_TOKENS.judge });
+export const BROAD_MAX_TOKENS = Object.freeze({ plan: 12000, script: 16000, judge: LIBRARY_MAX_TOKENS.judge });
 
 /** The plan: an idea card (with its twist clue) and the 7 beats, from the topic, recipe and angle. */
 // model/effort/maxTokens/note: overrides for a model comparison (the defaults are the production flow); note is added
@@ -680,20 +727,103 @@ export async function broadTopic({ apiKey = "", topic, recipe = null, examples =
  * The app can switch it (BLOCKY_WORLDS_CACHE_TTL = 5m | 1h | off).
  */
 export const HYBRID = Object.freeze({
-  plan: Object.freeze({ model: "claude-opus-5-5", effort: "low", maxTokens: 9000 }),
-  lines: Object.freeze({ model: "claude-sonnet-5-5", effort: "low", maxTokens: 8000 }),
-  fix: Object.freeze({ model: "claude-sonnet-5-5", effort: "low", maxTokens: 6000 }),
+  // 2026-11-14: lines 16000, plan / fix 12000 (the lines call of an 85 s script with the Studio notes used all of 8000 on thinking + JSON:
+  // three paid drafts lost); a cut-off reply is resumed anyway (CONTINUE)
+  plan: Object.freeze({ model: "claude-opus-5-5", effort: "low", maxTokens: 12000 }),
+  lines: Object.freeze({ model: "claude-sonnet-5-5", effort: "low", maxTokens: 16000 }),
+  fix: Object.freeze({ model: "claude-sonnet-5-5", effort: "low", maxTokens: 12000 }),
   judge: Object.freeze({ maxTokens: 2500 }),
   cacheTtl: "5m",
 });
 
+/**
+ * The IDEA ENGINE (ideaEngine.js): Opus (the best model, HYBRID.plan.model) writes a pool of ~40 ideas, free code rejects the banned
+ * pieces and every near-duplicate of the corpus (the idea library, past scripts, the references, the kit's examples) and of the log
+ * of ideas already given out, one judge call scores the rest, and the best `count` are kept (1 for "AI can decide"). Returns
+ * { ideas: [{ hook, rule, style, twist, source, visual, scores, total, card }], pool, kept, rejected, costUsd, calls }.
+ */
+export async function writeIdeaPool({ apiKey = "", count = 10, style = null, topic = "", corpus = [], given = [], meter = null, poolSize = POOL_SIZE, steps = {} }) {
+  const out = { ideas: [], pool: 0, kept: 0, rejected: [], costUsd: 0, calls: {} };
+  const log = (what, model, r) => { out.calls[what] = { model, usd: Number(r?.costUsd ?? 0), usage: r?.usage ?? null }; out.costUsd = Number((out.costUsd + Number(r?.costUsd ?? 0)).toFixed(5)); };
+  try {
+    const gen = steps.pool ?? ((a) => callJson(a));
+    const r = await gen({ apiKey, model: HYBRID.plan.model, system: [IDEA_POOL_SYSTEM, patternNotes("ideas")], user: ideaPoolPrompt({ count: poolSize, style, avoid: given.slice(-40), topic }), schema: ideaPoolSchema(), effort: "low", maxTokens: 9000, meter });
+    log("pool", HYBRID.plan.model, r);
+    const pool = Array.isArray(r.data?.ideas) ? r.data.ideas.filter((x) => x?.rule && x?.hook) : [];
+    out.pool = pool.length;
+    const f = filterIdeas(pool, { corpus: [...defaultCorpus(), ...corpus], given });
+    out.kept = f.kept.length; out.rejected = f.rejected;
+    if (!f.kept.length) return out;
+    const judge = steps.judge ?? ((a) => callJson(a));
+    const j = await judge({ apiKey, model: MODELS.judge, system: [IDEA_JUDGE_SYSTEM], user: ideaJudgePrompt(f.kept), schema: ideaJudgeSchema(), effort: "low", maxTokens: 6000, meter });
+    log("judge", MODELS.judge, j);
+    const scores = readIdeaScores(j.data, f.kept.length);
+    const ranked = topIdeas(f.kept, scores, f.kept.length);
+    out.all = ranked.map(({ hook, rule, style, twist, source, total, scores: sc }) => ({ hook, rule, style, twist, source, total, scores: sc })); // the whole judged pool, best first
+    out.ideas = ranked.slice(0, count).map((x) => ({ ...x, card: cardFromPoolIdea(x) }));
+  } catch (e) {
+    out.costUsd = Number((out.costUsd + Number(e?.costUsd ?? 0)).toFixed(5));
+    out.stopped = stoppedText(e);
+    out.failure = failureOf(e);
+  }
+  return out;
+}
+
+/**
+ * The DARK TWIST writer (dark.js; owner, 2026-11-14): Opus plans, Sonnet writes THREE versions of the lines, the story judge scores
+ * all three per criterion and the best is kept (every version is saved on the run: out.versions with its text and scores).
+ * Returns { topic, style: "dark", plan, script, skeleton (the map), versions, pick, setups, checks, names, calls, costUsd }.
+ */
+export async function writeDark({ apiKey = "", topic, lengthSec = 150, meter = null, versions = 3, ttl = HYBRID.cacheTtl, usedNames = [], note = "", steps = {} }) {
+  const s = { judgeStories, ...steps };
+  const out = { topic, style: "dark", lengthSec, plan: null, script: null, skeleton: {}, versions: [], pick: null, setups: [], checks: null, names: [], calls: {}, costUsd: 0 };
+  const log = (what, model, r) => { out.calls[what] = { model, usd: Number(r?.costUsd ?? 0), usage: r?.usage ?? null }; out.costUsd = Number((out.costUsd + Number(r?.costUsd ?? 0)).toFixed(5)); };
+  try {
+    out.names = freshNames({ n: 4, seed: `${topic}|${Date.now()}|${Math.random()}`, used: usedNames });
+    const p = await callJson({ apiKey, model: HYBRID.plan.model, system: [DARK_PLAN_SYSTEM, patternNotes("plan")], user: darkPlanPrompt({ topic, lengthSec, note: [note, freshNamesBlock(out.names)].filter(Boolean).join("\n\n") }), schema: darkPlanSchema(), effort: HYBRID.plan.effort, maxTokens: HYBRID.plan.maxTokens, meter, ttl });
+    log("plan", HYBRID.plan.model, p);
+    out.plan = p.data;
+    const make = (vnote) => callJson({ apiKey, model: HYBRID.lines.model, system: [DARK_LINES_SYSTEM, patternNotes("lines")], user: darkLinesPrompt({ plan: out.plan, topic, lengthSec, note: vnote }), schema: darkLinesSchema(), effort: HYBRID.lines.effort, maxTokens: 16000, meter, ttl });
+    const notes = DARK_VERSION_NOTES.slice(0, Math.min(versions, DARK_VERSION_NOTES.length));
+    const first = await make(notes[0]);
+    const rest = await Promise.all(notes.slice(1).map(make));
+    const drafts = [first, ...rest].map((r) => {
+      const script = normalizeScript(darkWithParts(r.data));
+      const map = r.data?.map ?? {};
+      const c = darkProblems(script, lengthSec, { topic });
+      const pp = plantPayoffProblems(script, map.setups);
+      return { script, map, hard: c.hard, advisory: [...c.advisory, ...pp], costUsd: r.costUsd, usage: r.usage };
+    });
+    log("lines", HYBRID.lines.model, { costUsd: drafts.reduce((a, d) => a + Number(d.costUsd ?? 0), 0), usage: drafts[0].usage });
+    const j = await s.judgeStories({ apiKey, scripts: drafts.map((d) => d.script), topic, meter });
+    log("storyJudge", MODELS.opener, j);
+    const pick = pickBest(drafts.map((d, i) => ({ hard: d.hard.length, advisory: d.advisory.length, total: j.scores[i]?.total ?? 0 })));
+    out.versions = drafts.map((d, i) => ({ version: i + 1, scores: j.scores[i]?.scores ?? {}, total: j.scores[i]?.total ?? 0, note: j.scores[i]?.note ?? "", hard: d.hard, advisory: d.advisory, words: d.script.lines.reduce((a, l) => a + l.text.split(/\s+/).filter(Boolean).length, 0), picked: i === pick, script: d.script, setups: plantPayoffTable(d.script, d.map.setups) }));
+    out.pick = pick + 1;
+    out.script = drafts[pick].script;
+    out.skeleton = drafts[pick].map;
+    out.setups = out.versions[pick].setups;
+    out.checks = { hard: drafts[pick].hard, advisory: drafts[pick].advisory };
+    out.usedNames = namesUsedBy(out.script.lines.map((x) => x.text));
+  } catch (e) {
+    out.costUsd = Number((out.costUsd + Number(e?.costUsd ?? 0)).toFixed(5));
+    out.stopped = stoppedText(e);
+    out.failure = failureOf(e);
+  }
+  return out;
+}
+
 /** The plan call's request parts (system blocks + user message), exported so the tests can compare them byte for byte. */
 export function hybridPlanRequest({ topic, recipe = null, examples = [], lengthSec = 90, note = "", idea = null, board = false }) {
-  return { system: [examplesBlock(examples), board ? hybridPlanSystem({ board }) : HYBRID_PLAN_SYSTEM], user: hybridPlanPrompt({ topic, recipe, lengthSec, note, idea }) };
+  return { system: [examplesBlock(examples), `${board ? hybridPlanSystem({ board }) : HYBRID_PLAN_SYSTEM}
+
+${patternNotes("plan")}`], user: hybridPlanPrompt({ topic, recipe, lengthSec, note, idea }) };
 }
 /** The lines call's request parts (the fix and a rewrite use the same system blocks: one cached prefix). */
 export function hybridLinesRequest({ plan, topic, examples = [], lengthSec = 90, previous = null, failed = [], note = "", board = false }) {
-  return { system: [examplesBlock(examples), board ? hybridLinesSystem({ board }) : HYBRID_LINES_SYSTEM], user: hybridLinesPrompt({ plan, topic, lengthSec, previous, failed, note }) };
+  return { system: [examplesBlock(examples), `${board ? hybridLinesSystem({ board }) : HYBRID_LINES_SYSTEM}
+
+${patternNotes("lines")}`], user: hybridLinesPrompt({ plan, topic, lengthSec, previous, failed, note }) };
 }
 
 /** Opus's plan: { plan, card, notes, costUsd, usage }. One call, never retried. idea: the card the user picked. */
@@ -758,18 +888,50 @@ function trimHybrid({ script, skeleton, card, examples, lengthSec, checks, board
  * Returns { topic, recipe, references, plan, card, planNotes, script, skeleton, checks, fixed, firstHard, feedback,
  * calls: { plan, lines, fix, judge } (each { model, usd, usage }), costUsd, stopped, failure }.
  */
-export async function writeHybrid({ apiKey = "", topic, recipe = null, examples = [], lengthSec = 90, meter = null, judge = true, idea = null, ttl = HYBRID.cacheTtl, steps = {}, note = "", board = false }) {
-  const s = { writeHybridPlan, writeHybridLines, repairOpener, judgeScript, ...steps };
+/**
+ * The STORY JUDGE (storyJudge.js): one cheap call (Haiku, the shared rules in the cached system prompt) scores every version on the
+ * formula's criteria (a simple rule, jokes with punchlines, a clever rule-based solution, win + holy twist, the hook, every line
+ * visible). Returns { scores: [{ version, scores, total, note }], best, costUsd, usage }.
+ */
+export async function judgeStories({ apiKey = "", scripts, topic = "", meter = null, maxTokens = 2500 }) {
+  const reply = await callJson({ apiKey, model: MODELS.opener, system: [STORY_JUDGE_SYSTEM], user: storyJudgePrompt(scripts, { topic }), schema: storyJudgeSchema(), effort: "low", maxTokens, meter });
+  return { scores: readStoryScores(reply.data, scripts.length), best: Number(reply.data?.best) || null, costUsd: reply.costUsd, usage: reply.usage ?? null };
+}
+
+export async function writeHybrid({ apiKey = "", topic, recipe = null, examples = [], lengthSec = 90, meter = null, judge = true, idea = null, ttl = HYBRID.cacheTtl, steps = {}, note = "", board = false, versions = board === "prefer" ? 3 : 1, usedNames = [] }) {
+  const s = { writeHybridPlan, writeHybridLines, repairOpener, judgeScript, judgeStories, ...steps };
   const out = { topic, recipe, references: examples.map((e) => ({ id: e.id, firstLine: e.firstLine ?? String(e.text).split(/(?<=[.!?])\s/)[0] })), plan: null, card: null, planNotes: [], script: null, skeleton: {}, checks: null, fixed: null, firstHard: [], trimmed: [], feedback: null, calls: { plan: null, lines: null, fix: null, judge: null }, costUsd: 0, stopped: null, failure: null };
   const log = (what, model, r) => { out.calls[what] = { model, usd: Number(r?.costUsd ?? 0), usage: r?.usage ?? null }; out.costUsd = Number((out.costUsd + Number(r?.costUsd ?? 0)).toFixed(5)); };
   const check = () => hybridChecks({ script: out.script, skeleton: out.skeleton, card: out.card, examples, lengthSec, board });
   const trimmed = () => { const t = trimHybrid({ script: out.script, skeleton: out.skeleton, card: out.card, examples, lengthSec, checks: out.checks, board }); out.script = t.script; out.checks = t.checks; out.trimmed.push(...t.changes); };
   try {
-    const p = await s.writeHybridPlan({ apiKey, topic, recipe, examples, lengthSec, meter, idea, ttl, ...(note ? { note } : {}), ...(board ? { board } : {}) });
+    // fresh names every time (bans.js): none of the examples', none in the used-names log
+    const names = freshNames({ n: 4, seed: `${topic}|${Date.now()}|${Math.random()}`, used: usedNames });
+    out.names = names;
+    const planNote = [note, freshNamesBlock(names)].filter(Boolean).join("\n\n");
+    const p = await s.writeHybridPlan({ apiKey, topic, recipe, examples, lengthSec, meter, idea, ttl, note: planNote, ...(board ? { board } : {}) });
     log("plan", HYBRID.plan.model, p);
     Object.assign(out, { plan: p.plan, card: p.card, planNotes: p.notes ?? [] });
-    const w = await s.writeHybridLines({ apiKey, plan: out.plan, topic, examples, lengthSec, meter, ttl, ...(board ? { board } : {}) });
-    log("lines", HYBRID.lines.model, w);
+    let w;
+    if (versions > 1) {
+      // THREE versions of the lines from the one plan (the first writes the cache, the others read it), one cheap judge call, the best kept
+      const make = (vnote) => s.writeHybridLines({ apiKey, plan: out.plan, topic, examples, lengthSec, meter, ttl, ...(vnote ? { note: vnote } : {}), ...(board ? { board } : {}) });
+      const notes = VERSION_NOTES.slice(0, Math.min(versions, VERSION_NOTES.length));
+      const first = await make(notes[0]);
+      const rest = await Promise.all(notes.slice(1).map(make));
+      const drafts = [first, ...rest];
+      log("lines", HYBRID.lines.model, { costUsd: drafts.reduce((a, d) => a + Number(d.costUsd ?? 0), 0), usage: first.usage ?? null });
+      const checked = drafts.map((d) => hybridChecks({ script: d.script, skeleton: d.skeleton, card: out.card, examples, lengthSec, board }));
+      const j = await s.judgeStories({ apiKey, scripts: drafts.map((d) => d.script), topic, meter });
+      log("storyJudge", MODELS.opener, j);
+      const pick = pickBest(drafts.map((_, i) => ({ hard: checked[i].hard.length, advisory: checked[i].advisory.length, total: j.scores[i]?.total ?? 0 })));
+      out.versions = drafts.map((d, i) => ({ version: i + 1, scores: j.scores[i]?.scores ?? {}, total: j.scores[i]?.total ?? 0, note: j.scores[i]?.note ?? "", hard: checked[i].hard.length, advisory: checked[i].advisory.length, words: checked[i].words, picked: i === pick }));
+      out.pick = pick + 1;
+      w = drafts[pick];
+    } else {
+      w = await s.writeHybridLines({ apiKey, plan: out.plan, topic, examples, lengthSec, meter, ttl, ...(board ? { board } : {}) });
+      log("lines", HYBRID.lines.model, w);
+    }
     out.script = w.script; out.skeleton = w.skeleton;
     // LENGTH-V2: the writer's own draft length (before any trim or fix) and its self-count
     out.draftWords = w.script.lines.reduce((a, l) => a + l.text.split(/\s+/).filter(Boolean).length, 0);

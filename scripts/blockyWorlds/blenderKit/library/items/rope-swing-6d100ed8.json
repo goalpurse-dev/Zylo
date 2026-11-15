@@ -1,0 +1,18 @@
+{
+ "id": "rope-swing-6d100ed8",
+ "name": "rope_swing",
+ "kind": "prop",
+ "about": "rope swing for Lumi",
+ "code": "def rope_swing(name, loc):\n    rope(name + '_l', (loc[0] - 0.7, loc[1], loc[2] + 8), (loc[0] - 0.7, loc[1], loc[2] + 1.2), r=0.06)\n    rope(name + '_r', (loc[0] + 0.7, loc[1], loc[2] + 8), (loc[0] + 0.7, loc[1], loc[2] + 1.2), r=0.06)\n    box(name + '_seat', (1.8, 0.6, 0.2), (loc[0], loc[1], loc[2] + 1.1), mat('swing_wood', hexc('#8a5a32'), 0.6), 0.03)\n    box(name + '_bar', (3, 0.3, 0.3), (loc[0], loc[1], loc[2] + 8.1), mat('swing_bar', hexc('#4a3a2a'), 0.6), 0.03)",
+ "source": {
+  "run": "tower1",
+  "shots": [
+   19
+  ],
+  "title": "The Lift Day"
+ },
+ "status": "approved",
+ "approved": true,
+ "createdAt": "2026-11-13T23:38:14.250Z",
+ "decidedAt": "2026-11-14T13:23:36.082Z"
+}

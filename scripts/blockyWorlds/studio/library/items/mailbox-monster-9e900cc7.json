@@ -1,0 +1,37 @@
+{
+ "id": "mailbox-monster-9e900cc7",
+ "name": "Mailbox Monster",
+ "codeName": "monster",
+ "kind": "creature",
+ "about": "Mailbox monster",
+ "creature": true,
+ "size": {
+  "w": 3.68,
+  "h": 3.2,
+  "d": 2.2
+ },
+ "height": 3.2,
+ "prims": 22,
+ "glow": 2,
+ "code": "const o=api.p.open||0;api.block([2.2,1.2,1.8],[0,1.0,0],'#6b7480');api.block([1.6,1.0,1.2],[0,2.0,0.2],'#8a94a0');api.block([0.7,0.6,1.0],[-1.45,1.5,0],'#c0392b');api.cyl(0.35,0.35,1.0,[-1.45,1.8,0],'#c0392b',{rot:[1.5708,0,0]});api.block([0.06,0.5,0.06],[-1.85,2.0,0.3],'#f1c40f');api.block([0.3,0.15,0.04],[-1.7,2.2,0.3],'#f1c40f');api.block([0.7,0.6,1.0],[1.45,1.5,0],'#2e86de');api.cyl(0.35,0.35,1.0,[1.45,1.8,0],'#2e86de',{rot:[1.5708,0,0]});api.block([2.0,1.6,0.1],[0,1.6,-1.0],'#e8e8e8',{rot:[0.2,0,0]});api.block([0.5,0.4,0.6],[0.4,3.0,0.2],'#27ae60');api.cyl(0.25,0.25,0.6,[0.4,3.25,0.2],'#27ae60',{rot:[1.5708,0,0]});api.ball(0.17,[-0.4,2.2,0.82],'#fff7a0',{glow:2.5});api.ball(0.17,[0.4,2.2,0.82],'#fff7a0',{glow:2.5});api.block([0.9,0.2,0.1],[0,1.7,0.82],'#2a1a1a');api.block([0.1,0.12,0.06],[-0.3,1.78,0.84],'#fff');api.block([0.1,0.12,0.06],[0.3,1.78,0.84],'#fff');api.block([0.5,0.4,0.06],[0.5,0.95,0.93],'#e67e22');api.block([0.4,0.35,0.05],[0.5,0.95,0.99],'#c0392b',{rot:[0,-o*1.4,0]});for(let i=0;i<4;i++){api.cyl(0.5,0.5,0.3,[i<2?-1.1:1.1,0.5,i%2==0?0.6:-0.6],'#222',{rot:[0,0,1.5708]});}",
+ "tags": [
+  "monster"
+ ],
+ "approved": false,
+ "status": "pending",
+ "preview": "thumbs/mailbox-monster-9e900cc7.jpg",
+ "source": {
+  "run": "studio testA2 (2026-11-13)",
+  "model": "claude-sonnet-5-5",
+  "story": "The Mailbox Monster (mailbox script)"
+ },
+ "quality": {
+  "cuts": 41,
+  "passing": 36,
+  "share": 0.88
+ },
+ "createdAt": "2026-11-13T17:35:12.793Z",
+ "updatedAt": "2026-11-13T17:35:12.793Z",
+ "reviewedAt": null,
+ "previewKind": "showcase"
+}

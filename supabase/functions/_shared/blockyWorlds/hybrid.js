@@ -27,8 +27,13 @@ import { skeletonProblems } from "./skeleton.js";
 import { mentions, ruleMissing, topicBlock, topicElements, topicProblems } from "./topic.js";
 import { blockedWordsRule } from "./safety.js";
 import { targetWords } from "./config.js";
+import { storyShapeProblems } from "./storyShape.js";
+import { buttonProblems, endingProblems, formulaProblems } from "./formula.js";
+import { bannedProblems } from "./bans.js";
+import { plantPayoffProblems } from "./plantPayoff.js";
 import { BOARD_KIT } from "./boardKit.js";
 import { boardFitProblems, kitBlock, swapHint } from "./boardFit.js";
+import { kitHard, kitPrefer, kitPreferBlock, studioBlockProblems } from "./studioBuilds.js";
 
 /**
  * Every word the safety check throws out (safety.js: famous names, a game platform's terms, gore), named in BOTH system
@@ -88,15 +93,17 @@ ${BEAT_SHEET_TEXT}
 ${RULE_VISUAL_TEXT}
 
 WHAT EACH PIECE OF THE PLAN MUST DO
-- opener: line 1, the user's topic as the world's rule, plain fact, starting with exactly "In this town, ". price: what the rule costs, concrete and seen by everyone (said in the origin).
+- opener: the user's topic as the world's rule, plain fact, starting with exactly "In this town, " (8 to 14 words). It is the RULE sentence: the writer says it as line 2, "You see, in this town, [the rule]." If the topic is a place or a setting ("we live in a plane"), turn it into ONE simple rule about an everyday action a kid gets in 2 seconds (a sneeze, a laugh, a hiccup, a lie, buckling a seatbelt) that happens inside it.
+- hook: LINE 1 of the video, the RESULT-FIRST HOOK: the craziest result or moment of the whole story, in the narrator's mouth RIGHT NOW, first person, 5 to 12 words, an exclamation, filmable (the example's shape: "And I just sneezed in the cockpit of a flying plane!"). It must be a result of the rule that the story then explains.
 - rule_visual: parameter (the one visible thing: "how high your house floats", "the colour of the cloud over your head"), description (how it looks in the world, filmable), neighbours (each named neighbour and the value they show), hero (the hero's value: the worst of all), opening_shot (what the first shot shows so a viewer gets the rule with the sound off).
-- neighbours: three NAMED neighbours (new names, never from the references), each living the rule with one quick joke, and what the rule visual shows for them. Three clearly different values.
+- neighbours: THREE NAMED characters at most in the WHOLE story (the neighbours, the ally and the grown-ups who fail are the same 3 people; new names, never from the references), each living the rule as a SOCIETY EXAMPLE that is a real JOKE with a PUNCHLINE (the joke in 1 or 2 lines, the punchline a short last line), and what the rule visual shows for them. Each example happens in its OWN place ("place": a kitchen, the school, the bus stop; different places).
+- pivot: the "But..." line, starting with "But", that puts the hero in the worst case of the rule WITH A NUMBER ("But I had ten minutes and four hundred stairs."). It lands about 15 seconds in.
 - hero: the narrator's name, who they are, how they are the WORST at the rule, and their FLAW (the very thing that makes them worst, which later saves everyone).
 - ally: a friend, grandparent or sibling who says ONE line (quoted, 4 to 12 words) that sounds like a joke or odd advice. It must be the key to the save. Plan it so the viewer laughs at it first and remembers it at the save.
 - trigger: what goes wrong, visible to everyone. THE THREAT COMES FROM THE RULE'S OWN WORLD: it grows out of the rule, its rule visual or something the viewer already saw (the machine that runs the rule, a neighbour's habit, the meter, the creature, the festival), never from nowhere. A giant flower that simply blooms on a hill in a sneezing contest town is from nowhere; the Sneeze Meter overloading after one sneeze too many is from the rule's world. trigger_root: the earlier detail it grows from, and where the viewer saw it.
-- adults: two or three grown-ups (neighbours from the tour are best) each try their fix and FAIL in a funny, VISIBLE way (a camera can show it), each worse than the last.
-- save: how the hero's flaw, together with the ally's line, saves everyone. No outside help, no new magic, no new power: only the flaw, the line and the world's own rule.
-- callback: the last line, a callback joke to something from the first half (a neighbour's joke, the ally's line, the rule), and what it calls back.
+- adults: two or three of those same named grown-ups each try their fix and FAIL in a funny, VISIBLE way (a camera can show it). EVERY step is BIGGER and FUNNIER than the last, and every line is something we can SEE. The trouble DOUBLES every 8 to 12 seconds (one, ten, a hundred): plan the numbers, and a sound word (Boom! Crash! Poof!) on each hit.
+- save: how the narrator SOLVES it by using the RULE ITSELF, cleverly (the rule turned against the trouble), together with the ally's line, and WINS BIG, a clear win everyone can see. It starts with the line "Then I noticed something." No outside help, no new magic, no new power: only the rule, the line and what the world already showed.
+- callback: THE HOLY TWIST. After the big win, the last 1 or 2 lines FLIP it or RESTART THE CHAOS, funny and visual, a callback to the hook or to an example; never soft, sentimental or abstract (no peace, love, lesson, togetherness, hope). "line" is the very last line, a 2 to 6 word BUTTON; "calls_back" says what it calls back.
 - beats: one entry per beat of the beat sheet, in order, each with a short intent, what the camera shows (filmable in a blocky world; the origin and neighbour beats show the rule visual), and the LINE INTENTS: one short note per spoken line (what that line does, not its final wording). Keep the line counts given in LENGTH.
 
 THE LENGTH: the request gives the exact number of line intents per beat. Keep to it: the writer writes one line per intent, and a plan with too few lines makes a script that is thrown away as too short.
@@ -114,26 +121,29 @@ Return only the JSON object.`;
  */
 export function hybridPlanSystem({ board = false } = {}) {
   if (!board) return HYBRID_PLAN_SYSTEM;
+  // the Studio engine: the kit as a preference (no world / moved fields: nothing is moved)
+  if (kitPrefer(board)) return HYBRID_PLAN_SYSTEM.replace(`${RULE_VISUAL_TEXT}\n`, `${RULE_VISUAL_TEXT}\n\n${kitPreferBlock("plan")}\n`);
   return HYBRID_PLAN_SYSTEM.replace(`${RULE_VISUAL_TEXT}\n`, `${RULE_VISUAL_TEXT}\nThe rule visual must be filmable with the kit below: its parameter shown with the kit's places, props and actions.\n\n${kitBlock(BOARD_KIT, "plan")}\n\nWORLD AND MOVED: "world" lists the places, the creature look (one of ${BOARD_KIT.creatures.map((c) => c.id).join(", ")}, or "none"), the animals and the weather the story uses, all from the kit. "moved" says in one plain sentence what you changed from the user's idea to fit the kit ("" when nothing moved).\n`);
 }
 export function hybridLinesSystem({ board = false } = {}) {
   if (!board) return HYBRID_LINES_SYSTEM;
+  if (kitPrefer(board)) return HYBRID_LINES_SYSTEM.replace(/\n\nReturn only the JSON object: /, `\n\n${kitPreferBlock("lines")}\n\nReturn only the JSON object: `);
   return HYBRID_LINES_SYSTEM.replace(/\n\nReturn only the JSON object: /, `\n\n${kitBlock(BOARD_KIT, "lines")}\n\nReturn only the JSON object: `);
 }
 
 export function hybridPlanSchema({ board = false } = {}) {
   const s = { type: "string" };
   const obj = (props, req = Object.keys(props)) => ({ type: "object", additionalProperties: false, required: req, properties: props });
-  const world = board ? {
+  const world = kitHard(board) ? {
     world: obj({ places: { type: "array", items: { type: "string", enum: BOARD_KIT.places.map((p) => p.id) } }, creature_look: { type: "string", enum: [...BOARD_KIT.creatures.map((c) => c.id), "none"] }, animals: { type: "array", items: s }, weather: { type: "array", items: s } }),
     moved: s,
   } : {};
   return obj({
     ...world,
-    title: s, premise: s, opener: s, price: s, teaser: s,
+    title: s, premise: s, opener: s, hook: s, pivot: s, price: s, teaser: s,
     rule_visual: obj({ parameter: s, description: s, neighbours: { type: "array", items: obj({ name: s, shows: s }) }, hero: s, opening_shot: s }),
     origin: s,
-    neighbours: { type: "array", items: obj({ name: s, joke: s, shows: s }) },
+    neighbours: { type: "array", items: obj({ name: s, joke: s, shows: s, place: s }) },
     hero: obj({ name: s, who: s, worst: s, flaw: s }),
     ally: obj({ name: s, who: s, line: s, why: s }),
     trigger: s, trigger_root: s,
@@ -228,11 +238,13 @@ export function planText(plan) {
   return [
     `TITLE: ${p.title}`,
     `PREMISE: ${p.premise}`,
-    `LINE 1 (the rule; tighten if needed, keep "In this town, "): ${p.opener}`,
+    ...(p.hook ? [`LINE 1 (the RESULT-FIRST HOOK, inside the first 5 seconds; keep its meaning, 5 to 12 words, an exclamation): ${p.hook}`] : []),
+    `LINE 2 (the RULE: say it as "You see, in this town, [the rule]." keeping this meaning): ${p.opener}`,
+    ...(p.pivot ? [`THE "BUT" PIVOT (starts with "But", has a number, about 15 seconds in): ${p.pivot}`] : []),
     `THE PRICE (in the origin): ${p.price}`,
     `THE RULE VISUAL (the rule is SEEN, not explained: name it in the origin and in each neighbour's joke): ${rv.parameter}. ${rv.description}\n${(rv.neighbours ?? []).map((n) => `- ${n.name}: ${n.shows}`).join("\n")}\n- the hero: ${rv.hero}`,
     `THE ORIGIN: ${p.origin}`,
-    `THE THREE NAMED NEIGHBOURS (one quick joke each, each line names its neighbour):\n${(p.neighbours ?? []).map((n, i) => `${i + 1}. ${n.name}: ${n.joke} (shows: ${n.shows})`).join("\n")}`,
+    `THE THREE NAMED NEIGHBOURS (one quick joke each, each line names its neighbour):\n${(p.neighbours ?? []).map((n, i) => `${i + 1}. ${n.name}: ${n.joke} (shows: ${n.shows})${n.place ? ` (place: ${n.place})` : ""}`).join("\n")}`,
     `THE HERO ("Then there's me."): ${p.hero?.name}, ${p.hero?.who}. The worst at the rule: ${p.hero?.worst}. The flaw: ${p.hero?.flaw}`,
     `THE ALLY'S PLANTED LINE (said by ${p.ally?.name}, ${p.ally?.who}, word for word, in quotes): "${p.ally?.line}". Why it matters later: ${p.ally?.why}`,
     `THE TRIGGER (it grows out of the rule's own world, never from nowhere): ${p.trigger}${p.trigger_root ? ` It grows from: ${p.trigger_root}` : ""}`,
@@ -265,11 +277,13 @@ export const HYBRID_LINES_SYSTEM = SCRIPT_SYSTEM
   .replace(/THE SHAPE \(seven parts, in order\)\n[\s\S]*?\n\nTHE HARD RULE/, `${BEAT_SHEET_TEXT}\nTag every line with its beat.\n\nTHE HARD RULE`)
   .replace(/STORY RULES\n[\s\S]*?\n- Original world/, `STORY RULES
 - The rule is SEEN, not explained: name the RULE VISUAL of the plan (the parameter and each neighbour's value) in the origin and in each neighbour's joke, so the picture tells the story.
-- The ally's planted line is said word for word, in quotes, in the ally beat, and said again in the save.
-- Each adult's attempt fails in a way a camera can show, and it is funny.
-- The hero's flaw saves everyone. No outside help, no new magic at the end.
-- The last line is the most quotable line in the video and is a callback joke to the first half.
+- The ally's planted line is said word for word, in quotes, in the ally beat, and said again in the save. Keep to at most 3 named characters plus "me".
+- Each adult's attempt fails in a way a camera can show, it is funny, and every step is bigger than the last. Every line is something we can SEE.
+- The narrator solves it with the RULE ITSELF, cleverly, and wins big. No outside help, no new magic at the end.
+- ENDING: a clear big win, then the last 1 or 2 lines are a HOLY TWIST that flips it or restarts the chaos, a callback to the hook or an example. Never soft, sentimental or abstract.
 - Original world`)
+  .replace('- Line two usually starts "You see,".', "- Line 1 is the result-first HOOK and line 2 is the rule line, \"You see, in this town, [the rule].\" (see THE STORY FORMULA).")
+  .replace(/- The very first line MUST start with exactly "In this town, "[^\n]*/, "- Line 1 is the result-first HOOK; within the first 2 sentences you say \"You see, in this town, [the one simple rule].\" (or \"in this world\"). That phrase is required but is not the first words.")
   .replace(/\n\nReturn only the JSON object\.$/, `
 
 YOU GET A PLAN from the story planner: every story decision is made (the rule visual, the neighbours, the hero and the flaw, the ally's line, the adults' attempts, the save, the callback, the beats line by line). Your job is the WORDS: write each planned line in the fast, punchy, deadpan kid voice of the reference examples, keep the plan's order, names and planted line, and keep to the length. Make the jokes land; you may sharpen a joke's wording, never its job.
@@ -278,6 +292,8 @@ THE LENGTH IS A HARD RULE AT BOTH ENDS: the request gives the minimum and the ma
 
 ${BEAT_MAP_TEXT}
 
+SPEAKERS (the captions color each voice): when a line holds a character's spoken words, set the line's "speaker" to that character's NAME (exactly as written in the story); the words inside the double quotes get that character's color and the rest stays the narrator's white. A line the narrator says alone has speaker "". A line that is only one character's words (no narrator part) is colored in full.
+
 ${TRAP_WORDS}
 
 Return only the JSON object: the title, the lines (each with its beat), the post, and the beat map.`);
@@ -285,7 +301,7 @@ Return only the JSON object: the title, the lines (each with its beat), the post
 /** The line writer's schema: the lines carry a beat (the part follows from it), plus the beat map. */
 export function hybridLinesSchema() {
   const base = scriptSchema(), s = { type: "string" };
-  const lines = { type: "array", items: { type: "object", additionalProperties: false, required: ["beat", "text", "words"], properties: { beat: { type: "string", enum: [...BEAT_IDS] }, text: s, words: { type: "integer" } } } };
+  const lines = { type: "array", items: { type: "object", additionalProperties: false, required: ["beat", "text", "words", "speaker"], properties: { beat: { type: "string", enum: [...BEAT_IDS] }, text: s, words: { type: "integer" }, speaker: s } } };
   return { ...base, required: [...base.required, "map"], properties: { ...base.properties, lines, map: beatMapSchema() } };
 }
 
@@ -316,9 +332,9 @@ export function hybridLinesPrompt({ plan, topic, lengthSec, previous = null, fai
 export function premiseLost(topic, script) {
   const els = topicElements(topic), lines = script?.lines ?? [];
   if (!els.length || !lines.length) return null;
-  const first = lines[0].text;
+  const first = lines.slice(0, 2).map((l) => l.text).join(" "); // the hook and the rule line (the formula: "You see, in this town, ...")
   const firstNone = !els.some((e) => mentions(first, e)) || ruleMissing(els, first).length >= els.length;
-  const later = lines.slice(2).map((l) => l.text).join(" ");
+  const later = lines.slice(3).map((l) => l.text).join(" ");
   const laterNone = !els.some((e) => mentions(later, e));
   if (firstNone && laterNone) return `The premise is lost: the story never states or uses your idea (${els.map((e) => e.label).join(", ")}).`;
   if (laterNone) return `The premise is lost after the opening: ${els.map((e) => e.label).join(", ")} never come back.`;
@@ -326,7 +342,7 @@ export function premiseLost(topic, script) {
 }
 
 /** Which problems of checkScript block: the opener, the length band, the safety words. */
-const HARD_SCRIPT = /^(?:The first line must start|Too long:|Too short:|Uses "|The script is empty)/;
+const HARD_SCRIPT = /^(?:The first line must start|The rule line is missing|Too long:|Too short:|Uses "|The script is empty)/;
 /** checkScript's part checks the beat sheet replaces (its seven parts: a beat-sheet script has no "discovery"). */
 const PART_SHAPE = /^(?:Missing parts:|The parts are out of order)/;
 
@@ -348,8 +364,12 @@ export function hybridChecks({ script, skeleton = {}, card, examples = [], lengt
   const flagged = base.problems.filter(slightlyShort).map(() => `A bit short: ${base.words} words, the band is ${lo} to ${hi} (the video runs about ${base.seconds} s).`);
   // the board-only launch mode: what the board kit can't film blocks (a must-have miss; boardFit.js on kitCheck.js); a
   // one-off mention is a note
-  const kit = board ? boardFitProblems(script, card) : { problems: [], warnings: [] };
-  const hard = [...base.problems.filter((p) => HARD_SCRIPT.test(p) && !slightlyShort(p)), ...copyReasons(copy), ...(lost ? [lost] : []), ...kit.problems];
+  // the Studio engine ("prefer"): never a kit miss; only its four blocks (studioBuilds.js: brands, nothing to show; the
+  // famous names and unsafe words are the safety checks every mode runs)
+  const kit = kitHard(board) ? boardFitProblems(script, card) : kitPrefer(board) ? { problems: studioBlockProblems(script, card), warnings: [] } : { problems: [], warnings: [] };
+  // the button (formula.js) is HARD for a beat-sheet draft: the last line is 2 to 6 words and calls back the rule or the hook
+  const button = beatDraft(script, skeleton, card) ? [...buttonProblems(script), ...endingProblems(script).filter((p) => /the ending is soft or abstract/.test(p)), ...bannedProblems(script, card?.topic ?? "")] : [];
+  const hard = [...base.problems.filter((p) => HARD_SCRIPT.test(p) && !slightlyShort(p)), ...copyReasons(copy), ...(lost ? [lost] : []), ...kit.problems, ...button];
   const advisory = [
     ...kit.warnings,
     ...flagged,
@@ -358,8 +378,14 @@ export function hybridChecks({ script, skeleton = {}, card, examples = [], lengt
     // a beat-sheet draft gets the beat-sheet notes; a draft written before it (2026-11-10) keeps the old skeleton notes
     ...(beatDraft(script, skeleton, card) ? beatSheetProblems(script, skeleton ?? {}, card, lengthSec) : [...(card ? propProblems(card, script) : []), ...(card && callbackProblem(card, script) ? [callbackProblem(card, script)] : []), ...skeletonProblems(script, skeleton ?? {}, card)]),
     ...base.warnings,
+    // the story formula (formula.js): the hook, the places, the "But" pivot, the escalation, "Then I noticed", the button
+    ...formulaProblems(script, lengthSec, { topic: card?.topic ?? "" }),
+    // plant & payoff (plantPayoff.js): every setup returns; at least 3 in the ending; unpaid ones go to Fix it
+    ...plantPayoffProblems(script, skeleton?.setups),
+    // THE STORY SHAPE (storyShape.js, owner 2026-11-15): rule, life under it, the one kid, but one day, the crisis, a twist, a cliffhanger / holy-twist ending
+    ...storyShapeProblems(script),
   ];
-  return { hard, advisory: [...new Set(advisory)], copy, words: base.words, seconds: base.seconds };
+  return { hard, advisory: [...new Set(advisory)].filter((x) => !hard.includes(x)), copy, words: base.words, seconds: base.seconds };
 }
 
 export { BEATS, BEAT_IDS, BEAT_PART };

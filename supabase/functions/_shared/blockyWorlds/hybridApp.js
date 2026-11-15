@@ -13,8 +13,8 @@ export const APP_HYBRID = Object.freeze({
   // plan and a fix); the guard refuses when the 24 h spend plus this would pass the cap
   guardUsd: 0.25,
   // a hard cap per write: no call is sent whose worst case (every output token) could take this write over it. The worst
-  // case of a full write is ~$0.45 (plan 9k + lines 8k + fix 6k + judge 2.5k output tokens), so a normal write never hits it
-  capUsd: 0.6,
+  // case of a full write is ~$0.66 (plan 12k + lines 16k + fix 12k + judge 2.5k output tokens, 2026-11-14), so a normal write never hits it
+  capUsd: 0.8,
   // the judge scores the script as feedback (saved on the draft); it never blocks and never triggers a rewrite
   judge: true,
 });

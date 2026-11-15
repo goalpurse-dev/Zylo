@@ -2,13 +2,19 @@
 // Blocky Worlds only: no other template imports this file.
 
 /**
- * The narrator: the owner's pick and test (2026-11-03). ElevenLabs "Little Dude II" (a stock library voice; never a
+ * The narrator (owner, 2026-11-12): ElevenLabs "Scruffy Duck" (a shared-library voice: TTS works on our key although
+ * GET /v1/voices/{id} says not_found, so nothing gates on that lookup) on Eleven v3. Eleven v3 gives word timings on
+ * /with-timestamps (checked 2026-11-12) and bills like Little Dude II: ~0.43 credits a character (the owner's test 63
+ * credits / 143 characters; our probe 15 / 35; Little Dude II 792 / 1799), so the voice price is unchanged. Eleven v3
+ * takes stability 0 / 0.5 / 1 (Creative / Natural / Robust); 0.5. The engine still trims the silences and speeds the
+ * take up 1.25x at the same pitch (voice/eleven.mjs).
+ * Before (2026-11-03 to 11-12): ElevenLabs "Little Dude II" (a stock library voice; never a
  * clone of a creator), on Multilingual v2. The voice's saved settings in the owner's ElevenLabs library are the same.
  * Ranges (ElevenLabs API reference): stability, similarity_boost, style 0-1; speed 0.7-1.2. voice.js checks them.
  * Speed is already the maximum, so the rest of the reference pace (~260 words a minute) comes from the script (short,
  * punchy lines: script.js PACE) and from trimming the silences between sentences (never a speed-up of the audio).
  */
-export const NARRATOR = Object.freeze({
+export const LITTLE_DUDE_II = Object.freeze({
   provider: "elevenlabs",
   voiceId: "fBD19tfE58bkETeiwUoC",
   voiceName: "Little Dude II",
@@ -22,6 +28,24 @@ export const NARRATOR = Object.freeze({
   }),
   outputFormat: "mp3_44100_128",
 });
+export const NARRATOR = Object.freeze({
+  provider: "elevenlabs",
+  voiceId: "8VJBrRk4O7tFoB5kqxa6",
+  voiceName: "Scruffy Duck",
+  model: "eleven_v3",
+  settings: Object.freeze({ stability: 0.5, similarity_boost: 0.75, style: 0, use_speaker_boost: true, speed: 1.2 }),
+  outputFormat: "mp3_44100_128",
+});
+
+/**
+ * The narrators to choose from: scruffy_duck = NARRATOR, the default (2026-11-12); little_dude_ii, the one before. The
+ * engine picks one with BLOCKY_WORLDS_NARRATOR=<key> (voice/eleven.mjs); a take records which voice made it. (The v4
+ * option skghcThhrhzKre1Ny7M7 is gone: the voice never reached the account.)
+ */
+export const NARRATORS = Object.freeze({
+  scruffy_duck: NARRATOR,
+  little_dude_ii: LITTLE_DUDE_II,
+});
 
 /**
  * The pace the script is sized for. The references speak at ~260 words a minute (ANALYSIS.md 2.3), but Little Dude II at
@@ -32,7 +56,10 @@ export const NARRATOR = Object.freeze({
  * (pricing.js PRICED_WPM), unchanged.
  */
 export const PACE = Object.freeze({
-  targetWpm: 212,
+  // 2026-11-12 (owner, the story formula): the engine speeds the voice up 1.25x and trims it, so the video runs ~4.3 words
+  // a second (255-280 a minute, formula.js): scripts are sized at 257 a minute, a 1:30 video is ~385 words, ~70 of them
+  // in the first 15 s. 212 was the pace before that speed-up.
+  targetWpm: 257,
   // the gap left between sentences after trimming the voice's own pauses (seconds); commas are left as spoken
   sentenceGapSec: 0.1,
 });

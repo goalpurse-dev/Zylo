@@ -15,7 +15,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { alertAdmin } from "../_shared/adminAlert.ts";
 import { readRunwareBalance } from "../_shared/runwareBalance.ts";
-import { SERVICES, countFailureKinds, dailyReport, failureKind, helsinkiClock, instantAlerts, judge, ownerEmails, ratePerDay, REPORT_HOUR_HELSINKI, stuckJobsLines, summarizeBackup } from "../_shared/opsHealth.js";
+import { servicesFor, runpodLiveFrom, blenderOnFrom, countFailureKinds, dailyReport, failureKind, helsinkiClock, instantAlerts, judge, ownerEmails, ratePerDay, REPORT_HOUR_HELSINKI, stuckJobsLines, summarizeBackup } from "../_shared/opsHealth.js";
 
 const SECRET = Deno.env.get("OPS_HEALTH_SECRET") ?? "";
 const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
@@ -179,7 +179,8 @@ async function collect() {
   }
   // RunPod (Cutaway, owner tests only): balance and spend per hour.
   {
-    const key = env("CUTAWAY_RUNPOD_API_KEY");
+    // one RunPod account for Blocky Worlds (gm9eqdkuyc2ofs) and Cutaway: either key reads the same balance
+    const key = env("BLOCKY_WORLDS_RUNPOD_API_KEY") || env("CUTAWAY_RUNPOD_API_KEY");
     const r = key ? await ping("https://api.runpod.io/graphql", { method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" }, body: JSON.stringify({ query: "query { myself { clientBalance currentSpendPerHr } }" }) }) : { ok: false, error: "no key" } as any;
     const me = r.body?.data?.myself;
     out.runpod = { reachable: r.ok && !!me, error: r.ok && !me ? "no balance in the answer" : r.error, balance: me ? Number(me.clientBalance) : null, unit: "usd",
@@ -201,7 +202,8 @@ async function collect() {
     const r = await fetch("https://www.tryzyvo.com/", { signal: AbortSignal.timeout(10_000) }).then((x) => ({ ok: x.ok, status: x.status })).catch((e) => ({ ok: false, status: 0, e: String(e) }));
     out.vercel = { reachable: r.ok, error: r.ok ? undefined : `tryzyvo.com answered ${r.status}` };
   }
-  return SERVICES.filter((s) => s.checked).map((service) => {
+  // RunPod is live (red alerts) once Blocky Worlds is open beyond the owner (BLOCKY_WORLDS_ACCESS allowlist / everyone)
+  return servicesFor({ runpodLive: runpodLiveFrom(env("BLOCKY_WORLDS_ACCESS")), blenderOn: blenderOnFrom(env("BLOCKY_WORLDS_RENDER_ENGINE")) }).filter((s) => s.checked).map((service) => {
     const state = out[service.id] ?? {};
     return { service, state, judged: judge(service, state) };
   });

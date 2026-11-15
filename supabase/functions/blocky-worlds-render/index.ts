@@ -3,7 +3,9 @@
 //   POST { runId, jobId, token, event, ... }              a worker's event (progress, voiced, planned, built, done, failed)
 //                                                         (built: a new shared-library asset -> blocky_worlds_assets)
 //   POST ?src=runpod&run=<id>&job=<id>&token=<token>      RunPod's webhook when a job ends
-//   POST with header x-blocky-cron                        the sweeper (pg_cron every minute: stuck jobs, lost webhooks)
+//   POST with header x-blocky-cron                        the sweeper (pg_cron every minute: stuck jobs, lost webhooks;
+//                                                         and the Studio engine's pass, studioSupabase.ts sweepStudio: a
+//                                                         dead worker's run failed + refunded, "your video is ready" emails)
 // Each run's token is HMAC(BLOCKY_WORLDS_CALLBACK_SECRET, run id); the sweeper's header is BLOCKY_WORLDS_CRON_SECRET.
 // Anything else is refused. What happens next is decided in _shared/blockyWorlds/render.js (reconcile) and carried out
 // in renderRuntime.js: the next job, retries, done, or failed and refunded once.
@@ -12,6 +14,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sameToken } from "../_shared/blockyWorlds/render.js";
 import { RENDER_CONFIG, logCapabilityGaps, renderRuntime } from "../_shared/blockyWorlds/renderSupabase.ts";
+import { sweepStudio } from "../_shared/blockyWorlds/studioSupabase.ts";
 
 const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
@@ -23,7 +26,14 @@ Deno.serve(async (req) => {
   const cron = req.headers.get("x-blocky-cron");
   if (cron != null) {
     if (!RENDER_CONFIG.cronSecret || !sameToken(cron, RENDER_CONFIG.cronSecret)) return json({ error: "refused" }, 403);
-    try { return json({ ok: true, ...(await runtime.sweep()) }); } catch (e: any) { console.error("[blocky-worlds-render] sweep", e?.message ?? e); return json({ error: "failed" }, 500); }
+    try {
+      const pipeline = await runtime.sweep();
+      // the Studio engine's pass (studioRuns.js): a dead worker's run failed + refunded, the ready emails; its own try so
+      // a Studio problem never stops the pipeline's sweep (and the other way round)
+      let studio: any = null;
+      try { studio = await sweepStudio(admin); } catch (e: any) { console.error("[blocky-worlds-render] studio sweep", e?.message ?? e); studio = { error: true }; }
+      return json({ ok: true, ...pipeline, studio });
+    } catch (e: any) { console.error("[blocky-worlds-render] sweep", e?.message ?? e); return json({ error: "failed" }, 500); }
   }
   const url = new URL(req.url), body = await req.json().catch(() => ({}));
   const query = Object.fromEntries(url.searchParams.entries());

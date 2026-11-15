@@ -7,10 +7,11 @@
 // (paceClean) and sizes the script to the length (targetWords).
 import { LENGTHS, PACE, targetWords } from "./config.js";
 import { FORMULAS, MOODS, TWISTS } from "./formulas.js";
-import { fixOpener, hasOpener, openerProblem } from "./opener.js";
+import { fixOpener, hasOpener, openerProblem, ruleLineProblem } from "./opener.js";
 import { safetyProblems } from "./safety.js";
 import { EXAMPLE_SCRIPT } from "./examples.js";
 import { topicBlock } from "./topic.js";
+import { mapNearSounds, sfxTags } from "./sfxTags.js";
 
 /** The seven parts, in order, and their share of the words (ANALYSIS.md 2.2). */
 export const PARTS = Object.freeze([
@@ -182,8 +183,10 @@ export function scriptPrompt({ idea, lengthSec, previous = null, note = "", beat
 export function normalizeScript(raw) {
   const lines = (Array.isArray(raw?.lines) ? raw.lines : [])
     // the hybrid writer's beat (beatSheet.js) rides along on the line; the part stays one of the seven
-    .map((l) => ({ part: PART_IDS.includes(l?.part) ? l.part : "own", text: paceClean(l?.text), ...(typeof l?.beat === "string" && /^[a-z]{2,12}$/.test(l.beat) ? { beat: l.beat } : {}) }))
-    .filter((l) => l.text && l.text !== ".");
+    .map((l) => ({ part: PART_IDS.includes(l?.part) ? l.part : "own", text: mapNearSounds(paceClean(l?.text)), ...(typeof l?.beat === "string" && /^[a-z]{2,12}$/.test(l.beat) ? { beat: l.beat } : {}), ...(typeof l?.speaker === "string" && l.speaker.trim() ? { speaker: l.speaker.trim().slice(0, 24) } : {}) }))
+    .filter((l) => l.text && l.text !== ".")
+    // the sound-word tags the engine reads (sfxTags.js): always taken from the text, so they never drift from it
+    .map((l) => { const sfx = sfxTags(l.text); return sfx.length ? { ...l, sfx } : l; });
   if (lines.length) {
     const fixed = fixOpener(lines[0].text);
     if (fixed) lines[0] = { ...lines[0], text: fixed };
@@ -218,7 +221,9 @@ export function checkScript(script, lengthSec, kind = "written") {
   const lines = script?.lines ?? [];
   if (!LENGTHS.includes(lengthSec)) problems.push(`The length must be ${LENGTHS[0]} to ${LENGTHS.at(-1)} seconds, in 10 s steps.`);
   if (!lines.length) return { problems: ["The script is empty."], warnings, words: 0, seconds: 0 };
-  const op = openerProblem(lines[0].text);
+  // the story formula (2026-11-13): a script whose lines carry beats opens with the HOOK and says "You see, in this town, [rule]" within
+  // its first two sentences; an older 7-part script keeps the "In this town" opener
+  const op = lines.some((l) => l.beat) ? ruleLineProblem(lines) : openerProblem(lines[0].text);
   if (op) problems.push(op);
   const total = lines.reduce((a, l) => a + wordCount(l.text), 0);
   const target = targetWords(lengthSec), [lo, hi] = BAND[kind] ?? BAND.written;
@@ -337,6 +342,7 @@ export function partFixPrompt({ script, indexes, reasons, card = null }) {
     ...(card?.topic && topicBlock(card.topic) ? [topicBlock(card.topic)] : []),
     ...(card ? [`THE IDEA: planted object: ${card.prop ?? "-"} | twist: ${card.twist ?? "-"} | closer to aim for: ${card.closer ?? "-"}`] : []),
     `WHY THEY FAILED (fix every one):\n${reasons.map((r) => `- ${r}`).join("\n")}`,
+    ...(set.has(script.lines.length - 1) && script.lines.length > 4 ? [`THE LAST LINE IS THE BUTTON: it must be 2 to 6 words, nothing more (a short fragment, not a sentence with a clause), and it must call back the rule ("${script.lines[0].text.slice(0, 80)}") or the hook ("${(script.lines[1]?.text ?? "").slice(0, 80)}") by reusing one of its words or pictures. Write the lines before it as needed, and end with the button as its own line.`] : []),
     `Replace lines ${indexes.map((i) => i + 1).join(", ")} (${indexes.reduce((a, i) => a + wordCount(script.lines[i]?.text), 0)} words now).`,
   ].join("\n\n");
 }

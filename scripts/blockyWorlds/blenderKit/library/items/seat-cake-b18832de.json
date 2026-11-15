@@ -1,0 +1,21 @@
+{
+ "id": "seat-cake-b18832de",
+ "name": "seat_cake",
+ "kind": "prop",
+ "about": "Seat-shaped pink cake",
+ "code": "def seat_cake(name, loc, s=1.0):\n    root = empty(name, loc)\n    box(name + '_b', (1.4, 1.4, 0.5), (0, 0, 0.25), mat('cake_pink', hexc('#f09ac2'), 0.5), 0.1, parent=root)\n    box(name + '_k', (1.4, 0.3, 1.0), (0, 0.55, 0.9), mat('cake_pink', hexc('#f09ac2'), 0.5), 0.1, parent=root)\n    sphere(name + '_c', 0.16, (0, -0.2, 0.62), mat('cherry', hexc('#d8241e'), 0.3), parent=root, seg=10)\n    root.scale = (s, s, s)\n    return root",
+ "source": {
+  "run": "plane1",
+  "shots": [
+   16,
+   39,
+   40,
+   41
+  ],
+  "title": "The Town That Lives in a Plane"
+ },
+ "status": "rejected",
+ "approved": false,
+ "createdAt": "2026-11-13T20:58:51.272Z",
+ "decidedAt": "2026-11-13T21:32:09.747Z"
+}

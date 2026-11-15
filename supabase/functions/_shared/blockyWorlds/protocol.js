@@ -9,6 +9,8 @@ import { PART_IDS, PARTS, partBudgets, wordCount } from "./script.js";
 import { contentWords } from "./library.js";
 import { conflictLines, TOPIC_PREFIX } from "./topic.js";
 import { BOARD_PREFIX, boardProblemLines, isPremiseProblem } from "./boardFit.js";
+import { isStudioBlock, studioBlockLines } from "./studioBuilds.js";
+import { FORMULA_PREFIX, formulaLines } from "./formula.js";
 
 // ---------- step 1: the idea card ----------
 export const CARD_FIELDS = Object.freeze(["opener", "title", "premise", "price", "examples", "narrator", "prop", "twist", "teaser", "closer", "formula", "twistType", "mood", "setting"]);
@@ -163,6 +165,8 @@ export function problemSpots(script, problems) {
   const spot = (problem, part, idx, fix = "part") => ({ problem, part, lines: idx, fix });
   return (problems ?? []).map((p) => {
     if (/^The first line must start/.test(p) && lines.length) return spot(p, lines[0].part, [0], "opener");
+    // the formula's rule line (opener.js ruleLineProblem): Fix it rewrites the hook and the line after it
+    if (/^The rule line is missing/.test(p) && lines.length) return spot(p, lines[0].part, lines.length > 1 ? [0, 1] : [0]);
     const lineNo = p.match(/^Line (\d+) has/);
     if (lineNo && lines[Number(lineNo[1]) - 1]) { const i = Number(lineNo[1]) - 1; return spot(p, lines[i].part, [i]); }
     if (/never shown before the trouble starts/.test(p)) { const part = partLines("me").length ? "me" : "tour"; return spot(p, part, partLines(part)); }
@@ -176,7 +180,21 @@ export function problemSpots(script, problems) {
     }
     // the board-only launch mode (boardFit.js): a whole-premise miss -> "Move it to our town"; a line miss -> that line's
     // part (Fix it rewrites the flagged lines of that part with the reason, which names the kit's alternatives)
+    // the story formula (formula.js): a note names its lines like "(line 7)"; Fix it rewrites those lines of their part
+    if (p.startsWith(FORMULA_PREFIX)) {
+      const idx = formulaLines(p).filter((i) => lines[i]);
+      if (!idx.length) return spot(p, null, [], "rewrite");
+      const part = lines[idx[0]].part;
+      return spot(p, part, idx.filter((i) => lines[i].part === part));
+    }
     if (isPremiseProblem(p)) return spot(p, null, [], "move");
+    // the Studio engine's blocks (studioBuilds.js): a brand on its lines -> Fix it on that part; a whole-story one -> rewrite
+    if (isStudioBlock(p)) {
+      const idx = studioBlockLines(p).filter((i) => lines[i]);
+      if (!idx.length) return spot(p, null, [], "rewrite");
+      const part = lines[idx[0]].part;
+      return spot(p, part, idx.filter((i) => lines[i].part === part));
+    }
     if (p.startsWith(BOARD_PREFIX)) {
       const idx = boardProblemLines(p).filter((i) => lines[i]);
       if (!idx.length) return spot(p, null, [], "rewrite");

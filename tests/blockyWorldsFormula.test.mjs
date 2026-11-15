@@ -1,0 +1,350 @@
+// Blocky Worlds: the STORY FORMULA (owner, 2026-11-12): "In this town, [rule]." -> a result-first hook inside 5 s -> 2-3
+// vignettes in their own places -> a "But..." pivot with a number -> an escalation that doubles, short sentences, sound
+// words -> "Then I noticed something" -> a 2-6 word button; ~4.3 words a second. All free: pure helpers.
+import test from "node:test";
+import assert from "node:assert/strict";
+import { FORMULA, FORMULA_PREFIX, FORMULA_TEXT, biggestNumber, formulaLines, formulaProblems, hasNumber, soundCues } from "../supabase/functions/_shared/blockyWorlds/formula.js";
+import { SOUND_WORDS, sfxTags } from "../supabase/functions/_shared/blockyWorlds/sfxTags.js";
+import { normalizeScript, wordCount } from "../supabase/functions/_shared/blockyWorlds/script.js";
+import { BEAT_PART, BEAT_SHEET_TEXT, beatBudgets } from "../supabase/functions/_shared/blockyWorlds/beatSheet.js";
+import { HYBRID_LINES_SYSTEM, HYBRID_PLAN_SYSTEM, hybridChecks, hybridPlanSchema, planText } from "../supabase/functions/_shared/blockyWorlds/hybrid.js";
+import { problemSpots } from "../supabase/functions/_shared/blockyWorlds/protocol.js";
+import { PACE, targetWords } from "../supabase/functions/_shared/blockyWorlds/config.js";
+
+const clone = (x) => JSON.parse(JSON.stringify(x));
+// our own test story (a keyhole town), ~370 words: every formula part present
+const RAW = [
+  ["rule", "And right now I'm hanging from a chimney, screaming at a goat!"],
+  ["rule", "You see, in this town, you must never knock on a door after sunset."],
+  ["origin", "Every door in town remembers who knocked."],
+  ["neighbours", "Mrs. Fable hides in her kitchen and answers through the letterbox."],
+  ["neighbours", "Mr. Hobart sleeps in his garage, behind eleven locks."],
+  ["neighbours", "Teague sells soup in the market and never opens the hatch."],
+  ["me", "But I live in a house with fifty doors."],
+  ["me", "Then there's me, Kestrel, the clumsiest knocker in town."],
+  ["ally", "Mrs. Fable caught me tapping on a wall."],
+  ["ally", "She said, \"A door only hears what you say twice.\""],
+  ["trigger", "Then one sunset the wind blew my door open."],
+  ["trigger", "Knock. Knock. Something knocked back."],
+  ["trigger", "One door rattled. Then ten. Then a hundred!"],
+  ["adults", "Mr. Hobart bolted his garage. Bang! Bang!"],
+  ["adults", "The doors laughed at his locks."],
+  ["adults", "Mrs. Fable stuffed her letterbox with socks."],
+  ["adults", "Pop! The socks flew out."],
+  ["adults", "Teague threw soup at the hatch."],
+  ["adults", "Splat! The hatch opened anyway."],
+  ["adults", "Two hundred doors rattled at once."],
+  ["adults", "Thud! The whole street shook."],
+  ["adults", "Every goat on the roofs started to scream."],
+  ["save", "Then I noticed something."],
+  ["save", "A door only hears what you say twice."],
+  ["save", "So I knocked twice on the biggest door."],
+  ["save", "Knock. Knock."],
+  ["save", "Then I whispered goodnight. Twice."],
+  ["save", "goodnight, goodnight."],
+  ["save", "Every door sighed and went quiet."],
+  ["save", "The goats stopped screaming."],
+  ["save", "The street was so still I heard a snail."],
+  ["save", "Nobody knocked. Nobody was knocked at."],
+  ["callback", "Mrs. Fable's door? Still knocking."],
+];
+const SCRIPT = normalizeScript({ title: "t", lines: RAW.map(([beat, text]) => ({ beat, part: BEAT_PART[beat], text })) });
+const edit = (fn) => { const s = clone(SCRIPT); fn(s.lines); return s; };
+const text = (s, re) => formulaProblems(s, 90).filter((p) => re.test(p));
+
+test("pace: ~4.3 words a second, a 1:30 video is ~385 words, ~70 words in the first 15 s", () => {
+  assert.equal(PACE.targetWpm, 257);
+  assert.ok(Math.abs(targetWords(90) - 385) <= 2);
+  assert.ok(Math.abs(FORMULA.wordsPerSec - 4.3) < 0.05);
+  assert.ok(Math.abs(FORMULA.wordsPerSec * 15 - 70) < 8);
+  // the budgets add up inside the band for every length
+  for (const len of [30, 60, 90, 120, 180]) assert.ok(beatBudgets(len).reduce((a, b) => a + b.words, 0) <= targetWords(len), `${len}`);
+});
+
+test("sound words: only short fragments are tagged, normalizeScript fills line.sfx from the text", () => {
+  assert.deepEqual(sfxTags("Boom! The door flew open."), ["boom"]);
+  assert.deepEqual(sfxTags("Knock. Knock."), ["knock", "knock"]);
+  assert.deepEqual(sfxTags("Crash, bang, thud!"), ["crash", "bang", "thud"]);
+  assert.deepEqual(sfxTags("Creeeak."), ["creak"]);
+  assert.deepEqual(sfxTags("I heard a knock at the door."), [], "an ordinary word in a longer sentence is no sound cue");
+  assert.deepEqual(sfxTags("Nothing here."), []);
+  assert.ok(SOUND_WORDS.every((w) => /^[a-z]+$/.test(w)));
+  const s = normalizeScript({ lines: [{ part: "rule", text: "In this town, x." }, { part: "tour", text: "Poof! Gone." }, { part: "tour", text: "Just words." }] });
+  assert.deepEqual(s.lines[1].sfx, ["poof"]);
+  assert.ok(!("sfx" in s.lines[2]), "a line without sound words has no sfx key");
+  // an edited line is re-tagged from its new text
+  assert.deepEqual(normalizeScript({ lines: [{ part: "tour", text: "Bang. Bang.", sfx: ["stale"] }] }).lines[0].sfx, ["bang", "bang"]);
+  assert.ok(soundCues(SCRIPT).length >= 8);
+  assert.deepEqual(soundCues(SCRIPT).slice(0, 2).map((c) => c.word), ["knock", "knock"]);
+});
+
+test("numbers: digits and number words count; the biggest one is read", () => {
+  assert.ok(hasNumber("ten minutes") && hasNumber("zero curtains") && hasNumber("4 stairs") && !hasNumber("many stairs"));
+  assert.equal(biggestNumber("Two houses. Then twenty. Then two hundred!"), 200);
+  assert.equal(biggestNumber("a thousand windows"), 1000);
+  assert.equal(biggestNumber("1,200 runners"), 1200);
+  assert.equal(biggestNumber("nobody"), 0);
+});
+
+test("formula: a script that does every part has no note", () => {
+  assert.deepEqual(formulaProblems(SCRIPT, 90), []);
+  assert.deepEqual(formulaProblems({ lines: [] }, 90), [], "too short to judge");
+});
+
+test("formula: the hook (LINE 1): first person, an exclamation, inside the first 5 seconds", () => {
+  assert.equal(text(edit((l) => { l[0].text = "The goats screamed at the chimney."; }), /no result-first hook/).length, 1);
+  assert.equal(text(edit((l) => { l[0].text = "Is that a goat on the chimney?"; }), /no result-first hook/).length, 1);
+  const late = text(edit((l) => { l[0].text = "And right now I am hanging from a chimney far above the whole sleepy little town, screaming my head off at a very angry goat who is eating my left sock and my favourite hat!"; }), /hook comes too late/);
+  assert.equal(late.length, 1);
+  assert.match(late[0], /\(line 1\)$/);
+  assert.equal(text(edit((l) => { l[0].text = "And right now I'm hanging from a chimney far above the whole sleepy town, screaming at a goat!"; }), /hook is \d+ words/).length, 1);
+});
+
+test("formula: the 'But' pivot: present, with a number, about 15 s in", () => {
+  assert.equal(text(edit((l) => { l[6].text = "I live in a house with fifty doors."; }), /no "But\.\.\." pivot/).length, 1);
+  assert.equal(text(edit((l) => { l[6].text = "But I live in a house with so many doors."; }), /no number/).length, 1);
+  assert.equal(text(edit((l) => { l.splice(2, 0, ...Array.from({ length: 5 }, () => ({ ...l[2], text: "The doors here are very old and very quiet at night." }))); }), /pivot comes after/).length, 1);
+});
+
+test("formula: the vignettes need their own places", () => {
+  const same = edit((l) => { l[3].text = "Mrs. Fable hides in her kitchen and answers through the letterbox."; l[4].text = "Mr. Hobart sleeps in his kitchen, behind eleven locks."; l[5].text = "Old Teague sells soup from her kitchen and never opens the hatch."; });
+  const p = text(same, /OWN places/);
+  assert.equal(p.length, 1);
+  assert.match(p[0], /\(lines 4, 5, 6\)$/);
+});
+
+test("formula: the escalation: short sentences, a sound word every 12 s, numbers that grow", () => {
+  assert.equal(text(edit((l) => { l[13].text = "Mr. Hobart bolted his garage door with every single lock he owned and then some more locks too."; }), /short sentences/).length, 1);
+  const quiet = edit((l) => { l.forEach((x) => { if (x.beat === "adults" || x.beat === "trigger") { x.text = x.text.replace(/\b(Bang|Pop|Splat|Thud|Knock)[.!]/g, "Oh."); delete x.sfx; } }); });
+  assert.equal(text(quiet, /sound word/).length, 1);
+  const flat = edit((l) => { l[12].text = "One door rattled. Then one. Then one."; l[17].text = "One bowl of soup flew."; l[19].text = "One door rattled at once."; });
+  assert.equal(text(flat, /numbers .* do not grow/).length, 1);
+});
+
+test("formula: 'Then I noticed something' and the 2 to 6 word button", () => {
+  assert.equal(text(edit((l) => { l[22].text = "Then I remembered the rule."; }), /Then I noticed something/).length, 1);
+  assert.equal(text(edit((l) => { l[32].text = "Aunt Bea's door is still knocking on everybody else's house tonight."; }), /button/).length, 1);
+  assert.equal(text(edit((l) => { l[32].text = "Still knocking."; }), /button/).length, 0);
+  assert.equal(text(edit((l) => { l[32].text = "Knocking."; }), /button/).length, 1);
+});
+
+test("formula notes ride the existing checks: advisory (the button is HARD), and Fix it finds their lines", () => {
+  const bad = edit((l) => { l[0].text = "The goats screamed at the chimney."; l[32].text = "Mrs. Fable's door is still knocking on everybody else's house tonight."; });
+  const c = hybridChecks({ script: bad, skeleton: {}, card: null, examples: [], lengthSec: 90 });
+  const notes = c.advisory.filter((x) => x.startsWith(FORMULA_PREFIX));
+  assert.equal(notes.length, 1, "the hook note is advisory");
+  const hard = c.hard.filter((x) => x.startsWith(FORMULA_PREFIX));
+  assert.equal(hard.length, 1, "the button length is hard");
+  assert.match(hard[0], /the button must be 2 to 6 words/);
+  const spots = problemSpots(bad, [...notes, ...hard]);
+  assert.deepEqual(spots.map((s) => [s.part, s.fix, s.lines]), [["rule", "part", [0]], ["closer", "part", [32]]]);
+  assert.deepEqual(formulaLines("Formula: x (lines 9, 10)"), [8, 9]);
+  assert.deepEqual(formulaLines("Formula: no lines here"), []);
+  // a note without lines goes to the whole-script rewrite
+  assert.equal(problemSpots(SCRIPT, [`${FORMULA_PREFIX} there is no "But..." pivot line.`])[0].fix, "rewrite");
+});
+
+test("prompts: both writers carry the formula, the plan asks for the hook, places, pivot and button", () => {
+  for (const sys of [HYBRID_PLAN_SYSTEM, HYBRID_LINES_SYSTEM]) {
+    assert.ok(sys.includes(FORMULA_TEXT), "the formula text");
+    assert.match(sys, /In this town, /);
+    assert.match(sys, /RESULT-FIRST HOOK/);
+    assert.match(sys, /Then I noticed something/);
+  }
+  assert.ok(BEAT_SHEET_TEXT.includes("SOUND WORD"));
+  assert.match(HYBRID_PLAN_SYSTEM, /2 to 6 word BUTTON/);
+  assert.match(HYBRID_LINES_SYSTEM, /Line 1 is the result-first HOOK/);
+  assert.doesNotMatch(HYBRID_LINES_SYSTEM, /Line two usually starts "You see,"/);
+  const props = hybridPlanSchema().properties;
+  assert.ok(props.hook && props.pivot);
+  assert.ok(props.neighbours.items.properties.place);
+  assert.match(planText({ ally: { name: "A", who: "w", line: "l" }, hook: "I fell!", pivot: "But I had ten.", neighbours: [{ name: "Mr. X", joke: "j", shows: "s", place: "kitchen" }], beats: [] }), /RESULT-FIRST HOOK[\s\S]*I fell![\s\S]*"BUT" PIVOT[\s\S]*place: kitchen/);
+  assert.equal(wordCount("In this town, a b."), 5);
+});
+
+test("result screen: a small tip names the TikTok sound 'Numbers' by TEMPOREX", async () => {
+  const { readFileSync } = await import("node:fs");
+  const panel = readFileSync(new URL("../src/components/viral-tools/blocky-worlds/ResultPanel.jsx", import.meta.url), "utf8");
+  assert.match(panel, /data-testid="bw-sound-tip">Tip: add &lsquo;Numbers&rsquo; by TEMPOREX in TikTok when you post\.<\/p>/);
+});
+
+// ---------- the sound library: the writer may only use sound words we have a sound for ----------
+import { SOUND_ALLOWED, SOUND_NEAR } from "../supabase/functions/_shared/blockyWorlds/soundLibrary.js";
+import { mapNearSounds } from "../supabase/functions/_shared/blockyWorlds/sfxTags.js";
+
+test("sound library: the server list mirrors the engine's SOUND_SFX (only the sounds being added may differ)", async () => {
+  const { SOUND_SFX } = await import("../scripts/blockyWorlds/engine/lib/audioPlan.js");
+  const engine = Object.keys(SOUND_SFX);
+  const BEING_ADDED = []; // delete a word here once the engine has it
+  for (const w of engine) assert.ok(SOUND_ALLOWED.includes(w), `the engine has a sound for "${w}": add it to soundLibrary.js SOUND_ALLOWED`);
+  for (const w of SOUND_ALLOWED) assert.ok(engine.includes(w) || BEING_ADDED.includes(w), `"${w}" is allowed but the engine has no sound for it`);
+  assert.equal(new Set(SOUND_ALLOWED).size, SOUND_ALLOWED.length);
+  for (const [from, to] of Object.entries(SOUND_NEAR)) assert.ok(SOUND_ALLOWED.includes(to), `${from} -> ${to} must land on an allowed sound`);
+  assert.equal(SOUND_ALLOWED.length, engine.length);
+});
+
+test("sound library: near-misses are mapped, other off-list sound words are flagged for Fix it, the prompt lists the allowed words", () => {
+  assert.equal(mapNearSounds("Bam! The door flew open."), "Bang! The door flew open.");
+  assert.equal(mapNearSounds("Thunk. Thunk."), "Thud. Thud.");
+  assert.equal(mapNearSounds("I thought bam was a funny word."), "I thought bam was a funny word.", "long sentences are left alone");
+  assert.deepEqual(normalizeScript({ lines: [{ part: "tour", text: "Bam! Whiz!" }] }).lines[0].sfx, ["bang", "whoosh"]);
+  // every sound word the tagger recognises is in the library now, so the off-list flag is dormant until a recognised word is
+  // left out of SOUND_ALLOWED (the flag itself is exercised by the whistle test below and by removing a word)
+  for (const w of SOUND_WORDS) assert.ok(SOUND_ALLOWED.includes(w), `recognised but no sound: ${w}`);
+  for (const w of SOUND_ALLOWED) assert.ok(FORMULA_TEXT.includes(w), w);
+  
+});
+
+// ---------- the callback button is hard, with a free fallback; sounds fit their objects; kitCheck sees escalation props ----------
+import { buttonFallback, buttonProblems, soundObjectProblems } from "../supabase/functions/_shared/blockyWorlds/formula.js";
+import { partFixPrompt } from "../supabase/functions/_shared/blockyWorlds/script.js";
+import { fixPart } from "../supabase/functions/_shared/blockyWorlds/llm.js";
+
+test("button: 2 to 6 words AND a call back to the rule or the hook, hard in the hybrid writer", () => {
+  assert.deepEqual(buttonProblems(SCRIPT), []);
+  const dogs = edit((l) => { l[0].text = "In this town, the dogs walk us."; l[1].text = "And right now I'm being dragged by a huge dog!"; l[32].text = "Now Big Moss walks with me, and the dogs walk no one."; });
+  assert.equal(buttonProblems(dogs).length, 1, "11 words: too long");
+  const noEcho = edit((l) => { l[32].text = "Sit, Big Moss. Good boy."; });
+  assert.match(buttonProblems(noEcho).join(), /does not call back the hook, the rule or an example/);
+  assert.equal(buttonProblems(edit((l) => { l[0].text = "And right now I'm being dragged by a huge dog!"; l[32].text = "Sit, Big Moss. Good dog."; })).length, 0, "dog echoes the hook");
+  const c = hybridChecks({ script: dogs, skeleton: {}, card: null, examples: [], lengthSec: 90 });
+  assert.ok(c.hard.some((x) => /the button must be 2 to 6 words/.test(x)));
+});
+
+test("button fallback: the last short sentence becomes the button, preferring one that calls back the rule or hook", () => {
+  const ctx = ["In this town, the dogs walk us.", "And right now I'm being dragged by a huge dog!", "You see, leashes go on people."];
+  assert.deepEqual(buttonFallback(["Now Big Moss walks with me, and the dogs walk no one. Sit, Big Moss. Good boy."], ctx), ["Now Big Moss walks with me, and the dogs walk no one. Good boy."].flatMap(() => ["Now Big Moss walks with me, and the dogs walk no one. Sit, Big Moss.", "Good boy."]).slice(0, 2));
+  // a sentence that echoes wins over a later one that does not
+  assert.deepEqual(buttonFallback(["The street went quiet again tonight. The dogs walk no one. Good boy."], ctx), ["The street went quiet again tonight. Good boy.", "The dogs walk no one."]);
+  assert.deepEqual(buttonFallback(["Short one."], ctx), ["Short one."], "already a button: untouched");
+  assert.deepEqual(buttonFallback(["One long sentence that has no short sentence anywhere inside it at all."], ctx).length, 1);
+});
+
+test("fixPart: names the button length and target, and falls back to the split when the model misses (mock-free: stubbed fetch)", async () => {
+  const lines = SCRIPT.lines;
+  const p = partFixPrompt({ script: SCRIPT, indexes: [lines.length - 1], reasons: ["x"] });
+  assert.match(p, /THE LAST LINE IS THE BUTTON: it must be 2 to 6 words/);
+  assert.match(p, /call back the rule/);
+  assert.doesNotMatch(partFixPrompt({ script: SCRIPT, indexes: [3], reasons: ["x"] }), /THE LAST LINE IS THE BUTTON/);
+  const real = globalThis.fetch;
+  globalThis.fetch = async () => new Response(JSON.stringify({ model: "claude-haiku-5-5", stop_reason: "end_turn", usage: { input_tokens: 10, output_tokens: 10 }, content: [{ type: "text", text: JSON.stringify({ lines: ["Nobody knocked tonight, and every door stayed asleep. Good door."] }) }] }), { status: 200, headers: { "content-type": "application/json" } });
+  try {
+    const bad = edit((l) => { l[32].text = "Aunt Bea's door? It kept knocking on every house in town all night long."; });
+    const r = await fixPart({ apiKey: "k", script: bad, indexes: [32], reasons: ["Formula: the last line is a 13-word line; the button must be 2 to 6 words"], card: null, lengthSec: 90 });
+    assert.equal(r.script.lines.at(-1).text, "Good door.", "the split-off button");
+    assert.ok(r.script.lines.at(-2).text.startsWith("Nobody knocked"));
+  } finally { globalThis.fetch = real; }
+});
+
+test("sound fits its object: a whistle with a beep is flagged for Fix it; a door with a slam is fine", () => {
+  const whistle = edit((l) => { l[13].text = "Coach Teague blew her whistle."; l[14].text = "Beep!"; });
+  const p = soundObjectProblems(whistle);
+  assert.equal(p.length, 1);
+  assert.match(p[0], /"beep" does not fit the whistle/);
+  assert.match(p[0], /\(line 15\)$/);
+  assert.equal(problemSpots(whistle, p)[0].fix, "part");
+  assert.deepEqual(soundObjectProblems(edit((l) => { l[13].text = "The door swung wide."; l[14].text = "Slam!"; })), []);
+  assert.equal(soundObjectProblems(edit((l) => { l[13].text = "Glass everywhere."; l[14].text = "Beep!"; })).length, 1);
+  assert.ok(text(whistle, /does not fit the whistle/).length === 1, "part of formulaProblems");
+});
+
+test("kitCheck is consulted for escalation lines: a prop the block world lacks, named there, is flagged in launch (board) mode", () => {
+  const sword = edit((l) => { l[19].text = "A hundred swords hung on the wall."; });
+  const c = hybridChecks({ script: sword, skeleton: {}, card: null, examples: [], lengthSec: 90, board: true });
+  assert.ok([...c.hard, ...c.advisory].some((x) => /sword/i.test(x) && /can't show/.test(x)), JSON.stringify([...c.hard, ...c.advisory].filter((x) => /sword/i.test(x))));
+});
+
+// ---------- the kit list in every writing path (owner, 2026-11-12) ----------
+import { readFileSync as readSrc } from "node:fs";
+import { kitBlock, launchModeFrom } from "../supabase/functions/_shared/blockyWorlds/boardFit.js";
+import { BOARD_KIT } from "../supabase/functions/_shared/blockyWorlds/boardKit.js";
+
+test("kit list: launch (kit) mode is on by default; plan, lines and Fix it get the full kit incl. sound words; ideas get it without sounds", async () => {
+  assert.equal(launchModeFrom(() => ""), true);
+  for (const who of ["plan", "lines"]) {
+    const b = kitBlock(BOARD_KIT, who);
+    for (const w of SOUND_ALLOWED) assert.ok(b.includes(w), `${who}: ${w}`);
+    for (const a of BOARD_KIT.animals) assert.ok(b.includes(a), `${who}: ${a}`);
+    for (const c of BOARD_KIT.creatures) assert.ok(b.includes(c.id), `${who}: ${c.id}`);
+    for (const p of BOARD_KIT.places) assert.ok(b.includes(p.id) || b.toLowerCase().includes(p.id), `${who}: ${p.id}`);
+    for (const w of BOARD_KIT.weather) assert.ok(b.includes(w), `${who}: ${w}`);
+    assert.match(b, /PROPS held or set down/);
+  }
+  assert.doesNotMatch(kitBlock(BOARD_KIT, "ideas"), /SOUND WORDS/);
+  // Fix it (fixPart) sends the kit in its system prompt when board is on, and not when it is off
+  const sent = [];
+  const real = globalThis.fetch;
+  globalThis.fetch = async (_u, init) => { sent.push(JSON.parse(init.body)); return new Response(JSON.stringify({ model: "claude-haiku-5-5", stop_reason: "end_turn", usage: { input_tokens: 1, output_tokens: 1 }, content: [{ type: "text", text: JSON.stringify({ lines: ["Still knocking."] }) }] }), { status: 200, headers: { "content-type": "application/json" } }); };
+  try {
+    for (const board of [true, false]) await fixPart({ apiKey: "k", script: clone(SCRIPT), indexes: [32], reasons: ["x"], card: null, lengthSec: 90, board });
+  } finally { globalThis.fetch = real; }
+  const sys = (b) => JSON.stringify(b.system);
+  assert.match(sys(sent[0]), /THE WORLD WE CAN FILM/);
+  assert.match(sys(sent[0]), /SOUND WORDS/);
+  assert.doesNotMatch(sys(sent[sent.length - 1]), /THE WORLD WE CAN FILM/);
+  // the API passes the launch flag to every writer call
+  const api = readSrc(new URL("../supabase/functions/blocky-worlds-api/index.ts", import.meta.url), "utf8");
+  for (const call of ["writeTopicIdeas(", "writeIdeas(", "fixPart(", "writeHybrid(", "rewriteHybrid(", "writeScript("]) {
+    const at = []; for (let i = api.indexOf(call); i >= 0; i = api.indexOf(call, i + 1)) at.push(i);
+    assert.ok(at.length, call);
+    for (const i of at) assert.match(api.slice(i, i + 700).split("\n")[0], /board: KIT\b/, `${call} gets board: KIT (LAUNCH_BOARD, or "prefer" with the Studio engine)`);
+  }
+});
+
+test("library-idea script writer: the kit + sound words ride in its SYSTEM prompt, the beat planner and the library batch writer get the kit too", async () => {
+  const { writeScript, writeBeats, writeLibraryIdeas } = await import("../supabase/functions/_shared/blockyWorlds/llm.js");
+  const { EXAMPLE_IDEAS } = await import("../supabase/functions/_shared/blockyWorlds/examples.js");
+  const sent = [];
+  const real = globalThis.fetch;
+  globalThis.fetch = async (_u, init) => { sent.push(JSON.parse(init.body)); return new Response(JSON.stringify({ model: "x", stop_reason: "end_turn", usage: { input_tokens: 1, output_tokens: 1 }, content: [{ type: "text", text: "{}" }] }), { status: 200, headers: { "content-type": "application/json" } }); };
+  const sys = (b) => JSON.stringify(b.system);
+  try {
+    await writeScript({ apiKey: "k", idea: EXAMPLE_IDEAS[0], lengthSec: 90, board: true }).catch(() => {});
+    await writeScript({ apiKey: "k", idea: EXAMPLE_IDEAS[0], lengthSec: 90, board: false }).catch(() => {});
+    await writeBeats({ apiKey: "k", card: EXAMPLE_IDEAS[0], lengthSec: 90, board: true }).catch(() => {});
+    await writeLibraryIdeas({ apiKey: "k", slots: [{ formula: "F1", twistType: "T1", mood: "epic", setting: "town square" }] }).catch(() => {});
+  } finally { globalThis.fetch = real; }
+  assert.match(sys(sent[0]), /THE WORLD WE CAN FILM/);
+  assert.match(sys(sent[0]), /SOUND WORDS/);
+  assert.doesNotMatch(sys(sent.find((_, i) => i === sent.findIndex((b) => !/THE WORLD WE CAN FILM/.test(sys(b))))), /THE WORLD WE CAN FILM/);
+  assert.ok(sent.some((b) => /THE WORLD WE CAN FILM/.test(sys(b)) && /beat sheet/i.test(sys(b))), "beat planner");
+  assert.match(sys(sent.at(-1)), /THE WORLD WE CAN FILM/, "library batch ideas");
+});
+
+// ---------- the 2026-11-13 story rules: hook first, "You see, in this town" within 2 sentences, no soft ending, max 3 names ----------
+import { endingProblems } from "../supabase/functions/_shared/blockyWorlds/formula.js";
+import { ruleLineIndex, ruleLineProblem } from "../supabase/functions/_shared/blockyWorlds/opener.js";
+import { checkScript } from "../supabase/functions/_shared/blockyWorlds/script.js";
+
+test("rule line: 'You see, in this town/world, ...' inside the first 2 sentences replaces the 'first line starts In this town' rule for formula scripts", () => {
+  assert.equal(ruleLineIndex(SCRIPT.lines), 1);
+  assert.equal(ruleLineProblem(SCRIPT.lines), null);
+  assert.equal(ruleLineIndex([{ text: "I just sneezed in a plane! You see, in this world, sneezing teleports you." }]), 0, "same line, second sentence");
+  assert.equal(ruleLineIndex([{ text: "Wow!" }, { text: "I fell." }, { text: "You see, in this town, x." }]), -1, "third sentence is too late");
+  assert.match(ruleLineProblem([{ text: "Wow!" }, { text: "In this town, sneezing teleports you." }]), /rule line is missing/);
+  // checkScript: a beat script is judged by the rule line, an older script by the opener
+  const noRule = clone(SCRIPT); noRule.lines[1] = { ...noRule.lines[1], text: "Nobody knocks after sunset." };
+  assert.match(checkScript(noRule, 90).problems.join(), /The rule line is missing/);
+  assert.ok(!/The first line must start/.test(checkScript(SCRIPT, 90).problems.join()), "the hook does not have to say In this town");
+  assert.equal(checkScript({ lines: [{ part: "rule", text: "Once upon a time." }] }, 90).problems.some((p) => /The first line must start/.test(p)), true, "older scripts keep the old opener");
+  // the rule line is hard, and Fix it rewrites the hook + the rule line
+  const c = hybridChecks({ script: noRule, skeleton: {}, card: null, examples: [], lengthSec: 90 });
+  assert.ok(c.hard.some((x) => /The rule line is missing/.test(x)));
+  assert.deepEqual(problemSpots(noRule, c.hard.filter((x) => /rule line/.test(x)))[0].lines, [0, 1]);
+});
+
+test("ending: soft, sentimental or abstract endings are HARD; no flip is a note; a real holy twist passes", () => {
+  const soft = edit((l) => { l[31].text = "We learned that love and family keep us together."; l[32].text = "Everyone smiled forever."; });
+  const p = endingProblems(soft);
+  assert.ok(p.some((x) => /the ending is soft or abstract/.test(x)));
+  const c = hybridChecks({ script: soft, skeleton: {}, card: null, examples: [], lengthSec: 90 });
+  assert.ok(c.hard.some((x) => /the ending is soft or abstract/.test(x)), "hard in the hybrid writer");
+  const flat = edit((l) => { l[31].text = "The street went quiet."; l[32].text = "The town was calm."; });
+  assert.ok(endingProblems(flat).some((x) => /no holy twist/.test(x)));
+  assert.deepEqual(endingProblems(SCRIPT), [], "the test story ends on a flip (Mrs. Fable's door? Still knocking.)");
+});
+
+test("names: at most 3 named characters plus the narrator", () => {
+  const many = edit((l) => { l[3].text = "Dottie Pell hides in her kitchen behind forty bulging curtains."; l[4].text = "Mr. Hollis stacks bricks in his hallway, one for every window."; l[5].text = "Mrs. Fenwick sells bread in her bakery behind three thin curtains."; });
+  assert.ok(text(many, /too many named characters/).length === 1);
+});

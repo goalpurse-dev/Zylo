@@ -634,6 +634,9 @@ const markersOf = (s) => [...(s.markers ?? []), ...(s.marker ? [s.marker] : [])]
 const boardActs = (s, keys) => keys.split("|").some((k) => (s.board?.acts ?? []).some((a) => a.k === k));
 export function onScreen(r, s, tl = {}) {
   if (waivedHas(s, r.name)) return true; // the opening rule (lib/opening.js) dropped its card / badge: owner-excused
+  // a STORYBOARD shot shows what its spec puts there (lib/storyboard.js showsOf: its props, animals, weather, the place s
+  // things): a thing (not a person) the line names is on screen when its word is there
+  if (s.board?.shows?.length && r.kind !== "cast") { const sh = new Set(s.board.shows.map((w) => String(w).toLowerCase())); if (NW(r.name).some((w) => sh.has(w) || sh.has(w.replace(/s$/, "")) || sh.has(`${w}s`))) return true; }
   const name = NW(r.name);
   // NO PICTURE CARDS OR BADGES (owner, PERMANENT 2026-11-07: lib/cards.js): a card, sign, badge or tag never shows an
   // item (an item nothing can show is excused through shot.unshown, read by waivedHas above)

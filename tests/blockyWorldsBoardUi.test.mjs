@@ -27,12 +27,13 @@ test("stageOf: every stage the prepare job reports comes back from the run row's
 test("the progress screen walks the server's STAGES (not the 4 statuses); the endpoint sends run.stage", () => {
   const api = src("api/blockyWorldsApi.js"), panel = src("ResultPanel.jsx");
   assert.match(api, /import \{ STAGES, stageOf \} from "..\/..\/..\/..\/..\/supabase\/functions\/_shared\/blockyWorlds\/render\.js"/);
-  assert.match(api, /export const runStage = \(run\) => \(run \? run\.stage \?\? stageOf\(run\.status, run\.pct \?\? 0\) : null\);/);
+  // (2026-11-13: a Studio run reads its own stages, studioStages.js; a pipeline run is read as before)
+  assert.match(api, /export const runStage = \(run\) => \(run \? run\.stage \?\? \(isStudioRun\(run\) \? studioStageOf\(run\) : stageOf\(run\.status, run\.pct \?\? 0\)\) : null\);/);
   assert.match(panel, /STAGES\.map\(\(s, i\) =>/);
   assert.ok(!/RUN_STEPS/.test(panel), "the old 4-step list is gone from the progress screen");
   assert.match(panel, /const stage = runStage\(run\);/);
   const index = readFileSync(new URL("../supabase/functions/blocky-worlds-api/index.ts", import.meta.url), "utf8");
-  assert.match(index, /stage: stageOf\(r\.status, r\.pct \?\? 0\),/);
+  assert.match(index, /stage: r\.engine === "studio" \? studioStageOf\(r\) : stageOf\(r\.status, r\.pct \?\? 0\),/);
 });
 
 test("the result screen: separate Copy buttons for the title, the description and the hashtags", () => {

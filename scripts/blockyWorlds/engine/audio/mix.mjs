@@ -105,11 +105,14 @@ export async function writeCueTrack(file, duration, cues, { voiceActiveDb = -18 
  * The bed for `musicLoop`: "A".."E" (audio/backrooms.mjs: the option's loop played to the length, ending on its final
  * cadence over the last ~2 s), or a path to a seamless loop file (tiled, 2.5 s fade at the end).
  */
-export async function bedFromLoop(musicLoop, seconds, file) {
+export async function bedFromLoop(musicLoop, seconds, file, { tempo = 1 } = {}) {
   if (typeof musicLoop === "string" && /^[A-Za-z]$/.test(musicLoop)) {
     const { renderBed } = await import("./backrooms.mjs");
-    const r = await renderBed({ option: musicLoop.toUpperCase(), seconds, out: file });
-    return { file, kind: `option ${musicLoop.toUpperCase()}`, hitAt: r.hitAt };
+    // the bed sped up to the voice's pace (same pitch): rendered tempo x longer, then atempo back to the length
+    const raw = tempo !== 1 ? file.replace(/\.wav$/i, ".raw.wav") : file;
+    const r = await renderBed({ option: musicLoop.toUpperCase(), seconds: seconds * tempo, out: raw });
+    if (tempo !== 1) ffmpeg(["-y", "-i", raw, "-af", `atempo=${tempo}`, "-t", seconds.toFixed(3), "-c:a", "pcm_s16le", file]);
+    return { file, kind: `option ${musicLoop.toUpperCase()}${tempo !== 1 ? ` x${tempo}` : ""}`, hitAt: r.hitAt != null ? r.hitAt / tempo : null };
   }
   if (!fs.existsSync(musicLoop)) throw new Error(`mixAudio: musicLoop not found: ${musicLoop}`);
   const D = seconds.toFixed(3), fo = Math.max(0, seconds - 2.5).toFixed(3);

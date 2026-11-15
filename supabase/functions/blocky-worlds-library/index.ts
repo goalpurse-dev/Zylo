@@ -8,13 +8,14 @@
 //   status   {}                           -> library counts by status/formula/mood, the last batches (no call)
 //   addPost  { runId?, libraryId?, url, likes, views, postedAt } -> the owner's real TikTok numbers (they count most)
 //
-// Who: the owner (ADMIN_EMAILS, a signed-in session) for everything; tick also accepts the header x-blocky-worlds-cron
+// Who: the owner (the Blocky owner list, gate.js; a signed-in session) for everything; tick also accepts the header x-blocky-worlds-cron
 // equal to the function secret BLOCKY_WORLDS_CRON_SECRET (a scheduled job, once the owner sets one up).
 // Mock mode (BLOCKY_WORLDS_LLM=mock): every tick is free. A real batch needs an explicit maxUsd and stops before it.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { cors, err, ok } from "../shared/cors.ts";
-import { adminEmailList, isAdmin } from "../_shared/contentMachine/adminGuard.js";
+import { isAdmin } from "../_shared/contentMachine/adminGuard.js";
+import { blockyOwners } from "../_shared/blockyWorlds/gate.js";
 import { batchCost, LIBRARY, rankOf } from "../_shared/blockyWorlds/library.js";
 import { MODELS } from "../_shared/blockyWorlds/config.js";
 import { PRICE, providerFrom } from "../_shared/blockyWorlds/llm.js";
@@ -24,7 +25,7 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const ANTHROPIC_KEY = Deno.env.get("ANTHROPIC_API_KEY") ?? "";
-const OWNERS = adminEmailList(Deno.env.get("ADMIN_EMAILS"));
+const OWNERS = blockyOwners(Deno.env.get("BLOCKY_WORLDS_OWNER_EMAILS"));
 const CRON_SECRET = (Deno.env.get("BLOCKY_WORLDS_CRON_SECRET") ?? "").trim();
 const PROVIDER = providerFrom(Deno.env.get("BLOCKY_WORLDS_LLM"));
 const PAID_OFF = (Deno.env.get("BLOCKY_WORLDS_PAID_CALLS") ?? "").trim().toLowerCase() === "off";

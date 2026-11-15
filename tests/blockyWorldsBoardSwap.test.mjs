@@ -49,7 +49,7 @@ test("swapIdea rewrites the card fields deterministically; a swapped idea fits",
 
 test("the library fixture: fit before and after the swap (the 2026-11-12 numbers), every row it keeps fits", () => {
   const before = fittingOnly(LIBRARY).length, after = fittingWithSwap(LIBRARY);
-  assert.equal(before, 12);
+  assert.equal(before, 13); // 12 until the kit gained hat / statue / fountain props (c9c2aae5): "The Hat Tax"-style rows now fit
   assert.ok(after.length >= 40 && after.length <= 48, `after ${after.length}`);
   for (const r of after) assert.ok(kitFit(r.idea).fit, r.id);
   // the library row's id and stats ride along; only the idea is the swapped copy
@@ -79,6 +79,17 @@ test("the writers get the swap as a hint (the plan writer's picked idea, the lib
   const llm = readFileSync(new URL("../supabase/functions/_shared/blockyWorlds/llm.js", import.meta.url), "utf8");
   assert.match(llm, /idea\?\.swap \? swapHint\(idea\.swap\) : ""/);
   const index = readFileSync(new URL("../supabase/functions/blocky-worlds-api/index.ts", import.meta.url), "utf8");
-  assert.match(index, /pickForUser\(LAUNCH_BOARD \? fittingWithSwap\(cands \?\? \[\]\) : cands \?\? \[\], IDEAS_PER_BATCH, mood\)/);
+  assert.match(index, /pickForUser\(STUDIO_ON \? \(cands \?\? \[\]\)\.filter\(\(c: any\) => studioIdeaOk\(c\.idea\)\) : LAUNCH_BOARD \? fittingWithSwap\(cands \?\? \[\]\) : cands \?\? \[\], IDEAS_PER_BATCH, mood\)/);
   assert.ok(BOARD_KIT.props.length > 0);
+});
+
+test("kitCheck unknown nouns (2026-11-12): a noun the kit doesn't know in a must-have spot warns; board-only makes it a miss; gate + leash are kit props now", async () => {
+  const { kitCheck } = await import("../supabase/functions/_shared/blockyWorlds/kitCheck.js");
+  const lines = ["In this town, nobody touches the old flute.", "You see, the flute sings at night.", "Then I went home.", "The end."];
+  const warn = kitCheck(lines), hard = kitCheck(lines, { boardOnly: true });
+  assert.equal(warn.ok, true); assert.ok(warn.warnings.some((w) => w.word === "flute" && /unknown/.test(w.why)));
+  assert.equal(hard.ok, false); assert.ok(hard.missing.some((m) => m.word === "flute"));
+  assert.equal(kitCheck(["A hundred leashes hung empty on the gate.", "The gate stayed shut."], { boardOnly: true }).ok, true);
+  // a card's single text keeps the warnings only (the idea picker's fit count does not change)
+  assert.equal(kitCheck(["a houseplant that eats the carpet"]).ok, true);
 });

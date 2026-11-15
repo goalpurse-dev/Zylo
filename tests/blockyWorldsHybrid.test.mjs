@@ -28,22 +28,22 @@ const OLD_SCRIPT = {
   lines: [
     ...L("rule", "In this town, poorer people live on the ground and richer people live higher up."),
     ...L("tour", "You see, money lifts your house up its tower.", "Go broke and it slides down in front of everyone.",
-      "Mr. Pell's porch sinks whenever someone up top gets richer.", "So we call him Mr. Puddle.",
-      "Captain Huxworth sends his laundry down by parachute.", "His elevator takes three days.",
-      "Mrs. Quibble on floor forty sees over the clouds.", "On her tiptoes."),
-    ...L("me", "I'm Tilly. I live in the lowest house of all.", "Our front door is half underground.",
+      "Mr. Sorrel's porch sinks whenever someone up top gets richer.", "So we call him Mr. Puddle.",
+      "Captain Thistle sends his laundry down by parachute.", "His elevator takes three days.",
+      "Mrs. Wren on floor forty sees over the clouds.", "On her tiptoes."),
+    ...L("me", "I'm Kestrel. I live in the lowest house of all.", "Our front door is half underground.",
       "Grandma Opal says the ground remembers everything.", "I keep Grandpa's brass whistle on a string.",
       "He said to blow it when the ground needs to move.", "I never knew what that meant."),
     ...L("until", "Until one night the mayor threw a gold party up top.", "My doorstep sank an inch.",
       "Then our whole street sank to the rooftops.", "Then the square cracked open like an egg.",
-      "Poor families grabbed their kids and ran.", "Mr. Pell's porch was gone."),
+      "Poor families grabbed their kids and ran.", "Mr. Sorrel's porch was gone."),
     ...L("discovery", "I slid into the crack after my doorstep.", "Down there were chains. Giant chains.",
       "Every chain ran from a ground house up to a tower.", "Our weight was holding the rich houses up.",
       "The rule was never about money.", "It was about who sinks so others can float."),
     ...L("climax", "I put Grandpa's brass whistle to my lips.", "I blew as hard as I could.",
       "Every poor family on the ground stepped off their porch at once.", "The chains went slack.",
       "The towers came down slowly. Gently. Floor by floor.", "Until every rich house sat on the ground next to ours.",
-      "Mrs. Quibble stood on her tiptoes. She could see my house now.", "Nobody floated. Nobody sank."),
+      "Mrs. Wren stood on her tiptoes. She could see my house now.", "Nobody floated. Nobody sank."),
     ...L("closer", "Now the poorer and the richer live side by side.",
       "In this town, nobody lives higher up anymore.", "Turns out the ground was holding everyone up."),
   ],
@@ -51,64 +51,64 @@ const OLD_SCRIPT = {
 };
 const OLD_MAP = {
   price: "Go broke and it slides down", exception: "I live in the lowest house of all", prop: "Grandpa's brass whistle", prop_quote: "I keep Grandpa's brass whistle",
-  neighbours: [{ name: "Mr. Pell", quote: "Mr. Pell's porch sinks" }, { name: "Captain Huxworth", quote: "sends his laundry down by parachute" }, { name: "Mrs. Quibble", quote: "Mrs. Quibble on floor forty" }],
+  neighbours: [{ name: "Mr. Sorrel", quote: "Mr. Sorrel's porch sinks" }, { name: "Captain Thistle", quote: "sends his laundry down by parachute" }, { name: "Mrs. Wren", quote: "Mrs. Wren on floor forty" }],
   escalation: ["My doorstep sank an inch", "our whole street sank to the rooftops", "the square cracked open"],
-  discovery: "Our weight was holding the rich houses up", twist: "The poor families' weight holds the towers up.", clue: "porch sinks", clue_quote: "Mr. Pell's porch sinks whenever",
+  discovery: "Our weight was holding the rich houses up", twist: "The poor families' weight holds the towers up.", clue: "porch sinks", clue_quote: "Mr. Sorrel's porch sinks whenever",
   win: "Every poor family on the ground stepped off", win_by: "rule",
 };
 const OLD_PLAN = {
   title: "The Ground Holds", premise: "p", opener: TOPIC, price: "Go broke and your house slides down.", teaser: "t",
-  narrator: { name: "Tilly", who: "ten, from the lowest house", exception: "the lowest house of all" },
-  neighbours: [{ name: "Mr. Pell", joke: "porch sinks when someone up top gets richer" }, { name: "Captain Huxworth", joke: "laundry by parachute" }, { name: "Mrs. Quibble", joke: "sees over clouds on tiptoes" }],
+  narrator: { name: "Kestrel", who: "ten, from the lowest house", exception: "the lowest house of all" },
+  neighbours: [{ name: "Mr. Sorrel", joke: "porch sinks when someone up top gets richer" }, { name: "Captain Thistle", joke: "laundry by parachute" }, { name: "Mrs. Wren", joke: "sees over clouds on tiptoes" }],
   prop: { object: "Grandpa's brass whistle", setup: "kept on a string", climax_job: "signals everyone to step off at once" },
-  twist: { sentence: "The poor families' weight holds the towers up.", clues: [{ clue: "porch sinks", where: "neighbour1", planted_by: "Mr. Pell's porch sinks when someone gets richer" }] },
+  twist: { sentence: "The poor families' weight holds the towers up.", clues: [{ clue: "porch sinks", where: "neighbour1", planted_by: "Mr. Sorrel's porch sinks when someone gets richer" }] },
   escalation: ["doorstep sinks", "street sinks", "square cracks"], discovery: "chains", climax: { how: "everyone steps off", by: "rule" },
   closer: "In this town, nobody lives higher up anymore.", formula: "F1", twistType: "T1", mood: "epic", setting: "town square",
   beats: ["rule", "tour", "me", "until", "discovery", "climax", "closer"].map((part) => ({ part, intent: part, shows: part, lines: [part] })),
 };
 
-// the BEAT SHEET (owner, 2026-11-10): a 90 s script (305 words) that does every beat's job
+// the BEAT SHEET (owner, 2026-11-10): a 90 s script (the story formula, 2026-11-12) that does every beat's job
 const B = (beat, ...texts) => texts.map((text) => ({ part: BEAT_PART[beat], beat, text }));
 const SCRIPT = {
   title: "Low Houses Hear",
   lines: [
-    ...B("rule", "In this town, poorer people live on the ground and richer people live higher up."),
-    ...B("origin", "You see, every coin you earn lifts your house a little.", "Go broke and it sinks right back down where everyone can see."),
-    ...B("neighbours", "Mr. Pell's house floats ten floors up.", "He waves at birds like they owe him money.",
-      "Captain Huxworth's house is so high it has snow on the roof.", "In July.",
-      "Mrs. Quibble's house floats just above the fence.", "She tiptoes to look richer."),
-    ...B("me", "Then there's me.", "Tilly. The lowest house in town.", "Our doormat is technically in the ground."),
-    ...B("ally", "My best friend Nub just shrugged at our muddy step.", "He said, \"Low houses hear everything first.\"", "I thought he meant the gossip."),
-    ...B("trigger", "Until one day every floating house started to shake.", "The whole hill was sliding toward the river.", "Every floating house was tied to it."),
-    ...B("adults", "Mr. Pell tried to pay the hill to stop.", "He threw coins at it. The hill ate them.",
-      "Captain Huxworth tied his house to a cloud.", "The cloud floated away. So did his boots.",
-      "Mrs. Quibble yelled at the river.", "The river splashed her back.", "The mayor called a meeting.",
-      "Nobody came because their houses were wobbling.", "It got worse every minute.", "The hill kept sliding."),
-    ...B("save", "Then I remembered Nub.", "\"Low houses hear everything first.\"", "I pressed my ear to our muddy floor.",
+    ...B("rule", "And right now my doormat is underground, with everyone watching!", "You see, in this town, poorer people live on the ground and richer people live higher up."),
+    ...B("origin", "Every coin you earn lifts your house a little.", "Go broke and it sinks right back down where everyone can see."),
+    ...B("neighbours", "Mr. Sorrel's house floats ten floors up, above the bakery.", "He waves at birds like they owe him money.",
+      "Captain Thistle's house is so high it has snow on the roof.", "In July.",
+      "Mrs. Wren's house floats just above the school fence.", "She tiptoes to look richer."),
+    ...B("me", "But my house is the lowest of two hundred.", "Then there's me.", "Kestrel. The lowest house in town.", "Our doormat is technically in the ground."),
+    ...B("ally", "My best friend Orla just shrugged at our muddy step.", "He said, \"Low houses hear everything first.\"", "I thought he meant the gossip."),
+    ...B("trigger", "Then one day every floating house started to shake.", "Rumble! The whole hill was sliding toward the river.", "Every floating house was tied to it.", "Two houses tipped. Then twenty. Then two hundred!"),
+    ...B("adults", "Mr. Sorrel tried to pay the hill to stop.", "He threw coins at it. Thud! The hill ate them.",
+      "Captain Thistle tied his house to a cloud.", "Whoosh! The cloud floated away. So did his boots.",
+      "Mrs. Wren yelled at the river.", "Splash! The river splashed her back.", "The mayor called a meeting.",
+      "Nobody came because their houses were wobbling.", "It got worse every minute.", "Mr. Sorrel hired a hundred balloons. Pop! Pop! Pop!", "Creak! The hill kept sliding.", "Five hundred chimneys leaned over the edge."),
+    ...B("save", "Then I noticed something.", "Orla's words. \"Low houses hear everything first.\"", "I pressed my ear to our muddy floor.",
       "I heard water. Underground water.", "It was rushing under the hill like a bathtub.", "I'm the lowest kid in town.",
       "So I'm the only one who could reach the drain.", "I crawled under our house and pulled the old plug.",
-      "The water drained out with a giant burp.", "The hill stopped sliding.", "Every house stayed tied and safe."),
-    ...B("callback", "Now everyone visits the lowest house to listen to the ground.", "Mrs. Quibble still tiptoes.", "Now she tiptoes down to us."),
+      "Glug! The water drained out with a giant burp.", "The hill stopped sliding.", "Every house stayed tied and safe.", "Nobody floated away. Nobody sank.", "The whole street cheered for the mud."),
+    ...B("callback", "Then the hill burped again. Thud!", "Wren tiptoes on the ground."),
   ],
   post: { title: "t", description: "d", hashtags: ["#a"] },
 };
 const MAP = {
-  neighbours: [{ name: "Mr. Pell", quote: "floats ten floors up" }, { name: "Captain Huxworth", quote: "snow on the roof" }, { name: "Mrs. Quibble", quote: "just above the fence" }],
-  worst: "The lowest house in town", ally_name: "Nub", ally_line: "Low houses hear everything first.", payoff: "Low houses hear everything first.",
-  adults: [{ who: "Mr. Pell", quote: "tried to pay the hill" }, { who: "Captain Huxworth", quote: "tied his house to a cloud" }, { who: "Mrs. Quibble", quote: "yelled at the river" }],
-  flaw: "the lowest house", save: "pulled the old plug", callback_to: "Mrs. Quibble's tiptoes",
+  neighbours: [{ name: "Mr. Sorrel", quote: "floats ten floors up" }, { name: "Captain Thistle", quote: "snow on the roof" }, { name: "Mrs. Wren", quote: "just above the fence" }],
+  worst: "The lowest house in town", ally_name: "Orla", ally_line: "Low houses hear everything first.", payoff: "Low houses hear everything first.",
+  adults: [{ who: "Mr. Sorrel", quote: "tried to pay the hill" }, { who: "Captain Thistle", quote: "tied his house to a cloud" }, { who: "Mrs. Wren", quote: "yelled at the river" }],
+  flaw: "the lowest house", save: "pulled the old plug", callback_to: "Mrs. Wren's tiptoes",
 };
 const PLAN = {
   title: "Low Houses Hear", premise: "p", opener: TOPIC, price: "Go broke and your house sinks.", teaser: "t",
   rule_visual: { parameter: "how high your house floats", description: "houses hover on thin ropes at heights that match their owner's coins",
-    neighbours: [{ name: "Mr. Pell", shows: "ten floors up" }, { name: "Captain Huxworth", shows: "above the clouds, snow on the roof" }, { name: "Mrs. Quibble", shows: "just above the fence" }],
+    neighbours: [{ name: "Mr. Sorrel", shows: "ten floors up" }, { name: "Captain Thistle", shows: "above the clouds, snow on the roof" }, { name: "Mrs. Wren", shows: "just above the fence" }],
     hero: "half sunk into the ground", opening_shot: "a street of houses floating at different heights, one stuck in the mud" },
-  origin: "coins lift houses", neighbours: [{ name: "Mr. Pell", joke: "waves at birds", shows: "ten floors" }, { name: "Captain Huxworth", joke: "snow in July", shows: "clouds" }, { name: "Mrs. Quibble", joke: "tiptoes", shows: "fence" }],
-  hero: { name: "Tilly", who: "ten", worst: "the lowest house in town", flaw: "lives in the ground" },
-  ally: { name: "Nub", who: "best friend", line: "Low houses hear everything first.", why: "she hears the water under the hill" },
-  trigger: "the hill slides", adults: [{ who: "Mr. Pell", attempt: "pays the hill", fail: "the hill eats the coins" }, { who: "Captain Huxworth", attempt: "ties to a cloud", fail: "the cloud floats off" }, { who: "Mrs. Quibble", attempt: "yells at the river", fail: "splashed" }],
-  save: { how: "Tilly hears the water and pulls the plug from below", uses_line: "she remembers and listens" },
-  callback: { line: "Now she tiptoes down to us.", calls_back: "Mrs. Quibble's tiptoes" },
+  origin: "coins lift houses", neighbours: [{ name: "Mr. Sorrel", joke: "waves at birds", shows: "ten floors" }, { name: "Captain Thistle", joke: "snow in July", shows: "clouds" }, { name: "Mrs. Wren", joke: "tiptoes", shows: "fence" }],
+  hero: { name: "Kestrel", who: "ten", worst: "the lowest house in town", flaw: "lives in the ground" },
+  ally: { name: "Orla", who: "best friend", line: "Low houses hear everything first.", why: "she hears the water under the hill" },
+  trigger: "the hill slides", adults: [{ who: "Mr. Sorrel", attempt: "pays the hill", fail: "the hill eats the coins" }, { who: "Captain Thistle", attempt: "ties to a cloud", fail: "the cloud floats off" }, { who: "Mrs. Wren", attempt: "yells at the river", fail: "splashed" }],
+  save: { how: "Kestrel hears the water and pulls the plug from below", uses_line: "she remembers and listens" },
+  callback: { line: "Now she tiptoes down to us.", calls_back: "Mrs. Wren's tiptoes" },
   formula: "F1", twistType: "T1", mood: "epic", setting: "town square",
   beats: BEAT_IDS.map((beat) => ({ beat, intent: beat, shows: beat, lines: [beat] })),
 };
@@ -116,9 +116,9 @@ const card = () => planCard(PLAN, TOPIC);
 
 // ---------- anti-copy: contractions are never names ----------
 test("anti-copy (2026-11-08): \"I've\", \"I'm\", \"Don't\" are no names; a possessive keeps its name", () => {
-  const n = namesIn("I've polished boots for years. I'm Pip. Don't laugh. We'll see. Mr. Pell's porch sank. Then Bogsworth sneezed.", { anyPosition: true });
+  const n = namesIn("I've polished boots for years. I'm Pip. Don't laugh. We'll see. Mr. Sorrel's porch sank. Then Bogsworth sneezed.", { anyPosition: true });
   assert.ok(!n.includes("Ive") && !n.includes("Im") && !n.includes("Don") && !n.includes("Dont") && !n.includes("Well"), JSON.stringify(n));
-  assert.ok(n.includes("Pell") && n.includes("Bogsworth") && n.includes("Pip"));
+  assert.ok(n.includes("Sorrel") && n.includes("Bogsworth") && n.includes("Pip"));
   const ref = { id: "r", text: "So I said, I've had enough. And Ive the giant laughed." };
   const s = { lines: L("me", "I've polished boots every day of my life.") };
   assert.deepEqual(copyProblems({ script: s, examples: [ref] }).filter((p) => p.kind === "names"), []);
@@ -144,8 +144,8 @@ test("skeleton: the exception by meaning (\"the quietest sneezer in town\", \"ev
   for (const t of ["I live near the forest.", "I'm honest."]) assert.ok(!isException(t), t);
   const s = clone(OLD_SCRIPT), m = clone(OLD_MAP);
   m.exception = "a quote that is not there";
-  s.lines[9] = { part: "me", text: "I'm Tilly. The quietest kid on the ground." };
-  m.price = "Mr. Pell's porch sinks"; // line 4: too late
+  s.lines[9] = { part: "me", text: "I'm Kestrel. The quietest kid on the ground." };
+  m.price = "Mr. Sorrel's porch sinks"; // line 4: too late
   let p = skeletonProblems(s, m);
   assert.ok(!p.some((x) => /exception/.test(x)), JSON.stringify(p));
   assert.ok(p.some((x) => /price .* lines 1 to 3/.test(x)));
@@ -174,18 +174,19 @@ test("hybrid checks: the good script has no hard problem; soft misses are adviso
   // an older 7-part draft keeps its skeleton notes
   const old = planCard(OLD_PLAN, TOPIC), m = clone(OLD_MAP);
   m.neighbours = []; m.clue_quote = "nothing";
-  const c3 = hybridChecks({ script: OLD_SCRIPT, skeleton: m, card: old, examples: [], lengthSec: 90 });
+  // 80 s: the 308-word older draft is a bit short for the formula pace (flagged, not hard)
+  const c3 = hybridChecks({ script: OLD_SCRIPT, skeleton: m, card: old, examples: [], lengthSec: 80 });
   assert.deepEqual(c3.hard, []);
   assert.ok(c3.advisory.some((x) => /^Skeleton/.test(x)) && c3.advisory.some((x) => /^Twist/.test(x)) && !c3.advisory.some((x) => /^Beat sheet/.test(x)));
 });
 
 test("hybrid checks: opener, length, real copying and a lost premise are hard", () => {
   const s = clone(SCRIPT);
-  s.lines[0] = { part: "rule", text: "Poorer people live on the ground here." };
-  assert.ok(hybridChecks({ script: s, skeleton: MAP, card: card(), lengthSec: 90 }).hard.some((x) => /^The first line must start/.test(x)));
+  s.lines[1] = { part: "rule", beat: "rule", text: "Poorer people live on the ground here." };
+  assert.ok(hybridChecks({ script: s, skeleton: MAP, card: card(), lengthSec: 90 }).hard.some((x) => /^The rule line is missing/.test(x)), "the rule line (You see, in this town, ...) is required, the hook comes first");
   const short = { ...clone(SCRIPT), lines: SCRIPT.lines.slice(0, 20) };
   assert.ok(hybridChecks({ script: short, skeleton: MAP, card: card(), lengthSec: 90 }).hard.some((x) => /^Too short/.test(x)));
-  const ref = { id: "ref9", text: "Old Huxworth said his house is so high it has snow on the roof all year." };
+  const ref = { id: "ref9", text: "Old Thistle said his house is so high it has snow on the roof all year." };
   assert.ok(hybridChecks({ script: SCRIPT, skeleton: MAP, card: card(), examples: [ref], lengthSec: 90 }).hard.some((x) => /^Too close to reference ref9/.test(x)));
   const lost = clone(SCRIPT);
   lost.lines = lost.lines.map((l, i) => ({ ...l, text: i === 0 ? "In this town, cats wear hats on Tuesdays." : l.text.replace(/\b(poor\w*|rich\w*|ground|underground|high\w*|up|low\w*|down)\b/gi, "blue") }));
@@ -205,15 +206,15 @@ test("the plan (beat sheet): the rule visual, the planted ally line, the adults,
   assert.equal(c.twist_clue, c.plantedLine);
   assert.equal(c.prop, "");
   assert.equal(c.closer, "Now she tiptoes down to us.");
-  assert.deepEqual(c.neighbourNames, ["Mr. Pell", "Captain Huxworth", "Mrs. Quibble"]);
+  assert.deepEqual(c.neighbourNames, ["Mr. Sorrel", "Captain Thistle", "Mrs. Wren"]);
   assert.equal(c.ruleVisual.parameter, "how high your house floats");
   assert.equal(c.ruleVisual.neighbours.length, 3);
-  assert.deepEqual(c.ruleVisual.hero, { name: "Tilly", shows: "half sunk into the ground" });
+  assert.deepEqual(c.ruleVisual.hero, { name: "Kestrel", shows: "half sunk into the ground" });
   assert.equal(c.examples.length, 3);
   assert.equal(c.topic, TOPIC);
   const t = planText(PLAN);
   assert.match(t, /THE RULE VISUAL .*how high your house floats/);
-  assert.match(t, /- Mr\. Pell: ten floors up/);
+  assert.match(t, /- Mr\. Sorrel: ten floors up/);
   assert.match(t, /THE ALLY'S PLANTED LINE .*"Low houses hear everything first\."/);
   assert.match(t, /THE ADULTS TRY AND FAIL/);
   assert.match(t, /\[neighbours\] neighbours/);
@@ -228,10 +229,10 @@ test("the plan (beat sheet): the rule visual, the planted ally line, the adults,
 test("beat sheet: nine beats in order with the owner's timing; budgets fit the length; both prompts carry it", () => {
   assert.deepEqual(BEAT_IDS, ["rule", "origin", "neighbours", "me", "ally", "trigger", "adults", "save", "callback"]);
   for (let i = 1; i < BEATS.length; i++) assert.equal(BEATS[i].span[0], BEATS[i - 1].span[1], BEATS[i].id);
-  assert.equal(BEATS.find((b) => b.id === "me").span[0], 22);
-  assert.equal(BEATS.find((b) => b.id === "ally").span[0], 30);
-  assert.equal(BEATS.find((b) => b.id === "trigger").span[0], 38);
-  assert.equal(BEATS.find((b) => b.id === "adults").span[0], 45);
+  assert.equal(BEATS.find((b) => b.id === "me").span[0], 19);
+  assert.equal(BEATS.find((b) => b.id === "ally").span[0], 27);
+  assert.equal(BEATS.find((b) => b.id === "trigger").span[0], 35);
+  assert.equal(BEATS.find((b) => b.id === "adults").span[0], 42);
   // the engine parts follow the beats in the old order (the renderer and director read parts)
   const order = ["rule", "tour", "me", "until", "discovery", "climax", "closer"];
   const parts = BEAT_IDS.map((id) => order.indexOf(BEAT_PART[id]));
@@ -264,7 +265,7 @@ test("beat sheet checks (advisory, by meaning): neighbours, worst, planted line 
   // without the map (a saved draft) the card's names and line do the job
   assert.deepEqual(beatSheetProblems(SCRIPT, {}, c), []);
   const with_ = (fn) => { const s = clone(SCRIPT); s.lines = s.lines.map((l, i) => fn(l, i) ?? l); return beatSheetProblems(s, MAP, c); };
-  assert.ok(with_((l) => (l.beat === "neighbours" ? { ...l, text: l.text.replace(/Mr\. Pell's|Captain Huxworth's|Mrs\. Quibble's/, "One") } : null)).some((x) => /three NAMED neighbours/.test(x)));
+  assert.ok(with_((l) => (l.beat === "neighbours" ? { ...l, text: l.text.replace(/Mr\. Sorrel's|Captain Thistle's|Mrs\. Wren's/, "One") } : null)).some((x) => /three NAMED neighbours/.test(x)));
   assert.ok(with_((l) => (l.beat === "me" ? { ...l, text: "I live here too." } : null)).some((x) => /WORST at the rule/.test(x)));
   assert.ok(with_((l) => (l.beat === "ally" && /Low houses/.test(l.text) ? { ...l, text: "He said hi." } : null)).some((x) => /not said before the trouble/.test(x)));
   assert.ok(with_((l) => (l.beat === "adults" ? { ...l, text: "People talked about it for a while." } : null)).some((x) => /adults should try/.test(x)));
@@ -282,43 +283,43 @@ test("beat sheet run fixes (2026-11-10): the free trim keeps named lines and \"T
   const long = clone(SCRIPT);
   const at = long.lines.findIndex((l) => l.beat === "adults") + 1;
   long.lines.splice(at, 0, ...["Everyone just stood around and really watched it.", "Some people really clapped for no reason at all.", "A dog barked at the hill twice.", "Then it got really windy for a while."].map((text) => ({ part: "until", beat: "adults", text })));
-  long.lines.splice(long.lines.findIndex((l) => l.beat === "neighbours") + 1, 0, { part: "tour", beat: "neighbours", text: "Then Mr. Pell really counts his very tall stairs." });
+  long.lines.splice(long.lines.findIndex((l) => l.beat === "neighbours") + 1, 0, { part: "tour", beat: "neighbours", text: "Then Mr. Sorrel really counts his very tall stairs." });
   const r = await writeHybrid({ topic: TOPIC, lengthSec: 90, steps: fakes([long], []) });
   assert.deepEqual(r.checks.hard, [], JSON.stringify(r.checks.hard));
   assert.ok(r.trimmed.length > 0);
-  for (const l of SCRIPT.lines.filter((x) => x.beat === "neighbours" && /Pell|Huxworth|Quibble/.test(x.text))) assert.ok(r.script.lines.some((y) => y.text === l.text), l.text);
-  assert.ok(r.script.lines.some((y) => y.text === "Then Mr. Pell really counts his very tall stairs."));
+  for (const l of SCRIPT.lines.filter((x) => x.beat === "neighbours" && /Sorrel|Thistle|Wren/.test(x.text))) assert.ok(r.script.lines.some((y) => y.text === l.text), l.text);
+  assert.ok(r.script.lines.some((y) => y.text === "Then Mr. Sorrel really counts his very tall stairs."));
   assert.ok(r.script.lines.some((y) => y.text === "Then there's me."));
   // the run's own adults lines fail visibly; "bigger than my house" makes the hero the worst
   const s = clone(SCRIPT);
-  const adults = ["Mr. Pell yelled down, \"Feed it double coins!\"", "Everybody did. Clink, clink, clink.", "The machine gulped faster.", "Captain Huxworth tied his house to a cloud with a hose.", "The hose snapped. Twang.", "Mrs. Quibble climbed inside with a wrench.", "It spat her out covered in coins.", "The mayor called a meeting.", "Nobody came.", "The hill kept going."];
+  const adults = ["Mr. Sorrel yelled down, \"Feed it double coins!\"", "Everybody did. Clink, clink, clink.", "The machine gulped faster.", "Captain Thistle tied his house to a cloud with a hose.", "The hose snapped. Twang.", "Mrs. Wren climbed inside with a wrench.", "It spat her out covered in coins.", "The mayor called a meeting.", "Nobody came.", "The hill kept going."];
   let k = 0;
-  s.lines = s.lines.map((l) => (l.beat === "adults" ? { ...l, text: adults[k++] ?? l.text } : l.beat === "me" ? { ...l, text: l.text === "Tilly. The lowest house in town." ? "Even my whisper makes a bubble bigger than my house." : l.text } : l));
+  s.lines = s.lines.map((l) => (l.beat === "adults" ? { ...l, text: adults[k++] ?? l.text } : l.beat === "me" ? { ...l, text: l.text === "Kestrel. The lowest house in town." ? "Even my whisper makes a bubble bigger than my house." : l.text } : l));
   const p = beatSheetProblems(s, { ...MAP, worst: "" }, card());
   assert.ok(!p.some((x) => /never visibly fail|WORST/.test(x)), JSON.stringify(p));
   // the planner gets fewer, fuller lines (~8.5 words) and the trigger is told not to copy "Until one night the"
-  assert.equal(lengthNumbers(90).lines, 35);
+  assert.equal(lengthNumbers(90).lines, 42);
   assert.match(BEAT_SHEET_TEXT, /never "Until one night the\.\.\."/);
 });
 
 test("beat sheet (round 2): a \"me\" line that shows the hero's rule-visual value counts as the worst at the rule", () => {
-  const c = { ...card(), ruleVisual: { ...card().ruleVisual, hero: { name: "Tilly", shows: "a flashing red 94, so big the sign had to be widened" } } };
+  const c = { ...card(), ruleVisual: { ...card().ruleVisual, hero: { name: "Kestrel", shows: "a flashing red 94, so big the sign had to be widened" } } };
   const s = clone(SCRIPT);
   s.lines = s.lines.map((l) => (l.beat === "me" ? { ...l, text: l.text === "Then there's me." ? l.text : "My sign says 94 and it flashes." } : l));
   assert.ok(!beatSheetProblems(s, { ...MAP, worst: "" }, c).some((x) => /WORST/.test(x)));
   assert.ok(beatSheetProblems(s, { ...MAP, worst: "" }, card()).some((x) => /WORST/.test(x)));
 });
 
-test("length v2: budgets sized to the aim (middle of the band), 9-word lines, the origin at least 18 words; the writer counts each line", async () => {
+test("length v2: budgets sized to the aim (middle of the band), 9-word lines, the origin at least 24 words; the writer counts each line", async () => {
   for (const len of [30, 60, 90, 120, 180]) {
     const b = beatBudgets(len), n = lengthNumbers(len);
     assert.equal(b.reduce((a, x) => a + x.words, 0) <= aimWords(len), true, `${len}`);
     assert.ok(n.aim > n.lo && n.aim < n.hi, `${len}`);
   }
-  assert.equal(aimWords(90), 302);
-  assert.ok(beatBudgets(90).find((x) => x.id === "origin").words >= 18);
+  assert.equal(aimWords(90), 367);
+  assert.ok(beatBudgets(90).find((x) => x.id === "origin").words >= 24);
   assert.equal(beatBudgets(90).find((x) => x.id === "neighbours").lines, 6);
-  assert.deepEqual(hybridLinesSchema().properties.lines.items.required, ["beat", "text", "words"]);
+  assert.deepEqual(hybridLinesSchema().properties.lines.items.required, ["beat", "text", "words", "speaker"]);
   assert.match(HYBRID_PLAN_SYSTEM, /THE THREAT COMES FROM THE RULE'S OWN WORLD/);
   assert.ok(hybridPlanSchema().required.includes("trigger_root"));
   // the writer's self-count and its draft length are logged (the words field is dropped from the saved lines)
@@ -328,8 +329,8 @@ test("length v2: budgets sized to the aim (middle of the band), 9-word lines, th
     globalThis.fetch = async (_u, init) => { const b = JSON.parse(init.body); const data = b.model === "claude-opus-5-5" ? PLAN : /verdicts/.test(JSON.stringify(b.output_config)) ? { verdicts: [{ scores: Object.fromEntries(RUBRIC.map((c) => [c.id, 4])), safe: true, better: "x" }] } : { title: "t", lines, post: SCRIPT.post, map: MAP }; return { ok: true, json: async () => ({ model: b.model, usage: { input_tokens: 10, output_tokens: 10 }, stop_reason: "end_turn", content: [{ type: "text", text: JSON.stringify(data) }] }) }; };
     try { return { result: await writeHybrid({ apiKey: "x", topic: TOPIC, lengthSec: 90, judge: false }) }; } finally { globalThis.fetch = real; }
   })();
-  assert.equal(r.draftWords, 306);
-  assert.deepEqual(r.selfCount, { stated: 306 + SCRIPT.lines.length, real: 306 });
+  assert.equal(r.draftWords, 363);
+  assert.deepEqual(r.selfCount, { stated: 363 + SCRIPT.lines.length, real: 363 });
   assert.ok(r.script.lines.every((l) => !("words" in l)));
 });
 
@@ -346,7 +347,7 @@ test("the threat comes from the rule's own world (owner, on topic 5): a trigger 
 test("rule visual: the plan's parameter with each neighbour's value and the hero's, or null without one", () => {
   const rv = ruleVisualOf(PLAN);
   assert.equal(rv.parameter, "how high your house floats");
-  assert.deepEqual(rv.neighbours.map((n) => n.name), ["Mr. Pell", "Captain Huxworth", "Mrs. Quibble"]);
+  assert.deepEqual(rv.neighbours.map((n) => n.name), ["Mr. Sorrel", "Captain Thistle", "Mrs. Wren"]);
   assert.equal(rv.hero.shows, "half sunk into the ground");
   assert.equal(ruleVisualOf({}), null);
   assert.equal(ruleVisualOf({ rule_visual: { parameter: " " } }), null);
@@ -363,7 +364,7 @@ test("the plan call: Opus 5.5 at low effort, examples first then the rules, both
   assert.equal(HYBRID.plan.effort, "low");
   assert.equal(body.max_tokens, HYBRID.plan.maxTokens);
   assert.match(body.system[0].text, /REFERENCE EXAMPLES/);
-  assert.equal(body.system[1].text, HYBRID_PLAN_SYSTEM);
+  assert.ok(body.system[1].text.startsWith(HYBRID_PLAN_SYSTEM) && /STYLE NOTES FROM 38 POPULAR VIDEOS/.test(body.system[1].text), "the rules, then the pattern bank (patternBank.js) in the same cached block");
   assert.deepEqual(body.system.map((b) => b.cache_control), [{ type: "ephemeral" }, { type: "ephemeral" }]);
   assert.equal(r.costUsd, 0.044); // 1000 in at $4 + 2000 out at $20 per million
   assert.equal(r.card.plantedLine, "Low houses hear everything first.");
@@ -397,7 +398,8 @@ test("writeHybrid: a hard failure gets exactly ONE cheap fix (low effort), even 
   const calls = [];
   const short = { ...clone(SCRIPT), lines: SCRIPT.lines.slice(0, 20) };
   const r = await writeHybrid({ topic: TOPIC, lengthSec: 90, steps: fakes([short, short], calls) });
-  assert.deepEqual(calls, ["plan", "lines", `fix:${HYBRID.fix.effort}:1`, "judge:true"]);
+  // 3 hard notes: too short, and the cut-off last line is no 2-6 word button that calls back the rule or the hook
+  assert.deepEqual(calls, ["plan", "lines", `fix:${HYBRID.fix.effort}:2`, "judge:true"]);
   assert.equal(r.fixed, false);
   assert.ok(r.firstHard.some((x) => /^Too short/.test(x)));
   const calls2 = [];
@@ -406,11 +408,11 @@ test("writeHybrid: a hard failure gets exactly ONE cheap fix (low effort), even 
   assert.equal(calls2.filter((c) => c.startsWith("fix")).length, 1);
 });
 
-test("writeHybrid: an opener-only miss goes to the small opener call; a capped call stops the topic", async () => {
+test("writeHybrid: a missing rule line goes to the one cheap lines fix; a capped call stops the topic", async () => {
   const calls = [];
-  const s = clone(SCRIPT); s.lines[0] = { part: "rule", text: "Poorer people live on the ground and richer people live higher up." };
-  const r = await writeHybrid({ topic: TOPIC, lengthSec: 90, steps: fakes([s], calls) });
-  assert.deepEqual(calls, ["plan", "lines", "opener", "judge:true"]);
+  const s = clone(SCRIPT); s.lines[1] = { part: "rule", beat: "rule", text: "Poorer people live on the ground and richer people live higher up." };
+  const r = await writeHybrid({ topic: TOPIC, lengthSec: 90, steps: fakes([s, SCRIPT], calls) });
+  assert.deepEqual(calls, ["plan", "lines", "fix:low:1", "judge:true"]);
   assert.equal(r.fixed, true);
   const r2 = await writeHybrid({ topic: TOPIC, steps: { writeHybridPlan: async () => { throw Object.assign(new Error("cap"), { cap: true, costUsd: 0 }); } } });
   assert.match(r2.stopped, /^money cap/);
@@ -468,7 +470,7 @@ test("cache: the cached prefix is byte-identical across calls (other topic, leng
   assert.equal(JSON.stringify(systemBlocks(l1.system)), JSON.stringify(systemBlocks(l2.system)));
   // examples first, then the rules; a breakpoint on each; 1 h only when asked, "off" none at all
   assert.match(l1.system[0], /^REFERENCE EXAMPLES/);
-  assert.equal(l1.system[1], HYBRID_LINES_SYSTEM);
+  assert.ok(l1.system[1].startsWith(HYBRID_LINES_SYSTEM) && /STYLE NOTES/.test(l1.system[1]), "the line rules + the pattern bank");
   assert.deepEqual(systemBlocks(l1.system, { ttl: "1h" }).map((x) => x.cache_control), [{ type: "ephemeral", ttl: "1h" }, { type: "ephemeral", ttl: "1h" }]);
   assert.ok(systemBlocks(l1.system, { ttl: "off" }).every((x) => !x.cache_control));
   assert.equal(HYBRID.cacheTtl, "5m");
@@ -536,8 +538,8 @@ test("pad check: a little short (within 10% of the minimum) is only flagged, no 
   const calls = [];
   await writeHybrid({ topic: TOPIC, lengthSec: 90, steps: fakes([s], calls) });
   assert.deepEqual(calls, ["plan", "lines", "judge:true"]);
-  // the real 2026-11-08 case: 264 words for a 286 minimum is now flagged, not a $0.034 fix
-  assert.ok(264 >= Math.ceil(lo * (1 - SHORT_GRACE)));
+  // the 2026-11-08 case (264 words for a 286 minimum), at the formula pace 320 for 347 is now flagged, not a $0.034 fix
+  assert.ok(320 >= Math.ceil(lo * (1 - SHORT_GRACE)));
   const short = { ...clone(SCRIPT), lines: SCRIPT.lines.slice(0, 20) };
   assert.ok(hybridChecks({ script: short, skeleton: MAP, card: card(), lengthSec: 90 }).hard.some((x) => /^Too short/.test(x)));
 });
@@ -593,4 +595,58 @@ test("app: the plan stays with the draft (not on the run, not in the library); b
   const worst = worstCaseUsd(HYBRID.plan.model, HYBRID.plan.maxTokens, 8000) + worstCaseUsd(HYBRID.lines.model, HYBRID.lines.maxTokens, 10000) + worstCaseUsd(HYBRID.fix.model, HYBRID.fix.maxTokens, 12000) + worstCaseUsd("claude-sonnet-5-5", HYBRID.judge.maxTokens, 4000);
   assert.ok(worst < APP_HYBRID.capUsd, `worst ${worst}`);
   assert.equal(APP_HYBRID.judge, true);
+});
+
+// ---------- the story judge: three versions, one cheap judge call, the best kept, every score logged (owner, 2026-11-13) ----------
+import { CRITERIA_IDS, pickBest, readStoryScores, STORY_JUDGE_SYSTEM, storyJudgePrompt, storyJudgeSchema, VERSION_NOTES } from "../supabase/functions/_shared/blockyWorlds/storyJudge.js";
+
+test("story judge: criteria, schema, prompt, scores read and clamped, the pick prefers a draft the checks accept", () => {
+  assert.deepEqual([...CRITERIA_IDS], ["hook", "rule", "examples", "stake", "plantpay", "twist", "lastline", "visible"]);
+  for (const id of CRITERIA_IDS) assert.match(STORY_JUDGE_SYSTEM, new RegExp(`- ${id}:`));
+  assert.deepEqual(storyJudgeSchema().properties.versions.items.required, ["version", ...CRITERIA_IDS, "note"]);
+  assert.match(storyJudgePrompt([SCRIPT, SCRIPT], { topic: "t" }), /VERSION 1[\s\S]*VERSION 2/);
+  const sc = readStoryScores({ versions: [{ version: 1, hook: 7, rule: 9, examples: 99, stake: 5, plantpay: 5, twist: -3, lastline: 8, visible: 6, note: "n" }, { version: 3, hook: 5, rule: 5, examples: 5, stake: 5, plantpay: 5, twist: 5, lastline: 5, visible: 5, note: "" }] }, 3);
+  assert.equal(sc[0].scores.examples, 10);
+  assert.equal(sc[0].scores.twist, 0);
+  assert.equal(sc[1].total, 0, "a version the judge left out scores 0");
+  assert.equal(sc[2].total, 50);
+  // the pick: no hard problem beats a higher score; then the total; then fewer advisory notes
+  assert.equal(pickBest([{ hard: 1, advisory: 0, total: 99 }, { hard: 0, advisory: 3, total: 40 }]), 1);
+  assert.equal(pickBest([{ hard: 0, advisory: 0, total: 60 }, { hard: 0, advisory: 0, total: 80 }, { hard: 0, advisory: 0, total: 70 }]), 1);
+  assert.equal(pickBest([{ hard: 0, advisory: 2, total: 70 }, { hard: 0, advisory: 1, total: 70 }]), 1);
+  assert.equal(pickBest([{ hard: 2, advisory: 0, total: 10 }, { hard: 1, advisory: 0, total: 5 }]), 1, "all refused: the fewest hard problems");
+  assert.equal(VERSION_NOTES.length, 3);
+});
+
+test("writeHybrid with versions: 3 (the default for board 'prefer', the Studio engine): three drafts, ONE judge call, the best kept, per-criterion scores logged", async () => {
+  const calls = [];
+  const drafts = [clone(SCRIPT), clone(SCRIPT), clone(SCRIPT)];
+  drafts[2].lines = drafts[2].lines.map((l) => (l.text.startsWith("Rumble!") ? { ...l, text: "Rumble! The hill slid and every house leaned over the river." } : l));
+  const notes = [];
+  const steps = {
+    ...fakes([], calls),
+    writeHybridLines: async ({ note }) => { notes.push(note ?? ""); calls.push("lines"); return { script: clone(drafts.shift()), skeleton: clone(MAP), costUsd: 0.04, usage: {} }; },
+    judgeStories: async ({ scripts }) => { calls.push("storyJudge"); assert.equal(scripts.length, 3); return { scores: readStoryScores({ versions: [
+      { version: 1, hook: 6, rule: 6, examples: 5, stake: 5, plantpay: 5, twist: 5, lastline: 4, visible: 6, note: "soft end" },
+      { version: 2, hook: 8, rule: 8, examples: 7, stake: 7, plantpay: 7, twist: 8, lastline: 9, visible: 8, note: "ok" },
+      { version: 3, hook: 7, rule: 7, examples: 7, stake: 7, plantpay: 7, twist: 7, lastline: 7, visible: 7, note: "ok" }] }, 3), best: 2, costUsd: 0.008, usage: {} }; },
+  };
+  const r = await writeHybrid({ topic: TOPIC, examples: [], lengthSec: 90, board: "prefer", steps });
+  assert.deepEqual(calls.filter((c) => c !== "lines"), ["plan", "storyJudge", "judge:true"]);
+  assert.equal(calls.filter((c) => c === "lines").length, 3);
+  assert.equal(notes[0], "", "the first version has no angle");
+  assert.ok(notes[1].includes("punchier") && notes[2].includes("ending"));
+  assert.equal(r.versions.length, 3);
+  assert.deepEqual(r.versions.map((v) => v.picked), [false, true, false]);
+  assert.equal(r.pick, 2);
+  for (const v of r.versions) for (const id of CRITERIA_IDS) assert.equal(typeof v.scores[id], "number", `${v.version}.${id}`);
+  assert.ok(r.versions[1].total > r.versions[0].total);
+  assert.equal(r.calls.storyJudge.usd, 0.008);
+  // cost = plan + 3 lines + the story judge + the library judge
+  assert.equal(r.costUsd, Number((0.06 + 0.12 + 0.008 + 0.01).toFixed(5)));
+  // versions: 1 (the default outside Studio) keeps the old single-draft flow
+  const calls1 = [];
+  const r1 = await writeHybrid({ topic: TOPIC, examples: [], lengthSec: 90, steps: fakes([SCRIPT], calls1) });
+  assert.deepEqual(calls1, ["plan", "lines", "judge:true"]);
+  assert.equal(r1.versions, undefined);
 });

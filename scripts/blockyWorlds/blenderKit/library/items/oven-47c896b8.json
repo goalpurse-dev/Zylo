@@ -1,0 +1,18 @@
+{
+ "id": "oven-47c896b8",
+ "name": "oven",
+ "kind": "prop",
+ "about": "Steel oven with glowing window",
+ "code": "def oven(name, loc):\n    root = empty(name, loc)\n    box(name + '_b', (3.0, 2.2, 3.0), (0, 0, 1.5), mat('oven_steel', hexc('#c8ccd4'), 0.3, metal=0.5), 0.1, parent=root)\n    box(name + '_g', (2.0, 0.1, 1.4), (0, -1.12, 1.6), mat('oven_glow', hexc('#ff9a3a'), 0.3, emit=hexc('#ff8a2a'), estr=3.0), 0.03, parent=root)\n    for i in range(3):\n        sphere(name + '_k%d' % i, 0.14, (-0.8 + i * 0.8, -1.12, 2.7), mat('knob', hexc('#2a2d33'), 0.4), parent=root, seg=8)\n    return root",
+ "source": {
+  "run": "plane1",
+  "shots": [
+   13
+  ],
+  "title": "The Town That Lives in a Plane"
+ },
+ "status": "approved",
+ "approved": true,
+ "createdAt": "2026-11-13T20:58:51.454Z",
+ "decidedAt": "2026-11-13T21:32:09.421Z"
+}

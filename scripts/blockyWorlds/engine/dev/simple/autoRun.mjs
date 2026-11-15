@@ -19,7 +19,10 @@ const say = (m) => { const l = `[${((Date.now() - t0) / 1000).toFixed(1)} s] ${m
 const stage = async (name, fn) => { const s = Date.now(); try { return await fn(); } finally { T[name] = +((Date.now() - s) / 1000).toFixed(1); fs.writeFileSync(path.join(out, "stages.json"), JSON.stringify({ seconds: T, usd: C }, null, 1)); } };
 // the money: script <= 0.12, scenes <= 0.06; the rest goes to videoRun (its own worst case: the director, the voice,
 // the storyboard + prompts caps, the review, RunPod) and must fit in what is left
-const SCRIPT_CAP = 0.12, SCENES_CAP = 0.06;
+// --writer hybrid: the PRODUCTION writer for a typed topic (blocky-worlds-api writeScript: topic ideas in launch board mode,
+// the user's first card, pickRecipe + examplesFor, writeHybrid board) with its formula checks (formula.js)
+const HYBRID_W = arg("writer") === "hybrid";
+const SCRIPT_CAP = Number(arg("script-usd", HYBRID_W ? 0.25 : 0.12)), SCENES_CAP = 0.06;
 if (!argv.includes("--yes")) { say(`plan: "${topic}" ${LEN} s; caps script $${SCRIPT_CAP}, scenes $${SCENES_CAP}, the run $${(CAP - SCRIPT_CAP - SCENES_CAP).toFixed(2)}; dry run`); process.exit(0); }
 const { envKey } = await import(pathToFileURL(path.join(ENGINE, "voice", "eleven.mjs")).href);
 const apiKey = envKey("ANTHROPIC_KEY") ?? envKey("ANTHROPIC_API_KEY");
@@ -32,7 +35,17 @@ const prev = argv.includes("--reuse") && fs.existsSync(path.join(out, "stages.js
 if (prev) { Object.assign(T, { script: prev.seconds.script, scenes: prev.seconds.scenes }); Object.assign(C, { script: prev.usd.script, scenes: prev.usd.scenes, earlier_attempt: +(prev.total - prev.usd.script - prev.usd.scenes).toFixed(5) }); }
 const results = prev ? JSON.parse(fs.readFileSync(path.join(out, "results.json"), "utf8")) : await stage("script", async () => {
   // --card <file>: a library idea card (the customer picked it); else ideas from the topic
-  const card = arg("card") ? JSON.parse(fs.readFileSync(arg("card"), "utf8")) : await (async () => { const ideas = await LLM.writeTopicIdeas({ apiKey, topic, meter }); return (ideas.cards ?? ideas.ideas ?? ideas.items ?? ideas)[0] ?? ideas; })();
+  const card = arg("card") ? JSON.parse(fs.readFileSync(arg("card"), "utf8")) : await (async () => { const ideas = await LLM.writeTopicIdeas({ apiKey, topic, meter, ...(HYBRID_W ? { board: true } : {}) }); return (ideas.cards ?? ideas.ideas ?? ideas.items ?? ideas)[0] ?? ideas; })();
+  if (HYBRID_W) {
+    const { pickRecipe, RECIPES } = await import(pathToFileURL(path.join(SHARED, "recipes.js")).href);
+    const { examplesFor } = await import(pathToFileURL(path.join(SHARED, "referenceTexts.js")).href);
+    const { APP_HYBRID } = await import(pathToFileURL(path.join(SHARED, "hybridApp.js")).href);
+    const picked = pickRecipe({ topic, card }), recipe = { ...picked, what: RECIPES[picked.id]?.what };
+    const h = await LLM.writeHybrid({ apiKey, topic, recipe, examples: examplesFor(recipe.id), lengthSec: LEN, meter, judge: APP_HYBRID.judge, idea: { ...card, topic }, board: true });
+    if (!h.script?.lines?.length) throw new Error(`the writer returned no script: ${h.stopped ?? "?"}`);
+    const { formulaProblems } = await import(pathToFileURL(path.join(SHARED, "formula.js")).href);
+    return { results: [{ script: h.script, card: { ...card, ...(h.card ?? {}), topic } }], costUsd: meter.spent, writer: { recipe: recipe.id, calls: h.calls, hardChecks: h.checks?.hard ?? [], softChecks: h.checks?.soft ?? [], fixed: h.fixed ?? null, feedback: h.feedback ?? null, formula: formulaProblems(h.script, LEN) } };
+  }
   const w = await LLM.writeScript({ apiKey, idea: card, lengthSec: LEN, meter, maxTokens: 8000 });
   return { results: [{ script: w.script, card }], costUsd: meter.spent };
 });
@@ -58,7 +71,7 @@ say(`scenes: ${scenes.length} ($${C.scenes}, ${T.scenes} s)`);
 const left = +(CAP - C.script - C.scenes - (C.earlier_attempt ?? 0) - Number(arg("spent", 0))).toFixed(3); // --spent: an earlier stopped attempt's spend
 const run = path.join(out, `video-${new Date().toISOString().slice(0, 19).replace(/[-:T]/g, "")}`); // its own storage folder (a shared "video" folder held another run's take: BAD_JOB)
 const r = await stage("video", async () => spawnSync(process.execPath, [path.join(ENGINE, "dev/simple/videoRun.mjs"), "--script", path.join(out, "results.json"), "--pick", "1", "--out", run, "--scenes", path.join(out, "scenes.json"),
-  "--storyboard", "auto", "--storyboard-usd", "0.14", "--prompts-usd", "0.24", "--per-shot", "330", ...(arg("max-fallback") != null ? ["--max-fallback", arg("max-fallback")] : []), "--review-usd", String(arg("review-usd", 0.01)), "--builder-usd", "0", "--prepare-sec", "300", "--chunks", "6", "--max-chunk-sec", "110", "--cap", String(left), "--yes"], { cwd: ENGINE, encoding: "utf8", maxBuffer: 1 << 26 }));
+  "--storyboard", "auto", "--storyboard-usd", String(arg("storyboard-usd", 0.14)), "--prompts-usd", String(arg("prompts-usd", 0.24)), ...(argv.includes("--voice-after") ? ["--voice-after"] : []), "--per-shot", "330", ...(arg("max-fallback") != null ? ["--max-fallback", arg("max-fallback")] : []), "--review-usd", String(arg("review-usd", 0.01)), "--builder-usd", "0", "--prepare-sec", "300", "--chunks", "6", "--max-chunk-sec", "110", "--cap", String(left), "--yes"], { cwd: ENGINE, encoding: "utf8", maxBuffer: 1 << 26 }));
 fs.writeFileSync(path.join(out, "videoRun.out"), `${r.stdout}\n${r.stderr}`);
 const costs = fs.existsSync(path.join(run, "costs.json")) ? JSON.parse(fs.readFileSync(path.join(run, "costs.json"), "utf8")) : {};
 Object.assign(C, costs);

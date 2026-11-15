@@ -1,0 +1,25 @@
+{
+ "id": "kite-c3d421d5",
+ "name": "kite",
+ "kind": "prop",
+ "about": "Red diamond paper kite with a colored tail",
+ "code": "def kite(name, loc, s=1.0):\n    root = empty(name, loc)\n    red = mat('kite_red', hexc('#e03a30'), 0.5)\n    poly_extrude(name + '_body', [(0, 1.2), (0.8, 0), (0, -1.4), (-0.8, 0)], 0.06, (0, 0, 0), red, rot=(90, 0, 0), parent=root)\n    box(name + '_spar', (0.06, 0.05, 2.6), (0, -0.07, -0.1), mat('kite_wood', hexc('#8a5a32'), 0.6), 0.01, parent=root)\n    for i in range(4):\n        box(name + '_tail%d' % i, (0.3, 0.04, 0.16), (0.1 * (i % 2), 0, -1.7 - i * 0.4), mat('kite_t%d' % (i % 2), hexc('#f2c14e' if i % 2 else '#4aa5e8'), 0.5), 0.01, parent=root)\n    root.scale = (s, s, s)\n    return root",
+ "source": {
+  "run": "plane1",
+  "shots": [
+   26,
+   27,
+   29,
+   31,
+   55,
+   56,
+   59,
+   63
+  ],
+  "title": "The Town That Lives in a Plane"
+ },
+ "status": "approved",
+ "approved": true,
+ "createdAt": "2026-11-13T20:58:51.146Z",
+ "decidedAt": "2026-11-13T21:32:09.183Z"
+}

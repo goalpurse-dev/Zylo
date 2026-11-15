@@ -1,0 +1,19 @@
+{
+ "id": "hand-bell-fa5db2e5",
+ "name": "hand_bell",
+ "kind": "prop",
+ "about": "Gold handbell for Teacher Wilda",
+ "code": "def hand_bell(name, loc):\n    root = empty(name, loc)\n    g = mat('bell_gold', hexc('#e2b23a'), 0.25, metal=0.8)\n    cyl(name + '_b', 0.55, 0.7, (0, 0, 0), g, 16, parent=root, r2=0.25)\n    sphere(name + '_c', 0.14, (0, 0, -0.45), g, parent=root, seg=10)\n    cyl(name + '_h', 0.1, 0.5, (0, 0, 0.55), mat('bell_wood', hexc('#7a4a2a'), 0.6), 8, parent=root)\n    return root",
+ "source": {
+  "run": "plane1",
+  "shots": [
+   48,
+   49
+  ],
+  "title": "The Town That Lives in a Plane"
+ },
+ "status": "approved",
+ "approved": true,
+ "createdAt": "2026-11-13T20:58:51.393Z",
+ "decidedAt": "2026-11-13T21:32:09.302Z"
+}

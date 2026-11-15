@@ -6,6 +6,8 @@
 // a hiccup on our side (&fail=story: the builder couldn't show the story); the credits come back.
 // &queue=N: every video first waits in line as #N (all video machines busy), moving up one place every 8 s, with a
 // "starts in about X minutes" ETA (90 s a place); &eta=late: the ETA has already passed ("Almost there"). Then the normal flow.
+// &engine=studio: the Studio director engine (studio.js, 2026-11-13): the Beta label, and a run walks the Studio stages
+// (queued, voice, plan, directing, previews, checking, fixing, rendering, finishing) ~3 s each; &email=1 says "we'll email you".
 import { LENGTHS, DEFAULT_LENGTH, NARRATOR } from "../../../../../supabase/functions/_shared/blockyWorlds/config.js";
 import { MOODS } from "../../../../../supabase/functions/_shared/blockyWorlds/formulas.js";
 import { cardOf, IDEAS_PER_BATCH } from "../../../../../supabase/functions/_shared/blockyWorlds/ideas.js";
@@ -17,6 +19,11 @@ import { problemSpots } from "../../../../../supabase/functions/_shared/blockyWo
 import { failReason } from "../../../../../supabase/functions/_shared/blockyWorlds/contract.js";
 import { errorFromReply } from "../api/blockyWorldsApi";
 import { canFilm, fittingWithSwap } from "../../../../../supabase/functions/_shared/blockyWorlds/boardFit.js";
+import { STUDIO_STAGES, STUDIO_STATUS, studioEtaText } from "../../../../../supabase/functions/_shared/blockyWorlds/studioStages.js";
+import { autoScenePlan, PICKER } from "../../../../../supabase/functions/_shared/blockyWorlds/scenePlan.js";
+import { characterSpec, checkUpload, ROLES } from "../../../../../supabase/functions/_shared/blockyWorlds/characterRef.js";
+import { BLENDER_FLAT } from "../../../../../supabase/functions/_shared/blockyWorlds/blenderPricing.js";
+import { adaptLength, checkStoryText, namesIn } from "../../../../../supabase/functions/_shared/blockyWorlds/adapt.js";
 // the judged library's live ideas (scripts/blockyWorlds/devFixture.mjs), so localhost shows the real, varied ideas
 import LIBRARY from "./libraryFixture.json";
 
@@ -27,12 +34,20 @@ const BLOCKED = Q.get("blocked") === "1", FAIL = Q.get("fail");
 const QUEUE = Math.max(0, Math.min(9, Number(Q.get("queue")) || 0)), LATE = Q.get("eta") === "late";
 // the board-only launch mode (the server's BLOCKY_WORLDS_LAUNCH=board), on by default here so localhost shows what launch
 // customers see: only library ideas the board kit can film, "What we can film", "Move it to our town". &launch=off: as before
-const LAUNCH = Q.get("launch") !== "off", KIT_SIM = ["premise", "line"].includes(Q.get("kit")) ? Q.get("kit") : null;
+// (&engine=studio: no board mode: the Studio engine never refuses a story for the kit, studioBuilds.js)
+const LAUNCH = Q.get("launch") !== "off" && Q.get("engine") !== "studio" && Q.get("as") !== "owner" && Q.get("ui") !== "blender", KIT_SIM = ["premise", "line"].includes(Q.get("kit")) ? Q.get("kit") : null;
 const PLACE_S = 8, PLACE_ETA = 90;
+const STUDIO = Q.get("engine") === "studio" || Q.get("as") === "owner" || Q.get("ui") === "blender", EMAIL = Q.get("email") === "1", STUDIO_STEP_S = Math.max(1, Number(Q.get("step")) || 3);
 // the mock script is the example script, whose planted object is this card's (Grandpa's whistle): the real checks run on it
 const PROTO = EXAMPLE_IDEAS[0];
 const mentions = (row, word) => JSON.stringify(row ?? {}).toLowerCase().includes(word);
-const PAID = ["starter", "pro", "generative"].includes(AS);
+// THE BLENDER MAKER (owner-only first): ?as=owner (or &ui=blender) shows it; its runs walk the Studio stages
+const BLENDER_UI = AS === "owner" || Q.get("ui") === "blender";
+// &step=N (screenshots): each Studio stage lasts N s (default 3)
+const PAID = ["starter", "pro", "generative", "owner"].includes(AS);
+// the Blender page's ONE price: charged at "Write my script" (default here, the server's BLOCKY_WORLDS_PREPAY=on) or &charge=start
+const CHARGE = Q.get("charge") === "start" ? "start" : "script";
+const flatOf = (body) => (body?.flat ? { flat: { credits: BLENDER_FLAT.credits, charge: CHARGE, paidAt: CHARGE === "script" ? new Date().toISOString() : null, keepCredits: BLENDER_FLAT.keepCredits } } : {});
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const id = () => crypto.randomUUID();
 const state = { ideas: new Map(), drafts: new Map(), runs: [], seed: 0, served: new Set() };
@@ -70,6 +85,11 @@ const runView = (r) => {
     const { kind, text } = failReason(r.failCode);
     return { id: r.id, draftId: r.draftId, title: r.title, lengthSec: r.lengthSec, credits: r.credits, createdAt: new Date(r.startedAt).toISOString(), doneAt: new Date(r.startedAt + 6000).toISOString(), status: "failed", stepAt: r.startedAt, pct: 0, post: null, finalUrl: null, downloadUrl: null, poster: null, error: "We couldn't make this video. It's not your fault, and your credits are back.", reason: text, failKind: kind, refunded: true };
   }
+  if (STUDIO) {
+    const i = Math.floor(t / STUDIO_STEP_S), s = STUDIO_STAGES[i] ?? null, end = STUDIO_STAGES.length * STUDIO_STEP_S;
+    const done = !s;
+    return { id: r.id, draftId: r.draftId, title: r.title, lengthSec: r.lengthSec, credits: r.credits, createdAt: new Date(r.startedAt).toISOString(), doneAt: done ? new Date(r.startedAt + end * 1000).toISOString() : null, status: done ? "done" : STUDIO_STATUS[s.stage], stepAt: r.startedAt, engine: "studio", stage: done ? null : s.stage, ...(done ? {} : { etaText: studioEtaText(r.lengthSec), emailWhenReady: EMAIL }), queuePosition: null, etaSec: null, doneEtaSec: null, etaAt: Date.now(), pct: done ? 100 : s.pct, post: done ? r.post : null, finalUrl: done ? "/blocky-worlds/clips/street.mp4" : null, downloadUrl: done ? "/blocky-worlds/clips/street.mp4" : null, poster: done ? "/blocky-worlds/clips/street.jpg" : null, error: null, refunded: false };
+  }
   const status = t < 3 ? "queued" : t < 7 ? "voice" : t < 12 ? "plan" : t < 22 ? "render" : "done";
   // the whole run's % like the server's (render.js reconcile): voice 3, the prepare stages 5-15 (storyboard, plan, prompts,
   // checks, stills, mix: the progress screen walks through STAGES), the chunks 15-95, the finish 95-100
@@ -79,7 +99,7 @@ const runView = (r) => {
 
 export async function devCall(action, body) {
   await wait(action === "writeScript" || action === "rewrite" ? 900 : 350);
-  if (action === "access") return { enabled: false, signedIn: AS !== "guest", plan: AS === "guest" ? null : AS, owner: AS === "owner", tester: true, visible: true, canWrite: PAID, canGenerate: PAID && RENDERER, canRemoveWatermark: AS === "pro" || AS === "generative", mock: true, renderer: RENDERER, lengths: LENGTHS, defaultLength: DEFAULT_LENGTH, prices: PRICES, narrator: { name: NARRATOR.voiceName }, moods: Object.entries(MOODS).map(([k, m]) => ({ id: k, label: m.label })), ideaBatchesLeft: PAID ? 20 : 3, launch: LAUNCH ? "board" : "off", film: LAUNCH ? canFilm() : null };
+  if (action === "access") return { enabled: false, signedIn: AS !== "guest", plan: AS === "guest" ? null : AS, owner: AS === "owner", tester: true, visible: true, canWrite: PAID, canGenerate: PAID && RENDERER, canRemoveWatermark: AS === "pro" || AS === "generative", mock: true, renderer: RENDERER, lengths: LENGTHS, defaultLength: DEFAULT_LENGTH, prices: PRICES, narrator: { name: NARRATOR.voiceName }, moods: Object.entries(MOODS).map(([k, m]) => ({ id: k, label: m.label })), ideaBatchesLeft: PAID ? 20 : 3, launch: LAUNCH ? "board" : "off", film: LAUNCH ? canFilm() : null, engine: STUDIO ? "studio" : "pipeline", beta: STUDIO, scenePlan: BLENDER_UI, blenderUi: BLENDER_UI, roles: BLENDER_UI ? ROLES : null, readyEmail: EMAIL, flat: BLENDER_UI ? { credits: BLENDER_FLAT.credits, charge: CHARGE, keepCredits: BLENDER_FLAT.keepCredits, expireDays: BLENDER_FLAT.expireDays, maxSec: BLENDER_FLAT.priceRowSec } : null };
   if (AS === "guest") fail("SIGN_IN");
   if (action === "ideas" || action === "topicIdeas") {
     // the library first (like the server); once a mood's library is used up, the mock writer, as the live writer would
@@ -119,7 +139,7 @@ export async function devCall(action, body) {
       d.notice = d.check.problems.length ? `It still needs one fix: ${d.check.problems[0]}` : null;
     }
     state.drafts.set(d.id, d);
-    return draftView(d);
+    return { ...draftView(d), ...(action === "writeScript" ? flatOf(body) : {}) };
   }
   if (action === "fixPart") {
     const d = state.drafts.get(body.draftId);
@@ -162,7 +182,7 @@ export async function devCall(action, body) {
     // one video at a time per script (like the server): a double-tapped Try again never charges twice
     const active = state.runs.find((x) => x.draftId === d.id && ["queued", "voice", "plan", "render"].includes(runView(x).status));
     if (active) fail("LIMIT", "This script is already being made. Wait for it to finish.", { runId: active.id });
-    const r = { id: id(), draftId: d.id, title: d.title, lengthSec: d.lengthSec, credits: PRICES[d.lengthSec], post: d.post, narration: narrationOf(d), startedAt: Date.now(), failCode: d.failing ?? null, queue: QUEUE };
+    const r = { id: id(), draftId: d.id, title: d.title, lengthSec: d.lengthSec, credits: body.flat ? BLENDER_FLAT.credits : PRICES[d.lengthSec], post: d.post, narration: narrationOf(d), startedAt: Date.now(), failCode: d.failing ?? null, queue: QUEUE };
     state.runs.unshift(r);
     return runView(r);
   }
@@ -171,5 +191,28 @@ export async function devCall(action, body) {
   if (action === "event") return { ok: true };
   if (action === "remove") { state.runs = state.runs.filter((r) => r.id !== body.runId); return { ok: true }; }
   if (action === "drafts") return { drafts: [...state.drafts.values()].map(draftView), writesLeft: 14 };
+  // THE BLENDER MAKER's actions (owner-only first): the scene plan, "explain more" and the character reference, all free here
+  if (action === "scenePlan") { const d = state.drafts.get(body.draftId); return { ...autoScenePlan(d?.lines ?? []), locations: PICKER }; }
+  if (action === "adaptStory") {
+    const t = checkStoryText(body.text);
+    if (!t.ok) fail("BAD_INPUT", t.error);
+    await wait(900);
+    // the mock adapter: the hook first, the rule line, then the user's own sentences (the real one is adapt.js on the server)
+    const own = t.text.split(/(?<=[.!?])\s+/).filter(Boolean).slice(0, 28);
+    const lines = [{ part: "rule", text: "And I just saved the whole town with one wild idea!" }, { part: "tour", text: "You see, in this town, " + (own[0] ?? "nothing is normal.").replace(/^in (my|this) town,?\s*/i, "").replace(/^./, (c) => c.toLowerCase()) }, ...own.slice(1).map((text) => ({ part: "tour", text }))];
+    const lengthSec = adaptLength(t.words);
+    const script = normalizeScript({ title: "Your Story", lines, post: { title: "Your Story" } });
+    const d = { id: id(), source: "own", ideaId: null, card: { adapted: true, characters: body.characters ?? [] }, title: script.title, lengthSec, lines: script.lines, post: script.post, check: { ...checkScript(script, lengthSec, "own"), problems: [], kind: "own" }, updatedAt: new Date().toISOString() };
+    state.drafts.set(d.id, d);
+    return { ...draftView(d), ...flatOf(body), adapted: { kept: { characters: namesIn(t.text), twist: "" }, changed: ["mock"], stillOpen: [] } };
+  }
+  if (action === "characterRef") {
+    const up = checkUpload({ image: body.image, mediaType: body.mediaType });
+    if (!up.ok) fail("BAD_INPUT", up.error);
+    await wait(1100);
+    // &photo=1 simulates a photo of a real person (refused); otherwise a fixed avatar look
+    if (Q.get("photo") === "1") fail("BAD_INPUT", characterSpec({ kind: "real_person_photo" }).error);
+    return { spec: characterSpec({ kind: "roblox_avatar", name_hint: ["Spiky Hoodie Kid", "Captain Cape", "Bubble Bob", "Night Ninja"][state.seed++ % 4], skin: "#f1dfc6", hair_style: ["spiky", "bob", "cap", "messy"][state.seed % 4], hair_color: "#3a2a1a", shirt: ["#7ed321", "#ff6fa8", "#5cc8ff", "#ffd23f"][state.seed % 4], shirt_pattern: "stripes", shirt_color2: "#ffffff", pants: "#3a3f55", accessories: ["cap"], summary: "mock look" }, body.role).spec };
+  }
   return fail("BAD_INPUT", "Unknown action.");
 }

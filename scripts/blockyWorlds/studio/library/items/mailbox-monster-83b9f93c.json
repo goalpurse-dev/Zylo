@@ -1,0 +1,37 @@
+{
+ "id": "mailbox-monster-83b9f93c",
+ "name": "Mailbox Monster",
+ "codeName": "mmon",
+ "kind": "creature",
+ "about": "Mailbox Monster: huge metal body of mailboxes on wheels, mailbox head, glowing eyes, mouth slot, chest mailbox door",
+ "creature": true,
+ "size": {
+  "w": 4.3,
+  "h": 6,
+  "d": 2.41
+ },
+ "height": 6,
+ "prims": 27,
+ "glow": 3,
+ "code": "const p=api.p;const s=p.sit||0;const ln=p.lean||0;const o=p.open||0;const m=p.mouth||0;const r=p.roll||0;const y=-1.1*s;const B='#3d6cb9';const G='#9aa3ad';const D='#2b2f36';const R='#d63031';for(let i=0;i<2;i++){const sd=i*2-1;api.cyl(0.75,0.75,0.6,[sd*1.4,0.75,0],D,{rot:[r,0,1.5708]});api.block([0.62,0.2,1.2],[sd*1.4,0.75,0],'#777',{rot:[r,0,0]});for(let j=0;j<3;j++){api.block([0.8,0.55,0.7],[sd*1.6,3.4+y-j*0.6,0.3],j==1?R:G);}api.ball(0.3,[sd*1.6,1.6+y,0.4],D);}api.block([2.2,2.2,2],[0,2.6+y,0],B);api.cyl(1.1,1.1,2,[0,3.7+y,0],B,{rot:[1.5708,0,0]});api.block([0.9,0.7,0.3],[0,2.7+y,1.1],G);api.block([0.7,0.5,0.05],[0,2.7+y,1.24],'#ffd36b',{glow:2*o});const a=o*1.4;api.block([0.8,0.6,0.06],[0,2.4+y+0.3*Math.cos(a),1.28+0.3*Math.sin(a)],'#c0c4cc',{rot:[a,0,0]});const hy=5.1+y-3*ln;const hz=2.6*ln;api.block([0.8,0.8,0.8],[0,4.5+y-1.5*ln,1.2*ln],D);api.block([1.8,1.1,1.6],[0,hy,hz],G);api.cyl(0.9,0.9,1.6,[0,hy+0.55,hz],G,{rot:[1.5708,0,0]});for(let i=0;i<2;i++){const sd=i*2-1;api.ball(0.24,[sd*0.45,hy+0.3,hz+0.8],'#fff3a0',{glow:2.5});api.ball(0.1,[sd*0.45,hy+0.3,hz+1.02],'#111111');}api.block([1.1,0.14+0.4*m,0.06],[0,hy-0.28,hz+0.81],'#ff8c2a',{glow:1.8});api.block([0.1,0.9,0.1],[1.0,hy+0.9,hz],R);api.block([0.5,0.3,0.08],[1.25,hy+1.2,hz],R);",
+ "tags": [
+  "mmon"
+ ],
+ "approved": false,
+ "status": "pending",
+ "preview": "thumbs/mailbox-monster-83b9f93c.jpg",
+ "source": {
+  "run": "studio testC (2026-11-13)",
+  "model": "claude-opus-5-5",
+  "story": "The Mailbox Monster (mailbox script)"
+ },
+ "quality": {
+  "cuts": 38,
+  "passing": 38,
+  "share": 1
+ },
+ "createdAt": "2026-11-13T17:35:11.927Z",
+ "updatedAt": "2026-11-13T17:35:11.928Z",
+ "reviewedAt": null,
+ "previewKind": "showcase"
+}

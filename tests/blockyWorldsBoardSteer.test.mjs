@@ -11,6 +11,7 @@ import { EXAMPLE_IDEAS } from "../supabase/functions/_shared/blockyWorlds/exampl
 import { HYBRID_LINES_SYSTEM, HYBRID_PLAN_SYSTEM, hybridChecks, hybridLinesSystem, hybridPlanSchema, hybridPlanSystem, planCard } from "../supabase/functions/_shared/blockyWorlds/hybrid.js";
 import { draftCheck, fixPart, hybridLinesRequest, hybridPlanRequest, writeHybrid, writeTopicIdeas } from "../supabase/functions/_shared/blockyWorlds/llm.js";
 import { problemSpots } from "../supabase/functions/_shared/blockyWorlds/protocol.js";
+import { patternNotes } from "../supabase/functions/_shared/blockyWorlds/patternBank.js";
 
 const S = (...texts) => ({ title: "t", lines: texts.map((text, i) => ({ part: i === 0 ? "rule" : i < 4 ? "tour" : "climax", text })), post: { title: "t" } });
 const filler = (n) => Array.from({ length: n }, (_, i) => `Mrs. Pell waved at me ${i + 1} times.`);
@@ -61,9 +62,16 @@ test("the hybrid planner and line writer get the kit as hard rules in launch mod
   assert.ok(lines.includes(kitBlock(BOARD_KIT, "lines")));
   assert.match(lines, /Return only the JSON object: the title/);
   const req = hybridPlanRequest({ topic: "x", board: true }), off = hybridPlanRequest({ topic: "x" });
-  assert.equal(req.system[1], plan);
-  assert.equal(off.system[1], HYBRID_PLAN_SYSTEM);
-  assert.equal(hybridLinesRequest({ plan: {}, topic: "x", board: true }).system[1], lines);
+  // the pattern notes (patternBank.js, with the story shape) follow the system text
+  assert.equal(req.system[1], `${plan}
+
+${patternNotes("plan")}`);
+  assert.equal(off.system[1], `${HYBRID_PLAN_SYSTEM}
+
+${patternNotes("plan")}`);
+  assert.equal(hybridLinesRequest({ plan: {}, topic: "x", board: true }).system[1], `${lines}
+
+${patternNotes("lines")}`);
   // the plan says its kit world and what it moved; the look is one of the 5
   const schema = hybridPlanSchema({ board: true });
   assert.deepEqual(schema.properties.world.properties.creature_look.enum, [...BOARD_KIT.creatures.map((c) => c.id), "none"]);
@@ -83,11 +91,12 @@ test("writeHybrid passes the board switch and the move note to the plan and the 
   };
   await writeHybrid({ topic: "t", steps, board: true, note: "Move the story into the world we can film" });
   assert.equal(seen.plan.board, true);
-  assert.equal(seen.plan.note, "Move the story into the world we can film");
+  assert.ok(seen.plan.note.startsWith("Move the story into the world we can film"), "the move note first, then the fresh names");
+  assert.match(seen.plan.note, /FRESH NAMES FOR THIS STORY/);
   assert.equal(seen.lines.board, true);
   await writeHybrid({ topic: "t", steps });
   assert.equal(seen.plan.board, undefined, "off: the call is as before");
-  assert.equal(seen.plan.note, undefined);
+  assert.match(seen.plan.note, /^FRESH NAMES FOR THIS STORY/, "only the fresh names without a note");
 });
 
 test("the free kit check blocks in the hybrid checks, draftCheck (written, own, hybrid) only in launch mode", () => {
@@ -100,8 +109,9 @@ test("the free kit check blocks in the hybrid checks, draftCheck (written, own, 
   }
   // the endpoint re-checks with the switch at quote / start (before the charge) and passes it to every writer
   const src = readFileSync(new URL("../supabase/functions/blocky-worlds-api/index.ts", import.meta.url), "utf8");
-  assert.match(src, /draftCheck\(script, lengthSec, kindOf\(d\), PROVIDER === "mock" \? null : d\.card \?\? null, \{ board: LAUNCH_BOARD \}\)/);
-  for (const fn of ["writeTopicIdeas", "writeIdeas", "writeHybrid", "rewriteHybrid", "writeScript", "fixPart"]) assert.ok(src.split("\n").some((l) => l.includes(`${fn}({`) && l.includes("board: LAUNCH_BOARD")), fn);
+  assert.match(src, /draftCheck\(script, lengthSec, kindOf\(d\), PROVIDER === "mock" \? null : d\.card \?\? null, \{ board: KIT \}\)/); // KIT = LAUNCH_BOARD unless the Studio engine ("prefer")
+  for (const fn of ["writeTopicIdeas", "writeIdeas", "writeHybrid", "rewriteHybrid", "writeScript", "fixPart"]) assert.ok(src.split("\n").some((l) => l.includes(`${fn}({`) && l.includes("board: KIT")), fn);
+  assert.match(src, /const KIT: boolean \| "prefer" = STUDIO_ON \? KIT_PREFER : LAUNCH_BOARD;/);
   assert.match(src, /const move = action === "rewrite" && body\?\.move === true;/);
 });
 

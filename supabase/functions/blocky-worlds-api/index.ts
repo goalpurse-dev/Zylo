@@ -4,7 +4,8 @@
 //
 // Switches (function secrets):
 //   BLOCKY_WORLDS_ACCESS=owner|allowlist|everyone   who may see and use the template at all (_shared/blockyWorlds/gate.js).
-//                                    Default (unset or unknown) owner: only ADMIN_EMAILS; allowlist adds
+//                                    Default (unset or unknown) owner: only the Blocky owner list (gate.js; secret
+//                                    BLOCKY_WORLDS_OWNER_EMAILS may override it; ADMIN_EMAILS opens nothing here); allowlist adds
 //                                    BLOCKY_WORLDS_TEST_USERS; everyone is launch. Until everyone, the owner's and
 //                                    testers' runs are env "test". Everyone else gets OFF on every action and a bare
 //                                    { visible: false } from `access`. (BLOCKY_WORLDS_ENABLED is retired: it opens nothing.)
@@ -16,6 +17,10 @@
 //   BLOCKY_WORLDS_RENDERER=runpod    video making on (docs/blocky-worlds-pipeline.md), and only when RunPod and the
 //                                    callback secret are configured too (renderSupabase.ts); otherwise start refuses
 //                                    BEFORE anything is charged. A tester's dryRun still runs every check and the price
+//   BLOCKY_WORLDS_ENGINE=studio      (2026-11-13) new videos are made by the Studio worker (_shared/blockyWorlds/studio.js,
+//                                    scripts/blockyWorlds/studioWorker/): Sonnet director + 1 fix round. The kit checks
+//                                    always run before the charge; start refuses (nothing charged) without a live worker.
+//                                    Unset / anything else: the RunPod pipeline above. docs/blocky-worlds-launch.md
 // The protocol (docs/blocky-worlds-protocol.md): "Pick an idea" serves unseen ideas from the judged library first; every
 // source becomes a complete idea card; then card -> beat sheet -> script, each step checked and retried on its own.
 // Learning: picked / rewritten / generated / downloaded / thumbs are counted per library idea (event action).
@@ -28,14 +33,18 @@ import { adminEmailList } from "../_shared/contentMachine/adminGuard.js";
 import { ERRORS, FAILED_MESSAGE, failReason } from "../_shared/blockyWorlds/contract.js";
 import { DEFAULT_LENGTH, LENGTHS, NARRATOR } from "../_shared/blockyWorlds/config.js";
 import { canGenerate, canRemoveEndCard, canWrite, endCardFor } from "../_shared/blockyWorlds/access.js";
-import { accessModeFrom, closedReply, guestAllowed, viewerAccess } from "../_shared/blockyWorlds/gate.js";
+import { accessModeFrom, blockyOwners, closedReply, guestAllowed, viewerAccess } from "../_shared/blockyWorlds/gate.js";
 import { costBasisUsd, PRICES, toolKey } from "../_shared/blockyWorlds/pricing.js";
+import { BLENDER_FLAT } from "../_shared/blockyWorlds/blenderPricing.js";
+import { studioFullCostUsd } from "../_shared/blockyWorlds/studio.js";
+import { KIT_PREFER, studioBuilds, studioIdeaOk } from "../_shared/blockyWorlds/studioBuilds.js";
 import { DEFAULT_SETTINGS, decide, WRITING } from "../_shared/blockyWorlds/guard.js";
 import { MOODS } from "../_shared/blockyWorlds/formulas.js";
 import { cardOf, DAILY_IDEA_BATCHES, FREE_IDEA_BATCHES, IDEAS_PER_BATCH } from "../_shared/blockyWorlds/ideas.js";
 import { checkScript, narrationOf, normalizeScript, PART_IDS, scriptFromText } from "../_shared/blockyWorlds/script.js";
 import { topicProblem } from "../_shared/blockyWorlds/safety.js";
-import { cardFromScript, CACHE_TTLS, draftCheck, fixPart, HYBRID, moneyMeter, providerFrom, repairOpener, rewriteHybrid, writeBeats, writeHybrid, writeIdeas, writeScript, writeTopicIdeas } from "../_shared/blockyWorlds/llm.js";
+import { cardFromScript, CACHE_TTLS, draftCheck, fixPart, HYBRID, moneyMeter, providerFrom, repairOpener, rewriteHybrid, writeBeats, writeHybrid, writeIdeaPool, writeIdeas, writeScript, writeTopicIdeas } from "../_shared/blockyWorlds/llm.js";
+import { ideaKey } from "../_shared/blockyWorlds/ideaEngine.js";
 import { pickRecipe, RECIPES } from "../_shared/blockyWorlds/recipes.js";
 import { examplesByIds, examplesFor } from "../_shared/blockyWorlds/referenceTexts.js";
 import { APP_HYBRID, callLogLines, hybridCard, hybridChecksRow, hybridBeats, runCard, stripForLibrary } from "../_shared/blockyWorlds/hybridApp.js";
@@ -44,6 +53,11 @@ import { cardProblems, problemSpots } from "../_shared/blockyWorlds/protocol.js"
 import { queueInfo, renderConfigured, renderRuntime } from "../_shared/blockyWorlds/renderSupabase.ts";
 import { canFilm, canFilmLine, fittingWithSwap, launchModeFrom, moveNote } from "../_shared/blockyWorlds/boardFit.js";
 import { boardOnlyBlocked, productionSettings, stageOf } from "../_shared/blockyWorlds/render.js";
+import { autoScenePlan, cleanScenePlan, PICKER } from "../_shared/blockyWorlds/scenePlan.js";
+import { adaptLength, adaptStory, checkStoryText } from "../_shared/blockyWorlds/adapt.js";
+import { characterSpec, charactersNote, checkUpload, cleanCharacters, readCharacter, ROLES, roleOf } from "../_shared/blockyWorlds/characterRef.js";
+import { engineFrom, readyEmailOn, STUDIO, studioEtaText, studioStageOf } from "../_shared/blockyWorlds/studio.js";
+import { studioQueueInfo, studioWorkerAlive } from "../_shared/blockyWorlds/studioSupabase.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -54,21 +68,40 @@ const flag = (k: string) => (Deno.env.get(k) ?? "").trim().toLowerCase();
 const ACCESS = accessModeFrom(Deno.env.get("BLOCKY_WORLDS_ACCESS"));
 const OPEN = ACCESS === "everyone";
 const TESTERS = adminEmailList(Deno.env.get("BLOCKY_WORLDS_TEST_USERS"));
-const OWNERS = adminEmailList(Deno.env.get("ADMIN_EMAILS"));
+const OWNERS = blockyOwners(Deno.env.get("BLOCKY_WORLDS_OWNER_EMAILS"));
 const PAID_OFF = flag("BLOCKY_WORLDS_PAID_CALLS") === "off";
+// BLOCKY_WORLDS_PREPAY=on (after migration 20261216200000): the Blender page charges its flat price at "Write my script"
+const PREPAY = flag("BLOCKY_WORLDS_PREPAY") === "on";
 const PROVIDER = providerFrom(Deno.env.get("BLOCKY_WORLDS_LLM"));
 // the hybrid writer for typed topics (default on; the mock provider keeps the free old path)
 const HYBRID_ON = flag("BLOCKY_WORLDS_HYBRID") !== "off" && PROVIDER === "anthropic";
 const CACHE_TTL: string = (CACHE_TTLS as readonly string[]).includes(flag("BLOCKY_WORLDS_CACHE_TTL")) ? flag("BLOCKY_WORLDS_CACHE_TTL") : HYBRID.cacheTtl;
-// on only when it says runpod AND everything a run needs is configured: a half-configured renderer never charges anyone
-const RENDERER = (Deno.env.get("BLOCKY_WORLDS_RENDERER") ?? "").trim() === "runpod" && renderConfigured() ? "runpod" : "";
+const envGet = (k: string) => Deno.env.get(k) ?? "";
+// THE ENGINE (2026-11-13, _shared/blockyWorlds/studio.js): BLOCKY_WORLDS_ENGINE=studio -> new videos are directed by the
+// Studio worker (Sonnet director + 1 fix round, scripts/blockyWorlds/studioWorker/); anything else: the RunPod pipeline.
+// A run records its engine at the charge (blocky_worlds_start_run p_engine), so a switch never moves a running video.
+const ENGINE = engineFrom(envGet);
+const STUDIO_ON = ENGINE === "studio";
+// THE IDEA ENGINE (ideaEngine.js, owner 2026-11-14): Opus writes a pool of ~40 ideas, a judge keeps the best 10 (the best 1 for "AI can decide"),
+// near-duplicates of the library, the examples and the log of ideas already given out (db blocky_worlds_idea_log) are rejected. On by default
+// with the Studio engine, BLOCKY_WORLDS_IDEA_ENGINE=on|off overrides.
+const IDEA_ENGINE = (flag("BLOCKY_WORLDS_IDEA_ENGINE") === "on" || (STUDIO_ON && flag("BLOCKY_WORLDS_IDEA_ENGINE") !== "off")) && PROVIDER === "anthropic";
+// BLOCKY_WORLDS_READY_EMAIL=on: the sweeper emails "your video is ready" (studioSupabase.ts); the page says so
+const READY_EMAIL = readyEmailOn(envGet);
+// on only when it says runpod AND everything a run needs is configured: a half-configured renderer never charges anyone.
+// Studio: the switch is enough here; start also needs a live worker (studioWorkerAlive), checked before the charge.
+const RENDERER = STUDIO_ON ? "studio" : (Deno.env.get("BLOCKY_WORLDS_RENDERER") ?? "").trim() === "runpod" && renderConfigured() ? "runpod" : "";
 const BUCKET = "blocky-worlds-renders";
 // BOARD-ONLY LAUNCH MODE (owner, 2026-11-12; _shared/blockyWorlds/boardFit.js): BLOCKY_WORLDS_LAUNCH=board shows only
 // library ideas the board kit can film, gives the writers the kit as hard rules and checks every script against the kit
 // before the charge; BLOCKY_WORLDS_BOARD_ONLY=on adds the strict render (no old-planner lines: a miss is refunded) and
 // implies launch mode. Both off by default; a secret change switches them (no code deploy).
-const envGet = (k: string) => Deno.env.get(k) ?? "";
-const LAUNCH_BOARD = launchModeFrom(envGet);
+const LAUNCH_BOARD = launchModeFrom(envGet) && !STUDIO_ON;
+// THE KIT for every writer and check (owner, 2026-11-13, studioBuilds.js): the Studio engine never refuses a story for
+// "not in the kit": the kit is a PREFERENCE ("prefer"), unknown things go on the run's Studio builds list, and only a
+// brand, a famous name, unsafe words or a story with nothing to show blocks (with Fix it). Otherwise the board mode
+// (true: hard kit rules + checks) or nothing, as before.
+const KIT: boolean | "prefer" = STUDIO_ON ? KIT_PREFER : LAUNCH_BOARD;
 /** the library rows the picker may show: in launch mode only those the board kit can film (computed at read time) */
 const LIBRARY_LIMIT = LAUNCH_BOARD ? 200 : 60;
 
@@ -140,6 +173,8 @@ function draftView(d: any) {
     credits: PRICES[d.length_sec] ?? null,
     check: { problems: check.problems ?? [], warnings: check.warnings ?? [], words: check.words ?? 0, seconds: check.seconds ?? 0, spots: problemSpots({ lines: d.lines ?? [] }, check.problems ?? []) },
     ready: !(check.problems ?? []).length, updatedAt: d.updated_at,
+    // Studio: the things the kit does not have, which the director builds (never a block)
+    ...(STUDIO_ON ? { studioBuilds: studioBuilds({ lines: d.lines ?? [] }, d.card ?? null) } : {}),
     // the hybrid writer's judge: a score and notes as feedback only (never a block)
     feedback: check.feedback ? { score: check.feedback.score ?? null, notes: check.feedback.notes ?? [] } : null,
   };
@@ -154,8 +189,12 @@ async function runView(r: any, { owner = false, queue = null }: { owner?: boolea
   return {
     id: r.id, draftId: r.draft_id, title: r.title, lengthSec: r.length_sec, credits: r.credits_charged, createdAt: r.created_at, doneAt: r.finished_at,
     status: r.status, stepAt: Date.parse(r.stage_at ?? r.created_at), pct: r.pct ?? 0, post: done ? r.post : null,
-    // the progress screen's stage (render.js STAGES: queued, voice, storyboard, plan, prompts, checks, stills, mix, render, finish)
-    stage: stageOf(r.status, r.pct ?? 0),
+    // the progress screen's stage (render.js STAGES: queued, voice, storyboard, plan, prompts, checks, stills, mix, render,
+    // finish; a Studio run: studio.js STUDIO_STAGES: queued, voice, plan, directing, previews, checking, fixing, rendering,
+    // finishing) and the engine that makes it (the page picks the stage list by it)
+    engine: r.engine === "studio" ? "studio" : "pipeline",
+    stage: r.engine === "studio" ? studioStageOf(r) : stageOf(r.status, r.pct ?? 0),
+    ...(r.engine === "studio" && working ? { etaText: studioEtaText(r.length_sec), emailWhenReady: READY_EMAIL } : {}),
     // the shared line (renderQueue.js): place in line + seconds until it starts while waiting, seconds until ready;
     // etaAt = when they were computed (the page counts down between polls)
     queuePosition: working ? queue?.queuePosition ?? null : null, etaSec: working ? queue?.etaSec ?? null : null,
@@ -185,7 +224,7 @@ function recheck(d: any, lengthSec = d.length_sec) {
   // the mock writer's sample script doesn't follow the card, so mock mode checks it without the card (like writeScript)
   // launch mode: what the board kit can't film blocks here too (boardFit.js on kitCheck.js): quote and start run this
   // BEFORE the charge, so a story the board can't film never reaches the paid render
-  return { ...draftCheck(script, lengthSec, kindOf(d), PROVIDER === "mock" ? null : d.card ?? null, { board: LAUNCH_BOARD }), kind: kindOf(d) };
+  return { ...draftCheck(script, lengthSec, kindOf(d), PROVIDER === "mock" ? null : d.card ?? null, { board: KIT }), kind: kindOf(d) };
 }
 /** Launch mode: what the planner moved from the user's idea to fit the kit, in one line (null when nothing moved). */
 const movedNotice = (card: any) => (card?.moved ? `We moved your story into our town: ${String(card.moved).slice(0, 200)}` : null);
@@ -217,14 +256,53 @@ async function scriptsLeft(userId: string, counts?: any) {
   return Math.max(0, WRITING.dailyScripts - Number(used));
 }
 
+// ---------- THE BLENDER PAGE'S ONE PRICE (owner 2026-11-15; blenderPricing.js BLENDER_FLAT, migration 20261216200000) ----------
+// "Write my script" from the Blender page (body.flat) writes at most BLENDER_FLAT.writeSec (the video stays at ~90 s) and,
+// with BLOCKY_WORLDS_PREPAY=on, CHARGES the flat price first (blocky_worlds_prepay): a writer failure gives it all back
+// at once; "Make my video" then consumes the prepay instead of charging (start below); a failed video gives the whole
+// price back (blocky_worlds_refund); no video within 7 days: all but 25 credits back (blocky_worlds_prepay_expire).
+// Owners only while the Blender page is owner-only. Off: the flat price is charged at start, as before.
+const prepayOn = (who: any) => PREPAY && Boolean(who?.owner);
+async function flatWrite(req: Request, body: any, trace: Trace) {
+  const who = await requireWriter(req, trace);
+  const inner = { ...body, flat: false, lengthSec: Math.min(Number(body?.lengthSec ?? BLENDER_FLAT.writeSec) || BLENDER_FLAT.writeSec, BLENDER_FLAT.writeSec) };
+  if (!prepayOn(who)) return { ...(await route(req, inner, trace)), flat: { credits: BLENDER_FLAT.credits, charge: "start" } };
+  trace.step = "prepay";
+  const { data: pre, error } = await admin.rpc("blocky_worlds_prepay", { p_user: who.user.id, p_credits: BLENDER_FLAT.credits, p_keep: BLENDER_FLAT.keepCredits, p_days: BLENDER_FLAT.expireDays });
+  if (error || !pre) {
+    if (/INSUFFICIENT_CREDITS/.test(error?.message ?? "")) throw new ApiError("CREDITS", `You need ${BLENDER_FLAT.credits} credits for this video.`, { credits: BLENDER_FLAT.credits });
+    throw new ApiError("SERVER", "Couldn't take the payment. Nothing was charged.", {}, error?.message ?? "no prepay row");
+  }
+  let out: any;
+  try { out = await route(req, inner, trace); }
+  catch (e) {
+    // the writer failed: the whole price back, once (a second call returns 0)
+    await admin.rpc("blocky_worlds_prepay_refund", { p_prepay: pre.id, p_keep: 0, p_why: "writer_failed" }).then(({ error: rErr }: any) => { if (rErr) console.error("[blocky-worlds-api] prepay refund FAILED, refund by hand:", pre.id, rErr.message); });
+    throw e;
+  }
+  await admin.from("blocky_worlds_prepays").update({ draft_id: out.id }).eq("id", pre.id);
+  return { ...out, flat: { credits: BLENDER_FLAT.credits, charge: "script", paidAt: pre.created_at, expiresAt: pre.expires_at, keepCredits: BLENDER_FLAT.keepCredits } };
+}
+/** the draft's open (paid, unused, not refunded) prepay, or null */
+async function openPrepay(userId: string, draftId: string) {
+  const { data } = await admin.from("blocky_worlds_prepays").select("id, credits").eq("user_id", userId).eq("draft_id", draftId).is("run_id", null).is("refunded_at", null).maybeSingle();
+  return data ?? null;
+}
+
 async function handle(req: Request, trace: Trace) {
   const body = await req.json().catch(() => ({}));
+  trace.action = String(body?.action ?? "");
+  if ((trace.action === "writeScript" || trace.action === "adaptStory") && body?.flat === true) return await flatWrite(req, body, trace);
+  return await route(req, body, trace);
+}
+
+async function route(req: Request, body: any, trace: Trace) {
   const action = String(body?.action ?? "");
   trace.action = action;
 
   if (action === "access") {
     const who = await whoIs(req);
-    // the owner (ADMIN_EMAILS) always sees it; anyone else only as BLOCKY_WORLDS_ACCESS allows. Closed = a bare reply.
+    // the owner (the Blocky owner list) always sees it; anyone else only as BLOCKY_WORLDS_ACCESS allows. Closed = a bare reply.
     const visible = who ? who.allowed : guestAllowed(ACCESS);
     if (!visible) return closedReply(Boolean(who));
     let ideaBatchesLeft = null;
@@ -236,10 +314,18 @@ async function handle(req: Request, trace: Trace) {
       enabled: OPEN, signedIn: Boolean(who), plan: who?.plan ?? null, owner: Boolean(who?.owner), tester: Boolean(who?.tester),
       visible, canWrite: Boolean(who && visible && writerOk(who)), canGenerate: Boolean(who && visible && (who.owner || canGenerate(who.plan)) && RENDERER),
       canRemoveWatermark: Boolean(who && canRemoveEndCard(who.plan)), mock: PROVIDER === "mock", renderer: Boolean(RENDERER),
+      // the engine (studio.js): "studio" shows the Beta label and the Studio progress screen
+      engine: ENGINE, beta: STUDIO_ON,
       lengths: LENGTHS, defaultLength: DEFAULT_LENGTH, prices: PRICES, narrator: { name: NARRATOR.voiceName },
       moods: Object.entries(MOODS).map(([id, m]: any) => ({ id, label: m.label })), ideaBatchesLeft,
       // launch mode: the page shows "What we can film" (generated from the kit list) and "Move it to our town"
       launch: LAUNCH_BOARD ? "board" : "off", film: LAUNCH_BOARD ? canFilm() : null,
+      // the SCENE PLAN (owner-only, the Blender kit engine): after the script, each scene's location from the library
+      scenePlan: Boolean(who?.owner),
+      // THE BLENDER UI (owner-only first, 2026-11-15): topic + "explain more" + character references, no length picker
+      blenderUi: Boolean(who?.owner), roles: who?.owner ? ROLES : null,
+      // the Blender page's ONE price (BLENDER_FLAT): when it is charged ("script": at Write my script; "start": at Make my video)
+      flat: who?.owner ? { credits: BLENDER_FLAT.credits, charge: prepayOn(who) ? "script" : "start", keepCredits: BLENDER_FLAT.keepCredits, expireDays: BLENDER_FLAT.expireDays, maxSec: BLENDER_FLAT.priceRowSec } : null,
     };
   }
 
@@ -257,7 +343,8 @@ async function handle(req: Request, trace: Trace) {
       // hidden rows keep their stats and come back when the filter is lifted (nothing stored, nothing retired)
       const { data: cands, error: cErr } = await admin.rpc("blocky_worlds_library_candidates", { p_user: who.user.id, p_mood: mood, p_limit: LIBRARY_LIMIT });
       if (cErr) console.error("[blocky-worlds-api] library:", cErr.message);
-      const chosen = pickForUser(LAUNCH_BOARD ? fittingWithSwap(cands ?? []) : cands ?? [], IDEAS_PER_BATCH, mood);
+      // Studio: never hidden for a kit miss, only for its blocks (a brand, a famous name, unsafe words)
+      const chosen = pickForUser(STUDIO_ON ? (cands ?? []).filter((c: any) => studioIdeaOk(c.idea)) : LAUNCH_BOARD ? fittingWithSwap(cands ?? []) : cands ?? [], IDEAS_PER_BATCH, mood);
       if (chosen.length >= IDEAS_PER_BATCH) {
         const { data: rows, error } = await admin.from("blocky_worlds_ideas").insert(chosen.map((c: any) => ({ user_id: who.user.id, source: "library", library_id: c.id, idea: c.idea }))).select("id, idea");
         if (error) throw new ApiError("SERVER", undefined, {}, error.message);
@@ -275,9 +362,20 @@ async function handle(req: Request, trace: Trace) {
     const seed = Math.floor((count ?? 0) / IDEAS_PER_BATCH) + (body?.more ? 1 : 0);
     let written: any;
     try {
-      written = topic != null
-        ? await writeTopicIdeas({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, topic, mood: moodOf(body?.mood), seed, avoid, board: LAUNCH_BOARD })
-        : await writeIdeas({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, seed, mood: moodOf(body?.mood), avoid, board: LAUNCH_BOARD });
+      if (IDEA_ENGINE && topic == null) {
+        // the idea engine: the log of ideas already given out + the library's openers are the corpus the new ideas must differ from
+        const { data: logRows } = await admin.from("blocky_worlds_idea_log").select("rule").order("given_at", { ascending: false }).limit(300);
+        const { data: libRows } = await admin.from("blocky_worlds_library").select("idea").limit(300);
+        const decideOne = body?.decide === true;
+        const pool: any = await writeIdeaPool({ apiKey: ANTHROPIC_KEY, count: decideOne ? 1 : IDEAS_PER_BATCH, style: body?.style === "dark" || body?.style === "funny" ? body.style : null, corpus: [...avoid, ...(libRows ?? []).map((r: any) => `${r.idea?.opener ?? ""} ${r.idea?.price ?? ""}`)], given: (logRows ?? []).map((r: any) => r.rule), meter: moneyMeter(0.6) });
+        if (pool.ideas.length) {
+          await admin.from("blocky_worlds_idea_log").upsert(pool.ideas.map((x: any) => ({ rule_key: ideaKey(x), rule: x.rule, hook: x.hook, style: x.style, twist: x.twist, source: x.source, total: x.total, scores: x.scores, given_to: who.user.id })), { onConflict: "rule_key", ignoreDuplicates: true });
+          written = { ideas: pool.ideas.map((x: any) => x.card), costUsd: pool.costUsd };
+        }
+      }
+      if (!written) written = topic != null
+        ? await writeTopicIdeas({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, topic, mood: moodOf(body?.mood), seed, avoid, board: KIT })
+        : await writeIdeas({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, seed, mood: moodOf(body?.mood), avoid, board: KIT });
     } catch (e: any) {
       await logCall(who.user.id, "ideas", e?.costUsd ?? 0, false);
       throw writerError(e);
@@ -330,7 +428,7 @@ async function handle(req: Request, trace: Trace) {
       trace.step = "writer";
       let fix: any;
       try {
-        fix = await fixPart({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, script: { title: d.title, lines: d.lines, post: d.post }, indexes, reasons: spots.map((s: any) => s.problem), card: PROVIDER === "mock" ? null : d.card ?? null, lengthSec: d.length_sec, kind: kindOf(d), board: LAUNCH_BOARD });
+        fix = await fixPart({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, script: { title: d.title, lines: d.lines, post: d.post }, indexes, reasons: spots.map((s: any) => s.problem), card: PROVIDER === "mock" ? null : d.card ?? null, lengthSec: d.length_sec, kind: kindOf(d), board: KIT });
       } catch (e: any) { await logCall(who.user.id, "script", e?.costUsd ?? 0, false); throw writerError(e); }
       await logCall(who.user.id, "script", fix.costUsd);
       // saved only when it's better than before (fewer problems); otherwise the draft stays as it was
@@ -376,7 +474,7 @@ async function handle(req: Request, trace: Trace) {
       const meter = moneyMeter(APP_HYBRID.capUsd);
       const picked = pickRecipe({ topic: d.card.topic, card: d.card });
       const recipe = { ...picked, what: (RECIPES as any)[picked.id]?.what };
-      const r: any = await writeHybrid({ apiKey: ANTHROPIC_KEY, topic: d.card.topic, recipe, examples: examplesFor(recipe.id), lengthSec, meter, judge: APP_HYBRID.judge, idea: d.card, ttl: CACHE_TTL, note, board: LAUNCH_BOARD });
+      const r: any = await writeHybrid({ apiKey: ANTHROPIC_KEY, topic: d.card.topic, recipe, examples: examplesFor(recipe.id), lengthSec, meter, judge: APP_HYBRID.judge, idea: d.card, ttl: CACHE_TTL, note, board: KIT });
       for (const line of callLogLines({ userId: who.user.id, draftId: d.id, action: "move", calls: r.calls })) console.log(JSON.stringify(line));
       if (!r.script?.lines?.length) {
         await logCall(who.user.id, "script", r.costUsd, false);
@@ -395,11 +493,11 @@ async function handle(req: Request, trace: Trace) {
       if (hybridWrite) {
         const picked = pickRecipe({ topic: topicText, card });
         const recipe = { ...picked, what: (RECIPES as any)[picked.id]?.what };
-        r = await writeHybrid({ apiKey: ANTHROPIC_KEY, topic: topicText, recipe, examples: examplesFor(recipe.id), lengthSec, meter, judge: APP_HYBRID.judge, idea: card, ttl: CACHE_TTL, board: LAUNCH_BOARD });
+        r = await writeHybrid({ apiKey: ANTHROPIC_KEY, topic: topicText, recipe, examples: examplesFor(recipe.id), lengthSec, meter, judge: APP_HYBRID.judge, idea: card, ttl: CACHE_TTL, board: KIT });
         if (r.script?.lines?.length) row = { title: r.script.title, length_sec: lengthSec, lines: r.script.lines, post: r.script.post, checks: hybridChecksRow(r), card: hybridCard(r, recipe), beats: hybridBeats(r.plan, lengthSec) };
       } else {
         const failed = recheck(d, lengthSec).problems;
-        r = await rewriteHybrid({ apiKey: ANTHROPIC_KEY, plan: d.card.hybrid.plan, card: d.card, examples: examplesByIds(d.card.hybrid.refs ?? []), lengthSec, previous: { lines: d.lines }, failed, note, meter, ttl: CACHE_TTL, board: LAUNCH_BOARD });
+        r = await rewriteHybrid({ apiKey: ANTHROPIC_KEY, plan: d.card.hybrid.plan, card: d.card, examples: examplesByIds(d.card.hybrid.refs ?? []), lengthSec, previous: { lines: d.lines }, failed, note, meter, ttl: CACHE_TTL, board: KIT });
         if (r.script?.lines?.length) row = { title: r.script.title || d.title, length_sec: lengthSec, lines: r.script.lines, post: r.script.post, checks: hybridChecksRow(r, { flow: "hybrid rewrite", previous: d.checks }) };
       }
       for (const line of callLogLines({ userId: who.user.id, draftId: d?.id ?? null, action, calls: r.calls })) console.log(JSON.stringify(line));
@@ -426,7 +524,7 @@ async function handle(req: Request, trace: Trace) {
     // (a move to our town plans the beats again: the old ones are set in the world that has to move)
     let beats: any = d?.beats && d.length_sec === lengthSec && !move ? d.beats : null;
     if (!beats) {
-      try { const b = await writeBeats({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, card, lengthSec }); costUsd += b.costUsd; beats = b.beats; } catch (e: any) { await logCall(who.user.id, "script", (e?.costUsd ?? 0) + costUsd, false); throw writerError(e); }
+      try { const b = await writeBeats({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, card, lengthSec, board: KIT }); costUsd += b.costUsd; beats = b.beats; } catch (e: any) { await logCall(who.user.id, "script", (e?.costUsd ?? 0) + costUsd, false); throw writerError(e); }
     }
     // step 3: the script, following the beats
     trace.step = "writer";
@@ -434,7 +532,7 @@ async function handle(req: Request, trace: Trace) {
     try {
       // a rewrite is told exactly which checks the current version fails (writeScript re-checks and retries once)
       const failed = d ? recheck(d, lengthSec).problems : [];
-      written = await writeScript({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, idea: card, lengthSec, previous: d ? { lines: d.lines } : null, note, beats, failed, board: LAUNCH_BOARD });
+      written = await writeScript({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, idea: card, lengthSec, previous: d ? { lines: d.lines } : null, note, beats, failed, board: KIT });
     } catch (e: any) {
       await logCall(who.user.id, "script", (e?.costUsd ?? 0) + costUsd, false);
       throw writerError(e);
@@ -468,7 +566,8 @@ async function handle(req: Request, trace: Trace) {
       try { const c = await cardFromScript({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, lines: script.lines }); card = c.card; await logCall(who.user.id, "script", c.costUsd); } catch (e: any) { console.error("[blocky-worlds-api] card from script:", e?.message ?? e); }
     }
     // launch mode: a pasted script that needs a cave is told so here, with Fix it / Move it to our town (never after the charge)
-    const checked = LAUNCH_BOARD ? { ...draftCheck(script, lengthSec, "own", card, { board: true }), kind: "own" } : checks;
+    // (Studio: the same checks without any kit miss; only its blocks, studioBuilds.js)
+    const checked = KIT ? { ...draftCheck(script, lengthSec, "own", card, { board: KIT }), kind: "own" } : checks;
     const row = { title: script.title || script.post.title, length_sec: lengthSec, lines: script.lines, post: script.post, checks: checked, card, updated_at: new Date().toISOString() };
     const saved = d
       ? await admin.from("blocky_worlds_drafts").update(row).eq("id", d.id).select("*").single()
@@ -483,7 +582,68 @@ async function handle(req: Request, trace: Trace) {
     return { drafts: (data ?? []).map(draftView), writesLeft: canWrite(who.plan) ? await scriptsLeft(who.user.id) : 0 };
   }
 
+  // ---------- "EXPLAIN MORE" (owner-only first, the Blender UI; _shared/blockyWorlds/adapt.js) ----------
+  // the user's long description / full narration -> OUR rules (hook, "You see, in this town", the story shape, 60-100 s,
+  // filmable things), keeping their story, characters and twist; one writer call (+ one fix when a hard check fails)
+  if (action === "adaptStory") {
+    trace.step = "sign-in";
+    const who = await requireWriter(req, trace);
+    if (!who.owner) throw new ApiError("NOT_FOUND", "Not available.");
+    const text: any = checkStoryText(body?.text);
+    if (!text.ok) throw new ApiError("BAD_INPUT", text.error);
+    const bad = topicProblem(text.text.slice(0, 2000));
+    if (bad) throw new ApiError("BAD_INPUT", bad);
+    const characters = cleanCharacters(body?.characters);
+    trace.step = "limits";
+    const { counts } = await guardFor(who.user.id, PROVIDER === "mock" ? 0 : 0.12, "writing");
+    if ((await scriptsLeft(who.user.id, counts)) <= 0) throw new ApiError("DAILY_LIMIT", "That's today's script writes. Come back tomorrow.");
+    trace.step = "writer";
+    let a: any;
+    try {
+      a = PROVIDER === "mock"
+        ? (() => { const s = scriptFromText(text.text, ""); return { script: s, lengthSec: adaptLength(text.words), check: { hard: [], advisory: [] }, kept: null, changed: ["mock: your text as written"], costUsd: 0 }; })()
+        : await adaptStory({ apiKey: ANTHROPIC_KEY, text: text.text, note: charactersNote(characters), meter: moneyMeter(0.4) });
+    } catch (e: any) { await logCall(who.user.id, "script", e?.costUsd ?? 0, false); throw writerError(e); }
+    await logCall(who.user.id, "script", a.costUsd);
+    const lengthSec = a.lengthSec;
+    const checks = { ...checkScript(a.script, lengthSec, "own"), kind: "own" };
+    const card = { adapted: true, topic: text.text.slice(0, 300), characters, kept: a.kept, changed: a.changed };
+    const row = { title: a.script.title || a.script.lines[0]?.text?.slice(0, 60) || "My story", length_sec: lengthSec, lines: a.script.lines, post: { ...(a.script.post ?? {}), title: a.script.post?.title || a.script.title || "" }, checks: { ...checks, warnings: [...(checks.warnings ?? []), ...a.check.advisory] }, card, updated_at: new Date().toISOString() };
+    const saved = await admin.from("blocky_worlds_drafts").insert({ ...row, user_id: who.user.id, source: "own" }).select("*").single();
+    if (saved.error) throw new ApiError("SERVER", undefined, {}, saved.error.message);
+    return { ...draftView(saved.data), adapted: { kept: a.kept, changed: a.changed, stillOpen: a.check.hard }, writesLeft: await scriptsLeft(who.user.id) };
+  }
+
+  // ---------- CHARACTER REFERENCE (owner-only first; _shared/blockyWorlds/characterRef.js) ----------
+  // ONE cheap vision call turns an avatar / cartoon picture into OUR blocky character spec; photos of real people, logos
+  // and brands are refused. The picture is read from this request, forwarded to that call only, and never stored.
+  if (action === "characterRef") {
+    trace.step = "sign-in";
+    const who = await requireWriter(req, trace);
+    if (!who.owner) throw new ApiError("NOT_FOUND", "Not available.");
+    const up: any = checkUpload({ image: body?.image, mediaType: body?.mediaType });
+    if (!up.ok) throw new ApiError("BAD_INPUT", up.error);
+    const role = roleOf(body?.role);
+    if (PROVIDER === "mock") return { spec: characterSpec({ kind: "roblox_avatar", name_hint: "Test Avatar", skin: "#f1dfc6", hair_style: "spiky", hair_color: "#3a2a1a", shirt: "#7ed321", shirt_pattern: "stripes", shirt_color2: "#ffe600", pants: "#3a3f55", accessories: [], summary: "mock: a green striped shirt" }, role).spec };
+    trace.step = "limits";
+    await guardFor(who.user.id, 0.01, "writing");
+    trace.step = "vision";
+    const r: any = await readCharacter({ apiKey: ANTHROPIC_KEY, image: up.data, mediaType: up.mediaType, role }).catch((e: any) => ({ ok: false, code: "WRITER", error: undefined, detail: e?.message ?? String(e), costUsd: 0 }));
+    await logCall(who.user.id, "ideas", r.costUsd ?? 0, r.ok || ["REAL_PERSON", "BRAND", "NOT_A_CHARACTER"].includes(r.code));
+    if (!r.ok) throw new ApiError(r.code === "WRITER" ? "WRITER" : "BAD_INPUT", r.error, {}, r.detail);
+    return { spec: r.spec };
+  }
+
   // ---------- 3-4. settings (the quote) and generate ----------
+  // ---------- the SCENE PLAN (owner-only; _shared/blockyWorlds/scenePlan.js): each scene's location from the library ----------
+  if (action === "scenePlan") {
+    trace.step = "sign-in";
+    const who = await requireWriter(req, trace);
+    if (!who.owner) throw new ApiError("NOT_FOUND", "Not available.");
+    const d = await loadDraft(who.user.id, body?.draftId);
+    return { ...autoScenePlan(d.lines ?? []), locations: PICKER };
+  }
+
   if (action === "quote" || action === "start") {
     trace.step = "sign-in";
     const who = await requireWriter(req, trace);
@@ -491,16 +651,27 @@ async function handle(req: Request, trace: Trace) {
     const lengthSec = action === "quote" ? lengthOf(body?.lengthSec, d.length_sec) : d.length_sec;
     trace.step = "script check";
     const checks = recheck(d, lengthSec);
-    if (action === "quote") return { credits: PRICES[lengthSec], lengthSec, ready: !checks.problems.length, problems: checks.problems };
+    // the Blender page (body.flat): ONE price per video, the 90 s row; a draft it already paid for costs nothing more
+    const flatDraft = body?.flat === true && who.owner;
+    const prepaid = flatDraft && prepayOn(who) ? await openPrepay(who.user.id, d.id) : null;
+    if (action === "quote") return { credits: flatDraft ? BLENDER_FLAT.credits : PRICES[lengthSec], lengthSec, ready: !checks.problems.length, problems: checks.problems, ...(prepaid ? { prepaid: true } : {}) };
     if (checks.problems.length) throw new ApiError("NOT_READY", checks.problems[0], { problems: checks.problems });
     const dryRun = body?.dryRun === true && (who.tester || who.owner);
     if (!RENDERER && !dryRun) throw new ApiError("RENDER_OFF", undefined, {}, "BLOCKY_WORLDS_RENDERER is not runpod, or RunPod / the callback secret is not configured");
     // board-only without the automatic storyboard would send every line to the old planner: refused before any charge
-    if (boardOnlyBlocked(productionSettings(envGet))) throw new ApiError("RENDER_OFF", undefined, {}, "BLOCKY_WORLDS_BOARD_ONLY is on but BLOCKY_WORLDS_STORYBOARD is not auto");
+    // (the pipeline only: the Studio engine never uses the storyboard)
+    if (!STUDIO_ON && boardOnlyBlocked(productionSettings(envGet))) throw new ApiError("RENDER_OFF", undefined, {}, "BLOCKY_WORLDS_BOARD_ONLY is on but BLOCKY_WORLDS_STORYBOARD is not auto");
+    // the Studio engine: a run is only charged while a Studio worker is alive to make it (fail closed, before any charge)
+    if (STUDIO_ON && !dryRun) {
+      trace.step = "studio worker";
+      if (!(await studioWorkerAlive(admin))) throw new ApiError("BUSY", "Our video studio is restarting. Nothing was charged. Try again in a few minutes.", { retryAfterSec: 300 }, `no Studio worker said hello in the last ${STUDIO.workerSeenSec} s (blocky_worlds_workers)`);
+    }
     trace.step = "cap check";
-    await guardFor(who.user.id, costBasisUsd(lengthSec), "video");
+    // what one attempt is expected to cost us (the emergency cap counts it): the Studio model's or the pipeline's
+    await guardFor(who.user.id, STUDIO_ON ? studioFullCostUsd(lengthSec) : costBasisUsd(lengthSec), "video");
     trace.step = "price";
-    const { data: price, error: pErr } = await admin.rpc("compute_tool_price", { p_tool_key: toolKey(lengthSec), p_input: {} });
+    const { data: price, error: pErr } = prepaid ? { data: prepaid.credits, error: null } : await admin.rpc("compute_tool_price", { p_tool_key: toolKey(flatDraft ? BLENDER_FLAT.priceRowSec : lengthSec), p_input: {} });
+    if (flatDraft && prepayOn(who) && !prepaid) throw new ApiError("NOT_READY", "This script's payment is not open any more (refunded or used). Write the script again.");
     if (pErr || price == null) throw new ApiError("SERVER", "Couldn't load the price. Please try again.", {}, pErr?.message ?? "no price row");
     const credits = Number(price), endCard = endCardFor(who.plan, body?.removeWatermark === true);
     if (dryRun) return { dryRun: true, credits, endCard, lengthSec, renderer: Boolean(RENDERER), checks };
@@ -510,23 +681,40 @@ async function handle(req: Request, trace: Trace) {
     const busyMsg = "This script is already being made. Wait for it to finish.";
     const { data: active } = await admin.from("blocky_worlds_runs").select("id").eq("draft_id", d.id).not("status", "in", "(done,failed)").limit(1).maybeSingle();
     if (active) throw new ApiError("LIMIT", busyMsg, { runId: active.id });
+    // the owner's scene plan (checked; a bad one is refused before any charge); anyone else's is ignored
+    let scenePlan: any = null;
+    if (who.owner && body?.scenePlan) {
+      const c = cleanScenePlan(body.scenePlan, (d.lines ?? []).length);
+      if (!c.ok) throw new ApiError("BAD_INPUT", c.error);
+      scenePlan = c.plan;
+    }
+    // the owner's character references (characterRef.js specs, re-cleaned): they go to the director's style sheet
+    const characters = who.owner ? cleanCharacters(body?.characters ?? d.card?.characters) : [];
     trace.step = "job creation";
     const script = { title: d.title, lines: d.lines };
     const { data: run, error } = await admin.rpc("blocky_worlds_start_run", {
       p_user: who.user.id, p_draft: d.id, p_title: d.title, p_length: lengthSec, p_lines: d.lines, p_narration: narrationOf(script), p_post: d.post,
       p_narrator: NARRATOR, p_end_card: endCard, p_credits: credits, p_env: (who.tester || who.owner) && !OPEN ? "test" : "prod",
+      // the engine is written with the charge (migration 20261213100000): the pipeline's sweeper never sees a Studio run.
+      // Sent only for Studio, so the pipeline keeps working whether or not that migration is applied yet.
+      ...(STUDIO_ON ? { p_engine: "studio" } : {}),
+      // the paid script: its prepay is consumed instead of a new charge (migration 20261216200000)
+      ...(prepaid ? { p_prepay: prepaid.id } : {}),
     });
     if (error || !run) {
       if (/INSUFFICIENT_CREDITS/.test(error?.message ?? "")) throw new ApiError("CREDITS", `You need ${credits} credits for this video.`, { credits });
       // the whole start (charge included) was rolled back: nothing was charged
       if (/one_active_per_draft|duplicate key/i.test(error?.message ?? "")) throw new ApiError("LIMIT", busyMsg, {}, error?.message);
+      if (/PREPAY_NOT_OPEN/.test(error?.message ?? "")) throw new ApiError("NOT_READY", "This script's payment is not open any more (refunded or used). Write the script again.", {}, error?.message);
       throw new ApiError("SERVER", "Couldn't start. Nothing was charged.", {}, error?.message ?? "no run returned");
     }
     const ideaLib = d.idea_id ? (await admin.from("blocky_worlds_ideas").select("library_id").eq("id", d.idea_id).maybeSingle()).data?.library_id ?? null : null;
-    await admin.from("blocky_worlds_runs").update({ card: runCard(d.card ?? null), library_id: ideaLib }).eq("id", run.id);
+    await admin.from("blocky_worlds_runs").update({ card: scenePlan || characters.length ? { ...(runCard(d.card ?? null) ?? {}), ...(scenePlan ? { scene_plan: scenePlan } : {}), ...(characters.length ? { characters } : {}) } : runCard(d.card ?? null), library_id: ideaLib, ...(STUDIO_ON ? { studio_builds: studioBuilds({ lines: d.lines ?? [] }, d.card ?? null) } : {}) }).eq("id", run.id);
     if (ideaLib) await countEvent(who.user.id, ideaLib, "generated", { draftId: d.id, runId: run.id });
     // the pipeline (docs/blocky-worlds-pipeline.md): the prepare job goes to RunPod now; a run that can't be sent is
     // failed and refunded by the runtime; anything else that goes wrong here is picked up by the sweeper within a minute
+    // A Studio run waits in the table: a Studio worker claims it (blocky_worlds_claim_studio_run); nothing is sent here.
+    if (run.engine === "studio") return await runView({ ...run, library_id: ideaLib }, { owner: who.owner, queue: (await studioQueueInfo(admin, [run]))[run.id] ?? null });
     trace.step = "dispatch";
     let started: any = null;
     try { started = await renderRuntime(admin).start(run.id); } catch (e: any) { console.error("[blocky-worlds-api] start dispatch:", run.id, e?.message ?? e); }
@@ -537,15 +725,15 @@ async function handle(req: Request, trace: Trace) {
   const who = await requireUser(req, trace);
   if (action === "list") {
     const { data } = await admin.from("blocky_worlds_runs").select("*").eq("user_id", who.user.id).is("deleted_at", null).order("created_at", { ascending: false }).limit(20);
-    const working = (data ?? []).filter((r: any) => !["done", "failed"].includes(r.status)).map((r: any) => r.id);
-    const q: Record<string, any> = working.length ? await queueInfo(admin, working) : {};
+    const working = (data ?? []).filter((r: any) => !["done", "failed"].includes(r.status) && r.engine !== "studio").map((r: any) => r.id);
+    const q: Record<string, any> = { ...(working.length ? await queueInfo(admin, working) : {}), ...(await studioQueueInfo(admin, data ?? [])) };
     return { runs: await Promise.all((data ?? []).map((r: any) => runView(r, { owner: who.owner, queue: q[r.id] ?? null }))) };
   }
   const runId = String(body?.runId ?? "");
   if (!/^[0-9a-f-]{36}$/i.test(runId)) throw new ApiError("BAD_INPUT");
   const { data: run } = await admin.from("blocky_worlds_runs").select("*").eq("id", runId).eq("user_id", who.user.id).is("deleted_at", null).maybeSingle();
   if (!run) throw new ApiError("NOT_FOUND", "We couldn't find that video.");
-  if (action === "status") return await runView(run, { owner: who.owner, queue: ["done", "failed"].includes(run.status) ? null : (await queueInfo(admin, [run.id]))[run.id] ?? null });
+  if (action === "status") return await runView(run, { owner: who.owner, queue: ["done", "failed"].includes(run.status) ? null : run.engine === "studio" ? (await studioQueueInfo(admin, [run]))[run.id] ?? null : (await queueInfo(admin, [run.id]))[run.id] ?? null });
   if (action === "event") {
     const kind = String(body?.kind ?? "");
     if (!["downloaded", "thumb_up", "thumb_down"].includes(kind)) throw new ApiError("BAD_INPUT");

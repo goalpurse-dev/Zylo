@@ -1,0 +1,18 @@
+{
+ "id": "rope-405e9f85",
+ "name": "rope",
+ "kind": "prop",
+ "about": "Thin string cylinder between two points",
+ "code": "def rope(name, p0, p1, color='#e8e0c8', r=0.04):\n    a, b = Vector(p0), Vector(p1)\n    d = b - a\n    L = d.length\n    th = math.degrees(math.acos(max(-1, min(1, d.z / L))))\n    ph = math.degrees(math.atan2(d.y, d.x))\n    m = (a + b) / 2\n    return cyl(name, r, L, (m.x, m.y, m.z), mat('rope_' + color, hexc(color), 0.7), 8, rot=(0, th, ph))",
+ "source": {
+  "run": "plane1",
+  "shots": [
+   59
+  ],
+  "title": "The Town That Lives in a Plane"
+ },
+ "status": "approved",
+ "approved": true,
+ "createdAt": "2026-11-13T20:58:51.211Z",
+ "decidedAt": "2026-11-13T21:32:09.637Z"
+}

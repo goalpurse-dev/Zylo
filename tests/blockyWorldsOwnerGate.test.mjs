@@ -5,7 +5,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
-import { ACCESS_MODES, accessModeFrom, closedReply, DEFAULT_ACCESS, guestAllowed, viewerAccess } from "../supabase/functions/_shared/blockyWorlds/gate.js";
+import { ACCESS_MODES, accessModeFrom, BLOCKY_OWNER_EMAILS, blockyOwners, closedReply, DEFAULT_ACCESS, guestAllowed, viewerAccess } from "../supabase/functions/_shared/blockyWorlds/gate.js";
 import { adminEmailList } from "../supabase/functions/_shared/contentMachine/adminGuard.js";
 import { accessStatusFrom, blockyWorldsRoute, showBlockyWorlds } from "../src/data/blockyWorlds.js";
 
@@ -39,11 +39,34 @@ test("owner mode (the default): only the owner; a tester, a normal account and a
   }
 });
 
-test("the owner must have a VERIFIED email in ADMIN_EMAILS (case-insensitive); an unverified look-alike is refused", () => {
+test("the owner must have a VERIFIED email in the owner list (case-insensitive); an unverified look-alike is refused", () => {
   assert.equal(at("owner", user("OWNER@example.com")).allowed, true);
   assert.equal(at("owner", user("second-admin@example.com")).allowed, true);
   assert.equal(at("owner", user("owner@example.com", false)).allowed, false);
-  assert.equal(viewerAccess({ mode: "owner", user: OWNER, owners: [], testers: [] }).allowed, false); // ADMIN_EMAILS unset: nobody
+  assert.equal(viewerAccess({ mode: "owner", user: OWNER, owners: [], testers: [] }).allowed, false); // an empty list: nobody
+});
+
+// ---------- the Blocky-only owner list (owner, 2026-11-12): a server constant, not ADMIN_EMAILS ----------
+test("owner list: one address, a server constant; the optional secret BLOCKY_WORLDS_OWNER_EMAILS overrides it; ADMIN_EMAILS opens nothing", () => {
+  assert.equal(BLOCKY_OWNER_EMAILS.length, 1);
+  assert.deepEqual(blockyOwners(undefined), [...BLOCKY_OWNER_EMAILS]);
+  assert.deepEqual(blockyOwners(""), [...BLOCKY_OWNER_EMAILS]);
+  assert.deepEqual(blockyOwners(" , "), [...BLOCKY_OWNER_EMAILS], "an empty secret never empties the list");
+  assert.deepEqual(blockyOwners("Other@Example.com, second@example.com"), ["other@example.com", "second@example.com"], "the secret replaces the list");
+  assert.ok(Object.isFrozen(BLOCKY_OWNER_EMAILS));
+  const mine = user(BLOCKY_OWNER_EMAILS[0]);
+  const viewer = (u, raw) => viewerAccess({ mode: "owner", user: u, owners: blockyOwners(raw), testers: [] });
+  assert.equal(viewer(mine).allowed, true);
+  assert.equal(viewer(mine).owner, true);
+  assert.equal(viewer(user(BLOCKY_OWNER_EMAILS[0], false)).allowed, false, "an unverified email is refused");
+  // another admin of the other tools (an ADMIN_EMAILS address) is refused in owner mode
+  assert.equal(viewer(user("second-admin@example.com")).allowed, false);
+  assert.equal(viewer(OWNER).allowed, false);
+  // the secret overrides: its address is in, the built-in one is out
+  assert.equal(viewer(OWNER, "owner@example.com").allowed, true);
+  assert.equal(viewer(mine, "owner@example.com").allowed, false);
+  // owner mode = only that list: testers never count
+  assert.equal(viewerAccess({ mode: "owner", user: TESTER, owners: blockyOwners(), testers: TESTERS }).allowed, false);
 });
 
 test("allowlist mode: the owner + BLOCKY_WORLDS_TEST_USERS; a normal account and a guest are refused", () => {
@@ -72,7 +95,8 @@ test("blocky-worlds-api: the switch is read once, every action except `access` g
   assert.match(src, /const ACCESS = accessModeFrom\(Deno\.env\.get\("BLOCKY_WORLDS_ACCESS"\)\)/);
   assert.doesNotMatch(src, /env\.get\("BLOCKY_WORLDS_ENABLED"\)|flag\("BLOCKY_WORLDS_ENABLED"\)/, "the retired switch must not open anything");
   assert.match(src, /viewerAccess\(\{ mode: ACCESS, user, owners: OWNERS, testers: TESTERS \}\)/);
-  assert.match(src, /const OWNERS = adminEmailList\(Deno\.env\.get\("ADMIN_EMAILS"\)\)/);
+  assert.match(src, /const OWNERS = blockyOwners\(Deno\.env\.get\("BLOCKY_WORLDS_OWNER_EMAILS"\)\)/);
+  assert.doesNotMatch(src, /env\.get\("ADMIN_EMAILS"\)/, "ADMIN_EMAILS opens nothing in the Blocky Worlds API");
   const requireUser = src.slice(src.indexOf("async function requireUser"), src.indexOf("const writerOk"));
   assert.match(requireUser, /if \(!who\) throw new ApiError\("SIGN_IN"\)/);
   assert.match(requireUser, /if \(!who\.allowed\) throw new ApiError\("OFF"\)/);
@@ -111,6 +135,8 @@ test("the other blocky-worlds functions: library is owner-only (404), render tak
   assert.deepEqual(fns.sort(), ["blocky-worlds-api", "blocky-worlds-library", "blocky-worlds-render"], "a new blocky-worlds function needs its own gate check here");
   const lib = read("supabase/functions/blocky-worlds-library/index.ts");
   assert.match(lib, /isAdmin\(data\.user, OWNERS\)/);
+  assert.match(lib, /const OWNERS = blockyOwners\(Deno\.env\.get\("BLOCKY_WORLDS_OWNER_EMAILS"\)\)/);
+  assert.doesNotMatch(lib, /env\.get\("ADMIN_EMAILS"\)/);
   assert.match(lib, /if \(!cron && !who\) return \{ status: 404/);
   const render = read("supabase/functions/blocky-worlds-render/index.ts");
   assert.match(render, /if \(!RENDER_CONFIG\.callbackSecret\) return json\(\{ error: "not configured" \}, 503\)/);
@@ -183,9 +209,21 @@ test("UI: no build switch and no owner email in front-end code", () => {
     const s = read(f);
     assert.doesNotMatch(s, /VITE_BLOCKY_WORLDS_ENABLED|BLOCKY_WORLDS_VISIBLE|BLOCKY_WORLDS_ENABLED\b/, f);
   }
-  for (const f of ["src/data/blockyWorlds.js", "src/components/viral-tools/blocky-worlds/api/blockyWorldsAccess.js", "src/components/viral-tools/blocky-worlds/BlockyWorldsGate.jsx", "supabase/functions/_shared/blockyWorlds/gate.js"]) {
+  for (const f of ["src/data/blockyWorlds.js", "src/components/viral-tools/blocky-worlds/api/blockyWorldsAccess.js", "src/components/viral-tools/blocky-worlds/BlockyWorldsGate.jsx"]) {
     assert.doesNotMatch(read(f), /[\w.+-]+@[\w-]+\.[a-z]{2,}/i, `${f}: no email addresses`);
   }
+  // the owner's address lives ONLY in the server constant (gate.js): not one file under src/ or public/ has it
+  const owner = BLOCKY_OWNER_EMAILS[0].toLowerCase();
+  const front = [];
+  const walkFront = (dir) => {
+    for (const e of readdirSync(new URL(`../${dir}/`, import.meta.url), { withFileTypes: true })) {
+      const p = `${dir}/${e.name}`;
+      if (e.isDirectory()) walkFront(p); else front.push(p);
+    }
+  };
+  for (const dir of ["src", "public"]) walkFront(dir);
+  for (const f of front) if (/\.(jsx?|mjs|json|html|css|txt|xml|svg)$/.test(f)) assert.ok(!read(f).toLowerCase().includes(owner), `${f}: the owner's email must never be in a front-end file`);
+  assert.ok(read("supabase/functions/_shared/blockyWorlds/gate.js").includes(owner), "the server constant holds it");
 });
 
 test("SEO and public files: no Blocky Worlds in the sitemap, robots, vercel.json, the route SEO policy or the Blocky Stories landing", () => {

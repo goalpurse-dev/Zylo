@@ -15,12 +15,14 @@ const LIBRARY = JSON.parse(readFileSync(new URL("../src/components/viral-tools/b
 const S = (...texts) => ({ title: "t", lines: texts.map((text) => ({ part: "own", text })) });
 const filler = (n) => Array.from({ length: n }, (_, i) => `Mrs. Pell waved at me ${i + 1} times.`);
 
-test("switches: launch mode from BLOCKY_WORLDS_LAUNCH=board or BOARD_ONLY on; both off by default", () => {
+test("switches: launch mode is ON by default (2026-11-12), only BLOCKY_WORLDS_LAUNCH=off switches it off; BOARD_ONLY is off by default", () => {
   const env = (o) => (k) => o[k] ?? "";
-  assert.equal(launchModeFrom(env({})), false);
+  assert.equal(launchModeFrom(env({})), true);
+  assert.equal(launchModeFrom(env({ BLOCKY_WORLDS_LAUNCH: "typo" })), true, "a typo never switches the kit off");
   assert.equal(boardOnlyFrom(env({})), false);
   assert.equal(launchModeFrom(env({ BLOCKY_WORLDS_LAUNCH: "board" })), true);
   assert.equal(launchModeFrom(env({ BLOCKY_WORLDS_LAUNCH: "off" })), false);
+  assert.equal(launchModeFrom(env({ BLOCKY_WORLDS_LAUNCH: " OFF " })), false);
   assert.equal(boardOnlyFrom(env({ BLOCKY_WORLDS_BOARD_ONLY: "on" })), true);
   assert.equal(launchModeFrom(env({ BLOCKY_WORLDS_BOARD_ONLY: "on" })), true, "a strict render implies the pre-charge check");
   assert.equal(boardOnlyFrom(env({ BLOCKY_WORLDS_BOARD_ONLY: "maybe" })), false);
@@ -148,7 +150,9 @@ test("a whole-premise miss is ONE problem with the move action; the card's plant
   const tape = S("In this town, nobody says goodnight out loud.", ...filler(4), "I kept a roll of tape in my pocket.", ...filler(3), "I taped its mouth shut with the tape.");
   const t = boardFitProblems(tape, { prop: "A roll of masking tape" });
   assert.ok(t.problems.some((p) => p.startsWith(`${BOARD_PREFIX} "tape"`)));
-  assert.deepEqual(boardFitProblems(tape, { prop: "a flashlight" }).problems, []);
+  // 2026-11-12: an unknown noun the story leans on (the tape, in the last lines) is a hard miss in board mode, whatever the card says
+  assert.ok(boardFitProblems(tape, { prop: "a flashlight" }).problems.some((p) => /"tape"/.test(p)));
+  assert.deepEqual(boardFitProblems(S("In this town, nobody says goodnight out loud.", ...filler(8), "I kept a flashlight in my pocket."), { prop: "a flashlight" }).problems, []);
 });
 
 test("the kit as writer rules: every place, look, animal and weather named; the same text every call (cacheable)", () => {
@@ -183,7 +187,7 @@ test("library filter: in launch mode the picker only ever chooses ideas the boar
   assert.match(src, /const LIBRARY_LIMIT = LAUNCH_BOARD \? 200 : 60;/);
   assert.match(src, /p_limit: LIBRARY_LIMIT/);
   // (since the planted-object swap: fittingWithSwap, tests/blockyWorldsBoardSwap.test.mjs)
-  assert.match(src, /pickForUser\(LAUNCH_BOARD \? fittingWithSwap\(cands \?\? \[\]\) : cands \?\? \[\], IDEAS_PER_BATCH, mood\)/);
+  assert.match(src, /pickForUser\(STUDIO_ON \? \(cands \?\? \[\]\)\.filter\(\(c: any\) => studioIdeaOk\(c\.idea\)\) : LAUNCH_BOARD \? fittingWithSwap\(cands \?\? \[\]\) : cands \?\? \[\], IDEAS_PER_BATCH, mood\)/);
   assert.match(src, /launch: LAUNCH_BOARD \? "board" : "off", film: LAUNCH_BOARD \? canFilm\(\) : null/);
 });
 

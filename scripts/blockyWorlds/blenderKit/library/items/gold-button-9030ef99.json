@@ -1,0 +1,18 @@
+{
+ "id": "gold-button-9030ef99",
+ "name": "gold_button",
+ "kind": "prop",
+ "about": "gold coat button",
+ "code": "def gold_button(ch):\n    return sphere(ch.name + '_gbtn', 0.2, (0.35, -0.6, 1.3), mat('gbtn_gold', hexc('#ffc72a'), 0.2, metal=0.8, emit=hexc('#ffb000'), estr=1.5), parent=ch.hip, coll=ch.coll)",
+ "source": {
+  "run": "tower1",
+  "shots": [
+   63
+  ],
+  "title": "The Lift Day"
+ },
+ "status": "approved",
+ "approved": true,
+ "createdAt": "2026-11-13T23:38:14.341Z",
+ "decidedAt": "2026-11-14T13:23:35.885Z"
+}

@@ -143,7 +143,7 @@ const card = { ...EXAMPLE_IDEAS[0], prop: "Grandpa's rusty wrench", closer: GOOD
 // a script of the right length for 90 s (the length check is real): GOOD padded with tour jokes
 const padded = () => {
   const s = clone(GOOD);
-  const extra = Array.from({ length: 20 }, (_, i) => ({ part: "tour", text: `Neighbour number ${["one", "two", "three", "four", "five", "six"][i % 6]} waves from a little window.` }));
+  const extra = Array.from({ length: 28 }, (_, i) => ({ part: "tour", text: `Neighbour number ${["one", "two", "three", "four", "five", "six"][i % 6]} waves from a little window.` }));
   s.lines.splice(5, 0, ...extra);
   return s;
 };

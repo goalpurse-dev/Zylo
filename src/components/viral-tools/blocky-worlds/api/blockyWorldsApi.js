@@ -3,6 +3,8 @@
 // from the same mock steps the server's mock mode uses (dev/devApi.js); a production build never reaches it.
 import { ERRORS, FAILED_MESSAGE, STATUSES, STATUS_LABELS } from "../../../../../supabase/functions/_shared/blockyWorlds/contract.js";
 import { STAGES, stageOf } from "../../../../../supabase/functions/_shared/blockyWorlds/render.js";
+import { STUDIO_STAGES, studioEtaText, studioStageOf } from "../../../../../supabase/functions/_shared/blockyWorlds/studioStages.js";
+export { studioEtaText };
 export { ERRORS, FAILED_MESSAGE, STATUSES, STATUS_LABELS };
 
 // localhost talks to the REAL server by default (owner, 2026-11-05); ?mock=1 runs the free in-browser mock instead (fake
@@ -42,12 +44,42 @@ export function errorFromReply(body, status = 0) {
   return new BlockyWorldsError(code, message || ERRORS[code].message, { status, credits: Number(body?.credits), problems: body?.problems, retryAfterSec: Number(body?.retryAfterSec), debug: body?.debug });
 }
 
+// LOCAL DEV ONLY: when the blocky-worlds-api runs on this laptop (scripts/blockyWorlds/localApi.mjs, http://localhost:8000)
+// the page uses it AUTOMATICALLY (one quick probe per page load), with the signed-in user's token, so the owner clicks
+// through server code that is not deployed yet; not running -> the live API. ?api=live forces live. Production builds
+// (import.meta.env.DEV false) never probe and never use it.
+const DEV_LOCAL_API = "http://localhost:8000";
+let backendOnce = null;
+/** "mock" | "local" | "live": which server this page talks to */
+export function whichBackend() {
+  if (DEV_MOCK) return Promise.resolve("mock");
+  if (!import.meta.env.DEV || new URLSearchParams(window.location.search).get("api") === "live") return Promise.resolve("live");
+  backendOnce ??= fetch(DEV_LOCAL_API, { method: "OPTIONS", signal: AbortSignal.timeout(900) }).then((r) => (r.ok ? "local" : "live")).catch(() => "live");
+  return backendOnce;
+}
+
+async function localCall(action, body) {
+  const { supabase } = await import("../../../../lib/supabaseClient");
+  const { data } = await supabase.auth.getSession();
+  const anon = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  let res, reply;
+  try {
+    res = await fetch(DEV_LOCAL_API, { method: "POST", headers: { "content-type": "application/json", apikey: anon, Authorization: `Bearer ${data?.session?.access_token ?? anon}` }, body: JSON.stringify({ action, ...body }) });
+    reply = await res.json().catch(() => ({}));
+  } catch {
+    throw new BlockyWorldsError("SERVER", "The local blocky-worlds-api is not running (node scripts/blockyWorlds/localApi.mjs).");
+  }
+  if (!res.ok || (reply?.error && reply?.code)) throw errorFromReply(reply ?? {}, res.status);
+  return reply;
+}
+
 /** One blocky-worlds-api action. Throws BlockyWorldsError. */
 export async function worldsCall(action, body = {}) {
   if (DEV_MOCK) {
     const { devCall } = await import("../dev/devApi");
     return devCall(action, body);
   }
+  if (import.meta.env.DEV && (await whichBackend()) === "local") return localCall(action, body);
   const { supabase } = await import("../../../../lib/supabaseClient");
   let data, error;
   try {
@@ -73,7 +105,11 @@ export const RUN_STEPS = STATUSES.filter((s) => !["done", "failed"].includes(s))
  * finish) and a run's stage: the server sends run.stage; an older reply (or the mock) is read from its status and %.
  */
 export { STAGES };
-export const runStage = (run) => (run ? run.stage ?? stageOf(run.status, run.pct ?? 0) : null);
+/** a Studio run (studio.js, 2026-11-13: the director engine) has its own stages; the server sends run.engine */
+export { STUDIO_STAGES };
+export const isStudioRun = (run) => run?.engine === "studio";
+export const stagesFor = (run) => (isStudioRun(run) ? STUDIO_STAGES : STAGES);
+export const runStage = (run) => (run ? run.stage ?? (isStudioRun(run) ? studioStageOf(run) : stageOf(run.status, run.pct ?? 0)) : null);
 
 /** "1:30" */
 export const clock = (sec) => `${Math.floor(sec / 60)}:${String(Math.round(sec % 60)).padStart(2, "0")}`;

@@ -43,7 +43,7 @@ import { useGpu, useSoftware } from "./gpu.mjs";
 import { concat, renderParallel } from "../render.mjs";
 import { stillsJob, objectStillsJob } from "./stillsRole.mjs";
 import { simpleStillsJob } from "./simpleRole.mjs"; // 2026-11-10 simple-style TEST page (page/simple/), stills only
-import { applyStoryboard, storyboardChecks } from "../lib/storyboard.js"; // STORYBOARD (2026-11-11): job.prepare.storyboard
+import { applyStoryboard, storyboardChecks, preVoiceProblems } from "../lib/storyboard.js"; // STORYBOARD (2026-11-11): job.prepare.storyboard
 import { paramsFromPrompts, writePromptsByScene, enrichPrompts, checkPrompts } from "../lib/shotPrompts.js";
 import { directStoryboard } from "../lib/storyboardDirector.js";
 import { kitCheck, kitHas } from "../../../../supabase/functions/_shared/blockyWorlds/kitCheck.js"; // the early kit check // the automatic storyboard (job.prepare.storyboard.auto)
@@ -302,7 +302,7 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
   // (lib/storyboardDirector.js: the bible, then every scene in parallel) WHILE the voice is made; its spend is the director's
   // THE EARLY KIT CHECK (2026-11-12): a story that leans on a thing the board kit can't show stops HERE, before the voice is
   // bought (the server runs the same check before the charge: _shared/blockyWorlds/kitCheck.js, "Fix it")
-  if (p.storyboard?.auto) { const kc = kitCheck(script); if (!kc.ok) throw coded("KIT_UNSUPPORTED", `the story needs ${kc.missing.map((m) => `"${m.word}" (${m.kind})`).join(", ")}, which our board kit can't film yet`); }
+  if (p.storyboard?.auto) { const kc = kitCheck(script, { boardOnly: p.storyboard.maxFallback === 0 }); /* board-only: an unknown noun in a must-have spot is a miss too */ if (!kc.ok) throw coded("KIT_UNSUPPORTED", `the story needs ${kc.missing.map((m) => `"${m.word}" (${m.kind})`).join(", ")}, which our board kit can't film yet`); }
   // the voice waits for the FINAL lines (the storyboard may reword an unfilmable line: the take must speak the new words)
   let linesFinal = () => {}; const linesReady = p.storyboard?.auto ? new Promise((r) => { linesFinal = r; }) : null;
   // the storyboard's record for the free replay (dev/simple/replayStoryboard.mjs): the board, its problems, the rewrites
@@ -312,7 +312,9 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
     if (!process.env.ANTHROPIC_KEY) throw coded("NOT_CONFIGURED", "no Anthropic key for the storyboard director");
     await post("progress", { stage: "storyboard", pct: 4 });
     const r = await directStoryboard({ apiKey: process.env.ANTHROPIC_KEY, script, cast: early.cast ?? {}, scenes: early.scenes ?? p.scenes ?? null, title: script.title ?? "", capUsd: Number(p.storyboard.capUsd) || 0.25, maxFallback: Number.isFinite(Number(p.storyboard.maxFallback)) && p.storyboard.maxFallback !== null ? Number(p.storyboard.maxFallback) : null, log: (m) => console.log(m),
-      kitCheckFn: (ls) => kitCheck(ls), onLinesFinal: (L, rw) => { if (rw.length) { script.lines = script.lines.map((l, i) => ({ ...l, text: L[i] })); console.log(`storyboard: ${rw.length} line(s) reworded before the voice: ${rw.map((x) => `#${x.line + 1}`).join(", ")}`); } linesFinal(rw); } });
+      kitCheckFn: (ls) => kitCheck(ls, { boardOnly: p.storyboard.maxFallback === 0 }),
+      // every final check BEFORE the voice (estimated timing): failures go back to the director's repair (owner, 2026-11-12)
+      engineCheckFn: (board, L) => preVoiceProblems({ plan, script, lines: L, board, planArgs: { idea: p.idea ?? {}, lengthSec: p.lengthSec ?? null, direction: d, exists, criticalMode: "report", library: libraryFind, scenes: p.scenes ?? null } }), onLinesFinal: (L, rw) => { if (rw.length) { script.lines = script.lines.map((l, i) => ({ ...l, text: L[i] })); console.log(`storyboard: ${rw.length} line(s) reworded before the voice: ${rw.map((x) => `#${x.line + 1}`).join(", ")}`); } linesFinal(rw); } });
     await saveBoard({ board: r.board, problems: r.problems, rewrites: r.rewrites, lines: r.lines, fellBack: r.fellBack });
     spend.directorUsd += r.costUsd; spend.plannedDirectorUsd += r.costUsd;
     console.log(`storyboard: ${r.board.lines.length} lines, ${r.fellBack.length} on the engine planner (${r.ms} ms, $${r.costUsd})`);
@@ -443,11 +445,11 @@ export async function prepare(job, dir, post, { planModule = null, voiceFn = nul
   const musicWav = path.join(dir, "music.wav"), mixM4a = path.join(dir, "mix.m4a");
   const { bedFromLoop, mixAudio } = await import(pathToFileURL(path.join(ENGINE, "audio", "mix.mjs")).href);
   const { sfxCues } = await import(pathToFileURL(path.join(ENGINE, "lib", "sfx.js")).href);
-  await lap("music", () => bedFromLoop(p.music ?? "A", tl.duration, musicWav));
+  await lap("music", async () => bedFromLoop(p.music ?? "A", tl.duration, musicWav, { tempo: tl.look === "simple" ? (await import(pathToFileURL(path.join(ENGINE, "lib", "audioPlan.js")).href)).AUDIO_SIMPLE.bedTempo : 1 })); /* the bed sped up to the voice's pace */
   // SIMPLE LOOK (owner 2026-11-10): almost no SFX (one low boom on the rule's key word), the music ~12 dB under the voice
   const { simpleCues, AUDIO_SIMPLE } = await import(pathToFileURL(path.join(ENGINE, "lib", "audioPlan.js")).href);
   const simpleAudio = tl.look === "simple";
-  const cues = p.sfx === false ? [] : simpleAudio ? simpleCues(tl, sfxCues(tl)) : sfxCues(tl);
+  const cues = p.sfx === false ? [] : simpleAudio ? simpleCues(tl, sfxCues(tl), script) : sfxCues(tl);
   const audio = await lap("mix", () => mixAudio({ voice: v.wav, music: musicWav, out: mixM4a, duration: tl.duration, sfxCues: cues, ...(simpleAudio ? { musicUnderVoiceDb: AUDIO_SIMPLE.musicUnderVoiceDb } : {}) }));
   await put(p.out.mix, mixM4a, "audio/mp4");
   return { role: "prepare", planned, builder: { ...built.report, applied: built.applied, reverted: built.reverted, cards: built.cards, added: library.added.map((a) => ({ id: a.id, kind: a.kind, name: a.name })) }, voice: { reused: reuse, costUsd: reuse ? 0 : v.costUsd ?? null, billedChars: v.billedChars ?? null, chars: v.chars ?? null, wpm: v.wpm, duration: v.duration }, audio: { lufs: audio.lufs, truePeak: audio.truePeak, sfxCues: cues.length }, timing, spend: spendNow() };
@@ -483,11 +485,11 @@ async function resumePrepare(job, dir, post, { voiceFn, script, mp3, takeJson, t
   const musicWav = path.join(dir, "music.wav"), mixM4a = path.join(dir, "mix.m4a");
   const { bedFromLoop, mixAudio } = await import(pathToFileURL(path.join(ENGINE, "audio", "mix.mjs")).href);
   const { sfxCues } = await import(pathToFileURL(path.join(ENGINE, "lib", "sfx.js")).href);
-  await lap("music", () => bedFromLoop(p.music ?? "A", tl.duration, musicWav));
+  await lap("music", async () => bedFromLoop(p.music ?? "A", tl.duration, musicWav, { tempo: tl.look === "simple" ? (await import(pathToFileURL(path.join(ENGINE, "lib", "audioPlan.js")).href)).AUDIO_SIMPLE.bedTempo : 1 })); /* the bed sped up to the voice's pace */
   // SIMPLE LOOK (owner 2026-11-10): almost no SFX (one low boom on the rule's key word), the music ~12 dB under the voice
   const { simpleCues, AUDIO_SIMPLE } = await import(pathToFileURL(path.join(ENGINE, "lib", "audioPlan.js")).href);
   const simpleAudio = tl.look === "simple";
-  const cues = p.sfx === false ? [] : simpleAudio ? simpleCues(tl, sfxCues(tl)) : sfxCues(tl);
+  const cues = p.sfx === false ? [] : simpleAudio ? simpleCues(tl, sfxCues(tl), script) : sfxCues(tl);
   const audio = await lap("mix", () => mixAudio({ voice: v.wav, music: musicWav, out: mixM4a, duration: tl.duration, sfxCues: cues, ...(simpleAudio ? { musicUnderVoiceDb: AUDIO_SIMPLE.musicUnderVoiceDb } : {}) }));
   await put(p.out.mix, mixM4a, "audio/mp4");
   const spend = { directorUsd: 0, directorModel: null, builderUsd: 0, plannedDirectorUsd: 0, plannedBuilderUsd: 0 };

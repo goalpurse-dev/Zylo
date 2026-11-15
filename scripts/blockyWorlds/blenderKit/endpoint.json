@@ -1,0 +1,25 @@
+{
+ "name": "zyvo-blender-kit",
+ "image": "registry.fly.io/zyvo-cutaway-render-staging@sha256:070b337dcff1adee1c1dc4a7f97f745df0800969757db645fc0dfe11b797ced1",
+ "registryAuthId": "cmvlelgjk00593mjx9gycdtjw",
+ "templateId": "d93ylrsqdq",
+ "endpointId": "sp338bavcw2gtn",
+ "gpus": [
+  "NVIDIA RTX 4000 Ada Generation",
+  "NVIDIA RTX A4500",
+  "NVIDIA RTX A4000",
+  "NVIDIA RTX 2000 Ada Generation"
+ ],
+ "workersMax": 6,
+ "idleTimeout": 5,
+ "executionTimeoutMs": 3600000,
+ "blockyEndpoint": "gm9eqdkuyc2ofs",
+ "blockyWorkersMaxBefore": 6,
+ "blockyWorkersMaxNow": 0,
+ "updatedAt": "2026-11-14T13:33:12.365Z",
+ "workersMoveBefore": {
+  "blocky": 3,
+  "ours": 3
+ },
+ "workersMovedAt": "2026-11-15T15:34:48.053Z"
+}

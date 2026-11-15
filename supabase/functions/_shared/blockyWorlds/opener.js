@@ -35,3 +35,28 @@ export function openerProblem(line) {
   if (hasOpener(line)) return null;
   return `The first line must start with "In this town, " (it starts "${String(line ?? "").trim().slice(0, 30)}").`;
 }
+
+// ---------- the story formula's RULE LINE (owner, 2026-11-13) ----------
+// Line 1 is the result-first HOOK now; the rule comes right after it: "You see, in this town, [the rule]." (or "in this
+// world"), inside the first two SENTENCES. That phrase is required but is not the first words of the video. A script
+// whose lines carry beats (the hybrid writer's) is checked with this; older 7-part scripts keep the "In this town" opener.
+export const RULE_LINE_RE = /\byou see,?\s+in this (?:town|world),?\s+\S/i;
+
+/** The index of the line that holds the rule phrase inside the first two sentences, or -1. */
+export function ruleLineIndex(lines) {
+  let seen = 0;
+  for (let i = 0; i < (lines ?? []).length && seen < 2; i++) {
+    const sentences = String(lines[i]?.text ?? lines[i] ?? "").split(/(?<=[.!?])\s+/).filter(Boolean);
+    for (const s of sentences) {
+      if (RULE_LINE_RE.test(s)) return i;
+      if (++seen >= 2) break;
+    }
+  }
+  return -1;
+}
+
+/** The rule line's problem, or null. */
+export function ruleLineProblem(lines) {
+  if (ruleLineIndex(lines) >= 0) return null;
+  return 'The rule line is missing: within the first 2 sentences say "You see, in this town, [the one simple rule]." (the hook comes first, the rule right after it).';
+}

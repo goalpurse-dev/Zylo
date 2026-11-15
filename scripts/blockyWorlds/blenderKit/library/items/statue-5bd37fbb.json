@@ -1,0 +1,18 @@
+{
+ "id": "statue-5bd37fbb",
+ "name": "statue",
+ "kind": "prop",
+ "about": "Stone statue on a plinth for the plaza",
+ "code": "def statue(name, loc):\n    r = empty(name, loc)\n    m = mat('stat_stone', hexc('#b9bcc4'), 0.7)\n    box(name + '_pl', (3, 3, 3), (0, 0, 1.5), m, 0.1, parent=r)\n    box(name + '_bd', (1.6, 1, 3), (0, 0, 4.5), m, 0.1, parent=r)\n    sphere(name + '_hd', 0.8, (0, 0, 6.6), m, parent=r)\n    return r",
+ "source": {
+  "run": "run1",
+  "shots": [
+   47
+  ],
+  "title": "Hiccup Time"
+ },
+ "status": "approved",
+ "approved": true,
+ "createdAt": "2026-11-14T11:32:16.299Z",
+ "decidedAt": "2026-11-14T13:23:35.471Z"
+}

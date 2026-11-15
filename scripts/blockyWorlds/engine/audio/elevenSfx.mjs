@@ -17,6 +17,17 @@ export const TAKES = {
   growl: { seconds: 2.5, text: "a deep eerie creature growl, low and slow, creepy but not gory, close, slight reverb" },
   crowd_cheer: { seconds: 2.5, text: "a small-town crowd of people cheer and shout together, short burst, outdoors at night" },
   crowd_murmur: { seconds: 4, text: "a small crowd murmuring quietly outdoors, indistinct chatter, steady, loopable ambience" },
+  // the writer's sound words code can't make (2026-11-12): NOT BOUGHT until the owner OKs it. The owner's real rate on the
+  // five takes above: billed credits = ceil(11 x seconds) -> these 9 = 116 credits = $0.0232 (list rate 40/s: $0.0824)
+  meow: { seconds: 1.2, text: "a cute cartoon cat meows once, short, close, dry, no background" },
+  woof: { seconds: 1.0, text: "a friendly dog barks once, woof, close, dry, no background" },
+  moo: { seconds: 1.6, text: "a cow moos once, short and comic, close, dry, no background" },
+  quack: { seconds: 1.0, text: "a duck quacks once, close, dry, no background" },
+  oink: { seconds: 1.0, text: "a pig oinks once, short and comic, close, dry, no background" },
+  ribbit: { seconds: 1.0, text: "a frog croaks once, ribbit, close, dry, no background" },
+  gulp: { seconds: 0.8, text: "a cartoon gulp, one big swallow, close, dry, no background" },
+  munch: { seconds: 1.5, text: "a cartoon character munches food, three quick crunchy bites, close, dry" },
+  slurp: { seconds: 1.2, text: "a loud cartoon slurp through a straw, close, dry, no background" },
 };
 
 function envKey(name) {

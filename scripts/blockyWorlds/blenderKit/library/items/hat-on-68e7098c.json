@@ -1,0 +1,19 @@
+{
+ "id": "hat-on-68e7098c",
+ "name": "hat_on",
+ "kind": "prop",
+ "about": "Brown hat parented to a head",
+ "code": "def hat_on(ch, color='#6a4a2a'):\n    root = empty('hat_' + ch.name, (0, 0, 0), parent=ch.head)\n    m = mat('hat_brown', hexc(color), 0.6)\n    cyl('hat_top_' + ch.name, 0.5, 0.55, (0, 0, 0.88), m, 16, parent=root)\n    cyl('hat_brim_' + ch.name, 0.9, 0.08, (0, 0, 0.62), m, 16, parent=root)\n    return root",
+ "source": {
+  "run": "plane1",
+  "shots": [
+   20,
+   21
+  ],
+  "title": "The Town That Lives in a Plane"
+ },
+ "status": "approved",
+ "approved": true,
+ "createdAt": "2026-11-13T20:58:51.332Z",
+ "decidedAt": "2026-11-13T21:32:09.528Z"
+}

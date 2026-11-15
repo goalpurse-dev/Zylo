@@ -37,7 +37,7 @@ export function scenesOf(tl0, board) {
   for (const [n] of (tl0.lines ?? []).entries()) {
     const b = board.lines.find((x) => x.line === n);
     let sc;
-    if (b.keep) { const o = sceneOf(old, n); sc = { ...o, id: o.id, location: o.location, time: o.time }; }
+    if (b.keep) { const o = sceneOf(old, n) ?? { ...(out.at(-1) ?? {}), id: `k${n}`, location: out.at(-1)?.location ?? "street", time: out.at(-1)?.time ?? "day", setPieces: [] }; sc = { ...o, id: o.id, location: o.location, time: o.time }; } // no planned scene for a kept line: the one before (never a crash)
     else { const time = b.shots[0].light ?? "night"; sc = { id: `b${n}`, location: b.place ?? "street", time, cast: [], happens: "storyboard", board: true }; }
     const last = out.at(-1);
     const same = last && (sc.board ? last.board && last.location === sc.location && last.time === sc.time : last.id === sc.id);
@@ -87,6 +87,8 @@ export function applyStoryboard(tl00, board) {
     });
     b.shots.forEach((s, i) => shots.push(boardShot(s, { n, l, t0: starts[i], t1: i + 1 < starts.length ? starts[i + 1] : l.end, words: W, board, seed: 700 + n * 7 + i, part: old[0]?.part ?? "tour", subjects: old.map((x) => x.subject) })));
   }
+  // THE CUT PASS: the viral pace on the board shots (cutPass below)
+  const paced = cutPass(shots, tl.captions ?? []); shots.length = 0; shots.push(...paced);
   // the shots tile the voice: each starts where the one before ended
   for (let i = 1; i < shots.length; i++) shots[i].start = shots[i - 1].end;
   shots[0].start = 0; shots.at(-1).end = tl.duration;
@@ -119,6 +121,84 @@ export function boardHas(s, what) {
 
 // the camera type of a board camera preset (the planner's variety + framing checks read it)
 const CAM_TYPE = [[/^(face|eye_close|peek|window_in)/, "closeup"], [/^(cat)/, "low"], [/^(town_wide|street_wide|street_back|house:|arrive:|front:)/, "wide"], [/^(street_end|sky_up|pov_window|pov_eye)/, "low"], [/^(room_window|behind_window)/, "over_shoulder"], [/^(room_wide)/, "wide"]];
+// ------------------------------------------------------------------------------------------------ pre-voice checks
+// every final check of a board on a planned timeline (estimated word timing before the voice, the real timing after), as
+// per-line problems the storyboard director can repair: [{ line, problem }]. Timing-only problems (a cut under 0.5 s,
+// the same camera 3 times) are left to the cut pass and the after-voice run; problems no line owns are not returned.
+const TIMING_ONLY = /shorter than 0\.5 s|same camera 3 times|unknown expr/;
+export function lineProblems(tl, checks) {
+  const out = [], put = (line, problem) => { if (Number.isInteger(line) && line >= 0 && !TIMING_ONLY.test(problem) && !out.some((x) => x.line === line && x.problem === problem)) out.push({ line, problem }); };
+  for (const [kind, list] of Object.entries(checks)) for (const p of list ?? []) {
+    if (typeof p === "string") { const m = p.match(/\bline (\d+)/), s = p.match(/\bshot (\d+)/); put(m ? Number(m[1]) : s ? tl.shots?.[Number(s[1])]?.line : null, `${kind}: ${p}`); }
+    else if (p && typeof p === "object") put(Number.isInteger(p.line) ? p.line : tl.shots?.[p.shot]?.line, `${kind}: ${p.problem ?? (p.missing ? `missing on screen: ${p.missing.map((m) => m.name ?? m).join(", ")}` : JSON.stringify(p).slice(0, 160))}`);
+  }
+  return out;
+}
+/** the pre-voice run: the script with the board's current lines, planned with estimated timing (plan: the plan.mjs module) */
+export function preVoiceProblems({ plan, script, lines, board, planArgs = {} }) {
+  const s2 = { ...script, lines: script.lines.map((l, i) => ({ ...l, text: lines[i] ?? l.text })) };
+  const tl0 = plan.planVideo({ ...planArgs, script: s2, words: plan.estimateWords ? plan.estimateWords(s2) : null });
+  const tl = applyStoryboard(tl0, board);
+  const checks = { ...storyboardChecks(tl, board), timeline: plan.checkTimeline(tl).filter((p) => !/unknown built asset/.test(p)), visuals: plan.checkVisuals(tl, s2), subjects: plan.checkSubjects(tl), production: plan.checkProduction(tl) };
+  return lineProblems(tl, checks);
+}
+
+// ------------------------------------------------------------------------------------------------ the cut pass
+export const PACE = Object.freeze({ firstCutSec: 0.6, earlySec: 15, earlyMaxShot: 1.1, maxShot: 1.35, minShot: 0.5 });
+export const SHOCK = /^(suddenly|boom|bang|crash|kaboom|smash|snap|snapped|gasped|screamed|shrieked|froze|exploded|landed|snatched|grabbed|slammed|blinked|glared|stared|vanished|disappeared|wham|thud|pop|boop|aah+|no+)\b/i;
+const SIBLINGS = (b) => {
+  const [kind, who] = String(b.loc).split(":"), p0 = (b.people ?? [])[0]?.id;
+  if (kind === "street") return ["street_wide", "street_end", "town_wide"];
+  if (kind === "house") return [`front:${who}`, `house:${who}`, `window:${who}:0`];
+  if (kind === "place") return ["place_wide", "place_medium", ...(p0 ? [`face:${p0}`] : [])];
+  return ["room_wide", "room_window", "room_side", ...(p0 ? [`face:${p0}`] : [])];
+};
+const canFace = (b) => !/^(street|house)/.test(String(b.loc)); // the board films faces in rooms and places only
+/** split the board shots into quick cuts; each cut keeps the shot's action clock (board.t0 = its offset, dur0 = the whole) */
+export function cutPass(shots, captions = []) {
+  const out = [];
+  const tooSame = (type) => out.length >= 2 && out.at(-1).camera === type && out.at(-2).camera === type;
+  for (const s of shots) {
+    if (!s.board) {
+      // an old-planner shot after two board shots of its camera type: the board shot before it takes another angle
+      const p = out.at(-1);
+      if (tooSame(s.camera) && p?.board) { const alt = [p.board.cam, ...SIBLINGS(p.board)].find((x) => camTypeOf(x) !== s.camera); if (alt) { p.board.cam = alt; p.camera = camTypeOf(alt); } }
+      out.push(s); continue;
+    }
+    // a director's cut shorter than the minimum (0.32 s in the dogs replay): it joins the shot before it on the same line
+    if (s.end - s.start < PACE.minShot && out.at(-1)?.board && out.at(-1).line === s.line) { out.at(-1).end = s.end; continue; }
+    const dur = s.end - s.start, first = !out.length;
+    const L = s.start < PACE.earlySec ? PACE.earlyMaxShot : PACE.maxShot;
+    // the cut points: the very first cut by PACE.firstCutSec, then even parts no longer than L and no shorter than minShot
+    const parts = []; let a0 = s.start;
+    if (first && dur >= PACE.firstCutSec + PACE.minShot) { parts.push([a0, a0 + PACE.firstCutSec]); a0 += PACE.firstCutSec; }
+    const rest = s.end - a0, k = Math.max(1, Math.min(Math.floor(rest / PACE.minShot), Math.ceil(rest / L)));
+    for (let j = 0; j < k; j++) parts.push([a0 + (rest * j) / k, j === k - 1 ? s.end : a0 + (rest * (j + 1)) / k]);
+    const sib = SIBLINGS(s.board).filter((c) => c !== s.board.cam);
+    const shock = captions.filter((w) => w.start >= s.start && w.start < s.end && SHOCK.test(String(w.word).replace(/[^A-Za-z]/g, "")));
+    const p0 = (s.board.people ?? [])[0]?.id;
+    parts.forEach(([q0, q1], j) => {
+      const c = JSON.parse(JSON.stringify(s)); c.start = +q0.toFixed(3); c.end = +q1.toFixed(3);
+      c.board.t0 = +(q0 - s.start).toFixed(3); c.board.dur0 = +dur.toFixed(3);
+      const hit = shock.find((w) => w.start >= q0 && w.start < q1), after = shock.find((w) => w.start < q0 && w.start >= q0 - 1.2);
+      // a reaction close-up after a shock word (where the board films faces), else the next angle of the same place
+      let cam = j === 0 ? s.board.cam : after && p0 && canFace(s.board) ? `face:${p0}` : sib[(j - 1) % Math.max(1, sib.length)] ?? s.board.cam;
+      // the variety rule: never the same camera type 3 times in a row
+      if (tooSame(camTypeOf(cam))) cam = [s.board.cam, ...sib].find((x) => !tooSame(camTypeOf(x))) ?? cam;
+      c.board.cam = cam;
+      c.board.move = hit ? "crash" : j > 0 ? "whip" : "push"; c.board.moveAt = hit ? +(hit.start - q0).toFixed(3) : 0;
+      c.camera = camTypeOf(cam);
+      c.text = captions.filter((w) => w.start >= q0 && w.start < q1).map((w) => w.word).join(" ") || s.text;
+      out.push(c);
+    });
+  }
+  return out;
+}
+/** the pace of a timeline: cuts a minute, cuts in the first 15 s, the first cut */
+export function cutStats(tl) {
+  const sh = tl.shots ?? [], d = Number(tl.duration) || sh.at(-1)?.end || 1;
+  return { cuts: sh.length - 1, cutsPerMin: +(((sh.length - 1) / d) * 60).toFixed(1), first15: sh.filter((s) => s.start > 0 && s.start < 15).length, firstCut: +(sh[1]?.start ?? d).toFixed(2) };
+}
 const camTypeOf = (cam) => CAM_TYPE.find(([re]) => re.test(cam))?.[1] ?? "medium";
 // the words a board shot draws (windows everywhere outside and in every room; the actions' things)
 const ACT_SHOWS = { "fly:curtains": ["curtains", "kites", "kite"], "rip:curtains": ["curtains", "wind"], "smear:batter": ["batter", "pancake"], "lick:glass": ["batter", "tongue"], "bulge:curtains": ["curtains", "cloud"], "poke_out:cat": ["curtains"], "stack:bricks": ["bricks", "wall"], "nail:boards": ["boards", "painting", "boat"], "grab:boards": ["boards", "hammer"], "huddle:blanket": ["blanket"], "blow_off:blanket": ["blanket"], "peek:sock": ["sock", "hole"], "pull:sock": ["sock"] };
@@ -127,7 +207,8 @@ function showsOf(b) {
   if (b.loc === "street" || b.loc.startsWith("house:")) ["street", "house", "houses", "town"].forEach((w) => out.add(w));
   const PLACE_WORDS = { school: ["school", "classroom", "class", "desk", "desks", "teacher"], woods: ["woods", "forest", "trees", "tree", "path"], park: ["park", "trees", "bench", "pond", "grass", "square"], shop: ["shop", "store", "counter", "shelves", "till"] };
   if (/^place:/.test(b.loc)) for (const w of PLACE_WORDS[b.loc.slice(6)] ?? []) out.add(w);
-  for (const a of b.animals ?? []) [a.species, `${a.species}s`].forEach((w) => out.add(w));
+  const KIN = { bird: ["pigeon", "pigeons", "crow", "crows", "sparrow", "sparrows", "birdie"], dog: ["puppy", "puppies", "pup", "pups", "hound"], cat: ["kitten", "kittens", "kitty"], rabbit: ["bunny", "bunnies"], chicken: ["hen", "hens", "chick", "chicks"], mouse: ["mice"] };
+  for (const a of b.animals ?? []) [a.species, `${a.species}s`, ...(KIN[a.species] ?? [])].forEach((w) => out.add(w));
   for (const pr of [...(b.props ?? []).map((x) => x.name), ...(b.people ?? []).map((x) => x.hold).filter(Boolean)]) { out.add(pr); out.add(`${pr}s`); for (const a of PROP_ALIASES[pr] ?? []) out.add(a); }
   if (b.weather) [b.weather, `${b.weather}y`].forEach((w) => out.add(w));
   for (const a of b.acts) for (const w of ACT_SHOWS[a.k] ?? []) out.add(w);
@@ -144,7 +225,7 @@ function boardShot(s, { n, l, t0, t1, words, board, seed, part, subjects = [] })
     start: r3(t0), end: r3(t1), line: n, lines: [n], part, set: "board", light: s.light ?? "night", camera: camType,
     insert: null, marker: null, seed,
     text: inShot.map((w) => w.word).join(" ") || l.text,
-    board: { loc: s.loc, cam: s.cam, people: s.people ?? [], monster: s.monster ?? null, acts: (s.acts ?? []).map((a) => ({ ...a, at: at(a.at) })), houses, before: housesAt(board, n - 1), homes: board.bible.homes }, // before: the houses as the line starts (what the wind rips off, the sock pulled)
+    board: { loc: s.loc, cam: s.cam, people: s.people ?? [], monster: s.monster ?? null, acts: (s.acts ?? []).map((a) => ({ ...a, at: at(a.at) })), ...(s.animals?.length ? { animals: s.animals } : {}), ...(s.props?.length ? { props: s.props } : {}), ...(s.weather ? { weather: s.weather } : {}), houses, before: housesAt(board, n - 1), homes: board.bible.homes }, // before: the houses as the line starts (what the wind rips off, the sock pulled)
   };
   Object.assign(shot, manifest(shot.board));
   shot.board.shows = showsOf(shot.board);
@@ -174,11 +255,13 @@ export function housesInView(b) {
   const h = b.loc.split(":")[1];
   return h ? [h] : [];
 }
+const ANIMAL_OBJECTS = new Set(["dog", "cat", "duck", "cow", "pig", "sheep", "chicken", "rabbit", "goat", "mouse", "fox", "deer", "bear", "wolf", "frog", "turtle"]); // in lib/visuals.js OBJECT_CATALOG (checked 2026-11-12; not imported: visuals.js imports this file)
+const FACE_OK = new Set(["neutral", "happy", "sad", "scared", "surprised", "angry", "sleepy", "smirk", "cry", "excited", "shush", "yell", "sneeze"]); // plan.mjs EXPRS
 export function manifest(b) {
   const keys = new Set(b.acts.map((a) => a.k));
   const actors = b.people.map((p) => {
     const act = b.acts.find((a) => a.who === p.id && HOLD[a.k]);
-    return { id: p.id, spot: "center", pose: ({ cover_mouth: "scared" })[p.pose] ?? p.pose ?? (p.where === "room:bed" && !p.awake ? "sleep" : "stand"), expr: ({ worried: "scared", thinking: "neutral", grin: "happy", shocked: "surprised" })[p.face] ?? p.face ?? "neutral", facing: "camera", hold: act ? HOLD[act.k] : null, face: p.face ?? "neutral" };
+    return { id: p.id, spot: "center", pose: ({ cover_mouth: "scared" })[p.pose] ?? p.pose ?? (p.where === "room:bed" && !p.awake ? "sleep" : "stand"), expr: ({ worried: "scared", thinking: "neutral", grin: "happy", shocked: "surprised", laugh: "happy", crying: "cry", teary: "sad", determined: "neutral" })[p.face] ?? (FACE_OK.has(p.face) ? p.face : "neutral"), facing: "camera", hold: act ? HOLD[act.k] : null, face: p.face ?? "neutral" };
   });
   const objects = [];
   const add = (o) => { if (!objects.some((x) => x.name === o.name && x.state === o.state)) objects.push({ ...o, facing: "camera", spot: "back" }); };
@@ -188,6 +271,8 @@ export function manifest(b) {
   const changing = [...keys].some((k) => /^(rip:curtains|pull:sock|lick:glass)$/.test(k)); // the line's change happens on screen: the old state is drawn too
   for (const h of inView) for (const st of [houseOf(b.houses, h), ...(changing ? [houseOf(b.before, h)] : [])]) { if (!st) continue; if (COVER_OBJ[st.cover]) add(COVER_OBJ[st.cover]); if (st.bricks) add({ name: "wall" }); }
   for (const k of keys) for (const o of ACT_OBJ[k] ?? []) add(o);
+  // the kit expansion on screen: its animals (pets) are things the checks can see
+  for (const a of b.animals ?? []) if (ANIMAL_OBJECTS.has(a.species)) add({ name: a.species }); // the engine catalog s animals (a bird / an owl: board.shows only) /* props: board props, not engine catalog objects (their words are in board.shows) */
   const m = b.monster;
   const monsterState = m ? { spot: "back", state: m.state === "flee" ? "flee" : m.state === "lurk" ? "lurk" : "reveal", eye: m.eye ?? "stare", eyeAt: b.acts.find((a) => /:eye$/.test(a.k))?.at ?? 0 } : null;
   const setState = keys.has("glow:windows") || keys.has("lights_on:windows") ? { windows: "lit" } : keys.has("dark:windows") ? { windows: "dark" } : null;
