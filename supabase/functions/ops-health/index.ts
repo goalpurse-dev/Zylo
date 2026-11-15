@@ -15,7 +15,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { alertAdmin } from "../_shared/adminAlert.ts";
 import { readRunwareBalance } from "../_shared/runwareBalance.ts";
-import { servicesFor, runpodLiveFrom, countFailureKinds, dailyReport, failureKind, helsinkiClock, instantAlerts, judge, ownerEmails, ratePerDay, REPORT_HOUR_HELSINKI, stuckJobsLines, summarizeBackup } from "../_shared/opsHealth.js";
+import { servicesFor, runpodLiveFrom, blenderOnFrom, countFailureKinds, dailyReport, failureKind, helsinkiClock, instantAlerts, judge, ownerEmails, ratePerDay, REPORT_HOUR_HELSINKI, stuckJobsLines, summarizeBackup } from "../_shared/opsHealth.js";
 
 const SECRET = Deno.env.get("OPS_HEALTH_SECRET") ?? "";
 const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
@@ -203,7 +203,7 @@ async function collect() {
     out.vercel = { reachable: r.ok, error: r.ok ? undefined : `tryzyvo.com answered ${r.status}` };
   }
   // RunPod is live (red alerts) once Blocky Worlds is open beyond the owner (BLOCKY_WORLDS_ACCESS allowlist / everyone)
-  return servicesFor({ runpodLive: runpodLiveFrom(env("BLOCKY_WORLDS_ACCESS")) }).filter((s) => s.checked).map((service) => {
+  return servicesFor({ runpodLive: runpodLiveFrom(env("BLOCKY_WORLDS_ACCESS")), blenderOn: blenderOnFrom(env("BLOCKY_WORLDS_RENDER_ENGINE")) }).filter((s) => s.checked).map((service) => {
     const state = out[service.id] ?? {};
     return { service, state, judged: judge(service, state) };
   });

@@ -10,11 +10,16 @@
   "NVIDIA RTX A4000",
   "NVIDIA RTX 2000 Ada Generation"
  ],
- "workersMax": 3,
+ "workersMax": 6,
  "idleTimeout": 5,
  "executionTimeoutMs": 3600000,
  "blockyEndpoint": "gm9eqdkuyc2ofs",
  "blockyWorkersMaxBefore": 6,
- "blockyWorkersMaxNow": 3,
- "updatedAt": "2026-11-14T13:33:12.365Z"
+ "blockyWorkersMaxNow": 0,
+ "updatedAt": "2026-11-14T13:33:12.365Z",
+ "workersMoveBefore": {
+  "blocky": 3,
+  "ours": 3
+ },
+ "workersMovedAt": "2026-11-15T15:34:48.053Z"
 }

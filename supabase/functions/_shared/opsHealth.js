@@ -24,7 +24,7 @@ export const SERVICES = [
   // RunPod (2026-11-13): ONE account for Blocky Worlds (endpoint gm9eqdkuyc2ofs: the Studio previews + final frames, the
   // pipeline's jobs) and Cutaway's tests. Owner-only (shown, never red) until Blocky Worlds is open to testers or everyone
   // (servicesFor runpodLive); then red when it runs out within ALERT_DAYS or drops under minBalanceUsd.
-  { id: "runpod", name: "RunPod", does: "Blocky Worlds videos (previews + final frames) and Cutaway Explainer tests (one account)", kind: "balance", checked: true, ownerOnly: true, minBalanceUsd: 10,
+  { id: "runpod", name: "RunPod", does: "Blocky Worlds videos (three.js endpoint gm9eqdkuyc2ofs + the Blender engine sp338bavcw2gtn: previews + final frames) and Cutaway Explainer tests (one account)", kind: "balance", checked: true, ownerOnly: true, minBalanceUsd: 10,
     fix: "Top up at runpod.io (Billing).", autoTopUp: "Yes: auto-pay (threshold + amount, card) in Billing." },
   { id: "fal", name: "fal.ai", does: "lip-sync and an older video path", kind: "balance", checked: false,
     fix: "Top up at fal.ai (Billing).", autoTopUp: "Not found in fal's docs: top up by hand, check the dashboard." },
@@ -44,10 +44,17 @@ export const SERVICES = [
   { id: "cloudflare", name: "Cloudflare", does: "the domain's DNS and email forwarding", kind: "free", checked: false, fix: "-", autoTopUp: "Not applicable." },
 ];
 
-/** The services for this check: RunPod counts as live (red alerts) once Blocky Worlds is open beyond the owner. */
-export function servicesFor({ runpodLive = false } = {}) {
-  return SERVICES.map((s) => (s.id === "runpod" && runpodLive ? { ...s, ownerOnly: false } : s));
+// THE BLENDER ENGINE (2026-11-15): one owner test video spends ~$1 of GPU and ~$3 in all, and a run that meets an empty
+// RunPod account half-way loses the paid director: with the Blender engine on (BLOCKY_WORLDS_RENDER_ENGINE=blender) a
+// balance under BLENDER_FLOOR_USD is RED even while Blocky Worlds is owner-only (the owner gets the instant alert)
+export const BLENDER_FLOOR_USD = 15;
+/** The services for this check: RunPod counts as live (red alerts) once Blocky Worlds is open beyond the owner; with the
+ *  Blender engine on, its low-balance floor is red even while owner-only. */
+export function servicesFor({ runpodLive = false, blenderOn = false } = {}) {
+  return SERVICES.map((s) => (s.id !== "runpod" ? s : (runpodLive || blenderOn) ? { ...s, ...(runpodLive ? { ownerOnly: false } : {}), ...(blenderOn ? { ownerFloorUsd: BLENDER_FLOOR_USD, minBalanceUsd: Math.max(s.minBalanceUsd ?? 0, BLENDER_FLOOR_USD) } : {}) } : s));
 }
+/** BLOCKY_WORLDS_RENDER_ENGINE (the worker's switch; also set as a project secret so this check sees it) */
+export const blenderOnFrom = (engine) => String(engine ?? "").trim().toLowerCase() === "blender";
 /** BLOCKY_WORLDS_ACCESS (a project secret every function can read): allowlist or everyone = real users render on RunPod */
 export const runpodLiveFrom = (access) => ["allowlist", "everyone"].includes(String(access ?? "").trim().toLowerCase());
 
@@ -181,7 +188,9 @@ export function judge(service, s) {
     todo.push(kinds ? failureAdvice(service, kinds) : service.fix);
   }
   const what = [...new Set(todo)].join(" ");
-  if (service.ownerOnly) return { ok: red.length === 0, red: [], info: red, left, todo: what }; // owner-only (Cutaway): shown, never red
+  // owner-only (Cutaway): shown, never red; except the Blender floor: a balance under it is red for the owner too
+  const underFloor = service.ownerFloorUsd != null && s.balance != null && Number(s.balance) < service.ownerFloorUsd;
+  if (service.ownerOnly && !underFloor) return { ok: red.length === 0, red: [], info: red, left, todo: what };
   return { ok: red.length === 0, red, info: [], left, todo: what };
 }
 

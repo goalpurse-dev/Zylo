@@ -16,9 +16,48 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const argv = process.argv.slice(2), GO = argv.includes("--yes"), ROLLBACK = argv.includes("--rollback");
 const image = argv.includes("--image") ? argv[argv.indexOf("--image") + 1] : null;
 const CUTAWAY = "f66astc0vrus92", BLOCKY = "gm9eqdkuyc2ofs", NAME = "zyvo-blender-kit";
-const BLOCKY_MAX = 3, OURS_MAX = 3;
+// after --move-workers (2026-11-15) a re-point keeps the moved numbers (endpoint.json), never back to 3 + 3
+const SAVED0 = (() => { try { return JSON.parse(fs.readFileSync(path.join(here, "endpoint.json"), "utf8")); } catch { return {}; } })();
+const BLOCKY_MAX = SAVED0.workersMoveBefore ? SAVED0.blockyWorkersMaxNow ?? 3 : 3, OURS_MAX = SAVED0.workersMoveBefore ? SAVED0.workersMax ?? 3 : 3;
 const GPUS = ["NVIDIA RTX 4000 Ada Generation", "NVIDIA RTX A4500", "NVIDIA RTX A4000", "NVIDIA RTX 2000 Ada Generation"];
 const epFile = path.join(here, "endpoint.json");
+// MOVE WORKERS (owner 2026-11-15, the Blender launch): the three.js endpoint gm9eqdkuyc2ofs workersMax -> 0 and the Blender
+// endpoint -> 6; only workersMax changes (images / templates stay); the before values go into endpoint.json
+//   node setup.mjs --move-workers [--yes]               3.js 3 -> 0, Blender 3 -> 6
+//   node setup.mjs --move-workers --rollback [--yes]    back to the saved before values
+const MOVE = argv.includes("--move-workers"), MOVE_TO = { blocky: 0, ours: 6 };
+if (MOVE) {
+  const env0 = Object.fromEntries(fs.readFileSync("C:/Users/Public/Zylo/.env.local", "utf8").split(/\r?\n/).map((l) => l.match(/^\s*([A-Z_0-9]+)\s*=\s*(.*)\s*$/)).filter(Boolean).map((m) => [m[1], m[2].replace(/^["']|["']$/g, "")]));
+  const K = env0.RUNPOD_API_KEY;
+  if (!K) throw new Error("RUNPOD_API_KEY missing in .env.local");
+  const call = async (p, init = {}) => {
+    if (p.includes(CUTAWAY) && (init.method ?? "GET") !== "GET") throw new Error("refusing to change the Cutaway endpoint");
+    const r = await fetch(`https://rest.runpod.io/v1${p}`, { ...init, headers: { Authorization: `Bearer ${K}`, "Content-Type": "application/json" } });
+    const t = await r.text(); let j; try { j = JSON.parse(t); } catch { j = t; }
+    if (!r.ok) throw new Error(`${init.method ?? "GET"} ${p}: ${r.status} ${String(t).slice(0, 300)}`);
+    return j;
+  };
+  const saved = JSON.parse(fs.readFileSync(epFile, "utf8"));
+  const list = await call("/endpoints");
+  const b = list.find((e) => e.id === BLOCKY), o = list.find((e) => e.id === saved.endpointId);
+  if (!b || !o) throw new Error("the three.js or the Blender endpoint is missing from this account");
+  const cut = list.find((e) => e.id === CUTAWAY);
+  const rest = list.filter((e) => e.id !== BLOCKY && e.id !== o.id).reduce((s, e) => s + (e.workersMax ?? 0), 0);
+  const to = ROLLBACK ? saved.workersMoveBefore : MOVE_TO;
+  if (!to) throw new Error("no saved before values (workersMoveBefore) to roll back to");
+  const before = { blocky: b.workersMax, ours: o.workersMax, cutaway: cut?.workersMax ?? null, rest };
+  console.log(`${GO ? "" : "[dry run] "}before: three.js ${BLOCKY} ${b.workersMax}, Blender ${o.id} ${o.workersMax}, Cutaway ${CUTAWAY} ${before.cutaway} (untouched), all others ${rest}; after: three.js ${to.blocky}, Blender ${to.ours} -> ${to.blocky + to.ours + rest} of 10`);
+  if (to.blocky + to.ours + rest > 10) throw new Error("that would go over the account's 10 workers");
+  if (!GO) { console.log("dry run: nothing changed (add --yes)"); process.exit(0); }
+  // lower first, then raise: the account total never goes over 10 in between
+  await call(`/endpoints/${BLOCKY}`, { method: "PATCH", body: JSON.stringify({ workersMax: to.blocky }) });
+  await call(`/endpoints/${o.id}`, { method: "PATCH", body: JSON.stringify({ workersMax: to.ours }) });
+  const after = await call("/endpoints");
+  const now = { blocky: after.find((e) => e.id === BLOCKY)?.workersMax, ours: after.find((e) => e.id === o.id)?.workersMax, cutaway: after.find((e) => e.id === CUTAWAY)?.workersMax ?? null };
+  fs.writeFileSync(epFile, JSON.stringify({ ...saved, workersMax: now.ours, blockyWorkersMaxNow: now.blocky, ...(ROLLBACK ? { workersMoveBefore: null } : { workersMoveBefore: { blocky: before.blocky, ours: before.ours } }), workersMovedAt: new Date().toISOString() }, null, 1));
+  console.log(`after (read back): three.js ${now.blocky}, Blender ${now.ours}, Cutaway ${now.cutaway} (untouched); wrote ${epFile}`);
+  process.exit(0);
+}
 if (!ROLLBACK && !image?.startsWith("registry.fly.io/zyvo-cutaway-render-staging@sha256:")) throw new Error("--image registry.fly.io/zyvo-cutaway-render-staging@sha256:... (pinned by digest)");
 
 const env = Object.fromEntries(fs.readFileSync("C:/Users/Public/Zylo/.env.local", "utf8").split(/\r?\n/).map((l) => l.match(/^\s*([A-Z_0-9]+)\s*=\s*(.*)\s*$/)).filter(Boolean).map((m) => [m[1], m[2].replace(/^["']|["']$/g, "")]));
