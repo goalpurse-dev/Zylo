@@ -1805,10 +1805,22 @@ def zw_clear_view(t0, t1, step=12):
                 v = inv @ q
                 if v.z < -0.5 and abs(v.y / -v.z) < tv and abs(v.x / -v.z) < th:
                     pts.append(q)
-        for q in pts[:8]:
-            e = c + (q - c) * 0.9
+        segs = [(c, c + (q - c) * 0.9) for q in pts[:8]]
+        # the NEAR CENTRE of the view (round 2 of the first test: a tested "close" spot aimed past the cast at a sidewalk
+        # tree that filled the frame): 9 rays through the middle of the frame, as far as the nearest cast point (max 14)
+        rot = cam.matrix_world.to_3x3()
+        near = min([(q - c).length * 0.9 for q in pts] + [14.0])
+        for u in (-0.4, 0.0, 0.4):
+            for v in (-0.4, 0.0, 0.4):
+                d = rot @ Vector((u * th, v * tv, -1.0))
+                d.normalize()
+                segs.append((c, c + d * near))
+        for a, e in segs:
             for o, lo, hi in cands:
-                if o.name not in hidden and not (lo.x <= c.x <= hi.x and lo.y <= c.y <= hi.y and lo.z <= c.z <= hi.z) and zw_seg_hits(c, e, lo, hi):
+                inst = o.type == "EMPTY"
+                inside = lo.x <= c.x <= hi.x and lo.y <= c.y <= hi.y and lo.z <= c.z <= hi.z
+                # a camera inside an instanced tree / lamp: that tree goes (a mesh around the camera, e.g. a room, stays)
+                if o.name not in hidden and (inst or not inside) and zw_seg_hits(a, e, lo, hi):
                     hidden.add(o.name)
     for o, lo, hi in cands:
         if o.name in hidden:

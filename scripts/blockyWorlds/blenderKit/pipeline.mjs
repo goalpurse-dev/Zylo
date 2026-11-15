@@ -22,10 +22,11 @@ import { loadEnv } from "../engine/runpod/client.mjs";
 import { makeDirector, systemPrompt, tileShots, assemble, staticCheck, wordLines, planLocations, planProblems, shotProblems, heroOf, giantSuspect, MODELS, BATCH, MIN_LOCATIONS, PRICING } from "./director.mjs";
 import { captionColors } from "./speakers.mjs";
 import { LOCATIONS, DRESS } from "./worlds/locations.mjs";
-import { runpod, RATE, BOOT_S, GPU, finalEstimate, previewEstimate, fitLimits } from "./rp.mjs";
+import { runpod, RATE, BOOT_S, GPU, finalEstimate, previewEstimate, fitLimits, chunkLimitS, chunkFloorS, finishLimitS, finishFloorS } from "./rp.mjs";
 import { shotFrames, splitShots } from "./plan.mjs";
 import { saveAsset, functionSource, findAssets } from "./library.mjs";
 import { makeBed, kitMusicDb } from "./music.mjs";
+import { actionsSource, actionDocs } from "./actions/actions.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, "../../..");
@@ -44,6 +45,9 @@ const FIX_NOTES = has("fix-notes") ? JSON.parse(fs.readFileSync(path.resolve(arg
 // header) instead of building worlds; its instructions carry ONE kit example + the library docs; tighter output limits;
 // one fix round by default. --scene-plan <file>: the owner's scene plan ({ scenes: [{ lines: [a, b], location }] }).
 const WORLDS = has("worlds") ? fs.readFileSync(path.join(HERE, "worlds", "worlds.py"), "utf8") : "";
+// THE ACTION LIBRARY (owner 2026-11-15, actions/actions.py + its catalog actions.mjs): tested action moments (the catch
+// ...), pasted after the world library in library mode; the director reads the catalog (actionDocs)
+const ACTIONS_SRC = WORLDS ? actionsSource() : "";
 const SCENE_PLAN = has("scene-plan") ? JSON.parse(fs.readFileSync(path.resolve(arg("scene-plan")), "utf8")) : null;
 const SLUG = arg("slug", "plane_town"), ROUNDS = Math.min(2, Number(arg("rounds", WORLDS ? 1 : 2))), K = Number(arg("chunks", 6));
 const MODEL = MODELS[arg("model", "sonnet")] ?? MODELS.sonnet;
@@ -111,8 +115,8 @@ const R = runpod({ L, prefix: state.rpPrefix, log: say });
 // 73 s in 123 s (+ our loudnorm / captions re-encode). Limits: 1.2 s/frame (1.8x), 6 s a preview shot, finish 300 s + 4x
 // the video's length.
 export const LIMIT = Object.freeze({ sPerFrame: 1.2, perShotS: 3, chunkS: 180, previewShotS: 6, previewJobS: 180 });
-const chunkMax = (g) => Math.round(g.n * LIMIT.sPerFrame + g.ids.length * LIMIT.perShotS + LIMIT.chunkS);
-const finishMax = () => Math.round(300 + 4 * dur);
+const chunkMax = (g) => chunkLimitS({ frames: g.n, shots: g.ids.length }); // scales with the work x the measured speed (rp.mjs)
+const finishMax = () => finishLimitS({ dur });
 // THE RESERVE (owner 2026-11-14: priced from the MEASURED rates x a margin, rp.mjs GPU): the final, the previews still
 // to come (round 0, every fix round left) and the checker calls still to come; a checker call does not reserve itself.
 // The hard stop: every job's limit (cancel) is booked before it is sent, and the final's limits are fitted to the money
@@ -142,6 +146,7 @@ const worldDocs = WORLDS ? [
   `DRESS (the story's look, one JSON object in "dress"): time ${DRESS.time.join(" | ")}; weather ${DRESS.weather.join(" | ")}; landmark ${DRESS.landmark.join(" | ")} (+ landmark_text); signs: up to 8 short shop sign words from the story; billboard: a short line; props: ${DRESS.props.join(", ")} (+ blimp_text); people: 0-40 background people.`,
   "THE PLACES (id: what it is; spots; marks):",
   ...LOCATIONS.map((l) => `- ${l.id}: ${l.label}: ${l.about}; spots ${l.spots.join(", ")}; marks ${l.marks.join(", ")}`),
+  actionDocs(),
 ].join("\n") : "";
 const system = systemPrompt({ kitDir: KIT, kitMapFile: kitMap, worldDocs, ...(WORLDS ? { examples: ["sneeze_teleport"] } : {}) });
 const D = makeDirector({ out: OUT, L, apiKey, model: MODEL, system, reserve, log: say, ...(WORLDS ? { tokens: { plan: 16000, batch: 10000, fix: 12000 } } : {}) });
@@ -217,7 +222,7 @@ function mergeOut(ids, why) {
   say(`merged ${ids.length} shot(s) into their neighbours (${why}): ${ids.join(", ")}`);
 }
 // library mode: the world library + the story's dress above the director's header
-const headerOf = () => (WORLDS ? `${WORLDS}\nZW_STORY_DRESS = ${pyLiteral(plan.dress ?? {})}\n\n` : "") + plan.header;
+const headerOf = () => (WORLDS ? `${WORLDS}\n${ACTIONS_SRC}\nZW_STORY_DRESS = ${pyLiteral(plan.dress ?? {})}\n\n` : "") + plan.header;
 const writeFile = () => assemble({ title: plan.title, header: headerOf(), shots: plan.shots, bodies: state.bodies, slug: SLUG });
 
 // batches of <= BATCH shots; a cut-off batch keeps its complete shots, the rest go into the next call
@@ -471,7 +476,7 @@ const NF = frames[frames.length - 1].f1, groups = splitShots(frames, K);
 // else scaled down toward the measured time x 1.3 (never below); no money for even that: a clean stop before any chunk
 const doneC = groups.map((_, i) => Boolean(state.chunks?.[i]?.done));
 const hardL = [...groups.map((g, i) => (doneC[i] ? 0 : chunkMax(g))), finishMax()];
-const floorL = [...groups.map((g, i) => (doneC[i] ? 0 : Math.ceil(g.n * GPU.sPerFrame * 1.3 + 45))), Math.ceil(GPU.finishS(dur) * 1.25)];
+const floorL = [...groups.map((g, i) => (doneC[i] ? 0 : chunkFloorS({ frames: g.n }))), finishFloorS({ dur })];
 const fit = fitLimits({ hard: hardL.filter((h) => h > 0), floor: floorL.filter((_, i) => hardL[i] > 0), roomUsd: L.capUsd - L.total() });
 if (!fit) throw Object.assign(new Error(`CAP: the final cannot be funded: $${(L.capUsd - L.total()).toFixed(3)} left, the measured final needs more: stopped before any chunk`), { code: "CAP" });
 const limits = []; { let k = 0; for (const h of hardL) limits.push(h > 0 ? fit.limits[k++] : 0); }

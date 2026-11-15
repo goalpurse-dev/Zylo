@@ -20,7 +20,19 @@ export const BOOT_S = 95; // a new worker's boot, billed (measured 53-72 s delay
 // are fitted to the money left (fitLimits), never below the measured time x a margin.
 //   measured: 0.64-0.69 s a final frame (4 videos, 18 chunks); previews ~9.6 s a shot (76 shots of world-library shots
 //   in 3 jobs of 230-240 s); the kit's finish ~60 s + ~1.6 s per video second (+ our loudnorm / captions)
-export const GPU = Object.freeze({ sPerFrame: 0.66, previewShotS: 10, finishS: (dur) => 60 + 2 * dur, margin: 1.5 });
+//   2026-11-14 (Milo, 96 s): chunks 0.65-0.99 s a frame on mixed workers; the finish ran OVER 631 s (cancelled by a fixed
+//   limit): the measured figures are widened to the slow end and EVERY limit now scales with the video and these figures
+export const GPU = Object.freeze({ sPerFrame: 0.95, previewShotS: 10, finishS: (dur) => 90 + 6.5 * dur, margin: 1.5 });
+// THE JOB LIMITS (cancel) scale with the work and the measured speed x a safety factor (owner 2026-11-14: a fixed
+// "300 s + 4x the length" finish limit cancelled a 96 s video's finish after the chunks were paid)
+export const LIMIT_FACTOR = 1.6;
+/** a final chunk's time limit: its frames at the (widened) measured speed x the factor + per-shot builds + the job's setup */
+export const chunkLimitS = ({ frames, shots, g = GPU }) => Math.round(frames * g.sPerFrame * LIMIT_FACTOR + shots * 3 + 180);
+/** a chunk's floor when the limits must be fitted to the money left: the measured speed x 1.15 + setup */
+export const chunkFloorS = ({ frames, g = GPU }) => Math.ceil(frames * g.sPerFrame * 1.15 + 45);
+/** the finish's time limit: scales with the video's length (unpack, mix, captions, 3 encodes + our loudnorm / captions) */
+export const finishLimitS = ({ dur, g = GPU }) => Math.round(g.finishS(dur) * LIMIT_FACTOR);
+export const finishFloorS = ({ dur, g = GPU }) => Math.ceil(g.finishS(dur) * 1.15);
 /** the final's priced GPU cost (chunks + boots + the finish) */
 export const finalEstimate = ({ frames, chunks, dur, g = GPU }) => +((frames * g.sPerFrame * g.margin + Math.min(chunks, 3) * BOOT_S + g.finishS(dur) * g.margin + BOOT_S) * RATE).toFixed(4);
 /** a preview round's priced GPU cost */
