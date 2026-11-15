@@ -11,11 +11,13 @@
 //   Dockerfile, fly.toml
 // Then a static check: every relative import in the copied code resolves to a copied file (the image build also runs
 // worker.mjs --smoke, which imports everything). Any miss: no Dockerfile in the folder, exit code 1.
-//   node scripts/blockyWorlds/studioWorker/buildContext.mjs [--out <dir>]     (default: <tmp>/zyvo-blocky-studio-build)
+//   node scripts/blockyWorlds/studioWorker/buildContext.mjs [--out <dir>] [--kit <kit root>] [--ref <commit>]
+//        (default out: <tmp>/zyvo-blocky-studio-build; default kit: BLOCKY_WORLDS_KIT_DIR, else the laptop's reference copy)
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { spawnSync } from "node:child_process";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, "../../..");
@@ -58,11 +60,42 @@ export function missingImports(files, exists) {
   return miss;
 }
 
-export async function buildContext(out) {
+// THE BLENDER KIT (the owner's Blender engine): a creator's kit used with permission, NEVER in git. Only the text the
+// director and its tools read go into the context's kit/ folder (the Dockerfile puts it at /kit, BLOCKY_WORLDS_KIT_DIR):
+// its guide, playbook, rbx/ toolkit, tools/*.py and the worked examples. Never its setup / voice / ElevenLabs scripts
+// (the owner's exclusion), assets or sounds (Blender runs on RunPod, not here).
+export const KIT_DEFAULT = path.join(ROOT, "reference/blocky-worlds/roblox-story-kit/unzipped/roblox-story-kit");
+const KIT_SKIP = /(^|\/)(setup\.py|eleven\.py|voice\.py|voice_run\.py)$/;
+/** the kit files the image needs (paths relative to the kit root) */
+export function kitFiles(kit) {
+  const relK = (p) => path.relative(kit, p).split(path.sep).join("/");
+  const keep = (f) => /^(SKILL\.md|README\.md|engine\/PLAYBOOK\.md)$/.test(f) || /^engine\/rbx\/.+\.py$/.test(f) || /^engine\/tools\/[^/]+\.py$/.test(f)
+    || /^engine\/videos\/[^/]+\/(shots\.py|script\.txt|audio\/[^/]+\.json)$/.test(f);
+  return walk(kit).map(relK).filter((f) => keep(f) && !KIT_SKIP.test(f)).sort();
+}
+
+/** a repo file's bytes at a git ref (the COMMITTED version), or null when the ref has no such file */
+export function gitBytes(ref, p) {
+  const r = spawnSync("git", ["-C", ROOT, "show", `${ref}:${p}`], { maxBuffer: 256 * 1024 * 1024 });
+  return r.status === 0 ? r.stdout : null;
+}
+
+// --ref <commit> (the go-live rule "deploy only committed code"): every repo file is taken from that commit, never from
+// the shared working folder (other sessions' uncommitted edits stay out); a file the commit lacks fails the build context
+export async function buildContext(out, { kit = process.env.BLOCKY_WORLDS_KIT_DIR || KIT_DEFAULT, ref = null } = {}) {
+  if (!fs.existsSync(path.join(kit, "SKILL.md")) || !fs.existsSync(path.join(kit, "engine", "PLAYBOOK.md"))) return { ok: false, out, missing: [`the Blender kit (SKILL.md, engine/PLAYBOOK.md) at ${kit}: pass --kit <dir> or BLOCKY_WORLDS_KIT_DIR`] };
   if (path.resolve(out).startsWith(ROOT + path.sep)) throw new Error("build the context OUTSIDE the repo folder (default: the temp folder)");
   fs.rmSync(out, { recursive: true, force: true });
   const files = contextFiles();
-  for (const f of files) cp(path.join(ROOT, f), path.join(out, "app", f));
+  const notCommitted = [];
+  const put = (f, dst) => {
+    if (!ref) return cp(path.join(ROOT, f), dst);
+    const b = gitBytes(ref, f);
+    if (!b) { notCommitted.push(f); return; }
+    fs.mkdirSync(path.dirname(dst), { recursive: true }); fs.writeFileSync(dst, b);
+  };
+  for (const f of files) put(f, path.join(out, "app", f));
+  if (notCommitted.length) return { ok: false, out, ref, missing: notCommitted.map((f) => `${f} (not in ${ref})`) };
   // the page files the bundle ships (git is on the laptop, not in the container)
   const { IMAGE_SINCE } = await import(pathToFileURL(path.join(ROOT, "scripts/blockyWorlds/studio/bundle.mjs")).href);
   const { changedFiles } = await import(pathToFileURL(path.join(ENGINE, "dev/simple/bundle.mjs")).href);
@@ -70,18 +103,21 @@ export async function buildContext(out) {
   fs.mkdirSync(path.join(out, "app", "build"), { recursive: true });
   fs.writeFileSync(path.join(out, "app", "build", "changed-files.json"), JSON.stringify({ since: IMAGE_SINCE, files: changed, at: new Date().toISOString() }, null, 1));
   const set = new Set(files);
-  const miss = missingImports(files, { has: (p) => set.has(p), read: (p) => fs.readFileSync(path.join(ROOT, p), "utf8") });
+  const miss = missingImports(files, { has: (p) => set.has(p), read: (p) => fs.readFileSync(path.join(out, "app", p), "utf8") });
   if (miss.length) return { ok: false, out, files: files.length, missing: miss };
-  cp(path.join(HERE, "Dockerfile"), path.join(out, "Dockerfile"));
-  cp(path.join(HERE, "fly.toml"), path.join(out, "fly.toml"));
+  const kf = kitFiles(kit);
+  for (const f of kf) cp(path.join(kit, f), path.join(out, "kit", f));
+  put("scripts/blockyWorlds/studioWorker/Dockerfile", path.join(out, "Dockerfile"));
+  put("scripts/blockyWorlds/studioWorker/fly.toml", path.join(out, "fly.toml"));
+  if (notCommitted.length) return { ok: false, out, ref, missing: notCommitted };
   const bytes = walk(out).reduce((a, f) => a + fs.statSync(f).size, 0);
-  return { ok: true, out, files: files.length, changed: changed.length, mb: +(bytes / 1e6).toFixed(1) };
+  return { ok: true, out, ref: ref ?? "working folder", files: files.length, kitFiles: kf.length, changed: changed.length, mb: +(bytes / 1e6).toFixed(1) };
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const argv = process.argv.slice(2);
   const out = path.resolve(argv.includes("--out") ? argv[argv.indexOf("--out") + 1] : path.join(os.tmpdir(), "zyvo-blocky-studio-build"));
-  const r = await buildContext(out);
+  const r = await buildContext(out, { ...(argv.includes("--kit") ? { kit: path.resolve(argv[argv.indexOf("--kit") + 1]) } : {}), ...(argv.includes("--ref") ? { ref: argv[argv.indexOf("--ref") + 1] } : {}) });
   console.log(JSON.stringify(r, null, 1));
   process.exit(r.ok ? 0 : 1);
 }

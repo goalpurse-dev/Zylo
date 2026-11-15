@@ -5,7 +5,10 @@
 //   node scripts/blockyWorlds/studioWorker/worker.mjs            the loop (the container's command)
 //   node ... worker.mjs --check                                  which secrets are set (names only) + a read-only DB ping
 //   node ... worker.mjs --once                                   take at most one run, then exit
-//   node ... worker.mjs --smoke                                  imports every module (the image build runs it): no key, no call
+//   node ... worker.mjs --smoke                                  imports every module + the Blender engine's free checks
+//                                                                (the image build runs it): no key, no call
+//   node ... worker.mjs --check-blender                          the Blender engine end to end in this image: the free
+//                                                                checks + ONE paid still (<= $0.05); never takes a run
 // It says hello every ~30 s (blocky_worlds_workers): blocky-worlds-api refuses a start (nothing charged) without one.
 // It does not take a run while paid calls are off or the emergency cap is reached (the run waits; the sweeper fails and
 // refunds it after maxWaitMin if nobody can take it).
@@ -27,8 +30,27 @@ if (argv.includes("--smoke")) {
   // every module the loop can load, imported once (the Docker build fails on a missing file); no key is read
   keysFromEnv();
   await import("./steps.mjs");
+  await import("../blenderKit/workerSteps.mjs");
+  await import("../blenderKit/director.mjs");
   say(`smoke ok: steps, runner, config (engine ${STUDIO.endpoint}, model ${STUDIO.model}, ${STUDIO.rounds} fix round)`);
+  // THE BLENDER ENGINE (free checks): python3 + PIL, the kit, shotcheck / kitmap / contact, ffmpeg: a miss FAILS the build
+  const { localChecks, report } = await import("./blenderCheck.mjs");
+  if (!report(localChecks(), (m) => say(`blender ${m}`))) { say("smoke FAILED: the Blender engine cannot run in this image"); process.exit(1); }
   process.exit(0);
+}
+if (argv.includes("--check-blender")) {
+  // the dry check of the Blender engine inside the built image: the free checks + ONE paid still (a few cents, refused
+  // over $0.05). It never touches the run queue (no claim, no hello)
+  const { localChecks, gpuStill, report } = await import("./blenderCheck.mjs");
+  const items = localChecks();
+  let still = { ok: false, detail: "skipped: a free check failed", usd: 0 };
+  if (items.every((i) => i.ok)) {
+    try { still = await gpuStill({ log: (m) => say(m) }); } catch (e) { still = { ok: false, detail: String(e?.message ?? e).slice(0, 300), usd: 0 }; }
+  }
+  items.push({ name: `one still on the Blender endpoint (cost $${Number(still.usd ?? 0).toFixed(4)})`, ok: still.ok, detail: still.detail });
+  const ok = report(items, (m) => say(m));
+  say(ok ? "check-blender: ALL PASS" : "check-blender: FAILED");
+  process.exit(ok ? 0 : 1);
 }
 if (argv.includes("--check")) {
   for (const [k, v] of Object.entries(describeConfig())) say(`${k}: ${v}`);

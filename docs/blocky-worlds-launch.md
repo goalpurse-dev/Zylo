@@ -369,3 +369,20 @@ cannot render: it waits and is failed + refunded by the sweeper. Rollback:
 - The first `db query` was refused by this session's permission check (a production database change): nothing was
   changed, and steps b-e (secrets, deploys, the scoped merge + push) were not started.
 - RunPod balance (read-only): **$4.19**: under the $15 Blender floor and under $30: top up before the first video.
+
+## The worker image for the Blender engine (2026-11-15)
+The Studio worker image now runs the owner's Blender engine path (`blenderKit/workerSteps.mjs` -> `pipeline.mjs`):
+python3 as `python` + Pillow (Debian `python3 python3-pil python-is-python3`), ffmpeg, and the KIT's text at `/kit`
+(`BLOCKY_WORLDS_KIT_DIR=/kit`: SKILL.md, PLAYBOOK.md, rbx/, tools/*.py, the worked examples; never setup / voice
+scripts, assets or sounds; never in git). The build runs `worker.mjs --smoke`, which now FAILS on a missing piece.
+1. Build context from COMMITTED code only (the shared folder holds other sessions' edits):
+   `node scripts/blockyWorlds/studioWorker/buildContext.mjs --ref HEAD --out <a folder outside the repo>`
+   (the kit comes from `BLOCKY_WORLDS_KIT_DIR` or the laptop's reference copy; `--kit <dir>` overrides).
+2. `cd <that folder>`; `fly apps create zyvo-blocky-studio` (once); secrets (names only):
+   `SUPABASE_URL SUPABASE_SERVICE_ROLE_KEY ANTHROPIC_API_KEY ELEVENLABS_API_KEY RUNPOD_API_KEY` +
+   `BLOCKY_WORLDS_RENDER_ENGINE=blender BLOCKY_WORLDS_BLENDER_OWNER_IDS=<the owner's auth user id>`.
+3. `fly deploy -a zyvo-blocky-studio --ha=false --remote-only` then `fly scale count 0 -a zyvo-blocky-studio`.
+4. The dry check in the built image (never takes a run; ONE still, worst case $0.04, refused over $0.05):
+   `fly machine run <the deployed image> -a zyvo-blocky-studio --rm --restart no --vm-size shared-cpu-2x --vm-memory 4096 -- node scripts/blockyWorlds/studioWorker/worker.mjs --check-blender`
+   (the image name is in `fly releases -a zyvo-blocky-studio --image`). Every line must say PASS.
+5. `fly scale count 1 -a zyvo-blocky-studio`; `fly logs -a zyvo-blocky-studio` shows "Blender kit engine ON for 1 owner(s)".

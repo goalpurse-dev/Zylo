@@ -541,7 +541,9 @@ for (const b of plan.newBuilds ?? []) {
   const code = functionSource(plan.header, b.function);
   if (!code) continue;
   const thumb = path.join(OUT, "previews", "latest", `shot_${String(users[0].id).padStart(2, "0")}.png`);
-  saved.push(saveAsset({ name: b.function, kind: b.kind, about: b.about, code, source: { run: path.basename(RUN), shots: users.map((s) => s.id), title: plan.title }, thumbFrom: fs.existsSync(thumb) ? thumb : null }).id);
+  // never fatal: the video is already paid for and made (the worker image's library folder may be read-only)
+  try { saved.push(saveAsset({ name: b.function, kind: b.kind, about: b.about, code, source: { run: path.basename(RUN), shots: users.map((s) => s.id), title: plan.title }, thumbFrom: fs.existsSync(thumb) ? thumb : null }).id); }
+  catch (e) { say(`library: ${b.function} not saved (${e?.code ?? e?.message ?? e})`); }
 }
 say(`library: ${saved.length} new build(s) saved PENDING the owner's approval: ${saved.join(", ") || "-"}`);
 
