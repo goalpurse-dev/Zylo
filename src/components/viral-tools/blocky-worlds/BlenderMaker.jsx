@@ -3,6 +3,7 @@ import { AlertTriangle, ArrowLeft, ArrowRight, Bell, Check, Clapperboard, Downlo
 import { CreditIcon } from "../../ui/zyvo";
 import { DEV_MOCK, isWorking, runStage, whichBackend } from "./api/blockyWorldsApi";
 import "./blockyWorlds.css";
+import useIsDesktop from "../cutaway-explainer/hooks/useIsDesktop";
 import { STUDIO_STAGES } from "../../../../supabase/functions/_shared/blockyWorlds/studioStages.js";
 import "./blenderMaker.css";
 
@@ -28,6 +29,8 @@ export default function BlenderMaker({ flow, pageAccess, onSignUp, onUpgrade, on
   const [notice, setNotice] = useState(null);
   const [confirm, setConfirm] = useState(false);
   const top = useRef(null);
+  const isDesktop = useIsDesktop();
+  const [tab, setTab] = useState("generate"); // phones: "generate" | "result" (Recent creations)
   // DEV ONLY: which server the page talks to (blockyWorldsApi.js whichBackend: the local API when it runs, else live)
   const [backend, setBackend] = useState(null);
   useEffect(() => { if (import.meta.env.DEV) whichBackend().then(setBackend); }, []);
@@ -38,7 +41,7 @@ export default function BlenderMaker({ flow, pageAccess, onSignUp, onUpgrade, on
   // every step opens at its top (the page scrolls in a container on desktop, the window on phones)
   useEffect(() => { let el = top.current; while (el) { if (el.scrollTop) el.scrollTop = 0; el = el.parentElement; } window.scrollTo?.(0, 0); }, [view]);
   // a run (new or opened) shows step 4
-  useEffect(() => { if (flow.run) setView("make"); }, [flow.run?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (flow.run) { setView("make"); setTab("generate"); } }, [flow.run?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fail = (error) => {
     if (!error) return;
@@ -86,9 +89,21 @@ export default function BlenderMaker({ flow, pageAccess, onSignUp, onUpgrade, on
       {DEV_MOCK && <div className="sticky top-0 z-30 bg-[#ffd23f] px-4 py-2 text-center text-[15px] font-black text-black">TEST MODE: fake scripts and a fake video, nothing is charged</div>}
       {/* our own finished videos, slowly floating on both sides (big screens only, never over anything the user types in) */}
       <ShowcaseReels />
-      <div ref={top} className={cx("relative z-10 mx-auto flex w-full flex-col gap-4 px-4 pb-4 pt-4 sm:px-6", hasRecent ? "max-w-[1300px]" : "max-w-[940px]")}>
+      {!isDesktop && (
+        <div className="sticky top-0 z-40 border-b border-white/10 bg-[#07090a]/95 px-3 py-2 backdrop-blur-xl" data-testid="bwm-phone-tabs">
+          <div className="grid grid-cols-2 rounded-full border-2 border-white/15 bg-white/[0.05] p-1" role="tablist">
+            {[["generate", "Generate"], ["result", `Result${hasRecent ? ` (${flow.recent.length})` : ""}`]].map(([id, label]) => (
+              <button key={id} type="button" role="tab" aria-selected={tab === id} onClick={() => setTab(id)} className={cx("rounded-full px-3 py-2 text-[14.5px] font-black transition", tab === id ? "bg-[#bef264] text-[#0d1208]" : "text-white/85")}>{label}</button>
+            ))}
+          </div>
+        </div>
+      )}
+      <div ref={top} className={cx("relative z-10 mx-auto flex w-full flex-col gap-3 px-3 pb-4 pt-3 sm:px-6 lg:gap-4 lg:pt-4", hasRecent ? "max-w-[1300px]" : "max-w-[940px]")}>
+        {!isDesktop && tab === "result" ? (
+          <RecentCreations phone recent={flow.recent} onOpen={(r) => { flow.openRun(r); setTab("generate"); }} onDownload={() => flow.sendEvent("downloaded")} />
+        ) : <>
         <header className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex items-center gap-3">
+          <div className="hidden items-center gap-3 lg:flex">
             <span className="grid h-11 w-11 place-items-center rounded-xl bg-[#bef264] text-[22px] shadow-[0_4px_0_#6f9a1f]" aria-hidden="true">🧱</span>
             <div>
               <h1 className="text-[24px] font-black leading-none tracking-[-0.03em] sm:text-[28px]">Blocky Worlds</h1>
@@ -96,10 +111,10 @@ export default function BlenderMaker({ flow, pageAccess, onSignUp, onUpgrade, on
               {backend && <p className="mt-1.5 inline-flex rounded-lg border border-white/25 bg-black/40 px-2 py-0.5 text-[12px] font-black uppercase tracking-[0.08em] text-white/85" data-testid="bwm-backend">dev · {backend === "local" ? "local API :8000" : backend === "mock" ? "mock" : "live API"}</p>}
             </div>
           </div>
-          <ol className="flex flex-wrap gap-2" aria-label={`Step ${stepIdx + 1} of 4: ${STEPS[stepIdx][1]}`}>
+          <ol className="flex flex-nowrap items-center gap-1.5 lg:gap-2" aria-label={`Step ${stepIdx + 1} of 4: ${STEPS[stepIdx][1]}`}>
             {STEPS.map(([id, label], i) => (
               <li key={id} className={cx("bwm-step-pill", i === stepIdx && "is-active", i < Math.max(stepIdx, doneIdx) && i !== stepIdx && "is-done")} aria-current={i === stepIdx ? "step" : undefined}>
-                <span className="dot">{i < stepIdx ? <Check className="h-5 w-5" strokeWidth={3.5} /> : i + 1}</span>{label}
+                <span className="dot">{i < stepIdx ? <Check className="h-4 w-4" strokeWidth={3.5} /> : i + 1}</span><span className={cx(i !== stepIdx && "hidden lg:inline")}>{label}</span>
               </li>
             ))}
           </ol>
@@ -148,8 +163,9 @@ export default function BlenderMaker({ flow, pageAccess, onSignUp, onUpgrade, on
         )}
         </div>
         {/* once there are videos: Recent creations takes the right side (compact); with none, the page stays centered */}
-        {hasRecent && <aside className="min-w-0 lg:sticky lg:top-4"><RecentCreations compact recent={flow.recent} onOpen={(r) => flow.openRun(r)} onDownload={() => flow.sendEvent("downloaded")} /></aside>}
+        {hasRecent && isDesktop && <aside className="min-w-0 lg:sticky lg:top-4"><RecentCreations compact recent={flow.recent} onOpen={(r) => flow.openRun(r)} onDownload={() => flow.sendEvent("downloaded")} /></aside>}
         </div>
+        </>}
       </div>
       {confirm && <ConfirmDialog flat={flat} draft={flow.draft} onCancel={() => setConfirm(false)} onGo={make} />}
     </div>
@@ -162,8 +178,8 @@ function Card({ n, title, sub, active = true, children, className }) {
       <div className="mb-3 flex items-center gap-3">
         <span className="bwm-num">{n}</span>
         <div>
-          <h2 className="text-[21px] font-black leading-tight tracking-[-0.02em] sm:text-[24px]">{title}</h2>
-          {sub && <p className="mt-0.5 text-[14.5px] font-semibold text-white/80 sm:text-[15.5px]">{sub}</p>}
+          <h2 className="text-[18px] font-black leading-tight tracking-[-0.02em] sm:text-[21px] lg:text-[24px]">{title}</h2>
+          {sub && <p className="mt-0.5 text-[13.5px] font-semibold text-white/80 sm:text-[14.5px] lg:text-[15.5px]">{sub}</p>}
         </div>
       </div>
       {children}
@@ -175,7 +191,7 @@ function Card({ n, title, sub, active = true, children, className }) {
  *  sits at the end of the column, so the column's last card scrolls clear of it) */
 function StickyBar({ children }) {
   return (
-    <div className="sticky bottom-[calc(76px+env(safe-area-inset-bottom))] z-30 mt-1 flex flex-wrap items-center justify-end gap-2 rounded-2xl border-2 border-[#bef264]/45 bg-[#0b0f10]/95 p-3 shadow-[0_-10px_30px_rgba(0,0,0,.55)] backdrop-blur-xl lg:bottom-3" data-testid="bwm-sticky-bar">
+    <div className="sticky bottom-[calc(72px+env(safe-area-inset-bottom))] z-30 -mx-3 mt-1 flex flex-wrap items-center justify-end gap-2 border-t-2 border-[#bef264]/45 px-3 py-2.5 sm:-mx-6 sm:px-6 lg:mx-0 lg:rounded-2xl lg:border-2 lg:px-3 lg:py-3 bg-[#0b0f10]/95 shadow-[0_-10px_30px_rgba(0,0,0,.55)] backdrop-blur-xl lg:bottom-3" data-testid="bwm-sticky-bar">
       {children}
     </div>
   );
@@ -521,8 +537,8 @@ function Confetti() {
 
 // ------------------------------------------------------------------ recent creations (like the other templates)
 const STATUS_OF = (r) => (r.status === "done" ? ["Ready", "bg-[#bef264] text-[#0d1208]"] : r.status === "failed" ? (r.refunded ? ["Refunded", "bg-[#5cc8ff] text-[#06202e]"] : ["Failed", "bg-[#ff6fa8] text-[#2a0716]"]) : ["Rendering", "bg-[#ffd23f] text-[#2a2000]"]);
-function RecentCreations({ recent, onOpen, onDownload, compact = false }) {
-  if (!recent?.length) return null;
+function RecentCreations({ recent, onOpen, onDownload, compact = false, phone = false }) {
+  if (!recent?.length) return phone ? <section className="bwm-card p-5 text-center" data-testid="bwm-recent"><Film className="mx-auto h-8 w-8 text-white/50" /><p className="mt-2 text-[17px] font-black">No videos yet</p><p className="mt-1 text-[14.5px] font-semibold text-white/75">Your videos show up here once they are made.</p></section> : null;
   return (
     <section className="bwm-card bwm-rise p-4" aria-labelledby="bwm-recent-title" data-testid="bwm-recent">
       <h2 id="bwm-recent-title" className="text-[19px] font-black tracking-[-0.02em]">Recent creations</h2>
@@ -543,9 +559,9 @@ function RecentCreations({ recent, onOpen, onDownload, compact = false }) {
                 <p className="text-[13px] font-semibold text-white/75">{r.createdAt ? new Date(r.createdAt).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : ""}</p>
                 <span className={cx("mt-1.5 self-start rounded-lg px-2 py-0.5 text-[13px] font-black", tone)}>{working ? `${label} ${pct}%` : label}</span>
                 {working && <div className="bwm-bar mt-2 !h-3"><span style={{ width: `${pct}%` }} /></div>}
-                <div className="mt-auto flex gap-2 pt-2">
-                  <button type="button" className="bwm-btn-2 !min-h-[40px] !px-3 !text-[14.5px]" onClick={() => onOpen(r)}>{r.status === "done" ? <><Play className="h-4 w-4" />Play</> : "Open"}</button>
-                  {r.downloadUrl && <a href={r.downloadUrl} download onClick={onDownload} className="bwm-btn-2 !min-h-[40px] !px-3 !text-[14.5px]"><Download className="h-4 w-4" />Download</a>}
+                <div className="mt-auto flex flex-wrap gap-2 pt-2">
+                  <button type="button" className="bwm-btn-2 !min-h-[40px] !px-3 !text-[14.5px]" onClick={() => onOpen(r)} aria-label={r.status === "done" ? "Play" : "Open"}>{r.status === "done" ? <><Play className="h-4 w-4" /><span className={compact ? "" : "max-[379px]:hidden"}>Play</span></> : "Open"}</button>
+                  {r.downloadUrl && <a href={r.downloadUrl} download onClick={onDownload} aria-label="Download" className="bwm-btn-2 !min-h-[40px] !px-3 !text-[14.5px]"><Download className="h-4 w-4" /><span className={compact ? "hidden" : "max-[379px]:hidden"}>Download</span></a>}
                 </div>
               </div>
             </li>

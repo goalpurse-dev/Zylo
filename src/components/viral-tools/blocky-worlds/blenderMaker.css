@@ -130,3 +130,15 @@
 @keyframes bwm-drift { from { transform: translateY(0); } to { transform: translateY(-50%); } }
 .bwm-reel-tile { width: 170px; aspect-ratio: 9 / 16; flex: none; overflow: hidden; border-radius: 22px; border: 3px solid rgba(190, 242, 100, .35); opacity: .5; box-shadow: 0 16px 40px rgba(0, 0, 0, .55); }
 .bwm-reel-tile video, .bwm-reel-tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* phones / tablets: a compact one-line Topic / Explain more toggle, smaller step pills */
+@media (max-width: 1023px) {
+  .bwm-tabs { padding: 3px; border-radius: 14px; }
+  .bwm-tab { min-height: 36px; padding: 0 12px; font-size: 14px; border-radius: 11px; }
+  .bwm-tab[aria-pressed="true"] { transform: none; }
+  .bwm-step-pill { font-size: 13.5px; padding: 3px 10px 3px 3px; gap: 6px; }
+  .bwm-step-pill .dot { width: 24px; height: 24px; font-size: 13.5px; }
+  .bwm-step-pill:not(.is-active) { padding-right: 3px; }
+  .bwm-num { width: 30px; height: 30px; font-size: 15px; border-radius: 9px; box-shadow: 0 4px 0 #6f9a1f; }
+  .bwm .bw-mark { font-size: .95em; }
+}
