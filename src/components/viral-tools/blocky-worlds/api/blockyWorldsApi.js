@@ -44,12 +44,33 @@ export function errorFromReply(body, status = 0) {
   return new BlockyWorldsError(code, message || ERRORS[code].message, { status, credits: Number(body?.credits), problems: body?.problems, retryAfterSec: Number(body?.retryAfterSec), debug: body?.debug });
 }
 
+// LOCAL DEV ONLY (?api=local): the page talks to the blocky-worlds-api running on this laptop
+// (scripts/blockyWorlds/localApi.mjs, http://localhost:8000) with the signed-in user's token, so the owner can click
+// through server code that is not deployed yet. Read once at load; import.meta.env.DEV is false in every build.
+export const DEV_LOCAL_API = Boolean(import.meta.env.DEV) && new URLSearchParams(window.location.search).get("api") === "local" ? "http://localhost:8000" : null;
+
+async function localCall(action, body) {
+  const { supabase } = await import("../../../../lib/supabaseClient");
+  const { data } = await supabase.auth.getSession();
+  const anon = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  let res, reply;
+  try {
+    res = await fetch(DEV_LOCAL_API, { method: "POST", headers: { "content-type": "application/json", apikey: anon, Authorization: `Bearer ${data?.session?.access_token ?? anon}` }, body: JSON.stringify({ action, ...body }) });
+    reply = await res.json().catch(() => ({}));
+  } catch {
+    throw new BlockyWorldsError("SERVER", "The local blocky-worlds-api is not running (node scripts/blockyWorlds/localApi.mjs).");
+  }
+  if (!res.ok || (reply?.error && reply?.code)) throw errorFromReply(reply ?? {}, res.status);
+  return reply;
+}
+
 /** One blocky-worlds-api action. Throws BlockyWorldsError. */
 export async function worldsCall(action, body = {}) {
   if (DEV_MOCK) {
     const { devCall } = await import("../dev/devApi");
     return devCall(action, body);
   }
+  if (DEV_LOCAL_API) return localCall(action, body);
   const { supabase } = await import("../../../../lib/supabaseClient");
   let data, error;
   try {
