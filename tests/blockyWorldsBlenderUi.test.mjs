@@ -164,7 +164,16 @@ test("the page: four numbered steps, no length picker, the price confirm on loca
   assert.match(api, /if \(!import\.meta\.env\.DEV \|\| new URLSearchParams\(window\.location\.search\)\.get\("api"\) === "live"\) return Promise\.resolve\("live"\);/);
   assert.match(api, /if \(import\.meta\.env\.DEV && \(await whichBackend\(\)\) === "local"\) return localCall\(action, body\);/);
   // kept from the classic page: the hero, the mood tabs, "Paste my own script", the preview + "Your videos"
-  for (const k of ["In this town&hellip;", "Idea moods", "Paste my own script", "<ResultPanel"]) assert.ok(ui.includes(k), k);
+  for (const k of ["In this town&hellip;", "Idea moods", "Paste my own script"]) assert.ok(ui.includes(k), k);
+  // owner 2026-11-15: no preview card; Recent creations on the right once there are videos; the next action in a sticky
+  // bar; no sideways scroll (the showcase is clipped); the price note follows the prepay switch (access.flat.charge)
+  assert.doesNotMatch(ui, /<ResultPanel/);
+  assert.match(ui, /\{hasRecent && <aside className="min-w-0 lg:sticky lg:top-4"><RecentCreations compact/);
+  assert.match(ui, /<StickyBar>/);
+  assert.match(ui, /data-testid="bwm-sticky-bar"/);
+  assert.match(ui, /bwm h-full w-full overflow-y-auto overflow-x-hidden/);
+  assert.match(ui, /relative h-screen overflow-hidden/);
+  assert.match(ui, /flat\.charge === "script" \? <>paid now, when you press <b>Write my script<\/b><\/> : <>paid when you press <b>Make my video<\/b><\/>/);
   for (const r of ROLES) assert.ok(ui.includes(`"${r}"`), r);
 });
 

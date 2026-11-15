@@ -2,7 +2,6 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { AlertTriangle, ArrowLeft, ArrowRight, Bell, Check, Clapperboard, Download, Film, ImagePlus, MapPin, Pencil, Play, RefreshCw, Sparkles, Wand2, X } from "lucide-react";
 import { CreditIcon } from "../../ui/zyvo";
 import { DEV_MOCK, isWorking, runStage, whichBackend } from "./api/blockyWorldsApi";
-import ResultPanel from "./ResultPanel";
 import "./blockyWorlds.css";
 import { STUDIO_STAGES } from "../../../../supabase/functions/_shared/blockyWorlds/studioStages.js";
 import "./blenderMaker.css";
@@ -32,13 +31,6 @@ export default function BlenderMaker({ flow, pageAccess, onSignUp, onUpgrade, on
   // DEV ONLY: which server the page talks to (blockyWorldsApi.js whichBackend: the local API when it runs, else live)
   const [backend, setBackend] = useState(null);
   useEffect(() => { if (import.meta.env.DEV) whichBackend().then(setBackend); }, []);
-  // the right side (kept from the classic page): the live preview of the idea / script, and "Your videos"
-  const shown = flow.picked;
-  const preview = useMemo(() => {
-    if (flow.draft) return { lines: flow.lines.map((l) => l?.text ?? ""), label: "Your script", meta: `Read by ${flow.access?.narrator?.name ?? "the narrator"}` };
-    if (shown) return { lines: [shown.opener, shown.teaser], label: shown.title };
-    return { lines: null, label: "Preview", meta: "Narrated, captioned and built in blocks. Vertical, ready to post." };
-  }, [shown, flow.draft, flow.lines, flow.access]);
 
   useEffect(() => { flow.setFlat?.(true); if (flow.lengthSec !== TARGET_LENGTH) flow.setLengthSec(TARGET_LENGTH); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   // THE ONE PRICE (the server's access.flat: BLENDER_FLAT): paid at "Write my script" ("script") or at "Make my video" ("start")
@@ -84,19 +76,23 @@ export default function BlenderMaker({ flow, pageAccess, onSignUp, onUpgrade, on
   const doneIdx = { topic: flow.draft ? 1 : 0, script: 1, scenes: 2, make: 3 }[view];
   const stepIdx = STEPS.findIndex(([id]) => id === view);
   const writing = ["turning", "writing", "adapting"].includes(flow.busy);
+  const words = story.trim().split(/\s+/).filter(Boolean).length;
+  const canWrite = !writing && (mode === "explain" ? words >= 25 : flow.topic.trim().length >= 3);
+  const hasRecent = (flow.recent?.length ?? 0) > 0;
+  const d = flow.draft;
 
   return (
-    <div className="bwm h-full w-full overflow-y-auto" data-testid="bw-blender">
+    <div className="bwm h-full w-full overflow-y-auto overflow-x-hidden" data-testid="bw-blender">
       {DEV_MOCK && <div className="sticky top-0 z-30 bg-[#ffd23f] px-4 py-2 text-center text-[15px] font-black text-black">TEST MODE: fake scripts and a fake video, nothing is charged</div>}
       {/* our own finished videos, slowly floating on both sides (big screens only, never over anything the user types in) */}
       <ShowcaseReels />
-      <div ref={top} className="relative z-10 mx-auto flex w-full max-w-[1560px] flex-col gap-5 px-4 pb-28 pt-5 sm:px-6 lg:pt-8 2xl:max-w-[1240px]">
-        <header className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div ref={top} className={cx("relative z-10 mx-auto flex w-full flex-col gap-4 px-4 pb-4 pt-4 sm:px-6", hasRecent ? "max-w-[1300px]" : "max-w-[940px]")}>
+        <header className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-3">
-            <span className="grid h-14 w-14 place-items-center rounded-2xl bg-[#bef264] text-[28px] shadow-[0_6px_0_#6f9a1f]" aria-hidden="true">🧱</span>
+            <span className="grid h-11 w-11 place-items-center rounded-xl bg-[#bef264] text-[22px] shadow-[0_4px_0_#6f9a1f]" aria-hidden="true">🧱</span>
             <div>
-              <h1 className="text-[30px] font-black leading-none tracking-[-0.03em] sm:text-[36px]">Blocky Worlds</h1>
-              <p className="mt-1 text-[16px] font-bold text-white/80">Your story, built in blocks, in about 25 minutes.</p>
+              <h1 className="text-[24px] font-black leading-none tracking-[-0.03em] sm:text-[28px]">Blocky Worlds</h1>
+              <p className="mt-1 text-[14.5px] font-bold text-white/80">Your story, built in blocks, in about 25 minutes.</p>
               {backend && <p className="mt-1.5 inline-flex rounded-lg border border-white/25 bg-black/40 px-2 py-0.5 text-[12px] font-black uppercase tracking-[0.08em] text-white/85" data-testid="bwm-backend">dev · {backend === "local" ? "local API :8000" : backend === "mock" ? "mock" : "live API"}</p>}
             </div>
           </div>
@@ -109,27 +105,51 @@ export default function BlenderMaker({ flow, pageAccess, onSignUp, onUpgrade, on
           </ol>
         </header>
 
-        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_400px] lg:items-start">
-        <div className="flex min-w-0 flex-col gap-5">
+        <div className={cx("grid gap-4", hasRecent && "lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start")}>
+        <div className="flex min-w-0 flex-col gap-4">
         {notice && <div className="bwm-rise flex items-start gap-3 rounded-2xl border-2 border-[#ff6fa8] bg-[#2a1220] px-4 py-3 text-[17px] font-bold text-white" role="status"><AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[#ff6fa8]" />{notice}<button type="button" onClick={() => setNotice(null)} className="ml-auto" aria-label="Close"><X className="h-5 w-5" /></button></div>}
 
         {view === "topic" && (
-          <TopicStep flat={flat} flow={flow} mode={mode} setMode={setMode} story={story} setStory={setStory} writing={writing} onWrite={write} />
+          <TopicStep flow={flow} mode={mode} setMode={setMode} story={story} setStory={setStory} writing={writing} onWrite={write} />
         )}
         {view === "script" && flow.draft && (
-          <ScriptStep flat={flat} flow={flow} onBack={() => setView("topic")} onNext={toScenes} onRewrite={() => guarded(() => flow.rewrite())} />
+          <ScriptStep flat={flat} flow={flow} />
         )}
         {view === "scenes" && flow.draft && (
-          <ScenesStep flow={flow} onBack={() => setView("script")} onNext={() => setView("make")} />
+          <ScenesStep flow={flow} />
         )}
         {view === "make" && (flow.run ? <RunStep flow={flow} onAgain={again} onRetry={() => guarded(() => flow.retryRun(flow.run))} />
-          : flow.draft && <MakeStep flat={flat} flow={flow} onBack={() => setView("scenes")} onMake={() => (LOCAL ? setConfirm(true) : make())} />)}
+          : flow.draft && <MakeStep flat={flat} flow={flow} />)}
+        {/* THE STICKY ACTION BAR (the other templates' pinned Generate bar): the step's next action is always on screen */}
+        {!(view === "make" && flow.run) && (
+          <StickyBar>
+            {view === "topic" && <>
+              <PriceRule flat={flat} short className="hidden min-w-0 flex-1 md:block" />
+              <button type="button" className="bwm-btn w-full whitespace-nowrap md:w-auto" disabled={!canWrite} onClick={write} data-testid="bwm-write">
+                {writing ? <Blocks label="Writing your script…" /> : <><Wand2 className="h-5 w-5" />Write my script{flat.credits != null && <span className="ml-1 inline-flex items-center gap-1.5 rounded-xl bg-[#0d1208]/15 px-2 py-0.5 text-[17px]" data-testid="bwm-write-price"><Cr n={flat.credits} /><span className="hidden text-[13px] sm:inline">{flat.charge === "script" ? "pay now" : "at Make my video"}</span></span>}</>}
+              </button>
+            </>}
+            {view === "script" && d && <>
+              <button type="button" className="bwm-btn-2" onClick={() => setView("topic")}><ArrowLeft className="h-5 w-5" />Back</button>
+              <button type="button" className="bwm-btn-2" onClick={() => guarded(() => flow.rewrite())} disabled={Boolean(flow.busy)}>{flow.busy === "rewriting" ? <Blocks label="Rewriting…" /> : <><RefreshCw className="h-5 w-5" />Rewrite</>}</button>
+              <button type="button" className="bwm-btn flex-1 md:flex-none" onClick={toScenes} disabled={Boolean(flow.busy) || (!d.ready && !flow.edited)} data-testid="bwm-to-scenes">Next: scenes<ArrowRight className="h-5 w-5" /></button>
+            </>}
+            {view === "scenes" && d && <>
+              <button type="button" className="bwm-btn-2" onClick={() => setView("script")}><ArrowLeft className="h-5 w-5" />Back</button>
+              <button type="button" className="bwm-btn flex-1 md:flex-none" onClick={() => setView("make")} disabled={!flow.scenePlan} data-testid="bwm-to-make">Next: make it<ArrowRight className="h-5 w-5" /></button>
+            </>}
+            {view === "make" && d && <>
+              <button type="button" className="bwm-btn-2" onClick={() => setView("scenes")}><ArrowLeft className="h-5 w-5" />Back</button>
+              <button type="button" className="bwm-btn flex-1 md:flex-none" onClick={() => (LOCAL ? setConfirm(true) : make())} disabled={Boolean(flow.busy) || !d.ready} data-testid="bwm-make">
+                {flow.busy === "starting" ? <Blocks label="Starting…" /> : <><Clapperboard className="h-5 w-5" />Make my video{paidFor(d) ? <span className="ml-1 rounded-xl bg-[#0d1208]/15 px-2 py-0.5 text-[14px]">included</span> : <span className="ml-1 inline-flex items-center rounded-xl bg-[#0d1208]/15 px-2 py-0.5 text-[17px]"><Cr n={flat.credits} /></span>}</>}
+              </button>
+            </>}
+          </StickyBar>
+        )}
         </div>
-        <aside className="h-[720px] min-w-0 lg:sticky lg:top-4 lg:h-[calc(100vh-150px)] lg:min-h-[560px]" aria-label="Preview">
-          <ResultPanel run={null} recent={[]} preview={preview} onOpen={(r) => flow.openRun(r)} onEvent={flow.sendEvent} />
-        </aside>
+        {/* once there are videos: Recent creations takes the right side (compact); with none, the page stays centered */}
+        {hasRecent && <aside className="min-w-0 lg:sticky lg:top-4"><RecentCreations compact recent={flow.recent} onOpen={(r) => flow.openRun(r)} onDownload={() => flow.sendEvent("downloaded")} /></aside>}
         </div>
-        <RecentCreations recent={flow.recent} onOpen={(r) => flow.openRun(r)} onDownload={() => flow.sendEvent("downloaded")} />
       </div>
       {confirm && <ConfirmDialog flat={flat} draft={flow.draft} onCancel={() => setConfirm(false)} onGo={make} />}
     </div>
@@ -138,16 +158,26 @@ export default function BlenderMaker({ flow, pageAccess, onSignUp, onUpgrade, on
 
 function Card({ n, title, sub, active = true, children, className }) {
   return (
-    <section className={cx("bwm-card bwm-rise p-5 sm:p-7", active && "is-active", className)}>
-      <div className="mb-5 flex items-center gap-4">
+    <section className={cx("bwm-card bwm-rise p-4 sm:p-5", active && "is-active", className)}>
+      <div className="mb-3 flex items-center gap-3">
         <span className="bwm-num">{n}</span>
         <div>
-          <h2 className="text-[26px] font-black leading-tight tracking-[-0.02em] sm:text-[30px]">{title}</h2>
-          {sub && <p className="mt-0.5 text-[16px] font-semibold text-white/75 sm:text-[17px]">{sub}</p>}
+          <h2 className="text-[21px] font-black leading-tight tracking-[-0.02em] sm:text-[24px]">{title}</h2>
+          {sub && <p className="mt-0.5 text-[14.5px] font-semibold text-white/80 sm:text-[15.5px]">{sub}</p>}
         </div>
       </div>
       {children}
     </section>
+  );
+}
+
+/** the pinned action bar: above the bottom nav on phones, at the screen's foot on desktop (it never hides content: it
+ *  sits at the end of the column, so the column's last card scrolls clear of it) */
+function StickyBar({ children }) {
+  return (
+    <div className="sticky bottom-[calc(76px+env(safe-area-inset-bottom))] z-30 mt-1 flex flex-wrap items-center justify-end gap-2 rounded-2xl border-2 border-[#bef264]/45 bg-[#0b0f10]/95 p-3 shadow-[0_-10px_30px_rgba(0,0,0,.55)] backdrop-blur-xl lg:bottom-3" data-testid="bwm-sticky-bar">
+      {children}
+    </div>
   );
 }
 
@@ -156,44 +186,44 @@ function Blocks({ label }) {
 }
 
 // ------------------------------------------------------------------ 1. topic
-function TopicStep({ flat, flow, mode, setMode, story, setStory, writing, onWrite }) {
+function TopicStep({ flow, mode, setMode, story, setStory, writing, onWrite }) {
   const words = story.trim().split(/\s+/).filter(Boolean).length;
   const can = !writing && (mode === "explain" ? words >= 25 : flow.topic.trim().length >= 3);
   const ideas = flow.shownIdeas.slice(0, 6);
   return (
     <>
       <Card n={1} title={<>Every story starts with <span className="bw-mark whitespace-nowrap">&ldquo;In this town&hellip;&rdquo;</span></>} sub="One line is enough. Or tell us more and we'll shape it.">
-        <div className="bwm-tabs mb-5" role="group" aria-label="How do you want to start?">
+        <div className="bwm-tabs mb-3" role="group" aria-label="How do you want to start?">
           <button type="button" className="bwm-tab" aria-pressed={mode === "topic"} onClick={() => setMode("topic")}><Sparkles className="mr-1.5 inline h-5 w-5" />Topic</button>
           <button type="button" className="bwm-tab" aria-pressed={mode === "explain"} onClick={() => setMode("explain")}><Pencil className="mr-1.5 inline h-5 w-5" />Explain more</button>
         </div>
         {mode === "topic" ? (
           <>
-            <label className="mb-2 block text-[18px] font-black" htmlFor="bwm-topic">Your topic</label>
+            <label className="mb-1.5 block text-[16px] font-black" htmlFor="bwm-topic">Your topic</label>
             <input id="bwm-topic" className="bwm-input" value={flow.topic} onChange={(e) => flow.setTopic(e.target.value)} maxLength={160} placeholder="Every time you sneeze, you teleport" onKeyDown={(e) => { if (e.key === "Enter" && can) onWrite(); }} />
-            <button type="button" className="mt-3 text-[16px] font-black text-[#bef264] underline decoration-2 underline-offset-4" onClick={() => setMode("explain")}><Pencil className="mr-1.5 inline h-4 w-4" />Paste my own script</button>
-            <div className="mt-6 flex items-center justify-between gap-3">
-              <h3 className="text-[19px] font-black">Or tap a ready idea</h3>
-              <button type="button" className="bwm-btn-2 !min-h-[44px] !px-4 !text-[15px]" onClick={() => flow.askIdeas({ more: true })} disabled={flow.ideas.status === "loading"}><RefreshCw className={cx("h-4 w-4", flow.ideas.status === "loading" && "animate-spin")} />More ideas</button>
+            <button type="button" className="mt-2 text-[15px] font-black text-[#bef264] underline decoration-2 underline-offset-4" onClick={() => setMode("explain")}><Pencil className="mr-1.5 inline h-4 w-4" />Paste my own script</button>
+            <div className="mt-4 flex items-center justify-between gap-3">
+              <h3 className="text-[17px] font-black">Or tap a ready idea</h3>
+              <button type="button" className="bwm-btn-2 !min-h-[38px] !px-3 !text-[14px]" onClick={() => flow.askIdeas({ more: true })} disabled={flow.ideas.status === "loading"}><RefreshCw className={cx("h-4 w-4", flow.ideas.status === "loading" && "animate-spin")} />More ideas</button>
             </div>
             <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Idea moods">
               {[{ id: null, label: "All" }, ...(flow.access?.moods ?? [])].map((m) => (
-                <button key={m.id ?? "all"} type="button" className="bwm-tab !min-h-[42px] border-2 border-white/15 !px-4 !text-[15.5px]" aria-pressed={(flow.mood ?? null) === m.id} onClick={() => flow.setMood(m.id)}>{m.label}</button>
+                <button key={m.id ?? "all"} type="button" className="bwm-tab !min-h-[36px] border-2 border-white/15 !px-3 !text-[14px]" aria-pressed={(flow.mood ?? null) === m.id} onClick={() => flow.setMood(m.id)}>{m.label}</button>
               ))}
             </div>
-            <div className="mt-3 grid gap-3 sm:grid-cols-2 2xl:grid-cols-3">
+            <div className="mt-2.5 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
               {ideas.length ? ideas.map((c, i) => (
                 <button key={c.id} type="button" className="bwm-chip bwm-rise" style={{ "--i": i }} aria-pressed={flow.picked?.id === c.id} onClick={() => flow.pickIdea(c)}>
-                  <span className="block text-[17px] font-black leading-snug text-[#bef264]">{c.title}</span>
-                  <span className="mt-1 block text-[15.5px] font-semibold leading-snug text-white/85">{c.opener}</span>
+                  <span className="block text-[15px] font-black leading-snug text-[#bef264]">{c.title}</span>
+                  <span className="mt-0.5 line-clamp-3 block text-[13.5px] font-semibold leading-snug text-white/90">{c.opener}</span>
                 </button>
               )) : <p className="col-span-full py-4"><Blocks label={<span className="text-[17px] font-bold text-white/80">Finding ideas…</span>} /></p>}
             </div>
           </>
         ) : (
           <>
-            <label className="mb-2 block text-[18px] font-black" htmlFor="bwm-story">Tell us your story, or paste your whole narration</label>
-            <textarea id="bwm-story" className="bwm-input min-h-[220px] resize-y !text-[18px] leading-relaxed" value={story} onChange={(e) => setStory(e.target.value)} maxLength={8000} placeholder="In my town, every lie makes you a little smaller. My best friend Zara fibs all day and fits in a teacup. I never lie, so I'm the biggest kid in town. One day a storm comes…" />
+            <label className="mb-1.5 block text-[16px] font-black" htmlFor="bwm-story">Tell us your story, or paste your whole narration</label>
+            <textarea id="bwm-story" className="bwm-input min-h-[170px] resize-y !text-[16.5px] leading-relaxed" value={story} onChange={(e) => setStory(e.target.value)} maxLength={8000} placeholder="In my town, every lie makes you a little smaller. My best friend Zara fibs all day and fits in a teacup. I never lie, so I'm the biggest kid in town. One day a storm comes…" />
             <p className={cx("mt-2 text-[16px] font-bold", words >= 25 ? "text-[#bef264]" : "text-white/75")}>{words >= 25 ? <><Check className="mr-1 inline h-4 w-4" strokeWidth={3} />{words} words. We keep your characters and your twist.</> : `${words} of 25 words`}</p>
           </>
         )}
@@ -201,12 +231,6 @@ function TopicStep({ flat, flow, mode, setMode, story, setStory, writing, onWrit
 
       <CharactersCard flow={flow} />
 
-      <div className="flex flex-col items-stretch gap-3 sm:items-end">
-        <button type="button" className="bwm-btn w-full sm:w-auto" disabled={!can} onClick={onWrite} data-testid="bwm-write">
-          {writing ? <Blocks label="Writing your script…" /> : <><Wand2 className="h-6 w-6" />Write my script{flat.credits != null && <span className="ml-1 inline-flex items-center gap-1.5 rounded-xl bg-[#0d1208]/15 px-2.5 py-1 text-[19px]" data-testid="bwm-write-price"><Cr n={flat.credits} />{flat.charge !== "script" && <span className="text-[14px]">at Make my video</span>}</span>}</>}
-        </button>
-        <PriceRule flat={flat} className="max-w-[560px] text-center sm:text-right" />
-      </div>
     </>
   );
 }
@@ -248,10 +272,10 @@ function CharactersCard({ flow }) {
   const remove = (key) => setItems((l) => { const x = l.find((i) => i.key === key); if (x) URL.revokeObjectURL(x.preview); return l.filter((i) => i.key !== key); });
   const setItemRole = (key, r) => setItems((l) => l.map((x) => (x.key === key ? { ...x, role: r } : x)));
   return (
-    <section className="bwm-card bwm-rise p-5 sm:p-7" style={{ "--i": 2 }}>
+    <section className="bwm-card bwm-rise p-4 sm:p-5" style={{ "--i": 2 }}>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-[24px] font-black tracking-[-0.02em]">Your characters <span className="ml-1 rounded-lg bg-white/10 px-2 py-0.5 align-middle text-[14px] font-black text-white/85">optional</span></h2>
+          <h2 className="text-[19px] font-black tracking-[-0.02em]">Your characters <span className="ml-1 rounded-lg bg-white/10 px-2 py-0.5 align-middle text-[14px] font-black text-white/85">optional</span></h2>
           <p className="mt-1 text-[16px] font-semibold text-white/75">Add a Roblox avatar or a cartoon character. We build our own blocky look from it.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -293,7 +317,7 @@ function CharactersCard({ flow }) {
 }
 
 // ------------------------------------------------------------------ 2. script
-function ScriptStep({ flat, flow, onBack, onNext, onRewrite }) {
+function ScriptStep({ flat, flow }) {
   const d = flow.draft;
   const ready = d.ready && !flow.edited;
   const sec = Math.round(d.check?.seconds || d.lengthSec);
@@ -310,11 +334,6 @@ function ScriptStep({ flat, flow, onBack, onNext, onRewrite }) {
       {(d.check?.problems ?? []).length > 0 && <p className="mt-4 rounded-2xl border-2 border-[#ffd23f] bg-[#2a2410] px-4 py-3 text-[16px] font-bold text-white">{d.check.problems[0]}</p>}
       <div className="mt-6 flex flex-col gap-4">
         <PriceTag flat={flat} paid={paidFor(d)} seconds={sec} ready={ready} edited={flow.edited} />
-        <div className="flex flex-wrap justify-end gap-3">
-          <button type="button" className="bwm-btn-2" onClick={onBack}><ArrowLeft className="h-5 w-5" />Back</button>
-          <button type="button" className="bwm-btn-2" onClick={onRewrite} disabled={Boolean(flow.busy)}>{flow.busy === "rewriting" ? <Blocks label="Rewriting…" /> : <><RefreshCw className="h-5 w-5" />Rewrite</>}</button>
-          <button type="button" className="bwm-btn" onClick={onNext} disabled={Boolean(flow.busy) || (!d.ready && !flow.edited)} data-testid="bwm-to-scenes">Next: scenes<ArrowRight className="h-6 w-6" /></button>
-        </div>
       </div>
     </Card>
   );
@@ -336,10 +355,10 @@ function Cr({ n, className = "h-5 w-5" }) {
 /** was this draft already paid for at "Write my script"? */
 const paidFor = (d) => d?.flat?.charge === "script" && Boolean(d.flat.paidAt);
 /** the rule, in one clear sentence (where the one price is paid, what is included, the refunds) */
-function PriceRule({ flat, className = "" }) {
+function PriceRule({ flat, short = false, className = "" }) {
   return (
-    <p className={cx("text-[15.5px] font-bold leading-snug text-white/85", className)} data-testid="bwm-price-rule">
-      One price per video: <span className="text-[#bef264]"><Cr n={flat.credits} className="h-4 w-4" /></span>, paid when you press <b>{flat.charge === "script" ? "Write my script" : "Make my video"}</b>. Script rewrites, the voice and the render are included. If the video fails, all of it comes back{flat.charge === "script" ? <>; no video within {flat.expireDays} days: all but <Cr n={flat.keepCredits} className="h-4 w-4" /> comes back</> : ""}.
+    <p className={cx(short ? "text-[13.5px]" : "text-[15px]", "font-bold leading-snug text-white/85", className)} data-testid="bwm-price-rule">
+      One price per video: <span className="text-[#bef264]"><Cr n={flat.credits} className="h-4 w-4" /></span>, {flat.charge === "script" ? <>paid now, when you press <b>Write my script</b></> : <>paid when you press <b>Make my video</b></>}. Script rewrites, the voice and the render are included. If the video fails, all of it comes back{flat.charge === "script" ? <>; no video within {flat.expireDays} days: all but <Cr n={flat.keepCredits} className="h-4 w-4" /> comes back</> : ""}.
     </p>
   );
 }
@@ -357,7 +376,7 @@ function PriceTag({ flat, paid, seconds, ready, edited }) {
 }
 
 // ------------------------------------------------------------------ 3. scenes
-function ScenesStep({ flow, onBack, onNext }) {
+function ScenesStep({ flow }) {
   const plan = flow.scenePlan;
   const places = plan?.locations ?? [];
   return (
@@ -380,16 +399,12 @@ function ScenesStep({ flow, onBack, onNext }) {
           ))}
         </ol>
       )}
-      <div className="mt-6 flex flex-wrap justify-end gap-3">
-        <button type="button" className="bwm-btn-2" onClick={onBack}><ArrowLeft className="h-5 w-5" />Back</button>
-        <button type="button" className="bwm-btn" onClick={onNext} disabled={!plan} data-testid="bwm-to-make">Next: make it<ArrowRight className="h-6 w-6" /></button>
-      </div>
     </Card>
   );
 }
 
 // ------------------------------------------------------------------ 4. make
-function MakeStep({ flat, flow, onBack, onMake }) {
+function MakeStep({ flat, flow }) {
   const d = flow.draft;
   return (
     <Card n={4} title="Make my video" sub="We direct every shot, check every frame and render it in 3D.">
@@ -407,12 +422,6 @@ function MakeStep({ flat, flow, onBack, onMake }) {
         <PriceTag flat={flat} paid={paidFor(d)} seconds={Math.round(d.check?.seconds || d.lengthSec)} ready={d.ready} />
       </div>
       <PriceRule flat={flat} className="mt-4" />
-      <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-        <button type="button" className="bwm-btn-2" onClick={onBack}><ArrowLeft className="h-5 w-5" />Back</button>
-        <button type="button" className="bwm-btn !min-h-[72px] !px-10 !text-[24px]" onClick={onMake} disabled={Boolean(flow.busy) || !d.ready} data-testid="bwm-make">
-          {flow.busy === "starting" ? <Blocks label="Starting…" /> : <><Clapperboard className="h-7 w-7" />Make my video{paidFor(d) ? <span className="ml-1 rounded-xl bg-[#0d1208]/15 px-2.5 py-1 text-[16px]">included</span> : <span className="ml-1 inline-flex items-center rounded-xl bg-[#0d1208]/15 px-2.5 py-1 text-[20px]"><Cr n={flat.credits} /></span>}</>}
-        </button>
-      </div>
     </Card>
   );
 }
@@ -512,26 +521,26 @@ function Confetti() {
 
 // ------------------------------------------------------------------ recent creations (like the other templates)
 const STATUS_OF = (r) => (r.status === "done" ? ["Ready", "bg-[#bef264] text-[#0d1208]"] : r.status === "failed" ? (r.refunded ? ["Refunded", "bg-[#5cc8ff] text-[#06202e]"] : ["Failed", "bg-[#ff6fa8] text-[#2a0716]"]) : ["Rendering", "bg-[#ffd23f] text-[#2a2000]"]);
-function RecentCreations({ recent, onOpen, onDownload }) {
+function RecentCreations({ recent, onOpen, onDownload, compact = false }) {
   if (!recent?.length) return null;
   return (
-    <section className="bwm-card bwm-rise p-5 sm:p-7" aria-labelledby="bwm-recent-title" data-testid="bwm-recent">
-      <h2 id="bwm-recent-title" className="text-[24px] font-black tracking-[-0.02em]">Recent creations</h2>
-      <p className="mt-1 text-[16px] font-semibold text-white/75">Your Blocky Worlds videos. Pick up any of them where you left off.</p>
-      <ul className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+    <section className="bwm-card bwm-rise p-4" aria-labelledby="bwm-recent-title" data-testid="bwm-recent">
+      <h2 id="bwm-recent-title" className="text-[19px] font-black tracking-[-0.02em]">Recent creations</h2>
+      <p className="mt-0.5 text-[14px] font-semibold text-white/75">Your Blocky Worlds videos.</p>
+      <ul className={cx("mt-3 grid grid-cols-1 gap-2.5", !compact && "sm:grid-cols-2 xl:grid-cols-3", compact && "max-h-[calc(100vh-190px)] overflow-y-auto pr-1")}>
         {recent.slice(0, 12).map((r, i) => {
           const [label, tone] = STATUS_OF(r);
           const working = isWorking(r);
           const pct = Math.max(3, Math.min(99, Number(r.pct) || STUDIO_STAGES.find((x) => x.stage === runStage(r))?.pct || 3));
           return (
             <li key={r.id} className="bwm-rise flex gap-3 rounded-2xl border-2 border-white/15 bg-[#0f1415] p-3" style={{ "--i": i }}>
-              <button type="button" onClick={() => onOpen(r)} className="relative h-[120px] w-[68px] shrink-0 overflow-hidden rounded-xl bg-black" aria-label={`Open ${r.title || "video"}`}>
+              <button type="button" onClick={() => onOpen(r)} className="relative h-[96px] w-[54px] shrink-0 overflow-hidden rounded-lg bg-black" aria-label={`Open ${r.title || "video"}`}>
                 {r.poster ? <img src={r.poster} alt="" className="h-full w-full object-cover" loading="lazy" /> : <span className="grid h-full place-items-center"><Film className="h-6 w-6 text-white/40" /></span>}
                 {r.status === "done" && <span className="absolute inset-0 grid place-items-center bg-black/25"><Play className="h-7 w-7 fill-white text-white" /></span>}
               </button>
               <div className="flex min-w-0 flex-1 flex-col">
-                <p className="truncate text-[17px] font-black">{r.title || "Untitled"}</p>
-                <p className="text-[14px] font-semibold text-white/70">{r.createdAt ? new Date(r.createdAt).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : ""}</p>
+                <p className="truncate text-[15.5px] font-black">{r.title || "Untitled"}</p>
+                <p className="text-[13px] font-semibold text-white/75">{r.createdAt ? new Date(r.createdAt).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : ""}</p>
                 <span className={cx("mt-1.5 self-start rounded-lg px-2 py-0.5 text-[13px] font-black", tone)}>{working ? `${label} ${pct}%` : label}</span>
                 {working && <div className="bwm-bar mt-2 !h-3"><span style={{ width: `${pct}%` }} /></div>}
                 <div className="mt-auto flex gap-2 pt-2">
@@ -565,5 +574,5 @@ function ShowcaseReels() {
       </div>
     </div>
   );
-  return <div className="pointer-events-none sticky top-0 z-0 hidden h-0 2xl:block" aria-hidden="true"><div className="relative h-screen">{column(SHOWCASE, "left")}{column([SHOWCASE[2], SHOWCASE[3], SHOWCASE[0], SHOWCASE[1]], "right")}</div></div>;
+  return <div className="pointer-events-none sticky top-0 z-0 hidden h-0 2xl:block" aria-hidden="true"><div className="relative h-screen overflow-hidden">{column(SHOWCASE, "left")}{column([SHOWCASE[2], SHOWCASE[3], SHOWCASE[0], SHOWCASE[1]], "right")}</div></div>;
 }
