@@ -43,7 +43,9 @@ export function contextFiles() {
   for (const f of walk(HERE).filter((f) => /\.(mjs|js)$/.test(f) && !f.includes(`${path.sep}dev${path.sep}`))) add(f);
   for (const f of fs.readdirSync(path.join(ROOT, "supabase/functions/_shared/blockyWorlds")).filter((f) => f.endsWith(".js"))) add(path.join(ROOT, "supabase/functions/_shared/blockyWorlds", f));
   add(path.join(ROOT, "supabase/functions/_shared/contentMachine/adminGuard.js"));
-  return [...files].filter((f) => !/(^|\/)(node_modules|out|assets)\//.test(f.replace(/^scripts\/blockyWorlds\/engine\//, ""))).sort();
+  // the node_modules / out / assets exclusion is for the engine's own folders only: blenderKit/assets/catalog.json (the
+  // director's asset catalog) must reach the image
+  return [...files].filter((f) => !/^scripts\/blockyWorlds\/engine\/(.*\/)?(node_modules|out|assets)\//.test(f) && !/(^|\/)node_modules\//.test(f)).sort();
 }
 
 /** every relative specifier ("./x", "../y") in the code files, that does not resolve inside the context */
