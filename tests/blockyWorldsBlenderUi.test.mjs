@@ -168,7 +168,9 @@ test("the page: four numbered steps, no length picker, the price confirm on loca
   // owner 2026-11-15: no preview card; Recent creations on the right once there are videos; the next action in a sticky
   // bar; no sideways scroll (the showcase is clipped); the price note follows the prepay switch (access.flat.charge)
   assert.doesNotMatch(ui, /<ResultPanel/);
-  assert.match(ui, /\{hasRecent && <aside className="min-w-0 lg:sticky lg:top-4"><RecentCreations compact/);
+  assert.match(ui, /\{hasRecent && isDesktop && <aside className="min-w-0 lg:sticky lg:top-4"><RecentCreations compact/);
+  // phones: Generate / Result tabs, Recent creations in the Result tab
+  assert.match(ui, /!isDesktop && tab === "result" \? \(\s+<RecentCreations phone/);
   assert.match(ui, /<StickyBar>/);
   assert.match(ui, /data-testid="bwm-sticky-bar"/);
   assert.match(ui, /bwm h-full w-full overflow-y-auto overflow-x-hidden/);
