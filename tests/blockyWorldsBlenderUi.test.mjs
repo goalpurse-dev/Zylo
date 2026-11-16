@@ -125,15 +125,15 @@ test("adaptStory: one call when the answer passes; a second call fixes a lost ch
 });
 
 // ---------------------------------------------------------------- the API + the worker
-test("the API: both new actions are owner-only, the picture is never stored, characters ride on the run card", () => {
+test("the API: both actions follow Blender access, the picture is never stored, characters ride on the run card", () => {
   const api = read("supabase/functions/blocky-worlds-api/index.ts");
   const adapt = api.slice(api.indexOf('if (action === "adaptStory")'), api.indexOf('if (action === "characterRef")'));
   const ref = api.slice(api.indexOf('if (action === "characterRef")'), api.indexOf("// ---------- 3-4. settings"));
-  for (const block of [adapt, ref]) assert.match(block, /if \(!who\.owner\) throw new ApiError\("NOT_FOUND"/);
+  for (const block of [adapt, ref]) assert.match(block, /if \(!blenderAvailable\(who\)\) throw new ApiError\("NOT_FOUND"/);
   assert.doesNotMatch(ref, /storage|\.upload\(|insert\(/, "the picture is never stored");
   assert.match(ref, /readCharacter\(/);
   assert.match(adapt, /cleanCharacters\(body\?\.characters\)/);
-  assert.match(api, /blenderUi: Boolean\(who\?\.owner\)/);
+  assert.match(api, /blenderUi: blenderAvailable\(who\)/);
   assert.match(api, /\.\.\.\(characters\.length \? \{ characters \} : \{\}\)/);
   const steps = read("scripts/blockyWorlds/blenderKit/workerSteps.mjs"), pipe = read("scripts/blockyWorlds/blenderKit/pipeline.mjs");
   assert.match(steps, /"--characters", chars/);
@@ -188,7 +188,7 @@ test("ONE price at Write my script (BLOCKY_WORLDS_PREPAY=on): the charge, the wr
   assert.match(fw, /blocky_worlds_prepay_refund", \{ p_prepay: pre\.id, p_keep: 0, p_why: "writer_failed" \}/);
   assert.match(fw, /update\(\{ draft_id: out\.id \}\)/);
   assert.match(api, /if \(\(trace\.action === "writeScript" \|\| trace\.action === "adaptStory"\) && body\?\.flat === true\) return await flatWrite/);
-  assert.match(api, /const prepayOn = \(who: any\) => PREPAY && Boolean\(who\?\.owner\);/);
+  assert.match(api, /const prepayOn = \(who: any\) => PREPAY && blenderAvailable\(who\);/);
   // start: the paid prepay is consumed (no second charge); quote shows the one price
   assert.match(api, /\.\.\.\(prepaid \? \{ p_prepay: prepaid\.id \} : \{\}\)/);
   assert.match(api, /credits: flatDraft \? BLENDER_FLAT\.credits : PRICES\[lengthSec\]/);

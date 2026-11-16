@@ -1,9 +1,9 @@
 // Blender kit engine as an OPTION of the Studio worker (scripts/blockyWorlds/studioWorker/): the same queue, claim,
 // heartbeat, stages, cost ledger, refund-on-failure and owner's Details as the three.js Studio engine (runner.mjs), with
 // the director and the render swapped for the Blender kit pipeline (pipeline.mjs).
-// OFF BY DEFAULT and OWNER-ONLY: the worker uses these steps only when BOTH are set
+// OFF BY DEFAULT: the worker uses these steps only when BOTH are set
 //   BLOCKY_WORLDS_RENDER_ENGINE=blender
-//   BLOCKY_WORLDS_BLENDER_OWNER_IDS=<user id>[,<user id>]   (runs of anyone else keep the three.js Studio steps)
+//   BLOCKY_WORLDS_BLENDER_OWNER_IDS=<user id>[,<user id>]   (or BLOCKY_WORLDS_BLENDER_ACCESS=everyone)
 //   pickSteps(run, { studio, blender, env }) -> the steps for this run
 //   makeBlenderSteps({ base, anthropicKey, cfg }) -> { voice, plan, mix, direct, final, outputs }
 // voice / plan / mix / outputs are the Studio steps (Scruffy Duck on eleven_v3, 1.25x + the pause cuts; the free base
@@ -23,7 +23,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 export function pickSteps(run, { studio, blender, env = process.env }) {
   const on = String(env.BLOCKY_WORLDS_RENDER_ENGINE ?? "").trim().toLowerCase() === "blender";
   const owners = String(env.BLOCKY_WORLDS_BLENDER_OWNER_IDS ?? "").split(",").map((s) => s.trim()).filter(Boolean);
-  return on && blender && run?.user_id && owners.includes(run.user_id) ? blender : studio;
+  return on && blender && run?.user_id && (env.BLOCKY_WORLDS_BLENDER_ACCESS === "everyone" || owners.includes(run.user_id)) ? blender : studio;
 }
 
 /** the fix rounds: 2, like the local Milo run (STUDIO.rounds = 1 is the three.js engine's; cfg.blenderRounds overrides) */

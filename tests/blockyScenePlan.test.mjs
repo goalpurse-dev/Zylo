@@ -50,11 +50,11 @@ test("the owner's edited plan is checked: library ids or a typed place that maps
   assert.equal(cleanScenePlan({}, 2).ok, false);
 });
 
-test("the scene plan is owner-only in the API, the page and the worker", () => {
+test("the scene plan follows Blender access in the API, the page and the worker", () => {
   const api = read("supabase/functions/blocky-worlds-api/index.ts");
-  assert.match(api, /action === "scenePlan"[\s\S]{0,200}if \(!who\.owner\) throw new ApiError/);
-  assert.match(api, /if \(who\.owner && body\?\.scenePlan\)/);
-  assert.match(api, /scenePlan: Boolean\(who\?\.owner\)/);
+  assert.match(api, /action === "scenePlan"[\s\S]{0,200}if \(!blenderAvailable\(who\)\) throw new ApiError/);
+  assert.match(api, /if \(blenderAvailable\(who\) && body\?\.scenePlan\)/);
+  assert.match(api, /scenePlan: blenderAvailable\(who\)/);
   assert.match(read("src/components/viral-tools/blocky-worlds/ScriptStep.jsx"), /access\?\.scenePlan && <ScenePlan/);
   assert.match(read("src/components/viral-tools/blocky-worlds/hooks/useBlockyWorlds.js"), /access\?\.scenePlan && scenePlan\?\.draftId === draft\.id/);
   assert.match(read("scripts/blockyWorlds/blenderKit/workerSteps.mjs"), /card\?\.scene_plan\?\.scenes\?\.length/);
