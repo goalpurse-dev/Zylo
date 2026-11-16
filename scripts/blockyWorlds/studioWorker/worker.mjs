@@ -32,6 +32,7 @@ if (argv.includes("--smoke")) {
   await import("./steps.mjs");
   await import("../blenderKit/workerSteps.mjs");
   await import("../blenderKit/director.mjs");
+  await import("../blenderKit/notes.mjs");
   say(`smoke ok: steps, runner, config (engine ${STUDIO.endpoint}, model ${STUDIO.model}, ${STUDIO.rounds} fix round)`);
   // THE BLENDER ENGINE (free checks): python3 + PIL, the kit, shotcheck / kitmap / contact, ffmpeg: a miss FAILS the build
   const { localChecks, report } = await import("./blenderCheck.mjs");
