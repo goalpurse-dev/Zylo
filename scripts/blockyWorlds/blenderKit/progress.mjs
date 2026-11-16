@@ -24,6 +24,7 @@ export function makeProgress({ now = () => Date.now() } = {}) {
 
   function feed(raw) {
     const line = String(raw ?? "").replace(/^\s*\[[^\]]*\]\s*/, "").trim();
+    if (line) s.lineAt = now(); // the last real line: what the time limit calls progress (studio.js studioProgressAt)
     let m;
     if ((m = line.match(/^script ".*": \d+ lines, \d+ words, voice ([\d.]+) s/))) s.dur = Number(m[1]);
     else if ((m = line.match(/^plan: (\d+) shots in/))) { s.shots = Number(m[1]); to("directing"); }
@@ -96,7 +97,7 @@ export function makeProgress({ now = () => Date.now() } = {}) {
     const order = Object.keys(BANDS);
     const stage = order.indexOf(s.stage) >= order.indexOf(s.last.stage) ? s.stage : s.last.stage;
     s.last = { pct, stage };
-    return { stage, pct, ceil: Math.max(pct, BANDS[stage][1]), detail: r.detail };
+    return { stage, pct, ceil: Math.max(pct, BANDS[stage][1]), detail: r.detail, lineAt: s.lineAt ?? null };
   }
   return { feed, snapshot, state: s };
 }

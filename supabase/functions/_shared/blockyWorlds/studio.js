@@ -25,7 +25,12 @@ export const STUDIO = Object.freeze({
   runCapUsd: 4,                 // everything per video (voice + model + RunPod): the hard cap, checked before every paid step
   directorMinutes: 25,          // the director's own clock (agent.mjs minutes)
   finalJobs: 3,                 // parallel RunPod jobs of the final (6 workers on the endpoint: two finals at once fit)
-  hardMin: 45,                  // the whole run from the claim: then it is failed and refunded
+  // THE TIME LIMIT (owner 2026-11-16: run 2947e875 was failed at a fixed 45 min while its finish was 1 min from done):
+  // studioLimitMin(run) = the soft limit, scaled with the video length, at least minLimitMin; past it a run is stopped
+  // ONLY when its progress went quiet for progressStaleMin; hardMin is the backstop from the claim, progress or not
+  hardMin: 120,                 // the hard max from the claim: then it is failed and refunded, progress or not
+  minLimitMin: 75,              // the soft limit never under this
+  progressStaleMin: 25,         // past the soft limit: no new pipeline line for this long = stuck (the longest quiet job, the finish, is ~15 min)
   heartbeatSec: 30,             // the worker's heartbeat while a run is going
   staleMin: 6,                  // no heartbeat for this long: the worker is gone, the run is failed and refunded
   maxWaitMin: 45,               // queued this long without a worker taking it: failed and refunded ("busy")
@@ -45,7 +50,8 @@ const ms = (t) => (t == null ? null : typeof t === "number" ? t : Date.parse(t))
  * What the sweeper does with one live Studio run: null (leave it) or { code, message } (fail it and refund). Pure.
  *   queued, no worker took it within maxWaitMin                  QUEUE_TIMEOUT ("busy": try again)
  *   claimed, no heartbeat for staleMin                            WORKER_LOST
- *   claimed longer than hardMin                                   TIMEOUT
+ *   claimed longer than hardMin (the hard max)                    TIMEOUT
+ *   past studioLimitMin AND no progress for progressStaleMin      TIMEOUT (never while it still moves)
  */
 export function studioSweepDecision(run, now = Date.now(), cfg = STUDIO) {
   if (!run || run.engine !== "studio" || ["done", "failed"].includes(run.status)) return null;
@@ -54,9 +60,25 @@ export function studioSweepDecision(run, now = Date.now(), cfg = STUDIO) {
     return waited > cfg.maxWaitMin * 60000 ? { code: "QUEUE_TIMEOUT", message: `waited ${Math.round(waited / 60000)} min for a Studio worker` } : null;
   }
   const claimed = ms(run.claimed_at) ?? ms(run.created_at), beat = ms(run.heartbeat_at) ?? claimed;
-  if (now - claimed > cfg.hardMin * 60000) return { code: "TIMEOUT", message: `not done ${cfg.hardMin} min after the worker took it` };
+  if (now - claimed > cfg.hardMin * 60000) return { code: "TIMEOUT", message: `not done ${cfg.hardMin} min after the worker took it (the hard max)` };
+  const limit = studioLimitMin(run, cfg), moved = studioProgressAt(run) ?? claimed;
+  if (now - claimed > limit * 60000 && now - moved > cfg.progressStaleMin * 60000) return { code: "TIMEOUT", message: `past its ${limit} min limit with no progress for ${Math.round((now - moved) / 60000)} min` };
   if (now - beat > cfg.staleMin * 60000) return { code: "WORKER_LOST", message: `no heartbeat from worker ${run.worker_id} for ${Math.round((now - beat) / 60000)} min` };
   return null;
+}
+
+/** THE SOFT LIMIT in minutes for a run of lengthSec (the target; the real voice runs up to ~35% longer): the director +
+ *  previews + 2 fix rounds (~30 min), the final at up to ~1.15 s a frame over 6 chunks + queueing (10 min), the finish
+ *  (~8 s a video second: 800 s for 99 s), x1.25; at least minLimitMin, at most hardMin */
+export function studioLimitMin(run, cfg = STUDIO) {
+  const sec = Math.max(30, Number(run?.length_sec) || 90) * 1.35;
+  const est = 30 + (sec * 30 * 1.15) / 6 / 60 + 10 + (sec * 8) / 60;
+  return Math.round(Math.min(cfg.hardMin, Math.max(cfg.minLimitMin, est * 1.25)));
+}
+/** when the run last moved: the pipeline's last line (render.progress.lineAt), else its progress write, else the stage */
+export function studioProgressAt(run) {
+  const p = run?.progress ?? run?.render?.progress ?? null;
+  return Math.max(ms(p?.lineAt) ?? 0, ms(run?.stage_at) ?? 0, ms(run?.claimed_at) ?? 0) || null;
 }
 
 /** start refuses before any charge unless a worker said hello lately (blocky_worlds_workers.seen_at) */

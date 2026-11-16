@@ -30,7 +30,21 @@ export function pickSteps(run, { studio, blender, env = process.env }) {
 export const blenderRounds = (cfg = {}) => Math.max(1, Math.min(2, Number(cfg.blenderRounds ?? 2) || 2));
 
 export function makeBlenderSteps({ base, anthropicKey, cfg, env = process.env, node = process.execPath }) {
+  const childEnvOf = () => ({ PATH: env.PATH, SystemRoot: env.SystemRoot, HOME: env.HOME, BLOCKY_WORLDS_KEYS_FROM_ENV: "1", ANTHROPIC_API_KEY: anthropicKey,
+    RUNPOD_API_KEY: env.RUNPOD_API_KEY, SUPABASE_URL: env.SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY: env.SUPABASE_SERVICE_ROLE_KEY,
+    ...(env.BLOCKY_WORLDS_KIT_DIR ? { BLOCKY_WORLDS_KIT_DIR: env.BLOCKY_WORLDS_KIT_DIR } : {}) });
   return {
+    /** the run's stored parts, removed only after the video is delivered (the runner calls it; never fatal) */
+    async cleanup({ dir, log = console.log }) {
+      if (!fs.existsSync(path.join(dir, "blender", "state.json"))) return;
+      const code = await new Promise((resolve) => {
+        const p = spawn(node, [path.join(HERE, "cleanup.mjs"), "--run", dir], { env: childEnvOf(), stdio: ["ignore", "pipe", "pipe"] });
+        p.stdout.on("data", (b) => log(`blender: ${String(b).trim()}`));
+        p.stderr.on("data", (b) => log(`blender cleanup stderr: ${String(b).slice(0, 300)}`));
+        p.on("close", resolve);
+      });
+      if (code !== 0) log(`blender cleanup exit ${code} (the parts stay; harmless)`);
+    },
     voice: base.voice,
     plan: base.plan,
     mix: base.mix,
@@ -51,10 +65,8 @@ export function makeBlenderSteps({ base, anthropicKey, cfg, env = process.env, n
       if (cardFile) fs.writeFileSync(cardFile, JSON.stringify(card));
       const args = [path.join(HERE, "pipeline.mjs"), "--run", dir, "--voice-dir", path.join(dir, "voice"), "--model", cfg.blenderModel ?? "sonnet", "--worlds",
         "--rounds", String(blenderRounds(cfg)), "--cap", String(cfg.runCapUsd), "--agent-cap", String(cfg.agentCapUsd), "--chunks", String(cfg.blenderChunks ?? 6),
-        ...(plan ? ["--scene-plan", plan] : []), ...(chars ? ["--characters", chars] : []), ...(cardFile ? ["--card", cardFile] : []), ...(card?.topic ? ["--topic", String(card.topic).slice(0, 200)] : []), "--yes"];
-      const childEnv = { PATH: env.PATH, SystemRoot: env.SystemRoot, HOME: env.HOME, BLOCKY_WORLDS_KEYS_FROM_ENV: "1", ANTHROPIC_API_KEY: anthropicKey,
-        RUNPOD_API_KEY: env.RUNPOD_API_KEY, SUPABASE_URL: env.SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY: env.SUPABASE_SERVICE_ROLE_KEY,
-        ...(env.BLOCKY_WORLDS_KIT_DIR ? { BLOCKY_WORLDS_KIT_DIR: env.BLOCKY_WORLDS_KIT_DIR } : {}) };
+        ...(plan ? ["--scene-plan", plan] : []), ...(chars ? ["--characters", chars] : []), ...(cardFile ? ["--card", cardFile] : []), ...(card?.topic ? ["--topic", String(card.topic).slice(0, 200)] : []), "--defer-cleanup", "--yes"];
+      const childEnv = childEnvOf();
       // LIVE PROGRESS (progress.mjs): every line the pipeline prints feeds the tracker; its snapshot goes to the run row
       // every few seconds (onProgress), so the page always moves
       const tracker = makeProgress();

@@ -19,7 +19,7 @@ const now = () => new Date().toISOString();
 export function studioDb(admin: any) {
   return {
     async liveStudioRuns(limit: number) {
-      const { data, error } = await admin.from("blocky_worlds_runs").select("id,user_id,title,status,engine,created_at,claimed_at,heartbeat_at,worker_id,credits_charged,refunded_at,length_sec")
+      const { data, error } = await admin.from("blocky_worlds_runs").select("id,user_id,title,status,engine,created_at,claimed_at,heartbeat_at,stage_at,progress:render->progress,worker_id,credits_charged,refunded_at,length_sec")
         .eq("engine", "studio").not("status", "in", TERMINAL).is("deleted_at", null).order("created_at").limit(limit);
       if (error) throw new Error(`studio runs: ${error.message}`);
       return data ?? [];

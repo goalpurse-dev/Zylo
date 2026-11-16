@@ -581,7 +581,9 @@ if (!fin.ok) throw new Error(`finish failed: ${String(fin.error).slice(0, 800)}`
 for (const [name, u] of Object.entries(fin.output.uploads)) await R.fetchParts(name, u.parts, path.join(OUT, name));
 const finalWall = (Date.now() - tFinal) / 1000;
 say(`final: ${path.join(OUT, "final.mp4")} (${fin.output.duration} s; cues ${fin.output.cues?.count}); render wall ${renderWall.toFixed(0)} s, with finish ${finalWall.toFixed(0)} s`);
-await R.cleanup().catch((e) => say(`cleanup: ${e.message}`));
+// --defer-cleanup (the worker): the stored parts stay until the final is uploaded and the run is Ready (cleanup.mjs)
+if (has("defer-cleanup")) say(`cleanup deferred: ${state.rpPrefix} stays until the video is delivered`);
+else await R.cleanup().catch((e) => say(`cleanup: ${e.message}`));
 
 // ---------------------------------------------------------------- 6. contact sheet, black / flat frames, library
 const sheet = path.join(OUT, "contact.jpg");
