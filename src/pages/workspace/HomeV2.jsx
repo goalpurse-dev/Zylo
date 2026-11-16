@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import Glow from "../../components/workspace/Glow.jsx";
 import ZyvoSuiteCarousel from "../../components/workspace/ZyvoSuiteCarousel.jsx";
 import MadeWithZyvo from "../../components/home-v2/madeWithZyvo/MadeWithZyvo.jsx";
+import InThisTownLaunch from "../../components/home-v2/InThisTownLaunch.jsx";
 import { FeaturedTemplate, HOME_MAX_W, JumpBackInV2, LongFormSection, PathCards, PhoneTemplates, PhoneTools, SectionHeader, TutorialsRow, WhatsNewRow, suiteTemplates } from "../../components/home-v2/HomeV2Sections.jsx";
 import { fetchShowcase } from "../../components/launch/launch";
 import { BLOCKY_TEMPLATE } from "../../data/homeContent";
@@ -47,6 +48,7 @@ export default function HomeV2() {
 
       {/* Centred content column, capped on big screens (the hero's cards use the same width). */}
       <div className={`mx-auto w-full ${HOME_MAX_W}`}>
+      <InThisTownLaunch />
       <WhatsNewRow />
 
       {/* Short Form: the "short form suite" coverflow is the templates section (owner, 2026-11-10: above Long Form) */}
