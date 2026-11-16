@@ -56,11 +56,11 @@ export default function BlockyWorlds() {
         open={gate === "upgrade"}
         onClose={() => setGate(null)}
         isGuest={false}
-        toolName="Blocky Worlds"
+        toolName="In This Town"
         previewSrc="/blocky-worlds/hero.jpg"
-        title="Blocky Worlds videos are for paid plans"
+        title="In This Town videos are for paid plans"
         subtitle="Upgrade to write the full story and make the video."
-        planLines={{ starter: "Blocky Worlds, with the Zyvo end card", pro: "Blocky Worlds, end card can be removed", generative: "Blocky Worlds, end card can be removed" }}
+        planLines={{ starter: "In This Town, with the Zyvo end card", pro: "In This Town, end card can be removed", generative: "In This Town, end card can be removed" }}
         dropFeatures={["Watermark-free exports"]}
       />
       <NoCreditsModal open={Boolean(noCredits)} onClose={() => setNoCredits(null)} creditsNeeded={noCredits?.needed ?? 0} creditBalance={balance} />

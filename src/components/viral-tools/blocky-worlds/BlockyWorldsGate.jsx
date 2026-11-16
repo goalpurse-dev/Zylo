@@ -3,7 +3,7 @@ import { blockyWorldsRoute } from "../../../data/blockyWorlds";
 import useBlockyWorldsAccess from "./api/blockyWorldsAccess";
 
 /**
- * The /workspace/blocky-worlds route's guard: the page (and its code) loads only once the server said this visitor may
+ * The /workspace/in-this-town route's guard: the page (and its code) loads only once the server said this visitor may
  * see Blocky Worlds. While asking: an empty dark screen with nothing Blocky Worlds on it. Closed or failed: home.
  */
 export default function BlockyWorldsGate({ children }) {

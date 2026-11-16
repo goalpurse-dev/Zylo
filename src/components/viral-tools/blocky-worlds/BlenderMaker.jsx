@@ -61,9 +61,9 @@ export default function BlenderMaker({ flow, pageAccess, onSignUp, onUpgrade, on
   const write = async () => {
     if (flat.charge === "script" && balance > 0 && flat.credits && balance < flat.credits) { onNoCredits?.(flat.credits); return; }
     const charged = flat.charge === "script" && flat.credits > 0 && pageAccess !== "guest";
-    if (charged) emitCreditSpend(flat.credits, "Blocky Worlds video");
+    if (charged) emitCreditSpend(flat.credits, "In This Town video");
     const r = await guarded(() => (mode === "explain" ? flow.adaptStory(story) : flow.continueStory()));
-    if (charged && !r?.ok) emitCreditRefund(flat.credits, "Blocky Worlds: refunded");
+    if (charged && !r?.ok) emitCreditRefund(flat.credits, "In This Town: refunded");
     if (r?.ok) setView("script");
   };
   const toScenes = async () => {
@@ -76,9 +76,9 @@ export default function BlenderMaker({ flow, pageAccess, onSignUp, onUpgrade, on
     const price = paidFor(flow.draft) ? 0 : flat.credits ?? flow.draft?.credits ?? 0;
     if (balance > 0 && balance < price) { onNoCredits?.(price); return; }
     try { if (typeof Notification !== "undefined" && Notification.permission === "default") Notification.requestPermission().catch(() => {}); } catch { /* no notifications */ }
-    if (price > 0) emitCreditSpend(price, "Blocky Worlds video");
+    if (price > 0) emitCreditSpend(price, "In This Town video");
     const r = await guarded(() => flow.generate());
-    if (price > 0 && !r?.ok) emitCreditRefund(price, "Blocky Worlds: refunded");
+    if (price > 0 && !r?.ok) emitCreditRefund(price, "In This Town: refunded");
   };
   const again = () => { flow.startOver(); setStory(""); setView("topic"); setNotice(null); };
 
@@ -112,7 +112,7 @@ export default function BlenderMaker({ flow, pageAccess, onSignUp, onUpgrade, on
           <div className="hidden items-center gap-3 lg:flex">
             <span className="grid h-11 w-11 place-items-center rounded-xl bg-[#bef264] text-[22px] shadow-[0_4px_0_#6f9a1f]" aria-hidden="true">🧱</span>
             <div>
-              <h1 className="text-[24px] font-black leading-none tracking-[-0.03em] sm:text-[28px]">Blocky Worlds</h1>
+              <h1 className="text-[24px] font-black leading-none tracking-[-0.03em] sm:text-[28px]">In This Town</h1>
               <p className="mt-1 text-[14.5px] font-bold text-white/80">Your story, built in blocks, in about 25 minutes.</p>
               {backend && <p className="mt-1.5 inline-flex rounded-lg border border-white/25 bg-black/40 px-2 py-0.5 text-[12px] font-black uppercase tracking-[0.08em] text-white/85" data-testid="bwm-backend">dev · {backend === "local" ? "local API :8000" : backend === "mock" ? "mock" : "live API"}</p>}
             </div>
@@ -471,14 +471,14 @@ function RunStep({ flow, onAgain, onRetry }) {
   const wasWorking = useRef(working);
   const refundShown = useRef(null);
   useEffect(() => {
-    if (run.status === "failed" && run.refunded && refundShown.current !== run.id && wasWorking.current) { refundShown.current = run.id; emitCreditRefund(run.credits, "Blocky Worlds: refunded"); }
+    if (run.status === "failed" && run.refunded && refundShown.current !== run.id && wasWorking.current) { refundShown.current = run.id; emitCreditRefund(run.credits, "In This Town: refunded"); }
   }, [run.status, run.refunded, run.id, run.credits]);
   const [party, setParty] = useState(false);
   useEffect(() => {
     if (run.status === "done" && wasWorking.current) {
       wasWorking.current = false;
       setParty(true);
-      try { if (document.hidden && typeof Notification !== "undefined" && Notification.permission === "granted") new Notification("Your Blocky Worlds video is ready!", { body: run.title }); } catch { /* no notifications */ }
+      try { if (document.hidden && typeof Notification !== "undefined" && Notification.permission === "granted") new Notification("Your In This Town video is ready!", { body: run.title }); } catch { /* no notifications */ }
       const t = setTimeout(() => setParty(false), 4200);
       return () => clearTimeout(t);
     }
@@ -577,7 +577,7 @@ function RecentCreations({ recent, onOpen, onDownload, compact = false, phone = 
   return (
     <section className="bwm-card bwm-rise p-4" aria-labelledby="bwm-recent-title" data-testid="bwm-recent">
       <h2 id="bwm-recent-title" className="text-[19px] font-black tracking-[-0.02em]">Recent creations</h2>
-      <p className="mt-0.5 text-[14px] font-semibold text-white/75">Your Blocky Worlds videos.</p>
+      <p className="mt-0.5 text-[14px] font-semibold text-white/75">Your In This Town videos.</p>
       <ul className={cx("mt-3 grid grid-cols-1 gap-2.5", !compact && "sm:grid-cols-2 xl:grid-cols-3", compact && "max-h-[calc(100vh-190px)] overflow-y-auto pr-1")}>
         {recent.slice(0, 12).map((r, i) => {
           const [label, tone] = STATUS_OF(r);

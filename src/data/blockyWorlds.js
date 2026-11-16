@@ -1,6 +1,6 @@
 // Blocky Worlds: names shared by the route, the page and the menu.
-export const BLOCKY_WORLDS_NAME = "Blocky Worlds";
-export const BLOCKY_WORLDS_PATH = "/workspace/blocky-worlds";
+export const BLOCKY_WORLDS_NAME = "In This Town";
+export const BLOCKY_WORLDS_PATH = "/workspace/in-this-town";
 
 /*
  * Who sees Blocky Worlds is decided by the SERVER only (owner, 2026-11-12): blocky-worlds-api's `access` action, under

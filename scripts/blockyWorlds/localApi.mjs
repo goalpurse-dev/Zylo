@@ -2,7 +2,7 @@
 // on this laptop with Deno (npx deno, no Docker needed) against the REAL project database, with the keys from
 // .env.local passed as environment variables (never printed, never written to a file).
 //   node scripts/blockyWorlds/localApi.mjs            -> http://localhost:8000
-//   then open http://localhost:5173/workspace/blocky-worlds?api=local  (signed in as an owner account)
+//   then open http://localhost:5173/workspace/in-this-town?api=local  (signed in as an owner account)
 // Paid calls happen only on the owner's clicks (a script ~$0.25, a character picture ~$0.001). "Make my video" asks
 // first on localhost (the price confirm) and starts only when a Blender/Studio worker is alive (else: refused, nothing
 // charged). Stop it with Ctrl+C (or end the node process).
