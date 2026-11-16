@@ -6,7 +6,9 @@ import { useReducedMotion } from "framer-motion";
 import { ArrowRight, ChevronRight, Clapperboard, Sparkles } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
 import { useAuth } from "../../context/AuthContext";
-import { fetchShowcase, isLongFormNew, showcaseThumb, trackLaunch } from "../launch/launch";
+import { isLongFormNew, showcaseThumb, trackLaunch } from "../launch/launch";
+import { BLOCKY_WORLDS_NAME, BLOCKY_WORLDS_PATH, showBlockyWorlds } from "../../data/blockyWorlds";
+import useBlockyWorldsAccess from "../viral-tools/blocky-worlds/api/blockyWorldsAccess";
 import { liveTutorials, tutorialThumb } from "../../lib/tutorials";
 import { NICHE_GROUPS } from "../../pages/workspace/long-form/niches";
 import CreatorRewardsModal from "../CreatorRewardsModal.jsx";
@@ -27,7 +29,6 @@ export const HUNT_THUMBS = ["/home/launch/spear-or-patience.jpg", "/home/launch/
 // Same scenes, different order per card so the two never match.
 const sceneLoop = (name) => ({ src: `${STORAGE}/loops/${name}.mp4`, webm: `${STORAGE}/loops/${name}.webm`, poster: `${STORAGE}/loops/${name}.webp` });
 export const LONG_FORM_LOOP = sceneLoop("lf-card"); // 063 101 036 091 058 086 041 (Home path card + lobby create card)
-const MADE_WITH_ZYVO_LOOP = sceneLoop("made-with-zyvo"); // 036 086 091 063 041 101 058
 const SECTION_X = "px-4 md:px-[50px]";
 // Home's content column: centred, and no wider than this on big screens.
 export const HOME_MAX_W = "max-w-[1440px]";
@@ -258,21 +259,15 @@ function BannerCard({ art, title, sub, cta, onClick, href, to, testId, display =
 
 export function WhatsNewRow() {
   const { user } = useAuth();
-  const [hunt, setHunt] = useState(null);
+  const townVisible = showBlockyWorlds(useBlockyWorldsAccess());
   const [rewardsOpen, setRewardsOpen] = useState(false);
-  useEffect(() => {
-    let live = true;
-    fetchShowcase("home").then((rows) => live && setHunt(rows.find((r) => /hunt/i.test(r.title)) ?? rows[0] ?? null));
-    return () => { live = false; };
-  }, []);
   // the newest tutorial, from the one list (src/lib/tutorials.js)
   const newest = liveTutorials()[0], tutorial = newest && { title: newest.title, youtube_url: newest.url, thumbnail_url: tutorialThumb(newest) };
   const cards = [
     <BannerCard key="lf" testId="wn-long-form" display="hidden md:block" art={<FanArt />} title="Long Form is here" sub="A full YouTube video from one idea" cta="Try it"
       to="/long-form" onClick={() => trackLaunch("try_long_form", { placement: "whats_new_row" })} />,
-    hunt && <BannerCard key="yt" testId="wn-showcase" art={<LazyLoopVideo {...MADE_WITH_ZYVO_LOOP} className="absolute inset-0" />}
-      title={`Made with Zyvo: ${hunt.title}`} cta="Watch on YouTube" href={hunt.youtube_url}
-      onClick={() => trackLaunch("showcase_click", { placement: "whats_new_row", target: hunt.youtube_url, videoId: hunt.id })} />,
+    townVisible && <BannerCard key="town" testId="wn-in-this-town" art={<img src="/blocky-worlds/clips/street.jpg" alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />}
+      title={BLOCKY_WORLDS_NAME} sub="Turn one strange town rule into a blocky story video." cta="Make a video" to={BLOCKY_WORLDS_PATH} />,
     // the thumbnail whole, in its own 16:9 shape on the right (never stretched or cropped to the card), a blurred copy
     // behind it, and the words on a dark fade on the left
     tutorial && <BannerCard key="tut" testId="wn-tutorial" art={(
@@ -291,7 +286,7 @@ export function WhatsNewRow() {
   const columns = { 1: "md:grid-cols-1 min-[1920px]:grid-cols-2", 2: "md:grid-cols-2 min-[1920px]:grid-cols-3", 3: "md:grid-cols-3 min-[1920px]:grid-cols-4" }[cards.length - 1];
   return (
     // (phones leave out the Long Form card: with nothing else to show, no empty heading)
-    <section className={`mt-8 w-full ${SECTION_X} ${!hunt && !tutorial ? "hidden md:block" : ""}`} data-testid="whats-new-row">
+    <section className={`mt-8 w-full ${SECTION_X} ${!townVisible && !tutorial ? "hidden md:block" : ""}`} data-testid="whats-new-row">
       <SectionHeader title="What's new" subtitle="Fresh on Zyvo this week." />
       <div className={`flex flex-col gap-3 md:grid md:gap-4 ${columns}`}>
         {cards}

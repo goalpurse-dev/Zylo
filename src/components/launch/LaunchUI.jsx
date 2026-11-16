@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
-import { ArrowRight, Clapperboard, FileText, Images, Lightbulb, Mic, PlayCircle, X } from "lucide-react";
+import { ArrowRight, PlayCircle, X } from "lucide-react";
 import { fetchShowcase, LONG_FORM_PREVIEW, showcaseThumb, trackLaunch } from "./launch";
+import { BLOCKY_WORLDS_PATH } from "../../data/blockyWorlds";
+import "./townAnnouncement.css";
 import { tutorialFor, tutorialThumb } from "../../lib/tutorials";
 
 function useReducedMotion() {
@@ -156,119 +158,36 @@ export function LongFormLaunchBanner() {
   );
 }
 
-// "What's new" — shown once per user (the layout decides when). Three real
-// f90160bc thumbnails deal in like cards, the five steps light up once, then
-// only a slow float remains; reduced motion shows the finished state.
-const SHOWCASE_STORAGE = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/showcase`;
-const FAN = [`${SHOWCASE_STORAGE}/launch/spear-or-patience.jpg`, `${SHOWCASE_STORAGE}/launch/how-did-this-kill.jpg`, `${SHOWCASE_STORAGE}/launch/what-does-it-prove.jpg`];
-const PROOF = [[Lightbulb, "Idea"], [FileText, "Script"], [Mic, "Voice"], [Clapperboard, "150 scenes"], [Images, "Thumbnails"]];
-const CHIPS = ["8–15 min", "Voice + captions", "3 thumbnails", "YouTube-ready"];
-const FONT_HREF = "https://fonts.googleapis.com/css2?family=Lilita+One&display=swap";
-const FAN_POSE = ["translateX(-66%) translateY(8px) rotate(-8deg)", "scale(1.14)", "translateX(66%) translateY(8px) rotate(8deg)"];
-const WN_CSS = `
-.wn-deal{opacity:0;transform:translateY(46px) scale(.82);animation:wnDeal .62s cubic-bezier(.34,1.5,.64,1) forwards}
-@keyframes wnDeal{60%{opacity:1}to{opacity:1;transform:none}}
-.wn-float{animation:wnFloat 6s ease-in-out infinite}
-@keyframes wnFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
-.wn-step{animation:wnLit .35s ease-out forwards}
-@keyframes wnLit{to{background:rgba(190,242,100,.12);border-color:rgba(190,242,100,.5);color:#BEF264}}
-.wn-label{animation:wnLabel .35s ease-out forwards}
-@keyframes wnLabel{to{color:rgba(255,255,255,.9)}}
-.wn-link::after{content:"";position:absolute;inset:0;background:#BEF264;transform:scaleX(0);transform-origin:left;animation:wnFill .3s ease-out forwards;animation-delay:inherit}
-@keyframes wnFill{to{transform:scaleX(1)}}
-.wn-card{transition:transform .28s cubic-bezier(.2,.8,.2,1),box-shadow .28s}
-@media (hover:hover){.wn-slot:hover{z-index:20!important}.wn-slot:hover .wn-card{transform:translateY(-12px) scale(1.06);box-shadow:0 24px 50px rgba(0,0,0,.6),0 0 0 1px rgba(190,242,100,.45)}}
-.wn-still .wn-deal,.wn-still .wn-float{animation:none;opacity:1;transform:none}
-.wn-still .wn-step{animation:none;background:rgba(190,242,100,.12);border-color:rgba(190,242,100,.5);color:#BEF264}
-.wn-still .wn-label{animation:none;color:rgba(255,255,255,.9)}
-.wn-still .wn-link::after{animation:none;transform:scaleX(1)}
-`;
-
-export function WhatsNewModal({ open, onClose }) {
+export function WhatsNewModal({ onClose, onPreferenceChange }) {
   const navigate = useNavigate();
-  const reduced = useReducedMotion();
-  const [huntUrl, setHuntUrl] = useState(null);
   const [dontShowAgain, setDontShowAgain] = useState(false);
-  useEffect(() => {
-    if (!open) return;
-    if (!document.querySelector(`link[href="${FONT_HREF}"]`)) {
-      const link = document.createElement("link");
-      link.rel = "stylesheet";
-      link.href = FONT_HREF;
-      document.head.appendChild(link);
-    }
-    fetchShowcase("home").then((rows) => setHuntUrl(rows.find((r) => /hunt/i.test(r.title))?.youtube_url ?? null));
-  }, [open]);
-  const close = () => { trackLaunch("whats_new_dismiss", { placement: "whats_new", dontShowAgain }); onClose({ dontShowAgain }); };
-  const make = () => { trackLaunch("try_long_form", { placement: "whats_new" }); onClose({ dontShowAgain }); navigate("/long-form/create"); };
-  const stepDelay = (k) => `${(1.0 + k * 0.3).toFixed(2)}s`;
+  const tutorial = tutorialFor("in_this_town");
+  const close = () => onClose(dontShowAgain);
+
   return (
-    <Dialog open={open} onClose={close} className="relative z-[300]">
-      <style>{WN_CSS}</style>
-      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" aria-hidden="true" />
-      <div className="fixed inset-0 flex items-end justify-center p-3 sm:items-center sm:p-4">
-        <DialogPanel
-          data-testid="whats-new"
-          className={`relative w-full max-w-[560px] overflow-hidden rounded-[28px] border border-lime-300/[0.13] bg-[#111315] px-5 pb-5 pt-6 text-center shadow-2xl shadow-black/30 sm:px-8 sm:pb-7 sm:pt-8 ${reduced ? "wn-still" : ""}`}
-        >
-          <button type="button" aria-label="Close" onClick={close} className="absolute right-3 top-3 z-30 grid h-8 w-8 place-items-center rounded-full bg-white/[0.06] text-white/55 transition hover:bg-white/10 hover:text-white">
-            <X className="h-4 w-4" />
-          </button>
-          <p className="relative text-[11px] font-bold uppercase tracking-widest text-lime-300">New · Long Form</p>
-          <DialogTitle className="relative mx-auto mt-2 max-w-[15ch] text-[31px] leading-[1.04] text-white sm:text-[44px]" style={{ fontFamily: "'Lilita One', system-ui, sans-serif" }}>
-            Your next YouTube video, made for you.
-          </DialogTitle>
-
-          <div className="relative mx-auto mt-3 h-[150px] w-full sm:mt-5 sm:h-[208px]">
-            {FAN.map((src, k) => (
-              <div key={src} className="wn-slot absolute left-1/2 top-1/2 aspect-video w-[138px] sm:w-[208px]"
-                style={{ zIndex: k === 1 ? 3 : k + 1, transform: `translate(-50%,-50%) ${FAN_POSE[k]}` }}>
-                <div className="wn-deal h-full w-full" style={{ animationDelay: `${(0.1 + k * 0.12).toFixed(2)}s` }}>
-                  <div className="wn-float h-full w-full" style={{ animationDelay: `${1 + k * 0.6}s` }}>
-                    <img src={src} alt="" className="wn-card h-full w-full rounded-[12px] border border-white/20 object-cover shadow-[0_14px_34px_rgba(0,0,0,.55),0_2px_8px_rgba(0,0,0,.4)]" />
-                  </div>
-                </div>
-              </div>
-            ))}
+    <Dialog open onClose={close} className="relative z-[300]">
+      <div className="fixed inset-0 bg-black/75 backdrop-blur-sm" aria-hidden="true" />
+      <div className="town-dialog-viewport">
+        <DialogPanel data-testid="whats-new" className="town-dialog">
+          <button type="button" aria-label="Close" onClick={close} className="town-dialog-close"><X size={19} /></button>
+          <div className="town-dialog-art" aria-hidden="true">
+            <img className="town-dialog-print town-dialog-back" src="/blocky-worlds/showcase/phase1.jpg" alt="" />
+            <img className="town-dialog-print town-dialog-front" src="/blocky-worlds/showcase/milo.jpg" alt="" />
           </div>
-
-          <div className="relative mx-auto mt-3 flex max-w-[470px] items-start justify-center">
-            {PROOF.map(([Icon, label], k) => (
-              <div key={label} className="contents">
-                <div className="flex flex-col items-center gap-1.5">
-                  <span className="wn-step grid h-7 w-7 place-items-center rounded-full border border-white/10 bg-white/[0.04] text-white/35 sm:h-9 sm:w-9" style={{ animationDelay: stepDelay(k) }}>
-                    <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                  </span>
-                  <span className="wn-label whitespace-nowrap text-[9.5px] font-semibold text-white/35 sm:text-[11px]" style={{ animationDelay: stepDelay(k) }}>{label}</span>
-                </div>
-                {k < PROOF.length - 1 && (
-                  <span className="wn-link relative mx-1 mt-3.5 h-0.5 min-w-[8px] flex-1 overflow-hidden rounded-full bg-white/10 sm:mt-[18px]" style={{ animationDelay: `${(1.15 + k * 0.3).toFixed(2)}s` }} />
-                )}
-              </div>
-            ))}
-          </div>
-
-          <div className="relative mt-4 flex flex-wrap justify-center gap-1.5 sm:mt-5">
-            {CHIPS.map((c) => <span key={c} className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[11px] font-semibold text-white/70 sm:text-[12px]">{c}</span>)}
-          </div>
-
-          <div className="relative mt-5 flex flex-col gap-2 sm:mt-6 sm:flex-row sm:justify-center">
-            <button type="button" onClick={make} data-testid="whats-new-try"
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-lime-300 px-6 text-sm font-black text-[#11150D] shadow-[0_0_28px_rgba(190,242,100,.22)] transition hover:bg-lime-200">
-              Make my first video <ArrowRight className="h-4 w-4" />
+          <div className="town-dialog-copy">
+            <p className="town-dialog-kicker">New on Zyvo</p>
+            <DialogTitle className="town-dialog-title">In This <em>Town.</em></DialogTitle>
+            <p className="town-dialog-hook">“In this town, everyone has to tell the truth. Except the mayor.”</p>
+            <p className="town-dialog-description">Give your town one strange rule. Turn it into a narrated, blocky story video with a twist.</p>
+            <button type="button" data-testid="whats-new-try" className="town-dialog-make" onClick={() => { close(); navigate(BLOCKY_WORLDS_PATH); }}>
+              Make my town video <ArrowRight size={18} />
             </button>
-            {huntUrl && (
-              <a href={huntUrl} target="_blank" rel="noopener noreferrer" onClick={() => trackLaunch("showcase_click", { placement: "whats_new", target: huntUrl })}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-5 text-sm font-semibold text-white/85 transition hover:bg-white/[0.08] hover:text-white">
-                <svg viewBox="0 0 24 17" className="h-3 w-4" aria-hidden="true"><rect width="24" height="17" rx="4.5" fill="#FF0033" /><path d="M9.6 4.8v7.4l6.2-3.7z" fill="#fff" /></svg>
-                Watch one on YouTube
-              </a>
-            )}
+            {tutorial && <a className="town-dialog-tutorial" href={tutorial.url} target="_blank" rel="noopener noreferrer" onClick={close}><PlayCircle size={17} /> Watch the tutorial</a>}
+            <label className="town-dialog-optout" data-testid="whats-new-dont-show">
+              <input type="checkbox" checked={dontShowAgain} onChange={e => { setDontShowAgain(e.target.checked); onPreferenceChange(e.target.checked); }} />
+              Don't show this again
+            </label>
           </div>
-          <label className="relative mt-4 inline-flex cursor-pointer select-none items-center gap-2 text-[12.5px] text-white/55 hover:text-white/75" data-testid="whats-new-dont-show">
-            <input type="checkbox" checked={dontShowAgain} onChange={(e) => setDontShowAgain(e.target.checked)} className="h-4 w-4 rounded accent-lime-300" />
-            Don't show this again
-          </label>
         </DialogPanel>
       </div>
     </Dialog>

@@ -11,14 +11,15 @@ import AnnouncementBar from "../../components/launch/AnnouncementBar.jsx";
 import { OfferBar } from "../../components/offer/OfferBanners.jsx";
 import { useOffer } from "../../lib/useOffer";
 import PastDueNotice from "../../components/billing/PastDueNotice.jsx";
-import { LONG_FORM_ANNOUNCEMENT, trackLaunch } from "../../components/launch/launch";
+import { trackLaunch } from "../../components/launch/launch";
 import { COOKIE_CONSENT_EVENT, hasCookieConsent } from "../../lib/cookieConsent";
 import { BLOCKY_STORIES_NAME, BLOCKY_STORIES_PATH } from "../../data/blockyStories";
 import { useAuth } from "../../context/AuthContext";
 import { fetchOnboardingStatus } from "../../lib/onboarding";
 
-// A logged-out visitor has no profile to remember "seen" on: it is kept in this browser.
-const WHATS_NEW_GUEST_KEY = `zyvo:whats-new:seen:${LONG_FORM_ANNOUNCEMENT}`;
+import useBlockyWorldsAccess from "../../components/viral-tools/blocky-worlds/api/blockyWorldsAccess";
+
+const TOWN_ANNOUNCEMENT = "in_this_town_launch";
 
 // ── Promo banner ──────────────────────────────────────────────
 export default function WorkspaceLayout() {
@@ -26,7 +27,11 @@ export default function WorkspaceLayout() {
   const noticeRef = useRef(null);
 
   const location = useLocation();
-  const { user: authUser } = useAuth();
+  const { user: authUser, loading: authLoading } = useAuth();
+  const userId = authUser?.id;
+  const visitor = userId || "guest";
+  const preferenceKey = `zyvo:whats-new:${TOWN_ANNOUNCEMENT}:${visitor}`;
+  const townAccess = useBlockyWorldsAccess();
   const offer = useOffer();
   // Phase 6d-1: the mobile Edit page is a full-screen editor — no promo banner there.
   const [narrow, setNarrow] = useState(() => typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches);
@@ -34,7 +39,7 @@ export default function WorkspaceLayout() {
   const hidePromo = narrow && /\/long-form\/project\/[^/]+\/(edit|publish)\/?$/.test(location.pathname);
   const [showWelcome, setShowWelcome] = useState(false);
   const [showWhatsNew, setShowWhatsNew] = useState(false);
-  // "What's new": eligible this load (null until known), and this session's key.
+  // Track eligibility per visitor so an account switch cannot reuse the previous preference.
   const [whatsNew, setWhatsNew] = useState(null);
 
   // Clean up trailing # left by Supabase OAuth token exchange
@@ -50,50 +55,30 @@ export default function WorkspaceLayout() {
 
   /* ================= WELCOME / WHAT'S NEW ================= */
   useEffect(() => {
-    const run = async () => {
-      const { data } = await supabase.auth.getUser();
-      const user = data?.user;
-      if (!user) {
-        // Logged-out visitors get "What's new" once per browser (it used to be
-        // skipped for them entirely, so it never showed in a fresh/incognito window).
-        let seen = false;
-        try { seen = !!localStorage.getItem(WHATS_NEW_GUEST_KEY); } catch { /* no storage: show once this load */ }
-        if (!seen) setWhatsNew({ guest: true });
-        return;
+    let live = true;
+    setWhatsNew(null);
+    setShowWhatsNew(false);
+    setShowWelcome(false);
+    if (authLoading) return;
+    async function loadPreferences() {
+      let optedOut = false;
+      try { optedOut = localStorage.getItem(preferenceKey) === "1"; } catch { /* storage unavailable */ }
+      if (userId) {
+        const [{ data: profile }, { enrolled }] = await Promise.all([
+          supabase.from("profiles").select("plan_code, seen_announcements").eq("id", userId).single(),
+          fetchOnboardingStatus(userId),
+        ]);
+        if (!live) return;
+        const welcomeKey = `zyvo_workspace_welcome:${userId}`;
+        if (!enrolled && (profile?.plan_code || "free").toLowerCase() === "free" && !localStorage.getItem(welcomeKey)) setShowWelcome(true);
+        if (profile?.seen_announcements?.includes(TOWN_ANNOUNCEMENT)) optedOut = true;
+        else if (optedOut) supabase.rpc("mark_announcement_seen", { p_key: TOWN_ANNOUNCEMENT }).then(() => {}, () => {});
       }
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("plan_code, seen_announcements")
-        .eq("id", user.id)
-        .single();
-
-      const isFree = (profile?.plan_code || "free").toLowerCase() === "free";
-      const welcomeKey = `zyvo_workspace_welcome:${user.id}`;
-
-      // An account in the new flow has the survey and the tutorial (components/onboarding) instead of the Welcome screen.
-      const { enrolled } = await fetchOnboardingStatus(user.id);
-      if (enrolled) return;
-      if (isFree && !localStorage.getItem(welcomeKey)) {
-        // Brand new account — the Welcome screen. (The "Earn free credits"
-        // popup that used to follow it by itself is gone; it still opens from
-        // the gift button and the Home card.)
-        // Don't set the key yet — only mark as seen when the user actually
-        // dismisses it. This way a page reload before interaction will show it again.
-        setShowWelcome(true);
-      } else if (profile && !(profile.seen_announcements ?? []).includes(LONG_FORM_ANNOUNCEMENT)) {
-        // "What's new" (Long Form launch): on Home, once per fresh session
-        // (new browser session or new login), never on top of the Welcome
-        // screen, and never again after "Don't show this again" (on
-        // the profile) or once the user has any Long Form project.
-        const { count } = await supabase.from("long_form_projects").select("id", { count: "exact", head: true }).eq("user_id", user.id);
-        if (!count) setWhatsNew({ sessionKey: `zyvo:whats-new:${user.id}:${user.last_sign_in_at ?? ""}` });
-      }
-    };
-
-    run();
-    // (again on signing in: a sign-up in the top bar's pop-up stays on this page, so this used to wait for the next page load)
-  }, [authUser?.id]);
+      if (live && !optedOut) setWhatsNew(visitor);
+    }
+    loadPreferences();
+    return () => { live = false; };
+  }, [authLoading, userId, visitor, preferenceKey]);
 
   // Setting up a video or watching its free preview (a new account lands here
   // straight after the sign-up): the Welcome screen waits for the next page.
@@ -107,22 +92,22 @@ export default function WorkspaceLayout() {
     return () => window.removeEventListener(COOKIE_CONSENT_EVENT, on);
   }, []);
 
-  // Show it when Home is reached in a session that hasn't shown it yet, after
-  // the cookie banner is closed, and never on top of another popup.
+  // A normal dismissal lasts for this visit to Home. Returning or reloading opens it again.
   useEffect(() => {
-    if (!whatsNew || location.pathname !== "/" || !cookieAnswered || showWelcome) return undefined;
-    const timer = setTimeout(() => {
-      if (document.querySelector("[data-zyvo-modal]")) return; // e.g. the sign-up dialog is open
-      try {
-        if (whatsNew.guest) localStorage.setItem(WHATS_NEW_GUEST_KEY, "1");
-        else { if (sessionStorage.getItem(whatsNew.sessionKey)) { setWhatsNew(null); return; } sessionStorage.setItem(whatsNew.sessionKey, "1"); }
-      } catch { /* no storage: show once this load */ }
-      setWhatsNew(null);
+    setShowWhatsNew(false);
+    if (whatsNew !== visitor || location.pathname !== "/" || townAccess !== "allowed" || !cookieAnswered || showWelcome) return;
+    let timer;
+    const show = () => {
+      if (document.querySelector("[data-zyvo-modal], [role='dialog']")) {
+        timer = setTimeout(show, 600);
+        return;
+      }
       setShowWhatsNew(true);
-      trackLaunch("whats_new_shown", { placement: "whats_new", guest: !!whatsNew.guest });
-    }, 600);
+      trackLaunch("whats_new_shown", { placement: TOWN_ANNOUNCEMENT, guest: !userId });
+    };
+    timer = setTimeout(show, 600);
     return () => clearTimeout(timer);
-  }, [whatsNew, location.pathname, cookieAnswered, showWelcome]);
+  }, [whatsNew, visitor, userId, location.pathname, townAccess, cookieAnswered, showWelcome]);
 
   /* ================= RESET HEADER ================= */
   useEffect(() => {
@@ -308,10 +293,21 @@ useEffect(() => {
           }} />
         )}
 
-        <WhatsNewModal open={showWhatsNew} onClose={({ dontShowAgain } = {}) => {
-          setShowWhatsNew(false);
-          if (dontShowAgain) supabase.rpc("mark_announcement_seen", { p_key: LONG_FORM_ANNOUNCEMENT }).then(() => {}, () => {});
-        }} />
+        {showWhatsNew && whatsNew === visitor && location.pathname === "/" && <WhatsNewModal
+          onPreferenceChange={checked => {
+            try {
+              if (checked) localStorage.setItem(preferenceKey, "1");
+              else localStorage.removeItem(preferenceKey);
+            } catch { /* profile storage still works for signed-in users */ }
+          }}
+          onClose={dontShowAgain => {
+            setShowWhatsNew(false);
+            if (dontShowAgain) {
+              setWhatsNew(null);
+              if (userId) supabase.rpc("mark_announcement_seen", { p_key: TOWN_ANNOUNCEMENT }).then(() => {}, () => {});
+            }
+          }}
+        />}
 
         {/* MOBILE NAV */}
         <MobileBottomNav hidden={isSelectorOpen} />
