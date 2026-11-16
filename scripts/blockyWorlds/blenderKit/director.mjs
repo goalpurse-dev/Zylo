@@ -22,6 +22,8 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const SHARED = path.resolve(HERE, "../../../supabase/functions/_shared/blockyWorlds");
 const { costOf, PRICE } = await import(pathToFileURL(path.join(SHARED, "llm.js")).href);
+const { placeBuildsIn, unrelatedPlace, PLACE_BUILDS } = await import(pathToFileURL(path.join(SHARED, "placeBuilds.js")).href);
+export { PLACE_BUILDS };
 export const MODELS = Object.freeze({ sonnet: "claude-sonnet-5-5", opus: "claude-opus-5-5" }); // llm.js PRICE ids
 export const CHECKER_MODEL = "claude-sonnet-5-5";
 const FALLBACK = new Set(["claude-sonnet-5-5", "claude-opus-5-5"]);
@@ -630,6 +632,14 @@ export function actionPlanProblems({ shots = [], style_sheet = [] }, lines = [],
     if (!mentionsChar(l.text, c)) continue;
     if (!l.shots.some((id) => mentionsChar(shots.find((s) => s.id === id)?.desc, c))) out.push(`line L${l.line} names ${c.name}${c.role ? ` (the ${roleWords(c.role)[0] ?? c.role})` : ""} but none of its shots (${l.shots.join(", ")}) shows ${c.name}: give one of them ${c.name}'s face or full body (name ${c.name} in that desc)`);
   }
+  // MISSING PLACES (placeBuilds.js): a line that names a place the library lacks shows it (built in its host place);
+  // never an unrelated place (a plane, the moon) on a line that does not name it
+  for (const l of lines) {
+    for (const pb of placeBuildsIn(l.text)) if (!l.shots.some((id) => placeBuildsIn(shots.find((s) => s.id === id)?.desc).some((x) => x.id === pb.id))) out.push(`line L${l.line} names the ${pb.id} (not in the library): BUILD it in ${pb.host} (${pb.recipe.slice(0, 90)}...) and show it in one of its shots (${l.shots.join(", ")}; say "${pb.id}" in that desc)`);
+  }
+  const textOf = new Map();
+  for (const l of lines) for (const id of l.shots) textOf.set(id, `${textOf.get(id) ?? ""} ${l.text}`);
+  for (const s of shots) if (unrelatedPlace(s.location, textOf.get(s.id) ?? "")) out.push(`shot ${s.id} is in ${s.location} but its line never names it: an UNRELATED place; stage it where the line happens (a figure of speech stays in the story's world)`);
   for (const b of builds ?? []) {
     const w = thingWords(b?.name ?? "");
     if (!w.length || !Array.isArray(b.lines) || !b.lines.length) continue;

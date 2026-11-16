@@ -9,6 +9,8 @@
 //   NOTES_SCHEMA, cleanScenes(scenes, nLines, libIds) -> { scenes } | null, isAutoPlan(plan)
 //   MILO_NOTES_EXAMPLE: the Milo notes (the format to follow; never its story)
 
+import { placeBuildsIn, unrelatedPlace } from "../../../supabase/functions/_shared/blockyWorlds/placeBuilds.js";
+
 export const NOTES_SCHEMA = { type: "object", additionalProperties: false, required: ["notes", "scenes"], properties: {
   notes: { type: "string" },
   scenes: { type: "array", items: { type: "object", additionalProperties: false, required: ["from", "to", "location"], properties: { from: { type: "integer" }, to: { type: "integer" }, location: { type: "string" } } } },
@@ -33,15 +35,19 @@ export const isAutoPlan = (plan) => !plan?.scenes?.length || plan.scenes.every((
 
 /** the model's scenes -> { scenes: [{ lines: [a, b], location, auto: true }] } covering 0..nLines-1 in order with library
  *  ids only, or null (then the run keeps its own plan) */
-export function cleanScenes(scenes, nLines, libIds) {
+export function cleanScenes(scenes, nLines, libIds, lineTexts = []) {
   if (!Array.isArray(scenes) || !scenes.length) return null;
   const out = [];
   let next = 0;
   for (const s of scenes) {
     const a = Number(s?.from), b = Number(s?.to);
     if (!Number.isInteger(a) || !Number.isInteger(b) || a !== next || b < a || b >= nLines || !libIds.has(s.location)) return null;
+    // never an UNRELATED place (a plane for "the clouds"): the host of a missing place its lines name, else the scene before
+    const text = lineTexts.slice(a, b + 1).join(" ");
+    let loc = s.location;
+    if (unrelatedPlace(loc, text)) loc = placeBuildsIn(text)[0]?.host ?? out.at(-1)?.location ?? "downtown_street";
     const last = out.at(-1);
-    if (last && last.location === s.location) last.lines[1] = b; else out.push({ lines: [a, b], location: s.location, auto: true });
+    if (last && last.location === loc) last.lines[1] = b; else out.push({ lines: [a, b], location: loc, auto: true });
     next = b + 1;
   }
   return next === nLines ? { scenes: out } : null;
@@ -64,6 +70,7 @@ export function notesBrief({ card = {}, script, locations = [], builds = [], sce
     `- ANCHORS (the recurring places / props, set up early and back in the ending), REACTIONS (the hero's face up close on the big beats), FINAL IMAGE (the last line's consequence, literally), SOUND WORDS on screen.`,
     scenesLocked ? `THE OWNER'S SCENE PLAN (keep it; scenes = []): ${scenesLocked.scenes.map((s) => `lines ${s.lines[0]}-${s.lines[1]}: ${s.location}`).join("; ")}` : `- scenes: the location (a library id) for every line, as consecutive ranges { from, to, location } covering lines 0-${script.lines.length - 1} in order with no gap. Pick the place where the line's action really happens; a long stretch in one place is fine only when every line there has its own action.`,
     `THE LOCATION LIBRARY (id: what it is):`, ...locations.map((l) => `- ${l.id}: ${l.about ?? l.label ?? ""}`),
+    ...(() => { const pbs = placeBuildsIn(script.lines.map((l) => l.text).join(" ")); return pbs.length ? [`MISSING PLACES (named by the script, not in the library: put each in WORLD + NEW BUILDS, built simply in its host place, and stage its lines there):`, ...pbs.map((p) => `- ${p.id} -> in ${p.host}: ${p.recipe}`)] : []; })(),
     builds.length ? `THINGS OUR CHECK FOUND THE STORY NEEDS (name, kind, lines): ${builds.map((b) => `${b.name} (${b.kind}; lines ${(b.lines ?? []).join(",")})`).join("; ")}` : "",
     `THE STORY CARD (data): ${JSON.stringify(c)}`,
     `THE SCRIPT (data; line number: text):`, ...script.lines.map((l, i) => `L${i}${l.speaker ? ` [${l.speaker}]` : ""}: ${l.text}`),

@@ -29,6 +29,7 @@ import { saveAsset, functionSource, findAssets } from "./library.mjs";
 import { makeBed, kitMusicDb } from "./music.mjs";
 import { actionsSource, actionDocs } from "./actions/actions.mjs";
 import { NOTES_SCHEMA, notesBrief, cleanScenes, isAutoPlan } from "./notes.mjs";
+import { placeBuildsIn } from "../../../supabase/functions/_shared/blockyWorlds/placeBuilds.js";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, "../../..");
@@ -175,7 +176,7 @@ if (CARD && !NOTES && WORLDS && !state.plan) {
     const locked = SCENE_PLAN?.scenes?.length && !isAutoPlan(SCENE_PLAN) ? SCENE_PLAN : null;
     try {
       const r = await L.step("director_notes", () => D.notes({ text: notesBrief({ card: CARD, script, locations: LOCATIONS, builds, scenesLocked: locked, dress: DRESS }), schema: NOTES_SCHEMA }));
-      const scenes = locked ? null : cleanScenes(r.data?.scenes, script.lines.length, LIB_IDS);
+      const scenes = locked ? null : cleanScenes(r.data?.scenes, script.lines.length, LIB_IDS, script.lines.map((l) => l.text));
       state.autoNotes = { notes: String(r.data?.notes ?? "").trim().slice(0, 9000), scenes, keptOwnerPlan: Boolean(locked) };
     } catch (e) { if (!["CAP", "AGENT_CAP", "MODEL"].includes(e.code)) throw e; state.autoNotes = { notes: "", scenes: null, error: e.message }; }
     save();
@@ -184,6 +185,9 @@ if (CARD && !NOTES && WORLDS && !state.plan) {
   if (state.autoNotes.scenes) SCENE_PLAN = state.autoNotes.scenes;
   say(`auto notes: ${NOTES.length} characters${state.autoNotes.scenes ? `; scene plan re-picked: ${state.autoNotes.scenes.scenes.map((s) => `${s.lines[0]}-${s.lines[1]} ${s.location}`).join(", ")}` : state.autoNotes.keptOwnerPlan ? "; the owner's scene plan kept" : "; the run's scene plan kept"}${state.autoNotes.error ? ` (notes skipped: ${state.autoNotes.error})` : ""}`);
 } else if (state.autoNotes && !NOTES) { NOTES = state.autoNotes.notes || ""; if (state.autoNotes.scenes) SCENE_PLAN = state.autoNotes.scenes; }
+// an automatic scene plan never keeps an UNRELATED place (a plane for "the clouds"): the missing place's host or the
+// scene before (an owner-edited plan is the owner's choice)
+if (SCENE_PLAN?.scenes?.length && isAutoPlan(SCENE_PLAN)) SCENE_PLAN = cleanScenes(SCENE_PLAN.scenes.map((s) => ({ from: s.lines[0], to: s.lines[1], location: s.location })), script.lines.length, LIB_IDS, script.lines.map((l) => l.text)) ?? SCENE_PLAN;
 const wordsText = (s) => words.slice(s.w0, s.w1 ?? words.length).map((w) => w.word).join(" ");
 const secs = (s) => `${(s.w0 <= 0 ? 0 : words[s.w0].start).toFixed(2)}-${(s.w1 == null ? dur : words[s.w1].start).toFixed(2)} s`;
 
@@ -198,6 +202,9 @@ if (!state.plan) {
     // the owner-APPROVED library builds that match this story (library.mjs findAssets: approved only), as reusable code
     ...(() => { const hits = findAssets(`${script.lines.map((l) => l.text).join(" ")} ${builds.map((b) => b.name).join(" ")}`).slice(0, 8); return hits.length ? [`APPROVED BUILDS FROM OUR LIBRARY (proven in Blender; copy any you use into header_code unchanged, then call them):`, ...hits.map((a) => `# ${a.kind}: ${a.about}\n${a.code}`)] : []; })(),
     builds.length ? `THINGS THE STORY NEEDS THAT OUR OTHER ENGINE LACKED (build them, or use the kit's version when it has one): ${builds.map((b) => `${b.name} (${b.kind}; lines ${b.lines.join(",")}${b.description ? `; ${b.description}` : ""})`).join("; ")}` : "",
+    // MISSING PLACES (placeBuilds.js, owner 2026-11-16): places the script names that the library lacks, with a simple
+    // recipe from the existing helpers; never replaced by an unrelated place (the plan check holds it)
+    ...(() => { const pbs = placeBuildsIn(script.lines.map((l) => l.text).join(" ")); return pbs.length ? [`MISSING PLACES (the script names them, the library lacks them: BUILD each simply in header_code inside its host place, show it on the lines that name it; never swap it for an unrelated place):`, ...pbs.map((b) => `- ${b.id} -> in ${b.host}: ${b.recipe}`)] : []; })(),
     `PLAN THE VIDEO. Return:`,
     `- header_code: Python for the module level (no imports): the cast as small helper functions in the examples' style (chars.Char + story._live, one per person; the colours of your style_sheet), any creature the script names as a visible creature built from kit primitives / fx, constants for set positions, and a builder function for every set or prop the kit lacks (reuse the kit's sets and our approved library builds wherever they fit).`,
     `- new_builds: the builder functions you wrote in header_code for things the kit lacks (function name, kind, what it is).`,
