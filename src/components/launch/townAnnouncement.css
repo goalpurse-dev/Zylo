@@ -1,0 +1,55 @@
+.town-dialog-viewport {
+  position: fixed; inset: 0; display: grid; place-items: center;
+  padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+}
+.town-dialog {
+  position: relative; display: grid; grid-template-columns: 42% 1fr;
+  width: min(100%, 750px); max-height: 100%; overflow: auto; overscroll-behavior: contain;
+  border: 1px solid #5e4852; border-radius: 24px; color: #fff6e7; background: #211923;
+  box-shadow: 0 24px 100px #0009;
+}
+.town-dialog-close {
+  position: absolute; right: 9px; top: 9px; z-index: 2; display: grid; place-items: center;
+  width: 44px; height: 44px; border-radius: 50%; background: #201820dc; color: #fff5e4;
+}
+.town-dialog-art {
+  position: relative; overflow: hidden; isolation: isolate;
+  background: linear-gradient(160deg, #3021395c, #604053aa 50%, #211923), url("/blocky-worlds/clips/night.jpg") center / cover;
+}
+.town-dialog-print {
+  position: absolute; width: 63%; height: 64%; object-fit: cover; border: 4px solid #f5e2c6; border-bottom-width: 12px;
+  border-radius: 5px; box-shadow: 0 9px 25px #12071980;
+}
+.town-dialog-back { right: -2%; top: 6%; transform: rotate(12deg); }
+.town-dialog-front { left: 7%; bottom: 7%; transform: rotate(-9deg); }
+.town-dialog-copy { padding: 38px clamp(24px, 4vw, 48px) 22px; }
+.town-dialog-kicker { margin: 0 0 10px; font: 700 11px/1.3 ui-monospace, monospace; letter-spacing: .16em; text-transform: uppercase; color: #ffd38d; }
+.town-dialog-title { margin: 0; font-size: clamp(42px, 5vw, 65px); font-weight: 900; line-height: .95; letter-spacing: -.065em; }
+.town-dialog-title em { color: #ffce87; font-family: Georgia, serif; font-weight: 500; }
+.town-dialog-hook { margin: 20px 0 9px; font: italic 22px/1.25 Georgia, serif; color: #fff2dd; }
+.town-dialog-description { margin: 0 0 22px; color: #d9cdd4; font-size: 14px; line-height: 1.5; }
+.town-dialog-make, .town-dialog-tutorial { display: flex; gap: 10px; align-items: center; justify-content: center; width: 100%; min-height: 44px; font-size: 14px; font-weight: 750; }
+.town-dialog-make { background: #ffcf89; color: #241821; border-radius: 10px; box-shadow: 0 3px #aa6940; }
+.town-dialog-make:hover { background: #ffdfa9; }
+.town-dialog-tutorial { margin: 5px 0; color: #f6e4d1; }
+.town-dialog-optout { display: flex; align-items: center; justify-content: center; gap: 9px; min-height: 44px; border-top: 1px solid #ffffff21; color: #d8cbd4; cursor: pointer; font-size: 13px; }
+.town-dialog-optout input { width: 17px; height: 17px; accent-color: #ffd38d; }
+.town-dialog :focus-visible { outline: 2px solid #ffcd89; outline-offset: 3px; }
+@media (max-width: 600px) {
+  .town-dialog { grid-template-columns: 1fr; width: min(100%, 420px); }
+  .town-dialog-art { height: clamp(104px, 25dvh, 190px); }
+  .town-dialog-print { width: 35%; height: 120%; }
+  .town-dialog-back { right: 18%; top: 5%; }
+  .town-dialog-front { left: 20%; bottom: -18%; }
+  .town-dialog-copy { padding: 20px 24px 10px; }
+  .town-dialog-hook { margin-top: 14px; font-size: 20px; }
+  .town-dialog-description { margin-bottom: 16px; }
+}
+@media (max-height: 480px) {
+  .town-dialog-copy { padding-block: 17px 8px; }
+  .town-dialog-art { max-height: 85px; }
+  .town-dialog-hook { margin-block: 10px 6px; }
+}
+@media (min-width: 601px) and (max-height: 480px) {
+  .town-dialog-art { max-height: none; }
+}
