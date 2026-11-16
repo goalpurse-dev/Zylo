@@ -809,6 +809,7 @@ return (
   <Route path={BLOCKY_STORIES_PATH} element={<BlockyStories />} />
   <Route path={CUTAWAY_PATH} element={<CutawayExplainer />} />
   {/* Blocky Worlds: the server decides who may see it (BLOCKY_WORLDS_ACCESS); everyone else is sent home */}
+  <Route path="/workspace/blocky-worlds" element={<Navigate replace to={{ pathname: BLOCKY_WORLDS_PATH, search: location.search, hash: location.hash }} />} />
   <Route path={BLOCKY_WORLDS_PATH} element={<BlockyWorldsGate><BlockyWorlds /></BlockyWorldsGate>} />
   <Route path="/workspace/face-asmr" element={<FaceAsmrPage />} />
   <Route path="/workspace/skeleton-shorts" element={<SkeletonShorts />} />

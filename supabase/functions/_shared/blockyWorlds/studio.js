@@ -113,7 +113,7 @@ export function sanitizeScript(script = {}) {
 
 // ---------------------------------------------------------------- "your video is ready" (an account email)
 export const APP_URL = "https://www.tryzyvo.com";
-export const APP_PATH = "/workspace/blocky-worlds"; // = src/data/blockyWorlds.js BLOCKY_WORLDS_PATH (a test holds them equal)
+export const APP_PATH = "/workspace/in-this-town"; // = src/data/blockyWorlds.js BLOCKY_WORLDS_PATH (a test holds them equal)
 /** BLOCKY_WORLDS_READY_EMAIL=on sends it (default off: the owner switches it on at launch) */
 export const readyEmailOn = (get = () => "") => ["on", "true", "1", "yes"].includes(String(get("BLOCKY_WORLDS_READY_EMAIL") ?? "").trim().toLowerCase());
 /** the email gate's kind: once per run (claim_email_send dedups on it) */
@@ -123,22 +123,22 @@ export function notifyDue(run, now = Date.now()) {
   return Boolean(run) && run.engine === "studio" && run.status === "done" && !run.notified_at && !run.deleted_at && now - ms(run.finished_at ?? run.updated_at ?? run.created_at) < 86400000;
 }
 const esc = (s = "") => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-export const READY_WHY = "You got this email because you made a Blocky Worlds video on Zyvo.";
+export const READY_WHY = "You got this email because you made a In This Town video on Zyvo.";
 /** -> { subject, render(footer) -> { html, text } } (the footer comes from emailRules.js emailFooter via userEmail.ts) */
 export function readyEmail({ title }) {
   const t = String(title ?? "").replace(CTRL, " ").trim().slice(0, 90) || "Your story";
   const url = `${APP_URL}${APP_PATH}`;
   return {
-    subject: `Your Blocky Worlds video is ready: ${t}`,
+    subject: `Your In This Town video is ready: ${t}`,
     url,
     render: (footer) => ({
       html: `<div style="max-width:520px;margin:0 auto;padding:24px 16px;font:400 15px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:#111;">
   <p style="margin:0 0 12px 0;font-size:20px;font-weight:800;">Your video is ready</p>
   <p style="margin:0 0 16px 0;">&ldquo;${esc(t)}&rdquo; has been directed, rendered and narrated. Watch it, download it and copy the upload text.</p>
   <p style="margin:0 0 8px 0;"><a href="${esc(url)}" style="display:inline-block;background:#BEF264;color:#11150D;font-weight:800;text-decoration:none;padding:12px 18px;border-radius:12px;">Open my video</a></p>
-  <p style="margin:16px 0 0 0;font-size:13px;color:#555;">Blocky Worlds is in beta. Reply to this email if something looks off.</p>
+  <p style="margin:16px 0 0 0;font-size:13px;color:#555;">In This Town is in beta. Reply to this email if something looks off.</p>
 </div>${footer?.html ?? ""}`,
-      text: `Your video is ready\n\n"${t}" has been directed, rendered and narrated.\nOpen it: ${url}\n\nBlocky Worlds is in beta. Reply to this email if something looks off.\n\n${footer?.text ?? ""}`,
+      text: `Your video is ready\n\n"${t}" has been directed, rendered and narrated.\nOpen it: ${url}\n\nIn This Town is in beta. Reply to this email if something looks off.\n\n${footer?.text ?? ""}`,
     }),
   };
 }

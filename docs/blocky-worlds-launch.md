@@ -332,7 +332,7 @@ cannot render: it waits and is failed + refunded by the sweeper. Rollback:
 ## Localhost click-through (before any deploy)
 - `npm run dev` (ONE vite on :5173) and `node scripts/blockyWorlds/localApi.mjs` (the undeployed blocky-worlds-api on
   :8000 with npx deno, real database, keys from .env.local as environment variables).
-- Open `http://localhost:5173/workspace/blocky-worlds` (the page finds the local API by itself; a dev badge says which), signed in as an owner (the built-in owner list, or
+- Open `http://localhost:5173/workspace/in-this-town` (the page finds the local API by itself; a dev badge says which), signed in as an owner (the built-in owner list, or
   `BLOCKY_WORLDS_OWNER_EMAILS`). Paid only on clicks: a script ~$0.25, a picture ~$0.001; "Make my video" asks first
   (the localhost price confirm) and starts only when a worker is alive.
 - Free: `?mock=1&as=owner` (fake scripts and video, every screen; `&photo=1` a refused picture, `&fail=1` a failed video).

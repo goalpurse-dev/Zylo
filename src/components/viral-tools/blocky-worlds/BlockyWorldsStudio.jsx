@@ -103,7 +103,7 @@ export default function BlockyWorldsStudio({ access: pageAccess, onSignUp, onUpg
           <span className="grid h-8 w-8 place-items-center rounded-xl border border-lime-300/20 bg-lime-300/10"><Boxes className="h-4 w-4 text-lime-300" aria-hidden="true" /></span>
           <div>
             <p className="flex items-center gap-1.5 text-[16px] font-black tracking-[-0.03em] text-white">
-              Blocky Worlds
+              In This Town
               {/* the Studio director engine (studio.js, soft launch 2026-11-13): the server says when it is on */}
               {flow.access?.beta && <span className="rounded-md border border-lime-300/30 bg-lime-300/10 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-[0.12em] text-lime-200" data-testid="bw-beta">Beta</span>}
             </p>
@@ -177,10 +177,10 @@ function MockBanner() {
 /** The page isn't open to this visitor (or the server couldn't be reached): say so, never a silent redirect. */
 function Closed({ access, signedOut, onSignUp }) {
   const [title, text] = access.failed
-    ? ["We couldn't reach Blocky Worlds", access.error || "Check your connection and try again."]
+    ? ["We couldn't reach In This Town", access.error || "Check your connection and try again."]
     : signedOut || !access.signedIn
-      ? ["Sign in to use Blocky Worlds", "Story videos built in blocks. Sign in (or sign up free) to start."]
-      : ["Blocky Worlds isn't open to this account yet", "It's being tested before launch. Check back soon."];
+      ? ["Sign in to use In This Town", "Story videos built in blocks. Sign in (or sign up free) to start."]
+      : ["In This Town isn't open to this account yet", "It's being tested before launch. Check back soon."];
   return (
     <div className="flex h-full w-full flex-col bg-[#0B0D0F]">
       {DEV_MOCK && <MockBanner />}
