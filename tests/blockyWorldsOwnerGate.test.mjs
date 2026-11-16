@@ -187,7 +187,7 @@ test("UI: menu, tool shelf, bottom-nav menu and pinned tools follow the server's
 test("UI: the route is wrapped in the gate, which waits on loading and redirects on denied", () => {
   const app = read("src/App.jsx");
   assert.match(app, /<Route path=\{BLOCKY_WORLDS_PATH\} element=\{<BlockyWorldsGate><BlockyWorlds \/><\/BlockyWorldsGate>\} \/>/);
-  assert.equal((app.match(/BLOCKY_WORLDS_PATH/g) ?? []).length, 2, "one import, one route");
+  assert.ok(app.includes('path="/workspace/blocky-worlds" element={<Navigate replace to={{ pathname: BLOCKY_WORLDS_PATH, search: location.search, hash: location.hash }}'));
   const gate = read("src/components/viral-tools/blocky-worlds/BlockyWorldsGate.jsx");
   assert.match(gate, /blockyWorldsRoute\(useBlockyWorldsAccess\(\)\)/);
   assert.match(gate, /return <Navigate to="\/" replace \/>;/);

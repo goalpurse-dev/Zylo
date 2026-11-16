@@ -81,8 +81,8 @@ test("the worker writes the progress to the run row; the API and the page read i
 
 test("credits: the header balance drops at Write my script (and comes back on a failure or a refunded video); phones get room for the nav", () => {
   const ui = read("src/components/viral-tools/blocky-worlds/BlenderMaker.jsx");
-  assert.match(ui, /if \(charged\) emitCreditSpend\(flat\.credits, "Blocky Worlds video"\);\n\s+const r = await guarded/);
+  assert.match(ui, /if \(charged\) emitCreditSpend\(flat\.credits, "In This Town video"\);\n\s+const r = await guarded/);
   assert.match(ui, /if \(charged && !r\?\.ok\) emitCreditRefund\(flat\.credits/);
-  assert.match(ui, /emitCreditRefund\(run\.credits, "Blocky Worlds: refunded"\)/);
+  assert.match(ui, /emitCreditRefund\(run\.credits, "In This Town: refunded"\)/);
   assert.match(ui, /pb-\[calc\(96px\+env\(safe-area-inset-bottom\)\)\]/);
 });
