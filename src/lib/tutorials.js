@@ -2,8 +2,9 @@
 // "New here? Watch the tutorial" card (a tool page shows its tutorial as soon as it is listed here).
 // To add one: a line with the tool key, the tool's name, the video's title and its YouTube link.
 // The thumbnail is YouTube's own image of the video. Newest first.
-//   tool keys: cutaway, long_form, ai_fruit_story, blocky_stories, behind_the_scenes
+//   tool keys: in_this_town, cutaway, long_form, ai_fruit_story, blocky_stories, behind_the_scenes
 export const TUTORIALS = [
+  { tool: "in_this_town", toolName: "In This Town", title: 'How to Make VIRAL Roblox "In This Town" Animations With Claude AI (FULL TUTORIAL)', url: "https://www.youtube.com/watch?v=nb9acc6kWzo" },
   { tool: "cutaway", toolName: "Cutaway Explainer", title: "How To Make Viral 3D Explainer Videos With AI", url: "https://www.youtube.com/watch?v=3KjCOOJhhzo" },
   { tool: "long_form", toolName: "Long Form", title: "How To Make Viral 2D History Stickman Videos With AI", url: "https://www.youtube.com/watch?v=cDVliwgwe_I" },
 ];

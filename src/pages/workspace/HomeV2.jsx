@@ -48,8 +48,8 @@ export default function HomeV2() {
 
       {/* Centred content column, capped on big screens (the hero's cards use the same width). */}
       <div className={`mx-auto w-full ${HOME_MAX_W}`}>
-      <InThisTownLaunch />
       <WhatsNewRow />
+      <InThisTownLaunch />
 
       {/* Short Form: the "short form suite" coverflow is the templates section (owner, 2026-11-10: above Long Form) */}
       <div className="mt-12">
