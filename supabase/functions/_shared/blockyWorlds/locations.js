@@ -4,6 +4,8 @@
 // Every location has TESTED camera spots (wide / street / close, checked with stills: worlds/stills.mjs). Pure data +
 // helpers (shared by the app API, the page and the Blender pipeline).
 //   LOCATIONS, locationById(id), pickLocation(text) -> the best id for a free-text place, DRESS (the dressing options)
+import { placeBuildsIn } from "./placeBuilds.js";
+
 export const LOCATIONS = Object.freeze([
   { id: "downtown_street", world: "downtown", label: "Downtown street", about: "a long pastel street: shops with striped awnings and story signs, trees, lamps, benches, cars, skyscrapers behind", spots: ["wide", "street", "close", "skyline"], marks: ["street", "sidewalk_east", "sidewalk_west"], words: ["street", "downtown", "city", "shops", "main street", "town", "road", "sidewalk", "mall"] },
   { id: "downtown_plaza", world: "downtown", label: "Town plaza", about: "the plaza at the start of downtown with a fountain and benches", spots: ["wide", "street", "close"], marks: ["plaza", "fountain"], words: ["plaza", "square", "fountain", "park", "crowd", "market"] },
@@ -21,7 +23,7 @@ export const LOCATIONS = Object.freeze([
   { id: "hallway", world: "kit", label: "School hallway", about: "the kit's school hallway with lockers", spots: ["wide", "street", "close"], marks: ["hall"], words: ["hallway", "corridor", "lockers", "locker"] },
   { id: "plane_cabin", world: "kit", label: "Plane cabin", about: "the kit's airliner cabin with rows of seats", spots: ["wide", "street", "close"], marks: ["aisle"], words: ["plane", "flight", "seat", "passenger", "airplane", "cabin"] },
   { id: "cockpit", world: "kit", label: "Cockpit", about: "the kit's airliner cockpit", spots: ["wide", "street", "close"], marks: ["seat"], words: ["cockpit", "pilot", "fly", "controls"] },
-  { id: "sky_airliner", world: "kit", label: "Plane in the sky", about: "the kit's airliner flying over clouds", spots: ["wide", "street", "close"], marks: ["plane"], words: ["sky", "clouds", "flying", "airplane", "jet"] },
+  { id: "sky_airliner", world: "kit", label: "Plane in the sky", about: "the kit's airliner flying over clouds", spots: ["wide", "street", "close"], marks: ["plane"], words: ["sky", "flying", "airplane", "jet"] },
   { id: "moon", world: "kit", label: "The moon", about: "the kit's moon surface with the earth in the sky", spots: ["wide", "street", "close"], marks: ["surface"], words: ["moon", "space", "astronaut", "planet", "stars", "rocket"] },
 ]);
 export const DRESS = Object.freeze({
@@ -37,9 +39,11 @@ export const locationById = (id) => byId.get(String(id ?? "")) ?? null;
 export function pickLocation(text) {
   const t = ` ${String(text ?? "").toLowerCase().replace(/[^a-z0-9 ]+/g, " ")} `;
   if (byId.has(String(text ?? "").trim())) return String(text).trim();
+  // a MISSING PLACE (placeBuilds.js: a hill, a river ...) counts for its host place, where it is built (owner 2026-11-16)
+  const hosts = placeBuildsIn(text).map((b) => b.host);
   let best = null, score = 0;
   for (const l of LOCATIONS) {
-    let s = 0;
+    let s = hosts.includes(l.id) ? 3 : 0;
     for (const w of l.words) if (t.includes(` ${w} `)) s += w.includes(" ") ? 2 : 1;
     if (t.includes(` ${l.label.toLowerCase()} `)) s += 3;
     if (s > score) { score = s; best = l.id; }

@@ -20,7 +20,7 @@ import { fileURLToPath } from "node:url";
 import { ledger, stepTimes } from "../studio/ledger.mjs";
 import { loadEnv } from "../engine/runpod/client.mjs";
 import { styleSheetLine } from "../../../supabase/functions/_shared/blockyWorlds/characterRef.js";
-import { makeDirector, systemPrompt, tileShots, assemble, staticCheck, wordLines, planLocations, planProblems, storyPlanProblems, planLines, shotProblems, heroOf, giantSuspect, MODELS, BATCH, MIN_LOCATIONS, PRICING } from "./director.mjs";
+import { makeDirector, systemPrompt, tileShots, assemble, staticCheck, wordLines, planLocations, planProblems, storyPlanProblems, planLines, shotProblems, heroOf, giantSuspect, actionPlanProblems, visionRuleProblems, heroSeenProblems, MODELS, BATCH, MIN_LOCATIONS, PRICING } from "./director.mjs";
 import { captionColors } from "./speakers.mjs";
 import { LOCATIONS, DRESS } from "./worlds/locations.mjs";
 import { runpod, RATE, BOOT_S, GPU, finalEstimate, previewEstimate, fitLimits, chunkLimitS, chunkFloorS, finishLimitS, finishFloorS } from "./rp.mjs";
@@ -28,6 +28,8 @@ import { shotFrames, splitShots } from "./plan.mjs";
 import { saveAsset, functionSource, findAssets } from "./library.mjs";
 import { makeBed, kitMusicDb } from "./music.mjs";
 import { actionsSource, actionDocs } from "./actions/actions.mjs";
+import { NOTES_SCHEMA, notesBrief, cleanScenes, isAutoPlan } from "./notes.mjs";
+import { placeBuildsIn } from "../../../supabase/functions/_shared/blockyWorlds/placeBuilds.js";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, "../../..");
@@ -35,9 +37,14 @@ const argv = process.argv.slice(2), has = (k) => argv.includes(`--${k}`), arg = 
 const RUN = path.resolve(arg("run"));
 const KIT = path.resolve(arg("kit", process.env.BLOCKY_WORLDS_KIT_DIR || path.join(REPO, "reference/blocky-worlds/roblox-story-kit/unzipped/roblox-story-kit")));
 const FIX_PER_CALL = 10;
+// THE RULES BLOCK (owner 2026-11-16): shots still failing after the fix rounds -> merged into a neighbour up to this share
+// of the shots; more -> the run stops before the final. ACTION_RULE_RE: the free shot check's action-rule problems
+export const RULES_MERGE_SHARE = 0.1;
+const ACTION_RULE_RE = /EMPTY|never puts|no character|the hero/;
 // --topic "<the topic line>", --notes <file>: the owner's production notes for THIS story (its world, its anchors, its
 // final image ...), handed to the director as part of the brief (data, like the script)
-const TOPIC = arg("topic", ""), NOTES = has("notes") ? fs.readFileSync(path.resolve(arg("notes")), "utf8").trim() : "";
+const TOPIC = arg("topic", "");
+let NOTES = has("notes") ? fs.readFileSync(path.resolve(arg("notes")), "utf8").trim() : "";
 // --fix-notes <json>: the owner's FIX ORDERS for the fix rounds (owner 2026-11-14): { general: "...", order: [ids, by
 // priority], shots: { id: "what this shot must show / how to film it" } }; listed shots join fix round 1 even when the
 // checker passed them; each order goes to the director with that shot (data, like the notes)
@@ -49,9 +56,12 @@ const WORLDS = has("worlds") ? fs.readFileSync(path.join(HERE, "worlds", "worlds
 // THE ACTION LIBRARY (owner 2026-11-15, actions/actions.py + its catalog actions.mjs): tested action moments (the catch
 // ...), pasted after the world library in library mode; the director reads the catalog (actionDocs)
 const ACTIONS_SRC = WORLDS ? actionsSource() : "";
-const SCENE_PLAN = has("scene-plan") ? JSON.parse(fs.readFileSync(path.resolve(arg("scene-plan")), "utf8")) : null;
+let SCENE_PLAN = has("scene-plan") ? JSON.parse(fs.readFileSync(path.resolve(arg("scene-plan")), "utf8")) : null;
 // --characters <file>: the user's character references (characterRef.js specs: role, name, colours, hair, outfit): the
 // director builds those characters with exactly those looks (DATA in the brief, never instructions)
+// --card <file>: the run card (premise, rule visual, characters, twist ...): without --notes, the AUTO NOTES (notes.mjs) are
+// written from it before the plan, and a scene plan that is only the free keyword pick is re-picked with them
+const CARD = has("card") ? JSON.parse(fs.readFileSync(path.resolve(arg("card")), "utf8")) : null;
 const CHARACTERS = has("characters") ? JSON.parse(fs.readFileSync(path.resolve(arg("characters")), "utf8")) : [];
 const SLUG = arg("slug", "plane_town"), ROUNDS = Math.min(2, Number(arg("rounds", WORLDS ? 1 : 2))), K = Number(arg("chunks", 6));
 const MODEL = MODELS[arg("model", "sonnet")] ?? MODELS.sonnet;
@@ -158,6 +168,26 @@ const worldDocs = WORLDS ? [
 const system = systemPrompt({ kitDir: KIT, kitMapFile: kitMap, worldDocs, ...(WORLDS ? { examples: ["sneeze_teleport"] } : {}) });
 const D = makeDirector({ out: OUT, L, apiKey, model: MODEL, system, reserve, log: say, ...(WORLDS ? { tokens: { plan: 16000, batch: 10000, fix: 12000 } } : {}) });
 const LIB_IDS = new Set(LOCATIONS.map((l) => l.id));
+// THE AUTO NOTES (notes.mjs, owner 2026-11-16): a run with a card and no owner notes gets Milo-shaped notes first; a scene
+// plan that is only the free keyword pick (or none) is re-picked with them; an owner-edited plan is kept. Never fatal:
+// a failed notes call goes on without (the plan checks still block)
+if (CARD && !NOTES && WORLDS && !state.plan) {
+  if (!state.autoNotes) {
+    const locked = SCENE_PLAN?.scenes?.length && !isAutoPlan(SCENE_PLAN) ? SCENE_PLAN : null;
+    try {
+      const r = await L.step("director_notes", () => D.notes({ text: notesBrief({ card: CARD, script, locations: LOCATIONS, builds, scenesLocked: locked, dress: DRESS }), schema: NOTES_SCHEMA }));
+      const scenes = locked ? null : cleanScenes(r.data?.scenes, script.lines.length, LIB_IDS, script.lines.map((l) => l.text));
+      state.autoNotes = { notes: String(r.data?.notes ?? "").trim().slice(0, 9000), scenes, keptOwnerPlan: Boolean(locked) };
+    } catch (e) { if (!["CAP", "AGENT_CAP", "MODEL"].includes(e.code)) throw e; state.autoNotes = { notes: "", scenes: null, error: e.message }; }
+    save();
+  }
+  NOTES = state.autoNotes.notes || "";
+  if (state.autoNotes.scenes) SCENE_PLAN = state.autoNotes.scenes;
+  say(`auto notes: ${NOTES.length} characters${state.autoNotes.scenes ? `; scene plan re-picked: ${state.autoNotes.scenes.scenes.map((s) => `${s.lines[0]}-${s.lines[1]} ${s.location}`).join(", ")}` : state.autoNotes.keptOwnerPlan ? "; the owner's scene plan kept" : "; the run's scene plan kept"}${state.autoNotes.error ? ` (notes skipped: ${state.autoNotes.error})` : ""}`);
+} else if (state.autoNotes && !NOTES) { NOTES = state.autoNotes.notes || ""; if (state.autoNotes.scenes) SCENE_PLAN = state.autoNotes.scenes; }
+// an automatic scene plan never keeps an UNRELATED place (a plane for "the clouds"): the missing place's host or the
+// scene before (an owner-edited plan is the owner's choice)
+if (SCENE_PLAN?.scenes?.length && isAutoPlan(SCENE_PLAN)) SCENE_PLAN = cleanScenes(SCENE_PLAN.scenes.map((s) => ({ from: s.lines[0], to: s.lines[1], location: s.location })), script.lines.length, LIB_IDS, script.lines.map((l) => l.text)) ?? SCENE_PLAN;
 const wordsText = (s) => words.slice(s.w0, s.w1 ?? words.length).map((w) => w.word).join(" ");
 const secs = (s) => `${(s.w0 <= 0 ? 0 : words[s.w0].start).toFixed(2)}-${(s.w1 == null ? dur : words[s.w1].start).toFixed(2)} s`;
 
@@ -172,6 +202,9 @@ if (!state.plan) {
     // the owner-APPROVED library builds that match this story (library.mjs findAssets: approved only), as reusable code
     ...(() => { const hits = findAssets(`${script.lines.map((l) => l.text).join(" ")} ${builds.map((b) => b.name).join(" ")}`).slice(0, 8); return hits.length ? [`APPROVED BUILDS FROM OUR LIBRARY (proven in Blender; copy any you use into header_code unchanged, then call them):`, ...hits.map((a) => `# ${a.kind}: ${a.about}\n${a.code}`)] : []; })(),
     builds.length ? `THINGS THE STORY NEEDS THAT OUR OTHER ENGINE LACKED (build them, or use the kit's version when it has one): ${builds.map((b) => `${b.name} (${b.kind}; lines ${b.lines.join(",")}${b.description ? `; ${b.description}` : ""})`).join("; ")}` : "",
+    // MISSING PLACES (placeBuilds.js, owner 2026-11-16): places the script names that the library lacks, with a simple
+    // recipe from the existing helpers; never replaced by an unrelated place (the plan check holds it)
+    ...(() => { const pbs = placeBuildsIn(script.lines.map((l) => l.text).join(" ")); return pbs.length ? [`MISSING PLACES (the script names them, the library lacks them: BUILD each simply in header_code inside its host place, show it on the lines that name it; never swap it for an unrelated place):`, ...pbs.map((b) => `- ${b.id} -> in ${b.host}: ${b.recipe}`)] : []; })(),
     `PLAN THE VIDEO. Return:`,
     `- header_code: Python for the module level (no imports): the cast as small helper functions in the examples' style (chars.Char + story._live, one per person; the colours of your style_sheet), any creature the script names as a visible creature built from kit primitives / fx, constants for set positions, and a builder function for every set or prop the kit lacks (reuse the kit's sets and our approved library builds wherever they fit).`,
     `- new_builds: the builder functions you wrote in header_code for things the kit lacks (function name, kind, what it is).`,
@@ -187,13 +220,17 @@ if (!state.plan) {
   // THE PLAN CHECK (director.mjs planProblems): 3+ locations (first test: almost every shot in the same cabin aisle),
   // ~50 cuts a minute, one hero + distinct colours per character, anchors that come back in the ending; one re-plan,
   // then a stop (before any GPU money)
-  let probs = [...planProblems(r.data, dur, { library: WORLDS ? LIB_IDS : null }), ...storyPlanProblems(r.data ?? {}, planLines(r.data?.shots ?? [], lineOf, script.lines))];
-  if (probs.length) {
+  // + THE ACTION RULES (director.mjs actionPlanProblems, owner 2026-11-16): never only the place, at most 1 shot in 6
+  // without a character, every named character (name or role) shown on its lines, the story's builds (the hill) shown;
+  // up to 2 re-plans, then a stop (BLOCKING, before any GPU money)
+  const planCheck = (d) => { const pl = planLines(d?.shots ?? [], lineOf, script.lines); return [...planProblems(d, dur, { library: WORLDS ? LIB_IDS : null }), ...storyPlanProblems(d ?? {}, pl), ...actionPlanProblems(d ?? {}, pl, { builds })]; };
+  let probs = planCheck(r.data);
+  for (let k = 1; probs.length && k <= 2; k++) {
     say(`plan check: ${probs.length} problem(s): ${probs.join(" | ")}`);
-    r = await L.step("director_plan", () => D.plan({ brief: `PLAN CHECK FAILED:\n${probs.map((x) => `- ${x}`).join("\n")}\nRe-plan the WHOLE video (same answer format: title, header_code, new_builds, style_sheet, anchors, every shot with id, w0, desc, location) so every point above is met (add any set builders to header_code).` }));
-    probs = [...planProblems(r.data, dur, { library: WORLDS ? LIB_IDS : null }), ...storyPlanProblems(r.data ?? {}, planLines(r.data?.shots ?? [], lineOf, script.lines))];
-    if (probs.length) throw new Error(`plan check: still failing after a re-plan: ${probs.join(" | ")}: stopped before any render`);
+    r = await L.step("director_plan", () => D.plan({ brief: `PLAN CHECK FAILED:\n${probs.map((x) => `- ${x}`).join("\n")}\nRe-plan the WHOLE video (same answer format: title, header_code, new_builds, style_sheet (with every character's role), anchors, every shot with id, w0, desc, location) so every point above is met (add any set builders to header_code).` }));
+    probs = planCheck(r.data);
   }
+  if (probs.length) throw new Error(`plan check: still failing after the re-plans: ${probs.join(" | ")}: stopped before any render`);
   const locs = planLocations(r.data.shots ?? []);
   const t = tileShots(r.data.shots ?? [], words);
   state.plan = { title: r.data.title ?? script.title, header: r.data.header_code ?? "", newBuilds: r.data.new_builds ?? [], shots: t.shots, mergedAtPlan: t.merged, cutOff: r.cutOff, locations: locs.list, styleSheet: r.data.style_sheet ?? [], anchors: r.data.anchors ?? [], dress: storyDress(r.data.dress) };
@@ -277,11 +314,15 @@ if (!sc.ok) {
 say(`static check: ${sc.ok ? "ok" : `${sc.problems.length} problem(s)`}, ${plan.shots.length} shots`);
 // THE SHOT CHECK (director.mjs shotProblems, owner 2026-11-14): no camera spot twice in a row, the hero in at least
 // half the shots, no literal camera inside a wall / building of a library place; ONE writing fix before any GPU money
-let shp = shotProblems({ shots: plan.shots, bodies: state.bodies, hero: heroOf(plan.styleSheet) });
+// + THE ACTION RULES on the bodies (owner 2026-11-16): the hero counted only where the BODY puts them on screen, a named
+// character in the desc called in the body, never only the place, at most 1 shot in 6 without a character; what the
+// writing fix leaves goes into fix round 1 (BLOCKING: still failing after the rounds -> never in the final)
+const shotCheck = (shots, hero = heroOf(plan.styleSheet)) => shotProblems({ shots, bodies: state.bodies, hero, styleSheet: plan.styleSheet ?? [], header: plan.header });
+let shp = shotCheck(plan.shots);
 if (Object.keys(shp).length && !state.shotFixed) {
   state.shotFixed = true;
   const ids = Object.keys(shp).map(Number).slice(0, 2 * BATCH);
-  const text = [`THE SHOT CHECK found these problems (never the same camera spot twice in a row; the hero ${heroOf(plan.styleSheet) ?? ""} on screen in at least half the shots; no camera inside or behind a wall / building; background people only on sidewalks / crosswalks; no walk through a standing character; zw_ground for anyone on a roof / table / shelf; at most 2 near-identical shots in a row). Rewrite ONLY these shots' bodies; header_append "" unless a helper must change.`,
+  const text = [`THE SHOT CHECK found these problems (never the same camera spot twice in a row; the hero ${heroOf(plan.styleSheet) ?? ""} on screen in at least half the shots; no camera inside or behind a wall / building; background people only on sidewalks / crosswalks; no walk through a standing character; zw_ground for anyone on a roof / table / shelf; at most 2 near-identical shots in a row; every shot shows a character or its named thing, never only the place; a character the desc names is called in the body; at most 1 shot in 6 without a character). Rewrite ONLY these shots' bodies; header_append "" unless a helper must change.`,
     ...ids.map((id) => `- shot ${id}: ${shp[id]}\n  current body:\n${state.bodies[id]}`)].join("\n");
   let r = null;
   // the caps cannot fund the writing fix: never a stop; the problems ride into fix round 1 (as urgent as a crash)
@@ -293,7 +334,8 @@ if (Object.keys(shp).length && !state.shotFixed) {
     state.convo = D.convo; save();
     sc = staticCheck(writeFile(), shotsFile);
     if (!sc.ok) mergeOut([...new Set(sc.problems.map((q) => q.shot).filter((x) => x != null))], "static after the shot fix");
-    shp = shotProblems({ shots: plan.shots, bodies: state.bodies, hero: heroOf(plan.styleSheet) });
+    shp = shotCheck(plan.shots);
+    state.shotLeft = shp; save();
   }
 }
 say(`shot check: ${Object.keys(shp).length ? `${Object.keys(shp).length} left (${Object.entries(shp).slice(0, 4).map(([k, v]) => `${k}: ${v.slice(0, 60)}`).join(" | ")})` : "ok"}`);
@@ -376,7 +418,7 @@ async function vision(tag, sheets, ids, suspects = {}, giants = {}) {
   const seen = new Set(sheets.flatMap((x) => x.shots));
   const lines = linesOfShots(plan.shots).filter((l) => l.shots.every((id) => seen.has(id)));
   const last = plan.shots[plan.shots.length - 1];
-  const r = await L.step("vision_check", () => D.check({ label: `check_${tag}`, sheets, shots, wordsText, suspects, giants, lines, lastShot: ids.includes(last.id) ? last.id : null, darkOk: shots.filter(darkOk).map((s) => s.id) }));
+  const r = await L.step("vision_check", () => D.check({ label: `check_${tag}`, sheets, shots, wordsText, suspects, giants, lines, lastShot: ids.includes(last.id) ? last.id : null, darkOk: shots.filter(darkOk).map((s) => s.id), cast: plan.styleSheet ?? [] }));
   const out = Object.fromEntries((r.data.shots ?? []).filter((x) => !x.ok).map((x) => [x.id, x.problem]));
   for (const l of r.data.lines ?? []) {
     if (l.ok) continue;
@@ -384,6 +426,14 @@ async function vision(tag, sheets, ids, suspects = {}, giants = {}) {
     const id = L0.shots.includes(l.fix_shot) ? l.fix_shot : L0.shots[0];
     out[id] = `${out[id] ? `${out[id]}; ` : ""}line ${l.line} "${L0.text}" is not shown literally: its key thing "${l.key}" must be clearly on screen in this shot`;
   }
+  // THE ACTION RULES as SEEN (owner 2026-11-16): an empty frame, a named character not visible; the hero's share over
+  // every shot seen so far (the checker's people per shot, kept across rounds)
+  const styleSheet = plan.styleSheet ?? [];
+  for (const [id, t] of Object.entries(visionRuleProblems({ shots, answers: r.data.shots ?? [], styleSheet }))) out[id] = `${out[id] ? `${out[id]}; ` : ""}${t}`;
+  state.seen ??= {};
+  for (const a of r.data.shots ?? []) if (ids.includes(a.id)) state.seen[a.id] = Array.isArray(a.people) ? a.people : [];
+  for (const [id, t] of Object.entries(heroSeenProblems({ shots: plan.shots, seen: state.seen, hero: heroOf(styleSheet), styleSheet }))) if (ids.includes(Number(id))) out[id] = `${out[id] ? `${out[id]}; ` : ""}${t}`;
+  save();
   return out;
 }
 
@@ -405,7 +455,7 @@ function mergeProblems(p, vis) {
   for (const [id, t] of Object.entries(p.pixBad)) if (!f[id]) f[id] = { kind: "pixel", text: t };
   for (const [id, t] of Object.entries(vis)) if (!f[id]) f[id] = { kind: "vision", text: `the checker saw: ${t}` };
   // the shot check's problems when its writing fix was skipped by the caps (round 0 only; urgent like a crash)
-  if (state.shotFixed === "skipped" && !state.previewed) for (const [id, t] of Object.entries(state.shotLeft ?? {})) if (shotById(Number(id))) f[id] = { kind: f[id]?.kind === "crash" ? "crash" : "shotcheck", text: `${f[id] ? `${f[id].text}; ` : ""}THE SHOT CHECK: ${t}` };
+  if (!state.previewed) for (const [id, t] of Object.entries(state.shotLeft ?? {})) if (shotById(Number(id))) f[id] = { kind: f[id]?.kind === "crash" ? "crash" : "shotcheck", text: `${f[id] ? `${f[id].text}; ` : ""}THE SHOT CHECK: ${t}` };
   return f;
 }
 
@@ -458,12 +508,15 @@ for (let round = (state.round ?? 0) + 1; round <= ROUNDS && Object.keys(failing)
   }
   save();
   { // the free shot check on the fixed bodies (information: the preview + the checker decide)
-    const sp = shotProblems({ shots: plan.shots.filter((s) => ids.includes(s.id)), bodies: state.bodies, hero: null });
+    const sp = shotCheck(plan.shots.filter((s) => ids.includes(s.id)), null);
+    state.roundShotLeft = sp;
     say(`round ${round} shot check after the fixes: ${Object.keys(sp).length ? Object.entries(sp).map(([k, v]) => `${k}: ${v.slice(0, 90)}`).join(" | ") : "ok"}`);
   }
   const p = await L.step(`preview_round${round}`, () => previewRound(`r${round}`, ids));
   const vis = await vision(`r${round}`, p.sheets, ids.filter((id) => !p.failed[id]), p.slabs, p.giants);
   failing = mergeProblems(p, vis);
+  // the free check's ACTION RULE problems on the fixed bodies count as failing too (the checker may miss them)
+  for (const [id, t] of Object.entries(state.roundShotLeft ?? {})) if (!failing[id] && shotById(Number(id)) && ACTION_RULE_RE.test(t)) failing[id] = { kind: "shotcheck", text: `THE SHOT CHECK: ${t}` };
   state.round = round;
   state.rounds.push({ round, fixed: ids.length, crashed: Object.keys(p.failed).length, pixel: Object.keys(p.pixBad).length, vision: Object.keys(vis).length, failing: Object.keys(failing).length, sheets: p.sheets.map((s) => s.file) });
   state.failing = failing; save();
@@ -473,6 +526,17 @@ for (let round = (state.round ?? 0) + 1; round <= ROUNDS && Object.keys(failing)
 // ---------------------------------------------------------------- 4. no holes: a shot that still crashes joins its neighbour
 const crashed = Object.entries(failing).filter(([, f]) => f.kind === "crash").map(([id]) => Number(id));
 if (crashed.length) mergeOut(crashed, "crash");
+// THE RULES BLOCK (owner 2026-11-16: the checker BLOCKS, it does not just report): a shot still failing after the fix
+// rounds never reaches the final: a few (at most RULES_MERGE_SHARE of the shots) join their neighbour like a crash; more
+// than that, or the hero SEEN in under half the shots, stops the run before the final render (the worker refunds)
+{
+  const left = Object.entries(failing).filter(([id, f]) => f.kind !== "crash" && shotById(Number(id))).map(([id]) => Number(id));
+  const maxMerge = Math.floor(plan.shots.length * RULES_MERGE_SHARE);
+  if (left.length > maxMerge) throw Object.assign(new Error(`the rules block the final: ${left.length} shot(s) still fail after ${ROUNDS} fix round(s) (at most ${maxMerge} may be merged): ${left.slice(0, 10).map((id) => `${id}: ${String(failing[id].text).slice(0, 90)}`).join(" | ")}: stopped before the final render`), { code: "RULES" });
+  if (left.length) mergeOut(left, "rules: still failing after the fix rounds");
+  const hs = heroSeenProblems({ shots: plan.shots, seen: state.seen ?? {}, hero: heroOf(plan.styleSheet), styleSheet: plan.styleSheet ?? [] });
+  if (Object.keys(hs).length) throw Object.assign(new Error(`the rules block the final: ${Object.values(hs)[0]}: stopped before the final render`), { code: "RULES" });
+}
 fs.writeFileSync(shotsFile, writeFile());
 const fsc = staticCheck(writeFile(), shotsFile);
 if (!fsc.ok) throw new Error(`the final shots.py fails the static check: ${JSON.stringify(fsc.problems).slice(0, 400)}`);
@@ -524,7 +588,9 @@ if (!fin.ok) throw new Error(`finish failed: ${String(fin.error).slice(0, 800)}`
 for (const [name, u] of Object.entries(fin.output.uploads)) await R.fetchParts(name, u.parts, path.join(OUT, name));
 const finalWall = (Date.now() - tFinal) / 1000;
 say(`final: ${path.join(OUT, "final.mp4")} (${fin.output.duration} s; cues ${fin.output.cues?.count}); render wall ${renderWall.toFixed(0)} s, with finish ${finalWall.toFixed(0)} s`);
-await R.cleanup().catch((e) => say(`cleanup: ${e.message}`));
+// --defer-cleanup (the worker): the stored parts stay until the final is uploaded and the run is Ready (cleanup.mjs)
+if (has("defer-cleanup")) say(`cleanup deferred: ${state.rpPrefix} stays until the video is delivered`);
+else await R.cleanup().catch((e) => say(`cleanup: ${e.message}`));
 
 // ---------------------------------------------------------------- 6. contact sheet, black / flat frames, library
 const sheet = path.join(OUT, "contact.jpg");

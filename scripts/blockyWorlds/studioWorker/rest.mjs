@@ -3,6 +3,7 @@
 // against a fake with no network. Never logs a key or a header.
 //   db.claim(workerId)                         blocky_worlds_claim_studio_run: the oldest queued Studio run, or null
 //   db.getRun(id)  db.updateRun(id, patch, { notTerminal, worker })  db.refund(runId)  db.ledger(run, rows)
+//   db.rescueRun(id, patch, { worker })        a late video: this worker's failed run -> done (the refund kept)
 //   db.gateState(userId)                       { settings, counts } for guard.js decide (paid switch, emergency cap)
 //   db.workerSeen(id, { version, busyRun })    the hello start checks (blocky_worlds_workers)
 //   db.liveStudioRuns(limit)                   db.alert(key, subject, text) (a system_logs row the sweeper mails)
@@ -44,6 +45,13 @@ export function restDb({ url, key, fetchFn = fetch, now = () => Date.now() }) {
       if (guard.notTerminal) q += `&status=not.in.${TERMINAL}`;
       if (guard.worker) q += `&worker_id=eq.${id(guard.worker)}`;
       const rows = await call("PATCH", `${q}&select=id,status,worker_id`, { ...patch, updated_at: iso() }, { Prefer: "return=representation" });
+      return Array.isArray(rows) ? rows[0] ?? null : null;
+    },
+    /** THE LATE VIDEO (owner 2026-11-16): a run THIS worker made that was failed elsewhere -> done (only failed rows of
+     *  this worker; the refund columns are never touched) */
+    async rescueRun(runId, patch, { worker }) {
+      if (!worker) return null;
+      const rows = await call("PATCH", `${RUNS}?id=eq.${id(runId)}&status=eq.failed&worker_id=eq.${id(worker)}&deleted_at=is.null&select=id,status,worker_id`, { ...patch, updated_at: iso() }, { Prefer: "return=representation" });
       return Array.isArray(rows) ? rows[0] ?? null : null;
     },
     async refund(runId) { return Number(await call("POST", "/rest/v1/rpc/blocky_worlds_refund", { p_run: runId })) || 0; },

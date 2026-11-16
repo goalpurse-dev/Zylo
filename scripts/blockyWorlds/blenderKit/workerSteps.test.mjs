@@ -20,6 +20,9 @@ test("switch + owner list: only the listed owners get Blender", () => {
   assert.equal(pickSteps(run("owner-1"), { studio, blender, env }), blender);
   assert.equal(pickSteps(run("owner-2"), { studio, blender, env }), blender);
   assert.equal(pickSteps(run("customer-9"), { studio, blender, env }), studio);
+  const publicEnv = { ...env, BLOCKY_WORLDS_BLENDER_ACCESS: "everyone" };
+  assert.equal(pickSteps(run("customer-9"), { studio, blender, env: publicEnv }), blender);
+  assert.equal(pickSteps(run(null), { studio, blender, env: publicEnv }), studio);
   assert.equal(pickSteps(run(null), { studio, blender, env }), studio);
   assert.equal(pickSteps(run(""), { studio, blender, env: { ...env, BLOCKY_WORLDS_BLENDER_OWNER_IDS: "," } }), studio);
 });

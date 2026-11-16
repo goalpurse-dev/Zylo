@@ -16,7 +16,7 @@
 // whitelist validator (studio/validate.mjs) are fixed in code and nothing in a script can change them.
 import fs from "node:fs";
 import path from "node:path";
-import { sanitizeScript, STUDIO, STUDIO_STATUS, studioPct, stageForStep } from "../../../supabase/functions/_shared/blockyWorlds/studio.js";
+import { sanitizeScript, STUDIO, STUDIO_STATUS, studioPct, stageForStep, studioLimitMin } from "../../../supabase/functions/_shared/blockyWorlds/studio.js";
 import { makeStudioRuns } from "../../../supabase/functions/_shared/blockyWorlds/studioRuns.js";
 import { paths } from "../../../supabase/functions/_shared/blockyWorlds/render.js";
 import { decide } from "../../../supabase/functions/_shared/blockyWorlds/guard.js";
@@ -64,13 +64,23 @@ export async function runStudioRun(run, deps, cfg = STUDIO) {
   const iso = () => new Date(now()).toISOString();
   const dir = path.join(deps.workDir, run.id);
   fs.mkdirSync(dir, { recursive: true });
-  const started = Date.parse(run.claimed_at ?? "") || now(), deadline = started + cfg.hardMin * 60000;
-  const st = { stage: run.studio_stage ?? "voice", stopped: null, checks: 0, booked: {}, seq: 0, stages: [], lastStop: null, writing: Promise.resolve() };
+  // THE TIME LIMIT (owner 2026-11-16, studio.js studioLimitMin): the hard max from the claim, progress or not; past the
+  // soft limit (scaled with the length) only when nothing moved for progressStaleMin. Never while it still moves.
+  const started = Date.parse(run.claimed_at ?? "") || now(), deadline = started + (cfg.hardMin ?? 120) * 60000;
+  const soft = started + studioLimitMin(run, cfg) * 60000;
+  const st = { stage: run.studio_stage ?? "voice", stopped: null, checks: 0, booked: {}, seq: 0, stages: [], lastStop: null, writing: Promise.resolve(), movedAt: now(), videoFile: null, delivered: false };
 
+  const timeUp = () => (now() > deadline ? `not done ${cfg.hardMin} min after the claim (the hard max)` : now() > soft && now() - st.movedAt > (cfg.progressStaleMin ?? 25) * 60000 ? `past its ${studioLimitMin(run, cfg)} min limit with no progress for ${Math.round((now() - st.movedAt) / 60000)} min` : null);
   const stopNow = () => {
     if (control.stop && !st.stopped) st.stopped = control.stop;
-    if (!st.stopped && now() > deadline) st.stopped = { code: "TIMEOUT", message: `not done ${cfg.hardMin} min after the claim` };
+    if (!st.stopped) { const why = timeUp(); if (why) st.stopped = { code: "TIMEOUT", message: why }; }
     if (st.stopped) throw new StudioStop(st.stopped.code, st.stopped.message);
+  };
+  // THE LATE-VIDEO RESCUE (owner 2026-11-16: 2947e875's finish was done 1 min after the sweeper failed it, then the folder
+  // was deleted): once the video exists, only a shutdown stops it; a time-out or a run ended elsewhere still gets its
+  // video uploaded and marked Ready (refund kept)
+  const stopShutdown = () => {
+    if (control.stop) throw new StudioStop(control.stop.code, control.stop.message);
   };
   // the stage on the run row (forward only); a row the worker no longer holds (failed by the sweeper) stops the run
   const write = (patch) => {
@@ -83,6 +93,7 @@ export async function runStudioRun(run, deps, cfg = STUDIO) {
   const ORDER = Object.keys(STUDIO_STATUS);
   const toStage = (stage) => {
     if (stage === st.stage && st.stages.length) return st.writing;
+    st.movedAt = now();
     // after live progress (the Blender pipeline) the stage only moves forward (the runner's own "rendering" after the
     // pipeline's "finishing" is skipped)
     if (st.progressed && ORDER.indexOf(stage) < ORDER.indexOf(st.stage)) return st.writing;
@@ -98,7 +109,8 @@ export async function runStudioRun(run, deps, cfg = STUDIO) {
     const moved = p.stage !== st.stage;
     if (moved) { st.stage = p.stage; st.stages.push(p.stage); log(`stage ${p.stage} (${p.pct}%)`); }
     st.progressed = true;
-    return write({ studio_stage: p.stage, status: STUDIO_STATUS[p.stage], pct: Math.floor(p.pct), ...(moved ? { stage_at: iso() } : {}), render: { progress: { stage: p.stage, pct: p.pct, ceil: p.ceil, detail: String(p.detail ?? "").slice(0, 120), at: iso() } } });
+    if (p.lineAt) st.movedAt = Math.max(st.movedAt, Number(p.lineAt));
+    return write({ studio_stage: p.stage, status: STUDIO_STATUS[p.stage], pct: Math.floor(p.pct), ...(moved ? { stage_at: iso() } : {}), render: { progress: { stage: p.stage, pct: p.pct, ceil: p.ceil, detail: String(p.detail ?? "").slice(0, 120), at: iso(), ...(p.lineAt ? { lineAt: new Date(p.lineAt).toISOString() } : {}) } } });
   };
   // the Studio ledger every studio module gets: the same object (its caps, costs, log), with a check() that first stops
   // paid work once the run is over and moves the progress screen to the step being paid for
@@ -153,15 +165,19 @@ export async function runStudioRun(run, deps, cfg = STUDIO) {
     if (builds.builds.length) log(`builds: ${builds.builds.map((b) => `${b.name} (${b.kind})`).join(", ")}; library hits: ${Object.keys(builds.assets).length}`);
     const directed = await timed("direct", () => steps.direct({ tl0: base.tl0, script, dir, L, card, builds: builds.builds, onProgress: progress, log: (m) => { if (/stopping/.test(String(m))) st.lastStop = String(m); log(m); } }));
     await book();
-    stopNow(); // the director stops quietly when a check refused its next call: the reason is here
     if (!directed?.plan?.shots?.length || !directed?.plan?.bible?.homes) {
+      stopNow(); // the director stops quietly when a check refused its next call: the reason is here
       const why = st.lastStop ?? directed?.report?.finished?.reason ?? "no cut was written";
       throw Object.assign(new StudioStop(/credit balance|insufficient|quota/i.test(why) ? "PROVIDER_BALANCE" : "DIRECTOR_FAILED", `the director wrote no cut: ${why}`.slice(0, 600)));
     }
+    // the Blender engine made the final inside `direct` (directed.blender): from here only a shutdown stops it (THE
+    // LATE-VIDEO RESCUE); the three.js engine still checks the limits before paying for its final
+    if (directed.blender) { st.videoFile = path.join(dir, "blender", "final.mp4"); stopShutdown(); } else stopNow();
     await toStage("rendering");
     const fin = await timed("final", () => steps.final({ plan: directed.plan, tl0: base.tl0, script, dir, L, mix: mix?.file ?? path.join(dir, "mix.m4a") }));
+    st.videoFile = fin?.final ?? null;
     await book();
-    stopNow();
+    stopShutdown();
     await toStage("finishing");
     const out = await timed("outputs", () => steps.outputs({ final: fin.final, dir, maxBytes: cfg.maxUploadBytes }));
     const P = paths(run);
@@ -172,11 +188,22 @@ export async function runStudioRun(run, deps, cfg = STUDIO) {
     });
     // the owner's Details: the director's summary (never the conversation, never the customer's script again)
     try { if (directed.report) await storage.upload(`${P.final.replace(/final\.mp4$/, "")}studio-report.json`, Buffer.from(JSON.stringify({ report: summary(directed.report), took, costs: L0.costs })), "application/json"); } catch (e) { log(`report upload skipped: ${e?.message ?? e}`); }
-    stopNow();
+    stopShutdown();
     const files = { final: P.final, web: P.webFinal, poster: P.poster, durationSec: out.durationSec ?? null, bytes: out.bytes ?? null };
     await st.writing;
     const done = await db.updateRun(run.id, { status: "done", pct: 100, files, finished_at: iso(), stage_at: iso(), heartbeat_at: iso(), error_code: null, error_message: null, studio_stage: null }, { notTerminal: true, worker: workerId });
-    if (!done) throw new StudioStop("STOPPED", "the run was ended elsewhere before it could be marked done");
+    if (!done) {
+      // THE LATE VIDEO: the run was failed (and refunded) elsewhere while the video was being made: it is still delivered
+      // as Ready, the refund is kept (no re-charge), the note says so; the sweeper's ready email goes out as usual
+      const prev = await db.getRun(run.id).catch(() => null);
+      const note = `late video: finished after the run was stopped (${prev?.error_code ?? "ended elsewhere"}); the refund of ${prev?.credits_refunded ?? 0} credits is kept`;
+      const rescued = db.rescueRun ? await db.rescueRun(run.id, { status: "done", pct: 100, files, finished_at: iso(), stage_at: iso(), heartbeat_at: iso(), error_code: null, error_message: note.slice(0, 500), studio_stage: null, notified_at: null, render: { late: { at: iso(), after: prev?.error_code ?? null, refundKept: prev?.credits_refunded ?? 0 } } }, { worker: workerId }).catch((e) => { log(`late rescue failed: ${e?.message ?? e}`); return null; }) : null;
+      if (!rescued) throw new StudioStop("STOPPED", "the run was ended elsewhere before it could be marked done");
+      st.delivered = true;
+      log(`LATE READY: ${note}`);
+      return { ok: true, late: true, files, costUsd: L0.total(), stages: st.stages, took };
+    }
+    st.delivered = true;
     log(`DONE in ${Math.round((now() - t0) / 1000)} s, $${L0.total()} (${JSON.stringify(took)})`);
     return { ok: true, files, costUsd: L0.total(), stages: st.stages, took };
   } catch (e) {
@@ -189,7 +216,11 @@ export async function runStudioRun(run, deps, cfg = STUDIO) {
     return { ok: false, code, message, costUsd: L0.total(), stages: st.stages, took };
   } finally {
     timers.clear(beat);
-    if (!deps.keepWork) fs.rmSync(dir, { recursive: true, force: true });
+    // the folder goes only once the video is delivered (uploaded + Ready), or when no video was made
+    const keep = !st.delivered && Boolean(st.videoFile) && fs.existsSync(st.videoFile);
+    if (st.delivered && steps.cleanup) await steps.cleanup({ dir, log }).catch((e) => log(`cleanup skipped: ${e?.message ?? e}`));
+    if (!deps.keepWork && !keep) fs.rmSync(dir, { recursive: true, force: true });
+    else if (keep) log(`KEPT ${dir}: a made video was not delivered (${st.videoFile})`);
   }
 }
 

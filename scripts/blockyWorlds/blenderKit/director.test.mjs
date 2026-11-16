@@ -89,19 +89,20 @@ test("the camera key: a library spot, a literal cam.key, or the first camera cal
 
 test("the shot check flags the same camera spot twice in a row, never a change of spot or place", () => {
   const shots = S(4);
-  const bodies = { 1: spotBody("downtown_street", "wide"), 2: spotBody("downtown_street", "wide"), 3: spotBody("downtown_street", "close"), 4: spotBody("downtown_plaza", "close") };
+  const mo = "k = mo(t0, t1)"; // the hero counts only where the BODY puts him on screen (owner 2026-11-16)
+  const bodies = { 1: spotBody("downtown_street", "wide", mo), 2: spotBody("downtown_street", "wide", mo), 3: spotBody("downtown_street", "close", mo), 4: spotBody("downtown_plaza", "close", mo) };
   const p = shotProblems({ shots, bodies, hero: "Mo" });
   assert.deepEqual(Object.keys(p), ["2"]);
   assert.match(p[2], /same camera spot as shot 1/);
   // the same custom push in two different locations is fine; in the same location it is a repeat
-  const push = "cam.push(t0, t1, (0, 4, 4), 9, 7, yaw=10)";
+  const push = "cam.push(t0, t1, (0, 4, 4), 9, 7, yaw=10)\nk = mo(t0, t1)";
   assert.deepEqual(shotProblems({ shots: [{ id: 1, location: "cabin", desc: "Mo" }, { id: 2, location: "cockpit", desc: "Mo" }], bodies: { 1: push, 2: push }, hero: "Mo" }), {});
   assert.ok(shotProblems({ shots: [{ id: 1, location: "cabin", desc: "Mo" }, { id: 2, location: "cabin", desc: "Mo" }], bodies: { 1: push, 2: push }, hero: "Mo" })[2]);
 });
 
 test("the shot check asks for the hero in enough shots, spread over the video", () => {
   const shots = S(10).map((s, i) => ({ ...s, desc: i < 2 ? "Mo waves" : "the street" }));
-  const bodies = Object.fromEntries(shots.map((s, i) => [s.id, spotBody("downtown_street", ["wide", "close"][i % 2])]));
+  const bodies = Object.fromEntries(shots.map((s, i) => [s.id, spotBody("downtown_street", ["wide", "close"][i % 2], i < 2 ? "k = mo(t0, t1)" : "")]));
   const p = shotProblems({ shots, bodies, hero: "Mo" });
   const flagged = Object.keys(p).map(Number);
   assert.equal(flagged.length, Math.ceil(10 * HERO_MIN_SHARE) - 2);

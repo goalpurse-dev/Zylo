@@ -42,17 +42,19 @@ test("the automatic scene plan groups lines by location and carries a place over
 test("the owner's edited plan is checked: library ids or a typed place that maps to one, every line covered in order", () => {
   const ok = cleanScenePlan({ scenes: [{ lines: [0, 1], location: "downtown_street" }, { lines: [2, 2], location: "x", typed: "the moon" }] }, 3);
   assert.deepEqual(ok, { ok: true, plan: { scenes: [{ lines: [0, 1], location: "downtown_street", auto: false }, { lines: [2, 2], location: "moon", auto: false }] } });
-  assert.equal(cleanScenePlan({ scenes: [{ lines: [0, 0], location: "x", typed: "a volcano lair" }] }, 1).ok, false);
+  assert.equal(cleanScenePlan({ scenes: [{ lines: [0, 0], location: "x", typed: "a submarine lair" }] }, 1).ok, false);
+  // a MISSING PLACE (placeBuilds.js, owner 2026-11-16) maps to its host, where the director builds it
+  assert.equal(cleanScenePlan({ scenes: [{ lines: [0, 0], location: "x", typed: "a volcano lair" }] }, 1).plan.scenes[0].location, "downtown_landmark");
   assert.equal(cleanScenePlan({ scenes: [{ lines: [0, 0], location: "moon" }] }, 2).ok, false, "a line left uncovered");
   assert.equal(cleanScenePlan({ scenes: [{ lines: [1, 1], location: "moon" }] }, 2).ok, false, "a gap at the start");
   assert.equal(cleanScenePlan({}, 2).ok, false);
 });
 
-test("the scene plan is owner-only in the API, the page and the worker", () => {
+test("the scene plan follows Blender access in the API, the page and the worker", () => {
   const api = read("supabase/functions/blocky-worlds-api/index.ts");
-  assert.match(api, /action === "scenePlan"[\s\S]{0,200}if \(!who\.owner\) throw new ApiError/);
-  assert.match(api, /if \(who\.owner && body\?\.scenePlan\)/);
-  assert.match(api, /scenePlan: Boolean\(who\?\.owner\)/);
+  assert.match(api, /action === "scenePlan"[\s\S]{0,200}if \(!blenderAvailable\(who\)\) throw new ApiError/);
+  assert.match(api, /if \(blenderAvailable\(who\) && body\?\.scenePlan\)/);
+  assert.match(api, /scenePlan: blenderAvailable\(who\)/);
   assert.match(read("src/components/viral-tools/blocky-worlds/ScriptStep.jsx"), /access\?\.scenePlan && <ScenePlan/);
   assert.match(read("src/components/viral-tools/blocky-worlds/hooks/useBlockyWorlds.js"), /access\?\.scenePlan && scenePlan\?\.draftId === draft\.id/);
   assert.match(read("scripts/blockyWorlds/blenderKit/workerSteps.mjs"), /card\?\.scene_plan\?\.scenes\?\.length/);

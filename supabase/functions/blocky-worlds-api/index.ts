@@ -266,8 +266,8 @@ async function scriptsLeft(userId: string, counts?: any) {
 // with BLOCKY_WORLDS_PREPAY=on, CHARGES the flat price first (blocky_worlds_prepay): a writer failure gives it all back
 // at once; "Make my video" then consumes the prepay instead of charging (start below); a failed video gives the whole
 // price back (blocky_worlds_refund); no video within 7 days: all but 25 credits back (blocky_worlds_prepay_expire).
-// Owners only while the Blender page is owner-only. Off: the flat price is charged at start, as before.
-const prepayOn = (who: any) => PREPAY && Boolean(who?.owner);
+const blenderAvailable = (who: { owner: boolean } | null) => OPEN || Boolean(who?.owner);
+const prepayOn = (who: any) => PREPAY && blenderAvailable(who);
 async function flatWrite(req: Request, body: any, trace: Trace) {
   const who = await requireWriter(req, trace);
   const inner = { ...body, flat: false, lengthSec: Math.min(Number(body?.lengthSec ?? BLENDER_FLAT.writeSec) || BLENDER_FLAT.writeSec, BLENDER_FLAT.writeSec) };
@@ -326,11 +326,11 @@ async function route(req: Request, body: any, trace: Trace) {
       // launch mode: the page shows "What we can film" (generated from the kit list) and "Move it to our town"
       launch: LAUNCH_BOARD ? "board" : "off", film: LAUNCH_BOARD ? canFilm() : null,
       // the SCENE PLAN (owner-only, the Blender kit engine): after the script, each scene's location from the library
-      scenePlan: Boolean(who?.owner),
+      scenePlan: blenderAvailable(who),
       // THE BLENDER UI (owner-only first, 2026-11-15): topic + "explain more" + character references, no length picker
-      blenderUi: Boolean(who?.owner), roles: who?.owner ? ROLES : null,
+      blenderUi: blenderAvailable(who), roles: blenderAvailable(who) ? ROLES : null,
       // the Blender page's ONE price (BLENDER_FLAT): when it is charged ("script": at Write my script; "start": at Make my video)
-      flat: who?.owner ? { credits: BLENDER_FLAT.credits, charge: prepayOn(who) ? "script" : "start", keepCredits: BLENDER_FLAT.keepCredits, expireDays: BLENDER_FLAT.expireDays, maxSec: BLENDER_FLAT.priceRowSec } : null,
+      flat: blenderAvailable(who) ? { credits: BLENDER_FLAT.credits, charge: prepayOn(who) ? "script" : "start", keepCredits: BLENDER_FLAT.keepCredits, expireDays: BLENDER_FLAT.expireDays, maxSec: BLENDER_FLAT.priceRowSec } : null,
     };
   }
 
@@ -593,7 +593,7 @@ async function route(req: Request, body: any, trace: Trace) {
   if (action === "adaptStory") {
     trace.step = "sign-in";
     const who = await requireWriter(req, trace);
-    if (!who.owner) throw new ApiError("NOT_FOUND", "Not available.");
+    if (!blenderAvailable(who)) throw new ApiError("NOT_FOUND", "Not available.");
     const text: any = checkStoryText(body?.text);
     if (!text.ok) throw new ApiError("BAD_INPUT", text.error);
     const bad = topicProblem(text.text.slice(0, 2000));
@@ -625,7 +625,7 @@ async function route(req: Request, body: any, trace: Trace) {
   if (action === "characterRef") {
     trace.step = "sign-in";
     const who = await requireWriter(req, trace);
-    if (!who.owner) throw new ApiError("NOT_FOUND", "Not available.");
+    if (!blenderAvailable(who)) throw new ApiError("NOT_FOUND", "Not available.");
     const up: any = checkUpload({ image: body?.image, mediaType: body?.mediaType });
     if (!up.ok) throw new ApiError("BAD_INPUT", up.error);
     const role = roleOf(body?.role);
@@ -644,7 +644,7 @@ async function route(req: Request, body: any, trace: Trace) {
   if (action === "scenePlan") {
     trace.step = "sign-in";
     const who = await requireWriter(req, trace);
-    if (!who.owner) throw new ApiError("NOT_FOUND", "Not available.");
+    if (!blenderAvailable(who)) throw new ApiError("NOT_FOUND", "Not available.");
     const d = await loadDraft(who.user.id, body?.draftId);
     return { ...autoScenePlan(d.lines ?? []), locations: PICKER };
   }
@@ -657,7 +657,7 @@ async function route(req: Request, body: any, trace: Trace) {
     trace.step = "script check";
     const checks = recheck(d, lengthSec);
     // the Blender page (body.flat): ONE price per video, the 90 s row; a draft it already paid for costs nothing more
-    const flatDraft = body?.flat === true && who.owner;
+    const flatDraft = body?.flat === true && blenderAvailable(who);
     const prepaid = flatDraft && prepayOn(who) ? await openPrepay(who.user.id, d.id) : null;
     if (action === "quote") return { credits: flatDraft ? BLENDER_FLAT.credits : PRICES[lengthSec], lengthSec, ready: !checks.problems.length, problems: checks.problems, ...(prepaid ? { prepaid: true } : {}) };
     if (checks.problems.length) throw new ApiError("NOT_READY", checks.problems[0], { problems: checks.problems });
@@ -686,15 +686,15 @@ async function route(req: Request, body: any, trace: Trace) {
     const busyMsg = "This script is already being made. Wait for it to finish.";
     const { data: active } = await admin.from("blocky_worlds_runs").select("id").eq("draft_id", d.id).not("status", "in", "(done,failed)").limit(1).maybeSingle();
     if (active) throw new ApiError("LIMIT", busyMsg, { runId: active.id });
-    // the owner's scene plan (checked; a bad one is refused before any charge); anyone else's is ignored
+    // the maker's scene plan is validated before charging
     let scenePlan: any = null;
-    if (who.owner && body?.scenePlan) {
+    if (blenderAvailable(who) && body?.scenePlan) {
       const c = cleanScenePlan(body.scenePlan, (d.lines ?? []).length);
       if (!c.ok) throw new ApiError("BAD_INPUT", c.error);
       scenePlan = c.plan;
     }
-    // the owner's character references (characterRef.js specs, re-cleaned): they go to the director's style sheet
-    const characters = who.owner ? cleanCharacters(body?.characters ?? d.card?.characters) : [];
+    // the maker's character references (characterRef.js specs, re-cleaned): they go to the director's style sheet
+    const characters = blenderAvailable(who) ? cleanCharacters(body?.characters ?? d.card?.characters) : [];
     trace.step = "job creation";
     const script = { title: d.title, lines: d.lines };
     const { data: run, error } = await admin.rpc("blocky_worlds_start_run", {

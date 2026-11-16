@@ -32,6 +32,7 @@ if (argv.includes("--smoke")) {
   await import("./steps.mjs");
   await import("../blenderKit/workerSteps.mjs");
   await import("../blenderKit/director.mjs");
+  await import("../blenderKit/notes.mjs");
   say(`smoke ok: steps, runner, config (engine ${STUDIO.endpoint}, model ${STUDIO.model}, ${STUDIO.rounds} fix round)`);
   // THE BLENDER ENGINE (free checks): python3 + PIL, the kit, shotcheck / kitmap / contact, ffmpeg: a miss FAILS the build
   const { localChecks, report } = await import("./blenderCheck.mjs");
@@ -74,7 +75,7 @@ const steps = makeSteps({ anthropicKey: cfg.anthropicKey, elevenKey: cfg.elevenK
 // BLOCKY_WORLDS_RENDER_ENGINE=blender AND the run's user is in BLOCKY_WORLDS_BLENDER_OWNER_IDS; everyone else keeps Studio
 const { makeBlenderSteps, pickSteps } = await import("../blenderKit/workerSteps.mjs");
 const blenderSteps = makeBlenderSteps({ base: steps, anthropicKey: cfg.anthropicKey, cfg: STUDIO });
-if (String(process.env.BLOCKY_WORLDS_RENDER_ENGINE ?? "").trim().toLowerCase() === "blender") say(`Blender kit engine ON for ${String(process.env.BLOCKY_WORLDS_BLENDER_OWNER_IDS ?? "").split(",").filter((s) => s.trim()).length} owner id(s); every other run stays on Studio`);
+if (String(process.env.BLOCKY_WORLDS_RENDER_ENGINE ?? "").trim().toLowerCase() === "blender") say(process.env.BLOCKY_WORLDS_BLENDER_ACCESS === "everyone" ? "Blender kit engine ON for all users" : `Blender kit engine ON for ${String(process.env.BLOCKY_WORLDS_BLENDER_OWNER_IDS ?? "").split(",").filter((s) => s.trim()).length} owner id(s); every other run stays on Studio`);
 fs.mkdirSync(cfg.workDir, { recursive: true });
 
 const control = { stop: null };
