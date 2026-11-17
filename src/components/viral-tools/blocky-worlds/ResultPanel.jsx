@@ -157,7 +157,7 @@ function RunView({ run, onEvent, retry }) {
         {party && <p className="ob-enter text-[12px] font-semibold text-lime-200">&ldquo;{run.title}&rdquo; · {clock(run.lengthSec)}</p>}
       </div>
       <div className={cx("relative aspect-[9/16] overflow-hidden rounded-[26px] border border-white/10 bg-black ", party && "ob-done")}>
-        {run.finalUrl ? <video src={run.finalUrl} poster={run.poster ?? undefined} controls autoPlay={party} muted={party} loop playsInline className="h-full w-full object-contain" /> : <img src={run.poster ?? "/blocky-worlds/hero.jpg"} alt="" className="h-full w-full object-cover opacity-80" />}
+        {run.finalUrl ? <video src={run.finalUrl} poster={run.poster ?? undefined} controls autoPlay={party} muted={party} loop playsInline className="h-full w-full object-contain" /> : <img src={run.poster ?? "/media/how-its-built/in-this-town-card-16x9.webp"} alt="" className="h-full w-full object-cover opacity-80" />}
         {party && !still && SPARKS.map((s, i) => <span key={i} className="ob-burst absolute left-1/2 top-1/2 rounded-[2px] bg-lime-200" style={{ "--a": s.a, "--d": s.d, width: s.size, height: s.size, animationDelay: s.delay }} />)}
       </div>
       <div className="flex gap-2">

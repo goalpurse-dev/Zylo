@@ -1,5 +1,6 @@
 // Home and navigation settings you can edit without touching the page code.
 import { BLOCKY_STORIES_NAME, BLOCKY_STORIES_PATH } from "./blockyStories.js";
+import { BLOCKY_WORLDS_NAME, BLOCKY_WORLDS_PATH } from "./blockyWorlds.js";
 
 // The previous Home (src/pages/workspace/home.jsx) stays available for one
 // release: set to true to show it at "/" again. Delete the old
@@ -44,6 +45,24 @@ export const FEATURED_TEMPLATE = {
 // is on the live site before launch. The four clips are cut from the owner's own test videos, without
 // sound, and none carries a video model's own subtitles (scripts/blocky/publishShowcase.mjs).
 const BLOCKY_SHOWCASE = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/generated/blocky/showcase`;
+// In This Town on Home: its own section (built like the others, plus a one-line pitch and a "Make a video" button) and
+// a card at the front of the "short form suite" row. Shown only when the server says this visitor may see In This
+// Town (blocky-worlds-api access). The clips are moments from our own Blender renders (public/in-this-town/clips);
+// the card is the how-its-built final render (public/media/how-its-built), never the old engine's bus stop.
+export const IN_THIS_TOWN_CARD = "/media/how-its-built/in-this-town-card-9x16.webp";
+// the same street without the baked "IN THIS TOWN..." title: for cards that print the name themselves
+export const IN_THIS_TOWN_CARD_CLEAN = "/media/how-its-built/in-this-town-card-9x16-clean.webp";
+export const IN_THIS_TOWN_CARD_WIDE = "/media/how-its-built/in-this-town-card-16x9.webp";
+export const TOWN_TEMPLATE = {
+  name: BLOCKY_WORLDS_NAME,
+  path: BLOCKY_WORLDS_PATH,
+  eyebrow: "New template",
+  pitch: "Type one strange town rule. Get a narrated story video, built in real 3D, with a twist.",
+  cta: "Make a video",
+  examples: ["milo-a", "tower-a", "plane-a", "milo-b", "tower-c", "plane-c"].map((id) => ({ video: `/in-this-town/clips/${id}.mp4`, poster: `/in-this-town/clips/${id}.webp` })),
+  suite: { desc: "One strange rule, a narrated 3D story", image: IN_THIS_TOWN_CARD_CLEAN, addedAt: "2026-11-16" },
+};
+
 export const BLOCKY_TEMPLATE = {
   name: BLOCKY_STORIES_NAME,
   path: BLOCKY_STORIES_PATH,

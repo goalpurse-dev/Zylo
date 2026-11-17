@@ -2,17 +2,19 @@
 // Home's pieces (gradient headline, zyvo suite coverflow). The previous Home is
 // home.jsx, behind USE_LEGACY_HOME (src/data/homeContent.js) for one release.
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import Glow from "../../components/workspace/Glow.jsx";
 import ZyvoSuiteCarousel from "../../components/workspace/ZyvoSuiteCarousel.jsx";
 import MadeWithZyvo from "../../components/home-v2/madeWithZyvo/MadeWithZyvo.jsx";
 import InThisTownLaunch from "../../components/home-v2/InThisTownLaunch.jsx";
+import RealThreeD from "../../components/home-v2/RealThreeD.jsx";
+import WorkflowNiches from "../../components/home-v2/WorkflowNiches.jsx";
+import useBlockyWorldsAccess from "../../components/viral-tools/blocky-worlds/api/blockyWorldsAccess";
+import { showBlockyWorlds } from "../../data/blockyWorlds";
 import { FeaturedTemplate, HOME_MAX_W, JumpBackInV2, LongFormSection, PathCards, PhoneTemplates, PhoneTools, SectionHeader, TutorialsRow, WhatsNewRow, suiteTemplates } from "../../components/home-v2/HomeV2Sections.jsx";
 import { fetchShowcase } from "../../components/launch/launch";
-import { BLOCKY_TEMPLATE } from "../../data/homeContent";
+import { BLOCKY_TEMPLATE, TOWN_TEMPLATE } from "../../data/homeContent";
 import { BLOCKY_STORIES_FLAG, BLOCKY_STORIES_LAUNCHED } from "../../data/blockyStories";
 import { useFeatureFlag } from "../../lib/featureFlags";
-import { FREE_PLAN_LINE } from "../../data/freePlan.js";
 import FirstVideoHomeCard from "../../components/onboarding/FirstVideoHomeCard.jsx";
 import SpamNote from "../../components/onboarding/SpamNote.jsx";
 
@@ -31,7 +33,9 @@ export default function HomeV2() {
 
   const [phone, setPhone] = useState(false);
   useEffect(() => { setPhone(window.matchMedia("(max-width: 767px)").matches); }, []);
-  const templates = suiteTemplates(Date.now(), { blocky: blockyLive });
+  // In This Town: only for visitors the server lets see it (the same answer as its menu entry and Home block)
+  const townVisible = showBlockyWorlds(useBlockyWorldsAccess());
+  const templates = suiteTemplates(Date.now(), { blocky: blockyLive, town: townVisible });
 
   return (
     <div className="flex-1 pb-24 lg:pb-12">
@@ -50,20 +54,25 @@ export default function HomeV2() {
       <div className={`mx-auto w-full ${HOME_MAX_W}`}>
       <WhatsNewRow />
       <InThisTownLaunch />
+      {/* "Not AI slop. Real 3D worlds.": how an In This Town video is built (shown with In This Town only) */}
+      <RealThreeD />
 
-      {/* Short Form: the "short form suite" coverflow is the templates section (owner, 2026-11-10: above Long Form) */}
+      {/* Workflows for viral niches: a hub, pulsing lines, one card per template (In This Town first) */}
+      <WorkflowNiches />
+
+      {/* Short Form: the "short form suite" coverflow is the templates section (owner, 2026-11-17: under the workflows,
+          above Long Form; the Fruit series / free-plan lines under it removed) */}
       <div className="mt-12">
         {/* The coverflow keeps animating when hidden, so a phone drops it once it knows (the first render keeps its links for crawlers). */}
         {!phone && <div className="hidden md:block"><ZyvoSuiteCarousel title="short form suite" items={templates} subtitle="Short Form templates for TikTok, Reels & Shorts" /></div>}
         <div className="px-4 md:hidden"><SectionHeader title="Short Form templates" subtitle="For TikTok, Reels & Shorts." /></div>
         <PhoneTemplates items={templates} />
-        <p className="mt-5 px-4 text-center text-[13px] text-white/55 md:px-[50px]" data-testid="home-fruit-link">
-          <span className="hidden md:inline">New: the <Link to="/ai-fruit-story-maker" className="font-bold text-lime-300 hover:text-lime-200">AI Fruit Story generator</Link> now makes series of up to 10 episodes with the same cast.</span>
-          <span className="block text-white/45 md:mt-1" data-testid="home-free-line">{FREE_PLAN_LINE}</span>
-        </p>
       </div>
 
       <LongFormSection />
+
+      {/* In This Town's own section, the newest template first (shown with In This Town only) */}
+      {townVisible && <FeaturedTemplate template={TOWN_TEMPLATE} testId="featured-in-this-town" />}
 
       {/* Blocky Stories' own section, right above the featured template and built the same way (launched only). */}
       {blockyLive && <FeaturedTemplate template={BLOCKY_TEMPLATE} testId="featured-blocky" />}

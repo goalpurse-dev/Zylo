@@ -16,7 +16,7 @@
   z-index: -1;
   inset: 0;
   background: linear-gradient(90deg, #19131ff7 4%, #251929e8 36%, #5d35494d 74%),
-    linear-gradient(0deg, #392436cc, #e58c6433), url("/blocky-worlds/clips/night.jpg") center 45% / cover;
+    linear-gradient(0deg, #392436cc, #e58c6433), url("/media/how-its-built/in-this-town-card-16x9.webp") center 45% / cover;
 }
 .town-launch-copy { align-self: center; padding: clamp(26px, 3.4vw, 48px); padding-right: 0; }
 .town-launch-new { display: flex; align-items: center; gap: 9px; margin: 0 0 13px; color: #ffcf82; font: 700 11px/1.3 ui-monospace, monospace; letter-spacing: .16em; }

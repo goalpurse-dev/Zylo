@@ -57,7 +57,7 @@ export default function BlockyWorlds() {
         onClose={() => setGate(null)}
         isGuest={false}
         toolName="In This Town"
-        previewSrc="/blocky-worlds/hero.jpg"
+        previewSrc="/media/how-its-built/in-this-town-card-9x16-clean.webp"
         title="In This Town videos are for paid plans"
         subtitle="Upgrade to write the full story and make the video."
         planLines={{ starter: "In This Town, with the Zyvo end card", pro: "In This Town, end card can be removed", generative: "In This Town, end card can be removed" }}

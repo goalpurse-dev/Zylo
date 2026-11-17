@@ -171,7 +171,7 @@ export function WhatsNewModal({ onClose, onPreferenceChange }) {
         <DialogPanel data-testid="whats-new" className="town-dialog">
           <button type="button" aria-label="Close" onClick={close} className="town-dialog-close"><X size={19} /></button>
           <div className="town-dialog-art" aria-hidden="true">
-            <img className="town-dialog-print town-dialog-back" src="/blocky-worlds/showcase/phase1.jpg" alt="" />
+            <img className="town-dialog-print town-dialog-back" src="/media/how-its-built/in-this-town-card-9x16-clean.webp" alt="" />
             <img className="town-dialog-print town-dialog-front" src="/blocky-worlds/showcase/milo.jpg" alt="" />
           </div>
           <div className="town-dialog-copy">
