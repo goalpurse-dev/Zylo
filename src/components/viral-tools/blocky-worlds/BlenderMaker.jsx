@@ -51,7 +51,7 @@ export default function BlenderMaker({ flow, pageAccess, onSignUp, onUpgrade, on
     else if (error.code === "UPGRADE") onUpgrade?.();
     else if (error.code === "CREDITS") onNoCredits?.(error.credits ?? flow.draft?.credits);
     // a blocker is shown on the step it belongs to (the script), never as a note about a step that isn't on screen
-    else if (error.code === "NOT_READY" && error.problems?.length && flow.draft) { setView("script"); setNotice(error.problems[0]); }
+    else if (error.code === "NOT_READY" && error.problems?.length && flow.draft && (view === "make" || view === "scenes")) { setView("script"); setNotice(error.problems[0]); }
     else setNotice(error.code === "NOT_READY" ? error.problems?.[0] ?? error.message : error.message);
   };
   const guarded = async (fn) => {
@@ -91,7 +91,10 @@ export default function BlenderMaker({ flow, pageAccess, onSignUp, onUpgrade, on
   const writing = ["turning", "writing", "adapting"].includes(flow.busy);
   const words = story.trim().split(/\s+/).filter(Boolean).length;
   const canWrite = !writing && (mode === "explain" ? words >= 25 && story.length <= STORY_MAX : flow.topic.trim().length >= 3);
-  const hasRecent = (flow.recent?.length ?? 0) > 0;
+  const paidDrafts = flow.paidDrafts ?? [];
+  const hasRecent = (flow.recent?.length ?? 0) + paidDrafts.length > 0;
+  // a paid script from Recent creations: back to its Script step (owner 2026-11-18: never lost, Continue opens it)
+  const continueDraft = (x) => { flow.openDraft(x); setNotice(null); setView("script"); setTab("generate"); };
   const d = flow.draft;
 
   return (
@@ -102,7 +105,7 @@ export default function BlenderMaker({ flow, pageAccess, onSignUp, onUpgrade, on
       {!isDesktop && (
         <div className="sticky top-0 z-40 border-b border-white/10 bg-[#07090a]/95 px-3 py-2 backdrop-blur-xl" data-testid="bwm-phone-tabs">
           <div className="grid grid-cols-2 rounded-full border-2 border-white/15 bg-white/[0.05] p-1" role="tablist">
-            {[["generate", "Generate"], ["result", `Result${hasRecent ? ` (${flow.recent.length})` : ""}`]].map(([id, label]) => (
+            {[["generate", "Generate"], ["result", `Result${hasRecent ? ` (${flow.recent.length + paidDrafts.length})` : ""}`]].map(([id, label]) => (
               <button key={id} type="button" role="tab" aria-selected={tab === id} onClick={() => setTab(id)} className={cx("rounded-full px-3 py-2 text-[14.5px] font-black transition", tab === id ? "bg-[#bef264] text-[#0d1208]" : "text-white/85")}>{label}</button>
             ))}
           </div>
@@ -110,7 +113,7 @@ export default function BlenderMaker({ flow, pageAccess, onSignUp, onUpgrade, on
       )}
       <div ref={top} className={cx("relative z-10 mx-auto flex w-full flex-col gap-3 px-3 pb-[calc(96px+env(safe-area-inset-bottom))] pt-3 sm:px-6 lg:gap-4 lg:pb-6 lg:pt-4", hasRecent ? "max-w-[1300px]" : "max-w-[940px]")}>
         {!isDesktop && tab === "result" ? (
-          <RecentCreations phone recent={flow.recent} onOpen={(r) => { flow.openRun(r); setTab("generate"); }} onDownload={() => flow.sendEvent("downloaded")} />
+          <RecentCreations phone recent={flow.recent} drafts={paidDrafts} onContinue={continueDraft} onOpen={(r) => { flow.openRun(r); setTab("generate"); }} onDownload={() => flow.sendEvent("downloaded")} />
         ) : <>
         <header className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="hidden items-center gap-3 lg:flex">
@@ -173,7 +176,7 @@ export default function BlenderMaker({ flow, pageAccess, onSignUp, onUpgrade, on
         )}
         </div>
         {/* once there are videos: Recent creations takes the right side (compact); with none, the page stays centered */}
-        {hasRecent && isDesktop && <aside className="min-w-0 lg:sticky lg:top-4"><RecentCreations compact recent={flow.recent} onOpen={(r) => flow.openRun(r)} onDownload={() => flow.sendEvent("downloaded")} /></aside>}
+        {hasRecent && isDesktop && <aside className="min-w-0 lg:sticky lg:top-4"><RecentCreations compact recent={flow.recent} drafts={paidDrafts} onContinue={continueDraft} onOpen={(r) => flow.openRun(r)} onDownload={() => flow.sendEvent("downloaded")} /></aside>}
         </div>
         </>}
       </div>
@@ -548,7 +551,8 @@ function RunStep({ flow, onAgain, onRetry }) {
   if (run.status === "failed") {
     return (
       <Card n={4} title="This video didn't make it" sub={run.reason ?? "Something went wrong on our side."}>
-        <p className="inline-flex items-center gap-2 rounded-2xl bg-[#18210f] px-4 py-3 text-[18px] font-black text-[#bef264]"><Check className="h-5 w-5" strokeWidth={3} />{run.refunded ? <>All of it is back: <Cr n={run.credits} /></> : <>All of it comes back within a minute: <Cr n={run.credits} /></>}</p>
+        <p className="inline-flex items-center gap-2 rounded-2xl bg-[#18210f] px-4 py-3 text-[18px] font-black text-[#bef264]"><Check className="h-5 w-5" strokeWidth={3} />{run.credits > 0 ? (run.refunded ? <>All of it is back: <Cr n={run.credits} /></> : <>All of it comes back within a minute: <Cr n={run.credits} /></>) : <>Nothing was charged</>}</p>
+        {run.canRetry && <p className="mt-3 text-[16px] font-bold leading-snug text-white/85" data-testid="bwm-retry-note">Try again continues from where it stopped (your script, voice and the shots that passed are kept). Nothing is taken now: we charge only when your video is ready.</p>}
         <div className="mt-6 flex flex-wrap justify-end gap-3">
           <button type="button" className="bwm-btn-2" onClick={onAgain}>New story</button>
           <button type="button" className="bwm-btn" onClick={onRetry} disabled={Boolean(flow.busy)}><RefreshCw className="h-6 w-6" />Try again</button>
@@ -619,6 +623,7 @@ function LiveProgress({ run, readyEmail }) {
           ))}
         </ol>
         <p className="flex items-center gap-2 text-[15.5px] font-bold text-white/85"><Bell className="h-5 w-5 shrink-0 text-[#bef264]" />We'll send a notification{readyEmail ? " and an email" : ""} when it's done.</p>
+        {run.chargeOnDone > 0 && <p className="flex items-center gap-2 text-[15.5px] font-bold text-[#bef264]" data-testid="bwm-charge-on-done"><Check className="h-5 w-5 shrink-0" strokeWidth={3} />Trying again from where it stopped. Nothing is taken until your video is ready.</p>}
       </div>
     </Card>
   );
@@ -631,14 +636,28 @@ function Confetti() {
 
 // ------------------------------------------------------------------ recent creations (like the other templates)
 const STATUS_OF = (r) => (r.status === "done" ? ["Ready", "bg-[#bef264] text-[#0d1208]"] : r.status === "failed" ? (r.refunded ? ["Refunded", "bg-[#5cc8ff] text-[#06202e]"] : ["Failed", "bg-[#ff6fa8] text-[#2a0716]"]) : ["Rendering", "bg-[#ffd23f] text-[#2a2000]"]);
-function RecentCreations({ recent, onOpen, onDownload, compact = false, phone = false }) {
-  if (!recent?.length) return phone ? <section className="bwm-card p-5 text-center" data-testid="bwm-recent"><Film className="mx-auto h-8 w-8 text-white/50" /><p className="mt-2 text-[17px] font-black">No videos yet</p><p className="mt-1 text-[14.5px] font-semibold text-white/75">Your videos show up here once they are made.</p></section> : null;
+function RecentCreations({ recent, drafts = [], onContinue, onOpen, onDownload, compact = false, phone = false }) {
+  if (!recent?.length && !drafts.length) return phone ? <section className="bwm-card p-5 text-center" data-testid="bwm-recent"><Film className="mx-auto h-8 w-8 text-white/50" /><p className="mt-2 text-[17px] font-black">No videos yet</p><p className="mt-1 text-[14.5px] font-semibold text-white/75">Your videos show up here once they are made.</p></section> : null;
   return (
     <section className="bwm-card bwm-rise p-4" aria-labelledby="bwm-recent-title" data-testid="bwm-recent">
       <h2 id="bwm-recent-title" className="text-[19px] font-black tracking-[-0.02em]">Recent creations</h2>
       <p className="mt-0.5 text-[14px] font-semibold text-white/75">Your In This Town videos.</p>
       <ul className={cx("mt-3 grid grid-cols-1 gap-2.5", !compact && "sm:grid-cols-2 xl:grid-cols-3", compact && "max-h-[calc(100vh-190px)] overflow-y-auto pr-1")}>
-        {recent.slice(0, 12).map((r, i) => {
+        {/* paid scripts not made yet: "Script ready" + Continue (owner 2026-11-18) */}
+        {drafts.slice(0, 6).map((x, i) => (
+          <li key={`d-${x.id}`} className="bwm-rise flex gap-3 rounded-2xl border-2 border-[#bef264]/50 bg-[#0f1415] p-3" style={{ "--i": i }} data-testid="bwm-recent-draft">
+            <button type="button" onClick={() => onContinue?.(x)} className="grid h-[96px] w-[54px] shrink-0 place-items-center rounded-lg bg-[#18210f]" aria-label={`Continue ${x.title || "script"}`}><Pencil className="h-6 w-6 text-[#bef264]" /></button>
+            <div className="flex min-w-0 flex-1 flex-col">
+              <p className="truncate text-[15.5px] font-black">{x.title || "My script"}</p>
+              <p className="text-[13px] font-semibold text-white/75">{x.updatedAt ? new Date(x.updatedAt).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : ""}</p>
+              <span className="mt-1.5 inline-flex items-center gap-1 self-start rounded-lg bg-[#bef264] px-2 py-0.5 text-[13px] font-black text-[#0d1208]">Script ready · Paid<Check className="h-3.5 w-3.5" strokeWidth={3} /></span>
+              <div className="mt-auto flex flex-wrap gap-2 pt-2">
+                <button type="button" className="bwm-btn-2 !min-h-[40px] !px-3 !text-[14.5px]" onClick={() => onContinue?.(x)} data-testid="bwm-recent-continue"><ArrowRight className="h-4 w-4" />Continue</button>
+              </div>
+            </div>
+          </li>
+        ))}
+        {(recent ?? []).slice(0, 12).map((r, i) => {
           const [label, tone] = STATUS_OF(r);
           const working = isWorking(r);
           const pct = Math.max(3, Math.min(99, Number(r.pct) || STUDIO_STAGES.find((x) => x.stage === runStage(r))?.pct || 3));

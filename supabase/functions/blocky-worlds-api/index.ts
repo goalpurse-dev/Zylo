@@ -188,7 +188,18 @@ async function signed(path: string | undefined, download?: string) {
   const { data } = await admin.storage.from(BUCKET).createSignedUrl(path, 3600, download ? { download } : undefined);
   return data?.signedUrl ?? null;
 }
+/** "Try again" continues for free only once migration 20261218100000 is applied (its columns exist); checked once */
+let retryOk = false, retryAskedAt = 0;
+const retryOn = async () => {
+  if (retryOk) return true;
+  if (Date.now() - retryAskedAt < 60_000) return false; // not yet: asked again at most once a minute
+  retryAskedAt = Date.now();
+  const { error } = await admin.from("blocky_worlds_runs").select("charge_on_done").limit(1);
+  retryOk = !error;
+  return retryOk;
+};
 async function runView(r: any, { owner = false, queue = null }: { owner?: boolean; queue?: any } = {}) {
+  const canRetry = r.status === "failed" && r.engine === "studio" && (await retryOn());
   const done = r.status === "done", files = r.files ?? {}, working = !["done", "failed"].includes(r.status);
   return {
     id: r.id, draftId: r.draft_id, title: r.title, lengthSec: r.length_sec, credits: r.credits_charged, createdAt: r.created_at, doneAt: r.finished_at,
@@ -211,6 +222,9 @@ async function runView(r: any, { owner = false, queue = null }: { owner?: boolea
     finalUrl: done ? await signed(files.web ?? files.final) : null, downloadUrl: done ? await signed(files.final, `${(r.title || "blocky-world").replace(/[^\w -]/g, "").slice(0, 60)}.mp4`) : null,
     poster: done ? await signed(files.poster) : null,
     error: r.status === "failed" ? FAILED_MESSAGE : null, refunded: Boolean(r.refunded_at),
+    // "Try again" (owner 2026-11-18): a failed Studio video continues from its saved parts and is charged only when it is
+    // ready; a retry run shows that it is not charged yet (chargeOnDone credits are taken when it is done)
+    canRetry, chargeOnDone: working ? Number(r.charge_on_done ?? 0) : 0, resumeOf: r.resume_of ?? null,
     ...(r.status === "failed" ? (({ kind, text }) => ({ reason: text, failKind: kind }))(failReason(r.error_code, r.error_message)) : {}),
     ...(owner && r.status === "failed" ? { debug: { code: r.error_code, message: r.error_message } } : {}),
   };
@@ -732,6 +746,34 @@ async function route(req: Request, body: any, trace: Trace) {
     if (!blenderAvailable(who)) throw new ApiError("NOT_FOUND", "Not available.");
     const d = await loadDraft(who.user.id, body?.draftId);
     return { ...autoScenePlan(d.lines ?? []), locations: PICKER };
+  }
+
+  // ---------- "TRY AGAIN" (owner 2026-11-18): the same script continues from the failed run's saved parts; nothing is
+  // charged now, the price is taken only when the video is ready (blocky_worlds_retry_run + the charge-on-done trigger)
+  if (action === "retry") {
+    trace.step = "sign-in";
+    const who = await requireWriter(req, trace);
+    const failedId = String(body?.runId ?? "");
+    if (!/^[0-9a-f-]{36}$/i.test(failedId)) throw new ApiError("BAD_INPUT");
+    const { data: failed } = await admin.from("blocky_worlds_runs").select("id, status, engine, draft_id, length_sec, user_id").eq("id", failedId).eq("user_id", who.user.id).is("deleted_at", null).maybeSingle();
+    if (!failed) throw new ApiError("NOT_FOUND", "We couldn't find that video.");
+    if (failed.status !== "failed" || failed.engine !== "studio") throw new ApiError("BAD_INPUT", "Only a video that didn't make it can be tried again.");
+    if (!(await retryOn())) throw new ApiError("BUSY", "Try again is being switched on. Nothing was charged. Please try again in a few minutes.", { retryAfterSec: 300 }, "migration 20261218100000 not applied");
+    const busyMsg = "This script is already being made. Wait for it to finish.";
+    const { data: active } = await admin.from("blocky_worlds_runs").select("id").eq("draft_id", failed.draft_id).not("status", "in", "(done,failed)").limit(1).maybeSingle();
+    if (active) throw new ApiError("LIMIT", busyMsg, { runId: active.id });
+    trace.step = "studio worker";
+    if (!(await studioWorkerAlive(admin))) throw new ApiError("BUSY", "Our video studio is restarting. Nothing was charged. Try again in a few minutes.", { retryAfterSec: 300 });
+    trace.step = "cap check";
+    await guardFor(who.user.id, studioFullCostUsd(failed.length_sec), "video");
+    trace.step = "job creation";
+    const { data: run, error } = await admin.rpc("blocky_worlds_retry_run", { p_user: who.user.id, p_failed: failed.id, p_env: null });
+    if (error || !run) {
+      if (/INSUFFICIENT_CREDITS/.test(error?.message ?? "")) throw new ApiError("CREDITS", `You need ${BLENDER_FLAT.credits} credits on your account. Nothing is taken now: we charge them only when your video is ready.`, { credits: BLENDER_FLAT.credits });
+      if (/one_active_per_draft|duplicate key/i.test(error?.message ?? "")) throw new ApiError("LIMIT", busyMsg, {}, error?.message);
+      throw new ApiError("SERVER", "Couldn't start. Nothing was charged.", {}, error?.message ?? "no run returned");
+    }
+    return await runView(run, { owner: who.owner, queue: (await studioQueueInfo(admin, [run]))[run.id] ?? null });
   }
 
   if (action === "quote" || action === "start") {

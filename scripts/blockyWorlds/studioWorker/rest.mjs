@@ -94,5 +94,13 @@ export function restStorage({ url, key, fetchFn = fetch, bucket = "blocky-worlds
       await call("POST", `/storage/v1/object/${bucket}/${path.split("/").map(encodeURIComponent).join("/")}`, bytes, { "Content-Type": contentType, "x-upsert": "true" });
       return { path, bytes: bytes.length };
     },
+    /** one file's bytes from a run folder, or null when it is not there */
+    async download(path) {
+      if (!/^(prod|test)\/[0-9a-f-]{36}\/[0-9a-f-]{36}\//i.test(path)) throw new Error(`refusing a download outside a run folder: ${path}`);
+      const res = await fetchFn(`${url}/storage/v1/object/authenticated/${bucket}/${path.split("/").map(encodeURIComponent).join("/")}`, { headers: { apikey: key, Authorization: `Bearer ${key}` } });
+      if (res.status === 404 || res.status === 400) return null;
+      if (!res.ok) throw new Error(`storage download ${res.status}`);
+      return Buffer.from(await res.arrayBuffer());
+    },
   };
 }

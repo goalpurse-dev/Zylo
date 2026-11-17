@@ -473,6 +473,14 @@ if (Object.keys(failing).length && (state.round ?? 0) < ROUNDS && !D.messagesWar
   state.convo = []; save();
   say(`fix rounds: the conversation cache is cold (${(D.idleS() / 60).toFixed(0)} min): a fresh conversation with a ${primer.length}-character brief`);
 }
+// "TRY AGAIN" (owner 2026-11-18, --more-rounds: the worker's retry of a run the checker blocked): the saved state already
+// used its fix rounds; the retry gets the same number again for the shots still failing (the passing ones stay as they are)
+if (has("more-rounds") && (state.round ?? 0) >= ROUNDS && Object.keys(failing).length) {
+  say(`retry: ${Object.keys(failing).length} shot(s) still failing after the last run's ${state.round} fix round(s): ${ROUNDS} more round(s)`);
+  state.rounds.push({ retry: true, from: state.round, failing: Object.keys(failing).length });
+  state.retries = (state.retries ?? 0) + 1;
+  state.round = 0; save();
+}
 for (let round = (state.round ?? 0) + 1; round <= ROUNDS && Object.keys(failing).length; round++) {
   if (FIX_NOTES?.shots && round === 1) for (const id of Object.keys(FIX_NOTES.shots)) if (shotById(Number(id)) && !failing[id]) failing[id] = { kind: "owner", text: "the owner asked for this shot to be fixed (see THE OWNER'S ORDER)" };
   const ids = Object.keys(failing).map(Number).filter((id) => shotById(id));
@@ -512,8 +520,10 @@ for (let round = (state.round ?? 0) + 1; round <= ROUNDS && Object.keys(failing)
     state.roundShotLeft = sp;
     say(`round ${round} shot check after the fixes: ${Object.keys(sp).length ? Object.entries(sp).map(([k, v]) => `${k}: ${v.slice(0, 90)}`).join(" | ") : "ok"}`);
   }
-  const p = await L.step(`preview_round${round}`, () => previewRound(`r${round}`, ids));
-  const vis = await vision(`r${round}`, p.sheets, ids.filter((id) => !p.failed[id]), p.slabs, p.giants);
+  // a retry's rounds get their own tags (their storage files never collide with the last run's r1 / r2)
+  const rtag = `r${round}${state.retries ? `x${state.retries}` : ""}`;
+  const p = await L.step(`preview_round${round}`, () => previewRound(rtag, ids));
+  const vis = await vision(rtag, p.sheets, ids.filter((id) => !p.failed[id]), p.slabs, p.giants);
   failing = mergeProblems(p, vis);
   // the free check's ACTION RULE problems on the fixed bodies count as failing too (the checker may miss them)
   for (const [id, t] of Object.entries(state.roundShotLeft ?? {})) if (!failing[id] && shotById(Number(id)) && ACTION_RULE_RE.test(t)) failing[id] = { kind: "shotcheck", text: `THE SHOT CHECK: ${t}` };

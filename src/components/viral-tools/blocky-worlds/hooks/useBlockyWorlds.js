@@ -131,12 +131,14 @@ export default function useBlockyWorlds({ enabled = true } = {}) {
     catch (error) { setTopicIdeas((s) => ({ ...s, status: "error", error: error.message })); return { ok: false, error }; }
   }, [topic, mood]);
 
+  // owner 2026-11-18: a paid script is in Recent creations at once ("Script ready" + Continue), never lost
+  const notePaid = useCallback((v) => { if (v?.id && v.flat?.paidAt) setPaidDrafts((list) => [v, ...list.filter((x) => x.id !== v.id)]); }, []);
   const writeFromIdea = useCallback(async (ideaId) => {
     setPickedId(ideaId);
     const r = await attempt("writing", () => worldsCall("writeScript", { ideaId, lengthSec, ...flatBody() }));
-    if (r.ok) { setDraft(r.value); setEdited(null); }
+    if (r.ok) { setDraft(r.value); setEdited(null); notePaid(r.value); }
     return r;
-  }, [attempt, lengthSec]);
+  }, [attempt, lengthSec, notePaid]);
 
   // Tapping an idea puts it into the prompt bar; it stays "picked" only while the text is still the idea's own words
   // (an edit makes it the user's own topic).
@@ -157,11 +159,11 @@ export default function useBlockyWorlds({ enabled = true } = {}) {
       setPickedId(worlds[0].id);
       return worldsCall("writeScript", { ideaId: worlds[0].id, lengthSec, ...flatBody() });
     });
-    if (r.ok) { setDraft(r.value); setEdited(null); setTakes(worlds); setTopicIdeas(EMPTY_IDEAS); }
+    if (r.ok) { setDraft(r.value); setEdited(null); setTakes(worlds); setTopicIdeas(EMPTY_IDEAS); notePaid(r.value); }
     // the worlds came but the script didn't: show them, so they can be picked once the problem is solved
     else if (worlds?.length) setTopicIdeas({ status: "ready", items: worlds, error: null, fromLibrary: false, libraryDone: false });
     return r;
-  }, [attempt, picked, topic, mood, lengthSec, writeFromIdea]);
+  }, [attempt, picked, topic, mood, lengthSec, writeFromIdea, notePaid]);
 
   /** One of the topic's other worlds, written instead of the current script (optional). */
   const tryTake = useCallback(async (card) => {
@@ -241,7 +243,8 @@ export default function useBlockyWorlds({ enabled = true } = {}) {
    */
   const retryRun = useCallback(async (failed) => {
     if (!failed?.draftId || busy) return { ok: false };
-    const r = await attempt("retrying", () => worldsCall("start", { draftId: failed.draftId, removeWatermark }));
+    // a Studio video (owner 2026-11-18): "retry" continues from the failed run's saved parts and charges only when ready
+    const r = await attempt("retrying", () => (failed.canRetry ? worldsCall("retry", { runId: failed.id }) : worldsCall("start", { draftId: failed.draftId, removeWatermark })));
     if (r.ok) { setRun(r.value); setRecent((list) => [r.value, ...list.filter((x) => x.id !== r.value.id)]); }
     return r;
   }, [attempt, busy, removeWatermark]);
@@ -272,16 +275,16 @@ export default function useBlockyWorlds({ enabled = true } = {}) {
     if (edited) { const s = await saveEdits(); if (!s.ok) return s; }
     const plan = access?.scenePlan && scenePlan?.draftId === draft.id && !edited ? { scenePlan: { scenes: scenePlan.scenes } } : {};
     const r = await attempt("starting", () => worldsCall("start", { draftId: draft.id, removeWatermark, ...plan, ...(characters.length ? { characters } : {}), ...flatBody() }));
-    if (r.ok) { setRun(r.value); setRecent((list) => [r.value, ...list]); }
+    if (r.ok) { setRun(r.value); setRecent((list) => [r.value, ...list]); setPaidDrafts((list) => list.filter((x) => x.id !== draft.id)); }
     return r;
   }, [attempt, draft, edited, saveEdits, removeWatermark, access, scenePlan, characters]);
 
   /** "Explain more": the user's long description / full narration, adapted to our rules on the server (adapt.js) */
   const adaptStory = useCallback(async (text) => {
     const r = await attempt("adapting", () => worldsCall("adaptStory", { text, characters, ...flatBody() }));
-    if (r.ok) { setDraft(r.value); setEdited(null); setTakes([]); }
+    if (r.ok) { setDraft(r.value); setEdited(null); setTakes([]); notePaid(r.value); }
     return r;
-  }, [attempt, characters]);
+  }, [attempt, characters, notePaid]);
   /** one character picture -> our kit spec (one cheap vision call); the picture goes to that call only */
   const readCharacter = useCallback((image, role) => worldsCall("characterRef", { image, role }), []);
 

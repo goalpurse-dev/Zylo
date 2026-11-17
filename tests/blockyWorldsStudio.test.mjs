@@ -304,7 +304,7 @@ test("runner: a step that fails -> the run is failed once and refunded once, not
   assert.equal(row.status, "failed");
   assert.equal(row.error_code, "RENDER_FAILED");
   assert.equal(db.refunds.filter((x) => x === run.id).length, 1);
-  assert.equal(uploads.length, 0);
+  assert.equal(uploads.filter((u) => !u.p.endsWith("/resume.tgz")).length, 0); // no video (the Try again parts may be saved)
   assert.ok(db.ledgerRows.some((l) => l.stage === "final" && l.usd === 0.03));
   assert.equal(failReason(row.error_code).kind, "ours");
 });
@@ -323,7 +323,7 @@ test("runner: a model answer cut off by the output limit (after its continuation
     const runs = makeStudioRuns({ db, now: () => T0, log: () => {} });
     assert.equal(await runs.failRun(db.runs.get(run.id), "STUDIO_FAILED", "sweeper"), false);
     assert.equal(db.refunds.filter((x) => x === run.id).length, 1, "never refunded twice");
-    assert.equal(uploads.length, 0);
+    assert.equal(uploads.filter((u) => !u.p.endsWith("/resume.tgz")).length, 0); // no video (the Try again parts may be saved)
     assert.ok(db.ledgerRows.some((l) => l.stage === "director" && l.usd === 0.08), "what the cut call cost is booked");
     assert.equal(failReason(r.code).kind, "ours");
   }
@@ -573,4 +573,44 @@ test("ops-health: RunPod (one account for Blocky Worlds + Cutaway) alerts once B
   assert.equal(judge(owner, { reachable: true, balance: 8, perDay: 0 }).red.length, 0, "owner-only: shown, never red");
   const ops = read("supabase/functions/ops-health/index.ts");
   assert.match(ops, /env\("BLOCKY_WORLDS_RUNPOD_API_KEY"\) \|\| env\("CUTAWAY_RUNPOD_API_KEY"\)/);
+});
+
+// ---------------------------------------------------------------- "TRY AGAIN" (owner 2026-11-18: continue, never start over)
+test("runner: a failed run saves its parts; the retry run restores them, reuses the voice, and tells the pipeline to continue", async () => {
+  const db = studioDb();
+  const run = studioRun(db, { lines: [{ part: "rule", text: "In this town, toast is money." }, { part: "me", text: "I was broke." }] });
+  const saved = new Map();
+  let voiceCalls = 0, resumeSeen = null;
+  const over = {
+    async voice({ dir, L }) { voiceCalls++; L.check("voice", 0.2); L.add("voice", 0.1); const v = path.join(dir, "voice", "take.wav"); fs.mkdirSync(path.dirname(v), { recursive: true }); fs.writeFileSync(v, "wav"); return { wav: v, words: [{ word: "In", start: 0, end: 0.2 }], duration: 60 }; },
+    async direct({ dir, resume }) {
+      resumeSeen = resume;
+      if (!resume) {
+        fs.mkdirSync(path.join(dir, "blender"), { recursive: true });
+        fs.writeFileSync(path.join(dir, "blender", "state.json"), JSON.stringify({ round: 2, failing: { 7: { kind: "vision", text: "back of a head" } } }));
+        fs.writeFileSync(path.join(dir, "blender", "costs.json"), JSON.stringify({ agent: 2 }));
+        throw new Error("the rules block the final: 30 shot(s) still fail after 2 fix round(s)");
+      }
+      // the retry sees the last run's state (and not its spend)
+      const st = JSON.parse(fs.readFileSync(path.join(dir, "blender", "state.json"), "utf8"));
+      assert.equal(st.round, 2);
+      assert.equal(fs.existsSync(path.join(dir, "blender", "costs.json")), false, "the old spend is not carried over");
+      return { plan: { bible: { homes: { me: 0 } }, shots: [{ id: "c1", line: 0, code: "" }], assets: {} }, report: { model: STUDIO.model, rounds: 1, calls: 1, history: [] } };
+    },
+  };
+  const a = fakes({ db, over });
+  a.deps.storage = { async upload(p, file) { saved.set(p, Buffer.isBuffer(file) ? file : fs.readFileSync(file)); return { path: p }; }, async download(p) { return saved.get(p) ?? null; } };
+  const r1 = await runStudioRun(clone(run), a.deps);
+  assert.equal(r1.ok, false);
+  const bundlePath = `test/${run.user_id}/${run.id}/resume.tgz`;
+  assert.ok(saved.has(bundlePath), "the parts are saved in the failed run's folder");
+  assert.equal(voiceCalls, 1);
+  // the retry run (blocky_worlds_retry_run: resume_of = the failed run, nothing charged yet)
+  const retry = studioRun(db, { lines: run.lines, resume_of: run.id, credits_charged: 0, user_id: run.user_id, env: run.env });
+  const b = fakes({ db, over });
+  b.deps.storage = a.deps.storage;
+  const r2 = await runStudioRun(clone(retry), b.deps);
+  assert.equal(r2.ok, true, r2.message);
+  assert.equal(voiceCalls, 1, "the voice take is reused, not paid again");
+  assert.equal(resumeSeen, true, "the pipeline is told to continue (--more-rounds)");
 });
