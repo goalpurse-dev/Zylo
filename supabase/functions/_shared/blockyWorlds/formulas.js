@@ -59,14 +59,23 @@ export const MOOD_TWISTS = Object.freeze({
 });
 
 /**
- * Where the story can happen: the sets the blocky kit is planned with (ANALYSIS.md 6.4). The writer picks one or two,
- * so every idea can be built.
+ * Where the story can happen (owner, 2026-11-17): OUR LIBRARY WORLDS (locations.js), so every story is filmed in a
+ * polished, tested set. Before this the list had "inside something giant", and a lie story was set inside a giant
+ * snail shell. Another place only when the user's own words ask for it (SETTING_RULE).
  */
 export const SETTINGS = Object.freeze([
+  "downtown (main street, town plaza, a landmark at the end of the street)", "suburb (houses, porches, front yards)",
+  "brick city (brick streets, alleys)", "inside a house (living room, bedroom, kitchen)", "school (classroom, hallway)",
+  "indoor places (a shop, a big hall)",
+]);
+/** the old pipeline's shot-plan set vocabulary (protocol.js writeShots; unchanged, the writers use SETTINGS above) */
+export const LEGACY_SETS = Object.freeze([
   "suburb street", "house (bedroom, kitchen, living room)", "school (hallway, cafeteria, classroom, stage)", "woods edge",
   "town square", "farm", "canyon or cliff town", "castle", "underground or cave town", "underwater or submarine",
   "inside something giant (an animal, a store, a tower)", "snowy town",
 ]);
+/** the one setting rule every writer gets next to SETTINGS */
+export const SETTING_RULE = "Set the story in these ordinary places of our town (day, night, rain or snow are fine). Use another place ONLY when the user's own words name it. Never invent a big setting: no town inside a giant creature or shell, no floating island, no world on an animal's back, unless the user asked for exactly that.";
 
 export const FORMULA_IDS = Object.freeze(Object.keys(FORMULAS));
 export const TWIST_IDS = Object.freeze(Object.keys(TWISTS));

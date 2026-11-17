@@ -1,7 +1,7 @@
 // Blocky Worlds: the idea generator. "Pick an idea" (a batch of cards, each from a different formula/twist pair) and
 // "Your topic" (anything the user types, turned into three outrageous world rules). Pure: prompts, schema, checks.
 // llm.js makes the calls. The study behind it: reference/blocky-worlds/ANALYSIS.md, sections 4 and 5.
-import { FORMULAS, MOODS, SETTINGS, TWISTS, slotsForBatch } from "./formulas.js";
+import { FORMULAS, MOODS, SETTINGS, SETTING_RULE, TWISTS, slotsForBatch } from "./formulas.js";
 import { hasOpener, fixOpener } from "./opener.js";
 import { safetyProblems } from "./safety.js";
 import { EXAMPLE_IDEAS } from "./examples.js";
@@ -54,7 +54,7 @@ RULES
 - Each idea is a different world. No two share a rule, a creature or a setting. (Not for the user's own idea: then every idea keeps the user's world.)
 - Kid logic: a ten-year-old must understand the rule from the opener alone.
 
-SETTINGS: ${SETTINGS.join("; ")}.
+SETTINGS: ${SETTINGS.join("; ")}. ${SETTING_RULE}
 
 A STRICT JUDGE SCORES EVERY IDEA. Most ideas fail for the same few reasons; avoid them:
 - The price is vague or invisible. Make it concrete and something the town has SEEN happen ("Last time the bread was late, the pigeon announced Mr. Crumb's wig size to the whole square.").
@@ -123,7 +123,7 @@ export function topicPrompt({ topic, mood = null, seed = 0, avoid = [], board = 
   return {
     slots,
     text: `The user's idea: "${String(topic).slice(0, 200)}"\n\nTHIS IDEA IS THE STORY. Write ${slots.length} ideas that each keep ALL of its key elements${labels ? ` (${labels})` : ""} at the core: the world, the threat and the characters it names drive the plot from the first line to the last.
-- The opener states the user's idea itself as the world's rule${setting ? `, naming ${setting.label} and the threat` : ""} (the shape: "In this town, we live inside X, and if Y ever ..."). Never swap it for a new invented gimmick (a mark on everyone's wrist, a sticker, a number over their head) that pushes the idea into the background.
+- The opener states the user's idea itself as the world's rule${setting ? `, naming ${setting.label} and the threat` : ""} (the shape: ${setting ? `"In this town, we live inside X, and if Y ever ..."` : `"In this town, [the user's rule as plain fact]", set in our ordinary town (${SETTING_RULE})`}). Never swap it for a new invented gimmick (a mark on everyone's wrist, a sticker, a number over their head) that pushes the idea into the background.
 - The formula of each slot only shapes HOW the idea is told (who the exception is, what the price is). The price, the narrator's exception, the planted object and the twist all come from the user's idea, and the twist pays it off.${conflictLines(topic).length ? `\n${conflictLines(topic).join("\n")}\n- So the opener names the threat doing the conflict ("In this town, we live inside a giant turtle, and the big bad wolf's army is hunting it" shape), and the twist ENDS that conflict.` : ""}
 - The ideas differ in their angle on the SAME idea, not in their world. The usual rule against "we all live inside giant Z" reskins does not apply here: the user's own world is the point.
 - If the idea names a real game, film, brand or person, keep the idea behind it and drop the name.${kitHard(board) ? `\n${BOARD_TOPIC_LINE}` : kitPrefer(board) ? `\n${PREFER_TOPIC_LINE}` : ""}

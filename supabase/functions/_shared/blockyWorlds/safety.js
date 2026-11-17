@@ -71,6 +71,8 @@ export function safetyProblems(text) {
  * writer turns it into an original world, and the script check refuses the name itself.
  */
 export const TOPIC = Object.freeze({ min: 2, max: 200 }); // 200: an edited idea opener (up to ~24 words) is a topic too
+/** "Explain more": the user's long story text (its length is adapt.js checkStoryText's job): only no gore. */
+export const storyTextProblem = (text) => (GORE_RE.test(String(text ?? "")) ? "We can't make a story about that. Keep it PG: suggest the danger, never gore." : null);
 export function topicProblem(topic) {
   const t = String(topic ?? "").trim();
   if (t.length < TOPIC.min || t.length > TOPIC.max) return `Type a topic (${TOPIC.min} to ${TOPIC.max} characters).`;

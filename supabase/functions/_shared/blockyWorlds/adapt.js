@@ -10,7 +10,7 @@ import { RULE_LINE_RE } from "./opener.js";
 import { callJson } from "./llm.js";
 import { LOCATIONS } from "./locations.js";
 
-export const ADAPT = Object.freeze({ model: "claude-sonnet-5-5", effort: "low", maxTokens: 12000, minWords: 25, maxChars: 8000, minSec: 60, maxSec: 80 }); // maxSec 80: the Blender page's cap (~90 s of video, BLENDER_FLAT.writeSec)
+export const ADAPT = Object.freeze({ model: "claude-sonnet-5-5", effort: "low", maxTokens: 12000, minWords: 25, maxChars: 3000, minSec: 60, maxSec: 80 }); // maxSec 80: the Blender page's cap (~90 s of video, BLENDER_FLAT.writeSec)
 
 /** the user's text: { ok, text } | { ok: false, error } (checked before any call) */
 export function checkStoryText(text) {

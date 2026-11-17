@@ -172,7 +172,7 @@ test("api + migration + worker: Studio passes \"prefer\" to every writer and che
   assert.match(api, /const LAUNCH_BOARD = launchModeFrom\(envGet\) && !STUDIO_ON;/);
   assert.match(api, /const KIT: boolean \| "prefer" = STUDIO_ON \? KIT_PREFER : LAUNCH_BOARD;/);
   assert.doesNotMatch(api, /board: LAUNCH_BOARD|board: true/, "every writer / check gets KIT (quote and start re-check with it too)");
-  assert.equal((api.match(/board: KIT/g) ?? []).length, 10);
+  assert.equal((api.match(/board: KIT/g) ?? []).length, 12); // + "Fix this line" and the auto style fix (2026-11-17)
   assert.match(api, /studio_builds: studioBuilds\(\{ lines: d\.lines \?\? \[\] \}, d\.card \?\? null\)/);
   assert.match(read("supabase/migrations/20261213100000_blocky_worlds_studio.sql"), /ADD COLUMN IF NOT EXISTS studio_builds jsonb/);
   const runner = read("scripts/blockyWorlds/studioWorker/runner.mjs"), steps = read("scripts/blockyWorlds/studioWorker/steps.mjs");

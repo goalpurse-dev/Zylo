@@ -322,15 +322,16 @@ test("rule line: 'You see, in this town/world, ...' inside the first 2 sentences
   assert.equal(ruleLineIndex([{ text: "I just sneezed in a plane! You see, in this world, sneezing teleports you." }]), 0, "same line, second sentence");
   assert.equal(ruleLineIndex([{ text: "Wow!" }, { text: "I fell." }, { text: "You see, in this town, x." }]), -1, "third sentence is too late");
   assert.match(ruleLineProblem([{ text: "Wow!" }, { text: "In this town, sneezing teleports you." }]), /rule line is missing/);
-  // checkScript: a beat script is judged by the rule line, an older script by the opener
+  // checkScript (2026-11-17, owner): ONE rule for every script: "in this town" / "in this world" in the first 2 LINES
   const noRule = clone(SCRIPT); noRule.lines[1] = { ...noRule.lines[1], text: "Nobody knocks after sunset." };
-  assert.match(checkScript(noRule, 90).problems.join(), /The rule line is missing/);
-  assert.ok(!/The first line must start/.test(checkScript(SCRIPT, 90).problems.join()), "the hook does not have to say In this town");
-  assert.equal(checkScript({ lines: [{ part: "rule", text: "Once upon a time." }] }, 90).problems.some((p) => /The first line must start/.test(p)), true, "older scripts keep the old opener");
-  // the rule line is hard, and Fix it rewrites the hook + the rule line
+  assert.match(checkScript(noRule, 90).problems.join(), /Say "in this town"/);
+  assert.ok(!/in this town/.test(checkScript(SCRIPT, 90).problems.join()), "the hook does not have to say In this town");
+  assert.equal(checkScript({ lines: [{ part: "rule", text: "Once upon a time." }] }, 90).problems.some((p) => /Say "in this town"/.test(p)), true);
+  assert.ok(!checkScript({ lines: [{ part: "rule", text: "In this town, nobody knocks." }] }, 90).problems.some((p) => /in this town/.test(p)), "an In this town opener passes too");
+  // the writer still fixes it (hard inside the writer), and Fix it rewrites the hook + the rule line
   const c = hybridChecks({ script: noRule, skeleton: {}, card: null, examples: [], lengthSec: 90 });
-  assert.ok(c.hard.some((x) => /The rule line is missing/.test(x)));
-  assert.deepEqual(problemSpots(noRule, c.hard.filter((x) => /rule line/.test(x)))[0].lines, [0, 1]);
+  assert.ok(c.hard.some((x) => /Say "in this town"/.test(x)));
+  assert.deepEqual(problemSpots(noRule, c.hard.filter((x) => /in this town/.test(x)))[0].lines, [0, 1]);
 });
 
 test("ending: soft, sentimental or abstract endings are HARD; no flip is a note; a real holy twist passes", () => {

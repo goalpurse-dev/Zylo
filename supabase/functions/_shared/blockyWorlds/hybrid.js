@@ -18,7 +18,7 @@
 //   4. At most ONE cheap fix call, only when a hard check fails (never for an advisory note).
 //   5. The judge: a score and notes as feedback only. It never blocks and never triggers a rewrite.
 import { BAND, checkScript, SCRIPT_SYSTEM, scriptSchema, wordCount } from "./script.js";
-import { FORMULAS, MOODS, SETTINGS, TWISTS } from "./formulas.js";
+import { FORMULAS, MOODS, SETTINGS, SETTING_RULE, TWISTS } from "./formulas.js";
 import { normalizeIdea } from "./ideas.js";
 import { aimWords, BEAT_IDS, BEAT_MAP_TEXT, BEAT_PART, BEAT_SHEET_TEXT, BEAT_WORDS_PER_LINE, BEATS, beatBudgets, LINE_MAX_WORDS, beatMapSchema, beatPlanNotes, beatSheetProblems, RULE_VISUAL_TEXT, ruleVisualOf } from "./beatSheet.js";
 import { copyProblems, copyReasons } from "./antiCopy.js";
@@ -168,7 +168,7 @@ export function hybridPlanPrompt({ topic, recipe = null, lengthSec, note = "", i
     recipe?.id ? `THE RECIPE: ${recipe.id} (${recipe.what ?? recipe.name ?? ""}).` : "",
     pickedIdeaBlock(idea),
     planLengthBlock(lengthSec),
-    `SETTING: one of: ${SETTINGS.join("; ")}.`,
+    `SETTING: one of: ${SETTINGS.join("; ")}. ${SETTING_RULE}`,
     note,
   ].filter(Boolean).join("\n\n");
 }
@@ -342,7 +342,7 @@ export function premiseLost(topic, script) {
 }
 
 /** Which problems of checkScript block: the opener, the length band, the safety words. */
-const HARD_SCRIPT = /^(?:The first line must start|The rule line is missing|Too long:|Too short:|Uses "|The script is empty)/;
+const HARD_SCRIPT = /^(?:The first line must start|The rule line is missing|Say "in this town"|Too long:|Too short:|Uses "|The script is empty)/;
 /** checkScript's part checks the beat sheet replaces (its seven parts: a beat-sheet script has no "discovery"). */
 const PART_SHAPE = /^(?:Missing parts:|The parts are out of order)/;
 
