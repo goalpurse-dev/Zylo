@@ -45,3 +45,21 @@ export function peekStashedFruitStory() {
 export function clearStashedFruitStory() {
   try { sessionStorage.removeItem(FRUIT_STORY_KEY); } catch { /* storage unavailable */ }
 }
+
+// In This Town: the rule a visitor typed on the public page (/in-this-town-story-video-maker), read once by the
+// maker's topic box (blocky-worlds/hooks/useBlockyWorlds.js). Peek and clear are separate so the state initializer
+// stays pure under StrictMode.
+const TOWN_TOPIC_KEY = "zyvo_prefill_town_topic";
+
+export function stashTownTopic(text) {
+  try { sessionStorage.setItem(TOWN_TOPIC_KEY, String(text ?? "").slice(0, 160)); } catch { /* storage unavailable: safe to no-op */ }
+}
+
+export function peekTownTopic() {
+  if (typeof window === "undefined") return "";
+  try { return sessionStorage.getItem(TOWN_TOPIC_KEY) || ""; } catch { return ""; }
+}
+
+export function clearTownTopic() {
+  try { sessionStorage.removeItem(TOWN_TOPIC_KEY); } catch { /* storage unavailable */ }
+}

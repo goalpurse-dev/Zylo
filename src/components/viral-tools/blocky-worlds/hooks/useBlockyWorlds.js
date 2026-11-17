@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BlockyWorldsError, isWorking, worldsCall } from "../api/blockyWorldsApi";
+import { clearTownTopic, peekTownTopic } from "../../../../lib/promptHandoff";
 
 /** What a picked idea card puts into the prompt bar. */
 export const ideaText = (card) => card?.opener ?? "";
@@ -25,7 +26,9 @@ export default function useBlockyWorlds({ enabled = true } = {}) {
   const [tab, setTab] = useState("idea"); // "idea" (ideas + your topic) | "own"
   const [mood, setMood] = useState(null);
   const [ideas, setIdeas] = useState(EMPTY_IDEAS);
-  const [topic, setTopic] = useState("");
+  // a rule typed on the public page (/in-this-town-story-video-maker) opens here, once
+  const [topic, setTopic] = useState(() => peekTownTopic());
+  useEffect(() => { clearTownTopic(); }, []);
   const [topicIdeas, setTopicIdeas] = useState(EMPTY_IDEAS);
   const [ownText, setOwnText] = useState("");
   const [lengthSec, setLengthSec] = useState(90);

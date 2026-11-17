@@ -213,6 +213,8 @@ import PublicGallery from "./components/public-gallery/gallery";
 const AIFruitStoryLanding = lazy(() => import("./pages/landing/AIFruitStoryLanding.jsx"));
 const ImageGeneratorLanding = lazy(() => import("./pages/landing/ImageGeneratorLanding.jsx"));
 const BlockyStoriesLanding = lazy(() => import("./pages/landing/BlockyStoriesLanding.jsx"));
+const InThisTownLanding = lazy(() => import("./pages/landing/InThisTownLanding.jsx"));
+const InThisTownBlogGuide = lazy(() => import("./app/blog/InThisTownBlogGuide.jsx"));
 const CartoonDriveByLanding = lazy(() => import("./pages/landing/CartoonDriveByLanding.jsx"));
 const FootballerNationalitySwapLanding = lazy(() => import("./pages/landing/FootballerNationalitySwapLanding.jsx"));
 const BehindTheScenesLanding = lazy(() => import("./pages/landing/BehindTheScenesLanding.jsx"));
@@ -663,6 +665,12 @@ return (
          <Route path="/ai-fruit-story-maker" element={<AIFruitStoryLanding />} />
          <Route path="/image-generator" element={<ImageGeneratorLanding />} />
          <Route path="/blocky-story-video-maker" element={<BlockyStoriesLanding />} />
+         {/* In This Town: literal paths, so scripts/generateSitemap.js finds them (src/data/inThisTownLanding.js) */}
+         <Route path="/in-this-town-story-video-maker" element={<InThisTownLanding />} />
+         <Route path="/blog/how-to-make-in-this-town-story-shorts" element={<InThisTownBlogGuide slug="how-to-make-in-this-town-story-shorts" />} />
+         <Route path="/blog/in-this-town-story-ideas" element={<InThisTownBlogGuide slug="in-this-town-story-ideas" />} />
+         <Route path="/blog/viral-blocky-story-formula" element={<InThisTownBlogGuide slug="viral-blocky-story-formula" />} />
+         <Route path="/blog/faceless-blocky-animations-without-blender" element={<InThisTownBlogGuide slug="faceless-blocky-animations-without-blender" />} />
          <Route path="/cartoon-drive-by-video-maker" element={<CartoonDriveByLanding />} />
          <Route path="/kit-swap-ai" element={<FootballerNationalitySwapLanding />} />
          <Route path="/behind-the-scenes-video-maker" element={<BehindTheScenesLanding />} />

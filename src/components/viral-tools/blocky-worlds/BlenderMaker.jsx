@@ -113,7 +113,7 @@ export default function BlenderMaker({ flow, pageAccess, onSignUp, onUpgrade, on
             <span className="grid h-11 w-11 place-items-center rounded-xl bg-[#bef264] text-[22px] shadow-[0_4px_0_#6f9a1f]" aria-hidden="true">🧱</span>
             <div>
               <h1 className="text-[24px] font-black leading-none tracking-[-0.03em] sm:text-[28px]">In This Town</h1>
-              <p className="mt-1 text-[14.5px] font-bold text-white/80">Your story, built in blocks, in about 25 minutes.</p>
+              <p className="mt-1 text-[14.5px] font-bold text-white/80">Your story, built in blocks, in about 30–45 minutes.</p>
               {backend && <p className="mt-1.5 inline-flex rounded-lg border border-white/25 bg-black/40 px-2 py-0.5 text-[12px] font-black uppercase tracking-[0.08em] text-white/85" data-testid="bwm-backend">dev · {backend === "local" ? "local API :8000" : backend === "mock" ? "mock" : "live API"}</p>}
             </div>
           </div>
@@ -438,7 +438,7 @@ function MakeStep({ flat, flow }) {
             <li className="rounded-xl bg-white/10 px-3 py-1.5">About {Math.round(d.check?.seconds || d.lengthSec)} s</li>
             {flow.scenePlan && <li className="rounded-xl bg-white/10 px-3 py-1.5">{flow.scenePlan.scenes.length} scenes</li>}
             {flow.characters.length > 0 && <li className="rounded-xl bg-white/10 px-3 py-1.5">{flow.characters.length} of your characters</li>}
-            <li className="rounded-xl bg-white/10 px-3 py-1.5">Ready in about 25–30 min</li>
+            <li className="rounded-xl bg-white/10 px-3 py-1.5">Ready in about 30–45 min</li>
           </ul>
         </div>
         <PriceTag flat={flat} paid={paidFor(d)} seconds={Math.round(d.check?.seconds || d.lengthSec)} ready={d.ready} />
@@ -455,7 +455,7 @@ function ConfirmDialog({ flat, draft, onCancel, onGo }) {
       <div className="bwm-dialog bwm-card is-active p-6 sm:p-8">
         <p className="inline-block rounded-lg bg-[#ffd23f] px-2.5 py-1 text-[13px] font-black uppercase tracking-[0.1em] text-black">Localhost check</p>
         <h2 id="bwm-confirm-title" className="mt-3 text-[28px] font-black leading-tight">{paid ? <>Start the real video? It is already paid (<Cr n={flat.credits} className="h-6 w-6" />).</> : <>Start a real video for <Cr n={flat.credits} className="h-6 w-6" />?</>}</h2>
-        <p className="mt-2 text-[17px] font-semibold text-white/85">This starts the real paid render (script, voice, director, GPU). It takes about 25–30 minutes. If it fails, all of it comes back.</p>
+        <p className="mt-2 text-[17px] font-semibold text-white/85">This starts the real paid render (script, voice, director, GPU). It takes about 30–45 minutes. If it fails, all of it comes back.</p>
         <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <button type="button" className="bwm-btn-2" onClick={onCancel}>Not now</button>
           <button type="button" className="bwm-btn" onClick={onGo} data-testid="bwm-confirm">{paid ? "Yes, make it" : <>Yes, make it · <Cr n={flat.credits} /></>}</button>
@@ -540,7 +540,7 @@ function LiveProgress({ run, readyEmail }) {
   const startedAt = Date.parse(run.claimedAt ?? "") || Date.parse(run.createdAt ?? "") || now;
   const stale = sinceSec > STALE_SEC;
   return (
-    <Card n={4} title="Making your video…" sub="About 25–30 minutes. You can leave this page: we'll let you know when it's ready.">
+    <Card n={4} title="Making your video…" sub="About 30–45 minutes. You can leave this page: we'll let you know when it's ready.">
       <div className="flex flex-col gap-4" data-testid="bwm-progress">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Blocks label={<span className="text-[19px] font-black">{STUDIO_STAGES[at]?.label ?? "Getting ready"}</span>} />
