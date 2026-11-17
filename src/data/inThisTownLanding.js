@@ -88,21 +88,21 @@ export const TOWN_IDEAS = [
 ];
 
 /** The owner's YouTube tutorials (zyloAI channel). `title` is the real YouTube title (the embed and the VideoObject use
- *  it); `label` is the short heading the pages show. The cover is a frame YouTube takes from inside the video
- *  (`cover`: maxres1-3), not the designed thumbnail: no game logo on our pages (owner rule). The player loads only on tap. */
+ *  it); `label` is the short heading the pages show. The cover is the video's own YouTube thumbnail (owner, 2026-11-17:
+ *  use the designed thumbnails, logo included). The player loads only on tap. */
 export const TOWN_TUTORIALS = [
   {
-    id: "nb9acc6kWzo", cover: "maxres3", label: "Full tutorial: make one with Claude AI", seconds: 121, uploadDate: "2026-11-16T07:31:48-08:00",
+    id: "nb9acc6kWzo", cover: "maxresdefault", label: "Full tutorial: make one with Claude AI", seconds: 121, uploadDate: "2026-11-16T07:31:48-08:00",
     blurb: "The whole workflow, step by step, from the idea to the finished animation.",
     title: 'How to Make VIRAL Roblox "In This Town" Animations With Claude AI (FULL TUTORIAL)',
   },
   {
-    id: "SZ_ddS9JvBs", cover: "maxres2", label: "Make one on your phone, no Claude", seconds: 83, uploadDate: "2026-11-16T15:00:51-08:00",
+    id: "SZ_ddS9JvBs", cover: "maxresdefault", label: "Make one on your phone, no Claude", seconds: 83, uploadDate: "2026-11-16T15:00:51-08:00",
     blurb: "How to make an In This Town story with nothing but a phone.",
     title: 'How to Make VIRAL Roblox "In This Town" Stories on PHONE! (NO CLAUDE)',
   },
   {
-    id: "rYWx5hnOWaU", cover: "maxres2", label: "I tested an AI that makes these videos", seconds: 132, uploadDate: "2026-11-17T08:24:38-08:00",
+    id: "rYWx5hnOWaU", cover: "maxresdefault", label: "I tested an AI that makes these videos", seconds: 132, uploadDate: "2026-11-17T08:24:38-08:00",
     blurb: "A hands-on test of an AI that turns one idea into an In This Town video.",
     title: 'I Tested an AI That Makes VIRAL Roblox "In This Town" Videos...',
   },
