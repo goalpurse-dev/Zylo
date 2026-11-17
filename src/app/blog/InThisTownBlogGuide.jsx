@@ -6,7 +6,8 @@ import CreditIcon from "../../components/ui/zyvo/CreditIcon.jsx";
 import { trackSeoEvent } from "../../lib/seoAnalytics.js";
 import MarkdownArticle from "./MarkdownArticle.jsx";
 import { extractFaqs, extractRelatedLinks } from "./markdownBlogUtils.js";
-import { getTownGuide } from "../../data/inThisTownBlog.js";
+import { getTownGuide, splitAtTutorial } from "../../data/inThisTownBlog.js";
+import { TutorialBlock } from "../../pages/landing/TownTutorials.jsx";
 import { IN_THIS_TOWN_PATH, IN_THIS_TOWN_PRICE, TOWN_NOTICE } from "../../data/inThisTownLanding.js";
 
 // The four In This Town guides. Content: src/data/inThisTownBlog.js. Title, description, canonical, OG and JSON-LD
@@ -16,6 +17,7 @@ export default function InThisTownBlogGuide({ slug }) {
   const guide = getTownGuide(slug);
   const faqs = useMemo(() => (guide ? extractFaqs(guide.markdown) : []), [guide]);
   const links = useMemo(() => (guide ? extractRelatedLinks(guide.markdown) : []), [guide]);
+  const [first, rest] = useMemo(() => splitAtTutorial(guide), [guide]);
   if (!guide) return null;
 
   return (
@@ -41,7 +43,9 @@ export default function InThisTownBlogGuide({ slug }) {
         </figure>
 
         <article className="mt-10">
-          <MarkdownArticle markdown={guide.markdown} slug={slug} ctaHref={IN_THIS_TOWN_PATH} />
+          <MarkdownArticle markdown={first} slug={slug} ctaHref={IN_THIS_TOWN_PATH} />
+          {guide.tutorial && <TutorialBlock id={guide.tutorial.id} slug={slug} />}
+          {rest && <MarkdownArticle markdown={rest} slug={slug} ctaHref={IN_THIS_TOWN_PATH} />}
         </article>
 
         <section className="mt-14" aria-labelledby="town-faq">

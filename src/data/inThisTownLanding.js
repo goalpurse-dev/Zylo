@@ -87,6 +87,40 @@ export const TOWN_IDEAS = [
   { rule: "every time you say \"I'm bored\", the town moves one street to the left", style: "Funny chaos" },
 ];
 
+/** The owner's YouTube tutorials (zyloAI channel). `title` is the real YouTube title (the embed and the VideoObject use
+ *  it); `label` is the short heading the pages show. The cover is a frame YouTube takes from inside the video
+ *  (`cover`: maxres1-3), not the designed thumbnail: no game logo on our pages (owner rule). The player loads only on tap. */
+export const TOWN_TUTORIALS = [
+  {
+    id: "nb9acc6kWzo", cover: "maxres3", label: "Full tutorial: make one with Claude AI", seconds: 121, uploadDate: "2026-11-16T07:31:48-08:00",
+    blurb: "The whole workflow, step by step, from the idea to the finished animation.",
+    title: 'How to Make VIRAL Roblox "In This Town" Animations With Claude AI (FULL TUTORIAL)',
+  },
+  {
+    id: "SZ_ddS9JvBs", cover: "maxres2", label: "Make one on your phone, no Claude", seconds: 83, uploadDate: "2026-11-16T15:00:51-08:00",
+    blurb: "How to make an In This Town story with nothing but a phone.",
+    title: 'How to Make VIRAL Roblox "In This Town" Stories on PHONE! (NO CLAUDE)',
+  },
+  {
+    id: "rYWx5hnOWaU", cover: "maxres2", label: "I tested an AI that makes these videos", seconds: 132, uploadDate: "2026-11-17T08:24:38-08:00",
+    blurb: "A hands-on test of an AI that turns one idea into an In This Town video.",
+    title: 'I Tested an AI That Makes VIRAL Roblox "In This Town" Videos...',
+  },
+].map((t) => ({
+  ...t,
+  url: `https://www.youtube.com/watch?v=${t.id}`,
+  embed: `https://www.youtube-nocookie.com/embed/${t.id}`,
+  thumb: `https://i.ytimg.com/vi_webp/${t.id}/${t.cover}.webp`,
+  thumbJpg: `https://i.ytimg.com/vi/${t.id}/${t.cover}.jpg`,
+  length: `${Math.floor(t.seconds / 60)}:${String(t.seconds % 60).padStart(2, "0")}`,
+}));
+export const getTutorial = (id) => TOWN_TUTORIALS.find((t) => t.id === id) ?? null;
+/** a tutorial as a schema.org VideoObject */
+export const tutorialVideoObject = (t) => ({
+  "@type": "VideoObject", name: t.title, description: t.blurb, thumbnailUrl: [t.thumbJpg], uploadDate: t.uploadDate,
+  duration: `PT${Math.floor(t.seconds / 60)}M${t.seconds % 60}S`, embedUrl: `https://www.youtube.com/embed/${t.id}`, url: t.url,
+});
+
 export const TOWN_STEPS = [
   { n: "1", title: "Topic", text: "Type one strange rule for a town, or pick a ready idea. One sentence is enough." },
   { n: "2", title: "Script", text: "An AI writer turns it into a full story: a result-first hook, the rule, the one kid who breaks it, a crisis and a twist. You read it and change anything before the video is made." },
@@ -233,6 +267,7 @@ export function inThisTownStructuredData(canonical, siteUrl) {
         ],
       },
       ...inThisTownVideoObjects(siteUrl),
+      ...TOWN_TUTORIALS.map(tutorialVideoObject),
       { "@type": "FAQPage", mainEntity: TOWN_FAQ.map(({ q, a }) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) },
     ],
   };

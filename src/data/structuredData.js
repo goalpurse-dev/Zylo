@@ -8,7 +8,7 @@ import { IS_ZYVO_FREE_FAQ } from "./freePlan.js";
 import { IMAGE_GENERATOR_PATH, imageGeneratorStructuredData } from "./imageGeneratorLanding.js";
 import { BLOCKY_LANDING_PATH, blockyStructuredData } from "./blockyStoryLanding.js";
 import { IN_THIS_TOWN_PATH, inThisTownStructuredData } from "./inThisTownLanding.js";
-import { townGuideFaq } from "./inThisTownBlog.js";
+import { townGuideFaq, townGuideVideo } from "./inThisTownBlog.js";
 
 const faqPage = (faq) => ({
   "@type": "FAQPage",
@@ -462,6 +462,8 @@ export function structuredDataFor(pathname, givenMetadata, canonical) {
   // the In This Town guides: their FAQ, from the same markdown the page renders
   const townFaq = pathname.startsWith("/blog/") ? townGuideFaq(pathname) : null;
   if (townFaq?.length) graph.push(faqPage(townFaq));
+  const townVideo = pathname.startsWith("/blog/") ? townGuideVideo(pathname) : null; // the owner's tutorial on the guide
+  if (townVideo) graph.push(townVideo);
 
   const toolName = TOOL_APPS[pathname] ?? metadata.toolName;
   if (toolName) {

@@ -7,6 +7,7 @@ import { trackSeoEvent } from "../../lib/seoAnalytics.js";
 import { useFirstInteraction } from "../../lib/firstInteraction.js";
 import { stashTownTopic } from "../../lib/promptHandoff.js";
 import { STICKMAN_FONT_HREF } from "../../data/stickmanLandingPages.js";
+import { TutorialGrid } from "./TownTutorials.jsx";
 import {
   GENRE, IN_THIS_TOWN_PRICE, IN_THIS_TOWN_SEO, IN_THIS_TOWN_TOOL_PATH, TOWN_BLOG, TOWN_FAQ, TOWN_FEATURES, TOWN_IDEAS, TOWN_NOTICE,
   TOWN_STEPS, TOWN_STORIES, TOWN_WALL, townPreview,
@@ -292,6 +293,12 @@ export default function InThisTownLanding() {
             </li>
           ))}
         </ul>
+      </section>
+
+      {/* TUTORIALS (the owner's YouTube videos) */}
+      <section className={`${WRAP} py-12 sm:py-16`} aria-labelledby="itt-tutorials">
+        <SectionTitle id="itt-tutorials" kicker="Video tutorials" lead="Prefer to watch? Three short tutorials from our channel: the full workflow with Claude, the phone version, and a test of an AI maker.">Watch how it&rsquo;s done</SectionTitle>
+        <div className="mt-8"><TutorialGrid slug={SLUG} /></div>
       </section>
 
       {/* WALL */}
