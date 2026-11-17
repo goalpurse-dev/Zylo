@@ -11,6 +11,8 @@ export const CAMPAIGN_WHY = "You're getting this because product updates are tur
 export const CUTAWAY_URL = `${APP_URL}/workspace/cutaway-explainer`;
 // The Blocky Stories template page (src/data/blockyStories.js: BLOCKY_STORIES_PATH).
 export const BLOCKY_URL = `${APP_URL}/workspace/blocky-stories`;
+// The In This Town page (src/data/blockyWorlds.js: BLOCKY_WORLDS_PATH; open to everyone, signed-out visitors may browse).
+export const TOWN_URL = `${APP_URL}/workspace/in-this-town`;
 
 const esc = (s = "") =>
   String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -185,6 +187,27 @@ const townEarly = {
   ], "Niko"),
 };
 
+// "In This Town" launch (owner's text, 2026-11-17): plain, one link (the In This Town page, shown in full) plus the
+// unsubscribe. No shard gift exists, so no gift line; the page is Starter and up, so the owner chose an honest line
+// ("It's on the Starter plan and up. See it here:") in place of "Make your first one here:".
+const townLaunch = {
+  from: ROOT_NIKO,
+  replyTo: REPLY_TO.niko,
+  subject: "in this town is live",
+  why: CAMPAIGN_WHY,
+  plain: true,
+  opensTracked: true,
+  linkTo: "town",
+  render: plainEmailInlineLink([
+    "Hey,",
+    "It's Niko from Zyvo.",
+    "It's here. You can now make \"In This Town\" Roblox shorts on Zyvo.",
+    "This one's different. Instead of just using AI video generators, it actually animates the whole story, so every scene stays clean and consistent from start to finish. It's the best thing we've ever made.",
+    "It's on the Starter plan and up. See it here: tryzyvo.com",
+    "Send me what you make, I want to see it.",
+  ], "Niko", { fullLinkText: true }),
+};
+
 export const CAMPAIGNS = {
   // Day 1 (2026-10-11): the 200 newest people who are ON. Sent before open tracking was switched on.
   warmup_day1: warmup("You signed up recently"),
@@ -233,6 +256,9 @@ export const CAMPAIGNS = {
   blocky_niche5: { ...blockyNiche, minRealOpenRateBefore: 0.05, maxRealBouncesBefore: 2 },
   // Owner, 2026-11-15: Sun 15 Nov 18:00–21:00 Finnish, group 1 (real opens / came back since 4 Nov) then group 2.
   town_early1: townEarly,
+  // Owner, 2026-11-17: Tue 17 Nov 18:00–21:00 Finnish, 1,000: "me" replies, Sunday's real openers, real opens /
+  // came back since 4 Nov, then active 30 days with no marketing email yet.
+  town_launch1: townLaunch,
 };
 
 // The 12-hour open check (owner, 2026-10-29): opens of a day under its min_open_rate 12 hours after
