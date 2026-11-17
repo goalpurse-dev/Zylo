@@ -20,7 +20,9 @@ export const MAX_SCRIPT_SEC = 150;
 export const TOO_LONG_PREFIX = "This script is too long for one video";
 
 const BLOCKER_RES = [/^Uses "/, /^The script is empty/, new RegExp(`^${STUDIO_BLOCK_PREFIX}`), new RegExp(`^${BOARD_PREFIX}`), new RegExp(`^${PREMISE_PREFIX}`), new RegExp(`^${TOO_LONG_PREFIX}`)];
-const SHOWN_RES = [/^Say "in this town"/, /^Line \d+ (?:is long|has)/, /^Formula: the (?:last line|button)/];
+// owner 2026-11-18: only the notes a user would care about (and Fix this line can really fix): the town line. Commas,
+// line lengths and the formula's button stay the writer's own feedback (never shown).
+const SHOWN_RES = [/^Say "in this town"/];
 /** true for a style note the page shows (with "Fix this line") */
 export const isShownNote = (p) => SHOWN_RES.some((re) => re.test(String(p ?? "")));
 /** true for a problem that may stop a paid user */

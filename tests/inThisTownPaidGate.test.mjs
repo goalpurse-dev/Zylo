@@ -30,10 +30,10 @@ test("paid gate: only unsafe / brand / famous / nothing-to-film / empty / far to
   const g = paidGate({ problems: ['Say "in this town" (or "in this world") in the first 2 lines.', 'Uses "gore". Keep it PG.'], warnings: ["Line 3 is long (13 words).", "Beat sheet: ally starts at 39%."], seconds: 80 });
   assert.deepEqual(g.problems, ['Uses "gore". Keep it PG.']);
   assert.equal(g.notes.length, 1);
-  assert.deepEqual(g.shown, ['Say "in this town" (or "in this world") in the first 2 lines.', "Line 3 is long (13 words)."], "internal writer notes are not shown");
+  assert.deepEqual(g.shown, ['Say "in this town" (or "in this world") in the first 2 lines.'], "only the notes a user cares about are shown (2026-11-18: no comma / length / formula notes)");
   assert.deepEqual(paidGate(g).problems, g.problems, "idempotent");
   assert.match(paidGate({ problems: [], warnings: [], seconds: 200 }).problems[0], /too long for one video/);
-  assert.ok(isShownNote("Formula: the last line is a 9-word line; the button must be 2 to 6 words. (line 30)"));
+  for (const n of ["Formula: the last line is a 9-word line; the button must be 2 to 6 words. (line 30)", "Line 2 has more than one comma.", "Line 3 is long (13 words)."]) assert.ok(!isShownNote(n), n);
 });
 
 test("note lines: 'Line 7', '(lines 3, 4)', the town line -> lines 1-2", () => {
