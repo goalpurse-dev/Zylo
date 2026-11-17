@@ -14,6 +14,7 @@ import { bedFromLoop, mixAudio } from "../engine/audio/mix.mjs";
 import { sfxCues } from "../engine/lib/sfx.js";
 import { simpleCues, AUDIO_SIMPLE } from "../engine/lib/audioPlan.js";
 import { processTake } from "../studio/pace.mjs";
+import { tightenTake } from "../studio/tighten.mjs";
 import { fixAnimalCast } from "../studio/castFix.mjs";
 import { directVideo, derive, MODELS } from "../studio/agent.mjs";
 import { assemble, allChecks } from "../studio/assemble.mjs";
@@ -35,9 +36,13 @@ export function makeSteps({ anthropicKey, elevenKey, cfg = STUDIO }) {
       L.check("voice", +(chars * 0.5 * 0.0002).toFixed(4)); // worst case: 0.5 ElevenLabs credits a character
       const out = path.join(dir, "voice");
       await elevenVoice({ lines: script.lines, outDir: out, narrator, apiKey: elevenKey });
-      const v = await processTake({ outDir: out });
+      const v0 = await processTake({ outDir: out });
+      // THE MILO TIGHTENING (owner 2026-11-18, studio/tighten.mjs): the real silences cut like the golden Milo take (free;
+      // a failure keeps the take as processed)
+      const t = tightenTake({ wav: v0.wav, words: v0.words, lines: script.lines, inPlace: true });
+      const v = t.error || !t.duration ? v0 : { ...v0, wav: t.wav, words: t.words, duration: t.duration, tightened: t.removed };
       L.add("voice", v.costUsd ?? +(chars * 0.44 * 0.0002).toFixed(4));
-      L.log({ step: "voice", chars, voice: narrator.voiceName, model: narrator.model, speed: v.speed, duration: v.duration, pace: v.pace });
+      L.log({ step: "voice", chars, voice: narrator.voiceName, model: narrator.model, speed: v.speed, duration: v.duration, pace: v.pace, tightened: v.tightened ?? 0 });
       return { wav: v.wav, words: v.words, duration: v.duration, chars };
     },
     /** the base plan (free): the real word timings + the free mock director; an animal cast as a person -> the pet */

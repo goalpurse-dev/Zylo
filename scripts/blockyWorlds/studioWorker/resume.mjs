@@ -14,7 +14,7 @@ export const resumePath = (run) => paths(run).final.replace(/final\.mp4$/, "resu
 export const KEEP_EXT = /\.(json|jsonl|txt|py|wav|mp3|m4a)$/i;
 // never in the bundle (2026-11-18: the Sock run's bundle went over the cap on ~80 MB of music and raw takes, and was
 // skipped without a word): the music beds (made again on every run) and the raw / original takes
-export const SKIP_FILE = /(^|[\\/])(music[^\\/]*\.wav|[^\\/]*\.raw\.wav|[^\\/]*\.orig\.wav)$/i;
+export const SKIP_FILE = /(^|[\\/])(music[^\\/]*\.wav|[^\\/]*\.raw\.wav|[^\\/]*\.orig\.wav|[^\\/]*\.processed\.wav|[^\\/]*\.tight\.wav)$/i;
 export const SKIP_DIR = /(^|[\\/])(frames|preview|previews|segments|chunks|final|tmp|node_modules)([\\/]|$)/i;
 export const MAX_BUNDLE_BYTES = 45 * 1024 * 1024;
 // the spend files: a retry is a new budget (its own caps), so the failed run's totals are left behind
@@ -68,7 +68,8 @@ export function saveVoiceResult(dir, v) {
 export function readVoiceResult(dir) {
   try {
     const v = JSON.parse(fs.readFileSync(path.join(dir, "voice-result.json"), "utf8"));
-    const wav = v.wav ? path.join(dir, v.wav) : null;
+    // a seed made on Windows writes "voice\\voice.wav": read it the same on the Linux worker
+    const wav = v.wav ? path.join(dir, ...String(v.wav).split(/[\\/]/)) : null;
     return wav && fs.existsSync(wav) && v.words ? { ...v, wav } : null;
   } catch { return null; }
 }

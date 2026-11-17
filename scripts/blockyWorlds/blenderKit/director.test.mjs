@@ -198,7 +198,9 @@ test("worlds.py: zw_giant_cam keeps every view outside the character's box at ev
   assert.match(src, /a = math\.radians\(yaw\) \+ ch\.root\.rotation_euler\[2\]/); // from the character's front
   assert.match(src, /zw_clear_view\(S\["t0"\], S\["t1"\]\)/);
   assert.match(src, /d, z, tgt, lens = 4\.5 \* size \+ 8, 2\.2,/);
-  assert.match(src, /raise RuntimeError\("CAMERA INSIDE A CHARACTER/);
+  // 2026-11-18 (owner): camera rules FIX a shot, never fail it: the guard moves the camera back out, it never raises
+  assert.match(src, /def zw_cam_guard[\s\S]*?Never raises/);
+  assert.doesNotMatch(src, /raise RuntimeError\("CAMERA INSIDE A CHARACTER/);
   assert.match(src, /V\.build = zw_guarded_build/);
   assert.equal(CHAR_BOX.z, 5.4);
 });
