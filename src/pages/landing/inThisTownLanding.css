@@ -1,0 +1,91 @@
+/* /in-this-town-story-video-maker: the toy's blocky scene, the step cards and the small motions. Everything stops
+   under "reduce motion". Colours: Zyvo lime (#bef264) on near-black, high contrast. */
+.itt-page { --lime: #bef264; --ink: #0b0d0f; }
+
+/* ---------- the toy scene (a 9:16 card drawn in CSS) ---------- */
+.itt-scene { position: relative; aspect-ratio: 9 / 16; overflow: hidden; border-radius: 22px; border: 3px solid rgba(255,255,255,.14);
+  background: linear-gradient(#7cc3ff 0%, #bfe6ff 62%, #d9f0ff 100%); isolation: isolate; }
+.itt-scene[data-theme="night"] { background: linear-gradient(#0b1638 0%, #1f2f6b 62%, #2c3d7a 100%); }
+.itt-scene[data-theme="rain"] { background: linear-gradient(#7c8a9c 0%, #a9b6c4 62%, #c3ccd6 100%); }
+.itt-sun { position: absolute; top: 9%; right: 12%; width: 18%; aspect-ratio: 1; background: #ffe066; box-shadow: 0 0 0 6px rgba(255,224,102,.35); }
+.itt-scene[data-theme="night"] .itt-sun { background: #f4f1de; box-shadow: 0 0 22px 4px rgba(244,241,222,.45); border-radius: 50%; }
+.itt-scene[data-theme="rain"] .itt-sun { opacity: 0; }
+.itt-cloud { position: absolute; height: 6%; width: 30%; background: #fff; opacity: .9; animation: itt-drift 14s linear infinite; }
+.itt-cloud::after { content: ""; position: absolute; left: 22%; top: -60%; width: 45%; height: 100%; background: inherit; }
+.itt-cloud.c1 { top: 16%; left: -30%; }
+.itt-cloud.c2 { top: 27%; left: -30%; width: 22%; animation-duration: 20s; animation-delay: -9s; }
+.itt-scene[data-theme="rain"] .itt-cloud { background: #8792a1; opacity: 1; }
+.itt-scene[data-theme="night"] .itt-cloud { opacity: .15; }
+@keyframes itt-drift { to { transform: translateX(480%); } }
+
+.itt-city { position: absolute; left: 0; right: 0; bottom: 22%; height: 40%; display: flex; align-items: flex-end; gap: 3%; padding: 0 4%; }
+.itt-bld { flex: 1; position: relative; background: var(--c); border-top: 6px solid rgba(0,0,0,.12);
+  background-image: linear-gradient(90deg, transparent 18%, rgba(255,255,255,.55) 18% 38%, transparent 38% 62%, rgba(255,255,255,.55) 62% 82%, transparent 82%);
+  background-size: 100% 18%; background-color: var(--c); }
+.itt-scene[data-theme="night"] .itt-bld { background-image: linear-gradient(90deg, transparent 18%, #ffd76a 18% 38%, transparent 38% 62%, rgba(255,255,255,.08) 62% 82%, transparent 82%); filter: brightness(.55); }
+.itt-road { position: absolute; left: 0; right: 0; bottom: 0; height: 22%; background: #4a5058; border-top: 5px solid #c9ced6; }
+.itt-road::after { content: ""; position: absolute; left: 0; right: 0; top: 46%; height: 4px; background: repeating-linear-gradient(90deg, #ffd43b 0 22px, transparent 22px 44px); }
+
+/* the hero kid: a blocky body, built from boxes */
+.itt-kid { position: absolute; left: 50%; bottom: 15%; width: 22%; transform: translateX(-50%); transform-origin: 50% 100%; animation: itt-bob 1.1s ease-in-out infinite; z-index: 3; }
+.itt-head { position: relative; margin: 0 auto; width: 62%; aspect-ratio: 1; background: #f6d06b; border: 2px solid rgba(0,0,0,.25); }
+.itt-head::before, .itt-head::after { content: ""; position: absolute; top: 34%; width: 13%; height: 20%; background: #1c1c1c; }
+.itt-head::before { left: 26%; } .itt-head::after { right: 26%; }
+.itt-mouth { position: absolute; left: 30%; right: 30%; top: 66%; height: 10%; background: #1c1c1c; border-radius: 0 0 6px 6px; }
+.itt-body { margin: 3% auto 0; width: 100%; height: 0; padding-bottom: 72%; background: var(--shirt, #84cc16); border: 2px solid rgba(0,0,0,.25); position: relative; }
+.itt-body::before, .itt-body::after { content: ""; position: absolute; top: 0; width: 26%; height: 100%; background: #f6d06b; border: 2px solid rgba(0,0,0,.2); }
+.itt-body::before { left: -28%; transform-origin: top; animation: itt-wave 1.1s ease-in-out infinite; } .itt-body::after { right: -28%; }
+.itt-legs { display: flex; gap: 6%; width: 80%; margin: 0 auto; }
+.itt-legs span { flex: 1; height: 0; padding-bottom: 70%; background: #2d3a8c; border: 2px solid rgba(0,0,0,.25); }
+@keyframes itt-bob { 0%,100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(-6%); } }
+@keyframes itt-wave { 0%,100% { transform: rotate(0); } 50% { transform: rotate(-35deg); } }
+
+.itt-npc { position: absolute; bottom: 15%; width: 11%; z-index: 2; animation: itt-walk 7s linear infinite; }
+.itt-npc .itt-head { background: #e8b88a; } .itt-npc.n2 .itt-head { background: #a46b45; }
+.itt-npc.n1 { left: -15%; --shirt: #f472b6; } .itt-npc.n2 { left: -15%; animation-delay: -3.5s; --shirt: #38bdf8; }
+@keyframes itt-walk { to { transform: translateX(1100%); } }
+
+/* themes: what the rule does to the kid / the sky */
+.itt-scene[data-theme="grow"] .itt-kid { animation: itt-grow 3.2s ease-in-out infinite; }
+@keyframes itt-grow { 0%,15% { transform: translateX(-50%) scale(1); } 55%,85% { transform: translateX(-50%) scale(2.35); } 100% { transform: translateX(-50%) scale(1); } }
+.itt-scene[data-theme="shrink"] .itt-kid { animation: itt-shrink 3.2s ease-in-out infinite; }
+@keyframes itt-shrink { 0%,15% { transform: translateX(-50%) scale(1); } 55%,85% { transform: translateX(-50%) scale(.38); } 100% { transform: translateX(-50%) scale(1); } }
+.itt-scene[data-theme="float"] .itt-kid { animation: itt-float 3.4s ease-in-out infinite; }
+@keyframes itt-float { 0%,100% { transform: translateX(-50%) translateY(0) rotate(0); } 50% { transform: translateX(-50%) translateY(-120%) rotate(-8deg); } }
+.itt-scene[data-theme="shake"] .itt-kid { animation: itt-shake .5s steps(2) infinite; }
+@keyframes itt-shake { 0% { transform: translateX(-54%) rotate(-3deg); } 100% { transform: translateX(-46%) rotate(3deg); } }
+.itt-scene[data-theme="shake"] .itt-npc { animation-duration: 2.4s; }
+.itt-scene[data-theme="night"] .itt-kid { animation-duration: 2.6s; }
+
+.itt-drops { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+.itt-drops i { position: absolute; top: -12%; width: 3px; height: 9%; background: rgba(255,255,255,.75); animation: itt-fall .9s linear infinite; }
+.itt-drops.coins i { width: 6%; height: auto; aspect-ratio: 1; border-radius: 50%; background: #ffd43b; border: 2px solid #b8860b; animation-duration: 1.8s; }
+@keyframes itt-fall { to { transform: translateY(1400%); } }
+
+/* the caption word, like the real videos */
+.itt-caption { position: absolute; left: 0; right: 0; bottom: 30%; z-index: 5; text-align: center; font: 900 clamp(20px, 7vw, 30px)/1 system-ui, sans-serif;
+  color: #fff; text-transform: uppercase; letter-spacing: .02em; -webkit-text-stroke: 1.5px #000; paint-order: stroke fill; text-shadow: 0 3px 0 #000; }
+.itt-caption span { display: inline-block; animation: itt-pop .32s cubic-bezier(.2,1.6,.4,1) both; }
+.itt-caption span.hot { color: #bef264; }
+@keyframes itt-pop { from { transform: scale(.4); opacity: 0; } }
+
+/* the script beats, one after another */
+.itt-beat { animation: itt-rise .45s ease-out both; animation-delay: calc(var(--i) * 120ms); }
+@keyframes itt-rise { from { opacity: 0; transform: translateY(10px); } }
+
+/* how it works: the bar fills step by step */
+.itt-step-bar { height: 6px; border-radius: 99px; background: rgba(255,255,255,.08); overflow: hidden; }
+.itt-step-bar > i { display: block; height: 100%; width: 0; background: var(--lime); }
+.itt-steps.on .itt-step-bar > i { animation: itt-fill 1.1s ease-out forwards; animation-delay: calc(var(--i) * 900ms); }
+@keyframes itt-fill { to { width: 100%; } }
+.itt-steps .itt-step { transition: transform .4s, border-color .4s; transform: translateY(8px); }
+.itt-steps.on .itt-step { transform: none; border-color: rgba(190,242,100,.35); transition-delay: calc(var(--i) * 900ms); }
+
+.itt-wiggle:hover { animation: itt-wig .4s ease-in-out; }
+@keyframes itt-wig { 25% { transform: rotate(-2deg); } 75% { transform: rotate(2deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .itt-page *, .itt-page *::before, .itt-page *::after { animation: none !important; transition: none !important; }
+  .itt-steps .itt-step { opacity: 1; transform: none; }
+  .itt-step-bar > i { width: 100%; }
+}

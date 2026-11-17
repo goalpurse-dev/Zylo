@@ -37,6 +37,7 @@ const REQUIRED_PUBLIC_PAGES = [
   "/clay-rescue-maker",
   "/image-generator",
   "/blocky-story-video-maker",
+  "/in-this-town-story-video-maker",
   "/blog/category/ai-video",
   "/blog/category/ai-images",
   "/blog/category/viral-ideas",

@@ -3595,6 +3595,90 @@ const ALL_BLOG_ARTICLES = [
     "featured": false,
     "popular": false,
     "relatedTool": { "name": "30 Days Series", "href": "/30-days-series-video-maker" }
+  },
+  {
+    "title": "How to make viral “In this town” Roblox story shorts (step by step)",
+    "slug": "/blog/how-to-make-in-this-town-story-shorts",
+    "description": "Make an \"In this town\" Roblox-style story Short step by step: the rule, the hook, the 7-beat story, one shot per line, voice, captions and posting.",
+    "image": "/in-this-town/blog/how-to-make-in-this-town-story-shorts.webp",
+    "category": "AI Video",
+    "tags": [
+      "in-this-town",
+      "story-shorts",
+      "tutorial",
+      "blocky"
+    ],
+    "publishedAt": "2026-11-17T12:00:00.000Z",
+    "updatedAt": "2026-11-17T12:00:00.000Z",
+    "featured": true,
+    "popular": false,
+    "relatedTool": {
+      "name": "In This Town",
+      "href": "/in-this-town-story-video-maker"
+    }
+  },
+  {
+    "title": "50 “In this town” story ideas for TikTok and YouTube Shorts",
+    "slug": "/blog/in-this-town-story-ideas",
+    "description": "50 original \"In this town\" story rules for Roblox-style story Shorts, sorted by theme, with a note on where each story could go.",
+    "image": "/in-this-town/blog/in-this-town-story-ideas.webp",
+    "category": "AI Video",
+    "tags": [
+      "in-this-town",
+      "ideas",
+      "tiktok",
+      "youtube-shorts"
+    ],
+    "publishedAt": "2026-11-17T12:00:00.000Z",
+    "updatedAt": "2026-11-17T12:00:00.000Z",
+    "featured": false,
+    "popular": false,
+    "relatedTool": {
+      "name": "In This Town",
+      "href": "/in-this-town-story-video-maker"
+    }
+  },
+  {
+    "title": "The story formula behind viral Roblox story videos",
+    "slug": "/blog/viral-blocky-story-formula",
+    "description": "The 7-beat structure behind viral Roblox-style story videos, from the rule to the twist and cliffhanger, explained with an original example.",
+    "image": "/in-this-town/blog/viral-blocky-story-formula.webp",
+    "category": "AI Video",
+    "tags": [
+      "in-this-town",
+      "storytelling",
+      "script",
+      "formula"
+    ],
+    "publishedAt": "2026-11-17T12:00:00.000Z",
+    "updatedAt": "2026-11-17T12:00:00.000Z",
+    "featured": false,
+    "popular": false,
+    "relatedTool": {
+      "name": "In This Town",
+      "href": "/in-this-town-story-video-maker"
+    }
+  },
+  {
+    "title": "How to make faceless Roblox-style animations without Blender or animation skills",
+    "slug": "/blog/faceless-blocky-animations-without-blender",
+    "description": "Make faceless Roblox-style story animations: what they need, the Blender route, and how to make one from a sentence with no 3D or animation skills.",
+    "image": "/in-this-town/blog/faceless-blocky-animations-without-blender.webp",
+    "category": "AI Video",
+    "tags": [
+      "in-this-town",
+      "faceless",
+      "animation",
+      "no-blender"
+    ],
+    "publishedAt": "2026-11-17T12:00:00.000Z",
+    "updatedAt": "2026-11-17T12:00:00.000Z",
+    "featured": false,
+    "popular": false,
+    "relatedTool": {
+      "name": "In This Town",
+      "href": "/in-this-town-story-video-maker"
+    }
   }
 ];
 

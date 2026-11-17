@@ -21,6 +21,7 @@ Facts that are safe to repeat:
 ## Short-form video templates
 
 - [AI Fruit Story](https://www.tryzyvo.com/ai-fruit-story-maker): talking-fruit drama videos and series of up to 10 episodes with the same cast
+- [In This Town](https://www.tryzyvo.com/in-this-town-story-video-maker): narrated "In this town…" story videos in blocky 3D from one sentence: script, voice, directed shots, captions
 - [Blocky Stories](https://www.tryzyvo.com/blocky-story-video-maker): animated story Shorts where blocky characters speak their lines with lip sync and captions
 - [Cartoon Drive-By](https://www.tryzyvo.com/cartoon-drive-by-video-maker): a 10-second vertical drive past a fictional cartoon-style place
 - [Behind the Scenes](https://www.tryzyvo.com/behind-the-scenes-video-maker): movie-set footage of a practical disaster on a miniature city

@@ -1,6 +1,8 @@
 import { STICKMAN_FONT_HREF, STICKMAN_LANDING_PAGES, STICKMAN_VIEWPORT } from "./stickmanLandingPages.js";
 import { HOME_SEO } from "./routeSeoPolicy.js";
 import { IMAGE_GENERATOR_SEO, IMAGE_HERO, imageSrc } from "./imageGeneratorLanding.js";
+import { IN_THIS_TOWN_PATH, IN_THIS_TOWN_SEO, OG_IMAGE as TOWN_OG_IMAGE, TOWN_STORIES } from "./inThisTownLanding.js";
+import { TOWN_GUIDES } from "./inThisTownBlog.js";
 import { BLOCKY_HERO_VIDEO, BLOCKY_LANDING_ASSETS, BLOCKY_LANDING_PATH, BLOCKY_LANDING_SEO, posterSrc as blockyPoster } from "./blockyStoryLanding.js";
 
 export const SITE_URL = "https://www.tryzyvo.com";
@@ -1078,6 +1080,21 @@ export const SUPPORT_PUBLIC_PAGES = {
   "/support/policies/tos": { title: "Terms of Service | Zyvo", description: "The terms that apply when you use Zyvo: accounts, plans and credits, acceptable use, the content you create, and liability." },
 };
 Object.entries(SUPPORT_PUBLIC_PAGES).forEach(([pathname, page]) => { PUBLIC_SEO_METADATA[pathname] = { ...page, type: "website" }; });
+
+// In This Town's public page and its four guides (src/data/inThisTownLanding.js, inThisTownBlog.js): the hero poster
+// preloaded, the display font without blocking, the page hydrated in place.
+PUBLIC_SEO_METADATA[IN_THIS_TOWN_PATH] = {
+  title: IN_THIS_TOWN_SEO.title,
+  description: IN_THIS_TOWN_SEO.description,
+  type: "website",
+  image: `${SITE_URL}${TOWN_OG_IMAGE}`,
+  imageSize: [1200, 630],
+  preloadImage: TOWN_STORIES[0].poster,
+  fontHref: STICKMAN_FONT_HREF,
+  inlineContent: true,
+  modified: IN_THIS_TOWN_SEO.modified, // bump when the page changes: it becomes the sitemap's lastmod
+};
+TOWN_GUIDES.forEach((g) => { PUBLIC_SEO_METADATA[`/blog/${g.slug}`] = { ...blog(g.seoTitle, g.description), image: `${SITE_URL}${g.hero}`, preloadImage: g.hero, inlineContent: true, modified: g.dateModified }; });
 
 export function getPublicSeoMetadata(pathname) {
   return PUBLIC_SEO_METADATA[pathname] || null;

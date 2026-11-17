@@ -7,6 +7,8 @@ import { FRUIT_FAQ, FRUIT_PRICING_FAQ, FRUIT_WHAT_IS_FAQ, fruitVideoObjects } fr
 import { IS_ZYVO_FREE_FAQ } from "./freePlan.js";
 import { IMAGE_GENERATOR_PATH, imageGeneratorStructuredData } from "./imageGeneratorLanding.js";
 import { BLOCKY_LANDING_PATH, blockyStructuredData } from "./blockyStoryLanding.js";
+import { IN_THIS_TOWN_PATH, inThisTownStructuredData } from "./inThisTownLanding.js";
+import { townGuideFaq } from "./inThisTownBlog.js";
 
 const faqPage = (faq) => ({
   "@type": "FAQPage",
@@ -64,6 +66,11 @@ export function structuredDataFor(pathname, givenMetadata, canonical) {
   // The image generator's page too (the tool with its real prices, FAQ, breadcrumb).
   if (pathname === IMAGE_GENERATOR_PATH) return imageGeneratorStructuredData(canonical, SITE_URL);
   if (pathname === BLOCKY_LANDING_PATH) return blockyStructuredData(canonical, SITE_URL);
+  if (pathname === IN_THIS_TOWN_PATH) {
+    const town = inThisTownStructuredData(canonical, SITE_URL);
+    town["@graph"][0].offers = planOffers(); // credits come with a plan: the plans' real prices
+    return town;
+  }
 
   // Homepage gets exactly one brand-identity graph (Organization + WebSite)
   // and nothing else — no BreadcrumbList/WebPage duplicate, no second
@@ -451,6 +458,10 @@ export function structuredDataFor(pathname, givenMetadata, canonical) {
       ].map(([name, text]) => ({ "@type": "Question", name, acceptedAnswer: { "@type": "Answer", text } })),
     });
   }
+
+  // the In This Town guides: their FAQ, from the same markdown the page renders
+  const townFaq = pathname.startsWith("/blog/") ? townGuideFaq(pathname) : null;
+  if (townFaq?.length) graph.push(faqPage(townFaq));
 
   const toolName = TOOL_APPS[pathname] ?? metadata.toolName;
   if (toolName) {

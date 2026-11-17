@@ -16,6 +16,7 @@ const TEMPLATE_PREFIXES = [
   { prefixes: ["/behind-the-scenes-video-maker", "/blog/behind-the-scenes"], id: "behind-the-scenes" },
   { prefixes: ["/ai-stickman-video-generator"], id: "long-form" },
   { prefixes: ["/blocky-story-video-maker"], id: "blocky-stories" },
+  { prefixes: ["/in-this-town-story-video-maker", "/blog/how-to-make-in-this-town", "/blog/in-this-town-story", "/blog/viral-blocky-story", "/blog/faceless-blocky"], id: "blocky-worlds" },
   { prefixes: ["/2am-", "/blog/what-is-the-2am", "/blog/best-2am", "/blog/how-to-create-2am", "/blog/ai-world", "/blog/how-to-make-ai-nostalgia"], id: "two-am" },
 ];
 
