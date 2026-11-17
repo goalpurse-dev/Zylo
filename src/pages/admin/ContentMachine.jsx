@@ -435,7 +435,10 @@ export default function ContentMachine() {
     <div className="mx-auto max-w-[1180px] space-y-4 px-4 py-6 text-white" data-testid="cm-page">
       <div className="flex flex-wrap items-end justify-between gap-2">
         <h1 className="text-2xl font-semibold">Content Machine</h1>
-        <p className="text-[12px] text-white/45">refreshes every 30 s</p>
+        <p className="flex items-center gap-3 text-[12px] text-white/45">
+          <a href="/admin/affiliates" className="rounded-lg border border-white/15 px-3 py-1.5 text-[12.5px] font-bold text-white/80 hover:bg-white/10">Affiliates</a>
+          refreshes every 30 s
+        </p>
       </div>
       <TopBar st={st} onStatus={onStatus} />
       <nav className="flex gap-1 overflow-x-auto border-b border-white/10" aria-label="Content Machine tabs">

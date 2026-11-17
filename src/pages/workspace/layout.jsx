@@ -177,6 +177,7 @@ useEffect(() => {
     "/workspace/earn/leaderboard":   "Earn",
     "/workspace/earn/rules":         "Earn",
     "/workspace/earnings":           "Earnings Calculator",
+    "/affiliate":                    "Affiliate",
     "/long-form":                    "Long Form",
     "/long-form/new":                "Long Form",
   };

@@ -1,6 +1,8 @@
 // In-memory stand-in for supabase-js, just enough for stripe-webhook/index.ts.
 // deno-lint-ignore-file no-explicit-any
-export const db: Record<string, any[]> = { profiles: [], credit_grants: [], billing_events_processed: [], offer_redemptions: [], signup_bonuses: [] };
+export const db: Record<string, any[]> = { profiles: [], credit_grants: [], billing_events_processed: [], offer_redemptions: [], signup_bonuses: [], commissions: [], affiliate_calls: [], funnel_events: [], cutaway_free_previews: [] };
+/** The affiliate functions (migration 20261217100000), modelled just enough: referred users, one commission each. missing: not installed. */
+export const affiliateFake: { missing: boolean; referred: Set<string> } = { missing: false, referred: new Set() };
 /** Return an error message to make the matching call fail. */
 export const inject: { fail: ((call: { table?: string; op: string; payload?: any }) => string | null) | null } = { fail: null };
 const UNIQUE: Record<string, string> = { credit_grants: "external_id", billing_events_processed: "event_id" };
@@ -10,6 +12,7 @@ class Query {
   constructor(private table: string) {}
   select() { return this; }
   eq(col: string, val: any) { this.filters.push([col, val]); return this; }
+  is(col: string, val: any) { this.filters.push([col, val]); return this; }
   limit(n: number) { this.max = n; return this; }
   maybeSingle() { this.single = true; return this; }
   update(patch: any) { this.op = "update"; this.payload = patch; return this; }
@@ -24,7 +27,7 @@ class Query {
       rows.push({ ...this.payload });
       return { data: null, error: null };
     }
-    const hit = rows.filter((r) => this.filters.every(([c, v]) => r[c] === v)).slice(0, this.max);
+    const hit = rows.filter((r) => this.filters.every(([c, v]) => (r[c] ?? null) === v)).slice(0, this.max);
     if (this.op === "update") hit.forEach((r) => Object.assign(r, this.payload));
     const data = hit.map((r) => ({ ...r }));
     return { data: this.single ? data[0] ?? null : data, error: null };
@@ -50,6 +53,24 @@ export function createClient(..._args: any[]): any {
         db.credit_grants.push({ user_id: args.p_user_id, reason: "offer_bonus", amount: args.p_credits, external_id: ext });
         p.credit_balance = (p.credit_balance ?? 0) + args.p_credits;
         return Promise.resolve({ data: true, error: null });
+      }
+      if (name.startsWith("affiliate_")) {
+        if (affiliateFake.missing) return Promise.resolve({ data: null, error: { code: "PGRST202", message: `Could not find the function public.${name}` } });
+        db.affiliate_calls.push({ name, args });
+        const ok = (data: any) => Promise.resolve({ data, error: null });
+        if (name === "affiliate_record_payment") {
+          if (!affiliateFake.referred.has(args.p_user_id)) return ok({ result: "not_referred" });
+          if (db.commissions.some((c) => c.payment_id === args.p_payment_id)) return ok({ result: "duplicate" });
+          if (db.commissions.some((c) => c.user_id === args.p_user_id)) return ok({ result: "not_first" });
+          db.commissions.push({ user_id: args.p_user_id, payment_id: args.p_payment_id, payment_intent: args.p_payment_intent, amount: args.p_amount_cents, plan: args.p_plan, hold: args.p_hold_days, status: "pending" });
+          return ok({ result: "created" });
+        }
+        if (name === "affiliate_reverse_payment") {
+          const hit = db.commissions.filter((c) => c.status === "pending" && ((args.p_payment_id && c.payment_id === args.p_payment_id) || (args.p_payment_intent && c.payment_intent === args.p_payment_intent)));
+          hit.forEach((c) => { c.status = "reversed"; });
+          return ok({ reversed: hit.length, already_paid: 0 });
+        }
+        return ok(null);
       }
       if (name !== "grant_credits_once") return Promise.resolve({ data: null, error: { message: `no function ${name}` } });
       // Same contract as the SQL function: ledger row + balance together, or neither.

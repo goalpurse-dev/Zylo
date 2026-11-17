@@ -9,7 +9,7 @@
 // It does not prove the SQL of grant_credits_once (the fake copies its
 // contract) or real Stripe payloads: that is what the Stripe CLI test run is for.
 // deno-lint-ignore-file no-explicit-any
-import { db, inject } from "./fakeSupabase.ts";
+import { affiliateFake, db, inject } from "./fakeSupabase.ts";
 
 const SECRET = "whsec_simulation";
 Deno.env.set("SUPABASE_URL", "http://fake");
@@ -314,6 +314,50 @@ console.log("\n14. Failed plan-change payment, and a scheduled downgrade");
   check("downgrade booked in the portal (schedule attached, price unchanged) → still Pro", [(await q(evt("customer.subscription.updated", subscription("sub_21", "cus_21", "active", PRO, { schedule: "sub_sched_1" })))).status, P(21).plan_code], [200, "pro"]);
   check("period ends, Stripe switches the price → now Starter", [(await q(evt("customer.subscription.updated", subscription("sub_21", "cus_21", "active", STARTER)))).status, P(21).plan_code], [200, "starter"]);
   check("and the renewal at the Starter price gives 750", (await q(evt("invoice.payment_succeeded", invoice("in_cycle_21", "cus_21", "sub_21", STARTER, { billing_reason: "subscription_cycle" })))).body, { ok: true, plan_credits: 750, granted: true });
+}
+
+console.log("\n15. Affiliate program: first payment → one commission, refund → reversed");
+{
+  const A = "00000000-0000-4000-8000-000000000a01";
+  db.profiles.push({ ...prof(1), id: A, stripe_customer_id: "cus_a1" });
+  affiliateFake.referred.add(A);
+  stripe.subs.sub_a1 = subscription("sub_a1", "cus_a1", "active");
+  const r1 = await q(evt("invoice.payment_succeeded", invoice("in_a1", "cus_a1", "sub_a1", STARTER, { amount_paid: 1900, tax: 0, payment_intent: "pi_a1", currency: "eur" })));
+  check("referred user's first invoice → plan + credits as before, plus a commission", [r1.status, r1.body.plan_credits, r1.body.affiliate_commission], [200, 750, true]);
+  check("commission on the amount paid, 30-day hold from config", [db.commissions[0].amount, db.commissions[0].hold, db.commissions[0].payment_intent], [1900, 30, "pi_a1"]);
+  const r2 = await q(evt("invoice.payment_succeeded", invoice("in_a2", "cus_a1", "sub_a1", STARTER, { amount_paid: 1900, billing_reason: "subscription_cycle", payment_intent: "pi_a2" })));
+  check("the renewal → no second commission (one-time)", [r2.body.affiliate_commission, db.commissions.length], [undefined, 1]);
+  check("refund of the first payment → reversed", [(await q(evt("charge.refunded", { id: "ch_a1", payment_intent: "pi_a1", invoice: "in_a1", refunded: true, amount_refunded: 1900 }))).body, db.commissions[0].status], [{ ok: true, affiliate_reversed: 1 }, "reversed"]);
+  check("a refund of an unrelated charge → nothing", (await q(evt("charge.refunded", { id: "ch_x", payment_intent: "pi_other", refunded: true }))).body, { ok: true, affiliate_reversed: 0 });
+
+  const B = "00000000-0000-4000-8000-000000000a02";
+  db.profiles.push({ ...prof(1), id: B, stripe_customer_id: "cus_a2" });
+  affiliateFake.referred.add(B);
+  stripe.lineItems.cs_a2 = [{ price: { id: MINI }, quantity: 1 }];
+  const pk = await q(evt("checkout.session.completed", { id: "cs_a2", mode: "payment", status: "complete", payment_status: "paid", customer: "cus_a2", metadata: { user_id: B }, amount_total: 1200, total_details: { amount_tax: 200 }, payment_intent: "pi_a2pack", currency: "eur" }));
+  check("a credit pack as the first payment → commission on what was paid (config excludeTax: false)", [pk.body.topup_credits, pk.body.affiliate_commission, db.commissions[1].amount, db.commissions[1].plan], [300, true, 1200, "topup"]);
+  check("a dispute on it → reversed", [(await q(evt("charge.dispute.created", { id: "dp_1", charge: "ch_pack", payment_intent: "pi_a2pack" }))).body, db.commissions[1].status], [{ ok: true, affiliate_reversed: 1 }, "reversed"]);
+
+  const C = "00000000-0000-4000-8000-000000000a03";
+  db.profiles.push({ ...prof(1), id: C, stripe_customer_id: "cus_a3" });
+  check("a user nobody referred → no commission", (await q(evt("invoice.payment_succeeded", invoice("in_a3", "cus_a3", "sub_a3", STARTER, { amount_paid: 1900 })))).body.affiliate_commission, undefined);
+
+  affiliateFake.missing = true;
+  const D = "00000000-0000-4000-8000-000000000a04";
+  db.profiles.push({ ...prof(1), id: D, stripe_customer_id: "cus_a4" });
+  const md = await q(evt("invoice.payment_succeeded", invoice("in_a4", "cus_a4", "sub_a4", STARTER, { amount_paid: 1900 })));
+  check("migration not run yet → the payment is handled exactly as before (200, credits)", [md.status, md.body.plan_credits, db.profiles.find((p) => p.id === D).credit_balance], [200, 750, 750]);
+  affiliateFake.missing = false;
+
+  inject.fail = (c) => (c.op === "rpc:affiliate_record_payment" ? "db timeout" : null);
+  const E = "00000000-0000-4000-8000-000000000a05";
+  db.profiles.push({ ...prof(1), id: E, stripe_customer_id: "cus_a5" });
+  affiliateFake.referred.add(E);
+  const ev5 = evt("invoice.payment_succeeded", invoice("in_a5", "cus_a5", "sub_a5", STARTER, { amount_paid: 1900 }));
+  check("commission write fails → 500 so Stripe retries", (await q(ev5)).status, 500);
+  inject.fail = null;
+  const re5 = await q(ev5);
+  check("the retry → credits not granted twice, commission made", [re5.body.granted, re5.body.affiliate_commission, db.profiles.find((p) => p.id === E).credit_balance], [false, true, 750]);
 }
 
 console.log("\nPlan-change numbers (new-subscriber amounts 750 / 1,600 / 3,200 unless noted):");

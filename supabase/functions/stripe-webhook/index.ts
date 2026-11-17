@@ -4,6 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { PLAN_PRICE_MAP, planCreditsFor, prorationCreditShare } from "../_shared/stripePlanPrices.js";
 import { OFFER, offerBonusFor } from "../_shared/offer.js";
 import { SIGNUP_BONUS, signupBonusFor } from "../_shared/signupBonus.js";
+import { AFFILIATE } from "../_shared/affiliate/config.js";
 
 /* =================== CONFIG =================== */
 /** Recurring plan prices → plan + monthly credits (current and legacy), with the
@@ -217,6 +218,31 @@ async function markProcessed(eventId: string) {
   if (error && error.code !== "23505") console.warn("[stripe-webhook] billing_events_processed insert failed:", error.message);
 }
 
+/* ---------- affiliate program (_shared/affiliate/config.js; migration 20261217100000) ---------- */
+// A function or table that isn't there yet (migration not run): the affiliate step is skipped, the payment
+// is handled as before. Any other failure throws, so Stripe retries; everything before it is once-only.
+const NOT_INSTALLED = ["42883", "PGRST202", "42P01", "PGRST205"];
+async function affiliateRpc(name: string, args: Record<string, unknown>): Promise<any | null> {
+  const res = await sb.rpc(name, args);
+  if (res.error && NOT_INSTALLED.includes(res.error.code)) {
+    console.warn(`[stripe-webhook] affiliate step skipped: ${name} is not installed`);
+    return null;
+  }
+  const data = must(res, `affiliate ${name}`);
+  if ((data as any)?.result !== "not_referred") console.log(`[stripe-webhook] affiliate ${name}: ${JSON.stringify(data)}`);
+  return data;
+}
+/** A referred user's FIRST payment → one pending commission (once per payment id and per user, in SQL). */
+async function recordAffiliatePayment(o: { userId: string; paymentId: string; paymentIntent: unknown; amountCents: number; currency: unknown; plan: string | null; paidAt: string | null }) {
+  if (!o.paymentId || !(o.amountCents > 0)) return null;
+  const intent = typeof o.paymentIntent === "string" ? o.paymentIntent : (o.paymentIntent as any)?.id ?? null;
+  return await affiliateRpc("affiliate_record_payment", {
+    p_user_id: o.userId, p_payment_id: o.paymentId, p_payment_intent: intent, p_amount_cents: Math.round(o.amountCents),
+    p_currency: String(o.currency ?? "eur"), p_plan: o.plan, p_paid_at: o.paidAt ?? new Date().toISOString(),
+    p_hold_days: AFFILIATE.holdDays, p_credit_value_cents: Math.round(AFFILIATE.creditValueEur * 100), p_is_test: false,
+  });
+}
+
 /* ---------- Stripe read helpers ---------- */
 /** GET from Stripe; a failed request throws (the event fails and Stripe retries). */
 async function stripeGet(path: string): Promise<any> {
@@ -327,7 +353,11 @@ async function handleEvent(type: string, eventId: string, obj: any): Promise<Rec
         throw new Error(`paid checkout ${s.id} maps to 0 credits (prices: ${items.map((it) => it?.price?.id).join(", ") || "none"})`);
       }
       const granted = await grantCreditsOnce(userId, totalCredits, "topup", s.id);
-      return { ok: true, topup_credits: totalCredits, granted };
+      const affiliate = await recordAffiliatePayment({
+        userId, paymentId: s.id, paymentIntent: s.payment_intent, currency: s.currency, plan: "topup", paidAt: unixToIso(s.created),
+        amountCents: (Number(s.amount_total) || 0) - (AFFILIATE.excludeTax ? Number(s.total_details?.amount_tax) || 0 : 0),
+      });
+      return { ok: true, topup_credits: totalCredits, granted, ...(affiliate?.result === "created" ? { affiliate_commission: true } : {}) };
     }
 
     // Initial subscription checkout — store IDs; credits come on invoice.payment_succeeded
@@ -485,9 +515,16 @@ async function handleEvent(type: string, eventId: string, obj: any): Promise<Rec
       } else if (row.data) console.log(`[stripe-webhook] sign-up bonus for user ${userId}: ${decision.why}`);
     }
 
+    // The affiliate commission: only a referred user's first paid invoice counts (the SQL decides).
+    const affiliate = await recordAffiliatePayment({
+      userId, paymentId: inv.id, paymentIntent: inv?.payment_intent, currency: inv?.currency, plan: plan ?? changedTo?.plan ?? null, paidAt: paidAtIso,
+      amountCents: (Number(inv?.amount_paid) || 0) - (AFFILIATE.excludeTax ? Number(inv?.tax) || 0 : 0),
+    });
+    const aff = affiliate?.result === "created" ? { affiliate_commission: true } : {};
+
     return hasProration
-      ? { ok: true, plan_credits: planCredits, plan_change: true, credits, granted, ...(offer.eligible ? { bonus } : {}), ...(signupBonus ? { signup_bonus: true } : {}) }
-      : { ok: true, plan_credits: planCredits, granted, ...(offer.eligible ? { bonus } : {}), ...(signupBonus ? { signup_bonus: true } : {}) };
+      ? { ok: true, plan_credits: planCredits, plan_change: true, credits, granted, ...(offer.eligible ? { bonus } : {}), ...(signupBonus ? { signup_bonus: true } : {}), ...aff }
+      : { ok: true, plan_credits: planCredits, granted, ...(offer.eligible ? { bonus } : {}), ...(signupBonus ? { signup_bonus: true } : {}), ...aff };
   }
 
   /* ── invoice.payment_failed ───────────────────────────────────────── */
@@ -615,6 +652,22 @@ async function handleEvent(type: string, eventId: string, obj: any): Promise<Rec
       annual_credits_last_topup:  null,
     }, `set free: subscription ${sub.id} was deleted`);
     return { received: true, plan: "free" };
+  }
+
+  /* ── charge.refunded / charge.dispute.created ─────────────────────── */
+  //   Only the affiliate program uses these: an unpaid commission on the refunded or disputed payment is
+  //   reversed (already paid out: kept, and the admin sees it in the logs). Credits are not touched.
+  //   These events must be switched on for this endpoint in the Stripe Dashboard.
+  if (type === "charge.refunded" || type === "charge.dispute.created") {
+    const isDispute = type === "charge.dispute.created";
+    if (!isDispute && !AFFILIATE.reverseOnPartialRefund && !obj?.refunded) return { ok: true, reason: "partial-refund" };
+    const ref = (v: any) => (typeof v === "string" ? v : v?.id ?? null);
+    const paymentIntent = ref(obj?.payment_intent);
+    const invoiceId = isDispute ? null : ref(obj?.invoice);
+    if (!paymentIntent && !invoiceId) return { ok: true, reason: "no-payment-reference" };
+    const r = await affiliateRpc("affiliate_reverse_payment", { p_payment_id: invoiceId, p_payment_intent: paymentIntent, p_reason: type });
+    if (r?.already_paid) console.warn(`[stripe-webhook] ${type} event=${eventId}: the affiliate commission on ${paymentIntent ?? invoiceId} was already paid out`);
+    return { ok: true, affiliate_reversed: r?.reversed ?? 0 };
   }
 
   // ── All other events (payment_intent.*, charge.*, 3DS events, etc.) ──

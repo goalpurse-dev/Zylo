@@ -25,6 +25,7 @@ import LongFormScriptReadyNotifier from "./components/LongFormScriptReadyNotifie
 import { BLOCKY_STORIES_PATH } from "./data/blockyStories";
 import { CUTAWAY_PATH } from "./data/cutawayExplainer";
 import { BLOCKY_WORLDS_PATH } from "./data/blockyWorlds";
+import { AFFILIATE_PATH, captureRefFromUrl } from "./lib/affiliate";
 import BlockyWorldsGate from "./components/viral-tools/blocky-worlds/BlockyWorldsGate";
 
 // pages…
@@ -58,6 +59,8 @@ const FeedbackAnalytics = lazy(() => import("./pages/admin/FeedbackAnalytics"));
 const OpsPage = lazy(() => import("./pages/admin/Ops"));
 const FunnelPage = lazy(() => import("./pages/admin/Funnel"));
 const ContentMachinePage = lazy(() => import("./pages/admin/ContentMachine"));
+const AffiliatesAdminPage = lazy(() => import("./pages/admin/Affiliates"));
+const AffiliatePage = lazy(() => import("./pages/workspace/affiliate/AffiliatePage.jsx"));
 const TextToVoice = lazy(() => import("./pages/tools/TextToVoice"));
 
 // already lazy
@@ -463,6 +466,7 @@ function AppWithRouting() {
     "/text-to-voice",
     "/workspace",
     "/long-form",
+    "/affiliate",
     "/welcome"
   ];
 
@@ -480,6 +484,9 @@ function AppWithRouting() {
   React.useLayoutEffect(() => {
     setHideNav(computeHide(location.pathname));
   }, [location.pathname, computeHide]);
+
+  // A creator's link (?ref=CODE) on any page: remembered for sign-up, counted once, taken out of the address.
+  React.useEffect(() => { captureRefFromUrl(); }, [location.search]);
 
   const mainClass = hideNav
     ? "min-h-screen bg-[#0B1117] text-white p-0"
@@ -833,6 +840,8 @@ return (
   <Route path="/workspace/earn/rules"       element={<EarnPage />} />
   {/* Earnings Calculator (not the Earn referral program above). In the desktop tools shell only, not the bottom nav. */}
   <Route path="/workspace/earnings"         element={<EarningsCalculatorPage />} />
+  {/* The affiliate program (public: a visitor sees how it works, joining needs an account) */}
+  <Route path={AFFILIATE_PATH}             element={<AffiliatePage />} />
   <Route path="/long-form"                       element={<LongFormPage />} />
   <Route path="/long-form/new"                   element={<LongFormNewPage />} />
   <Route path="/long-form/create"                element={<LongFormProductionSetupPage />} />
@@ -929,6 +938,7 @@ return (
           <Route path="/admin/ops" element={<OpsPage />} />
           <Route path="/admin/funnel" element={<FunnelPage />} />
           <Route path="/admin/content-machine" element={<ContentMachinePage />} />
+          <Route path="/admin/affiliates" element={<AffiliatesAdminPage />} />
 
         
           <Route path="/home" element={<Navigate to="/" replace />} />
