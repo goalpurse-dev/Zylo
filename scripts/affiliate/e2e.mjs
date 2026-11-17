@@ -24,7 +24,9 @@ await pg.exec(`
     update profiles set credit_balance = credit_balance + p_amount where id = p_user_id;
     return true;
   end $$;`);
-await pg.exec(readFileSync(new URL("../../supabase/migrations/20261217100000_affiliate_program.sql", import.meta.url), "utf8"));
+for (const m of ["20261217100000_affiliate_program.sql", "20261217110000_affiliate_onboarding_followup.sql"]) {
+  await pg.exec(readFileSync(new URL(`../../supabase/migrations/${m}`, import.meta.url), "utf8"));
+}
 
 /* ---- a stand-in for the few supabase-js calls api.js makes ---- */
 const users = new Map(); // token → user
@@ -206,6 +208,31 @@ await call(owner, "adminUpdate", { affiliateId: affId, status: "disabled" });
 check("disabled code doesn't validate", (await call(null, "lookup", { code: "MAYA" })).valid, false);
 check("admin rate override", (await call(owner, "adminUpdate", { affiliateId: affId, status: "active", cashRate: 0.25 })).ok, true);
 check("new since last visit", (await call(maya, "markSeen")).ok, true);
+
+console.log("8. Survey follow-up: platform saved, same-IP credit cooldown, rate limit");
+await call(owner, "adminUpdate", { affiliateId: affId, status: "active" });
+const t1 = await newUser("tt1@example.com", "T1");
+const p1 = await call(t1, "claim", { code: "MAYA", source: "code", platform: "tiktok" }, "3.3.3.3");
+check("TikTok sign-up: claimed, 5 credits", [p1.result, p1.bonusCredits], ["claimed", 5]);
+check("platform saved on the referral", (await pg.query("select platform from referrals where referred_user_id = $1", [t1.id])).rows[0].platform, "tiktok");
+const t2 = await newUser("tt2@example.com", "T2");
+const p2 = await call(t2, "claim", { code: "MAYA", source: "code", platform: "youtube" }, "3.3.3.3");
+check("same IP within 7 days: still counts for the creator, no credits", [p2.result, p2.bonusCredits, p2.bonusSkipped, await balance(t2)], ["claimed", 0, "ip_recent", 0]);
+await pg.query("update referrals set created_at = now() - interval '8 days' where referred_user_id = $1", [t1.id]);
+const t3 = await newUser("tt3@example.com", "T3");
+check("after 7 days the same IP may get credits again (another creator: a 3rd sign-up from one IP for MAYA is held for review)", (await call(t3, "claim", { code: (await call(owner, "me")).affiliate.code, source: "code", platform: "instagram" }, "3.3.3.3")).bonusCredits, 5);
+check("a made-up platform: still claimed", (await call(await newUser("tt4@example.com", "T4"), "claim", { code: "MAYA", source: "code", platform: "myspace" }, "2.2.2.2")).result, "claimed");
+check("...saved as no platform", (await pg.query("select platform from referrals r join auth.users u on u.id = r.referred_user_id where u.email = 'tt4@example.com'")).rows[0].platform, null);
+ov = await call(owner, "adminOverview");
+const pf = ov.affiliates.find((a) => a.code === "MAYA").platforms;
+check("admin: where MAYA's sign-ups came from", [pf.tiktok, pf.youtube, pf.other > 0], [1, 1, true]);
+const results = [];
+for (let k = 0; k < 11; k++) results.push((await call(null, "lookup", { code: "MAYA" }, "10.0.0.1")).reason ?? "ok");
+check("11th code check within a minute from one IP: rate limited", [results.slice(0, 10).every((r) => r === "ok"), results[10]], [true, "rate_limited"]);
+check("another IP is not affected", (await call(null, "lookup", { code: "MAYA" }, "10.0.0.2")).valid, true);
+const spam = await newUser("spam@example.com", "S");
+for (let k = 0; k < 10; k++) await call(spam, "lookup", { code: "NOPE" + k }, "10.1.0." + k);
+check("...and per account, whatever the IP", (await call(spam, "claim", { code: "MAYA", source: "code" }, "10.2.0.1")).result, "rate_limited");
 
 console.log(failed ? `\n${failed} FAILED` : "\nall end-to-end checks passed");
 process.exit(failed ? 1 : 0);

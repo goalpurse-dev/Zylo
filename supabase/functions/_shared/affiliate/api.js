@@ -143,26 +143,45 @@ export function createAffiliateHandler({ sb, getUser, adminEmails = [], salt = "
     };
   }
 
-  async function claim(user, req, { code, source }) {
+  /** false when this IP or account has checked too many codes this minute (the call is then not counted). */
+  async function rateOk(req, user) {
+    const ip = await ipHashOf(req);
+    const keys = [ip ? `ip:${ip}` : null, user ? `user:${user.id}` : null].filter(Boolean);
+    if (!keys.length) return true;
+    return must(await sb.rpc("affiliate_rate_ok", { p_keys: keys, p_max: cfg.codeChecksPerMinute, p_window_seconds: 60 }), "rate limit") === true;
+  }
+
+  async function claim(user, req, { code, source, platform }) {
     const src = source === "link" ? "link" : "code";
     const c = cleanCode(code, cfg);
     if (!c || codeProblem(c, cfg)) return { result: "unknown_code" };
+    // typed codes are rate-limited; the stored link's one automatic claim is not a guess
+    if (src === "code" && !(await rateOk(req, user))) return { result: "rate_limited" };
     const r = must(await sb.rpc("affiliate_claim", {
       p_user_id: user.id, p_code: c, p_source: src, p_ip_hash: await ipHashOf(req), p_window_days: cfg.claimWindowDays,
       p_bonus_credits: cfg.signupBonusCredits, p_link_bonus: cfg.linkSignupBonus, p_flag_same_ip: cfg.flagSameIp, p_max_per_ip: cfg.maxReferralsPerIp,
+      p_platform: cfg.creatorPlatforms.includes(platform) ? platform : null, p_ip_bonus_days: cfg.ipBonusCooldownDays,
     }), "claim");
-    return { result: r?.result, displayName: r?.display_name ?? null, code: r?.code ?? null, bonusCredits: n(r?.bonus_credits) };
+    return { result: r?.result, displayName: r?.display_name ?? null, code: r?.code ?? null, bonusCredits: n(r?.bonus_credits), bonusSkipped: r?.bonus_skipped ?? null };
   }
 
   /* ---------- admin ---------- */
   async function adminOverview() {
     must(await sb.rpc("affiliate_release_due", { p_affiliate_id: null }), "release due");
-    const [affs, statRows, flagged, recentPayouts] = await Promise.all([
+    const [affs, statRows, flagged, recentPayouts, platformRows] = await Promise.all([
       sb.from("affiliates").select("*").order("created_at", { ascending: false }).limit(1000),
       sb.rpc("affiliate_stats", { p_affiliate_id: null }),
       sb.from("referrals").select("id, affiliate_id, referred_user_id, source, flag_reason, created_at, ip_hash").eq("flagged", true).eq("review_status", "none").order("created_at", { ascending: false }).limit(200),
       sb.from("payouts").select("id, affiliate_id, amount, credits, method, reference, paid_to, paid_at").neq("method", "credits").order("paid_at", { ascending: false }).limit(50),
+      sb.from("referrals").select("affiliate_id, platform").neq("review_status", "rejected").limit(50000),
     ]);
+    // where each creator's sign-ups came from: the platform picked in the survey, or "other" (link without it)
+    const platforms = new Map();
+    for (const r of must(platformRows, "platforms") ?? []) {
+      const m = platforms.get(r.affiliate_id) ?? { tiktok: 0, youtube: 0, instagram: 0, other: 0 };
+      m[r.platform ?? "other"] = (m[r.platform ?? "other"] ?? 0) + 1;
+      platforms.set(r.affiliate_id, m);
+    }
     const list = must(affs, "affiliates") ?? [];
     const byId = new Map((must(statRows, "stats") ?? []).map((r) => [r.affiliate_id, r]));
     const emails = await emailsFor([...list.map((a) => a.user_id), ...(must(flagged, "flagged") ?? []).map((f) => f.referred_user_id)]);
@@ -174,6 +193,7 @@ export function createAffiliateHandler({ sb, getUser, adminEmails = [], salt = "
         cashRate: n(a.cash_rate), creditRate: n(a.credit_rate), payoutType: a.payout_type, payoutMethod: a.payout_method, payoutEmail: a.payout_email,
         clicks: n(s.clicks), signups: n(s.signups), buyers: n(s.buyers), flagged: n(s.flagged),
         pendingCents: n(s.pending_cents), availableCents: n(s.available_cents), paidCents: n(s.paid_cents), createdAt: a.created_at, note: a.admin_note,
+        platforms: platforms.get(a.id) ?? { tiktok: 0, youtube: 0, instagram: 0, other: 0 },
       };
     });
     const codeOf = new Map(list.map((a) => [a.id, a.code]));
@@ -234,6 +254,7 @@ export function createAffiliateHandler({ sb, getUser, adminEmails = [], salt = "
     if (action === "lookup") {
       const c = cleanCode(body.code, cfg);
       if (!c || codeProblem(c, cfg)) return { valid: false };
+      if (!(await rateOk(req, user))) return { valid: false, reason: "rate_limited" };
       const a = await affiliateByCode(c);
       if (!a || a.status !== "active") return { valid: false };
       if (user && a.user_id === user.id) return { valid: false, reason: "self" };

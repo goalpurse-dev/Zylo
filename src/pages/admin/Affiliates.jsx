@@ -13,6 +13,9 @@ import NotFoundRedirect from "../../components/NotFoundRedirect";
 
 const when = (iso) => (iso ? new Date(iso).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "–");
 const pctOf = (r) => `${Math.round(Number(r) * 100)}%`;
+// "TikTok 12 · YouTube 3 · link 4": the platform each sign-up picked in the survey ("link": came by link, no platform given)
+const PLATFORM_NAMES = { tiktok: "TikTok", youtube: "YouTube", instagram: "IG", other: "link" };
+const platformLine = (p = {}) => Object.entries(PLATFORM_NAMES).filter(([k]) => p[k] > 0).map(([k, label]) => `${label} ${p[k]}`).join(" · ");
 
 function Card({ title, right, children, testid }) {
   return (
@@ -49,7 +52,9 @@ function AffiliateRow({ a, onChanged }) {
         <td className="px-2 py-2 font-black tracking-wide text-white">{a.code}</td>
         <td className="px-2 py-2 text-white/70"><div>{a.displayName}</div><div className="text-[11.5px] text-white/40">{a.email ?? "–"}</div></td>
         <td className="px-2 py-2 text-right tabular-nums">{a.clicks}</td>
-        <td className="px-2 py-2 text-right tabular-nums">{a.signups}</td>
+        <td className="px-2 py-2 text-right tabular-nums">{a.signups}
+          {a.signups > 0 && <div className="whitespace-nowrap text-[11px] text-white/40" title="Where their sign-ups heard about Zyvo">{platformLine(a.platforms)}</div>}
+        </td>
         <td className="px-2 py-2 text-right tabular-nums">{a.buyers}</td>
         <td className="px-2 py-2 text-right tabular-nums">{eur(a.pendingCents, { decimals: 2 })}</td>
         <td className="px-2 py-2 text-right tabular-nums text-lime-200">{eur(a.availableCents, { decimals: 2 })}</td>

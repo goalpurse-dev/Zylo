@@ -40,6 +40,12 @@ export const AFFILIATE = Object.freeze({
   codeEditsAllowed: 1,
   flagSameIp: true,
   maxReferralsPerIp: 2,
+  // code checks (live lookups + claims) allowed per minute, per hashed IP and per account
+  codeChecksPerMinute: 10,
+  // the same hashed IP gets creator credits once in this many days (later sign-ups still count for the creator)
+  ipBonusCooldownDays: 7,
+  // "Where did you hear about Zyvo?" answers that ask for the creator's code
+  creatorPlatforms: Object.freeze(["tiktok", "youtube", "instagram"]),
   currency: "EUR",
   siteUrl: "https://tryzyvo.com",
   // the "10 people buy Pro" example on the page (the Pro price is read live; this is the fallback)

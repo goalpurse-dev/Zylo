@@ -87,14 +87,21 @@ test("navigation: sidebar Affiliate + Earn badge; mobile Home · Short · Long �
   assert.match(nav, /active=\{moreOpen \|\| \(!anyMenuOpen && moreRouteActive\)\}/, "More is active on Creations and Affiliate");
 });
 
-test("survey: the creator-code step, skippable, prefilled from the link; typed code wins", () => {
+test("survey: the creator code is a follow-up for TikTok / YouTube / Instagram only; skippable, prefilled, typed code wins", () => {
   const step = read("src/components/onboarding/CreatorCodeStep.jsx");
-  assert.match(step, /Which creator sent you\?/);
+  assert.match(step, /Which creator\? Enter their code and get \{AFFILIATE\.signupBonusCredits\} starting credits/);
+  assert.match(step, /We couldn't find that creator/);
   assert.match(step, /useState\(stored\.current \?\? ""\)/, "prefilled from the ?ref link");
   assert.match(step, /data-testid="creator-code-skip"/);
   assert.match(step, /const source = stored\.current && stored\.current === code \? "link" : "code"/);
+  assert.match(step, /affiliateApi\("claim", \{ code, source, platform \}\)/, "the platform is saved on the referral");
   const survey = read("src/components/onboarding/OnboardingSurvey.jsx");
-  assert.match(survey, /4: <CreatorCodeStep/);
+  assert.match(survey, /Where did you hear about Zyvo\?/);
+  assert.deepEqual([...survey.matchAll(/\{ id: "(\w+)", (?:brand|icon)[^}]*label: "([^"]+)" \}/g)].slice(-6).map((m) => m[2]), ["TikTok", "YouTube", "Instagram", "A friend", "Google", "Other"]);
+  assert.match(survey, /AFFILIATE\.creatorPlatforms\.includes\(heardFrom\) && \(\s*<CreatorFollowUp/);
+  assert.deepEqual([...AFFILIATE.creatorPlatforms], ["tiktok", "youtube", "instagram"]);
+  assert.equal(AFFILIATE.codeChecksPerMinute, 10);
+  assert.equal(AFFILIATE.ipBonusCooldownDays, 7);
 });
 
 test("the webhook: commission on the first payment, reversal on refund/dispute, skipped if not installed", () => {

@@ -15,7 +15,7 @@ export const FUNNEL_STEPS = Object.freeze([
 const LABELS = {
   goals: { faceless: "Faceless TikTok, Reels or Shorts", longform: "Long-form YouTube videos", business: "My business or brand", exploring: "Just exploring" },
   experience: { never: "Never", few: "A few", regular: "I post regularly" },
-  heard: { tiktok_creator: "TikTok creator", tiktok_ad: "TikTok ad", instagram: "Instagram", youtube: "YouTube", google: "Google", friend: "Friend", other: "Other" },
+  heard: { tiktok: "TikTok", tiktok_creator: "TikTok creator", tiktok_ad: "TikTok ad", instagram: "Instagram", youtube: "YouTube", google: "Google", friend: "Friend", other: "Other" },
   buttons: { finish: "Finish my video", compare: "Compare plans", explore: "Explore Zyvo first" },
 };
 // "What do you hope Zyvo will help you create?": a simple grouping by words. A wish can land in more than one group.
