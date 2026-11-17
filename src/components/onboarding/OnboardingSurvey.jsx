@@ -2,11 +2,13 @@
 // (The step layout and answer cards grew out of the old EmailConsentModal.)
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { ArrowLeft, Briefcase, Check, Clapperboard, Compass, Film, Megaphone, MoreHorizontal, Rocket, Smartphone, Sprout, Users } from "lucide-react";
+import { ArrowLeft, Briefcase, Check, Clapperboard, Compass, Film, MoreHorizontal, Rocket, Smartphone, Sprout, Users } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
 import { EMAIL_CONSENT_TEXT, rememberSurveyGoals, requestWelcomeEmail, trackFunnel } from "../../lib/onboarding";
 import { BrandLogo } from "./brandLogos.jsx";
 import BuildingPlan from "./BuildingPlan.jsx";
+import CreatorFollowUp from "./CreatorCodeStep.jsx";
+import { AFFILIATE } from "../../../supabase/functions/_shared/affiliate/config.js";
 import "./onboarding.css";
 
 const GOALS = [
@@ -20,13 +22,13 @@ const EXPERIENCE = [
   { id: "few", icon: Film, label: "A few" },
   { id: "regular", icon: Rocket, label: "I post regularly" },
 ];
+// TikTok, YouTube and Instagram ask the follow-up "Which creator?" (AFFILIATE.creatorPlatforms).
 const HEARD = [
-  { id: "tiktok_creator", brand: "tiktok", label: "TikTok creator" },
-  { id: "tiktok_ad", icon: Megaphone, label: "TikTok ad" },
-  { id: "instagram", brand: "instagram", label: "Instagram" },
+  { id: "tiktok", brand: "tiktok", label: "TikTok" },
   { id: "youtube", brand: "youtube", label: "YouTube" },
+  { id: "instagram", brand: "instagram", label: "Instagram" },
+  { id: "friend", icon: Users, label: "A friend" },
   { id: "google", brand: "google", label: "Google" },
-  { id: "friend", icon: Users, label: "Friend" },
   { id: "other", icon: MoreHorizontal, label: "Other" },
 ];
 const TOTAL = 5;
@@ -59,7 +61,7 @@ export default function OnboardingSurvey({ onDone, preview = false, withPlan = t
   const [goals, setGoals] = useState([]);
   const [experience, setExperience] = useState(null);
   const [heardFrom, setHeardFrom] = useState(null);
-  const [creator, setCreator] = useState("");
+  const [creator, setCreator] = useState(""); // the creator code applied in the follow-up, also saved as the survey's heard_creator
   const [hope, setHope] = useState("");
   const [consent, setConsent] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -76,7 +78,7 @@ export default function OnboardingSurvey({ onDone, preview = false, withPlan = t
     setSaving(true);
     trackFunnel(skipped ? "survey_skipped" : "survey_completed", skipped ? { atStep: step } : {});
     const { error } = await supabase.rpc("save_onboarding_survey", {
-      p_goals: goals, p_experience: experience, p_heard_from: heardFrom, p_heard_creator: heardFrom === "tiktok_creator" ? creator.trim() || null : null,
+      p_goals: goals, p_experience: experience, p_heard_from: heardFrom, p_heard_creator: creator.trim() || null,
       p_email_consent: consent, p_consent_text: consent ? EMAIL_CONSENT_TEXT : null, p_skipped: skipped, p_hope: skipped ? null : hope.trim() || null,
     });
     if (error) console.error("survey not saved:", error.message); // the flow goes on: a lost answer must not stop anyone
@@ -109,17 +111,12 @@ export default function OnboardingSurvey({ onDone, preview = false, withPlan = t
     ),
     3: (
       <>
-        <h1 className="text-[27px] font-black leading-tight tracking-tight text-white sm:text-[32px]">How did you hear about Zyvo?</h1>
+        <h1 className="text-[27px] font-black leading-tight tracking-tight text-white sm:text-[32px]">Where did you hear about Zyvo?</h1>
         <div className="mt-5 grid gap-2 sm:grid-cols-2">
-          {HEARD.map((h) => <AnswerCard key={h.id} {...h} testId={`heard-${h.id}`} picked={heardFrom === h.id} onClick={() => { setHeardFrom(h.id); answered("heard_from", h.id); if (h.id !== "tiktok_creator") setStep(4); }} />)}
+          {HEARD.map((h) => <AnswerCard key={h.id} {...h} testId={`heard-${h.id}`} picked={heardFrom === h.id} onClick={() => { setHeardFrom(h.id); answered("heard_from", h.id); if (!AFFILIATE.creatorPlatforms.includes(h.id)) setStep(4); }} />)}
         </div>
-        {heardFrom === "tiktok_creator" && (
-          <div className="mt-4">
-            <label htmlFor="survey-creator" className="text-[13px] font-semibold text-white/60">Which creator? (optional)</label>
-            <input id="survey-creator" value={creator} maxLength={120} onChange={(e) => setCreator(e.target.value)} data-testid="survey-creator"
-              className="mt-1.5 h-12 w-full rounded-xl border border-white/10 bg-white/[0.05] px-4 text-[15px] text-white outline-none focus:border-lime-300/60" />
-            <button type="button" data-testid="survey-next" onClick={() => { if (creator.trim()) answered("heard_creator", creator.trim()); setStep(4); }} className="mt-3 min-h-[54px] w-full rounded-2xl bg-lime-300 text-[16px] font-black text-[#11150D] transition hover:bg-lime-200">Next</button>
-          </div>
+        {AFFILIATE.creatorPlatforms.includes(heardFrom) && (
+          <CreatorFollowUp platform={heardFrom} preview={preview} onAnswered={(a, c) => { answered("creator_code", a); if (c) setCreator(c); }} onNext={() => setStep(4)} />
         )}
       </>
     ),

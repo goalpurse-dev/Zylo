@@ -1,6 +1,8 @@
 import { useEffect, useState, isValidElement } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Clapperboard, Home, Folder, LayoutGrid, Sparkles, X } from "lucide-react";
+import { ChevronRight, Clapperboard, Home, Folder, HandCoins, LayoutGrid, Menu, Sparkles, X } from "lucide-react";
+import EarnBadge from "../affiliate/EarnBadge.jsx";
+import { AFFILIATE_PATH } from "../../lib/affiliate";
 import { createPortal } from "react-dom";
 import MobileCreateMenu, { WORKSPACE_TOOLS } from "./CreateMenu";
 import { BLOCKY_STORIES_PATH } from "../../data/blockyStories";
@@ -117,6 +119,69 @@ function CenteredActionMenu({ open, onClose, title, items, columns = 3 }) {
   );
 }
 
+/* ─── More: a bottom sheet with large rows ───────────────────────────────── */
+const MORE_ITEMS = [
+  { id: "creations", label: "Creations", sub: "Everything you've made", path: "/workspace/creations", icon: Folder },
+  { id: "affiliate", label: "Affiliate", sub: "Share your code, get paid", path: AFFILIATE_PATH, icon: HandCoins, earn: true },
+];
+
+function MoreSheet({ open, onClose }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const onKey = (event) => { if (event.key === "Escape") onClose(); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
+  if (!open) return null;
+  return createPortal(
+    // Above the bottom nav (z-100), which stays visible with More lit up; the backdrop stops at the nav too.
+    <div className="fixed inset-x-0 top-0 z-[99] lg:hidden" style={{ bottom: "calc(78px + env(safe-area-inset-bottom))" }} role="presentation">
+      <button type="button" aria-label="Close More menu" className="absolute inset-0 bg-black/70 backdrop-blur-[7px]" onClick={onClose} />
+      <section
+        role="dialog"
+        aria-label="More"
+        className="absolute inset-x-0 bottom-0 overflow-hidden rounded-t-[26px] border-t border-white/[0.1] bg-[#121416] px-4 pb-4 pt-2.5 shadow-[0_-22px_70px_rgba(0,0,0,.55)]"
+        style={{ animation: "zyvoMoreSheetIn 220ms cubic-bezier(.2,.8,.2,1) both" }}
+        data-testid="more-sheet"
+      >
+        <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-white/15" aria-hidden="true" />
+        <div className="mb-3 flex items-center justify-between px-1">
+          <p className="text-[16px] font-bold tracking-[-0.02em] text-white">More</p>
+          <button type="button" aria-label="Close More menu" onClick={onClose}
+            className="grid h-9 w-9 place-items-center rounded-full border border-white/[0.08] bg-white/[0.05] text-white/60 transition active:scale-90">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="grid gap-2">
+          {MORE_ITEMS.map((item) => {
+            const active = location.pathname.startsWith(item.path);
+            const Icon = item.icon;
+            return (
+              <button key={item.id} type="button" onClick={() => { onClose(); navigate(item.path); }} aria-current={active ? "page" : undefined} data-testid={`more-${item.id}`}
+                className={`flex min-h-[68px] w-full items-center gap-3.5 rounded-[18px] border px-3.5 py-3 text-left transition active:scale-[0.98] ${active ? "border-lime-300/40 bg-lime-300/[0.08]" : "border-white/[0.08] bg-white/[0.035]"}`}>
+                <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-[14px] border ${active ? "border-lime-300/30 bg-lime-300/[0.1] text-lime-300" : "border-white/[0.09] bg-black/20 text-white"}`}>
+                  <Icon className="h-[22px] w-[22px]" strokeWidth={1.9} />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-center gap-2 text-[15.5px] font-bold text-white">{item.label}{item.earn && <EarnBadge />}</span>
+                  <span className="mt-0.5 block text-[12.5px] text-white/45">{item.sub}</span>
+                </span>
+                <ChevronRight className="h-4 w-4 shrink-0 text-white/25" />
+              </button>
+            );
+          })}
+        </div>
+        <style>{`@keyframes zyvoMoreSheetIn { from { transform: translateY(24px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }`}</style>
+      </section>
+    </div>,
+    document.body,
+  );
+}
+
 /* ─── Nav item ───────────────────────────────────────────────────────────── */
 function NavItem({ name, icon: Icon, iconSrc, active, onClick, expanded, badge }) {
   return (
@@ -176,7 +241,9 @@ export default function MobileBottomNav({ hidden }) {
     location.pathname.startsWith("/workspace/ai-cooking-matic") ||
     location.pathname.startsWith("/workspace/kit-swap") ||
     location.pathname.startsWith("/workspace/behind-the-scenes");
-  const anyMenuOpen = createOpen || workspaceOpen;
+  const [moreOpen, setMoreOpen] = useState(false);
+  const anyMenuOpen = createOpen || workspaceOpen || moreOpen;
+  const moreRouteActive = MORE_ITEMS.some((item) => location.pathname.startsWith(item.path));
   const workspaceRouteActive =
     location.pathname.startsWith("/workspace/image-generator") ||
     location.pathname.startsWith("/workspace/video-generator");
@@ -185,6 +252,7 @@ export default function MobileBottomNav({ hidden }) {
     const openCreate = () => {
       if (window.matchMedia("(min-width: 1024px)").matches) return;
       setWorkspaceOpen(false);
+      setMoreOpen(false);
       setCreateOpen(true);
     };
     window.addEventListener("zyvo:open-create-menu", openCreate);
@@ -205,6 +273,7 @@ export default function MobileBottomNav({ hidden }) {
         items={WORKSPACE_TOOLS}
         columns={2}
       />
+      <MoreSheet open={moreOpen} onClose={() => setMoreOpen(false)} />
       <div
         className={`ftg-bottom-nav fixed bottom-0 left-0 right-0 z-[100] border-t border-white/[0.08] bg-[linear-gradient(180deg,#1b1d1f_0%,#17191b_100%)] shadow-[0_-18px_45px_rgba(0,0,0,.28)] transition-opacity duration-300 lg:hidden ${
           hidden ? "opacity-0 pointer-events-none" : "opacity-100"
@@ -228,7 +297,7 @@ export default function MobileBottomNav({ hidden }) {
             name="Home"
             icon={Home}
             active={!anyMenuOpen && location.pathname === "/"}
-            onClick={() => { setCreateOpen(false); setWorkspaceOpen(false); navigate("/"); }}
+            onClick={() => { setMoreOpen(false); setCreateOpen(false); setWorkspaceOpen(false); navigate("/"); }}
           />
 
           {/* Short Form — same orb everywhere, raised only on Home */}
@@ -237,7 +306,7 @@ export default function MobileBottomNav({ hidden }) {
             icon={Sparkles}
             active={createOpen || (!anyMenuOpen && createActive)}
             expanded={createOpen}
-            onClick={() => { setWorkspaceOpen(false); setCreateOpen((value) => !value); }}
+            onClick={() => { setMoreOpen(false); setWorkspaceOpen(false); setCreateOpen((value) => !value); }}
           />
 
           {/* Long Form */}
@@ -246,7 +315,7 @@ export default function MobileBottomNav({ hidden }) {
             icon={Clapperboard}
             active={!anyMenuOpen && location.pathname.startsWith("/long-form")}
             badge={isLongFormNew()}
-            onClick={() => { setCreateOpen(false); setWorkspaceOpen(false); if (!location.pathname.startsWith("/long-form")) trackLaunch("nav_long_form", { placement: "mobile_nav" }); navigate("/long-form"); }}
+            onClick={() => { setMoreOpen(false); setCreateOpen(false); setWorkspaceOpen(false); if (!location.pathname.startsWith("/long-form")) trackLaunch("nav_long_form", { placement: "mobile_nav" }); navigate("/long-form"); }}
           />
 
           {/* Tools */}
@@ -254,15 +323,16 @@ export default function MobileBottomNav({ hidden }) {
             name="Tools"
             icon={LayoutGrid}
             active={workspaceOpen || (!anyMenuOpen && workspaceRouteActive)}
-            onClick={() => { setCreateOpen(false); setWorkspaceOpen((value) => !value); }}
+            onClick={() => { setMoreOpen(false); setCreateOpen(false); setWorkspaceOpen((value) => !value); }}
           />
 
-          {/* Creations */}
+          {/* More: Creations and Affiliate, in a bottom sheet */}
           <NavItem
-            name="Creations"
-            icon={Folder}
-            active={!anyMenuOpen && location.pathname.startsWith("/workspace/creations")}
-            onClick={() => { setCreateOpen(false); setWorkspaceOpen(false); navigate("/workspace/creations"); }}
+            name="More"
+            icon={Menu}
+            active={moreOpen || (!anyMenuOpen && moreRouteActive)}
+            expanded={moreOpen}
+            onClick={() => { setCreateOpen(false); setWorkspaceOpen(false); setMoreOpen((value) => !value); }}
           />
 
         </div>

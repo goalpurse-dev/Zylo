@@ -151,7 +151,7 @@ test("the funnel: distinct people of the period's sign-ups, drop-off between ste
 
 test("the survey's last question: optional, saved, every answer on the dashboard newest first, grouped by words", () => {
   const survey = read("src/components/onboarding/OnboardingSurvey.jsx");
-  assert.match(survey, /const TOTAL = 5/);
+  assert.match(survey, /const TOTAL = 5/); // the creator code is a follow-up inside step 3, not a step
   assert.match(survey, /What do you hope Zyvo will help you create\?/);
   assert.match(survey, /HOPE_PLACEHOLDER = "Faceless videos for my TikTok about history"/);
   assert.match(survey, /data-testid="survey-hope-skip"/);

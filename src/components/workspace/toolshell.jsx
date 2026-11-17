@@ -1,6 +1,8 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { createElement, useEffect, useState } from "react";
-import { ChevronRight, Clapperboard, DollarSign, Folder, Home, LayoutGrid, Pin, Sparkles, TrendingUp } from "lucide-react";
+import { ChevronRight, Clapperboard, DollarSign, Folder, HandCoins, Home, LayoutGrid, Pin, Sparkles, TrendingUp } from "lucide-react";
+import EarnBadge from "../affiliate/EarnBadge.jsx";
+import { AFFILIATE_PATH } from "../../lib/affiliate";
 import Logo from "../../assets/logo-mark.webp";
 import { optImg } from "../../lib/optImage";
 import { ALL_PINNABLE_TOOLS, DesktopCreatePanel, DesktopWorkspacePanel, useShortFormTools } from "./CreateMenu";
@@ -30,7 +32,7 @@ function getInitialPinnedTools() {
   }
 }
 
-function NavItem({ icon, iconSrc, label, active, onClick, badge }) {
+function NavItem({ icon, iconSrc, label, active, onClick, badge, earn }) {
   return (
     <button
       onClick={onClick}
@@ -43,6 +45,7 @@ function NavItem({ icon, iconSrc, label, active, onClick, badge }) {
       </span>
       <span className="text-[13.5px] font-semibold">{label}</span>
       {badge && <NewBadge className="ml-auto" />}
+      {earn && <EarnBadge className="ml-auto" />}
     </button>
   );
 }
@@ -202,6 +205,14 @@ export default function ToolShell({ onClose }) {
               label="Earnings"
               active={!anyPanelOpen && isActive("/workspace/earnings")}
               onClick={() => go("/workspace/earnings")}
+            />
+
+            <NavItem
+              icon={HandCoins}
+              label="Affiliate"
+              earn
+              active={!anyPanelOpen && isActive(AFFILIATE_PATH)}
+              onClick={() => go(AFFILIATE_PATH)}
             />
 
             <NavItem

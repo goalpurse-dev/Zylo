@@ -5,6 +5,15 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { FIRST_VIDEO_PATH, beginAdminPreview, fetchOnboardingStatus, localOnboardingTest, takeSignupRoute, trackFunnel } from "../../lib/onboarding";
 import { hasCheckoutIntent } from "../../lib/payments";
+import { toast } from "sonner";
+import { claimFromStoredRef } from "../../lib/affiliate";
+
+// A new account that came through a creator's ?ref link and didn't type a code (no survey, or skipped it):
+// the link's creator, and the sign-up credits. The server refuses old or paying accounts, so this is safe anywhere.
+async function claimLink() {
+  const r = await claimFromStoredRef();
+  if (r?.result === "claimed" && r.bonusCredits > 0) toast.success(`+${r.bonusCredits} free credits from ${r.displayName ?? "your creator"}'s code`);
+}
 
 const OnboardingSurvey = lazy(() => import("./OnboardingSurvey.jsx"));
 const NEW_ACCOUNT_MS = 10 * 60 * 1000;
@@ -68,7 +77,11 @@ export default function OnboardingGate() {
     // Someone on their way to Stripe pays first: they answer when they are back.
     if (hasCheckoutIntent()) return undefined;
     let live = true;
-    fetchOnboardingStatus(userId).then((status) => { if (live && status.enrolled && !status.surveyDone) setShowSurvey(true); });
+    fetchOnboardingStatus(userId).then((status) => {
+      if (!live) return;
+      if (status.enrolled && !status.surveyDone) setShowSurvey(true);
+      else claimLink();
+    });
     return () => { live = false; };
   }, [userId, loading, location.pathname]);
 
@@ -78,6 +91,7 @@ export default function OnboardingGate() {
       <OnboardingSurvey preview={previewSurvey} withPlan={previewSurvey || !location.pathname.startsWith("/long-form")} onDone={() => {
         setShowSurvey(false);
         if (previewSurvey) { navigate(FIRST_VIDEO_PATH); return; }
+        claimLink();
         fetchOnboardingStatus(userId, { fresh: true });
         // Long Form keeps its own free preview, already on its way: no tutorial on top of it.
         if (!location.pathname.startsWith("/long-form")) navigate(FIRST_VIDEO_PATH);
