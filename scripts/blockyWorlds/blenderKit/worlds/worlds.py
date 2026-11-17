@@ -1690,9 +1690,9 @@ def zw_spot(cam, place, spot, t0, t1, push=0.08, lens=None):
 # ---------------------------------------------------------------- GIANT CAMERA RULES (owner 2026-11-14)
 # Growing / shrinking characters: zw_grow scales a character over a shot (feet stay on the ground). zw_giant_cam gives a
 # SAFE camera for a character of any size: distance and height scale with the size, the face framed from outside with
-# a longer lens, never closer than the head's own size. zw_cam_guard BLOCKS any shot whose camera is inside or touching a
-# character's body (every 6th frame + the last; world bounding box of the character's meshes, scale animation included):
-# the shot fails with "CAMERA INSIDE A CHARACTER" and goes to the fix round.
+# a longer lens, never closer than the head's own size. zw_cam_guard MOVES a camera that is inside or touching a
+# character's body back out along its own view (every 6th frame + the last; world bounding box of the character's
+# meshes, scale animation included): a camera rule fixes the shot, it never fails it (owner 2026-11-18).
 def zw_grow(ch, t0, t1, s0, s1, interp="BEZIER"):
     """the character's size from s0 to s1 between t0 and t1 (1.0 = a kid, 5.2 tall)"""
     ch.root.scale = (s0, s0, s0)
@@ -1748,20 +1748,52 @@ def zw_cast_boxes():
 
 
 def zw_cam_guard(t0, t1, step=6):
-    """BLOCK the shot if the camera is inside or touching any character's body at any checked frame"""
+    """THE CAMERA NEVER INSIDE A BODY (owner 2026-11-18: camera rules FIX a shot, they never fail it): at the checked frames
+    a camera inside or touching a character's box is moved BACK along its own view (the nearest clear point behind it,
+    0.25 at a time, at most 12 units) and keyed there. A camera that cannot be moved (driven by a constraint) is left
+    as it is with a warning: the checker then judges the frame. Never raises."""
     sc = bpy.context.scene
-    if sc.camera is None:
-        return
+    cam = sc.camera
+    if cam is None:
+        return 0
     f0, f1 = F(t0), max(F(t0), F(t1) - 1)
-    frames = list(range(f0, f1 + 1, step)) + [f1]
+    frames = sorted(set(list(range(f0, f1 + 1, step)) + [f1]))
+    moved = 0
     for f in frames:
         sc.frame_set(f)
-        c = sc.camera.matrix_world.translation
+        boxes = []
         for name, lo, hi in zw_cast_boxes():
             m = 0.12 * max(1.0, (hi.z - lo.z) / 5.2)
-            if lo.x - m <= c.x <= hi.x + m and lo.y - m <= c.y <= hi.y + m and lo.z - m <= c.z <= hi.z + m:
-                raise RuntimeError("CAMERA INSIDE A CHARACTER: the camera at (%.1f, %.1f, %.1f) is inside %s's body at frame %d; pull it back (zw_giant_cam)" % (c.x, c.y, c.z, name, f))
+            boxes.append((name, lo - Vector((m, m, m)), hi + Vector((m, m, m))))
+        inside = lambda p: [n for n, lo, hi in boxes if lo.x <= p.x <= hi.x and lo.y <= p.y <= hi.y and lo.z <= p.z <= hi.z]
+        c = cam.matrix_world.translation.copy()
+        hit = inside(c)
+        if not hit:
+            continue
+        back = cam.matrix_world.to_3x3() @ Vector((0.0, 0.0, 1.0))   # the camera looks down -Z: +Z is behind it
+        back.normalize()
+        p = c.copy()
+        for _ in range(48):
+            p = p + back * 0.25
+            if not inside(p):
+                break
+        if inside(p):
+            print("zw_cam_guard: frame %d: no clear point behind the camera inside %s (left as it is)" % (f, ", ".join(hit)))
+            continue
+        try:
+            new = cam.parent.matrix_world.inverted() @ p if cam.parent else p
+            cam.location = new
+            cam.keyframe_insert("location", frame=f)
+            sc.frame_set(f)
+            if (cam.matrix_world.translation - p).length > 0.05:
+                print("zw_cam_guard: frame %d: the camera is driven (constraint), not moved" % f)
+                continue
+            moved += 1
+            print("zw_cam_guard: frame %d: camera moved %.1f back out of %s" % (f, (p - c).length, ", ".join(hit)))
+        except Exception as e:   # never fails a shot
+            print("zw_cam_guard: frame %d: could not move the camera (%s)" % (f, e))
     sc.frame_set(f0)
+    return moved
 
 
 def zw_box_of(o):

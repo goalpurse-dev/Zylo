@@ -139,7 +139,11 @@ const finishMax = () => finishLimitS({ dur });
 // left (fitLimits) before any chunk goes out.
 const CHECK_USD = 0.09; // the measured checker call ($0.059 for 76 shots on 5 sheets) x the margin
 const finalEst = () => finalEstimate({ frames: Math.round(dur * 30), chunks: K, dur });
+// --stop-after-check (the Milo golden STILLS test, golden/miloStills.mjs): only the first previews + the checker + the
+// render gate's verdict; no fix rounds, no final: nothing else is reserved
+const STOP_AFTER_CHECK = has("stop-after-check");
 const reserve = (kind = "agent") => {
+  if (STOP_AFTER_CHECK) return (state.previewed ? 0 : previewEstimate({ shots: Math.round((dur / 60) * 55), jobs: 3 })) + (kind === "agent_check" ? 0 : CHECK_USD);
   const roundsLeft = Math.max(0, ROUNDS - (state.round ?? 0));
   const nFix = Math.max(20, Object.keys(state.failing ?? {}).length);
   const checks = (state.previewed ? 0 : 1) + roundsLeft - (kind === "agent_check" ? 1 : 0);
@@ -468,6 +472,14 @@ if (!state.previewed) {
   state.failing = failing; save();
   say(`round 0: ${plan.shots.length} shots previewed: ${Object.keys(p.failed).length} crashed, ${Object.keys(p.pixBad).length} pixel, ${Object.keys(vis).length} vision -> ${Object.keys(failing).length} to fix`);
 } else failing = state.failing ?? {};
+if (STOP_AFTER_CHECK) {
+  // the golden stills verdict: what the checker says of the plan as it renders today, and what the render gate would do
+  const g = renderGate({ shots: plan.shots, failing });
+  const verdict = { shots: plan.shots.length, failing: Object.keys(failing).length, kinds: Object.values(failing).reduce((a, f) => ({ ...a, [f.kind]: (a[f.kind] ?? 0) + 1 }), {}), gate: { ok: g.ok, reason: g.reason, cut: g.cut, weak: g.weak, ignored: g.ignored.length, passShare: g.shareAfter }, reaimed: Object.keys(state.reaimed ?? {}).length, sheets: (state.rounds.at(-1)?.sheets ?? []), spentUsd: L.total() };
+  fs.writeFileSync(path.join(OUT, "golden-stills.json"), JSON.stringify(verdict, null, 1));
+  say(`STOP AFTER CHECK: ${verdict.failing} of ${verdict.shots} flagged ${JSON.stringify(verdict.kinds)}; gate ${g.ok ? "RENDER" : `BLOCK (${g.reason})`}; $${L.total().toFixed(3)}`);
+  process.exit(0);
+}
 
 function mergeProblems(p, vis) {
   const f = {};
