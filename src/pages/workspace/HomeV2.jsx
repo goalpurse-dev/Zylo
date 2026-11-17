@@ -7,9 +7,12 @@ import Glow from "../../components/workspace/Glow.jsx";
 import ZyvoSuiteCarousel from "../../components/workspace/ZyvoSuiteCarousel.jsx";
 import MadeWithZyvo from "../../components/home-v2/madeWithZyvo/MadeWithZyvo.jsx";
 import InThisTownLaunch from "../../components/home-v2/InThisTownLaunch.jsx";
+import RealThreeD from "../../components/home-v2/RealThreeD.jsx";
+import useBlockyWorldsAccess from "../../components/viral-tools/blocky-worlds/api/blockyWorldsAccess";
+import { showBlockyWorlds } from "../../data/blockyWorlds";
 import { FeaturedTemplate, HOME_MAX_W, JumpBackInV2, LongFormSection, PathCards, PhoneTemplates, PhoneTools, SectionHeader, TutorialsRow, WhatsNewRow, suiteTemplates } from "../../components/home-v2/HomeV2Sections.jsx";
 import { fetchShowcase } from "../../components/launch/launch";
-import { BLOCKY_TEMPLATE } from "../../data/homeContent";
+import { BLOCKY_TEMPLATE, TOWN_TEMPLATE } from "../../data/homeContent";
 import { BLOCKY_STORIES_FLAG, BLOCKY_STORIES_LAUNCHED } from "../../data/blockyStories";
 import { useFeatureFlag } from "../../lib/featureFlags";
 import { FREE_PLAN_LINE } from "../../data/freePlan.js";
@@ -31,7 +34,9 @@ export default function HomeV2() {
 
   const [phone, setPhone] = useState(false);
   useEffect(() => { setPhone(window.matchMedia("(max-width: 767px)").matches); }, []);
-  const templates = suiteTemplates(Date.now(), { blocky: blockyLive });
+  // In This Town: only for visitors the server lets see it (the same answer as its menu entry and Home block)
+  const townVisible = showBlockyWorlds(useBlockyWorldsAccess());
+  const templates = suiteTemplates(Date.now(), { blocky: blockyLive, town: townVisible });
 
   return (
     <div className="flex-1 pb-24 lg:pb-12">
@@ -50,6 +55,8 @@ export default function HomeV2() {
       <div className={`mx-auto w-full ${HOME_MAX_W}`}>
       <WhatsNewRow />
       <InThisTownLaunch />
+      {/* "Not AI slop. Real 3D worlds.": how an In This Town video is built (shown with In This Town only) */}
+      <RealThreeD />
 
       {/* Short Form: the "short form suite" coverflow is the templates section (owner, 2026-11-10: above Long Form) */}
       <div className="mt-12">
@@ -64,6 +71,9 @@ export default function HomeV2() {
       </div>
 
       <LongFormSection />
+
+      {/* In This Town's own section, the newest template first (shown with In This Town only) */}
+      {townVisible && <FeaturedTemplate template={TOWN_TEMPLATE} testId="featured-in-this-town" />}
 
       {/* Blocky Stories' own section, right above the featured template and built the same way (launched only). */}
       {blockyLive && <FeaturedTemplate template={BLOCKY_TEMPLATE} testId="featured-blocky" />}

@@ -240,13 +240,14 @@ test("Blocky is on Home while it is switched on for everyone (the global switch;
   assert.match(home, /const blockyLive = blockySwitch\.loading \? BLOCKY_STORIES_LAUNCHED : blockySwitch\.enabled;/);
   assert.equal(home.split("BLOCKY_TEMPLATE").length - 1, 2, "imported, and used once");
   assert.match(home, /\{blockyLive && <FeaturedTemplate template=\{BLOCKY_TEMPLATE\} testId="featured-blocky" \/>\}/);
-  assert.match(home, /const templates = suiteTemplates\(Date\.now\(\), \{ blocky: blockyLive \}\);/);
+  // (In This Town rides along with its own server-decided flag, 2026-11-17)
+  assert.match(home, /const templates = suiteTemplates\(Date\.now\(\), \{ blocky: blockyLive, town: townVisible \}\);/);
   assert.match(home, /items=\{templates\}/);
   // Its own section comes right before the featured one (Cartoon Drive By).
   assert.ok(home.indexOf("featured-blocky") < home.indexOf("<FeaturedTemplate />") && home.indexOf("featured-blocky") > home.indexOf("ZyvoSuiteCarousel title="));
   const sections = read("src/components/home-v2/HomeV2Sections.jsx");
-  assert.match(sections, /export function suiteTemplates\(now = Date\.now\(\), \{ blocky = false \} = \{\}\) \{/, "off unless asked for");
-  assert.match(sections, /const all = blocky \? \[\{ name: BLOCKY_TEMPLATE\.name, path: BLOCKY_TEMPLATE\.path, \.\.\.BLOCKY_TEMPLATE\.suite \}, \.\.\.TEMPLATES\] : TEMPLATES;/);
+  assert.match(sections, /export function suiteTemplates\(now = Date\.now\(\), \{ blocky = false, town = false \} = \{\}\) \{/, "off unless asked for");
+  assert.match(sections, /\.\.\.\(blocky \? \[\{ name: BLOCKY_TEMPLATE\.name, path: BLOCKY_TEMPLATE\.path, \.\.\.BLOCKY_TEMPLATE\.suite \}\] : \[\]\),\n    \.\.\.TEMPLATES,/);
   assert.doesNotMatch(sections.slice(sections.indexOf("const TEMPLATES = ["), sections.indexOf("];", sections.indexOf("const TEMPLATES = ["))), /blocky/i, "never in the list that always shows");
   const content = read("src/data/homeContent.js");
   const block = content.slice(content.indexOf("export const BLOCKY_TEMPLATE"));

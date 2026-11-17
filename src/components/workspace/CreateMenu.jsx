@@ -147,8 +147,8 @@ export const FLAGGED_CREATE_TOOLS = [
     label: BLOCKY_WORLDS_NAME,
     sublabel: "",
     path: BLOCKY_WORLDS_PATH,
-    preview: "/blocky-worlds/hero.jpg",
-    previewPosition: "object-top",
+    preview: "/media/how-its-built/in-this-town-card-9x16-clean.webp", // our Blender render (not the old engine's bus stop)
+    previewPosition: "object-center",
     color: "#bef264",
     enabled: false,
     after: "ai-fruit-story",

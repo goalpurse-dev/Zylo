@@ -16,10 +16,9 @@ import { CUTAWAY_PATH } from "../../data/cutawayExplainer";
 import { fetchUserLongFormProjects } from "../../pages/workspace/long-form/project";
 import { coverFor, fetchProjectCovers, projectTitle } from "../../pages/workspace/long-form/projectCovers";
 import { NeutralCover } from "../../pages/workspace/long-form/shared";
-import { BLOCKY_TEMPLATE, FEATURED_TEMPLATE, HIDDEN_TEMPLATES } from "../../data/homeContent";
+import { BLOCKY_TEMPLATE, FEATURED_TEMPLATE, HIDDEN_TEMPLATES, IN_THIS_TOWN_CARD, IN_THIS_TOWN_CARD_WIDE, TOWN_TEMPLATE } from "../../data/homeContent";
 import { optImg } from "../../lib/optImage";
 import cartoonDrivePreview from "../../assets/home/latest/image9.16-fast.webp";
-import shipClip from "../../assets/home/latest/video9.16-fast.mp4";
 
 const STORAGE = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/showcase`;
 // Served with the site, so they load even when the storage server can't be reached.
@@ -178,7 +177,8 @@ export function PathCards() {
         media={(
           <div className="grid h-full grid-cols-3 gap-1.5">
             <img {...optImg("/behind-the-scenes/poster.webp", "200px", 480)} alt="" className="h-full w-full object-cover" />
-            <LazyLoopVideo src={shipClip} poster={cartoonDrivePreview} className="h-full" />
+            {/* In This Town: our Blender render (owner, 2026-11-17: replaces the desert ship) */}
+            <img src={IN_THIS_TOWN_CARD} alt="" decoding="async" className="h-full w-full object-cover" />
             <img {...optImg("/viral-builder/ai-fruit/presets/kicked-out.webp", "200px", 480)} alt="" className="h-full w-full object-cover" />
           </div>
         )}
@@ -266,7 +266,7 @@ export function WhatsNewRow() {
   const cards = [
     <BannerCard key="lf" testId="wn-long-form" display="hidden md:block" art={<FanArt />} title="Long Form is here" sub="A full YouTube video from one idea" cta="Try it"
       to="/long-form" onClick={() => trackLaunch("try_long_form", { placement: "whats_new_row" })} />,
-    townVisible && <BannerCard key="town" testId="wn-in-this-town" art={<img src="/blocky-worlds/clips/street.jpg" alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />}
+    townVisible && <BannerCard key="town" testId="wn-in-this-town" art={<img src={IN_THIS_TOWN_CARD_WIDE} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />}
       title={BLOCKY_WORLDS_NAME} sub="Turn one strange town rule into a blocky story video." cta="Make a video" to={BLOCKY_WORLDS_PATH} />,
     // the thumbnail whole, in its own 16:9 shape on the right (never stretched or cropped to the card), a blurred copy
     // behind it, and the words on a dark fade on the left
@@ -472,8 +472,13 @@ const TEMPLATES = [
   { name: "Kit Swap", desc: "Swap a player's kit for any country", image: "/template/kit-swap/preview.png", path: "/workspace/kit-swap", addedAt: "2026-07-12" },
 ];
 // blocky: Blocky Stories is switched on for everyone. Its card then leads the row (the newest template).
-export function suiteTemplates(now = Date.now(), { blocky = false } = {}) {
-  const all = blocky ? [{ name: BLOCKY_TEMPLATE.name, path: BLOCKY_TEMPLATE.path, ...BLOCKY_TEMPLATE.suite }, ...TEMPLATES] : TEMPLATES;
+// town: the server lets this visitor see In This Town; its card goes first (the newest template of all).
+export function suiteTemplates(now = Date.now(), { blocky = false, town = false } = {}) {
+  const all = [
+    ...(town ? [{ name: TOWN_TEMPLATE.name, path: TOWN_TEMPLATE.path, ...TOWN_TEMPLATE.suite }] : []),
+    ...(blocky ? [{ name: BLOCKY_TEMPLATE.name, path: BLOCKY_TEMPLATE.path, ...BLOCKY_TEMPLATE.suite }] : []),
+    ...TEMPLATES,
+  ];
   return all.filter((t) => !HIDDEN_TEMPLATES.includes(t.name)).map((t) => ({ ...t, badge: t.addedAt && now - Date.parse(t.addedAt) < 30 * 86_400_000 ? "NEW" : null }));
 }
 
@@ -500,9 +505,10 @@ export function FeaturedTemplate({ template = FEATURED_TEMPLATE, testId = "featu
               </span>
             </div>
             <h2 className="text-[28px] font-black tracking-[-0.045em] text-white sm:text-[34px] md:text-[42px]">{t.name}</h2>
+            {t.pitch && <p className="mt-1.5 max-w-[60ch] text-[14.5px] text-white/70 md:text-[15.5px]">{t.pitch}</p>}
           </div>
           <ToolLink to={t.path} onClick={track} className="flex shrink-0 items-center gap-1.5 rounded-full bg-lime-300 px-4 py-2.5 text-[13px] font-black text-[#11150D] transition hover:bg-lime-200 active:scale-95">
-            Try Template <ArrowRight className="h-4 w-4" />
+            {t.cta ?? "Try Template"} <ArrowRight className="h-4 w-4" />
           </ToolLink>
         </div>
         <div className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-2 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:gap-3 sm:px-0 [&::-webkit-scrollbar]:hidden">
