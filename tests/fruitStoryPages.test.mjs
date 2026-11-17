@@ -140,7 +140,7 @@ test("free wording: free to start with 5 image generations, video tools need a p
   assert.equal(FREE_PLAN_LINE, "Start free with 5 image generations. Video tools like AI Fruit Story need a paid plan.");
   assert.match(HOME_SEO.description, /Start free with 5 image generations\.$/);
   assert.ok(HOME_SEO.description.length <= 160);
-  assert.match(read("src/pages/workspace/HomeV2.jsx"), /\{FREE_PLAN_LINE\}/);
+  // (Home no longer shows it under the short form suite: owner, 2026-11-17)
   assert.match(read("src/app/blog/imagegenerator/is-zyvo-free.jsx"), /\{FREE_PLAN_LINE\}/);
   assert.match(IS_ZYVO_FREE_FAQ[0].a, /5 image generations/);
   assert.match(IS_ZYVO_FREE_FAQ[0].a, /AI Fruit Story need a paid plan/);
