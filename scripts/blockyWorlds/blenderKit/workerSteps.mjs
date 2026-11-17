@@ -26,6 +26,9 @@ export function pickSteps(run, { studio, blender, env = process.env }) {
   return on && blender && run?.user_id && (env.BLOCKY_WORLDS_BLENDER_ACCESS === "everyone" || owners.includes(run.user_id)) ? blender : studio;
 }
 
+/** a run's own LOWER cap (card.cap_usd: our golden test), never above the live one */
+export const capOf = (cfg, card) => Math.min(cfg.runCapUsd, Number(card?.cap_usd) > 0 ? Number(card.cap_usd) : Infinity);
+
 /** the fix rounds: 2, like the local Milo run (STUDIO.rounds = 1 is the three.js engine's; cfg.blenderRounds overrides) */
 export const blenderRounds = (cfg = {}) => Math.max(1, Math.min(2, Number(cfg.blenderRounds ?? 2) || 2));
 
@@ -64,7 +67,7 @@ export function makeBlenderSteps({ base, anthropicKey, cfg, env = process.env, n
       const cardFile = card ? path.join(dir, "card.json") : null;
       if (cardFile) fs.writeFileSync(cardFile, JSON.stringify(card));
       const args = [path.join(HERE, "pipeline.mjs"), "--run", dir, "--voice-dir", path.join(dir, "voice"), "--model", cfg.blenderModel ?? "sonnet", "--worlds",
-        "--rounds", String(blenderRounds(cfg)), "--cap", String(cfg.runCapUsd), "--agent-cap", String(cfg.agentCapUsd), "--chunks", String(cfg.blenderChunks ?? 6),
+        "--rounds", String(blenderRounds(cfg)), "--cap", String(capOf(cfg, card)), "--agent-cap", String(Math.min(cfg.agentCapUsd, capOf(cfg, card))), "--chunks", String(cfg.blenderChunks ?? 6),
         ...(plan ? ["--scene-plan", plan] : []), ...(chars ? ["--characters", chars] : []), ...(cardFile ? ["--card", cardFile] : []), ...(card?.topic ? ["--topic", String(card.topic).slice(0, 200)] : []), "--defer-cleanup", "--yes", ...(resume ? ["--more-rounds"] : [])];
       const childEnv = childEnvOf();
       // LIVE PROGRESS (progress.mjs): every line the pipeline prints feeds the tracker; its snapshot goes to the run row

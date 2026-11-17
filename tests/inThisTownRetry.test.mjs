@@ -67,3 +67,38 @@ test("Try again: the migration creates a free retry run that is charged once, on
   const hook = fs.readFileSync("src/components/viral-tools/blocky-worlds/hooks/useBlockyWorlds.js", "utf8");
   assert.match(hook, /worldsCall\("retry", \{ runId: failed\.id \}\)/);
 });
+
+test("render gate (calibrated on Milo): unwatchable shots are cut, weak ones kept, a mostly good video renders", async () => {
+  const { renderGate, classify, heroLinesMissing } = await import("../scripts/blockyWorlds/blenderKit/renderGate.mjs");
+  // Milo: 70 shots kept (ids up to 90 after the plan merges)
+  const shots = Array.from({ length: 90 }, (_, i) => ({ id: i + 1 })).filter((s) => s.id % 9 !== 0 || [3, 6, 22, 32, 40, 86, 89].includes(s.id)).slice(0, 80);
+  // Milo's last fix round (the checker's real words, shortened): 7 unwatchable, 7 weak -> RENDER
+  const milo = {
+    3: "A giant bank facade fills the frame", 6: "A townsman's torso fills the frame", 22: "The frame is mostly a wall and a head from behind", 32: "Milo is not visible, only an empty room with a sleeve edge",
+    40: "The frame is a flat blue-purple wall", 86: "The frame is a flat purple wall", 89: "Only giant legs fill the frame",
+    28: "A striped sleeve blocks the view", 42: "Milo's head and a striped arm in the foreground", 46: "The bank is not tilted", 48: "A big tree blocks most of the view",
+    56: "A big tree blocks the view of Milo", 58: "A green arm blocks the view", 61: "The bike is not visible",
+  };
+  const failing = Object.fromEntries(Object.entries(milo).map(([id, t]) => [id, { kind: "vision", text: `the checker saw: ${t}` }]));
+  const g = renderGate({ shots, failing });
+  assert.equal(g.ok, true, g.reason);
+  assert.deepEqual(g.cut.sort((a, b) => a - b), [3, 6, 22, 32, 40, 86, 89]);
+  assert.equal(g.weak.length, 7);
+  // the free rule notes the checker did not confirm never count (the Sock run: 29 of its 73)
+  assert.equal(classify({ kind: "shotcheck", text: "THE SHOT CHECK: no character in 2 or more of 6 shots" }), "ignore");
+  // a truly broken video still stops: too many unwatchable, or too few passing
+  const broken = Object.fromEntries(shots.slice(0, 15).map((s) => [s.id, { kind: "vision", text: "the frame is black" }]));
+  assert.equal(renderGate({ shots, failing: broken }).ok, false);
+  const weakMany = Object.fromEntries(shots.slice(0, 20).map((s) => [s.id, { kind: "vision", text: "the framing is loose" }]));
+  assert.equal(renderGate({ shots, failing: weakMany }).ok, false);
+  // a line that names the hero must show the hero (as seen by the checker)
+  const mentions = (t, h) => String(t).toLowerCase().includes(String(h).toLowerCase());
+  assert.equal(heroLinesMissing({ lines: [{ line: 3, text: "Milo laughed", shots: [5, 6] }], seen: { 5: ["Grandpa"], 6: ["crowd"] }, hero: "Milo", mentions }).length, 1);
+  assert.equal(heroLinesMissing({ lines: [{ line: 3, text: "Milo laughed", shots: [5, 6] }], seen: { 5: ["Milo"], 6: [] }, hero: "Milo", mentions }).length, 0);
+});
+
+test("Try again parts: the music beds and raw takes never go in the bundle (the Sock run's was ~110 MB and was dropped)", async () => {
+  const { SKIP_FILE } = await import("../scripts/blockyWorlds/studioWorker/resume.mjs");
+  for (const f of ["music.wav", "music.raw.wav", "blender/video/audio/music_bed.wav", "blender/video/audio/music_bed.raw.wav", "voice/voice.orig.wav"]) assert.ok(SKIP_FILE.test(f), f);
+  for (const f of ["voice/voice.wav", "blender/video/audio/voice.wav", "blender/state.json", "voice-result.json"]) assert.ok(!SKIP_FILE.test(f), f);
+});

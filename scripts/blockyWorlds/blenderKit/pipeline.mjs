@@ -20,8 +20,9 @@ import { fileURLToPath } from "node:url";
 import { ledger, stepTimes } from "../studio/ledger.mjs";
 import { loadEnv } from "../engine/runpod/client.mjs";
 import { styleSheetLine } from "../../../supabase/functions/_shared/blockyWorlds/characterRef.js";
-import { cameraWallProblem, clearRayProblem, makeDirector, systemPrompt, tileShots, assemble, staticCheck, wordLines, planLocations, planProblems, storyPlanProblems, planLines, shotProblems, heroOf, giantSuspect, actionPlanProblems, visionRuleProblems, heroSeenProblems, MODELS, BATCH, MIN_LOCATIONS, PRICING } from "./director.mjs";
+import { cameraWallProblem, mentionsHero, clearRayProblem, makeDirector, systemPrompt, tileShots, assemble, staticCheck, wordLines, planLocations, planProblems, storyPlanProblems, planLines, shotProblems, heroOf, giantSuspect, actionPlanProblems, visionRuleProblems, heroSeenProblems, MODELS, BATCH, MIN_LOCATIONS, PRICING } from "./director.mjs";
 import { reaimPlan } from "./camFix.mjs";
+import { heroLinesMissing, renderGate } from "./renderGate.mjs";
 import { captionColors } from "./speakers.mjs";
 import { LOCATIONS, DRESS } from "./worlds/locations.mjs";
 import { runpod, RATE, BOOT_S, GPU, finalEstimate, previewEstimate, fitLimits, chunkLimitS, chunkFloorS, finishLimitS, finishFloorS } from "./rp.mjs";
@@ -556,16 +557,19 @@ for (let round = (state.round ?? 0) + 1; round <= ROUNDS && Object.keys(failing)
 // ---------------------------------------------------------------- 4. no holes: a shot that still crashes joins its neighbour
 const crashed = Object.entries(failing).filter(([, f]) => f.kind === "crash").map(([id]) => Number(id));
 if (crashed.length) mergeOut(crashed, "crash");
-// THE RULES BLOCK (owner 2026-11-16: the checker BLOCKS, it does not just report): a shot still failing after the fix
-// rounds never reaches the final: a few (at most RULES_MERGE_SHARE of the shots) join their neighbour like a crash; more
-// than that, or the hero SEEN in under half the shots, stops the run before the final render (the worker refunds)
+// THE RENDER GATE (owner 2026-11-18, renderGate.mjs, calibrated on Milo): the best version is RENDERED when, after the
+// fix rounds, the unwatchable shots (black / blank / a wall / something filling the frame) are few enough to cut, at
+// least PASS_MIN of the rest pass and every line naming the hero shows the hero; the weak shots are kept and logged.
+// Only a truly unwatchable video stops before the final render (the worker refunds and keeps the parts for Try again).
 {
-  const left = Object.entries(failing).filter(([id, f]) => f.kind !== "crash" && shotById(Number(id))).map(([id]) => Number(id));
-  const maxMerge = Math.floor(plan.shots.length * RULES_MERGE_SHARE);
-  if (left.length > maxMerge) throw Object.assign(new Error(`the rules block the final: ${left.length} shot(s) still fail after ${ROUNDS} fix round(s) (at most ${maxMerge} may be merged): ${left.slice(0, 10).map((id) => `${id}: ${String(failing[id].text).slice(0, 90)}`).join(" | ")}: stopped before the final render`), { code: "RULES" });
-  if (left.length) mergeOut(left, "rules: still failing after the fix rounds");
-  const hs = heroSeenProblems({ shots: plan.shots, seen: state.seen ?? {}, hero: heroOf(plan.styleSheet), styleSheet: plan.styleSheet ?? [] });
-  if (Object.keys(hs).length) throw Object.assign(new Error(`the rules block the final: ${Object.values(hs)[0]}: stopped before the final render`), { code: "RULES" });
+  const g = renderGate({ shots: plan.shots, failing });
+  state.gate = { cut: g.cut, weak: g.weak, ignored: g.ignored, shareAfter: g.shareAfter, ok: g.ok, reason: g.reason }; save();
+  if (!g.ok) throw Object.assign(new Error(`the rules block the final: ${g.reason}: ${[...g.cut, ...g.weak.map((w) => w.id)].slice(0, 10).map((id) => `${id}: ${String(failing[id]?.text ?? "").slice(0, 80)}`).join(" | ")}: stopped before the final render`), { code: "RULES" });
+  if (g.cut.length) mergeOut(g.cut, "unwatchable after the fix rounds");
+  const heroName = heroOf(plan.styleSheet);
+  const missing = heroLinesMissing({ lines: linesOfShots(plan.shots), seen: state.seen ?? {}, hero: heroName, mentions: mentionsHero });
+  if (missing.length) throw Object.assign(new Error(`the rules block the final: line L${missing[0].line} ("${String(missing[0].text).slice(0, 60)}") names ${heroName} but none of its shots shows ${heroName}: stopped before the final render`), { code: "RULES" });
+  say(`render gate: RENDER (${Math.round(g.shareAfter * 100)}% pass; cut ${g.cut.length}${g.cut.length ? ` (${g.cut.join(", ")})` : ""}; ${g.weak.length} weak shot(s) kept${g.weak.length ? `: ${g.weak.slice(0, 8).map((w) => `${w.id}: ${w.text.slice(0, 60)}`).join(" | ")}` : ""}; ${g.ignored.length} rule note(s) not confirmed by the checker)`);
 }
 fs.writeFileSync(shotsFile, writeFile());
 const fsc = staticCheck(writeFile(), shotsFile);

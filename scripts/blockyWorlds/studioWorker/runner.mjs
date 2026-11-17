@@ -115,7 +115,9 @@ export async function runStudioRun(run, deps, cfg = STUDIO) {
   };
   // the Studio ledger every studio module gets: the same object (its caps, costs, log), with a check() that first stops
   // paid work once the run is over and moves the progress screen to the step being paid for
-  const L0 = makeLedger(dir, { capUsd: cfg.runCapUsd, agentCapUsd: cfg.agentCapUsd });
+  // a run may carry a LOWER cap of its own (card.cap_usd, set only by our own tools: the Milo golden test, $3); never higher
+  const capUsd = Math.min(cfg.runCapUsd, Number(run.card?.cap_usd) > 0 ? Number(run.card.cap_usd) : Infinity);
+  const L0 = makeLedger(dir, { capUsd, agentCapUsd: Math.min(cfg.agentCapUsd, capUsd) });
   const L = Object.create(L0);
   L.check = (name, worstUsd, opts) => {
     stopNow();
@@ -230,7 +232,7 @@ export async function runStudioRun(run, deps, cfg = STUDIO) {
     // the parts a "Try again" continues from (never on a shutdown: the run is picked up again as it is)
     if (!st.videoFile && storage?.upload && !control.stop) {
       try {
-        const buf = (deps.packResume ?? packResume)(dir);
+        const buf = (deps.packResume ?? packResume)(dir, log);
         if (buf) { await storage.upload(resumePath(run), buf, "application/gzip"); log(`saved the parts for Try again (${Math.round(buf.length / 1024)} KB)`); }
       } catch (x) { log(`saving the parts for Try again failed (a retry starts fresh): ${x?.message ?? x}`); }
     }

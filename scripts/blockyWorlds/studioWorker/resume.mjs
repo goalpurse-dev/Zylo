@@ -12,6 +12,9 @@ import { paths } from "../../../supabase/functions/_shared/blockyWorlds/render.j
 export const resumePath = (run) => paths(run).final.replace(/final\.mp4$/, "resume.tgz");
 /** the parts worth keeping: small text state + the voice; never images, videos, archives or frames */
 export const KEEP_EXT = /\.(json|jsonl|txt|py|wav|mp3|m4a)$/i;
+// never in the bundle (2026-11-18: the Sock run's bundle went over the cap on ~80 MB of music and raw takes, and was
+// skipped without a word): the music beds (made again on every run) and the raw / original takes
+export const SKIP_FILE = /(^|[\\/])(music[^\\/]*\.wav|[^\\/]*\.raw\.wav|[^\\/]*\.orig\.wav)$/i;
 export const SKIP_DIR = /(^|[\\/])(frames|preview|previews|segments|chunks|final|tmp|node_modules)([\\/]|$)/i;
 export const MAX_BUNDLE_BYTES = 45 * 1024 * 1024;
 // the spend files: a retry is a new budget (its own caps), so the failed run's totals are left behind
@@ -27,7 +30,7 @@ export function bundleFiles(dir) {
     for (const e of fs.readdirSync(path.join(dir, rel), { withFileTypes: true })) {
       const r = rel ? path.join(rel, e.name) : e.name;
       if (e.isDirectory()) { if (!SKIP_DIR.test(r)) walk(r); }
-      else if (KEEP_EXT.test(e.name)) out.push(r);
+      else if (KEEP_EXT.test(e.name) && !SKIP_FILE.test(r)) out.push(r);
     }
   };
   if (fs.existsSync(dir)) walk("");
@@ -35,14 +38,15 @@ export function bundleFiles(dir) {
 }
 
 /** a run folder -> the bundle bytes (null when there is nothing worth keeping, or it is too big) */
-export function packResume(dir) {
+export function packResume(dir, log = () => {}) {
   const files = bundleFiles(dir);
-  if (!files.some((f) => /state\.json$|voice-result\.json$/.test(f))) return null;
+  if (!files.some((f) => /state\.json$|voice-result\.json$/.test(f))) { log("Try again parts: nothing to save (no state, no voice)"); return null; }
   const out = path.join(dir, "..", `${path.basename(dir)}.resume.tgz`);
   run("import sys,tarfile,os\nout,root=sys.argv[1],sys.argv[2]\nwith tarfile.open(out,'w:gz') as t:\n for f in sys.argv[3:]:\n  t.add(os.path.join(root,f),arcname=f)", [out, dir, ...files]);
   const buf = fs.readFileSync(out);
   fs.rmSync(out, { force: true });
-  return buf.length > MAX_BUNDLE_BYTES ? null : buf;
+  if (buf.length > MAX_BUNDLE_BYTES) { log(`Try again parts NOT saved: ${Math.round(buf.length / 1e6)} MB is over the ${MAX_BUNDLE_BYTES / 1e6} MB cap`); return null; }
+  return buf;
 }
 
 /** the bundle bytes -> unpacked into dir (members outside dir are refused), the old spend files dropped */
