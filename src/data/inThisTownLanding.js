@@ -17,7 +17,7 @@ export const IN_THIS_TOWN_ASSETS = "/in-this-town";
 export const IN_THIS_TOWN_PRICE = BLENDER_FLAT; // { credits, keepCredits, expireDays, ... }: the one price the maker charges
 
 export const IN_THIS_TOWN_SEO = {
-  title: g("Roblox-Style Story Video Maker: In This Town Shorts | Zyvo", "In This Town Story Video Maker | Zyvo"),
+  title: g("Roblox-style Story Video Maker: In This Town Shorts | Zyvo", "In This Town Story Video Maker | Zyvo"),
   description: g(
     "Type one strange town rule and get a narrated, Roblox-style \"In this town…\" story Short: voice, captions, 3D scenes and a twist. Faceless and vertical.",
     "Type one strange town rule and get a narrated \"In this town…\" story Short: voice, captions, blocky 3D scenes and a twist. Faceless and vertical.",
@@ -90,7 +90,7 @@ export const TOWN_IDEAS = [
 export const TOWN_STEPS = [
   { n: "1", title: "Topic", text: "Type one strange rule for a town, or pick a ready idea. One sentence is enough." },
   { n: "2", title: "Script", text: "An AI writer turns it into a full story: a result-first hook, the rule, the one kid who breaks it, a crisis and a twist. You read it and change anything before the video is made." },
-  { n: "3", title: "Video", text: "We pick the scenes, voice it, direct every shot in 3D, check each one against its line and add captions. Usually about 25 minutes." },
+  { n: "3", title: "Video", text: "We pick the scenes, voice it, direct every shot in 3D, check each one against its line and add captions. Usually about 30–45 minutes." },
 ];
 
 export const TOWN_FEATURES = [
@@ -100,9 +100,9 @@ export const TOWN_FEATURES = [
   ["Your own hero", "Upload an avatar or a cartoon character and we build a blocky hero in its colours."],
 ];
 
-/** Why the page talks about the time: the maker says "about 25 minutes" too (BlenderMaker.jsx). */
+/** The time, as the maker says it too (BlenderMaker.jsx): about 30–45 minutes (owner, 2026-11-17: the measured range). */
 export const TOWN_FAQ = [
-  { q: "How long does it take to make a video?", a: "Writing the script takes about a minute. After you approve it, the video is usually ready in about 25 minutes: every shot is directed, rendered in 3D and checked. It can take longer when many videos are in the queue. You can close the page: the video waits for you under Recent creations." },
+  { q: "How long does it take to make a video?", a: "Writing the script takes about a minute. After you approve it, the video is usually ready in about 30–45 minutes: every shot is directed, rendered in 3D and checked. It can take longer when many videos are in the queue. You can close the page: the video waits for you under Recent creations." },
   { q: "How much does it cost?", a: `One price per video: ${BLENDER_FLAT.credits} credits, charged when you press "Write my script". That covers script rewrites, the voice and the full render. If the video fails, every credit comes back. If you never press "Make my video", all but ${BLENDER_FLAT.keepCredits} credits come back after ${BLENDER_FLAT.expireDays} days.` },
   { q: "How long are the videos?", a: "About 60 to 100 seconds, vertical 9:16, made for TikTok, YouTube Shorts and Instagram Reels." },
   { q: "Can I use my own avatar or character?", a: g("Yes. Upload a picture of a Roblox avatar or a cartoon character and the director builds a blocky hero in its colours and style. Avatars and cartoons only: no photos of real people and no logos. The picture is only used to read the look.", "Yes. Upload a picture of a game avatar or a cartoon character and the director builds a blocky hero in its colours and style. Avatars and cartoons only: no photos of real people and no logos. The picture is only used to read the look.") },
@@ -116,9 +116,9 @@ export const TOWN_NOTICE = GENRE ? `Not affiliated with ${GENRE.owner}.` : null;
 
 /** The four guides, for the page's links and the blog's back links. */
 export const TOWN_BLOG = [
-  { slug: "how-to-make-in-this-town-story-shorts", title: g("How to make viral “In this town” Roblox story shorts (step by step)", "How to make viral “In this town” story shorts (step by step)") },
+  { slug: "how-to-make-in-this-town-story-shorts", title: g("How to make viral “In this town” Roblox-style story shorts (step by step)", "How to make viral “In this town” story shorts (step by step)") },
   { slug: "in-this-town-story-ideas", title: "50 “In this town” story ideas for TikTok and YouTube Shorts" },
-  { slug: "viral-blocky-story-formula", title: g("The story formula behind viral Roblox story videos", "The story formula behind viral blocky story videos") },
+  { slug: "viral-blocky-story-formula", title: g("The story formula behind viral Roblox-style story videos", "The story formula behind viral blocky story videos") },
   { slug: "faceless-blocky-animations-without-blender", title: g("How to make faceless Roblox-style animations without Blender or animation skills", "How to make faceless blocky animations without Blender or animation skills") },
 ];
 

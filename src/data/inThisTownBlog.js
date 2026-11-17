@@ -6,7 +6,7 @@
 import { GENRE, IN_THIS_TOWN_PATH, IN_THIS_TOWN_PRICE, TOWN_BLOG } from "./inThisTownLanding.js";
 import { extractFaqs } from "../app/blog/markdownBlogUtils.js";
 
-const R = GENRE ? `${GENRE.short} ` : "";            // "Roblox " or ""
+const R = GENRE ? `${GENRE.style} ` : "";            // "Roblox-style " or "" (owner, 2026-11-17: titles say "Roblox-style", never the bare name)
 const RS = GENRE ? GENRE.style : "blocky";           // "Roblox-style" or "blocky"
 const P = IN_THIS_TOWN_PRICE.credits;
 const L = IN_THIS_TOWN_PATH;
@@ -99,7 +99,7 @@ There are two routes:
 
 **Do it yourself.** Build or download a blocky town in a 3D program, rig characters, animate every shot, render, edit. It gives you full control, and it takes a lot of time and skill per video.
 
-**Use a maker.** Zyvo's In This Town tool does steps 2 to 6 for you. You type the rule, read and edit the script it writes, and it voices the story, directs each shot in 3D, checks that each shot matches its line, renders the video and adds captions. A video usually takes about 25 minutes and costs ${P} credits, refunded if it fails.
+**Use a maker.** Zyvo's In This Town tool does steps 2 to 6 for you. You type the rule, read and edit the script it writes, and it voices the story, directs each shot in 3D, checks that each shot matches its line, renders the video and adds captions. A video usually takes about 30–45 minutes and costs ${P} credits, refunded if it fails.
 
 [Primary CTA: Turn your rule into a video → ${L}]
 
@@ -424,7 +424,7 @@ Zyvo's In This Town maker does every part above from one sentence, in your brows
 5. **An AI director writes every shot in 3D**, renders previews, and a checker compares each shot with its line. Wrong shots go back for a fix.
 6. **It renders the final video** on cloud GPUs in Blender, then adds captions coloured by speaker, sound effects and music.
 
-There is nothing to install and no 3D skill needed. A video usually takes about 25 minutes and costs ${P} credits, refunded in full if it fails.
+There is nothing to install and no 3D skill needed. A video usually takes about 30–45 minutes and costs ${P} credits, refunded in full if it fails.
 
 [Secondary CTA: Try a rule in the free preview box → ${L}]
 
@@ -492,7 +492,7 @@ const POST = (slug, o) => ({ slug, hero: `/in-this-town/blog/${slug}.webp`, hero
 
 export const TOWN_GUIDES = [
   POST("how-to-make-in-this-town-story-shorts", {
-    seoTitle: `How to Make "In This Town" ${R}Story Shorts, Step by Step`,
+    seoTitle: `How to Make "In This Town" ${R}Story Shorts`,
     description: `Make an "In this town" ${RS} story Short step by step: the rule, the hook, the 7-beat story, one shot per line, voice, captions and posting.`,
     readTime: "8 min read", heroAlt: "Milo, a blocky boy in a striped yellow shirt, from an In This Town story made with Zyvo",
     markdown: HOW,
@@ -510,7 +510,7 @@ export const TOWN_GUIDES = [
     markdown: FORMULA,
   }),
   POST("faceless-blocky-animations-without-blender", {
-    seoTitle: `Faceless ${GENRE ? "Roblox-Style" : "Blocky"} Animations Without Blender or Skills`,
+    seoTitle: `Faceless ${GENRE ? "Roblox-style" : "Blocky"} Animations Without Blender or Skills`,
     description: `Make faceless ${RS} story animations: what they need, the Blender route, and how to make one from a sentence with no 3D or animation skills.`,
     readTime: "8 min read", heroAlt: "Blocky townspeople on a city street, from an In This Town story made with Zyvo",
     markdown: FACELESS,
