@@ -55,6 +55,21 @@ export function ruleLineIndex(lines) {
   return -1;
 }
 
+// ---------- THE ONE TOWN-LINE RULE (owner, 2026-11-17) ----------
+// "in this town" (or "in this world") must appear somewhere in the first 2 LINES. It replaces both the old "line 1
+// starts with In this town," and the "You see, in this town" sentence check for every kind of script (written, hybrid,
+// edited, pasted): the writer opens result-first with the hook and says "You see, in this town, ..." in line 2, which
+// passes; a user's own opener "In this town, ..." passes too. It is a STYLE note (paidGate.js): it never blocks.
+export const TOWN_LINE_RE = /\bin this (?:town|world)\b/i;
+export const TOWN_LINE_PREFIX = 'Say "in this town"';
+/** The index (0 or 1) of the first line that says "in this town" / "in this world", or -1. */
+export const townLineIndex = (lines) => (lines ?? []).slice(0, 2).findIndex((l) => TOWN_LINE_RE.test(String(l?.text ?? l ?? "")));
+/** The town line's problem, or null. */
+export function townLineProblem(lines) {
+  if (!(lines ?? []).length || townLineIndex(lines) >= 0) return null;
+  return `${TOWN_LINE_PREFIX} (or "in this world") in the first 2 lines, e.g. "You see, in this town, [the rule]."`;
+}
+
 /** The rule line's problem, or null. */
 export function ruleLineProblem(lines) {
   if (ruleLineIndex(lines) >= 0) return null;

@@ -2,7 +2,7 @@
 // Every source (a library idea, "Your topic", a pasted script) becomes the same complete IDEA CARD, then always:
 //   card -> beat sheet (7 parts) -> script -> shot plan (fixed vocabulary) -> render
 // Each step has code checks here; a failed step is retried on its own (llm.js), never the whole chain.
-import { FORMULAS, MOODS, SETTINGS, TWISTS } from "./formulas.js";
+import { FORMULAS, LEGACY_SETS, MOODS, SETTINGS, SETTING_RULE, TWISTS } from "./formulas.js";
 import { hasOpener } from "./opener.js";
 import { safetyProblems } from "./safety.js";
 import { PART_IDS, PARTS, partBudgets, wordCount } from "./script.js";
@@ -35,7 +35,7 @@ export const CARD_FROM_SCRIPT_SYSTEM = `You read a short story narration and wri
 - price (what breaking the rule costs), examples (exactly three short examples of the rule from the script), narrator (who tells it and how they're the exception), prop (the object that wins the climax), twist (how it ends), teaser (a card line that hints at the twist), closer (the script's last line), title.
 - formula: F1 everyone-has-X-except-me, F2 never-do-X-or-Y, F3 every-night-we-give-X-to-Y, F4 our-town-lives-inside-Z, F5 everyone-gets-X-when-Y, F6 some-are-A-the-rest-are-B.
 - twistType: T1 rule-is-the-weapon, T2 hidden-truth, T3 weakness-is-strength, T4 wording-loophole, T5 open-loop-sting, T6 wholesome-inversion.
-- mood: horror, wholesome, funny or epic. setting: one of: ${SETTINGS.join("; ")}.
+- mood: horror, wholesome, funny or epic. setting: one of: ${SETTINGS.join("; ")}. ${SETTING_RULE}
 Return only the JSON object.`;
 export const cardFromScriptPrompt = (lines) => `THE SCRIPT\n${lines.map((l) => (typeof l === "string" ? l : l.text)).join("\n")}`;
 
@@ -166,7 +166,7 @@ export function problemSpots(script, problems) {
   return (problems ?? []).map((p) => {
     if (/^The first line must start/.test(p) && lines.length) return spot(p, lines[0].part, [0], "opener");
     // the formula's rule line (opener.js ruleLineProblem): Fix it rewrites the hook and the line after it
-    if (/^The rule line is missing/.test(p) && lines.length) return spot(p, lines[0].part, lines.length > 1 ? [0, 1] : [0]);
+    if (/^(?:The rule line is missing|Say "in this town")/.test(p) && lines.length) return spot(p, lines[0].part, lines.length > 1 ? [0, 1] : [0]);
     const lineNo = p.match(/^Line (\d+) has/);
     if (lineNo && lines[Number(lineNo[1]) - 1]) { const i = Number(lineNo[1]) - 1; return spot(p, lines[i].part, [i]); }
     if (/never shown before the trouble starts/.test(p)) { const part = partLines("me").length ? "me" : "tour"; return spot(p, part, partLines(part)); }
@@ -217,7 +217,7 @@ export const SHOTS = Object.freeze({
   fx: Object.freeze(["rain", "snow", "fog", "glow", "sparkles", "dust", "lights_out", "wind", "none"]),
   action: Object.freeze(["idle", "walk", "run", "sit", "wave", "point", "phone", "cower", "carry", "climb", "fall", "hug", "cheer", "look_up", "talk", "sleep"]),
   expr: Object.freeze(["happy", "sad", "scared", "excited", "bored", "angry", "sleepy", "surprised", "smirk", "cry", "neutral"]),
-  sets: SETTINGS,
+  sets: LEGACY_SETS,
 });
 export const SHOTS_SYSTEM = `You plan the shots of a Blocky Worlds video: one or more shots for every line of the script, using ONLY this vocabulary.
 camera: ${SHOTS.camera.join(", ")}
@@ -225,7 +225,7 @@ light: ${SHOTS.light.join(", ")}
 fx: ${SHOTS.fx.join(", ")}
 action: ${SHOTS.action.join(", ")}
 expr: ${SHOTS.expr.join(", ")}
-set: ${SETTINGS.join("; ")}
+set: ${LEGACY_SETS.join("; ")}
 RULES
 - Every line gets at least one shot; listed examples get one shot each. Visuals are literal: every spoken noun is shown.
 - Line 1 shows the rule in action (wide_establishing or insert_prop).
@@ -238,7 +238,7 @@ export function shotsSchema() {
   return {
     type: "object", additionalProperties: false, required: ["shots"],
     properties: { shots: { type: "array", items: { type: "object", additionalProperties: false, required: ["line", "camera", "set", "light", "fx", "characters", "sign"], properties: {
-      line: { type: "integer" }, camera: en(SHOTS.camera), set: en(SETTINGS), light: en(SHOTS.light), fx: en(SHOTS.fx), sign: s,
+      line: { type: "integer" }, camera: en(SHOTS.camera), set: en(LEGACY_SETS), light: en(SHOTS.light), fx: en(SHOTS.fx), sign: s,
       characters: { type: "array", items: { type: "object", additionalProperties: false, required: ["who", "action", "expr"], properties: { who: s, action: en(SHOTS.action), expr: en(SHOTS.expr) } } },
     } } } },
   };
@@ -253,7 +253,7 @@ export function shotProblems(shots, script) {
   for (const s of list) {
     if (!(s.line >= 0 && s.line < n)) out.push(`a shot points at line ${s.line}, which doesn't exist`);
     if (!SHOTS.camera.includes(s.camera)) out.push(`unknown camera ${s.camera}`);
-    if (!SETTINGS.includes(s.set)) out.push(`unknown set ${s.set}`);
+    if (!LEGACY_SETS.includes(s.set)) out.push(`unknown set ${s.set}`);
     if (!SHOTS.light.includes(s.light)) out.push(`unknown light ${s.light}`);
     for (const c of s.characters ?? []) if (!SHOTS.action.includes(c.action) || !SHOTS.expr.includes(c.expr)) out.push(`line ${s.line}: unknown action/expression`);
   }

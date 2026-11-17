@@ -96,7 +96,9 @@ export function topicElements(topic) {
     if (DESCRIPTORS.has(low)) { pend.push(low); continue; }
     if (DETERMINERS.has(low)) continue;
     const base = baseWord(w);
-    if (base.length < 3 || STOP.has(low) || STOP.has(base)) { pend = []; continue; }
+    // a stop word right after "in" ends the setting phrase ("in this TOWN, every time you lie": "lie" is not a place;
+    // 2026-11-17 it made the topic writer set a lie story "inside" a giant snail shell)
+    if (base.length < 3 || STOP.has(low) || STOP.has(base)) { pend = []; settingNext = false; continue; }
     const key = keyOf(w);
     let el = out.find((e) => sameKey(e.key, key));
     if (!el) { el = { key, words: [], setting: false }; out.push(el); }

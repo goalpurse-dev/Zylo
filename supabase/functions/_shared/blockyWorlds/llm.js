@@ -468,6 +468,7 @@ function mockFixPart({ script, indexes, reasons, card }) {
         ? [`In this town, ${String(card.topic).replace(/[.!?]+$/, "")}.`, ...out.slice(1)]
         : [`It was all about the ${named}.`, ...out.slice(1)];
     }
+    else if (/^Say "in this town"/.test(r)) out = [`You see, in this town, ${out[0].replace(/^./, (c) => c.toLowerCase())}`, ...out.slice(1)];
     else if (/^Line \d+ has/.test(r)) out = out.flatMap((t) => { const w = t.split(/\s+/); if (w.length <= 12) return [t]; const h = Math.ceil(w.length / 2); return [`${w.slice(0, h).join(" ").replace(/[,.]$/, "")}.`, w.slice(h).join(" ").replace(/^./, (c) => c.toUpperCase())]; });
     else if (r.startsWith(STUDIO_BLOCK_PREFIX)) { const word = r.match(/"([^"]+)"/)?.[1]; if (word) out = out.map((t) => t.replace(new RegExp(word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"), "a snack")); }
     else if (r.startsWith(BOARD_PREFIX)) { const word = r.match(/"([^"]+)"/)?.[1]; if (word) out = out.map((t) => t.replace(new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\w*`, "gi"), "lantern")); }
@@ -515,6 +516,47 @@ export async function fixPart({ apiKey = "", provider = "anthropic", script, ind
     if (!why.length) why = reasons;
   }
   return { ...(best ?? { script, check: draftCheck(script, lengthSec, kind, card, { board }), fixed: false }), costUsd: Number(costUsd.toFixed(5)), attempts };
+}
+
+/**
+ * "FIX THIS LINE" (owner, 2026-11-17): rewrite ONLY the flagged lines (indexes, at most 4, in one span) for one note,
+ * keep every other line word for word, then re-check. The town line is fixed in code first when it can be (free).
+ * Two tries; the result is kept when the note is gone and no new real blocker appeared (paidGate.js), else the best try
+ * comes back with ok false. Returns { script, ok, costUsd }.
+ */
+export async function fixLines({ apiKey = "", provider = "anthropic", script, indexes, note, card = null, lengthSec, kind = "own", board = false, gate }) {
+  const lines0 = script.lines;
+  const from = Math.max(0, Math.min(...indexes)), to = Math.min(lines0.length - 1, Math.max(...indexes), from + 3);
+  const span = Array.from({ length: to - from + 1 }, (_, k) => from + k);
+  const key = (p) => String(p).replace(/\d+/g, "#");
+  const gated = (s) => gate(draftCheck(s, lengthSec, kind, card, { board }));
+  const before = gated(script), hadBlock = new Set(before.problems.map(key));
+  const good = (s) => { const c = gated(s); return { c, ok: !c.warnings.some((w) => key(w) === key(note)) && c.problems.every((p) => hadBlock.has(key(p))) }; };
+  // free first: the town line ("In my village, ..." -> "In this town, ...", or "You see, in this town, " before line 2)
+  if (/^Say "in this town"/.test(note) && lines0.length) {
+    const near = fixOpener(lines0[0].text);
+    const tries = [near ? { i: 0, text: near } : null, lines0[1] ? { i: 1, text: `You see, in this town, ${lines0[1].text.replace(/^you see,?\s*/i, "").replace(/^./, (c) => (/^I\b/.test(lines0[1].text) ? c : c.toLowerCase()))}` } : null].filter(Boolean);
+    for (const t of tries) {
+      const next = { ...script, lines: lines0.map((l, k) => (k === t.i ? { ...l, text: t.text } : l)) };
+      if (good(next).ok) return { script: next, ok: true, costUsd: 0 };
+    }
+  }
+  let costUsd = 0, best = null, why = [note];
+  for (let round = 1; round <= 2; round++) {
+    const reply = provider === "mock"
+      ? mockFixPart({ script, indexes: span, reasons: why, card })
+      : await callJson({ apiKey, model: MODELS.script, system: kitSystem(PART_FIX_SYSTEM, board, "lines"), user: partFixPrompt({ script, indexes: span, reasons: why, card }), schema: partFixSchema(), effort: "low", maxTokens: 3000, timeoutMs: 90_000 });
+    costUsd += reply.costUsd;
+    const fresh = (Array.isArray(reply.data?.lines) ? reply.data.lines : []).map((t) => paceClean(t)).filter((t) => t && t !== ".").slice(0, span.length + 2);
+    if (!fresh.length) continue;
+    const first = lines0[from];
+    const lines = [...lines0.slice(0, from), ...fresh.map((text) => ({ ...first, text })), ...lines0.slice(to + 1)];
+    const next = { ...script, lines }, g = good(next);
+    if (g.ok) return { script: next, ok: true, costUsd: Number(costUsd.toFixed(5)) };
+    if (!best || g.c.warnings.length < best.c.warnings.length) best = { script: next, c: g.c };
+    why = [note, ...g.c.problems.filter((p) => !hadBlock.has(key(p)))];
+  }
+  return { script: best?.script ?? script, ok: false, costUsd: Number(costUsd.toFixed(5)) };
 }
 
 // ---------- the custom-topic gate (owner, 2026-11-07) ----------

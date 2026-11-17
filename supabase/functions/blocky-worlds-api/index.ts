@@ -42,8 +42,9 @@ import { DEFAULT_SETTINGS, decide, WRITING } from "../_shared/blockyWorlds/guard
 import { MOODS } from "../_shared/blockyWorlds/formulas.js";
 import { cardOf, DAILY_IDEA_BATCHES, FREE_IDEA_BATCHES, IDEAS_PER_BATCH } from "../_shared/blockyWorlds/ideas.js";
 import { checkScript, narrationOf, normalizeScript, PART_IDS, scriptFromText } from "../_shared/blockyWorlds/script.js";
-import { topicProblem } from "../_shared/blockyWorlds/safety.js";
-import { cardFromScript, CACHE_TTLS, draftCheck, fixPart, HYBRID, moneyMeter, providerFrom, repairOpener, rewriteHybrid, writeBeats, writeHybrid, writeIdeaPool, writeIdeas, writeScript, writeTopicIdeas } from "../_shared/blockyWorlds/llm.js";
+import { storyTextProblem, topicProblem } from "../_shared/blockyWorlds/safety.js";
+import { isShownNote, noteSpots, paidGate } from "../_shared/blockyWorlds/paidGate.js";
+import { cardFromScript, CACHE_TTLS, draftCheck, fixLines, fixPart, HYBRID, moneyMeter, providerFrom, repairOpener, rewriteHybrid, writeBeats, writeHybrid, writeIdeaPool, writeIdeas, writeScript, writeTopicIdeas } from "../_shared/blockyWorlds/llm.js";
 import { ideaKey } from "../_shared/blockyWorlds/ideaEngine.js";
 import { pickRecipe, RECIPES } from "../_shared/blockyWorlds/recipes.js";
 import { examplesByIds, examplesFor } from "../_shared/blockyWorlds/referenceTexts.js";
@@ -168,11 +169,13 @@ function writerError(e: any) {
 
 // ---------- views ----------
 function draftView(d: any) {
-  const check = d.checks ?? {};
+  // owner 2026-11-17 (paidGate.js): only REAL blockers are problems; every style rule is a note with "Fix this line"
+  const check = paidGate(d.checks ?? {});
   return {
     id: d.id, source: d.source, ideaId: d.idea_id, title: d.title, lengthSec: d.length_sec, lines: d.lines ?? [], post: d.post ?? {},
     credits: PRICES[d.length_sec] ?? null,
-    check: { problems: check.problems ?? [], warnings: check.warnings ?? [], words: check.words ?? 0, seconds: check.seconds ?? 0, spots: problemSpots({ lines: d.lines ?? [] }, check.problems ?? []) },
+    check: { problems: check.problems ?? [], warnings: check.shown ?? [], words: check.words ?? 0, seconds: check.seconds ?? 0, spots: problemSpots({ lines: d.lines ?? [] }, check.problems ?? []) },
+    notes: noteSpots(check, d.lines ?? []),
     ready: !(check.problems ?? []).length, updatedAt: d.updated_at,
     // Studio: the things the kit does not have, which the director builds (never a block)
     ...(STUDIO_ON ? { studioBuilds: studioBuilds({ lines: d.lines ?? [] }, d.card ?? null) } : {}),
@@ -229,8 +232,10 @@ function recheck(d: any, lengthSec = d.length_sec) {
   // the mock writer's sample script doesn't follow the card, so mock mode checks it without the card (like writeScript)
   // launch mode: what the board kit can't film blocks here too (boardFit.js on kitCheck.js): quote and start run this
   // BEFORE the charge, so a story the board can't film never reaches the paid render
-  return { ...draftCheck(script, lengthSec, kindOf(d), PROVIDER === "mock" ? null : d.card ?? null, { board: KIT }), kind: kindOf(d) };
+  return paidGate({ ...draftCheck(script, lengthSec, kindOf(d), PROVIDER === "mock" ? null : d.card ?? null, { board: KIT }), kind: kindOf(d) });
 }
+/** everything a rewrite should hear about: the blockers and the style notes */
+const failedOf = (c: any) => [...(c.problems ?? []), ...(c.notes ?? [])];
 /** Launch mode: what the planner moved from the user's idea to fit the kit, in one line (null when nothing moved). */
 const movedNotice = (card: any) => (card?.moved ? `We moved your story into our town: ${String(card.moved).slice(0, 200)}` : null);
 /** "The rewrite still has a problem" in plain words (never a silent failing rewrite). */
@@ -292,6 +297,44 @@ async function flatWrite(req: Request, body: any, trace: Trace) {
 async function openPrepay(userId: string, draftId: string) {
   const { data } = await admin.from("blocky_worlds_prepays").select("id, credits").eq("user_id", userId).eq("draft_id", draftId).is("run_id", null).is("refunded_at", null).maybeSingle();
   return data ?? null;
+}
+
+/** "Fix this line" calls one draft may use (free; a runaway loop can't spend without end) */
+const FIX_LINES_PER_DRAFT = 40;
+/** the draft's paid state for the page (owner 2026-11-17: once paid at "Write my script", later steps say "Paid ✓", never the price) */
+async function paidOf(userId: string, draftId: string) {
+  const { data } = await admin.from("blocky_worlds_prepays").select("credits, created_at, expires_at").eq("user_id", userId).eq("draft_id", draftId).is("run_id", null).is("refunded_at", null).maybeSingle();
+  return data ? { flat: { credits: data.credits, charge: "script", paidAt: data.created_at, expiresAt: data.expires_at, keepCredits: BLENDER_FLAT.keepCredits } } : {};
+}
+/** a draft as the page sees it, with its paid state */
+async function viewFor(userId: string, d: any) {
+  return { ...draftView(d), ...(await paidOf(userId, d.id)) };
+}
+
+/**
+ * Before a fresh script is shown (owner 2026-11-17): a STYLE rule the writer's own fix left open (the notes that used
+ * to block: the town line, the button, the length band ...) is fixed line by line (fixLines, at most 2 notes, ~1-2
+ * small calls), kept only when better. Never throws: a failure just leaves the note for the user's "Fix this line".
+ */
+async function autoFixStyle(userId: string, d: any) {
+  try {
+    let cur = d, checks = recheck(d);
+    for (const note of (checks.notes ?? []).filter(isShownNote).slice(0, 2)) {
+      const lines = noteSpots(checks, cur.lines ?? []).find((n) => n.text === note)?.lines ?? [];
+      if (!lines.length) continue;
+      const fix: any = await fixLines({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, script: { title: cur.title, lines: cur.lines, post: cur.post }, indexes: lines, note, card: PROVIDER === "mock" ? null : cur.card ?? null, lengthSec: cur.length_sec, kind: kindOf(cur), board: KIT, gate: paidGate });
+      if (fix.costUsd) await logCall(userId, "script", fix.costUsd);
+      if (!fix.ok) continue;
+      cur = { ...cur, lines: fix.script.lines };
+      checks = recheck(cur);
+    }
+    if (cur === d) return d;
+    const { data, error } = await admin.from("blocky_worlds_drafts").update({ lines: cur.lines, checks: { ...(d.checks ?? {}), ...checks, autoFixed: true }, updated_at: new Date().toISOString() }).eq("id", d.id).select("*").single();
+    return error || !data ? d : data;
+  } catch (e: any) {
+    console.error("[blocky-worlds-api] autoFixStyle:", d?.id, e?.message ?? e);
+    return d;
+  }
 }
 
 async function handle(req: Request, trace: Trace) {
@@ -395,6 +438,39 @@ async function route(req: Request, body: any, trace: Trace) {
   }
 
   // ---------- 2. the script (paid plans; writing is free, with a daily limit) ----------
+  // ---------- "FIX THIS LINE" (owner, 2026-11-17): free, only the note's lines, then re-checked ----------
+  // Never counted toward the daily script writes (a paid user is never stuck on a note); the emergency caps still apply
+  // and one draft takes at most FIX_LINES_PER_DRAFT of them.
+  if (action === "fixLines") {
+    trace.step = "sign-in";
+    const who = await requireWriter(req, trace);
+    const d = await loadDraft(who.user.id, body?.draftId);
+    const note = String(body?.note ?? "").slice(0, 400);
+    const before = recheck(d);
+    const spot = noteSpots(before, d.lines ?? []).find((n) => n.text === note);
+    // fixed meanwhile (or a stale page): the current state, no call
+    if (!spot || !spot.lines.length) return { ...(await viewFor(who.user.id, { ...d, checks: before })), fixed: !spot };
+    if (Number(d.checks?.lineFixes ?? 0) >= FIX_LINES_PER_DRAFT) throw new ApiError("DAILY_LIMIT", "That's a lot of line fixes for one script. Edit the line yourself, or press Rewrite.");
+    trace.step = "limits";
+    await guardFor(who.user.id, PROVIDER === "mock" ? 0 : 0.03, "writing");
+    trace.step = "writer";
+    let fix: any;
+    try {
+      fix = await fixLines({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, script: { title: d.title, lines: d.lines, post: d.post }, indexes: spot.lines, note, card: PROVIDER === "mock" ? null : d.card ?? null, lengthSec: d.length_sec, kind: kindOf(d), board: KIT, gate: paidGate });
+    } catch (e: any) { await logCall(who.user.id, "script", e?.costUsd ?? 0, false); throw writerError(e); }
+    if (fix.costUsd) await logCall(who.user.id, "script", fix.costUsd);
+    const next = { ...d, lines: fix.script.lines };
+    const checks = recheck(next);
+    // kept when the note is gone with no new blocker; otherwise the script stays as it was (and the page says so)
+    if (!fix.ok) {
+      await admin.from("blocky_worlds_drafts").update({ checks: { ...(d.checks ?? {}), lineFixes: Number(d.checks?.lineFixes ?? 0) + 1 } }).eq("id", d.id);
+      return { ...(await viewFor(who.user.id, { ...d, checks: before })), fixed: false, notice: "We couldn't fix that line this time. Edit it yourself, or try once more." };
+    }
+    const { data, error } = await admin.from("blocky_worlds_drafts").update({ lines: next.lines, checks: { ...checks, lineFixes: Number(d.checks?.lineFixes ?? 0) + 1 }, updated_at: new Date().toISOString() }).eq("id", d.id).select("*").single();
+    if (error) throw new ApiError("SERVER", undefined, {}, error.message);
+    return { ...(await viewFor(who.user.id, data)), fixed: true, changed: spot.lines };
+  }
+
   if (action === "writeScript" || action === "rewrite" || action === "fixOpener" || action === "fixPart") {
     trace.step = "sign-in";
     const who = await requireWriter(req, trace);
@@ -415,7 +491,7 @@ async function route(req: Request, body: any, trace: Trace) {
       const next = { ...d, lines: [{ ...lines[0], text: fix.line }, ...lines.slice(1)] };
       const checks = recheck(next);
       const { data } = await admin.from("blocky_worlds_drafts").update({ lines: next.lines, checks, writes: d.writes + 1, updated_at: new Date().toISOString() }).eq("id", d.id).select("*").single();
-      return draftView(data);
+      return await viewFor(who.user.id, data);
     }
 
     // "Fix it": only the lines a check flagged in one part are rewritten; every other line stays word for word; the
@@ -427,7 +503,7 @@ async function route(req: Request, body: any, trace: Trace) {
       const spots = problemSpots({ lines: d.lines ?? [] }, before.problems).filter((s: any) => s.fix === "part" && s.part === part);
       if (!spots.length) {
         // nothing left to fix there (fixed meanwhile): the current state, no call
-        return { ...draftView({ ...d, checks: before }), fixed: !before.problems.length, writesLeft: await scriptsLeft(who.user.id, counts) };
+        return { ...(await viewFor(who.user.id, { ...d, checks: before })), fixed: !before.problems.length, writesLeft: await scriptsLeft(who.user.id, counts) };
       }
       const indexes = [...new Set(spots.flatMap((s: any) => s.lines))].sort((a: number, b: number) => a - b);
       trace.step = "writer";
@@ -437,13 +513,14 @@ async function route(req: Request, body: any, trace: Trace) {
       } catch (e: any) { await logCall(who.user.id, "script", e?.costUsd ?? 0, false); throw writerError(e); }
       await logCall(who.user.id, "script", fix.costUsd);
       // saved only when it's better than before (fewer problems); otherwise the draft stays as it was
-      if (fix.check.problems.length >= before.problems.length) {
+      const after = paidGate(fix.check);
+      if (after.problems.length + after.notes.length >= before.problems.length + before.notes.length) {
         throw new ApiError("WRITER", "We couldn't fix that part this time. Try Fix it once more, or edit those lines yourself.", {}, `fixPart ${part}: ${fix.check.problems.join(" | ")}`);
       }
-      const checks = { ...fix.check, kind: kindOf(d) };
+      const checks = { ...after, kind: kindOf(d) };
       const { data, error } = await admin.from("blocky_worlds_drafts").update({ lines: fix.script.lines, checks, writes: d.writes + 1, updated_at: new Date().toISOString() }).eq("id", d.id).select("*").single();
       if (error) throw new ApiError("SERVER", undefined, {}, error.message);
-      return { ...draftView(data), fixed: fix.fixed, notice: stillFailing(checks.problems), writesLeft: await scriptsLeft(who.user.id) };
+      return { ...(await viewFor(who.user.id, data)), fixed: fix.fixed, notice: stillFailing(checks.problems), writesLeft: await scriptsLeft(who.user.id) };
     }
 
     // the idea: from the card (writeScript), or the draft's (rewrite); a draft of the user's own gets a small idea
@@ -489,7 +566,7 @@ async function route(req: Request, body: any, trace: Trace) {
       const row = { title: r.script.title || d.title, length_sec: lengthSec, lines: r.script.lines, post: r.script.post, checks: hybridChecksRow(r, { flow: "move to our town", previous: d.checks }), card: hybridCard(r, recipe), beats: hybridBeats(r.plan, lengthSec), updated_at: new Date().toISOString() };
       const saved = await admin.from("blocky_worlds_drafts").update({ ...row, writes: d.writes + 1 }).eq("id", d.id).select("*").single();
       if (saved.error) throw new ApiError("SERVER", undefined, {}, saved.error.message);
-      return { ...draftView(saved.data), notice: stillFailing(row.checks.problems ?? []) ?? movedNotice(r.card), writesLeft: await scriptsLeft(who.user.id) };
+      return { ...(await viewFor(who.user.id, saved.data)), notice: stillFailing(paidGate(row.checks).problems) ?? movedNotice(r.card), writesLeft: await scriptsLeft(who.user.id) };
     }
     if (HYBRID_ON && (hybridWrite || hybridRewrite)) {
       trace.step = hybridWrite ? "hybrid writer" : "hybrid rewrite";
@@ -501,7 +578,7 @@ async function route(req: Request, body: any, trace: Trace) {
         r = await writeHybrid({ apiKey: ANTHROPIC_KEY, topic: topicText, recipe, examples: examplesFor(recipe.id), lengthSec, meter, judge: APP_HYBRID.judge, idea: card, ttl: CACHE_TTL, board: KIT });
         if (r.script?.lines?.length) row = { title: r.script.title, length_sec: lengthSec, lines: r.script.lines, post: r.script.post, checks: hybridChecksRow(r), card: hybridCard(r, recipe), beats: hybridBeats(r.plan, lengthSec) };
       } else {
-        const failed = recheck(d, lengthSec).problems;
+        const failed = failedOf(recheck(d, lengthSec));
         r = await rewriteHybrid({ apiKey: ANTHROPIC_KEY, plan: d.card.hybrid.plan, card: d.card, examples: examplesByIds(d.card.hybrid.refs ?? []), lengthSec, previous: { lines: d.lines }, failed, note, meter, ttl: CACHE_TTL, board: KIT });
         if (r.script?.lines?.length) row = { title: r.script.title || d.title, length_sec: lengthSec, lines: r.script.lines, post: r.script.post, checks: hybridChecksRow(r, { flow: "hybrid rewrite", previous: d.checks }) };
       }
@@ -516,7 +593,9 @@ async function route(req: Request, body: any, trace: Trace) {
         ? await admin.from("blocky_worlds_drafts").update({ ...row, writes: d.writes + 1 }).eq("id", d.id).select("*").single()
         : await admin.from("blocky_worlds_drafts").insert({ ...row, user_id: who.user.id, idea_id: ideaRow.id, source: "topic", writes: 1 }).select("*").single();
       if (saved.error) throw new ApiError("SERVER", undefined, {}, saved.error.message);
-      return { ...draftView(saved.data), notice: stillFailing(row.checks.problems ?? []) ?? (hybridWrite ? movedNotice(r.card) : null), writesLeft: await scriptsLeft(who.user.id) };
+      // a style rule the writer's own fix left open is fixed line by line before the script is shown (paidGate.js notes)
+      const fixedRow = await autoFixStyle(who.user.id, saved.data);
+      return { ...(await viewFor(who.user.id, fixedRow)), notice: stillFailing(paidGate(fixedRow.checks).problems) ?? (hybridWrite ? movedNotice(r.card) : null), writesLeft: await scriptsLeft(who.user.id) };
     }
 
     trace.step = "card";
@@ -536,7 +615,7 @@ async function route(req: Request, body: any, trace: Trace) {
     let written: any;
     try {
       // a rewrite is told exactly which checks the current version fails (writeScript re-checks and retries once)
-      const failed = d ? recheck(d, lengthSec).problems : [];
+      const failed = d ? failedOf(recheck(d, lengthSec)) : [];
       written = await writeScript({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, idea: card, lengthSec, previous: d ? { lines: d.lines } : null, note, beats, failed, board: KIT });
     } catch (e: any) {
       await logCall(who.user.id, "script", (e?.costUsd ?? 0) + costUsd, false);
@@ -551,7 +630,8 @@ async function route(req: Request, body: any, trace: Trace) {
     if (saved.error) throw new ApiError("SERVER", undefined, {}, saved.error.message);
     // learning: a library idea was picked (its first script) or rewritten
     if (libraryId) await countEvent(who.user.id, libraryId, d ? "rewritten" : "picked", { draftId: saved.data.id });
-    return { ...draftView(saved.data), notice: stillFailing(checks.problems ?? []), writesLeft: await scriptsLeft(who.user.id) };
+    const fixedRow = await autoFixStyle(who.user.id, saved.data);
+    return { ...(await viewFor(who.user.id, fixedRow)), notice: stillFailing(paidGate(fixedRow.checks).problems), writesLeft: await scriptsLeft(who.user.id) };
   }
 
   if (action === "saveScript") {
@@ -561,7 +641,7 @@ async function route(req: Request, body: any, trace: Trace) {
     const d = body?.draftId ? await loadDraft(who.user.id, body.draftId) : null;
     // the user's lines (an edit keeps each line's part when it's one of ours) or their own pasted text
     const script = Array.isArray(body?.lines)
-      ? normalizeScript({ title: body?.title ?? d?.title ?? "", lines: body.lines.slice(0, 200).map((l: any) => ({ part: PART_IDS.includes(l?.part) ? l.part : "own", text: String(l?.text ?? "").slice(0, 400) })), post: d?.post ?? { title: body?.title ?? "" } })
+      ? normalizeScript({ title: body?.title ?? d?.title ?? "", lines: body.lines.slice(0, 200).map((l: any) => ({ part: PART_IDS.includes(l?.part) ? l.part : "own", text: String(l?.text ?? "").slice(0, 400), ...(typeof l?.beat === "string" ? { beat: l.beat } : {}), ...(typeof l?.speaker === "string" ? { speaker: l.speaker } : {}) })), post: d?.post ?? { title: body?.title ?? "" } })
       : scriptFromText(String(body?.text ?? "").slice(0, 12000), String(body?.title ?? "").slice(0, 80));
     if (!script.lines.length) throw new ApiError("BAD_INPUT", "Write or paste a script first.");
     if (!script.post.title) script.post.title = script.title || script.lines[0].text.slice(0, 70);
@@ -572,19 +652,22 @@ async function route(req: Request, body: any, trace: Trace) {
     }
     // launch mode: a pasted script that needs a cave is told so here, with Fix it / Move it to our town (never after the charge)
     // (Studio: the same checks without any kit miss; only its blocks, studioBuilds.js)
-    const checked = KIT ? { ...draftCheck(script, lengthSec, "own", card, { board: KIT }), kind: "own" } : checks;
+    const checked = paidGate(KIT ? { ...draftCheck(script, lengthSec, "own", card, { board: KIT }), kind: "own" } : checks);
     const row = { title: script.title || script.post.title, length_sec: lengthSec, lines: script.lines, post: script.post, checks: checked, card, updated_at: new Date().toISOString() };
     const saved = d
       ? await admin.from("blocky_worlds_drafts").update(row).eq("id", d.id).select("*").single()
       : await admin.from("blocky_worlds_drafts").insert({ ...row, user_id: who.user.id, source: "own" }).select("*").single();
     if (saved.error) throw new ApiError("SERVER", undefined, {}, saved.error.message);
-    return draftView(saved.data);
+    return await viewFor(who.user.id, saved.data);
   }
 
   if (action === "drafts") {
     const who = await requireUser(req, trace);
     const { data } = await admin.from("blocky_worlds_drafts").select("*").eq("user_id", who.user.id).is("deleted_at", null).order("updated_at", { ascending: false }).limit(10);
-    return { drafts: (data ?? []).map(draftView), writesLeft: canWrite(who.plan) ? await scriptsLeft(who.user.id) : 0 };
+    const ids = (data ?? []).map((x: any) => x.id);
+    const { data: pre } = ids.length ? await admin.from("blocky_worlds_prepays").select("draft_id, credits, created_at, expires_at").eq("user_id", who.user.id).in("draft_id", ids).is("run_id", null).is("refunded_at", null) : { data: [] };
+    const paidMap = new Map((pre ?? []).map((p: any) => [p.draft_id, p]));
+    return { drafts: (data ?? []).map((x: any) => { const p: any = paidMap.get(x.id); return { ...draftView(x), ...(p ? { flat: { credits: p.credits, charge: "script", paidAt: p.created_at, expiresAt: p.expires_at, keepCredits: BLENDER_FLAT.keepCredits } } : {}) }; }), writesLeft: canWrite(who.plan) ? await scriptsLeft(who.user.id) : 0 };
   }
 
   // ---------- "EXPLAIN MORE" (owner-only first, the Blender UI; _shared/blockyWorlds/adapt.js) ----------
@@ -596,7 +679,8 @@ async function route(req: Request, body: any, trace: Trace) {
     if (!blenderAvailable(who)) throw new ApiError("NOT_FOUND", "Not available.");
     const text: any = checkStoryText(body?.text);
     if (!text.ok) throw new ApiError("BAD_INPUT", text.error);
-    const bad = topicProblem(text.text.slice(0, 2000));
+    // the story box is checked as a story (adapt.js: 25 words to ~3,000 characters), never as a 200-character topic
+    const bad = storyTextProblem(text.text);
     if (bad) throw new ApiError("BAD_INPUT", bad);
     const characters = cleanCharacters(body?.characters);
     trace.step = "limits";
@@ -616,7 +700,8 @@ async function route(req: Request, body: any, trace: Trace) {
     const row = { title: a.script.title || a.script.lines[0]?.text?.slice(0, 60) || "My story", length_sec: lengthSec, lines: a.script.lines, post: { ...(a.script.post ?? {}), title: a.script.post?.title || a.script.title || "" }, checks: { ...checks, warnings: [...(checks.warnings ?? []), ...a.check.advisory] }, card, updated_at: new Date().toISOString() };
     const saved = await admin.from("blocky_worlds_drafts").insert({ ...row, user_id: who.user.id, source: "own" }).select("*").single();
     if (saved.error) throw new ApiError("SERVER", undefined, {}, saved.error.message);
-    return { ...draftView(saved.data), adapted: { kept: a.kept, changed: a.changed, stillOpen: a.check.hard }, writesLeft: await scriptsLeft(who.user.id) };
+    const fixedRow = await autoFixStyle(who.user.id, saved.data);
+    return { ...(await viewFor(who.user.id, fixedRow)), adapted: { kept: a.kept, changed: a.changed, stillOpen: a.check.hard }, writesLeft: await scriptsLeft(who.user.id) };
   }
 
   // ---------- CHARACTER REFERENCE (owner-only first; _shared/blockyWorlds/characterRef.js) ----------

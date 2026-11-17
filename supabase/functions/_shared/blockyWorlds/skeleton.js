@@ -11,7 +11,7 @@
 //   8. the closer flips line 1 (shares a word with it, in the last two lines)
 //   + the twist is set up earlier: its clue is in a line before the discovery and comes back in the discovery or
 //     climax, and the climax brings no new magic (a magic word that was never used before the discovery)
-import { hasOpener } from "./opener.js";
+import { townLineIndex } from "./opener.js";
 import { contentWords } from "./library.js";
 import { propReference } from "./protocol.js";
 import { norm } from "./antiCopy.js";
@@ -107,7 +107,8 @@ export function skeletonProblems(script, skel = {}, card = null) {
   if (!lines.length) return [`${SKELETON_PREFIX}: the script is empty.`];
   const firstWords = contentWords(lines[0].text);
   // 1. rule + price first
-  if (!hasOpener(lines[0].text)) bad('line 1 must state the rule ("In this town, ...").');
+  // 2026-11-17: the one town-line rule (opener.js): "in this town" within the first 2 lines (the hook may come first)
+  if (townLineIndex(lines) < 0) bad('lines 1-2 must state the rule ("in this town, ...").');
   // the price within lines 1-3 (owner, 2026-11-08: "the price can be in line 3")
   const price = lineOf(lines, skel.price);
   if (price < 0 || price > 2) bad(`the price of breaking the rule must be said in lines 1 to 3${price > 2 ? ` (it comes in line ${price + 1})` : ""}.`);

@@ -183,7 +183,7 @@ test("hybrid checks: the good script has no hard problem; soft misses are adviso
 test("hybrid checks: opener, length, real copying and a lost premise are hard", () => {
   const s = clone(SCRIPT);
   s.lines[1] = { part: "rule", beat: "rule", text: "Poorer people live on the ground here." };
-  assert.ok(hybridChecks({ script: s, skeleton: MAP, card: card(), lengthSec: 90 }).hard.some((x) => /^The rule line is missing/.test(x)), "the rule line (You see, in this town, ...) is required, the hook comes first");
+  assert.ok(hybridChecks({ script: s, skeleton: MAP, card: card(), lengthSec: 90 }).hard.some((x) => /^Say "in this town"/.test(x)), "the town line (You see, in this town, ...) is required in the first 2 lines, the hook comes first");
   const short = { ...clone(SCRIPT), lines: SCRIPT.lines.slice(0, 20) };
   assert.ok(hybridChecks({ script: short, skeleton: MAP, card: card(), lengthSec: 90 }).hard.some((x) => /^Too short/.test(x)));
   const ref = { id: "ref9", text: "Old Thistle said his house is so high it has snow on the roof all year." };

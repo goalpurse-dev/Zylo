@@ -7,7 +7,7 @@
 // (paceClean) and sizes the script to the length (targetWords).
 import { LENGTHS, PACE, targetWords } from "./config.js";
 import { FORMULAS, MOODS, TWISTS } from "./formulas.js";
-import { fixOpener, hasOpener, openerProblem, ruleLineProblem } from "./opener.js";
+import { fixOpener, hasOpener, openerProblem, ruleLineProblem, townLineIndex, townLineProblem } from "./opener.js";
 import { safetyProblems } from "./safety.js";
 import { EXAMPLE_SCRIPT } from "./examples.js";
 import { topicBlock } from "./topic.js";
@@ -223,17 +223,23 @@ export function checkScript(script, lengthSec, kind = "written") {
   if (!lines.length) return { problems: ["The script is empty."], warnings, words: 0, seconds: 0 };
   // the story formula (2026-11-13): a script whose lines carry beats opens with the HOOK and says "You see, in this town, [rule]" within
   // its first two sentences; an older 7-part script keeps the "In this town" opener
-  const op = lines.some((l) => l.beat) ? ruleLineProblem(lines) : openerProblem(lines[0].text);
+  // 2026-11-17 (owner): ONE rule for every script: "in this town" / "in this world" within the first 2 lines (opener.js)
+  const op = townLineProblem(lines);
   if (op) problems.push(op);
   const total = lines.reduce((a, l) => a + wordCount(l.text), 0);
   const target = targetWords(lengthSec), [lo, hi] = BAND[kind] ?? BAND.written;
   if (total < Math.round(target * lo)) problems.push(`Too short: ${total} words, a ${lengthSec} s video needs at least ${Math.round(target * lo)}.`);
   if (total > Math.round(target * hi)) problems.push(`Too long: ${total} words, a ${lengthSec} s video fits ${Math.round(target * hi)} at most.`);
+  // the town line ("You see, in this town, [the rule].", line 1 or 2) is the opener: it may run longer, and its own
+  // "you see, in this town," commas don't count (2026-11-17: the writer's correct line 2 was flagged as long + 2 commas)
+  const ti = townLineIndex(lines);
   lines.forEach((l, i) => {
-    const n = wordCount(l.text), max = i === 0 ? LINE.openerMaxWords : LINE.maxWords;
+    const opener = i === 0 || i === ti;
+    const n = wordCount(l.text), max = opener ? LINE.openerMaxWords : LINE.maxWords;
     if (n > max) (kind === "written" ? problems : warnings).push(`Line ${i + 1} has ${n} words (keep it under ${max}): "${l.text.slice(0, 50)}..."`);
-    else if (i > 0 && n > LINE.softMaxWords) warnings.push(`Line ${i + 1} is long (${n} words).`);
-    if (i > 0 && (l.text.match(/,/g) ?? []).length > LINE.maxCommas) warnings.push(`Line ${i + 1} has more than one comma.`);
+    else if (!opener && n > LINE.softMaxWords) warnings.push(`Line ${i + 1} is long (${n} words).`);
+    const body = i === ti ? l.text.replace(/^.*?\bin this (?:town|world)\b,?/i, "") : l.text;
+    if (i > 0 && (body.match(/,/g) ?? []).length > LINE.maxCommas) warnings.push(`Line ${i + 1} has more than one comma.`);
     for (const re of LAZY) if (re.test(l.text)) warnings.push(`Line ${i + 1} uses "${l.text.match(re)[0]}".`);
   });
   const sorted = lines.map((l) => wordCount(l.text)).sort((a, b) => a - b), median = sorted[Math.floor(sorted.length / 2)];

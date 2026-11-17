@@ -21,6 +21,7 @@ const LOCAL = typeof window !== "undefined" && ["localhost", "127.0.0.1"].includ
 const ROLES = ["Main character", "Villain", "Best friend", "Parent", "Teacher", "Other"];
 const FACE = { "Main character": "hero", Villain: "villain", "Best friend": "kid", Parent: "plain", Teacher: "plain", Other: "kid" };
 const TARGET_LENGTH = 80; // the writer's target: ~90 s of real video (the length comes from the story, no picker)
+const STORY_MAX = 3000; // "Explain more": the story box takes up to ~3,000 characters (the server's adapt.js ADAPT.maxChars)
 const cx = (...a) => a.filter(Boolean).join(" ");
 
 export default function BlenderMaker({ flow, pageAccess, onSignUp, onUpgrade, onNoCredits, balance = 0 }) {
@@ -49,6 +50,8 @@ export default function BlenderMaker({ flow, pageAccess, onSignUp, onUpgrade, on
     if (error.code === "SIGN_IN") onSignUp?.();
     else if (error.code === "UPGRADE") onUpgrade?.();
     else if (error.code === "CREDITS") onNoCredits?.(error.credits ?? flow.draft?.credits);
+    // a blocker is shown on the step it belongs to (the script), never as a note about a step that isn't on screen
+    else if (error.code === "NOT_READY" && error.problems?.length && flow.draft) { setView("script"); setNotice(error.problems[0]); }
     else setNotice(error.code === "NOT_READY" ? error.problems?.[0] ?? error.message : error.message);
   };
   const guarded = async (fn) => {
@@ -67,7 +70,8 @@ export default function BlenderMaker({ flow, pageAccess, onSignUp, onUpgrade, on
     if (r?.ok) setView("script");
   };
   const toScenes = async () => {
-    if (flow.edited) { const s = await guarded(() => flow.saveEdits()); if (!s?.ok) return; }
+    if (flow.edited) { const s = await guarded(() => flow.saveEdits()); if (!s?.ok) return; if (!s.value?.ready) return; }
+    if (!flow.draft?.ready) return;
     setView("scenes");
     if (!flow.scenePlan) flow.loadScenePlan();
   };
@@ -86,7 +90,7 @@ export default function BlenderMaker({ flow, pageAccess, onSignUp, onUpgrade, on
   const stepIdx = STEPS.findIndex(([id]) => id === view);
   const writing = ["turning", "writing", "adapting"].includes(flow.busy);
   const words = story.trim().split(/\s+/).filter(Boolean).length;
-  const canWrite = !writing && (mode === "explain" ? words >= 25 : flow.topic.trim().length >= 3);
+  const canWrite = !writing && (mode === "explain" ? words >= 25 && story.length <= STORY_MAX : flow.topic.trim().length >= 3);
   const hasRecent = (flow.recent?.length ?? 0) > 0;
   const d = flow.draft;
 
@@ -131,10 +135,10 @@ export default function BlenderMaker({ flow, pageAccess, onSignUp, onUpgrade, on
         {notice && <div className="bwm-rise flex items-start gap-3 rounded-2xl border-2 border-[#ff6fa8] bg-[#2a1220] px-4 py-3 text-[17px] font-bold text-white" role="status"><AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[#ff6fa8]" />{notice}<button type="button" onClick={() => setNotice(null)} className="ml-auto" aria-label="Close"><X className="h-5 w-5" /></button></div>}
 
         {view === "topic" && (
-          <TopicStep flow={flow} mode={mode} setMode={setMode} story={story} setStory={setStory} writing={writing} onWrite={write} />
+          <TopicStep flow={flow} mode={mode} setMode={setMode} story={story} setStory={setStory} writing={writing} onWrite={write} onOpenDraft={(x) => { flow.openDraft(x); setNotice(null); setView("script"); }} />
         )}
         {view === "script" && flow.draft && (
-          <ScriptStep flat={flat} flow={flow} />
+          <ScriptStep flat={flat} flow={flow} onNotice={setNotice} />
         )}
         {view === "scenes" && flow.draft && (
           <ScenesStep flow={flow} />
@@ -153,16 +157,16 @@ export default function BlenderMaker({ flow, pageAccess, onSignUp, onUpgrade, on
             {view === "script" && d && <>
               <button type="button" className="bwm-btn-2" onClick={() => setView("topic")}><ArrowLeft className="h-5 w-5" />Back</button>
               <button type="button" className="bwm-btn-2" onClick={() => guarded(() => flow.rewrite())} disabled={Boolean(flow.busy)}>{flow.busy === "rewriting" ? <Blocks label="Rewriting…" /> : <><RefreshCw className="h-5 w-5" />Rewrite</>}</button>
-              <button type="button" className="bwm-btn flex-1 md:flex-none" onClick={toScenes} disabled={Boolean(flow.busy) || (!d.ready && !flow.edited)} data-testid="bwm-to-scenes">Next: scenes<ArrowRight className="h-5 w-5" /></button>
+              <button type="button" className="bwm-btn flex-1 md:flex-none" onClick={toScenes} disabled={(Boolean(flow.busy) && flow.busy !== "saving") || (!d.ready && !flow.edited)} data-testid="bwm-to-scenes">Next: scenes<ArrowRight className="h-5 w-5" /></button>
             </>}
             {view === "scenes" && d && <>
               <button type="button" className="bwm-btn-2" onClick={() => setView("script")}><ArrowLeft className="h-5 w-5" />Back</button>
-              <button type="button" className="bwm-btn flex-1 md:flex-none" onClick={() => setView("make")} disabled={!flow.scenePlan} data-testid="bwm-to-make">Next: make it<ArrowRight className="h-5 w-5" /></button>
+              <button type="button" className="bwm-btn flex-1 md:flex-none" onClick={() => setView("make")} disabled={!flow.scenePlan || !d.ready} data-testid="bwm-to-make">Next: make it<ArrowRight className="h-5 w-5" /></button>
             </>}
             {view === "make" && d && <>
               <button type="button" className="bwm-btn-2" onClick={() => setView("scenes")}><ArrowLeft className="h-5 w-5" />Back</button>
               <button type="button" className="bwm-btn flex-1 md:flex-none" onClick={() => (LOCAL ? setConfirm(true) : make())} disabled={Boolean(flow.busy) || !d.ready} data-testid="bwm-make">
-                {flow.busy === "starting" ? <Blocks label="Starting…" /> : <><Clapperboard className="h-5 w-5" />Make my video{paidFor(d) ? <span className="ml-1 rounded-xl bg-[#0d1208]/15 px-2 py-0.5 text-[14px]">included</span> : <span className="ml-1 inline-flex items-center rounded-xl bg-[#0d1208]/15 px-2 py-0.5 text-[17px]"><Cr n={flat.credits} /></span>}</>}
+                {flow.busy === "starting" ? <Blocks label="Starting…" /> : <><Clapperboard className="h-5 w-5" />Make my video{paidFor(d) ? <span className="ml-1 inline-flex items-center gap-1 rounded-xl bg-[#0d1208]/15 px-2 py-0.5 text-[14px]" data-testid="bwm-make-paid">Paid<Check className="h-4 w-4" strokeWidth={3} /></span> : <span className="ml-1 inline-flex items-center rounded-xl bg-[#0d1208]/15 px-2 py-0.5 text-[17px]"><Cr n={flat.credits} /></span>}</>}
               </button>
             </>}
           </StickyBar>
@@ -208,12 +212,30 @@ function Blocks({ label }) {
 }
 
 // ------------------------------------------------------------------ 1. topic
-function TopicStep({ flow, mode, setMode, story, setStory, writing, onWrite }) {
+function TopicStep({ flow, mode, setMode, story, setStory, writing, onWrite, onOpenDraft }) {
   const words = story.trim().split(/\s+/).filter(Boolean).length;
-  const can = !writing && (mode === "explain" ? words >= 25 : flow.topic.trim().length >= 3);
+  const can = !writing && (mode === "explain" ? words >= 25 && story.length <= STORY_MAX : flow.topic.trim().length >= 3);
   const ideas = flow.shownIdeas.slice(0, 6);
+  const paidDrafts = (flow.paidDrafts ?? []).slice(0, 3);
   return (
     <>
+      {/* a script already paid for at "Write my script" and not made yet: one tap back to it (it never needs paying again) */}
+      {paidDrafts.length > 0 && (
+        <section className="bwm-card bwm-rise border-[#bef264]/60 p-4 sm:p-5" data-testid="bwm-paid-drafts">
+          <h2 className="text-[18px] font-black tracking-[-0.02em]">Continue your paid script</h2>
+          <p className="mt-0.5 text-[14.5px] font-semibold text-white/80">Already paid: pick up where you left off.</p>
+          <ul className="mt-3 flex flex-col gap-2">
+            {paidDrafts.map((x) => (
+              <li key={x.id}>
+                <button type="button" className="bwm-chip flex w-full items-center justify-between gap-3 text-left" onClick={() => onOpenDraft(x)} data-testid="bwm-paid-draft">
+                  <span className="min-w-0 truncate text-[16px] font-black text-white">{x.title}</span>
+                  <span className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-[#bef264] px-2 py-0.5 text-[13px] font-black text-[#0d1208]">Paid<Check className="h-3.5 w-3.5" strokeWidth={3} /></span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       <Card n={1} title={<>Every story starts with <span className="bw-mark whitespace-nowrap">&ldquo;In this town&hellip;&rdquo;</span></>} sub="One line is enough. Or tell us more and we'll shape it.">
         <div className="bwm-tabs mb-3" role="group" aria-label="How do you want to start?">
           <button type="button" className="bwm-tab" aria-pressed={mode === "topic"} onClick={() => setMode("topic")}><Sparkles className="mr-1.5 inline h-5 w-5" />Topic</button>
@@ -245,8 +267,11 @@ function TopicStep({ flow, mode, setMode, story, setStory, writing, onWrite }) {
         ) : (
           <>
             <label className="mb-1.5 block text-[16px] font-black" htmlFor="bwm-story">Tell us your story, or paste your whole narration</label>
-            <textarea id="bwm-story" className="bwm-input min-h-[170px] resize-y !text-[16.5px] leading-relaxed" value={story} onChange={(e) => setStory(e.target.value)} maxLength={8000} placeholder="In my town, every lie makes you a little smaller. My best friend Zara fibs all day and fits in a teacup. I never lie, so I'm the biggest kid in town. One day a storm comes…" />
-            <p className={cx("mt-2 text-[16px] font-bold", words >= 25 ? "text-[#bef264]" : "text-white/75")}>{words >= 25 ? <><Check className="mr-1 inline h-4 w-4" strokeWidth={3} />{words} words. We keep your characters and your twist.</> : `${words} of 25 words`}</p>
+            <textarea id="bwm-story" className="bwm-input min-h-[170px] resize-y !text-[16.5px] leading-relaxed" value={story} onChange={(e) => setStory(e.target.value.slice(0, STORY_MAX))} maxLength={STORY_MAX} placeholder="In my town, every lie makes you a little smaller. My best friend Zara fibs all day and fits in a teacup. I never lie, so I'm the biggest kid in town. One day a storm comes…" data-testid="bwm-story" />
+            <p className={cx("mt-2 flex flex-wrap justify-between gap-2 text-[16px] font-bold", words >= 25 ? "text-[#bef264]" : "text-white/75")} data-testid="bwm-story-count">
+              <span>{words >= 25 ? <><Check className="mr-1 inline h-4 w-4" strokeWidth={3} />{words} words. We keep your characters and your twist.</> : `${words} of at least 25 words`}</span>
+              <span className={cx("tabular-nums", story.length >= STORY_MAX ? "text-[#ffd23f]" : "text-white/60")}>{story.length.toLocaleString("en-US")} / {STORY_MAX.toLocaleString("en-US")} characters</span>
+            </p>
           </>
         )}
       </Card>
@@ -339,21 +364,54 @@ function CharactersCard({ flow }) {
 }
 
 // ------------------------------------------------------------------ 2. script
-function ScriptStep({ flat, flow }) {
+function ScriptStep({ flat, flow, onNotice }) {
   const d = flow.draft;
   const ready = d.ready && !flow.edited;
   const sec = Math.round(d.check?.seconds || d.lengthSec);
+  const blockers = d.check?.problems ?? [];
+  const notes = d.notes ?? [];
+  const flagged = new Set(notes.flatMap((n) => n.lines));
+  // owner 2026-11-17: an edit is saved when the line loses focus or on Enter, and the checks run again at once
+  const save = async () => { if (!flow.edited) return; const r = await flow.saveEdits(); if (!r.ok) onNotice?.(r.error?.message ?? "We couldn't save that line. Try again."); };
+  const fix = async (note) => { const r = await flow.fixLines(note.text); if (!r.ok) onNotice?.(r.error?.message ?? "We couldn't fix that line this time."); else if (r.value?.notice) onNotice?.(r.value.notice); };
+  const status = flow.busy === "saving" ? "Saving…" : flow.edited ? "Not saved yet" : "Saved";
   return (
-    <Card n={2} title="Your script" sub="Tap any line to change it. We read it in the narrator's voice.">
+    <Card n={2} title="Your script" sub="Tap any line to change it. It saves when you leave the line or press Enter.">
       <ol className="flex flex-col gap-2">
         {flow.lines.map((l, i) => (
           <li key={i} className="bwm-rise flex items-start gap-3" style={{ "--i": i }}>
-            <span className="mt-3 w-7 shrink-0 text-right text-[15px] font-black text-white/60">{i + 1}</span>
-            <AutoLine value={l.text} onChange={(v) => flow.editLine(i, v)} label={`Line ${i + 1}`} />
+            <span className={cx("mt-3 w-7 shrink-0 text-right text-[15px] font-black", flagged.has(i) ? "text-[#ffd23f]" : "text-white/60")}>{i + 1}</span>
+            <AutoLine value={l.text} onChange={(v) => flow.editLine(i, v)} onCommit={save} label={`Line ${i + 1}`} />
           </li>
         ))}
       </ol>
-      {(d.check?.problems ?? []).length > 0 && <p className="mt-4 rounded-2xl border-2 border-[#ffd23f] bg-[#2a2410] px-4 py-3 text-[16px] font-bold text-white">{d.check.problems[0]}</p>}
+      <p className={cx("mt-2 text-right text-[13.5px] font-bold", flow.edited ? "text-[#ffd23f]" : "text-white/60")} role="status" data-testid="bwm-save-status">{status === "Saved" ? <><Check className="mr-1 inline h-3.5 w-3.5" strokeWidth={3} />Saved</> : status}</p>
+      {/* real blockers (unsafe, brands, nothing to film): these stop "Make my video" until fixed */}
+      {blockers.length > 0 && (
+        <ul className="mt-3 flex flex-col gap-2" data-testid="bwm-blockers">
+          {blockers.map((p) => (
+            <li key={p} className="rounded-2xl border-2 border-[#ff6fa8] bg-[#2a1220] px-4 py-3 text-[16px] font-bold text-white"><AlertTriangle className="mr-2 inline h-5 w-5 text-[#ff6fa8]" />{p}</li>
+          ))}
+        </ul>
+      )}
+      {/* style notes: never a block; each has a free "Fix this line" that rewrites only its lines */}
+      {notes.length > 0 && (
+        <ul className="mt-3 flex flex-col gap-2" data-testid="bwm-notes">
+          {notes.map((n) => {
+            const busy = flow.busy === `fixline:${n.text}`;
+            return (
+              <li key={n.text} className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border-2 border-[#ffd23f]/60 bg-[#2a2410] px-4 py-2.5 text-[15px] font-bold text-white">
+                <span className="min-w-0 flex-1">{n.text}</span>
+                {n.lines.length > 0 && (
+                  <button type="button" className="bwm-btn-2 !min-h-[38px] !px-3 !text-[14px]" onClick={() => fix(n)} disabled={Boolean(flow.busy)} data-testid="bwm-fix-line">
+                    {busy ? <Blocks label="Fixing…" /> : <><Wand2 className="h-4 w-4" />Fix this line{n.lines.length > 1 ? "s" : ""}</>}
+                  </button>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
       <div className="mt-6 flex flex-col gap-4">
         <PriceTag flat={flat} paid={paidFor(d)} seconds={sec} ready={ready} edited={flow.edited} />
       </div>
@@ -361,13 +419,13 @@ function ScriptStep({ flat, flow }) {
   );
 }
 
-/** a script line that is always as tall as its text (phones wrap a line into 3-4 rows) */
-function AutoLine({ value, onChange, label }) {
+/** a script line that is always as tall as its text (phones wrap a line into 3-4 rows); Enter saves (no new line) */
+function AutoLine({ value, onChange, onCommit, label }) {
   const ref = useRef(null);
   const fit = () => { const el = ref.current; if (el) { el.style.height = "auto"; el.style.height = `${el.scrollHeight + 4}px`; } };
   useLayoutEffect(fit, [value]);
   useEffect(() => { window.addEventListener("resize", fit); return () => window.removeEventListener("resize", fit); }, []);
-  return <textarea ref={ref} rows={1} className="bwm-line overflow-hidden" value={value ?? ""} onChange={(e) => onChange(e.target.value)} aria-label={label} />;
+  return <textarea ref={ref} rows={1} className="bwm-line overflow-hidden" value={value ?? ""} onChange={(e) => onChange(e.target.value.replace(/\n/g, " "))} onBlur={() => onCommit?.()} onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent?.isComposing) { e.preventDefault(); e.currentTarget.blur(); } }} enterKeyHint="done" aria-label={label} />;
 }
 
 /** a credit amount with OUR credit symbol (the app's CreditIcon, as on the other templates' Generate buttons) */
@@ -390,8 +448,9 @@ function PriceTag({ flat, paid, seconds, ready, edited }) {
     <div className="bwm-pop flex items-center gap-4 rounded-2xl border-2 border-[#bef264]/60 bg-[#18210f] px-5 py-4" data-testid="bwm-price">
       <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-[#bef264] text-[#0d1208]"><CreditIcon className="h-7 w-7" /></span>
       <div>
-        <p className="text-[24px] font-black leading-none"><Cr n={flat.credits} className="h-6 w-6" />{paid && <span className="ml-2 align-middle text-[15px] font-black text-[#bef264]"><Check className="mr-0.5 inline h-4 w-4" strokeWidth={3} />Paid</span>}</p>
-        <p className="mt-1 text-[15.5px] font-bold text-white/80">{edited ? "Saved when you go on" : !ready ? "Fix the note above first" : paid ? `About ${seconds} s of video · rewrites, voice and render included` : `About ${seconds} s of video · paid when you press ${flat.charge === "script" ? "Write my script" : "Make my video"}`}</p>
+        {/* owner 2026-11-17: once paid, the price is never shown again: "Paid ✓" */}
+        <p className="text-[24px] font-black leading-none" data-testid="bwm-price-head">{paid ? <span className="text-[#bef264]">Paid<Check className="ml-1 inline h-6 w-6" strokeWidth={3} /></span> : <Cr n={flat.credits} className="h-6 w-6" />}</p>
+        <p className="mt-1 text-[15.5px] font-bold text-white/80">{edited ? "Your change saves when you leave the line" : !ready ? "Fix the red note above first" : paid ? `About ${seconds} s of video · rewrites, voice and render included` : `About ${seconds} s of video · paid when you press ${flat.charge === "script" ? "Write my script" : "Make my video"}`}</p>
       </div>
     </div>
   );
@@ -443,7 +502,7 @@ function MakeStep({ flat, flow }) {
         </div>
         <PriceTag flat={flat} paid={paidFor(d)} seconds={Math.round(d.check?.seconds || d.lengthSec)} ready={d.ready} />
       </div>
-      <PriceRule flat={flat} className="mt-4" />
+      {!paidFor(d) && <PriceRule flat={flat} className="mt-4" />}
     </Card>
   );
 }
@@ -454,7 +513,7 @@ function ConfirmDialog({ flat, draft, onCancel, onGo }) {
     <div className="bwm-overlay" role="dialog" aria-modal="true" aria-labelledby="bwm-confirm-title">
       <div className="bwm-dialog bwm-card is-active p-6 sm:p-8">
         <p className="inline-block rounded-lg bg-[#ffd23f] px-2.5 py-1 text-[13px] font-black uppercase tracking-[0.1em] text-black">Localhost check</p>
-        <h2 id="bwm-confirm-title" className="mt-3 text-[28px] font-black leading-tight">{paid ? <>Start the real video? It is already paid (<Cr n={flat.credits} className="h-6 w-6" />).</> : <>Start a real video for <Cr n={flat.credits} className="h-6 w-6" />?</>}</h2>
+        <h2 id="bwm-confirm-title" className="mt-3 text-[28px] font-black leading-tight">{paid ? <>Start the real video? It is already paid.</> : <>Start a real video for <Cr n={flat.credits} className="h-6 w-6" />?</>}</h2>
         <p className="mt-2 text-[17px] font-semibold text-white/85">This starts the real paid render (script, voice, director, GPU). It takes about 30–45 minutes. If it fails, all of it comes back.</p>
         <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <button type="button" className="bwm-btn-2" onClick={onCancel}>Not now</button>

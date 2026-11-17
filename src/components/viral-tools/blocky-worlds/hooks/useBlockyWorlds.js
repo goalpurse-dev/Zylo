@@ -34,6 +34,10 @@ export default function useBlockyWorlds({ enabled = true } = {}) {
   const [lengthSec, setLengthSec] = useState(90);
   const [draft, setDraft] = useState(null);
   const [edited, setEdited] = useState(null); // the user's unsaved line edits (null = none)
+  // every line edit bumps this; a save only clears the edits it saved (typing during a save is never lost)
+  const editRev = useRef(0);
+  // drafts already paid at "Write my script" with no video yet (the page offers "Continue" after a reload)
+  const [paidDrafts, setPaidDrafts] = useState([]);
   const [busy, setBusy] = useState(null); // "writing" | "rewriting" | "saving" | "fixing" | "fix:<part>" | "starting" | "retrying" | null
   const [pickedId, setPickedId] = useState(null);
   const [pickedIdea, setPickedIdea] = useState(null); // the idea card tapped into the prompt bar
@@ -58,7 +62,8 @@ export default function useBlockyWorlds({ enabled = true } = {}) {
   useEffect(() => {
     if (!access?.signedIn) return;
     worldsCall("list").then((r) => setRecent(r.runs ?? [])).catch(() => {});
-  }, [access?.signedIn]);
+    if (access?.flat?.charge === "script") worldsCall("drafts").then((r) => setPaidDrafts((r.drafts ?? []).filter((x) => x.flat?.paidAt))).catch(() => {});
+  }, [access?.signedIn, access?.flat?.charge]);
 
   // A run being made is polled until it's done or failed. A poll that errors keeps polling (backing off to 15 s), and
   // coming back to the tab asks at once: before 2026-11-05 one failed poll stopped the loop for good, so a failed run
@@ -173,21 +178,36 @@ export default function useBlockyWorlds({ enabled = true } = {}) {
   }, [attempt, ownText, lengthSec]);
 
   const editLine = useCallback((index, text) => {
+    editRev.current++;
     setEdited((prev) => { const lines = (prev ?? draft?.lines ?? []).map((l) => ({ ...l })); lines[index] = { ...lines[index], text }; return lines; });
   }, [draft]);
+  /** a draft from the server, keeping its paid state when an older reply didn't carry it */
+  const takeDraft = useCallback((v) => setDraft((prev) => ({ ...v, ...(v?.flat || prev?.id !== v?.id ? {} : prev?.flat ? { flat: prev.flat } : {}) })), []);
+  // owner 2026-11-17: a line edit is saved at once (on blur / Enter), re-checked by the server, and never reverted
   const saveEdits = useCallback(async () => {
     if (!draft || !edited) return { ok: true };
-    const r = await attempt("saving", () => worldsCall("saveScript", { draftId: draft.id, lines: edited, lengthSec: draft.lengthSec, title: draft.title }));
-    if (r.ok) { setDraft(r.value); setEdited(null); }
+    const rev = editRev.current, lines = edited;
+    const r = await attempt("saving", () => worldsCall("saveScript", { draftId: draft.id, lines, lengthSec: draft.lengthSec, title: draft.title }));
+    if (r.ok) { takeDraft(r.value); if (editRev.current === rev) setEdited(null); }
     return r;
-  }, [attempt, draft, edited]);
+  }, [attempt, draft, edited, takeDraft]);
+  /** "Fix this line": the server rewrites only the note's lines (free), then re-checks */
+  const fixLines = useCallback(async (note) => {
+    if (!draft || busy) return { ok: false };
+    if (edited) { const s = await saveEdits(); if (!s.ok) return s; }
+    const r = await attempt(`fixline:${note}`, () => worldsCall("fixLines", { draftId: draft.id, note }));
+    if (r.ok) { takeDraft(r.value); setEdited(null); }
+    return r;
+  }, [attempt, draft, busy, edited, saveEdits, takeDraft]);
+  /** reopen a paid script (after a reload): its lines, notes and paid state come from the server */
+  const openDraft = useCallback((d) => { setDraft(d); setEdited(null); setTakes([]); setRun(null); }, []);
 
   const rewrite = useCallback(async (note = "") => {
     if (!draft) return { ok: false };
     const r = await attempt("rewriting", () => worldsCall("rewrite", { draftId: draft.id, note, lengthSec }));
-    if (r.ok) { setDraft(r.value); setEdited(null); }
+    if (r.ok) { takeDraft(r.value); setEdited(null); }
     return r;
-  }, [attempt, draft, lengthSec]);
+  }, [attempt, draft, lengthSec, takeDraft]);
 
   /**
    * "Move it to our town" (the board-only launch mode): the story needs a world the video can't film, so it is written
@@ -273,7 +293,7 @@ export default function useBlockyWorlds({ enabled = true } = {}) {
     access, tab, setTab, mood, setMood, ideas, shownIdeas, askIdeas, topic, setTopic, topicIdeas, askTopic, ownText, setOwnText,
     lengthSec, setLengthSec, draft, lines: edited ?? draft?.lines ?? [], edited: Boolean(edited), editLine, saveEdits,
     busy, pickedId, writeFromIdea, picked, pickIdea, continueStory, takes, tryTake, saveOwn, rewrite, moveToTown, fixOpener, fixPart, removeWatermark, setRemoveWatermark,
-    run, recent, generate, retryRun, rewriteAndRetry, sendEvent, openRun, startOver,
+    run, recent, generate, retryRun, rewriteAndRetry, sendEvent, openRun, startOver, fixLines, paidDrafts, openDraft,
     scenePlan, loadScenePlan, changeScene,
     characters, setCharacters, adaptStory, readCharacter, setFlat,
   };

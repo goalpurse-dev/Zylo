@@ -163,7 +163,9 @@ test("script: pausing punctuation is cleaned out, meaning kept", () => {
 test("script: the checks catch a wrong opener, wrong length, long lines, parts out of order and banned names", () => {
   const base = normalizeScript(EXAMPLE_SCRIPT);
   const swap = (i, text) => ({ ...base, lines: base.lines.map((l, k) => (k === i ? { ...l, text } : l)) });
-  assert.match(checkScript(swap(0, "Once upon a time there was a whisper town."), 90).problems.join(), /must start/);
+  // 2026-11-17: one rule, "in this town" within the first 2 lines (the example says it in line 1)
+  assert.match(checkScript(swap(0, "Once upon a time there was a whisper town."), 90).problems.join(), /Say "in this town"/);
+  assert.ok(!/in this town/.test(checkScript({ ...base, lines: [{ ...base.lines[0], text: "And I just whispered!" }, { ...base.lines[1], text: `You see, in this town, ${base.lines[0].text.replace(/^In this town, /, "")}` }, ...base.lines.slice(2)] }, 90).problems.join()), "result-first hook + the rule in line 2 passes");
   assert.match(checkScript(base, 60).problems.join(), /Too long/);
   assert.match(checkScript(base, 120).problems.join(), /Too short/);
   assert.match(checkScript(swap(5, "This line is far far far far far far far far far far far far far far far far too long."), 90).problems.join(), /Line 6 has/);
