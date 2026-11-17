@@ -8,6 +8,7 @@ import ZyvoSuiteCarousel from "../../components/workspace/ZyvoSuiteCarousel.jsx"
 import MadeWithZyvo from "../../components/home-v2/madeWithZyvo/MadeWithZyvo.jsx";
 import InThisTownLaunch from "../../components/home-v2/InThisTownLaunch.jsx";
 import RealThreeD from "../../components/home-v2/RealThreeD.jsx";
+import WorkflowNiches from "../../components/home-v2/WorkflowNiches.jsx";
 import useBlockyWorldsAccess from "../../components/viral-tools/blocky-worlds/api/blockyWorldsAccess";
 import { showBlockyWorlds } from "../../data/blockyWorlds";
 import { FeaturedTemplate, HOME_MAX_W, JumpBackInV2, LongFormSection, PathCards, PhoneTemplates, PhoneTools, SectionHeader, TutorialsRow, WhatsNewRow, suiteTemplates } from "../../components/home-v2/HomeV2Sections.jsx";
@@ -69,6 +70,9 @@ export default function HomeV2() {
           <span className="block text-white/45 md:mt-1" data-testid="home-free-line">{FREE_PLAN_LINE}</span>
         </p>
       </div>
+
+      {/* Workflows for viral niches: a hub, pulsing lines, one card per template (In This Town first) */}
+      <WorkflowNiches />
 
       <LongFormSection />
 

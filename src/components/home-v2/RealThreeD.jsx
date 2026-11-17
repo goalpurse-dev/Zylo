@@ -84,7 +84,7 @@ export default function RealThreeD() {
   return (
     <section className="r3d" aria-labelledby="r3d-title" data-testid="home-real-3d">
       <div className="r3d-copy">
-        <p className="r3d-kicker"><span aria-hidden="true" /> How In This Town is made</p>
+        <p className="r3d-kicker"><span aria-hidden="true" /> Inside the studio · How In This Town is made</p>
         <h2 id="r3d-title">Not AI slop. <em>Real 3D worlds.</em></h2>
         <p className="r3d-sub">Every In This Town video is built like an animation studio would: real 3D sets in Blender, our own characters, an AI director that plans every shot and checks every frame, rendered on GPUs.</p>
         <ol className="r3d-steps" aria-label="How one shot is built">

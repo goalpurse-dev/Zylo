@@ -14,7 +14,7 @@
 }
 .town-dialog-art {
   position: relative; overflow: hidden; isolation: isolate;
-  background: linear-gradient(160deg, #3021395c, #604053aa 50%, #211923), url("/blocky-worlds/clips/night.jpg") center / cover;
+  background: linear-gradient(160deg, #211923c4, #3a2433b8 50%, #211923f0), url("/media/how-its-built/in-this-town-card-16x9.webp") center / cover;
 }
 .town-dialog-print {
   position: absolute; width: 63%; height: 64%; object-fit: cover; border: 4px solid #f5e2c6; border-bottom-width: 12px;
