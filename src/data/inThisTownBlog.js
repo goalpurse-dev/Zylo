@@ -3,7 +3,7 @@
 // src/app/blog/MarkdownArticle.jsx renders: ## / ### headings, lists, > quotes, tables, **bold**, CTA lines
 // "[Primary CTA: label → /path]", then "## FAQ" (### question + answer) and "## Related links" ("Title → /path").
 // Facts only: no invented numbers, no other creator's scripts. The genre's name follows GENRE (inThisTownLanding.js).
-import { GENRE, IN_THIS_TOWN_PATH, IN_THIS_TOWN_PRICE, TOWN_BLOG } from "./inThisTownLanding.js";
+import { GENRE, IN_THIS_TOWN_PATH, IN_THIS_TOWN_PRICE, TOWN_BLOG, getTutorial, tutorialVideoObject } from "./inThisTownLanding.js";
 import { extractFaqs } from "../app/blog/markdownBlogUtils.js";
 
 const R = GENRE ? `${GENRE.style} ` : "";            // "Roblox-style " or "" (owner, 2026-11-17: titles say "Roblox-style", never the bare name)
@@ -496,24 +496,28 @@ export const TOWN_GUIDES = [
     description: `Make an "In this town" ${RS} story Short step by step: the rule, the hook, the 7-beat story, one shot per line, voice, captions and posting.`,
     readTime: "8 min read", heroAlt: "Milo, a blocky boy in a striped yellow shirt, from an In This Town story made with Zyvo",
     markdown: HOW,
+    tutorial: { id: "nb9acc6kWzo", before: "## What an \"In this town\" video is" },
   }),
   POST("in-this-town-story-ideas", {
     seoTitle: `50 "In This Town" Story Ideas for TikTok & YouTube Shorts`,
     description: `50 original "In this town" story rules for ${RS} story Shorts, sorted by theme, with a note on where each story could go.`,
     readTime: "10 min read", heroAlt: "A blocky plane cabin from an In This Town story made with Zyvo",
     markdown: IDEAS,
+    tutorial: { id: "SZ_ddS9JvBs", before: "## How to use this list" },
   }),
   POST("viral-blocky-story-formula", {
     seoTitle: `The Story Formula Behind Viral ${R}Story Videos`,
     description: `The 7-beat structure behind viral ${RS} story videos, from the rule to the twist and cliffhanger, explained with an original example.`,
     readTime: "8 min read", heroAlt: "A blocky boy by a glowing coin at the foot of a tower, from an In This Town story made with Zyvo",
     markdown: FORMULA,
+    tutorial: { id: "nb9acc6kWzo", before: "## The seven beats" },
   }),
   POST("faceless-blocky-animations-without-blender", {
     seoTitle: `Faceless ${GENRE ? "Roblox-style" : "Blocky"} Animations Without Blender or Skills`,
     description: `Make faceless ${RS} story animations: what they need, the Blender route, and how to make one from a sentence with no 3D or animation skills.`,
     readTime: "8 min read", heroAlt: "Blocky townspeople on a city street, from an In This Town story made with Zyvo",
     markdown: FACELESS,
+    tutorial: { id: "rYWx5hnOWaU", before: "## Make it yours: a custom hero" },
   }),
 ];
 
@@ -523,4 +527,17 @@ export const getTownGuide = (slug) => TOWN_GUIDES.find((g2) => g2.slug === slug)
 export function townGuideFaq(pathname) {
   const guide = getTownGuide(String(pathname).replace(/^\/blog\//, ""));
   return guide ? extractFaqs(guide.markdown).map(([q, a]) => ({ q, a })) : null;
+}
+
+/** the guide's markdown split around its tutorial: [before, after] (the tutorial goes between them), or [markdown, ""] */
+export function splitAtTutorial(guide) {
+  if (!guide) return ["", ""];
+  const at = guide.tutorial ? guide.markdown.indexOf(`\n${guide.tutorial.before}\n`) : -1;
+  return at < 0 ? [guide.markdown, ""] : [guide.markdown.slice(0, at + 1), guide.markdown.slice(at + 1)];
+}
+
+/** the guide's tutorial as a VideoObject (structuredData.js), or null */
+export function townGuideVideo(pathname) {
+  const t = getTutorial(getTownGuide(String(pathname).replace(/^\/blog\//, ""))?.tutorial?.id);
+  return t ? tutorialVideoObject(t) : null;
 }
