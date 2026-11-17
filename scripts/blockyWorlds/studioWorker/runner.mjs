@@ -21,6 +21,7 @@ import { makeStudioRuns } from "../../../supabase/functions/_shared/blockyWorlds
 import { paths } from "../../../supabase/functions/_shared/blockyWorlds/render.js";
 import { decide } from "../../../supabase/functions/_shared/blockyWorlds/guard.js";
 import { buildsForRun } from "./assets.mjs";
+import { packResume, readVoiceResult, resumePath, saveVoiceResult, unpackResume } from "./resume.mjs";
 
 /** a stop the runner means (its code is the run's error_code) */
 export class StudioStop extends Error {
@@ -143,14 +144,28 @@ export async function runStudioRun(run, deps, cfg = STUDIO) {
   const t0 = now(), took = {};
   const timed = async (name, fn) => { const a = now(); try { return await fn(); } finally { took[name] = +((now() - a) / 1000).toFixed(1); } };
 
+  // "TRY AGAIN" (owner 2026-11-18, resume.mjs): a retry run continues from the failed run's saved parts
+  const resumeOf = run.resume_of ?? run.card?.resume_of ?? null;
+  let resumed = false;
   try {
     const script = sanitizeScript({ title: run.title, lines: run.lines });
     if (!script.lines.length) throw new StudioStop("BAD_JOB", "the run has no script lines");
     const card = run.card ?? {};
     stopNow();
+    if (resumeOf && storage?.download) {
+      try {
+        const buf = await storage.download(resumePath({ ...run, id: resumeOf }));
+        if (buf?.length) { const files = (deps.unpackResume ?? unpackResume)(buf, dir); resumed = true; log(`resume: ${files.length} saved parts of run ${String(resumeOf).slice(0, 8)} restored`); }
+        else log(`resume: run ${String(resumeOf).slice(0, 8)} has no saved parts: a fresh start`);
+      } catch (e) { log(`resume skipped (a fresh start): ${e?.message ?? e}`); }
+    }
     await gate("before the voice");
     await toStage("voice");
-    const voice = await timed("voice", () => steps.voice({ script, dir, L, run }));
+    // a restored take is reused (no second paid voice)
+    const kept = resumed ? readVoiceResult(dir) : null;
+    if (kept) log("resume: the voice take is reused");
+    const voice = kept ?? await timed("voice", () => steps.voice({ script, dir, L, run }));
+    if (!kept) saveVoiceResult(dir, voice);
     await book();
     stopNow();
     await toStage("plan");
@@ -163,7 +178,7 @@ export async function runStudioRun(run, deps, cfg = STUDIO) {
     // the director's brief lists them as delimited data + each approved build's code (agent.mjs libraryBrief)
     const builds = await (deps.buildsForRun ?? buildsForRun)(run, script).catch((e) => { log(`builds skipped: ${e?.message ?? e}`); return { builds: [], assets: {} }; });
     if (builds.builds.length) log(`builds: ${builds.builds.map((b) => `${b.name} (${b.kind})`).join(", ")}; library hits: ${Object.keys(builds.assets).length}`);
-    const directed = await timed("direct", () => steps.direct({ tl0: base.tl0, script, dir, L, card, builds: builds.builds, onProgress: progress, log: (m) => { if (/stopping/.test(String(m))) st.lastStop = String(m); log(m); } }));
+    const directed = await timed("direct", () => steps.direct({ tl0: base.tl0, script, dir, L, card, builds: builds.builds, resume: resumed, onProgress: progress, log: (m) => { if (/stopping/.test(String(m))) st.lastStop = String(m); log(m); } }));
     await book();
     if (!directed?.plan?.shots?.length || !directed?.plan?.bible?.homes) {
       stopNow(); // the director stops quietly when a check refused its next call: the reason is here
@@ -212,6 +227,13 @@ export async function runStudioRun(run, deps, cfg = STUDIO) {
     await st.writing.catch(() => {});
     // failed + refunded once (a run the sweeper already failed: nothing happens here)
     const failed = await runs.failRun(run, code, message, { worker: workerId }).catch((x) => { log(`fail write failed (the sweeper refunds it): ${x?.message ?? x}`); return false; });
+    // the parts a "Try again" continues from (never on a shutdown: the run is picked up again as it is)
+    if (!st.videoFile && storage?.upload && !control.stop) {
+      try {
+        const buf = (deps.packResume ?? packResume)(dir);
+        if (buf) { await storage.upload(resumePath(run), buf, "application/gzip"); log(`saved the parts for Try again (${Math.round(buf.length / 1024)} KB)`); }
+      } catch (x) { log(`saving the parts for Try again failed (a retry starts fresh): ${x?.message ?? x}`); }
+    }
     log(`${failed ? "FAILED" : "stopped"} ${code}: ${message.slice(0, 300)}`);
     return { ok: false, code, message, costUsd: L0.total(), stages: st.stages, took };
   } finally {

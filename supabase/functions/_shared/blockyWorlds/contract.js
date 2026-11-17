@@ -86,6 +86,7 @@ export const FAIL_TEXT = Object.freeze({
   busy: "All our video machines were busy, so your video couldn't start in time.",
   story: "Our builder couldn't show everything your story needs (something in it isn't in our block world yet).",
   paused: "Video making is paused on our side for a moment.",
+  quality: "Some shots didn't meet our quality bar, so we stopped before the final render and refunded you.",
 });
 export function failReason(code, message = null) {
   const c = String(code ?? "").toUpperCase();
@@ -104,6 +105,9 @@ export function failReason(code, message = null) {
     const list = items.length <= 1 ? items[0] ?? "" : `${items.slice(0, -1).join(", ")} and ${items.at(-1)}`;
     return { kind: "story", text: list ? `Our block world can't film ${list} yet, so this story couldn't be made. Rewrite it without ${items.length > 1 ? "them" : "it"}, or pick an idea from the list.` : "Part of this story needs something our block world can't film yet. Rewrite it, or pick an idea from the list." };
   }
+  // THE QUALITY CHECKER (owner 2026-11-18): the Blender pipeline's checker blocked the final (shots still failing after
+  // the fix rounds): said honestly, never "something broke"
+  if (/rules block the final|still fail(?:ing)? after|-> \d+ still failing|shot\(s\) still fail/i.test(String(message ?? ""))) return { kind: "quality", text: FAIL_TEXT.quality };
   const kind = Object.keys(FAIL_KINDS).find((k) => FAIL_KINDS[k].includes(c)) ?? "ours";
   return { kind, text: FAIL_TEXT[kind] };
 }

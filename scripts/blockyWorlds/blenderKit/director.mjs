@@ -18,6 +18,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { viewProblems } from "./camClear.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const SHARED = path.resolve(HERE, "../../../supabase/functions/_shared/blockyWorlds");
@@ -533,6 +534,8 @@ export function shotProblems({ shots = [], bodies = {}, hero = null, styleSheet 
     const g = giantCameraProblems(bodies[s.id]);
     if (g.length) add(s.id, `BLOCKED (camera inside / too close to a character): ${g[0]}`);
     for (const p of miloShotProblems({ body: bodies[s.id], desc: s.desc, location: s.location, hero })) add(s.id, p);
+    // THE VIEW CHECK (owner 2026-11-18, camClear.mjs): a camera looking THROUGH someone, or standing BEHIND the subject
+    for (const p of viewProblems(bodies[s.id], s.desc)) add(s.id, `bad view: ${p}`);
   }
   // AT MOST 2 NEAR-IDENTICAL SHOTS IN A ROW (owner 2026-11-15): the same place + the same kind of camera + near-identical descs
   const kind = (s) => { const c = shotCamera(bodies[s.id], s.location); return c ? c.replace(/^spot:([\w-]+)\/\w+$/, "spot:$1").split(":").slice(0, 2).join(":") : null; };

@@ -50,7 +50,7 @@ export function makeBlenderSteps({ base, anthropicKey, cfg, env = process.env, n
     mix: base.mix,
     outputs: base.outputs,
     /** the whole Blender pipeline; returns the shape the runner checks (plan.shots, plan.bible.homes) + the report */
-    async direct({ script, dir, L, card = null, log = console.log, builds = [], onProgress = null, progressEveryMs = 4000 }) {
+    async direct({ script, dir, L, card = null, log = console.log, builds = [], onProgress = null, progressEveryMs = 4000, resume = false }) {
       fs.writeFileSync(path.join(dir, "results.json"), JSON.stringify({ results: [{ script }] }));
       fs.writeFileSync(path.join(dir, "studio-builds.json"), JSON.stringify(builds ?? []));
       // LIBRARY MODE (the world library + tested camera spots, one fix round) and the owner's scene plan when the run has one
@@ -65,7 +65,7 @@ export function makeBlenderSteps({ base, anthropicKey, cfg, env = process.env, n
       if (cardFile) fs.writeFileSync(cardFile, JSON.stringify(card));
       const args = [path.join(HERE, "pipeline.mjs"), "--run", dir, "--voice-dir", path.join(dir, "voice"), "--model", cfg.blenderModel ?? "sonnet", "--worlds",
         "--rounds", String(blenderRounds(cfg)), "--cap", String(cfg.runCapUsd), "--agent-cap", String(cfg.agentCapUsd), "--chunks", String(cfg.blenderChunks ?? 6),
-        ...(plan ? ["--scene-plan", plan] : []), ...(chars ? ["--characters", chars] : []), ...(cardFile ? ["--card", cardFile] : []), ...(card?.topic ? ["--topic", String(card.topic).slice(0, 200)] : []), "--defer-cleanup", "--yes"];
+        ...(plan ? ["--scene-plan", plan] : []), ...(chars ? ["--characters", chars] : []), ...(cardFile ? ["--card", cardFile] : []), ...(card?.topic ? ["--topic", String(card.topic).slice(0, 200)] : []), "--defer-cleanup", "--yes", ...(resume ? ["--more-rounds"] : [])];
       const childEnv = childEnvOf();
       // LIVE PROGRESS (progress.mjs): every line the pipeline prints feeds the tracker; its snapshot goes to the run row
       // every few seconds (onProgress), so the page always moves
