@@ -20,7 +20,8 @@ import { fileURLToPath } from "node:url";
 import { ledger, stepTimes } from "../studio/ledger.mjs";
 import { loadEnv } from "../engine/runpod/client.mjs";
 import { styleSheetLine } from "../../../supabase/functions/_shared/blockyWorlds/characterRef.js";
-import { makeDirector, systemPrompt, tileShots, assemble, staticCheck, wordLines, planLocations, planProblems, storyPlanProblems, planLines, shotProblems, heroOf, giantSuspect, actionPlanProblems, visionRuleProblems, heroSeenProblems, MODELS, BATCH, MIN_LOCATIONS, PRICING } from "./director.mjs";
+import { cameraWallProblem, clearRayProblem, makeDirector, systemPrompt, tileShots, assemble, staticCheck, wordLines, planLocations, planProblems, storyPlanProblems, planLines, shotProblems, heroOf, giantSuspect, actionPlanProblems, visionRuleProblems, heroSeenProblems, MODELS, BATCH, MIN_LOCATIONS, PRICING } from "./director.mjs";
+import { reaimPlan } from "./camFix.mjs";
 import { captionColors } from "./speakers.mjs";
 import { LOCATIONS, DRESS } from "./worlds/locations.mjs";
 import { runpod, RATE, BOOT_S, GPU, finalEstimate, previewEstimate, fitLimits, chunkLimitS, chunkFloorS, finishLimitS, finishFloorS } from "./rp.mjs";
@@ -317,6 +318,23 @@ say(`static check: ${sc.ok ? "ok" : `${sc.problems.length} problem(s)`}, ${plan.
 // + THE ACTION RULES on the bodies (owner 2026-11-16): the hero counted only where the BODY puts them on screen, a named
 // character in the desc called in the body, never only the place, at most 1 shot in 6 without a character; what the
 // writing fix leaves goes into fix round 1 (BLOCKING: still failing after the rounds -> never in the final)
+// THE CAMERA FIX (owner 2026-11-18, camFix.mjs): before any GPU, every shot filmed from behind a head, through someone or
+// with a head cut off is RE-AIMED in code (free, exact camera keys); a re-aimed body that breaks the static check keeps
+// its old camera. Runs on the first bodies, after the shot-check rewrite and after every fix round.
+const wallFor = (s) => { const place = String(state.bodies[s.id] ?? "").match(/zw_build\(\s*["']([\w-]+)["']/)?.[1] ?? null; return (C, T) => (place ? cameraWallProblem(place, C) || clearRayProblem(place, C, T) : ""); };
+function reaim(shots, tag) {
+  const before = Object.fromEntries(shots.map((s) => [s.id, state.bodies[s.id]]));
+  const r = reaimPlan(state.bodies, shots, { wallFor });
+  const ids = Object.keys(r.fixed);
+  if (ids.length) {
+    const c = staticCheck(writeFile(), shotsFile);
+    if (!c.ok) for (const p of c.problems) if (p.shot != null && before[p.shot] != null && r.fixed[p.shot]) { state.bodies[p.shot] = before[p.shot]; delete r.fixed[p.shot]; }
+    state.reaimed ??= {}; for (const [id, t] of Object.entries(r.fixed)) state.reaimed[id] = t; save();
+  }
+  say(`camera fix (${tag}): ${Object.keys(r.fixed).length} shot(s) re-aimed${Object.keys(r.fixed).length ? ` (${Object.entries(r.fixed).slice(0, 6).map(([k, v]) => `${k}: ${v[0].slice(0, 70)}`).join(" | ")})` : ""}${Object.keys(r.left).length ? `; ${Object.keys(r.left).length} with no clean angle (the director gets them)` : ""}`);
+  return r;
+}
+reaim(plan.shots, "plan");
 const shotCheck = (shots, hero = heroOf(plan.styleSheet)) => shotProblems({ shots, bodies: state.bodies, hero, styleSheet: plan.styleSheet ?? [], header: plan.header });
 let shp = shotCheck(plan.shots);
 if (Object.keys(shp).length && !state.shotFixed) {
@@ -334,6 +352,7 @@ if (Object.keys(shp).length && !state.shotFixed) {
     state.convo = D.convo; save();
     sc = staticCheck(writeFile(), shotsFile);
     if (!sc.ok) mergeOut([...new Set(sc.problems.map((q) => q.shot).filter((x) => x != null))], "static after the shot fix");
+    reaim(plan.shots.filter((s) => ids.includes(s.id)), "after the shot fix");
     shp = shotCheck(plan.shots);
     state.shotLeft = shp; save();
   }
@@ -508,6 +527,7 @@ for (let round = (state.round ?? 0) + 1; round <= ROUNDS && Object.keys(failing)
     say(`round ${round} SKIPPED: the caps cannot fund it (${skipped}); going on to the final with ${ids.length} shot(s) still flagged`);
     break;
   }
+  reaim(plan.shots.filter((s) => ids.includes(s.id)), `fix round ${round}`);
   let c = staticCheck(writeFile(), shotsFile);
   if (!c.ok) { // a fix that breaks the static check: that shot keeps its previous body (the header part is dropped)
     for (const p of c.problems) if (p.shot != null && prev[p.shot]) state.bodies[p.shot] = prev[p.shot];
