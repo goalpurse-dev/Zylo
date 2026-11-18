@@ -100,6 +100,43 @@ export function parseSpots(worldsText) {
   }
   return out;
 }
+/** THE SPOT MARKS (owner 2026-11-18: "the director places characters ON the spot's marks, the camera does not chase
+ *  them"): for one tested spot, where its camera looks on the ground and where 1-3 people stand so every head is in the
+ *  frame (side by side ~1.9 apart, across the view, at the target's distance; only as many as fit) ->
+ *  { look: [x, y], marks: [[x, y, 0], ...] } */
+export function spotMarks([C, T, lens]) {
+  const dx = T[0] - C[0], dy = T[1] - C[1], D0 = Math.hypot(dx, dy) || 1;
+  const ux = dx / D0, uy = dy / D0, px = -uy, py = ux; // along / across the view
+  // the people stand ALONG the view where a person is readable (about 35% of the frame height or more), never farther
+  // than the spot's own target, never closer than 3
+  const tanV = 12 / lens, D = Math.max(3, Math.min(D0, 5.6 / (0.35 * 2 * tanV)));
+  const cx = C[0] + ux * D, cy = C[1] + uy * D;
+  const halfW = D * tanV * (9 / 16);
+  const marks = [];
+  for (let k = 1; k <= 3; k++) {
+    const off = Array.from({ length: k }, (_, i) => (i - (k - 1) / 2) * 1.9);
+    if (Math.max(...off.map(Math.abs)) + 0.8 > 0.9 * halfW) break;
+    marks.splice(0, marks.length, ...off.map((o) => [+(cx + px * o).toFixed(1), +(cy + py * o).toFixed(1), 0]));
+  }
+  return { look: [+T[0].toFixed(1), +T[1].toFixed(1)], marks: marks.length ? marks : [[+cx.toFixed(1), +cy.toFixed(1), 0]] };
+}
+/** the marks a spot really frames well: people on them pass the same camera check (fewest first dropped); [] = this
+ *  spot frames no person well (it looks up at a sign, a roof, a giant: for things, not people) */
+export function goodMarks(spots, place, name) {
+  const sp = spots?.[place]?.[name];
+  if (!sp) return [];
+  const all = spotMarks(sp).marks;
+  for (let k = all.length; k >= 1; k--) {
+    const ms = k === all.length ? all : [all[Math.floor((all.length - 1) / 2)], ...all.filter((_, i) => i !== Math.floor((all.length - 1) / 2))].slice(0, k);
+    const body = ms.map((p, i) => `    P${i} = kid(t0, t1)\n    P${i}.pose(t0, loc=(${p[0]}, ${p[1]}, 0), rot=facing((${p[0]}, ${p[1]}), (${sp[0][0]}, ${sp[0][1]})))`).join("\n") + `\n    cam = Cam()\n    zw_spot(cam, "${place}", "${name}", t0, t1)`;
+    if (!shotViewProblems(body, "", { spots }).length) return ms;
+  }
+  return [];
+}
+/** the director's table of every spot's marks (one line a place) */
+export function spotMarksDoc(spots) {
+  return Object.entries(spots ?? {}).map(([place, ss]) => `- ${place}: ${Object.keys(ss).map((name) => { const ms = goodMarks(spots, place, name), look = spotMarks(ss[name]).look; return ms.length ? `${name} looks at (${look.join(", ")}): stand ${ms.length === 1 ? "the subject at" : `up to ${ms.length} at`} ${ms.map((p) => `(${p[0]}, ${p[1]}, 0)`).join(" ")}` : `${name}: things only (frames no person well)`; }).join(" | ")}`);
+}
 const RE_SPOT = R(String.raw`zw_spot\(\s*cam\s*,\s*["'](\w+)["']\s*,\s*["'](\w+)["']\s*,\s*([^,()]+),\s*([^,()]+)(?:,\s*push\s*=\s*(${NUM}))?(?:,\s*lens\s*=\s*(${NUM}))?\s*\)`, "g");
 export function cameras(body, { spots = null } = {}) {
   const out = [];

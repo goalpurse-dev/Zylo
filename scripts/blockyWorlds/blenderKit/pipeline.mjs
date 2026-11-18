@@ -21,7 +21,7 @@ import { ledger, stepTimes } from "../studio/ledger.mjs";
 import { loadEnv } from "../engine/runpod/client.mjs";
 import { styleSheetLine } from "../../../supabase/functions/_shared/blockyWorlds/characterRef.js";
 import { cameraWallProblem, mentionsHero, shotCap, clearRayProblem, makeDirector, systemPrompt, tileShots, assemble, staticCheck, wordLines, planLocations, planProblems, storyPlanProblems, planLines, shotProblems, heroOf, giantSuspect, actionPlanProblems, visionRuleProblems, heroSeenProblems, MODELS, BATCH, MIN_LOCATIONS, PRICING } from "./director.mjs";
-import { parseSpots, reaimPlan } from "./camFix.mjs";
+import { parseSpots, reaimPlan, spotMarksDoc } from "./camFix.mjs";
 import { heroLinesMissing, renderGate } from "./renderGate.mjs";
 import { captionColors } from "./speakers.mjs";
 import { LOCATIONS, DRESS } from "./worlds/locations.mjs";
@@ -147,13 +147,17 @@ const reserve = (kind = "agent") => {
   const roundsLeft = Math.max(0, ROUNDS - (state.round ?? 0));
   const nFix = Math.max(20, Object.keys(state.failing ?? {}).length);
   const checks = (state.previewed ? 0 : 1) + roundsLeft - (kind === "agent_check" ? 1 : 0);
-  return finalEst() + (state.previewed ? 0 : previewEstimate({ shots: Math.round((dur / 60) * 55), jobs: 3 })) + roundsLeft * previewEstimate({ shots: nFix, jobs: nFix > 24 ? 3 : 1 }) + Math.max(0, checks) * CHECK_USD;
+  // + the stale-verdict recheck of the re-aimed shots (3b), funded first: it is the cheapest way to a clean verdict
+  const nDirty = (state.dirty ?? []).length, recheck = nDirty ? previewEstimate({ shots: nDirty, jobs: nDirty > 24 ? 3 : 1 }) + (kind === "agent_check" ? 0 : CHECK_USD) : 0;
+  return recheck + finalEst() + (state.previewed ? 0 : previewEstimate({ shots: Math.round((dur / 60) * 55), jobs: 3 })) + roundsLeft * previewEstimate({ shots: nFix, jobs: nFix > 24 ? 3 : 1 }) + Math.max(0, checks) * CHECK_USD;
 };
 say(`reserved for the GPU + checks: $${reserve().toFixed(3)} (final $${finalEst().toFixed(3)}, priced from the measured rates x ${GPU.margin})`);
 
 // ---------------------------------------------------------------- 2. the director
 const kitMap = path.join(OUT, "kitmap.md");
 spawnSync("python", ["-I", path.join(HERE, "kitmap.py"), path.join(KIT, "engine"), kitMap], { encoding: "utf8" });
+// the library's tested spots as data (camFix: a zw_spot aimed where nobody stands is re-aimed too; the director's marks)
+const SPOTS = WORLDS ? parseSpots(WORLDS) : null;
 const worldDocs = WORLDS ? [
   "HOW TO USE IT in a shot body (the library code is already in the file):",
   "  ZW_INFO = zw_build(\"downtown_street\", t0, t1, ZW_STORY_DRESS)      # builds the place, dressed for the story; returns its marks",
@@ -169,6 +173,10 @@ const worldDocs = WORLDS ? [
   `DRESS (the story's look, one JSON object in "dress"): time ${DRESS.time.join(" | ")}; weather ${DRESS.weather.join(" | ")}; landmark ${DRESS.landmark.join(" | ")} (+ landmark_text); signs: up to 8 short shop sign words from the story; billboard: a short line; props: ${DRESS.props.join(", ")} (+ blimp_text); people: 0-40 background people.`,
   "THE PLACES (id: what it is; spots; marks):",
   ...LOCATIONS.map((l) => `- ${l.id}: ${l.label}: ${l.about}; spots ${l.spots.join(", ")}; marks ${l.marks.join(", ")}`),
+  // THE SPOT MARKS (owner 2026-11-18: the director places the characters where the camera looks, the camera never
+  // chases them; the Sock's living-room shots stood people where the close spot does not look: empty corners)
+  "THE SPOT MARKS: when a shot uses zw_spot(cam, place, spot), stand that shot's characters ON that spot's marks below (literal loc=(x, y, 0), facing the camera or each other); the camera looks there. Never move people off the marks and never use a zw_spot that does not look at them. A 'things only' spot frames no person well: never use it for a shot about a person (use a spot with marks, or your own cam.key aimed at the person).",
+  ...spotMarksDoc(SPOTS),
   actionDocs(),
 ].join("\n") : "";
 const system = systemPrompt({ kitDir: KIT, kitMapFile: kitMap, worldDocs, ...(WORLDS ? { examples: ["sneeze_teleport"] } : {}) });
@@ -340,8 +348,6 @@ say(`static check: ${sc.ok ? "ok" : `${sc.problems.length} problem(s)`}, ${plan.
 // with a head cut off is RE-AIMED in code (free, exact camera keys); a re-aimed body that breaks the static check keeps
 // its old camera. Runs on the first bodies, after the shot-check rewrite and after every fix round.
 const wallFor = (s) => { const place = String(state.bodies[s.id] ?? "").match(/zw_build\(\s*["']([\w-]+)["']/)?.[1] ?? null; return (C, T) => (place ? cameraWallProblem(place, C) || clearRayProblem(place, C, T) : ""); };
-// the library's tested spots as data (camFix: a zw_spot aimed where nobody stands is re-aimed too)
-const SPOTS = WORLDS ? parseSpots(WORLDS) : null;
 function reaim(shots, tag) {
   const before = Object.fromEntries(shots.map((s) => [s.id, state.bodies[s.id]]));
   const r = reaimPlan(state.bodies, shots, { wallFor, spots: SPOTS });
@@ -349,7 +355,9 @@ function reaim(shots, tag) {
   if (ids.length) {
     const c = staticCheck(writeFile(), shotsFile);
     if (!c.ok) for (const p of c.problems) if (p.shot != null && before[p.shot] != null && r.fixed[p.shot]) { state.bodies[p.shot] = before[p.shot]; delete r.fixed[p.shot]; }
-    state.reaimed ??= {}; for (const [id, t] of Object.entries(r.fixed)) state.reaimed[id] = t; save();
+    state.reaimed ??= {}; for (const [id, t] of Object.entries(r.fixed)) state.reaimed[id] = t;
+    // changed after their last preview: the gate never judges them on the old frames (re-previewed before it)
+    state.dirty = [...new Set([...(state.dirty ?? []), ...Object.keys(r.fixed).map(Number)])]; save();
   }
   say(`camera fix (${tag}): ${Object.keys(r.fixed).length} shot(s) re-aimed${Object.keys(r.fixed).length ? ` (${Object.entries(r.fixed).slice(0, 6).map(([k, v]) => `${k}: ${v[0].slice(0, 70)}`).join(" | ")})` : ""}${Object.keys(r.left).length ? `; ${Object.keys(r.left).length} with no clean angle (the director gets them)` : ""}`);
   return r;
@@ -482,6 +490,7 @@ if (!state.previewed) {
   const p = await L.step("preview_round0", () => previewRound("r0", plan.shots.map((s) => s.id)));
   const vis = await vision("r0", p.sheets, plan.shots.map((s) => s.id).filter((id) => !p.failed[id]), p.slabs, p.giants);
   failing = mergeProblems(p, vis);
+  state.dirty = []; // every shot was just previewed
   state.previewed = true; state.round = 0;
   state.rounds.push({ round: 0, shots: plan.shots.length, crashed: Object.keys(p.failed).length, pixel: Object.keys(p.pixBad).length, vision: Object.keys(vis).length, failing: Object.keys(failing).length, sheets: p.sheets.map((s) => s.file) });
   state.failing = failing; save();
@@ -572,6 +581,7 @@ for (let round = (state.round ?? 0) + 1; round <= ROUNDS && Object.keys(failing)
   const rtag = `r${round}${state.retries ? `x${state.retries}` : ""}`;
   const p = await L.step(`preview_round${round}`, () => previewRound(rtag, ids));
   const vis = await vision(rtag, p.sheets, ids.filter((id) => !p.failed[id]), p.slabs, p.giants);
+  state.dirty = (state.dirty ?? []).filter((id) => !ids.includes(id)); // just previewed
   failing = mergeProblems(p, vis);
   // the free check's ACTION RULE problems on the fixed bodies count as failing too (the checker may miss them)
   for (const [id, t] of Object.entries(state.roundShotLeft ?? {})) if (!failing[id] && shotById(Number(id)) && ACTION_RULE_RE.test(t)) failing[id] = { kind: "shotcheck", text: `THE SHOT CHECK: ${t}` };
@@ -579,6 +589,23 @@ for (let round = (state.round ?? 0) + 1; round <= ROUNDS && Object.keys(failing)
   state.rounds.push({ round, fixed: ids.length, crashed: Object.keys(p.failed).length, pixel: Object.keys(p.pixBad).length, vision: Object.keys(vis).length, failing: Object.keys(failing).length, sheets: p.sheets.map((s) => s.file) });
   state.failing = failing; save();
   say(`round ${round}: ${ids.length} shots re-previewed: ${Object.keys(p.failed).length} crashed, ${Object.keys(p.pixBad).length} pixel, ${Object.keys(vis).length} vision -> ${Object.keys(failing).length} still failing`);
+}
+
+// ---------------------------------------------------------------- 3b. no stale verdicts (owner 2026-11-18)
+// the finishing Sock run re-aimed 31 shots, its fix round was skipped for money, and the gate judged the OLD frames:
+// every shot still flagged whose body changed after its last preview (the camera fix) is previewed and checked again
+// (cheap: no director call) before the gate
+{
+  const dirty = [...new Set(state.dirty ?? [])].filter((id) => failing[id] && shotById(id) && failing[id].kind !== "crash");
+  if (dirty.length) {
+    const tag = `rc${(state.rechecks ?? 0) + 1}`;
+    const p = await L.step("preview_recheck", () => previewRound(tag, dirty));
+    const vis = await vision(tag, p.sheets, dirty.filter((id) => !p.failed[id]), p.slabs, p.giants);
+    const fresh = mergeProblems(p, vis);
+    for (const id of dirty) { if (fresh[id]) failing[id] = fresh[id]; else delete failing[id]; }
+    state.rechecks = (state.rechecks ?? 0) + 1; state.dirty = []; state.failing = failing; save();
+    say(`recheck: ${dirty.length} changed shot(s) previewed again: ${dirty.filter((id) => !failing[id]).length} now pass, ${dirty.filter((id) => failing[id]).length} still flagged`);
+  }
 }
 
 // ---------------------------------------------------------------- 4. no holes: a shot that still crashes joins its neighbour

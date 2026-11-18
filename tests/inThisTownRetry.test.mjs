@@ -155,3 +155,17 @@ test("camera fix reads the library spots: a living-room spot aimed where nobody 
   assert.doesNotMatch(r.body, /zw_spot/);
   assert.deepEqual(shotViewProblems(r.body, "Jasper whispering to the sock", { spots }), []);
 });
+
+test("spot marks (owner 2026-11-18): the director stands people where each library spot looks; changed shots are re-checked before the gate", async () => {
+  const { parseSpots, spotMarksDoc, goodMarks } = await import("../scripts/blockyWorlds/blenderKit/camFix.mjs");
+  const spots = parseSpots(fs.readFileSync("scripts/blockyWorlds/blenderKit/worlds/worlds.py", "utf8"));
+  assert.deepEqual(goodMarks(spots, "living_room", "close"), [[-1, 0, 0]]);
+  assert.equal(goodMarks(spots, "downtown_street", "close").length, 0, "a spot that looks up at a sign is things only");
+  const doc = spotMarksDoc(spots).join("\n");
+  assert.match(doc, /living_room: .*close looks at \(-1, 0\): stand the subject at \(-1, 0, 0\)/);
+  const p = fs.readFileSync("scripts/blockyWorlds/blenderKit/pipeline.mjs", "utf8");
+  assert.match(p, /THE SPOT MARKS: when a shot uses zw_spot/);
+  assert.match(p, /\.\.\.spotMarksDoc\(SPOTS\)/);
+  assert.match(p, /preview_recheck/);
+  assert.match(p, /state\.dirty = \[\.\.\.new Set\(\[\.\.\.\(state\.dirty \?\? \[\]\), \.\.\.Object\.keys\(r\.fixed\)/);
+});
