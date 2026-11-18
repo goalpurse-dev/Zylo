@@ -357,7 +357,7 @@ async function twistFor(userId: string) {
 /** the draft card with its craft log entry (the family the plan used, the planned reveal %) */
 function withCraft(card: any, twist: any, plan: any) {
   if (!card) return card;
-  return { ...card, craft: { twistFamily: plan?.twistType ?? card?.craft?.twistFamily ?? twist?.family ?? null, twistPct: Number(plan?.twist?.reveal_pct) || twist?.pct || null, at: new Date().toISOString() } };
+  return { ...card, craft: { twistFamily: plan?.twistType ?? card?.craft?.twistFamily ?? twist?.family ?? null, twistPct: Number(plan?.twist?.reveal_pct) || twist?.pct || null, twistMove: twist?.move ?? card?.craft?.twistMove ?? null, at: new Date().toISOString() } };
 }
 
 /** "Fix this line" calls one draft may use (free; a runaway loop can't spend without end) */
@@ -678,7 +678,7 @@ async function route(req: Request, body: any, trace: Trace) {
     try {
       // a rewrite is told exactly which checks the current version fails (writeScript re-checks and retries once)
       const failed = d ? failedOf(recheck(d, lengthSec)) : [];
-      twistUsed = d?.card?.craft?.twistFamily ? { family: d.card.craft.twistFamily, pct: d.card.craft.twistPct } : await twistFor(who.user.id);
+      twistUsed = d?.card?.craft?.twistFamily ? { family: d.card.craft.twistFamily, pct: d.card.craft.twistPct, move: d.card.craft.twistMove ?? null } : await twistFor(who.user.id);
       written = await writeScript({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, idea: card, lengthSec, previous: d ? { lines: d.lines } : null, note, beats, failed, board: KIT, twist: twistUsed });
     } catch (e: any) {
       await logCall(who.user.id, "script", (e?.costUsd ?? 0) + costUsd, false);
