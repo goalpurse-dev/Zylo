@@ -125,3 +125,14 @@ test("safety limits (owner 2026-11-18): 3 running, 6 a day, the $50 pause says '
   assert.match(api, /retriesUsed\(failed\.draft_id\)\) >= MAX_FREE_RETRIES/);
   assert.match(api, /in-this-town-spend-25/);
 });
+
+test("the Sock crash (2026-11-18): an empty re-plan never replaces a good plan; new purchases paused except the owner", () => {
+  const p = fs.readFileSync("scripts/blockyWorlds/blenderKit/pipeline.mjs", "utf8");
+  assert.match(p, /const usable = \(d\) => Array\.isArray\(d\?\.shots\) && d\.shots\.length >= 8/);
+  assert.match(p, /the best plan stays/);
+  assert.doesNotMatch(p, /plan check: still failing after the re-plans/);
+  assert.match(p, /tokens: \{ plan: 32000/);
+  const api = fs.readFileSync("supabase/functions/blocky-worlds-api/index.ts", "utf8");
+  assert.match(api, /if \(!PURCHASES_OPEN && !who\.owner\) throw new ApiError\("BUSY", PURCHASES_PAUSED_MESSAGE/);
+  assert.match(api, /In This Town is getting an upgrade, back very soon\./);
+});

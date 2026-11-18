@@ -62,6 +62,8 @@ export default function BlenderMaker({ flow, pageAccess, onSignUp, onUpgrade, on
     return r;
   };
   const write = async () => {
+    // new purchases paused (owner 2026-11-18): nothing is charged, the page says why
+    if (flat.paused) { setNotice(flat.paused); return; }
     if (flat.charge === "script" && balance > 0 && flat.credits && balance < flat.credits) { onNoCredits?.(flat.credits); return; }
     const charged = flat.charge === "script" && flat.credits > 0 && pageAccess !== "guest";
     if (charged) emitCreditSpend(flat.credits, "In This Town video");
@@ -152,8 +154,8 @@ export default function BlenderMaker({ flow, pageAccess, onSignUp, onUpgrade, on
         {!(view === "make" && flow.run) && (
           <StickyBar>
             {view === "topic" && <>
-              <PriceRule flat={flat} short className="hidden min-w-0 flex-1 md:block" />
-              <button type="button" className="bwm-btn w-full whitespace-nowrap md:w-auto" disabled={!canWrite} onClick={write} data-testid="bwm-write">
+              {flat.paused ? <p className="min-w-0 flex-1 text-[15px] font-bold text-[#ffd23f]" data-testid="bwm-paused">{flat.paused}</p> : <PriceRule flat={flat} short className="hidden min-w-0 flex-1 md:block" />}
+              <button type="button" className="bwm-btn w-full whitespace-nowrap md:w-auto" disabled={!canWrite || Boolean(flat.paused)} onClick={write} data-testid="bwm-write">
                 {writing ? <Blocks label="Writing your script…" /> : <><Wand2 className="h-5 w-5" />Write my script{flat.credits != null && <span className="ml-1 inline-flex items-center gap-1.5 rounded-xl bg-[#0d1208]/15 px-2 py-0.5 text-[17px]" data-testid="bwm-write-price"><Cr n={flat.credits} /><span className="hidden text-[13px] sm:inline">{flat.charge === "script" ? "pay now" : "at Make my video"}</span></span>}</>}
               </button>
             </>}
