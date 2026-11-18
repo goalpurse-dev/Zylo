@@ -209,7 +209,7 @@ export function paths(run) {
     voiceMp3: `${d}/voice/voice.mp3`, take: `${d}/voice/take.json`,
     timeline: `${d}/timeline.json`, visualCheck: `${d}/visual-check.json`, production: `${d}/production.json`, direction: `${d}/direction.json`, shotReview: `${d}/shot-review.json`, mix: `${d}/mix.m4a`,
     seg: (i, a) => `${d}/chunks/seg_${pad(i)}_a${a}.mp4`, web: (i, a) => `${d}/chunks/web_${pad(i)}_a${a}.mp4`,
-    final: `${d}/final.mp4`, webFinal: `${d}/web.mp4`, poster: `${d}/poster.jpg`,
+    final: `${d}/final.mp4`, webFinal: `${d}/web.mp4`, poster: `${d}/poster.jpg`, noMusic: `${d}/final_nomusic.mp4`,
   };
 }
 

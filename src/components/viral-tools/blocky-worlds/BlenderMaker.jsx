@@ -576,6 +576,9 @@ function RunStep({ flow, onAgain, onRetry }) {
             <div className="flex flex-col gap-3">
               <p className="text-[19px] font-bold text-white/85">Download it and post it. Vertical, captioned, ready for TikTok, Shorts and Reels.</p>
               {run.downloadUrl && <a href={run.downloadUrl} download onClick={() => flow.sendEvent("downloaded")} className="bwm-btn"><Download className="h-6 w-6" />Download video</a>}
+              {/* owner 2026-11-19: the same video with voice + sound effects only, for a trending sound */}
+              {run.noMusicUrl && <a href={run.noMusicUrl} download onClick={() => flow.sendEvent("downloaded")} className="bwm-btn-2" data-testid="bwm-download-no-music"><Download className="h-5 w-5" />Download without music</a>}
+              <p className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-[15px] font-semibold leading-snug text-white/75" data-testid="bwm-tiktok-tip">Posting on TikTok? Add the trending sound &lsquo;Numbers&rsquo; by TEMPOREX from TikTok&rsquo;s sound library.</p>
               <button type="button" className="bwm-btn-2" onClick={onAgain}><Sparkles className="h-5 w-5" />Make another story</button>
             </div>
           </div>
