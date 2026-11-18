@@ -68,7 +68,7 @@ export function makeBlenderSteps({ base, anthropicKey, cfg, env = process.env, n
       if (cardFile) fs.writeFileSync(cardFile, JSON.stringify(card));
       const args = [path.join(HERE, "pipeline.mjs"), "--run", dir, "--voice-dir", path.join(dir, "voice"), "--model", cfg.blenderModel ?? "sonnet", "--worlds",
         "--rounds", String(blenderRounds(cfg)), "--cap", String(capOf(cfg, card)), "--agent-cap", String(Math.min(cfg.agentCapUsd, capOf(cfg, card))), "--chunks", String(cfg.blenderChunks ?? 6),
-        ...(plan ? ["--scene-plan", plan] : []), ...(chars ? ["--characters", chars] : []), ...(cardFile ? ["--card", cardFile] : []), ...(card?.topic ? ["--topic", String(card.topic).slice(0, 200)] : []), "--defer-cleanup", "--yes", ...(resume ? ["--more-rounds"] : [])];
+        ...(plan ? ["--scene-plan", plan] : []), ...(chars ? ["--characters", chars] : []), ...(cardFile ? ["--card", cardFile] : []), ...(card?.topic ? ["--topic", String(card.topic).slice(0, 200)] : []), "--defer-cleanup", "--yes", ...(resume ? ["--more-rounds"] : []), ...(card?.owner_force_render === true ? ["--force-render"] : [])];
       const childEnv = childEnvOf();
       // LIVE PROGRESS (progress.mjs): every line the pipeline prints feeds the tracker; its snapshot goes to the run row
       // every few seconds (onProgress), so the page always moves
