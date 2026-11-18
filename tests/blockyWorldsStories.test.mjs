@@ -205,7 +205,8 @@ test("idea engine: the pool prompt (Opus, ~40, every source, banned pieces), the
 });
 
 test("idea engine: the judge's rows become totals; the best N (or the best 1 for 'AI can decide') are kept", () => {
-  assert.deepEqual(ideaJudgeSchema().properties.scores.items.required, ["n", "hook", "rule", "visual", "twist", "fit", "fresh"]);
+  // + the six rule tests (craft.js, owner 2026-11-18)
+  assert.deepEqual(ideaJudgeSchema().properties.scores.items.required, ["n", "hook", "rule", "visual", "twist", "fit", "fresh", "rt_clear_3s", "rt_object", "rt_daily_cost", "rt_can_flip", "rt_comment_bait", "rt_fresh"]);
   const sc = readIdeaScores({ scores: [{ n: 2, hook: 9, rule: 9, visual: 9, twist: 9, fit: 9, fresh: 9 }, { n: 1, hook: 5, rule: 5, visual: 5, twist: 5, fit: 5, fresh: 5 }] }, 3);
   assert.equal(sc[1].total, 90);
   assert.equal(sc[0].total, 50);

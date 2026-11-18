@@ -45,6 +45,7 @@ import { cardOf, DAILY_IDEA_BATCHES, FREE_IDEA_BATCHES, IDEAS_PER_BATCH } from "
 import { checkScript, narrationOf, normalizeScript, PART_IDS, scriptFromText } from "../_shared/blockyWorlds/script.js";
 import { storyTextProblem, topicProblem } from "../_shared/blockyWorlds/safety.js";
 import { isShownNote, noteSpots, paidGate } from "../_shared/blockyWorlds/paidGate.js";
+import { pickTwist, twistBlock } from "../_shared/blockyWorlds/craft.js";
 import { cardFromScript, CACHE_TTLS, draftCheck, fixLines, fixPart, HYBRID, moneyMeter, providerFrom, repairOpener, rewriteHybrid, writeBeats, writeHybrid, writeIdeaPool, writeIdeas, writeScript, writeTopicIdeas } from "../_shared/blockyWorlds/llm.js";
 import { ideaKey } from "../_shared/blockyWorlds/ideaEngine.js";
 import { pickRecipe, RECIPES } from "../_shared/blockyWorlds/recipes.js";
@@ -342,6 +343,23 @@ async function openPrepay(userId: string, draftId: string) {
   return data ?? null;
 }
 
+/**
+ * THE TWIST ROTATION (owner 2026-11-18, craft.js): YouTube does not monetise templated storylines, so each user's next
+ * script gets a twist family not used in their last 3 and a reveal % away from their last 2. The log is the user's
+ * drafts (card.craft), newest first; never fatal (no history = the first pick).
+ */
+async function twistFor(userId: string) {
+  try {
+    const { data } = await admin.from("blocky_worlds_drafts").select("card, created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(8);
+    return pickTwist((data ?? []).map((d: any) => d?.card?.craft).filter(Boolean));
+  } catch { return pickTwist([]); }
+}
+/** the draft card with its craft log entry (the family the plan used, the planned reveal %) */
+function withCraft(card: any, twist: any, plan: any) {
+  if (!card) return card;
+  return { ...card, craft: { twistFamily: plan?.twistType ?? card?.craft?.twistFamily ?? twist?.family ?? null, twistPct: Number(plan?.twist?.reveal_pct) || twist?.pct || null, at: new Date().toISOString() } };
+}
+
 /** "Fix this line" calls one draft may use (free; a runaway loop can't spend without end) */
 const FIX_LINES_PER_DRAFT = 40;
 /** the draft's paid state for the page (owner 2026-11-17: once paid at "Write my script", later steps say "Paid ✓", never the price) */
@@ -618,8 +636,9 @@ async function route(req: Request, body: any, trace: Trace) {
       if (hybridWrite) {
         const picked = pickRecipe({ topic: topicText, card });
         const recipe = { ...picked, what: (RECIPES as any)[picked.id]?.what };
-        r = await writeHybrid({ apiKey: ANTHROPIC_KEY, topic: topicText, recipe, examples: examplesFor(recipe.id), lengthSec, meter, judge: APP_HYBRID.judge, idea: card, ttl: CACHE_TTL, board: KIT });
-        if (r.script?.lines?.length) row = { title: r.script.title, length_sec: lengthSec, lines: r.script.lines, post: r.script.post, checks: hybridChecksRow(r), card: hybridCard(r, recipe), beats: hybridBeats(r.plan, lengthSec) };
+        const twist = await twistFor(who.user.id);
+        r = await writeHybrid({ apiKey: ANTHROPIC_KEY, topic: topicText, recipe, examples: examplesFor(recipe.id), lengthSec, meter, judge: APP_HYBRID.judge, idea: card, ttl: CACHE_TTL, board: KIT, note: twistBlock(twist) });
+        if (r.script?.lines?.length) row = { title: r.script.title, length_sec: lengthSec, lines: r.script.lines, post: r.script.post, checks: hybridChecksRow(r), card: withCraft(hybridCard(r, recipe), twist, r.plan), beats: hybridBeats(r.plan, lengthSec) };
       } else {
         const failed = failedOf(recheck(d, lengthSec));
         r = await rewriteHybrid({ apiKey: ANTHROPIC_KEY, plan: d.card.hybrid.plan, card: d.card, examples: examplesByIds(d.card.hybrid.refs ?? []), lengthSec, previous: { lines: d.lines }, failed, note, meter, ttl: CACHE_TTL, board: KIT });
@@ -655,18 +674,19 @@ async function route(req: Request, body: any, trace: Trace) {
     }
     // step 3: the script, following the beats
     trace.step = "writer";
-    let written: any;
+    let written: any, twistUsed: any = null;
     try {
       // a rewrite is told exactly which checks the current version fails (writeScript re-checks and retries once)
       const failed = d ? failedOf(recheck(d, lengthSec)) : [];
-      written = await writeScript({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, idea: card, lengthSec, previous: d ? { lines: d.lines } : null, note, beats, failed, board: KIT });
+      twistUsed = d?.card?.craft?.twistFamily ? { family: d.card.craft.twistFamily, pct: d.card.craft.twistPct } : await twistFor(who.user.id);
+      written = await writeScript({ apiKey: ANTHROPIC_KEY, provider: PROVIDER, idea: card, lengthSec, previous: d ? { lines: d.lines } : null, note, beats, failed, board: KIT, twist: twistUsed });
     } catch (e: any) {
       await logCall(who.user.id, "script", (e?.costUsd ?? 0) + costUsd, false);
       throw writerError(e);
     }
     await logCall(who.user.id, "script", written.costUsd + costUsd);
     const s = written.script, checks = { ...written.check, kind: "written" };
-    const row = { title: s.title, length_sec: lengthSec, lines: s.lines, post: s.post, checks, card, beats, updated_at: new Date().toISOString() };
+    const row = { title: s.title, length_sec: lengthSec, lines: s.lines, post: s.post, checks, card: twistUsed ? withCraft(card, twistUsed, null) : card, beats, updated_at: new Date().toISOString() };
     const saved = d
       ? await admin.from("blocky_worlds_drafts").update({ ...row, writes: d.writes + 1 }).eq("id", d.id).select("*").single()
       : await admin.from("blocky_worlds_drafts").insert({ ...row, user_id: who.user.id, idea_id: ideaRow.id, source: ideaRow.source === "topic" ? "topic" : "idea", writes: 1 }).select("*").single();
