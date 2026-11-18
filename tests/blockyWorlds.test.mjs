@@ -259,11 +259,12 @@ test("script: every length from 30 s to 3 min fits all seven parts (budgets add 
 });
 
 test("guard: the same rules as Cutaway's; writing skips the per-user video limits", () => {
-  const counts = { spent_24h: 1, user_running: 2, user_starts_1h: 0 };
+  // owner 2026-11-18: 3 videos in progress per user, the emergency pause at $50
+  const counts = { spent_24h: 1, user_running: 3, user_starts_1h: 0 };
   assert.equal(decide(DEFAULT_SETTINGS, counts, 0.5).code, "LIMIT");
   assert.equal(decide(DEFAULT_SETTINGS, counts, 0.5, { kind: "writing" }).ok, true);
   assert.equal(decide(DEFAULT_SETTINGS, null, 0.1).code, "BUSY", "fails closed");
-  assert.equal(decide(DEFAULT_SETTINGS, { spent_24h: 19.9 }, 0.5).reason, "the emergency cap");
+  assert.equal(decide(DEFAULT_SETTINGS, { spent_24h: 49.9 }, 0.5).reason, "the emergency cap");
   assert.equal(decide(DEFAULT_SETTINGS, { spent_24h: 0 }, 0.1, { envOff: true }).code, "BUSY");
 });
 

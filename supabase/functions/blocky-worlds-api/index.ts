@@ -38,7 +38,8 @@ import { costBasisUsd, PRICES, toolKey } from "../_shared/blockyWorlds/pricing.j
 import { BLENDER_FLAT } from "../_shared/blockyWorlds/blenderPricing.js";
 import { studioFullCostUsd } from "../_shared/blockyWorlds/studio.js";
 import { KIT_PREFER, studioBuilds, studioIdeaOk } from "../_shared/blockyWorlds/studioBuilds.js";
-import { DEFAULT_SETTINGS, decide, WRITING } from "../_shared/blockyWorlds/guard.js";
+import { DEFAULT_SETTINGS, decide, MAX_FREE_RETRIES, RETRIES_USED_UP, SPEND_ALERT_USD, WRITING } from "../_shared/blockyWorlds/guard.js";
+import { alertOnce } from "../_shared/adminAlert.ts";
 import { MOODS } from "../_shared/blockyWorlds/formulas.js";
 import { cardOf, DAILY_IDEA_BATCHES, FREE_IDEA_BATCHES, IDEAS_PER_BATCH } from "../_shared/blockyWorlds/ideas.js";
 import { checkScript, narrationOf, normalizeScript, PART_IDS, scriptFromText } from "../_shared/blockyWorlds/script.js";
@@ -152,9 +153,31 @@ async function guardFor(userId: string, addUsd: number, kind: "video" | "writing
     admin.from("blocky_worlds_settings").select("*").eq("id", 1).maybeSingle(),
     admin.rpc("blocky_worlds_guard", { p_user: userId }),
   ]);
-  const g = decide(settings ?? DEFAULT_SETTINGS, error ? null : counts, addUsd, { envOff: PAID_OFF && PROVIDER !== "mock", kind });
+  // owner 2026-11-18: at most ~6 videos a day per user (Try agains included)
+  let c: any = error ? null : counts;
+  if (c && kind === "video") {
+    const { count } = await admin.from("blocky_worlds_runs").select("id", { count: "exact", head: true }).eq("user_id", userId).gte("created_at", new Date(Date.now() - 86_400_000).toISOString());
+    c = { ...c, user_starts_24h: count ?? 0 };
+  }
+  const g = decide(settings ?? DEFAULT_SETTINGS, c, addUsd, { envOff: PAID_OFF && PROVIDER !== "mock", kind });
   if (!g.ok) throw new ApiError(g.code as any, g.code === "LIMIT" ? g.reason ?? undefined : g.message ?? undefined, { retryAfterSec: g.retryAfterSec }, `${g.reason}${error ? `: ${error.message}` : ""}`);
   return { settings, counts: counts ?? {} };
+}
+/** owner 2026-11-18: one email a day when the real In This Town spend of the last 24 h passes SPEND_ALERT_USD ($25);
+ *  the automatic pause for new videos comes at blocky_worlds_settings.daily_cap_usd ($50). Never throws. */
+async function spendAlert(counts: any, settings: any) {
+  try {
+    const spent = Number(counts?.spent_24h ?? 0), cap = Number(settings?.daily_cap_usd ?? DEFAULT_SETTINGS.daily_cap_usd);
+    if (spent < SPEND_ALERT_USD) return;
+    await alertOnce(admin, "in-this-town-spend-25", 86_400, `In This Town: $${spent.toFixed(2)} spent in the last 24 h`,
+      `The real In This Town cost (GPU, AI, voice) of the last 24 hours is $${spent.toFixed(2)}, over the $${SPEND_ALERT_USD} alert line. New videos pause automatically at $${cap}. To pause everything now: set paid_calls = false in public.blocky_worlds_settings. To lift the automatic pause: raise daily_cap_usd there.`);
+  } catch (e) { console.error("[blocky-worlds-api] spend alert:", (e as any)?.message ?? e); }
+}
+/** the free Try agains a paid script has used (owner 2026-11-18: MAX_FREE_RETRIES) */
+async function retriesUsed(draftId: string | null) {
+  if (!draftId) return 0;
+  const { count } = await admin.from("blocky_worlds_runs").select("id", { count: "exact", head: true }).eq("draft_id", draftId).not("resume_of", "is", null);
+  return count ?? 0;
 }
 const ideaBatchesFor = (plan: string) => (canWrite(plan) ? DAILY_IDEA_BATCHES : FREE_IDEA_BATCHES);
 async function logCall(userId: string, purpose: "ideas" | "script", usd: number, okCall = true) {
@@ -199,7 +222,7 @@ const retryOn = async () => {
   return retryOk;
 };
 async function runView(r: any, { owner = false, queue = null }: { owner?: boolean; queue?: any } = {}) {
-  const canRetry = r.status === "failed" && r.engine === "studio" && (await retryOn());
+  const canRetry = r.status === "failed" && r.engine === "studio" && (await retryOn()) && (await retriesUsed(r.draft_id ?? null)) < MAX_FREE_RETRIES;
   const done = r.status === "done", files = r.files ?? {}, working = !["done", "failed"].includes(r.status);
   return {
     id: r.id, draftId: r.draft_id, title: r.title, lengthSec: r.length_sec, credits: r.credits_charged, createdAt: r.created_at, doneAt: r.finished_at,
@@ -759,13 +782,15 @@ async function route(req: Request, body: any, trace: Trace) {
     if (!failed) throw new ApiError("NOT_FOUND", "We couldn't find that video.");
     if (failed.status !== "failed" || failed.engine !== "studio") throw new ApiError("BAD_INPUT", "Only a video that didn't make it can be tried again.");
     if (!(await retryOn())) throw new ApiError("BUSY", "Try again is being switched on. Nothing was charged. Please try again in a few minutes.", { retryAfterSec: 300 }, "migration 20261218100000 not applied");
+    if ((await retriesUsed(failed.draft_id)) >= MAX_FREE_RETRIES) throw new ApiError("LIMIT", RETRIES_USED_UP);
     const busyMsg = "This script is already being made. Wait for it to finish.";
     const { data: active } = await admin.from("blocky_worlds_runs").select("id").eq("draft_id", failed.draft_id).not("status", "in", "(done,failed)").limit(1).maybeSingle();
     if (active) throw new ApiError("LIMIT", busyMsg, { runId: active.id });
     trace.step = "studio worker";
     if (!(await studioWorkerAlive(admin))) throw new ApiError("BUSY", "Our video studio is restarting. Nothing was charged. Try again in a few minutes.", { retryAfterSec: 300 });
     trace.step = "cap check";
-    await guardFor(who.user.id, studioFullCostUsd(failed.length_sec), "video");
+    const gr = await guardFor(who.user.id, studioFullCostUsd(failed.length_sec), "video");
+    await spendAlert(gr.counts, gr.settings);
     trace.step = "job creation";
     const { data: run, error } = await admin.rpc("blocky_worlds_retry_run", { p_user: who.user.id, p_failed: failed.id, p_env: null });
     if (error || !run) {
@@ -800,7 +825,8 @@ async function route(req: Request, body: any, trace: Trace) {
     }
     trace.step = "cap check";
     // what one attempt is expected to cost us (the emergency cap counts it): the Studio model's or the pipeline's
-    await guardFor(who.user.id, STUDIO_ON ? studioFullCostUsd(lengthSec) : costBasisUsd(lengthSec), "video");
+    const gs = await guardFor(who.user.id, STUDIO_ON ? studioFullCostUsd(lengthSec) : costBasisUsd(lengthSec), "video");
+    await spendAlert(gs.counts, gs.settings);
     trace.step = "price";
     const { data: price, error: pErr } = prepaid ? { data: prepaid.credits, error: null } : await admin.rpc("compute_tool_price", { p_tool_key: toolKey(flatDraft ? BLENDER_FLAT.priceRowSec : lengthSec), p_input: {} });
     if (flatDraft && prepayOn(who) && !prepaid) throw new ApiError("NOT_READY", "This script's payment is not open any more (refunded or used). Write the script again.");

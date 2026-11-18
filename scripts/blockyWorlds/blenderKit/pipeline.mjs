@@ -20,7 +20,7 @@ import { fileURLToPath } from "node:url";
 import { ledger, stepTimes } from "../studio/ledger.mjs";
 import { loadEnv } from "../engine/runpod/client.mjs";
 import { styleSheetLine } from "../../../supabase/functions/_shared/blockyWorlds/characterRef.js";
-import { cameraWallProblem, mentionsHero, clearRayProblem, makeDirector, systemPrompt, tileShots, assemble, staticCheck, wordLines, planLocations, planProblems, storyPlanProblems, planLines, shotProblems, heroOf, giantSuspect, actionPlanProblems, visionRuleProblems, heroSeenProblems, MODELS, BATCH, MIN_LOCATIONS, PRICING } from "./director.mjs";
+import { cameraWallProblem, mentionsHero, shotCap, clearRayProblem, makeDirector, systemPrompt, tileShots, assemble, staticCheck, wordLines, planLocations, planProblems, storyPlanProblems, planLines, shotProblems, heroOf, giantSuspect, actionPlanProblems, visionRuleProblems, heroSeenProblems, MODELS, BATCH, MIN_LOCATIONS, PRICING } from "./director.mjs";
 import { reaimPlan } from "./camFix.mjs";
 import { heroLinesMissing, renderGate } from "./renderGate.mjs";
 import { captionColors } from "./speakers.mjs";
@@ -238,7 +238,8 @@ if (!state.plan) {
   }
   if (probs.length) throw new Error(`plan check: still failing after the re-plans: ${probs.join(" | ")}: stopped before any render`);
   const locs = planLocations(r.data.shots ?? []);
-  const t = tileShots(r.data.shots ?? [], words);
+  // THE SHOT CAP (owner 2026-11-18): ~50 cuts a minute of voice, never above 85
+  const t = tileShots(r.data.shots ?? [], words, { maxShots: shotCap(dur) });
   state.plan = { title: r.data.title ?? script.title, header: r.data.header_code ?? "", newBuilds: r.data.new_builds ?? [], shots: t.shots, mergedAtPlan: t.merged, cutOff: r.cutOff, locations: locs.list, styleSheet: r.data.style_sheet ?? [], anchors: r.data.anchors ?? [], dress: storyDress(r.data.dress) };
   state.bodies = {};
   state.convo = D.convo; // a resume continues the same conversation (the batches need the plan turn)

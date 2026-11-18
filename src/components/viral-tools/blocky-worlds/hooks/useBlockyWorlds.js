@@ -244,6 +244,8 @@ export default function useBlockyWorlds({ enabled = true } = {}) {
   const retryRun = useCallback(async (failed) => {
     if (!failed?.draftId || busy) return { ok: false };
     // a Studio video (owner 2026-11-18): "retry" continues from the failed run's saved parts and charges only when ready
+    // its free retries used up (owner 2026-11-18: 2 per paid script): never a new paid start from Try again
+    if (failed.engine === "studio" && !failed.canRetry) return { ok: false, error: new BlockyWorldsError("LIMIT", "We couldn't make this one, all credits are back. Try a new story.") };
     const r = await attempt("retrying", () => (failed.canRetry ? worldsCall("retry", { runId: failed.id }) : worldsCall("start", { draftId: failed.draftId, removeWatermark })));
     if (r.ok) { setRun(r.value); setRecent((list) => [r.value, ...list.filter((x) => x.id !== r.value.id)]); }
     return r;
