@@ -1,6 +1,6 @@
 {
  "name": "zyvo-blender-kit",
- "image": "registry.fly.io/zyvo-cutaway-render-staging@sha256:070b337dcff1adee1c1dc4a7f97f745df0800969757db645fc0dfe11b797ced1",
+ "image": "registry.fly.io/zyvo-cutaway-render-staging@sha256:fc60e13b1064a9e168837e1c9e8b818ba9066f7af47d093253908456c7829166",
  "registryAuthId": "cmvlelgjk00593mjx9gycdtjw",
  "templateId": "d93ylrsqdq",
  "endpointId": "sp338bavcw2gtn",
@@ -16,10 +16,11 @@
  "blockyEndpoint": "gm9eqdkuyc2ofs",
  "blockyWorkersMaxBefore": 6,
  "blockyWorkersMaxNow": 0,
- "updatedAt": "2026-11-14T13:33:12.365Z",
+ "updatedAt": "2026-11-18T22:28:25.176Z",
  "workersMoveBefore": {
   "blocky": 3,
   "ours": 3
  },
- "workersMovedAt": "2026-11-15T15:34:48.053Z"
+ "workersMovedAt": "2026-11-15T15:34:48.053Z",
+ "imageBefore": "registry.fly.io/zyvo-cutaway-render-staging@sha256:070b337dcff1adee1c1dc4a7f97f745df0800969757db645fc0dfe11b797ced1"
 }
