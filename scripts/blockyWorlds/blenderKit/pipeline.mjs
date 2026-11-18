@@ -20,9 +20,9 @@ import { fileURLToPath } from "node:url";
 import { ledger, stepTimes } from "../studio/ledger.mjs";
 import { loadEnv } from "../engine/runpod/client.mjs";
 import { styleSheetLine } from "../../../supabase/functions/_shared/blockyWorlds/characterRef.js";
-import { cameraWallProblem, mentionsHero, shotCap, clearRayProblem, makeDirector, systemPrompt, tileShots, assemble, staticCheck, wordLines, planLocations, planProblems, storyPlanProblems, planLines, shotProblems, heroOf, giantSuspect, actionPlanProblems, visionRuleProblems, heroSeenProblems, MODELS, BATCH, MIN_LOCATIONS, PRICING } from "./director.mjs";
+import { cameraWallProblem, mentionsHero, shotCap, clearRayProblem, makeDirector, systemPrompt, tileShots, assemble, staticCheck, wordLines, planLocations, planProblems, varietyPlanProblems, minLocations, storyPlanProblems, planLines, shotProblems, heroOf, giantSuspect, actionPlanProblems, visionRuleProblems, heroSeenProblems, MODELS, BATCH, MIN_LOCATIONS, PRICING } from "./director.mjs";
 import { parseSpots, reaimPlan, spotMarksDoc } from "./camFix.mjs";
-import { heroLinesMissing, renderGate } from "./renderGate.mjs";
+import { heroLinesMissing, renderGate, weakShotList } from "./renderGate.mjs";
 import { captionColors } from "./speakers.mjs";
 import { LOCATIONS, DRESS } from "./worlds/locations.mjs";
 import { runpod, RATE, BOOT_S, GPU, finalEstimate, previewEstimate, fitLimits, chunkLimitS, chunkFloorS, finishLimitS, finishFloorS } from "./rp.mjs";
@@ -30,7 +30,7 @@ import { shotFrames, splitShots } from "./plan.mjs";
 import { saveAsset, functionSource, findAssets } from "./library.mjs";
 import { makeBed, kitMusicDb } from "./music.mjs";
 import { actionsSource, actionDocs } from "./actions/actions.mjs";
-import { NOTES_SCHEMA, notesBrief, cleanScenes, isAutoPlan } from "./notes.mjs";
+import { NOTES_SCHEMA, notesBrief, cleanScenes, isAutoPlan, spreadScenes } from "./notes.mjs";
 import { placeBuildsIn } from "../../../supabase/functions/_shared/blockyWorlds/placeBuilds.js";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -202,6 +202,8 @@ if (CARD && !NOTES && WORLDS && !state.plan) {
 // an automatic scene plan never keeps an UNRELATED place (a plane for "the clouds"): the missing place's host or the
 // scene before (an owner-edited plan is the owner's choice)
 if (SCENE_PLAN?.scenes?.length && isAutoPlan(SCENE_PLAN)) SCENE_PLAN = cleanScenes(SCENE_PLAN.scenes.map((s) => ({ from: s.lines[0], to: s.lines[1], location: s.location })), script.lines.length, LIB_IDS, script.lines.map((l) => l.text)) ?? SCENE_PLAN;
+// THE SCENE SPREAD (owner 2026-11-18, notes.mjs spreadScenes): an automatic scene plan keeps no place over 40% of the words
+if (SCENE_PLAN?.scenes?.length && isAutoPlan(SCENE_PLAN)) SCENE_PLAN = spreadScenes(SCENE_PLAN, script.lines.map((l) => l.text), LIB_IDS);
 const wordsText = (s) => words.slice(s.w0, s.w1 ?? words.length).map((w) => w.word).join(" ");
 const secs = (s) => `${(s.w0 <= 0 ? 0 : words[s.w0].start).toFixed(2)}-${(s.w1 == null ? dur : words[s.w1].start).toFixed(2)} s`;
 
@@ -222,12 +224,13 @@ if (!state.plan) {
     `PLAN THE VIDEO. Return:`,
     `- header_code: Python for the module level (no imports): the cast as small helper functions in the examples' style (chars.Char + story._live, one per person; the colours of your style_sheet), any creature the script names as a visible creature built from kit primitives / fx, constants for set positions, and a builder function for every set or prop the kit lacks (reuse the kit's sets and our approved library builds wherever they fit).`,
     `- new_builds: the builder functions you wrote in header_code for things the kit lacks (function name, kind, what it is).`,
-    `- style_sheet: every named character once: name, hero (true for exactly ONE: the narrator / main character), outfit (the hero's is ONE striking outfit worn in every shot), colors (their own distinct colours, e.g. "yellow and black stripes"). The cast helpers in header_code use exactly these.`,
+    `- style_sheet: every named character once: name, hero (true for exactly ONE: the narrator / main character), outfit (the hero's is ONE striking outfit worn in every shot), colors (their own distinct colours, e.g. "yellow and black stripes"), looks (how their look changes over the story, with line numbers, or "same all video"; a character the script says stays normal stays normal). The cast helpers in header_code use exactly these.`,
+    `- gag: when the story's rule makes VISIBLE changes (animal noses, colours, sizes ...): change = what changes, versions = at least 4 clearly different versions you BUILD in header_code and show (pig snout, duck beak, elephant trunk, frog mouth, fox nose ...); a line naming the set shows them side by side. Otherwise change "", versions [].`,
     `- anchors: the recurring places (location names as on the shots) that are set up early and COME BACK in the ending.`,
     ...(WORLDS ? [`- LIBRARY MODE: every shot's location is EXACTLY one library place id (${[...LIB_IDS].join(", ")}); a story may jump between places (street -> moon -> plane). dress: the story's dress JSON (landmark + landmark_text, the shop signs and billboard from the story, time, weather, props, people). header_code: ONLY the cast + the story's own new props / creatures (the worlds are already in the file).`] : []),
     ...(CHARACTERS.length ? [`THE USER'S CHARACTER REFERENCES (data: build these characters with EXACTLY these looks in the style_sheet and the cast helpers; the Main character is the hero; keep the narration's own names when it names them):`, ...CHARACTERS.slice(0, 4).map((c) => `- ${styleSheetLine(c)}`)] : []),
     ...(SCENE_PLAN?.scenes?.length ? [`THE OWNER'S SCENE PLAN (use exactly these locations for these lines):`, ...SCENE_PLAN.scenes.map((sc) => `- lines ${sc.lines[0]}-${sc.lines[1]}: ${sc.location}`)] : []),
-    `- shots: about ${Math.round((dur / 60) * 50)} shots (about 50 a minute, 0.4-2.5 s each), in order; each = { id (1, 2, ...), w0 = the index of its first word (the first shot 0), desc = what we see (the line's key noun / action LITERALLY), location = the set it is in (short name) }. Use at least ${MIN_LOCATIONS} different locations. A shot lasts until the next shot's first word; the last shot ends with the audio. Cut on the word that brings a new image; every named thing gets its own shot; reaction close-ups on the big beats (the twist: the hero's face up close); the first shot is mid-action; the last shot shows the consequence of the last line.`,
+    `- shots: about ${Math.round((dur / 60) * 50)} shots (about 50 a minute, 0.4-2.5 s each), in order; each = { id (1, 2, ...), w0 = the index of its first word (the first shot 0), desc = what we see (the line's key noun / action LITERALLY), location = the set it is in (short name) }. size = wide / medium / close / reaction (alternate them: never more than 2 close / reaction shots in a row, never 3 of one size in a row; each new location opens wide). Use at least ${minLocations(dur)} different locations, none over 40% of the time. A shot lasts until the next shot's first word; the last shot ends with the audio. Cut on the word that brings a new image; every named thing gets its own shot; reaction close-ups on the big beats (the twist: the hero's face up close); the first shot is mid-action; the last shot shows the consequence of the last line.`,
     `You will then write the shot bodies in batches of ${BATCH}. Keep the header complete now: later batches can only add small helpers.`,
   ].filter(Boolean).join("\n");
   let r = await L.step("director_plan", () => D.plan({ brief }));
@@ -237,7 +240,7 @@ if (!state.plan) {
   // + THE ACTION RULES (director.mjs actionPlanProblems, owner 2026-11-16): never only the place, at most 1 shot in 6
   // without a character, every named character (name or role) shown on its lines, the story's builds (the hill) shown;
   // up to 2 re-plans, then a stop (BLOCKING, before any GPU money)
-  const planCheck = (d) => { const pl = planLines(d?.shots ?? [], lineOf, script.lines); return [...planProblems(d, dur, { library: WORLDS ? LIB_IDS : null }), ...storyPlanProblems(d ?? {}, pl), ...actionPlanProblems(d ?? {}, pl, { builds })]; };
+  const planCheck = (d) => { const pl = planLines(d?.shots ?? [], lineOf, script.lines); return [...planProblems(d, dur, { library: WORLDS ? LIB_IDS : null }), ...varietyPlanProblems(d ?? {}, dur, { words, sceneLocked: Boolean(SCENE_PLAN?.scenes?.length && !isAutoPlan(SCENE_PLAN)) }), ...storyPlanProblems(d ?? {}, pl), ...actionPlanProblems(d ?? {}, pl, { builds })]; };
   // THE BEST PLAN WINS (owner 2026-11-18, the Sock Try again crashed: the second re-plan came back EMPTY, 0 shots, and
   // replaced a good plan): every answer is scored, a re-plan is only taken when it is a usable plan (at least half the
   // shots of the best one, a cast, a header) with fewer problems; after the re-plans the best plan goes on and its
@@ -248,7 +251,7 @@ if (!state.plan) {
   let best = usable(r.data) ? { r, probs } : null;
   for (let k = 1; probs.length && k <= 2; k++) {
     say(`plan check: ${probs.length} problem(s): ${probs.join(" | ")}`);
-    const r2 = await L.step("director_plan", () => D.plan({ brief: `PLAN CHECK FAILED:\n${probs.map((x) => `- ${x}`).join("\n")}\nRe-plan the WHOLE video (same answer format: title, header_code, new_builds, style_sheet (with every character's role), anchors, every shot with id, w0, desc, location) so every point above is met (add any set builders to header_code).` }));
+    const r2 = await L.step("director_plan", () => D.plan({ brief: `PLAN CHECK FAILED:\n${probs.map((x) => `- ${x}`).join("\n")}\nRe-plan the WHOLE video (same answer format: title, header_code, new_builds, style_sheet (with every character's role), anchors, gag, every shot with id, w0, desc, location, size) so every point above is met (add any set builders to header_code).` }));
     const p2 = planCheck(r2.data);
     const bigEnough = !best || (r2.data?.shots?.length ?? 0) >= 0.5 * best.r.data.shots.length;
     if (usable(r2.data) && bigEnough && (!best || p2.length <= best.probs.length)) { best = { r: r2, probs: p2 }; r = r2; probs = p2; }
@@ -260,7 +263,7 @@ if (!state.plan) {
   const locs = planLocations(r.data.shots ?? []);
   // THE SHOT CAP (owner 2026-11-18): ~50 cuts a minute of voice, never above 85
   const t = tileShots(r.data.shots ?? [], words, { maxShots: shotCap(dur) });
-  state.plan = { title: r.data.title ?? script.title, header: r.data.header_code ?? "", newBuilds: r.data.new_builds ?? [], shots: t.shots, mergedAtPlan: t.merged, cutOff: r.cutOff, locations: locs.list, styleSheet: r.data.style_sheet ?? [], anchors: r.data.anchors ?? [], dress: storyDress(r.data.dress) };
+  state.plan = { title: r.data.title ?? script.title, header: r.data.header_code ?? "", newBuilds: r.data.new_builds ?? [], shots: t.shots, mergedAtPlan: t.merged, cutOff: r.cutOff, locations: locs.list, styleSheet: r.data.style_sheet ?? [], anchors: r.data.anchors ?? [], gag: r.data.gag?.change ? { change: String(r.data.gag.change).slice(0, 200), versions: (r.data.gag.versions ?? []).map((v) => String(v).slice(0, 60)).slice(0, 12) } : null, dress: storyDress(r.data.dress) };
   state.bodies = {};
   state.convo = D.convo; // a resume continues the same conversation (the batches need the plan turn)
   save();
@@ -465,7 +468,7 @@ async function vision(tag, sheets, ids, suspects = {}, giants = {}) {
   const seen = new Set(sheets.flatMap((x) => x.shots));
   const lines = linesOfShots(plan.shots).filter((l) => l.shots.every((id) => seen.has(id)));
   const last = plan.shots[plan.shots.length - 1];
-  const r = await L.step("vision_check", () => D.check({ label: `check_${tag}`, sheets, shots, wordsText, suspects, giants, lines, lastShot: ids.includes(last.id) ? last.id : null, darkOk: shots.filter(darkOk).map((s) => s.id), cast: plan.styleSheet ?? [] }));
+  const r = await L.step("vision_check", () => D.check({ label: `check_${tag}`, sheets, shots, wordsText, suspects, giants, lines, lastShot: ids.includes(last.id) ? last.id : null, darkOk: shots.filter(darkOk).map((s) => s.id), gag: plan.gag ?? null, cast: plan.styleSheet ?? [] }));
   const out = Object.fromEntries((r.data.shots ?? []).filter((x) => !x.ok).map((x) => [x.id, x.problem]));
   for (const l of r.data.lines ?? []) {
     if (l.ok) continue;
@@ -525,7 +528,7 @@ if (Object.keys(failing).length && (state.round ?? 0) < ROUNDS && !D.messagesWar
     NOTES ? `THE OWNER'S PRODUCTION NOTES:\n${NOTES}` : "",
     `STYLE SHEET: ${JSON.stringify(plan.styleSheet)}`, `ANCHORS: ${JSON.stringify(plan.anchors)}`, `THE STORY'S DRESS (ZW_STORY_DRESS): ${JSON.stringify(plan.dress ?? {})}`,
     `THE HEADER CODE (already in the file, after the world library; call its helpers; header_code in your answer ADDS code after it and may redefine a helper):\n${plan.header}`,
-    `EVERY SHOT (id, seconds, location, words, desc):`, ...plan.shots.map((s) => `${s.id} (${secs(s)}, ${s.location}) "${wordsText(s)}": ${s.desc}`)].filter(Boolean).join("\n");
+    `EVERY SHOT (id, seconds, location, size, words, desc):`, ...plan.shots.map((s) => `${s.id} (${secs(s)}, ${s.location}${s.size ? `, ${s.size}` : ""}) "${wordsText(s)}": ${s.desc}`)].filter(Boolean).join("\n");
   state.convo = []; save();
   say(`fix rounds: the conversation cache is cold (${(D.idleS() / 60).toFixed(0)} min): a fresh conversation with a ${primer.length}-character brief`);
 }
@@ -617,7 +620,9 @@ if (crashed.length) mergeOut(crashed, "crash");
 // Only a truly unwatchable video stops before the final render (the worker refunds and keeps the parts for Try again).
 {
   const g = renderGate({ shots: plan.shots, failing });
-  state.gate = { cut: g.cut, weak: g.weak, ignored: g.ignored, shareAfter: g.shareAfter, ok: g.ok, reason: g.reason }; save();
+  state.gate = { cut: g.cut, weak: g.weak, ignored: g.ignored, shareAfter: g.shareAfter, ok: g.ok, reason: g.reason }; state.gate.list = weakShotList(state.gate, plan.shots); save();
+  // the FULL weak-shot list in the log, one line each (the report keeps it too: report.gate.list)
+  for (const w of state.gate.list) say(`weak shot ${w.id} (${w.status}): ${w.desc.slice(0, 80)} -> ${w.why.slice(0, 120)}`);
   // OWNER TEST (--force-render: the run card's owner_force_render, set only by our own tools): the final is rendered
   // even below the bar; the unwatchable shots are still cut and everything is logged
   const FORCE = has("force-render");
@@ -710,6 +715,6 @@ const report = { title: plan.title, slug: SLUG, model: MODEL, duration: fin.outp
   rounds: state.rounds, merged: state.merged ?? [], stillFailing: failing, costs: L.costs, total: L.total(), steps: stepTimes(RUN),
   final: { file: path.join(OUT, "final.mp4"), phone: path.join(OUT, "final_phone.mp4"), contact: sheet, renderWallS: +renderWall.toFixed(0), withFinishS: +finalWall.toFixed(0),
     chunks: Object.values(state.chunks).map((c) => ({ frames: c.out.frames, renderS: c.out.renderS, sPerFrame: c.out.sPerFrame, gpu: c.out.gpu?.renderer })), finish: { finishS: fin.output.finishS, cues: fin.output.cues } },
-  frameScan: scan, library: saved, sandbox: fin.output.sandbox };
+  frameScan: scan, library: saved, sandbox: fin.output.sandbox, gate: state.gate ?? null };
 fs.writeFileSync(path.join(OUT, "report.json"), JSON.stringify(report, null, 1));
 say(`done: $${L.total()} of $${L.capUsd}; report ${path.join(OUT, "report.json")}`);

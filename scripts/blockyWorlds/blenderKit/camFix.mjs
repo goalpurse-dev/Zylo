@@ -378,8 +378,62 @@ export function reaimPlan(bodies, shots, { wallFor = () => () => "", spots = nul
     const b = bodies[s.id];
     if (!b) continue;
     const r = reaimBody(b, s.desc ?? "", { wall: wallFor(s), spots });
-    if (r.fixed.length) { bodies[s.id] = r.body; fixed[s.id] = r.fixed; }
-    if (r.left.length) left[s.id] = r.left;
+    // EFFECTS NEVER COVER FACES (owner 2026-11-18): after the camera is final, any puff / smoke / sparkle on a face moves
+    const f = fxOffFaces(r.body, { spots });
+    const all = [...r.fixed, ...f.fixed];
+    if (all.length) { bodies[s.id] = f.body; fixed[s.id] = all; }
+    if (r.left.length || f.left.length) left[s.id] = [...r.left, ...f.left];
   }
   return { fixed, left };
+}
+
+// ---------------------------------------------------------------- effects never cover faces
+// THE SOCK LESSON (owner 2026-11-18: "puffs, smoke and sparkles go beside or behind characters, never over a face"):
+// story.puff('pf', (0, 3.4, 4.5), tp, 1.2) was put ON the head of the character standing at (0, 3.4). A literal effect
+// position at face height within reach of a face is moved BESIDE that face (across the camera line, a little behind),
+// on the side away from the other people; positions built from loop variables are left to the checker.
+const FX_CALL = /\b((?:story\.|fx\.)?(?:puff|poof|smoke|sparkles?|burst|confetti|dust)\w*)\(\s*(?:(['"][^'"]*['"])\s*,\s*)?\(\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*\)\s*((?:,[^,()\n]+)*)\)/g;
+export const FX_CLEAR = 0.9; // the gap kept between an effect's edge and a face (units; a head is ~1.2 wide)
+/** an effect's size: the last plain number after its time (the kit's puff(name, pos, t, size)); 1 if none */
+const fxSize = (rest) => { const nums = splitTop(String(rest).replace(/^,/, "")).map((a) => (/^-?\d+(?:\.\d+)?$/.test(a) ? Number(a) : null)); return nums.length >= 2 && nums[1] != null ? nums[1] : 1; };
+export function fxOffFaces(body, { spots = null } = {}) {
+  const ps = people(body);
+  let out = String(body ?? "");
+  const fixed = [], left = [];
+  if (!ps.length) return { body: out, fixed, left };
+  const cam = cameras(out, { spots })[0];
+  const [C, T] = cam ? viewsOf(cam)[0] : [null, null];
+  let ray = C && T ? [T[0] - C[0], T[1] - C[1]] : [0, 1];
+  const rn = Math.hypot(...ray) || 1; ray = [ray[0] / rn, ray[1] / rn];
+  const perp = [-ray[1], ray[0]];
+  for (const m of [...out.matchAll(FX_CALL)]) {
+    const [text, fn, name, xs, ys, zs, rest] = m;
+    const P = [Number(xs), Number(ys), Number(zs)], size = Math.max(0.2, fxSize(rest));
+    const hit = ps.find((p) => { const F = face(p); return Math.hypot(P[0] - F[0], P[1] - F[1]) < size + FX_CLEAR * p.s && Math.abs(P[2] - F[2]) < size + FX_CLEAR * p.s; });
+    if (!hit) continue;
+    const F = face(hit), others = ps.filter((p) => p !== hit);
+    const room = (q) => Math.min(99, ...others.map((p) => Math.hypot(q[0] - p.x, q[1] - p.y)));
+    // the candidates, nearest first: beside the face (either side, across the camera line, a little behind it), then
+    // behind and above the head; with a camera, the first one that stays IN FRAME and clear of the face on screen wins
+    const cands = [];
+    for (const off of [size + 0.75 * hit.s, size + 0.7 * hit.s + FX_CLEAR]) {
+      const two = [1, -1].map((side) => [F[0] + side * perp[0] * off + ray[0] * 0.6, F[1] + side * perp[1] * off + ray[1] * 0.6, P[2]]);
+      cands.push(...two.sort((a, b) => room(b) - room(a)));
+    }
+    cands.push([F[0] + ray[0] * (size + 1), F[1] + ray[1] * (size + 1), F[2] + size + 0.9 * hit.s]);
+    const clearOnScreen = (q) => {
+      if (!C) return true;
+      const a = project(C, T, cam.lens, q), f = project(C, T, cam.lens, F), e = project(C, T, cam.lens, [q[0] + perp[0] * size, q[1] + perp[1] * size, q[2]]);
+      if (!a || !f || !e || Math.abs(a.x) > 0.9 || Math.abs(a.y) > 0.9) return false;
+      const rad = Math.hypot(e.x - a.x, (e.y - a.y) * 16 / 9), head = 0.7 * hit.s * (rad / size);
+      return Math.hypot(a.x - f.x, (a.y - f.y) * 16 / 9) > rad + 0.85 * head;
+    };
+    const q = cands.find(clearOnScreen);
+    if (!q) { left.push(`${fn}${name ? ` ${name}` : ""} covers ${hit.who}'s face and no clear spot beside it is in frame: move it beside or behind them`); continue; }
+    const moved = text.replace(/\(\s*-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?\s*\)/, `(${r2(q[0])}, ${r2(q[1])}, ${r2(q[2])})`);
+    if (moved === text) continue;
+    out = out.replace(text, moved);
+    fixed.push(`${fn}${name ? ` ${name}` : ""} covered ${hit.who}'s face -> moved beside it (${r2(q[0])}, ${r2(q[1])}, ${r2(q[2])})`);
+  }
+  return { body: out, fixed, left };
 }
