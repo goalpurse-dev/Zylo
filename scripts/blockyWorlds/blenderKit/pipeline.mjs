@@ -172,7 +172,7 @@ const worldDocs = WORLDS ? [
   actionDocs(),
 ].join("\n") : "";
 const system = systemPrompt({ kitDir: KIT, kitMapFile: kitMap, worldDocs, ...(WORLDS ? { examples: ["sneeze_teleport"] } : {}) });
-const D = makeDirector({ out: OUT, L, apiKey, model: MODEL, system, reserve, log: say, ...(WORLDS ? { tokens: { plan: 16000, batch: 10000, fix: 12000 } } : {}) });
+const D = makeDirector({ out: OUT, L, apiKey, model: MODEL, system, reserve, log: say, ...(WORLDS ? { tokens: { plan: 32000, batch: 10000, fix: 12000 } } : {}) }); // plan 32k (2026-11-18: the thinking took most of 16k and the Sock re-plan was cut off)
 const LIB_IDS = new Set(LOCATIONS.map((l) => l.id));
 // THE AUTO NOTES (notes.mjs, owner 2026-11-16): a run with a card and no owner notes gets Milo-shaped notes first; a scene
 // plan that is only the free keyword pick (or none) is re-picked with them; an owner-edited plan is kept. Never fatal:
@@ -230,13 +230,25 @@ if (!state.plan) {
   // without a character, every named character (name or role) shown on its lines, the story's builds (the hill) shown;
   // up to 2 re-plans, then a stop (BLOCKING, before any GPU money)
   const planCheck = (d) => { const pl = planLines(d?.shots ?? [], lineOf, script.lines); return [...planProblems(d, dur, { library: WORLDS ? LIB_IDS : null }), ...storyPlanProblems(d ?? {}, pl), ...actionPlanProblems(d ?? {}, pl, { builds })]; };
+  // THE BEST PLAN WINS (owner 2026-11-18, the Sock Try again crashed: the second re-plan came back EMPTY, 0 shots, and
+  // replaced a good plan): every answer is scored, a re-plan is only taken when it is a usable plan (at least half the
+  // shots of the best one, a cast, a header) with fewer problems; after the re-plans the best plan goes on and its
+  // remaining notes are logged (the later shot checks, the camera fix and the render gate handle them); only NO usable
+  // plan stops the run
+  const usable = (d) => Array.isArray(d?.shots) && d.shots.length >= 8 && Array.isArray(d?.style_sheet) && d.style_sheet.length > 0 && String(d?.header_code ?? "").trim().length > 0;
   let probs = planCheck(r.data);
+  let best = usable(r.data) ? { r, probs } : null;
   for (let k = 1; probs.length && k <= 2; k++) {
     say(`plan check: ${probs.length} problem(s): ${probs.join(" | ")}`);
-    r = await L.step("director_plan", () => D.plan({ brief: `PLAN CHECK FAILED:\n${probs.map((x) => `- ${x}`).join("\n")}\nRe-plan the WHOLE video (same answer format: title, header_code, new_builds, style_sheet (with every character's role), anchors, every shot with id, w0, desc, location) so every point above is met (add any set builders to header_code).` }));
-    probs = planCheck(r.data);
+    const r2 = await L.step("director_plan", () => D.plan({ brief: `PLAN CHECK FAILED:\n${probs.map((x) => `- ${x}`).join("\n")}\nRe-plan the WHOLE video (same answer format: title, header_code, new_builds, style_sheet (with every character's role), anchors, every shot with id, w0, desc, location) so every point above is met (add any set builders to header_code).` }));
+    const p2 = planCheck(r2.data);
+    const bigEnough = !best || (r2.data?.shots?.length ?? 0) >= 0.5 * best.r.data.shots.length;
+    if (usable(r2.data) && bigEnough && (!best || p2.length <= best.probs.length)) { best = { r: r2, probs: p2 }; r = r2; probs = p2; }
+    else { say(`plan check: re-plan ${k} not taken (${usable(r2.data) ? `${p2.length} problem(s), ${r2.data.shots.length} shots` : `not a usable plan: ${r2.data?.shots?.length ?? 0} shots`}); the best plan stays`); probs = best ? best.probs : p2; }
   }
-  if (probs.length) throw new Error(`plan check: still failing after the re-plans: ${probs.join(" | ")}: stopped before any render`);
+  if (!best) throw new Error("plan check: the director returned no usable plan (no shots / no cast): stopped before any render");
+  r = best.r;
+  if (best.probs.length) say(`plan check: going on with the best plan; ${best.probs.length} note(s) left for the shot checks: ${best.probs.join(" | ").slice(0, 400)}`);
   const locs = planLocations(r.data.shots ?? []);
   // THE SHOT CAP (owner 2026-11-18): ~50 cuts a minute of voice, never above 85
   const t = tileShots(r.data.shots ?? [], words, { maxShots: shotCap(dur) });

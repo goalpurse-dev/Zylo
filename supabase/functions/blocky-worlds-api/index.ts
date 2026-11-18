@@ -310,8 +310,14 @@ async function scriptsLeft(userId: string, counts?: any) {
 // price back (blocky_worlds_refund); no video within 7 days: all but 25 credits back (blocky_worlds_prepay_expire).
 const blenderAvailable = (who: { owner: boolean } | null) => OPEN || Boolean(who?.owner);
 const prepayOn = (who: any) => PREPAY && blenderAvailable(who);
+// NEW PURCHASES PAUSED (owner 2026-11-18, until one live video succeeds end to end): "Write my script" (the purchase)
+// is refused for everyone but the owner until the function secret BLOCKY_WORLDS_PURCHASES=on. Scripts already paid,
+// their "Make my video", Try again and refunds are untouched.
+const PURCHASES_OPEN = flag("BLOCKY_WORLDS_PURCHASES") === "on";
+const PURCHASES_PAUSED_MESSAGE = "In This Town is getting an upgrade, back very soon.";
 async function flatWrite(req: Request, body: any, trace: Trace) {
   const who = await requireWriter(req, trace);
+  if (!PURCHASES_OPEN && !who.owner) throw new ApiError("BUSY", PURCHASES_PAUSED_MESSAGE, { retryAfterSec: 3600 }, "new purchases paused (BLOCKY_WORLDS_PURCHASES is not on)");
   const inner = { ...body, flat: false, lengthSec: Math.min(Number(body?.lengthSec ?? BLENDER_FLAT.writeSec) || BLENDER_FLAT.writeSec, BLENDER_FLAT.writeSec) };
   if (!prepayOn(who)) return { ...(await route(req, inner, trace)), flat: { credits: BLENDER_FLAT.credits, charge: "start" } };
   trace.step = "prepay";
@@ -410,7 +416,7 @@ async function route(req: Request, body: any, trace: Trace) {
       // THE BLENDER UI (owner-only first, 2026-11-15): topic + "explain more" + character references, no length picker
       blenderUi: blenderAvailable(who), roles: blenderAvailable(who) ? ROLES : null,
       // the Blender page's ONE price (BLENDER_FLAT): when it is charged ("script": at Write my script; "start": at Make my video)
-      flat: blenderAvailable(who) ? { credits: BLENDER_FLAT.credits, charge: prepayOn(who) ? "script" : "start", keepCredits: BLENDER_FLAT.keepCredits, expireDays: BLENDER_FLAT.expireDays, maxSec: BLENDER_FLAT.priceRowSec } : null,
+      flat: blenderAvailable(who) ? { paused: !PURCHASES_OPEN && !who?.owner ? PURCHASES_PAUSED_MESSAGE : null, credits: BLENDER_FLAT.credits, charge: prepayOn(who) ? "script" : "start", keepCredits: BLENDER_FLAT.keepCredits, expireDays: BLENDER_FLAT.expireDays, maxSec: BLENDER_FLAT.priceRowSec } : null,
     };
   }
 
