@@ -5,6 +5,7 @@
 // email_campaign_queue); every send still passes the email gate.
 import { APP_URL, REPLY_TO, SENDERS } from "./emailRules.js";
 import { OFFER_EMAIL_LINE, offerLive } from "./offer.js";
+import { LAUNCH_DEAL_EMAIL_LINE, launchDealLive } from "./launchDeal.js";
 
 export const CAMPAIGN_WHY = "You're getting this because product updates are turned on for your Zyvo account.";
 // The Cutaway Explainer page (src/data/cutawayExplainer.js: CUTAWAY_PATH).
@@ -208,6 +209,31 @@ const townLaunch = {
   ], "Niko", { fullLinkText: true }),
 };
 
+// "In This Town" launch, second round (owner, 2026-11-19): the same subject to people who didn't get the first one,
+// "Make your first one here" linking to In This Town, and the launch deal line while the deal runs (_shared/launchDeal.js:
+// Starter 20% off the first month until Sunday 23:59 Finnish). Outside the deal window the line is left out by itself.
+const townLaunch2Lines = (deal) => [
+  "Hey,",
+  "It's Niko from Zyvo.",
+  "It's here. You can now make \"In This Town\" Roblox shorts on Zyvo.",
+  "This one's different. Instead of just using AI video generators, it actually animates the whole story, so every scene stays clean and consistent from start to finish. It's the best thing we've ever made.",
+  ...(deal ? [LAUNCH_DEAL_EMAIL_LINE] : []),
+  "Make your first one here: tryzyvo.com",
+  "Send me what you make, I want to see it.",
+];
+const townLaunch2 = {
+  from: ROOT_NIKO,
+  replyTo: REPLY_TO.niko,
+  subject: "in this town is live",
+  why: CAMPAIGN_WHY,
+  plain: true,
+  opensTracked: true,
+  linkTo: "town",
+  render: (footer, opts = {}) => plainEmailInlineLink(townLaunch2Lines(TOWN_LAUNCH2_DEAL && launchDealLive(opts.at ?? Date.now())), "Niko", { fullLinkText: true })(footer, opts),
+};
+// The owner's 14:00 rule: if the deal isn't built and tested by then, the email goes without the deal line (set false).
+export const TOWN_LAUNCH2_DEAL = true;
+
 export const CAMPAIGNS = {
   // Day 1 (2026-10-11): the 200 newest people who are ON. Sent before open tracking was switched on.
   warmup_day1: warmup("You signed up recently"),
@@ -259,6 +285,7 @@ export const CAMPAIGNS = {
   // Owner, 2026-11-17: Tue 17 Nov 18:00–21:00 Finnish, 1,000: "me" replies, Sunday's real openers, real opens /
   // came back since 4 Nov, then active 30 days with no marketing email yet.
   town_launch1: townLaunch,
+  town_launch2: townLaunch2,
 };
 
 // The 12-hour open check (owner, 2026-10-29): opens of a day under its min_open_rate 12 hours after
