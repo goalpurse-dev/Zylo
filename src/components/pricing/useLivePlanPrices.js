@@ -1,4 +1,5 @@
 import { formatMoney, maxSavingPercent, planPriceView, usePlanPrices } from "../../lib/planPrices";
+import { launchDealPrice } from "../../../supabase/functions/_shared/launchDeal.js";
 
 /**
  * Live € plan prices for paywalls and upsells (Stripe via plan-prices), so no
@@ -20,6 +21,11 @@ export default function useLivePlanPrices(billing = "monthly") {
       const v = view(planId);
       if (v) return money(v.perMonth);
       return status === "error" ? "—" : "…";
+    },
+    /** The launch deal's first-month price ("€14.40"), or null while loading (lib/useLaunchDeal). */
+    dealMain: (planId) => {
+      const v = view(planId);
+      return v ? money(launchDealPrice(v.perMonth)) : null;
     },
     note: (planId) => {
       const v = view(planId);

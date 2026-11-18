@@ -6,6 +6,7 @@ import { startCheckout } from "../../../lib/payments";
 import usePaymentAction from "../../../hooks/usePaymentAction";
 import useLivePlanPrices from "../../pricing/useLivePlanPrices";
 import { PLAN_CREDITS } from "../../../../supabase/functions/_shared/stripePlanPrices.js";
+import { LAUNCH_DEAL, useLaunchDeal } from "../../../lib/useLaunchDeal";
 
 const TIERS = [
   {
@@ -45,6 +46,7 @@ export default function FaceAsmrPaywall({ open, onClose, isGuest, dismissable = 
   // Monthly first: the price shown is the amount checkout charges.
   const [billing, setBilling] = useState("monthly");
   const live = useLivePlanPrices(billing);
+  const deal = useLaunchDeal();
   const buy = (tier) => pay.run(tier.id, () => startCheckout({ type: "subscription", planId: tier.id, billing }));
 
   useEffect(() => {
@@ -180,8 +182,10 @@ export default function FaceAsmrPaywall({ open, onClose, isGuest, dismissable = 
               {/* Tier cards */}
               <div className="grid grid-cols-1 gap-2.5 p-4 sm:grid-cols-3 sm:p-5">
                 {TIERS.map((tier) => {
-                  const price = live.main(tier.id);
-                  const note  = live.note(tier.id);
+                  // The launch deal (lib/useLaunchDeal): Starter monthly shows the first month's price; checkout takes it off.
+                  const dealHere = deal.live && tier.id === LAUNCH_DEAL.plan && billing === LAUNCH_DEAL.billing && live.dealMain(tier.id) != null;
+                  const price = dealHere ? live.dealMain(tier.id) : live.main(tier.id);
+                  const note  = dealHere ? `${deal.percentOff}% off your first month, then ${live.main(tier.id)}/mo · ends in ${deal.countdown}` : live.note(tier.id);
                   return (
                     <div
                       key={tier.id}
@@ -206,6 +210,7 @@ export default function FaceAsmrPaywall({ open, onClose, isGuest, dismissable = 
 
                         <div className="flex items-center justify-between gap-2 sm:block">
                           <div className="flex items-end gap-1">
+                            {dealHere && <span className="mb-1 text-[14px] font-bold text-white/30 line-through" aria-label={`Normal price ${live.main(tier.id)}`}>{live.main(tier.id)}</span>}
                             <span className="text-[28px] font-extrabold leading-none text-white sm:text-[32px]">{price}</span>
                             <span className="mb-1 text-[11px] text-white/30">/mo</span>
                           </div>
@@ -219,7 +224,7 @@ export default function FaceAsmrPaywall({ open, onClose, isGuest, dismissable = 
                         </div>
 
                         {/* Yearly: the full amount checkout will charge, easy to read. */}
-                        <div className={billing === "yearly" ? "text-[12px] font-semibold text-white/85" : "text-[10px] text-white/25"}>{note}</div>
+                        <div className={dealHere ? "text-[11px] font-bold text-lime-300" : billing === "yearly" ? "text-[12px] font-semibold text-white/85" : "text-[10px] text-white/25"}>{note}</div>
 
                         <button
                           onClick={() => buy(tier)}
