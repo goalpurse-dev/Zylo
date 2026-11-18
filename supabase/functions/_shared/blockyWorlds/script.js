@@ -5,6 +5,7 @@
 // NARRATOR), so the pace comes from the writing: short, punchy, single-clause lines, contractions, and no punctuation
 // that makes the voice pause (semicolons, colons, dashes, ellipses, brackets). Code cleans that punctuation out
 // (paceClean) and sizes the script to the length (targetWords).
+import { CRAFT_LINES_TEXT, twistBlock } from "./craft.js";
 import { LENGTHS, PACE, targetWords } from "./config.js";
 import { FORMULAS, MOODS, TWISTS } from "./formulas.js";
 import { fixOpener, hasOpener, openerProblem, ruleLineProblem, townLineIndex, townLineProblem } from "./opener.js";
@@ -117,6 +118,8 @@ POST (the upload text)
 A STYLE SAMPLE (${SAMPLE_WORDS} words, about ${Math.round((SAMPLE_WORDS / PACE.targetWpm) * 60)} seconds: its LENGTH is not your target, the LENGTH line of the request is). Match its line length, rhythm and voice. Never reuse its story, names or lines.
 ${EXAMPLE_SCRIPT.lines.map((l) => `[${l.part}] ${l.text}`).join("\n")}
 
+${CRAFT_LINES_TEXT}
+
 Return only the JSON object.`;
 
 /** The tool schema (no array size limits). */
@@ -165,7 +168,7 @@ export function lengthBlock(lengthSec) {
 }
 
 /** The user message for a new script (or a rewrite: previous + the user's note). */
-export function scriptPrompt({ idea, lengthSec, previous = null, note = "", beats = null, failed = [] }) {
+export function scriptPrompt({ idea, lengthSec, previous = null, note = "", beats = null, failed = [], twist = null }) {
   const lines = Object.fromEntries(partLines(lengthSec).map((b) => [b.id, b]));
   return [
     ...(idea?.topic && topicBlock(idea.topic) ? [topicBlock(idea.topic)] : []),
@@ -173,6 +176,8 @@ export function scriptPrompt({ idea, lengthSec, previous = null, note = "", beat
     // the plan's numbers, not the beat writer's (2026-11-07: its words were right, the script still ran 21% over)
     ...(beats?.length ? [`THE BEAT SHEET (follow it part by part)\n${beats.map((b) => `[${b.part}] ${b.summary} | on screen: ${b.shows} | ${lines[b.part] ? `${lines[b.part].lines} line(s), ~${lines[b.part].words} words` : `~${b.words} words`}`).join("\n")}`] : []),
     lengthBlock(lengthSec),
+    // the per-user twist rotation (craft.js pickTwist): the family and the reveal % of this video
+    ...(twist?.family ? [twistBlock(twist)] : []),
     ...(previous ? [`THE PREVIOUS VERSION (write a better one, keep what works):\n${previous.lines.map((l) => `[${l.part}] ${l.text}`).join("\n")}`] : []),
     ...(note ? [`THE USER ASKS: ${String(note).slice(0, 300)}`] : []),
     ...(failed?.length ? [`THE PREVIOUS VERSION FAILED THESE CHECKS (the new one must pass every one):\n${failed.map((p) => `- ${p}`).join("\n")}`] : []),

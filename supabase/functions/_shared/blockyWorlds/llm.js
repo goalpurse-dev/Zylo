@@ -30,7 +30,7 @@ import { freshNames, freshNamesBlock, namesUsedBy } from "./bans.js";
 import { patternNotes } from "./patternBank.js";
 import { DARK_PLAN_SYSTEM, DARK_LINES_SYSTEM, DARK_VERSION_NOTES, darkLinesPrompt, darkLinesSchema, darkPlanPrompt, darkPlanSchema, darkProblems, darkWithParts } from "./dark.js";
 import { plantPayoffProblems, plantPayoffTable } from "./plantPayoff.js";
-import { cardFromPoolIdea, defaultCorpus, filterIdeas, IDEA_JUDGE_SYSTEM, IDEA_POOL_SYSTEM, ideaJudgePrompt, ideaJudgeSchema, ideaPoolPrompt, ideaPoolSchema, POOL_SIZE, readIdeaScores, topIdeas } from "./ideaEngine.js";
+import { cardFromPoolIdea, defaultCorpus, filterIdeas, IDEA_JUDGE_SYSTEM, IDEA_POOL_SYSTEM, ideaJudgePrompt, ideaJudgeSchema, ideaPoolPrompt, ideaPoolSchema, POOL_SIZE, readIdeaScores, ruleBar, topIdeas } from "./ideaEngine.js";
 import { pickBest, readStoryScores, STORY_JUDGE_SYSTEM, storyJudgePrompt, storyJudgeSchema, VERSION_NOTES } from "./storyJudge.js";
 import { HYBRID_LINES_SYSTEM, HYBRID_PLAN_SYSTEM, hybridLinesSystem, hybridPlanSystem, hybridChecks, hybridLinesPrompt, hybridLinesSchema, hybridPlanPrompt, hybridPlanSchema, planCard, planNotes, withParts } from "./hybrid.js";
 import { beatBudgets, plantedShare } from "./beatSheet.js";
@@ -405,7 +405,7 @@ export function trimForLength(script, lengthSec, card = null, { board = false } 
  * trimmed }. A script that still has problems comes back with them (it can't be generated until they're fixed).
  * @param {{apiKey?: string, provider?: string, idea: object, lengthSec: number, previous?: {lines: {part: string, text: string}[]} | null, note?: string, beats?: object[] | null}} input
  */
-export async function writeScript({ apiKey = "", provider = "anthropic", idea, lengthSec, previous = null, note = "", beats = null, failed = [], meter = null, maxTokens = 16000, board = false }) {
+export async function writeScript({ apiKey = "", provider = "anthropic", idea, lengthSec, previous = null, note = "", beats = null, failed = [], meter = null, maxTokens = 16000, board = false, twist = null }) {
   // the board-only launch mode: the kit as hard rules for the writer, and the kit checks with the others
   // 2026-11-12: the kit (places, creature looks, animals, props, weather, SOUND WORDS) rides in the SYSTEM prompt, as in the formula writer
   const opts = { board }, baseNote = kitHard(board) ? [note, idea?.swap ? swapHint(idea.swap) : ""].filter(Boolean).join("\n\n") : note;
@@ -415,7 +415,7 @@ export async function writeScript({ apiKey = "", provider = "anthropic", idea, l
     attempts++;
     const reply = provider === "mock"
       ? await MOCK.script({ lengthSec })
-      : await callJson({ apiKey, model: MODELS.script, system, user: scriptPrompt({ idea, lengthSec, previous: prev, note: extra, beats, failed: round === 1 ? failed : [] }), schema: scriptSchema(), effort: "medium", timeoutMs: 180_000, meter, maxTokens });
+      : await callJson({ apiKey, model: MODELS.script, system, user: scriptPrompt({ idea, lengthSec, previous: prev, note: extra, beats, failed: round === 1 ? failed : [], twist }), schema: scriptSchema(), effort: "medium", timeoutMs: 180_000, meter, maxTokens });
     costUsd += reply.costUsd;
     script = normalizeScript(reply.data);
     check = scriptProtocolCheck(script, lengthSec, provider === "mock" ? null : idea, opts);
@@ -800,8 +800,9 @@ export async function writeIdeaPool({ apiKey = "", count = 10, style = null, top
     const j = await judge({ apiKey, model: MODELS.judge, system: [IDEA_JUDGE_SYSTEM], user: ideaJudgePrompt(f.kept), schema: ideaJudgeSchema(), effort: "low", maxTokens: 6000, meter });
     log("judge", MODELS.judge, j);
     const scores = readIdeaScores(j.data, f.kept.length);
-    const ranked = topIdeas(f.kept, scores, f.kept.length);
-    out.all = ranked.map(({ hook, rule, style, twist, source, total, scores: sc }) => ({ hook, rule, style, twist, source, total, scores: sc })); // the whole judged pool, best first
+    // THE RULE BAR (craft.js): only rules scoring 9+ of 12 on the six rule tests
+    const ranked = ruleBar(topIdeas(f.kept, scores, f.kept.length));
+    out.all = ranked.map(({ hook, rule, style, twist, source, total, scores: sc, ruleScore }) => ({ hook, rule, style, twist, source, total, scores: sc, ruleScore })); // the whole judged pool, best first
     out.ideas = ranked.slice(0, count).map((x) => ({ ...x, card: cardFromPoolIdea(x) }));
   } catch (e) {
     out.costUsd = Number((out.costUsd + Number(e?.costUsd ?? 0)).toFixed(5));

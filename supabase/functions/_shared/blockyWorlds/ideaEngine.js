@@ -15,6 +15,7 @@ import { normalizeIdea } from "./ideas.js";
 import { REFERENCE_PREMISES } from "./references.js";
 import { REFERENCE_TEXTS } from "./referenceTexts.js";
 import { EXAMPLE_IDEAS, EXAMPLE_SCRIPT } from "./examples.js";
+import { RULE_MIN, RULE_TESTS, ruleScore } from "./craft.js";
 
 export const IDEA_STYLES = Object.freeze(["funny", "dark"]);
 export const POOL_SIZE = 40;
@@ -61,10 +62,13 @@ export const IDEA_CRITERIA = Object.freeze([
 ]);
 export const IDEA_JUDGE_SYSTEM = `You judge story ideas for short vertical videos. You get a numbered list; score EVERY idea from 0 to 10 on each criterion and be harsh (5 is flat, 7 good, 9 great).
 ${IDEA_CRITERIA.map((c) => `- ${c.id}: ${c.ask}.`).join("\n")}
-Return only the JSON object: { "scores": [ { "n": 1, ${IDEA_CRITERIA.map((c) => `"${c.id}": n`).join(", ")} }, ... ] } with one row per idea.`;
+THE SIX RULE TESTS: also score the RULE from 0 to 2 on each (0 no, 1 partly, 2 clearly):
+${RULE_TESTS.map((t) => `- rt_${t.id}: ${t.ask}.`).join("\n")}
+Return only the JSON object: { "scores": [ { "n": 1, ${[...IDEA_CRITERIA.map((c) => c.id), ...RULE_TESTS.map((t) => `rt_${t.id}`)].map((k) => `"${k}": n`).join(", ")} }, ... ] } with one row per idea.`;
 export function ideaJudgeSchema() {
   const n = { type: "integer" };
-  const row = { type: "object", additionalProperties: false, required: ["n", ...IDEA_CRITERIA.map((c) => c.id)], properties: { n, ...Object.fromEntries(IDEA_CRITERIA.map((c) => [c.id, n])) } };
+  const rt = RULE_TESTS.map((t) => `rt_${t.id}`);
+  const row = { type: "object", additionalProperties: false, required: ["n", ...IDEA_CRITERIA.map((c) => c.id), ...rt], properties: { n, ...Object.fromEntries([...IDEA_CRITERIA.map((c) => c.id), ...rt].map((k) => [k, n])) } };
   return { type: "object", additionalProperties: false, required: ["scores"], properties: { scores: { type: "array", items: row } } };
 }
 export const ideaJudgePrompt = (ideas) => ideas.map((x, i) => `${i + 1}. [${x.style}] ${x.hook} | RULE: ${x.rule} | TWIST: ${x.twist} | SHOWS: ${x.visual}`).join("\n");
@@ -76,7 +80,9 @@ export function readIdeaScores(data, count) {
   return Array.from({ length: count }, (_, i) => {
     const r = rows.find((x) => Number(x?.n) === i + 1) ?? {};
     const scores = Object.fromEntries(IDEA_CRITERIA.map((c) => [c.id, clamp(r[c.id])]));
-    return { scores, total: Math.round((IDEA_CRITERIA.reduce((a, c) => a + c.weight * scores[c.id], 0) / wsum) * 10) };
+    // the six rule tests (craft.js): 0-12; null when the judge row has none (an older reply)
+    const ruleScoreOf = RULE_TESTS.some((t) => r[`rt_${t.id}`] != null) ? ruleScore(Object.fromEntries(RULE_TESTS.map((t) => [t.id, r[`rt_${t.id}`]]))) : null;
+    return { scores, total: Math.round((IDEA_CRITERIA.reduce((a, c) => a + c.weight * scores[c.id], 0) / wsum) * 10), ruleScore: ruleScoreOf };
   });
 }
 
@@ -130,7 +136,16 @@ export function cardFromPoolIdea(idea) {
 
 /** Rank scored ideas (best first); `count` of them, or the single best. Ties: the funnier-looking order of the pool is kept. */
 export function topIdeas(ideas, scores, count = 10) {
-  return ideas.map((idea, i) => ({ ...idea, scores: scores[i]?.scores ?? {}, total: scores[i]?.total ?? 0 })).sort((a, b) => b.total - a.total).slice(0, count);
+  return ideas.map((idea, i) => ({ ...idea, scores: scores[i]?.scores ?? {}, total: scores[i]?.total ?? 0, ruleScore: scores[i]?.ruleScore ?? null })).sort((a, b) => b.total - a.total).slice(0, count);
+}
+/**
+ * THE RULE BAR (owner 2026-11-18): only ideas whose rule scores RULE_MIN+ of 12 on the six rule tests are kept; when none
+ * passes, the single best rule is kept so the user is never left with nothing (ruleScore null = no score: kept).
+ */
+export function ruleBar(ranked) {
+  const pass = ranked.filter((x) => x.ruleScore == null || x.ruleScore >= RULE_MIN);
+  if (pass.length) return pass;
+  return ranked.length ? [[...ranked].sort((a, b) => (b.ruleScore ?? 0) - (a.ruleScore ?? 0) || b.total - a.total)[0]] : [];
 }
 
 /**

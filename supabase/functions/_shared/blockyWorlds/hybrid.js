@@ -30,6 +30,7 @@ import { targetWords } from "./config.js";
 import { storyShapeProblems } from "./storyShape.js";
 import { buttonProblems, endingProblems, formulaProblems } from "./formula.js";
 import { bannedProblems } from "./bans.js";
+import { CRAFT_PLAN_TEXT, craftProblems, planCraftProblems, ruleScoresSchema } from "./craft.js";
 import { plantPayoffProblems } from "./plantPayoff.js";
 import { BOARD_KIT } from "./boardKit.js";
 import { boardFitProblems, kitBlock, swapHint } from "./boardFit.js";
@@ -108,6 +109,8 @@ WHAT EACH PIECE OF THE PLAN MUST DO
 
 THE LENGTH: the request gives the exact number of line intents per beat. Keep to it: the writer writes one line per intent, and a plan with too few lines makes a script that is thrown away as too short.
 
+${CRAFT_PLAN_TEXT}
+
 RULES: the user's topic is the core of every beat, never replaced by an invented gimmick. Original names; never a real game, platform, brand, film, book or person; PG fear only (danger suggested, no gore, no weapons). The names, the ally's line and every joke you plan must pass the word list below.
 
 ${TRAP_WORDS}
@@ -155,6 +158,12 @@ export function hybridPlanSchema({ board = false } = {}) {
     mood: { type: "string", enum: Object.keys(MOODS) },
     setting: s,
     beats: { type: "array", items: obj({ beat: { type: "string", enum: [...BEAT_IDS] }, intent: s, shows: s, lines: { type: "array", items: s } }) },
+    // THE CRAFT (craft.js, owner 2026-11-18)
+    rule_scores: ruleScoresSchema(),
+    twist: obj({ reveal: s, reveal_pct: { type: "integer" }, reveal_beat: { type: "string", enum: [...BEAT_IDS] }, clues: { type: "array", items: obj({ beat: { type: "string", enum: [...BEAT_IDS] }, clue: s, in_joke: { type: "boolean" } }) } }),
+    motif: obj({ thing: s, uses: { type: "array", items: s } }),
+    logic: { type: "array", items: obj({ question: s, answer: s }) },
+    ending: obj({ consequence: s, image: s, cost: s }),
   });
 }
 
@@ -212,6 +221,9 @@ export function planCard(plan, topic) {
     adults: (p.adults ?? []).map((a) => String(a?.who ?? "").trim()).filter(Boolean),
     // launch mode: the kit world the plan chose and what it moved from the user's idea (shown to the user)
     ...(p.world ? { world: p.world, moved: String(p.moved ?? "").trim() } : {}),
+    // THE CRAFT (craft.js): the motif for the free line checks, the twist for the per-user rotation log
+    ...(p.motif?.thing ? { motif: { thing: String(p.motif.thing).slice(0, 80), uses: (p.motif.uses ?? []).map((u) => String(u).slice(0, 120)).slice(0, 6) } } : {}),
+    ...(p.twist?.reveal ? { craft: { twistFamily: p.twistType ?? null, twistPct: Number(p.twist.reveal_pct) || null } } : {}),
   };
 }
 function legacyPlanCard(p, topic) {
@@ -227,7 +239,7 @@ function legacyPlanCard(p, topic) {
 
 /** What a plan is missing (free; shown as notes, never a block). */
 export function planNotes(plan) {
-  return beatPlanNotes(plan);
+  return [...beatPlanNotes(plan), ...planCraftProblems(plan)];
 }
 
 /** The plan as text for the line writer. */
@@ -251,6 +263,10 @@ export function planText(plan) {
     `THE ADULTS TRY AND FAIL (each a funny, visible failure, worse each time):\n${(p.adults ?? []).map((a, i) => `${i + 1}. ${a.who}: ${a.attempt} -> ${a.fail}`).join("\n")}`,
     `THE SAVE (the hero's flaw + the planted line; say the planted line again here): ${p.save?.how} The line pays off: ${p.save?.uses_line}`,
     `THE CALLBACK (the last line): ${p.callback?.line} (calls back: ${p.callback?.calls_back})`,
+    ...(p.twist?.reveal ? [`THE TWIST REVEAL (at about ${p.twist.reveal_pct}% of the runtime, in the ${p.twist.reveal_beat} beat): ${p.twist.reveal}\nTHE CLUES BEFORE IT (keep them fair; one hides inside a joke or an insult):\n${(p.twist.clues ?? []).map((c) => `- [${c.beat}] ${c.clue}${c.in_joke ? " (inside a joke)" : ""}`).join("\n")}`] : []),
+    ...(p.motif?.thing ? [`THE MOTIF (3+ times, its meaning changing, the last use in the FINAL line): ${p.motif.thing}\n${(p.motif.uses ?? []).map((u, i) => `${i + 1}. ${u}`).join("\n")}`] : []),
+    ...(p.ending?.consequence ? [`THE ENDING: the consequence (${p.ending.consequence}), then one image or a short quote (${p.ending.image}), then the callback; what the final choice costs the hero: ${p.ending.cost}. The last line never explains the twist.`] : []),
+    ...((p.logic ?? []).length ? [`THE LOGIC (answer each in the lines):\n${p.logic.map((q) => `- ${q.question} -> ${q.answer}`).join("\n")}`] : []),
     `THE BEATS, LINE BY LINE (one spoken line per intent; write the words, keep the order, tag each line with its beat):\n${(p.beats ?? []).map((b) => `[${b.beat}] ${b.intent} | on screen: ${b.shows}\n${(b.lines ?? []).map((l, i) => `  ${i + 1}. ${l}`).join("\n")}`).join("\n")}`,
   ].join("\n\n");
 }
@@ -384,6 +400,8 @@ export function hybridChecks({ script, skeleton = {}, card, examples = [], lengt
     ...plantPayoffProblems(script, skeleton?.setups),
     // THE STORY SHAPE (storyShape.js, owner 2026-11-15): rule, life under it, the one kid, but one day, the crisis, a twist, a cliffhanger / holy-twist ending
     ...storyShapeProblems(script),
+    // THE CRAFT (craft.js, owner 2026-11-18): timing, motif, concrete details, sentence lengths, dialogue, the last line
+    ...craftProblems(script, lengthSec, { plan: card ?? null }),
   ];
   return { hard, advisory: [...new Set(advisory)].filter((x) => !hard.includes(x)), copy, words: base.words, seconds: base.seconds };
 }
