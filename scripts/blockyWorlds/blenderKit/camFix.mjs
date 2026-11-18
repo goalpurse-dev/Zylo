@@ -85,8 +85,32 @@ const RE_PUSH = R(String.raw`cam\.(push|pull)\(\s*([^,()]+),\s*([^,()]+),\s*\(\s
 const RE_KEY = R(String.raw`cam\.key\(\s*([^,()]+),\s*\(\s*(${NUM})\s*,\s*(${NUM})\s*,\s*(${NUM})\s*\)\s*,\s*\(\s*(${NUM})\s*,\s*(${NUM})\s*,\s*(${NUM})\s*\)([^)\n]*)\)`, "g");
 const kw = (rest, k) => { const m = String(rest).match(R(String.raw`\b${k}\s*=\s*(${NUM})`)); return m ? Number(m[1]) : null; };
 /** the cameras of a body: [{ text, t0, t1, T: [x,y,z], d0, d1, yaw, pitch, lens }] (cam.push / cam.pull with literal numbers) */
-export function cameras(body) {
+/** THE LIBRARY'S TESTED SPOTS (worlds.py ZW_SPOTS) as data: { place: { spot: [cam, target, lens] } }, read from the
+ *  worlds.py text (2026-11-18: the living room's "close" spot looks at (-1, 0) on a 35 mm lens; the Sock director stood
+ *  people at y 4, so 9 shots showed an empty corner, and the camera fix could not see it) */
+export function parseSpots(worldsText) {
+  const out = {};
+  const T3 = String.raw`\(\s*(${NUM})\s*,\s*(${NUM})\s*,\s*(${NUM})\s*\)`;
+  for (const line of String(worldsText ?? "").split(/\r?\n/)) {
+    const m = line.match(/^\s*"(\w+)":\s*\{(.*)\},?\s*$/);
+    if (!m || !/"\w+":\s*\(\(/.test(m[2])) continue;
+    for (const s of m[2].matchAll(R(String.raw`"(\w+)":\s*\(\s*${T3}\s*,\s*${T3}\s*,\s*(${NUM})\s*\)`, "g"))) {
+      (out[m[1]] ??= {})[s[1]] = [[+s[2], +s[3], +s[4]], [+s[5], +s[6], +s[7]], +s[8]];
+    }
+  }
+  return out;
+}
+const RE_SPOT = R(String.raw`zw_spot\(\s*cam\s*,\s*["'](\w+)["']\s*,\s*["'](\w+)["']\s*,\s*([^,()]+),\s*([^,()]+)(?:,\s*push\s*=\s*(${NUM}))?(?:,\s*lens\s*=\s*(${NUM}))?\s*\)`, "g");
+export function cameras(body, { spots = null } = {}) {
   const out = [];
+  // a tested library spot (zw_spot): the same as two exact keys (worlds.py: the end pushed `push` of the way in)
+  if (spots) for (const m of String(body ?? "").matchAll(RE_SPOT)) {
+    const sp = spots[m[1]]?.[m[2]];
+    if (!sp) continue;
+    const [C0, T, ln] = sp, push = m[5] != null ? Number(m[5]) : 0.08, lens = m[6] != null ? Number(m[6]) : ln;
+    const C1 = C0.map((v, i) => v + (T[i] - v) * push);
+    out.push({ kind: "spot", text: m[0], t0: m[3].trim(), t1: m[4].trim(), C0, C1, T0: T, T1: T, T, lens, yaw: 0, pitch: 0, d0: Math.hypot(...sub(C0, T)), d1: Math.hypot(...sub(C1, T)) });
+  }
   for (const m of String(body ?? "").matchAll(RE_PUSH)) {
     out.push({ text: m[0], t0: m[2].trim(), t1: m[3].trim(), T: [Number(m[4]), Number(m[5]), Number(m[6])], d0: Number(m[7]), d1: Number(m[8]), yaw: kw(m[9], "yaw") ?? 0, yaw1: kw(m[9], "yaw1"), pitch: kw(m[9], "pitch") ?? 0, lens: kw(m[9], "lens") ?? 35 });
   }
@@ -185,22 +209,38 @@ export function viewOf({ C, T, lens, subj, group = [subj], ps, looking = false }
 // ---------------------------------------------------------------- the shot check + the re-aim
 const sidesOf = (yaw) => (Math.abs(Math.sin((yaw * Math.PI) / 180)) > 0.05 ? [1, -1] : [1]);
 /** the bad views of a camera on each mirror reading (a problem counts only when every reading shows one) */
+/** a camera's start + end views (exact for keys and spots, the push's own model otherwise) */
+const viewsOf = (c) => (c.kind === "key" || c.kind === "spot" ? [[c.C0, c.T0], [c.C1, c.T1]] : [[camFromPush(c.T, c.d0, c.yaw, c.pitch), c.T], [camFromPush(c.T, c.d1, c.yaw, c.pitch), c.T]]);
+/** is any character's head inside the frame of this camera (at its start and its end)? */
+const anyoneSeen = (c, ps, lens) => viewsOf(c).every(([C, T]) => ps.some((p) => { const q = project(C, T, lens, [p.x, p.y, 4.9 * p.s]); return q && Math.abs(q.x) < 0.95 && Math.abs(q.y) < 0.95; }));
+/** who a camera is about: its target's cast; a camera aimed where NOBODY stands (the Sock's living-room corner) is about
+ *  the character nearest its target, and that shot gets the problem "nobody in frame" -> { cast, nobody } | null */
+function castFor(c, ps, lens) {
+  const cast = castOf(c.T, ps);
+  if (cast) return { cast, nobody: false };
+  if (!ps.length || anyoneSeen(c, ps, lens)) return null;
+  const near = [...ps].sort((a, b) => Math.hypot(a.x - c.T[0], a.y - c.T[1]) - Math.hypot(b.x - c.T[0], b.y - c.T[1]))[0];
+  const k = castOf([near.x, near.y, 3.6 * near.s], ps);
+  return k ? { cast: k, nobody: true } : null;
+}
 function judge(c, cast, ps, lens, looking) {
-  if (c.kind === "key") return [[...new Set([[c.C0, c.T0], [c.C1, c.T1]].flatMap(([C, T]) => viewOf({ C, T, lens, subj: cast.subj, group: cast.group, ps, looking })))]];
+  if (c.kind === "key" || c.kind === "spot") return [[...new Set([[c.C0, c.T0], [c.C1, c.T1]].flatMap(([C, T]) => viewOf({ C, T, lens, subj: cast.subj, group: cast.group, ps, looking })))]];
   return sidesOf(c.yaw).map((side) => [...new Set([c.d0, c.d1].flatMap((d) => viewOf({ C: camFromPush(c.T, d, c.yaw, c.pitch, side), T: c.T, lens, subj: cast.subj, group: cast.group, ps, looking })))]);
 }
 /** a body (+ its desc) -> [problem] for every camera whose view is bad on BOTH mirror readings */
-export function shotViewProblems(body, desc = "") {
-  const ps = people(body), cams = cameras(body), crash = crashLens(body);
+export function shotViewProblems(body, desc = "", { spots = null } = {}) {
+  const ps = people(body), cams = cameras(body, { spots }), crash = crashLens(body);
   if (!ps.length || !cams.length) return [];
   const looking = LOOKING.test(desc);
   const out = [];
   for (const c of cams) {
-    const cast = castOf(c.T, ps);
-    if (!cast) continue;
-    const found = judge(c, cast, ps, Math.max(c.lens, crash), looking);
+    const lens = Math.max(c.lens, crash);
+    const f0 = castFor(c, ps, lens);
+    if (!f0) continue;
+    if (f0.nobody) { out.push(`${f0.cast.subj.who}: nobody in frame (the camera looks where no character stands)`); continue; }
+    const found = judge(c, f0.cast, ps, lens, looking);
     if (!found.every((f) => f.length)) continue;
-    for (const p of found[0]) out.push(`${cast.subj.who}: ${p}`);
+    for (const p of found[0]) out.push(`${f0.cast.subj.who}: ${p}`);
   }
   return [...new Set(out)];
 }
@@ -210,16 +250,17 @@ const r2 = (v) => Math.round(v * 100) / 100;
  * ONE body -> { body, fixed: [text], left: [text] }: every camera with a bad view (on every reading) is replaced by two
  * exact cam.key keys from the solver. wall(pos, tgt) -> "" or why a camera / its ray is blocked by the place.
  */
-export function reaimBody(body, desc = "", { wall = () => "" } = {}) {
-  const ps = people(body), cams = cameras(body), crash = crashLens(body);
+export function reaimBody(body, desc = "", { wall = () => "", spots = null } = {}) {
+  const ps = people(body), cams = cameras(body, { spots }), crash = crashLens(body);
   const looking = LOOKING.test(desc);
   let out = String(body ?? "");
   const fixed = [], left = [];
   for (const c of cams) {
-    const cast = castOf(c.T, ps);
-    if (!cast) continue;
     const lens = Math.max(c.lens, crash);
-    const bad = judge(c, cast, ps, lens, looking);
+    const f0 = castFor(c, ps, lens);
+    if (!f0) continue;
+    const cast = f0.cast;
+    const bad = f0.nobody ? [["nobody in frame (the camera looks where no character stands)"]] : judge(c, cast, ps, lens, looking);
     if (!bad.every((b) => b.length)) continue;
     const why = bad[0].join("; ");
     const sol = solve({ c, cast, ps, lens, looking, wall });
@@ -237,7 +278,7 @@ export function reaimBody(body, desc = "", { wall = () => "" } = {}) {
 function solve({ c, cast, ps, lens, looking, wall }) {
   const { subj, group } = cast, s = subj.s;
   const cx = group.reduce((a, p) => a + p.x, 0) / group.length, cy = group.reduce((a, p) => a + p.y, 0) / group.length;
-  const orig = c.kind === "key" ? c.C1 : camFromPush(c.T, c.d1, c.yaw, c.pitch);
+  const orig = c.kind === "key" || c.kind === "spot" ? c.C1 : camFromPush(c.T, c.d1, c.yaw, c.pitch);
   // the front: the subject's facing; a group facing each other (a conversation): across their line, on the camera's side
   let front = subj.fx != null ? [subj.fx, subj.fy] : norm([orig[0] - cx, orig[1] - cy, 0]).slice(0, 2);
   const other = group.find((g) => g !== subj && g.fx != null);
@@ -262,7 +303,9 @@ function solve({ c, cast, ps, lens, looking, wall }) {
     for (const side of [1, -1]) {
       const sv = [-fwd[1] * side, fwd[0] * side];
       const C = [subj.x - fwd[0] * 1.7 * s + sv[0] * 1.0 * s, subj.y - fwd[1] * 1.7 * s + sv[1] * 1.0 * s, 5.1 * s];
-      if (!wall(C, far) && !ps.some((p) => p !== subj && segHitsBox(C, far, p)) && !viewOf({ C, T: far, lens, subj, group: [subj], ps, looking: true }).length) {
+      // (2026-11-18: an over-the-shoulder that leaves the subject out of the frame is no fix: their head must be in it)
+      const inFrame = anyoneSeen({ kind: "key", C0: C, C1: C, T0: far, T1: far, T: far }, [subj], lens);
+      if (inFrame && !wall(C, far) && !ps.some((p) => p !== subj && segHitsBox(C, far, p)) && !viewOf({ C, T: far, lens, subj, group: [subj], ps, looking: true }).length) {
         return { C0: C.map((v, i) => v + (C[i] - far[i]) * 0.04), C1: C, T: far, how: "over the shoulder" };
       }
     }
@@ -292,12 +335,12 @@ function solve({ c, cast, ps, lens, looking, wall }) {
 }
 
 /** every body of a plan -> { fixed: { id: [text] }, left: { id: [text] } } (bodies changed in place) */
-export function reaimPlan(bodies, shots, { wallFor = () => () => "" } = {}) {
+export function reaimPlan(bodies, shots, { wallFor = () => () => "", spots = null } = {}) {
   const fixed = {}, left = {};
   for (const s of shots) {
     const b = bodies[s.id];
     if (!b) continue;
-    const r = reaimBody(b, s.desc ?? "", { wall: wallFor(s) });
+    const r = reaimBody(b, s.desc ?? "", { wall: wallFor(s), spots });
     if (r.fixed.length) { bodies[s.id] = r.body; fixed[s.id] = r.fixed; }
     if (r.left.length) left[s.id] = r.left;
   }

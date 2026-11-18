@@ -136,3 +136,22 @@ test("the Sock crash (2026-11-18): an empty re-plan never replaces a good plan; 
   assert.match(api, /if \(!PURCHASES_OPEN && !who\.owner\) throw new ApiError\("BUSY", PURCHASES_PAUSED_MESSAGE/);
   assert.match(api, /In This Town is getting an upgrade, back very soon\./);
 });
+
+test("camera fix reads the library spots: a living-room spot aimed where nobody stands is re-aimed (the Sock's empty corners)", async () => {
+  const { parseSpots, reaimBody, shotViewProblems } = await import("../scripts/blockyWorlds/blenderKit/camFix.mjs");
+  const spots = parseSpots(fs.readFileSync("scripts/blockyWorlds/blenderKit/worlds/worlds.py", "utf8"));
+  assert.deepEqual(spots.living_room.close, [[3.5, -5.5, 4.6], [-1, 0, 4.4], 35]);
+  const s61 = `    ZW_INFO = zw_build('living_room', t0, t1, ZW_STORY_DRESS)
+    J = jasper(t0, t1, 'smile')
+    J.pose(t0, loc=(2, 4, 0), rot=0)
+    B = bramwell(t0, t1, 'smile')
+    B.pose(t0, loc=(-1, 4, 0), rot=0)
+    cam = Cam()
+    zw_spot(cam, 'living_room', 'close', t0, t1)
+    cam.handheld(0.9)`;
+  assert.match(shotViewProblems(s61, "Jasper whispering to the sock", { spots }).join(), /nobody in frame/);
+  const r = reaimBody(s61, "Jasper whispering to the sock", { spots });
+  assert.equal(r.fixed.length, 1);
+  assert.doesNotMatch(r.body, /zw_spot/);
+  assert.deepEqual(shotViewProblems(r.body, "Jasper whispering to the sock", { spots }), []);
+});
