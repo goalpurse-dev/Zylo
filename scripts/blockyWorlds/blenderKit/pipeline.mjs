@@ -21,7 +21,7 @@ import { ledger, stepTimes } from "../studio/ledger.mjs";
 import { loadEnv } from "../engine/runpod/client.mjs";
 import { styleSheetLine } from "../../../supabase/functions/_shared/blockyWorlds/characterRef.js";
 import { cameraWallProblem, mentionsHero, shotCap, clearRayProblem, makeDirector, systemPrompt, tileShots, assemble, staticCheck, wordLines, planLocations, planProblems, storyPlanProblems, planLines, shotProblems, heroOf, giantSuspect, actionPlanProblems, visionRuleProblems, heroSeenProblems, MODELS, BATCH, MIN_LOCATIONS, PRICING } from "./director.mjs";
-import { reaimPlan } from "./camFix.mjs";
+import { parseSpots, reaimPlan } from "./camFix.mjs";
 import { heroLinesMissing, renderGate } from "./renderGate.mjs";
 import { captionColors } from "./speakers.mjs";
 import { LOCATIONS, DRESS } from "./worlds/locations.mjs";
@@ -340,9 +340,11 @@ say(`static check: ${sc.ok ? "ok" : `${sc.problems.length} problem(s)`}, ${plan.
 // with a head cut off is RE-AIMED in code (free, exact camera keys); a re-aimed body that breaks the static check keeps
 // its old camera. Runs on the first bodies, after the shot-check rewrite and after every fix round.
 const wallFor = (s) => { const place = String(state.bodies[s.id] ?? "").match(/zw_build\(\s*["']([\w-]+)["']/)?.[1] ?? null; return (C, T) => (place ? cameraWallProblem(place, C) || clearRayProblem(place, C, T) : ""); };
+// the library's tested spots as data (camFix: a zw_spot aimed where nobody stands is re-aimed too)
+const SPOTS = WORLDS ? parseSpots(WORLDS) : null;
 function reaim(shots, tag) {
   const before = Object.fromEntries(shots.map((s) => [s.id, state.bodies[s.id]]));
-  const r = reaimPlan(state.bodies, shots, { wallFor });
+  const r = reaimPlan(state.bodies, shots, { wallFor, spots: SPOTS });
   const ids = Object.keys(r.fixed);
   if (ids.length) {
     const c = staticCheck(writeFile(), shotsFile);
