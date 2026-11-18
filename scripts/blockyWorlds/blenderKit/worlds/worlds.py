@@ -98,7 +98,7 @@ def zw_windows(name, glass="#5aaee8", glass2="#8cc8f2", wall="#f4f1ea"):
 # neutral, weaker colour: no blue cast, deeper shadows); a warm sun.
 ZW_SKY = {
     "day": dict(cam=[(0.0, (0.60, 0.83, 1.0)), (0.16, (0.24, 0.58, 1.0)), (0.6, (0.06, 0.30, 0.92))], amb=(0.88, 0.9, 1.0), amb_str=0.42,
-                sun=(1.0, 0.9, 0.74), sun_str=5.4, sun_rot=(42, 0, -20), cloud=("#ffffff", "#fff8f0", 0.55), grass="#5fcc4c"),
+                sun=(1.0, 0.84, 0.62), sun_str=5.6, sun_rot=(60, 0, -24), cloud=("#ffffff", "#fff8f0", 0.55), grass="#5fcc4c"),
     "sunset": dict(cam=[(0.0, (1.0, 0.52, 0.2)), (0.18, (0.92, 0.36, 0.32)), (0.62, (0.2, 0.12, 0.42))], amb=(1.0, 0.72, 0.58), amb_str=0.36,
                    sun=(1.0, 0.58, 0.3), sun_str=4.8, sun_rot=(72, 0, -38), cloud=("#ffb28c", "#ff9a7a", 0.5), grass="#6aa846"),
     "night": dict(cam=[(0.0, (0.04, 0.07, 0.18)), (0.3, (0.014, 0.025, 0.08)), (0.8, (0.004, 0.008, 0.03))], amb=(0.3, 0.38, 0.7), amb_str=0.22,

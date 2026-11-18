@@ -18,6 +18,10 @@ export function classify(f) {
   if (!f) return "ignore";
   if (f.kind === "crash" || f.kind === "pixel") return "cut";
   if (f.kind === "shotcheck" || f.kind === "owner") return "ignore"; // not seen by the vision checker: never a failure
+  // FRAMING notes (owner 2026-11-18: faces, the face share) go to the fix rounds but never count against the final
+  const rest = String(f.text ?? "").split(/;\s*/).filter((p) => p.trim() && !/^FRAMING:/.test(p.trim())).join("; ");
+  if (!rest) return "ignore";
+  f = { ...f, text: rest };
   return UNWATCHABLE_RE.test(String(f.text ?? "")) ? "cut" : "weak";
 }
 

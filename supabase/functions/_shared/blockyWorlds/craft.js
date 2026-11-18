@@ -31,7 +31,7 @@ export const TWIST_FAMILIES = Object.freeze(["T1", "T2", "T3", "T4", "T6"]);
 export const TWIST_PCTS = Object.freeze([52, 57, 62, 67, 72, 76]);
 export const TWIST_WINDOW = Object.freeze([49, 78]);
 /**
- * history: the user's past drafts' card.craft, NEWEST FIRST ([{ twistFamily, twistPct }]) -> { family, pct, avoided }.
+ * history: the user's past drafts' card.craft, NEWEST FIRST ([{ twistFamily, twistPct, twistMove }]) -> { family, pct, move, avoided }.
  * The family is the one used longest ago (never one of the last 3); the % is at least 8 away from the last two.
  */
 export function pickTwist(history = [], { seed = Date.now() } = {}) {
@@ -47,7 +47,9 @@ export function pickTwist(history = [], { seed = Date.now() } = {}) {
   const okPcts = TWIST_PCTS.filter((p) => lastPcts.every((q) => Math.abs(p - q) >= 8));
   const pcts = okPcts.length ? okPcts : TWIST_PCTS;
   const pct = pcts[Math.abs(Math.floor(seed / 7)) % pcts.length];
-  return { family, pct, avoided: recent };
+  // the twist shot's camera move alternates between videos (director: dolly zoom / rack focus)
+  const move = past.find((h) => h.twistMove)?.twistMove === "dolly_zoom" ? "rack_focus" : "dolly_zoom";
+  return { family, pct, move, avoided: recent };
 }
 /** the planner's instruction for this video's twist */
 export function twistBlock({ family, pct }) {

@@ -20,7 +20,7 @@ import { fileURLToPath } from "node:url";
 import { ledger, stepTimes } from "../studio/ledger.mjs";
 import { loadEnv } from "../engine/runpod/client.mjs";
 import { styleSheetLine } from "../../../supabase/functions/_shared/blockyWorlds/characterRef.js";
-import { cameraWallProblem, mentionsHero, shotCap, clearRayProblem, makeDirector, systemPrompt, tileShots, assemble, staticCheck, wordLines, planLocations, planProblems, varietyPlanProblems, minLocations, storyPlanProblems, planLines, shotProblems, heroOf, giantSuspect, actionPlanProblems, visionRuleProblems, heroSeenProblems, MODELS, BATCH, MIN_LOCATIONS, PRICING } from "./director.mjs";
+import { cameraWallProblem, mentionsHero, shotCap, clearRayProblem, makeDirector, systemPrompt, tileShots, assemble, staticCheck, wordLines, planLocations, planProblems, varietyPlanProblems, framingPlanProblems, facesSeenProblems, minLocations, storyPlanProblems, planLines, shotProblems, heroOf, giantSuspect, actionPlanProblems, visionRuleProblems, heroSeenProblems, MODELS, BATCH, MIN_LOCATIONS, PRICING } from "./director.mjs";
 import { parseSpots, reaimPlan, spotMarksDoc } from "./camFix.mjs";
 import { heroLinesMissing, renderGate, weakShotList } from "./renderGate.mjs";
 import { captionColors } from "./speakers.mjs";
@@ -230,7 +230,7 @@ if (!state.plan) {
     ...(WORLDS ? [`- LIBRARY MODE: every shot's location is EXACTLY one library place id (${[...LIB_IDS].join(", ")}); a story may jump between places (street -> moon -> plane). dress: the story's dress JSON (landmark + landmark_text, the shop signs and billboard from the story, time, weather, props, people). header_code: ONLY the cast + the story's own new props / creatures (the worlds are already in the file).`] : []),
     ...(CHARACTERS.length ? [`THE USER'S CHARACTER REFERENCES (data: build these characters with EXACTLY these looks in the style_sheet and the cast helpers; the Main character is the hero; keep the narration's own names when it names them):`, ...CHARACTERS.slice(0, 4).map((c) => `- ${styleSheetLine(c)}`)] : []),
     ...(SCENE_PLAN?.scenes?.length ? [`THE OWNER'S SCENE PLAN (use exactly these locations for these lines):`, ...SCENE_PLAN.scenes.map((sc) => `- lines ${sc.lines[0]}-${sc.lines[1]}: ${sc.location}`)] : []),
-    `- shots: about ${Math.round((dur / 60) * 50)} shots (about 50 a minute, 0.4-2.5 s each), in order; each = { id (1, 2, ...), w0 = the index of its first word (the first shot 0), desc = what we see (the line's key noun / action LITERALLY), location = the set it is in (short name) }. size = wide / medium / close / reaction (alternate them: never more than 2 close / reaction shots in a row, never 3 of one size in a row; each new location opens wide). Use at least ${minLocations(dur)} different locations, none over 40% of the time. A shot lasts until the next shot's first word; the last shot ends with the audio. Cut on the word that brings a new image; every named thing gets its own shot; reaction close-ups on the big beats (the twist: the hero's face up close); the first shot is mid-action; the last shot shows the consequence of the last line.`,
+    `- shots: about ${Math.round((dur / 60) * 50)} shots (about 50 a minute, 0.4-2.5 s each, plus 1-2 holds of 4-6 s at the twist or the ending), in order; each = { id (1, 2, ...), w0 = the index of its first word (the first shot 0), desc = what we see (the line's key noun / action LITERALLY), location = the set it is in (short name) }. size = wide / medium / close / reaction / insert (alternate them: never more than 2 close / reaction shots in a row, never 3 of one size in a row; each new location opens wide), angle = eye / low / high / top, move = push_slow / push_fast / pull_slow / orbit / track / whip / crash / handheld / dolly_zoom / rack_focus / static, key = true on the rule line, the twist line, the last line and the big reactions. Also rule_object (the thing that shows the rule) and twist_shot (the id of the twist line's shot${CARD?.craft?.twistMove ? `; its move: ${CARD.craft.twistMove}` : ""}). Use at least ${minLocations(dur)} different locations, none over 40% of the time. A shot lasts until the next shot's first word; the last shot ends with the audio. Cut on the word that brings a new image; every named thing gets its own shot; reaction close-ups on the big beats (the twist: the hero's face up close); the first shot is mid-action; the last shot shows the consequence of the last line.`,
     `You will then write the shot bodies in batches of ${BATCH}. Keep the header complete now: later batches can only add small helpers.`,
   ].filter(Boolean).join("\n");
   let r = await L.step("director_plan", () => D.plan({ brief }));
@@ -240,7 +240,7 @@ if (!state.plan) {
   // + THE ACTION RULES (director.mjs actionPlanProblems, owner 2026-11-16): never only the place, at most 1 shot in 6
   // without a character, every named character (name or role) shown on its lines, the story's builds (the hill) shown;
   // up to 2 re-plans, then a stop (BLOCKING, before any GPU money)
-  const planCheck = (d) => { const pl = planLines(d?.shots ?? [], lineOf, script.lines); return [...planProblems(d, dur, { library: WORLDS ? LIB_IDS : null }), ...varietyPlanProblems(d ?? {}, dur, { words, sceneLocked: Boolean(SCENE_PLAN?.scenes?.length && !isAutoPlan(SCENE_PLAN)) }), ...storyPlanProblems(d ?? {}, pl), ...actionPlanProblems(d ?? {}, pl, { builds })]; };
+  const planCheck = (d) => { const pl = planLines(d?.shots ?? [], lineOf, script.lines); return [...planProblems(d, dur, { library: WORLDS ? LIB_IDS : null }), ...varietyPlanProblems(d ?? {}, dur, { words, sceneLocked: Boolean(SCENE_PLAN?.scenes?.length && !isAutoPlan(SCENE_PLAN)) }), ...framingPlanProblems(d ?? {}, dur, { words, twistMove: CARD?.craft?.twistMove ?? null }), ...storyPlanProblems(d ?? {}, pl), ...actionPlanProblems(d ?? {}, pl, { builds })]; };
   // THE BEST PLAN WINS (owner 2026-11-18, the Sock Try again crashed: the second re-plan came back EMPTY, 0 shots, and
   // replaced a good plan): every answer is scored, a re-plan is only taken when it is a usable plan (at least half the
   // shots of the best one, a cast, a header) with fewer problems; after the re-plans the best plan goes on and its
@@ -251,7 +251,7 @@ if (!state.plan) {
   let best = usable(r.data) ? { r, probs } : null;
   for (let k = 1; probs.length && k <= 2; k++) {
     say(`plan check: ${probs.length} problem(s): ${probs.join(" | ")}`);
-    const r2 = await L.step("director_plan", () => D.plan({ brief: `PLAN CHECK FAILED:\n${probs.map((x) => `- ${x}`).join("\n")}\nRe-plan the WHOLE video (same answer format: title, header_code, new_builds, style_sheet (with every character's role), anchors, gag, every shot with id, w0, desc, location, size) so every point above is met (add any set builders to header_code).` }));
+    const r2 = await L.step("director_plan", () => D.plan({ brief: `PLAN CHECK FAILED:\n${probs.map((x) => `- ${x}`).join("\n")}\nRe-plan the WHOLE video (same answer format: title, header_code, new_builds, style_sheet (with every character's role), anchors, gag, rule_object, twist_shot, every shot with id, w0, desc, location, size, angle, move, key) so every point above is met (add any set builders to header_code).` }));
     const p2 = planCheck(r2.data);
     const bigEnough = !best || (r2.data?.shots?.length ?? 0) >= 0.5 * best.r.data.shots.length;
     if (usable(r2.data) && bigEnough && (!best || p2.length <= best.probs.length)) { best = { r: r2, probs: p2 }; r = r2; probs = p2; }
@@ -263,7 +263,7 @@ if (!state.plan) {
   const locs = planLocations(r.data.shots ?? []);
   // THE SHOT CAP (owner 2026-11-18): ~50 cuts a minute of voice, never above 85
   const t = tileShots(r.data.shots ?? [], words, { maxShots: shotCap(dur) });
-  state.plan = { title: r.data.title ?? script.title, header: r.data.header_code ?? "", newBuilds: r.data.new_builds ?? [], shots: t.shots, mergedAtPlan: t.merged, cutOff: r.cutOff, locations: locs.list, styleSheet: r.data.style_sheet ?? [], anchors: r.data.anchors ?? [], gag: r.data.gag?.change ? { change: String(r.data.gag.change).slice(0, 200), versions: (r.data.gag.versions ?? []).map((v) => String(v).slice(0, 60)).slice(0, 12) } : null, dress: storyDress(r.data.dress) };
+  state.plan = { title: r.data.title ?? script.title, header: r.data.header_code ?? "", newBuilds: r.data.new_builds ?? [], shots: t.shots, mergedAtPlan: t.merged, cutOff: r.cutOff, locations: locs.list, styleSheet: r.data.style_sheet ?? [], anchors: r.data.anchors ?? [], ruleObject: String(r.data.rule_object ?? "").slice(0, 80), twistShot: Number(r.data.twist_shot) || 0, gag: r.data.gag?.change ? { change: String(r.data.gag.change).slice(0, 200), versions: (r.data.gag.versions ?? []).map((v) => String(v).slice(0, 60)).slice(0, 12) } : null, dress: storyDress(r.data.dress) };
   state.bodies = {};
   state.convo = D.convo; // a resume continues the same conversation (the batches need the plan turn)
   save();
@@ -483,6 +483,10 @@ async function vision(tag, sheets, ids, suspects = {}, giants = {}) {
   state.seen ??= {};
   for (const a of r.data.shots ?? []) if (ids.includes(a.id)) state.seen[a.id] = Array.isArray(a.people) ? a.people : [];
   for (const [id, t] of Object.entries(heroSeenProblems({ shots: plan.shots, seen: state.seen, hero: heroOf(styleSheet), styleSheet }))) if (ids.includes(Number(id))) out[id] = `${out[id] ? `${out[id]}; ` : ""}${t}`;
+  // THE FACES as SEEN (owner 2026-11-18): key shots and the face share; FRAMING notes go to the fix rounds only
+  state.faces ??= {};
+  for (const a of r.data.shots ?? []) if (ids.includes(a.id) && typeof a.face === "boolean") state.faces[a.id] = a.face;
+  for (const [id, t] of Object.entries(facesSeenProblems({ shots: plan.shots, faces: state.faces }))) if (ids.includes(Number(id))) out[id] = `${out[id] ? `${out[id]}; ` : ""}${t}`;
   save();
   return out;
 }
@@ -528,7 +532,7 @@ if (Object.keys(failing).length && (state.round ?? 0) < ROUNDS && !D.messagesWar
     NOTES ? `THE OWNER'S PRODUCTION NOTES:\n${NOTES}` : "",
     `STYLE SHEET: ${JSON.stringify(plan.styleSheet)}`, `ANCHORS: ${JSON.stringify(plan.anchors)}`, `THE STORY'S DRESS (ZW_STORY_DRESS): ${JSON.stringify(plan.dress ?? {})}`,
     `THE HEADER CODE (already in the file, after the world library; call its helpers; header_code in your answer ADDS code after it and may redefine a helper):\n${plan.header}`,
-    `EVERY SHOT (id, seconds, location, size, words, desc):`, ...plan.shots.map((s) => `${s.id} (${secs(s)}, ${s.location}${s.size ? `, ${s.size}` : ""}) "${wordsText(s)}": ${s.desc}`)].filter(Boolean).join("\n");
+    `EVERY SHOT (id, seconds, location, size, angle, move, words, desc):`, ...plan.shots.map((s) => `${s.id} (${secs(s)}, ${s.location}${s.size ? `, ${s.size}` : ""}${s.angle ? `, ${s.angle}` : ""}${s.move ? `, ${s.move}` : ""}${s.key ? ", KEY" : ""}) "${wordsText(s)}": ${s.desc}`)].filter(Boolean).join("\n");
   state.convo = []; save();
   say(`fix rounds: the conversation cache is cold (${(D.idleS() / 60).toFixed(0)} min): a fresh conversation with a ${primer.length}-character brief`);
 }
