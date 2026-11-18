@@ -249,6 +249,7 @@ export async function runStudioRun(run, deps, cfg = STUDIO) {
 }
 
 /** the director report's small part (rounds, the best version, the finish reason) */
-function summary(r) {
-  return { model: r.model, rounds: r.rounds, calls: r.calls, checkerCalls: r.checkerCalls, sec: r.sec, finished: r.finished ?? null, best: r.best ?? null, history: (r.history ?? []).map((h) => ({ round: h.round, failingLines: h.failingLines, blocked: h.blocked, gate: h.gate, usd: h.usd, sec: h.sec })) };
+export function summary(r) {
+  // the Blender report adds the gate with the FULL weak-shot list (owner 2026-11-18) + the shots still failing
+  return { ...(r.gate !== undefined ? { title: r.title ?? null, shots: r.shots ?? null, total: r.total ?? null, gate: r.gate, weakShots: r.gate?.list ?? [], stillFailing: r.stillFailing ?? {} } : {}), model: r.model, rounds: r.rounds, calls: r.calls, checkerCalls: r.checkerCalls, sec: r.sec, finished: r.finished ?? null, best: r.best ?? null, history: (r.history ?? []).map((h) => ({ round: h.round, failingLines: h.failingLines, blocked: h.blocked, gate: h.gate, usd: h.usd, sec: h.sec })) };
 }

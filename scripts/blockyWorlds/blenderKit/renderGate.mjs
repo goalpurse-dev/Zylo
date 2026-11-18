@@ -42,6 +42,17 @@ export function renderGate({ shots, failing }) {
   return { cut, weak, ignored, shareAfter, ok: !reason, reason };
 }
 
+/**
+ * THE FULL WEAK-SHOT LIST (owner 2026-11-18: every run's report keeps all of them, not the first 8 of a log line):
+ * gate (state.gate) + the plan's shots -> [{ id, status: "cut" | "weak", at, desc, why }]
+ */
+export function weakShotList(gate, shots = []) {
+  if (!gate) return [];
+  const byId = new Map(shots.map((s) => [s.id, s]));
+  const row = (id, status, why) => { const s = byId.get(id); return { id, status, at: s?.w0 ?? null, desc: String(s?.desc ?? "").slice(0, 160), why: String(why ?? "").slice(0, 200) }; };
+  return [...(gate.cut ?? []).map((id) => row(id, "cut", "unwatchable: cut from the final")), ...(gate.weak ?? []).map((w) => row(w.id, "weak", w.text))].sort((a, b) => a.id - b.id);
+}
+
 /** the lines that name the hero but show the hero in none of their (checked) shots -> [{ line, text, shots }] */
 export function heroLinesMissing({ lines, seen = {}, hero, mentions }) {
   if (!hero) return [];

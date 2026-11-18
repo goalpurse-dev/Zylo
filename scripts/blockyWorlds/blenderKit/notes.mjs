@@ -53,6 +53,39 @@ export function cleanScenes(scenes, nLines, libIds, lineTexts = []) {
   return next === nLines ? { scenes: out } : null;
 }
 
+/**
+ * THE SCENE SPREAD (owner 2026-11-18, the Sock: the automatic scene plan put 28 of 38 lines in the living room, 73% of
+ * the video): no location over maxShare of the words. The longest scene of an over-share place is split in half and the
+ * second half goes to a neighbouring scene's place (the story already goes there), else the first everyday library
+ * place; never an EXOTIC place its lines don't name. Short scripts (< 8 lines) and one-line scenes stay as they are.
+ * plan { scenes: [{ lines: [a, b], location, auto }] } -> the same shape
+ */
+export function spreadScenes(plan, lineTexts = [], libIds = new Set(), { maxShare = 0.4 } = {}) {
+  if (!plan?.scenes?.length || lineTexts.length < 8) return plan;
+  const w = lineTexts.map((t) => Math.max(1, String(t).trim().split(/\s+/).filter(Boolean).length));
+  const total = w.reduce((a, b) => a + b, 0);
+  let scenes = plan.scenes.map((s) => ({ ...s, lines: [...s.lines] }));
+  const wordsOf = (s) => w.slice(s.lines[0], s.lines[1] + 1).reduce((a, b) => a + b, 0);
+  const merge = (list) => list.reduce((o, s) => { const l = o.at(-1); if (l && l.location === s.location) l.lines[1] = s.lines[1]; else o.push(s); return o; }, []);
+  for (let k = 0; k < 12; k++) {
+    const share = {};
+    for (const s of scenes) share[s.location] = (share[s.location] ?? 0) + wordsOf(s) / total;
+    const over = Object.entries(share).filter(([, v]) => v > maxShare + 0.02).sort((a, b) => b[1] - a[1])[0];
+    if (!over) break;
+    const mine = scenes.map((s, i) => ({ s, i })).filter((x) => x.s.location === over[0] && x.s.lines[1] > x.s.lines[0]).sort((a, b) => wordsOf(b.s) - wordsOf(a.s))[0];
+    if (!mine) break;
+    const { s, i } = mine, mid = Math.floor((s.lines[0] + s.lines[1] + 1) / 2);
+    const text = lineTexts.slice(mid, s.lines[1] + 1).join(" ");
+    const ok = (loc) => loc && loc !== s.location && (!libIds.size || libIds.has(loc)) && !unrelatedPlace(loc, text);
+    const near = [scenes[i + 1]?.location, scenes[i - 1]?.location, ...scenes.map((x) => x.location)].find((loc) => ok(loc) && (share[loc] ?? 0) + wordsOf({ lines: [mid, s.lines[1]] }) / total <= maxShare + 0.02);
+    const loc = near ?? [...libIds].find((x) => ok(x) && !share[x]);
+    if (!loc) break;
+    scenes.splice(i, 1, { ...s, lines: [s.lines[0], mid - 1] }, { lines: [mid, s.lines[1]], location: loc, auto: true });
+    scenes = merge(scenes);
+  }
+  return { ...plan, scenes };
+}
+
 const CARD_KEYS = ["title", "topic", "premise", "narrator", "ally", "adults", "neighbourNames", "examples", "ruleVisual", "flaw", "price", "prop", "setting", "twist", "plantedLine", "closer", "mood"];
 
 export function notesBrief({ card = {}, script, locations = [], builds = [], scenesLocked = null, dress = null }) {
@@ -68,7 +101,7 @@ export function notesBrief({ card = {}, script, locations = [], builds = [], sce
     `- NEW BUILDS: every thing the story needs that the library lacks (props, creatures, the place it lacks), what it looks like in blocks.`,
     `- LINE BY LINE: one entry for EVERY script line, "L<n>: <who is on screen> + <the line's named thing / action>". Every line shows a character or its named thing, never only a place (no empty plaza, alley or classroom); the hero is in most lines (at least half the shots); a line that names a character (by name or by role) SHOWS that character clearly; a group (the sleepers, the class) is shown as people.`,
     `- ANCHORS (the recurring places / props, set up early and back in the ending), REACTIONS (the hero's face up close on the big beats), FINAL IMAGE (the last line's consequence, literally), SOUND WORDS on screen.`,
-    scenesLocked ? `THE OWNER'S SCENE PLAN (keep it; scenes = []): ${scenesLocked.scenes.map((s) => `lines ${s.lines[0]}-${s.lines[1]}: ${s.location}`).join("; ")}` : `- scenes: the location (a library id) for every line, as consecutive ranges { from, to, location } covering lines 0-${script.lines.length - 1} in order with no gap. Pick the place where the line's action really happens; a long stretch in one place is fine only when every line there has its own action.`,
+    scenesLocked ? `THE OWNER'S SCENE PLAN (keep it; scenes = []): ${scenesLocked.scenes.map((s) => `lines ${s.lines[0]}-${s.lines[1]}: ${s.location}`).join("; ")}` : `- scenes: the location (a library id) for every line, as consecutive ranges { from, to, location } covering lines 0-${script.lines.length - 1} in order with no gap. Pick the place where the line's action really happens; no place holds more than 40% of the lines; a script of about 90 s (30+ lines) uses at least 4 places (cut away: outside, the street, another room, a friend's place).`,
     `THE LOCATION LIBRARY (id: what it is):`, ...locations.map((l) => `- ${l.id}: ${l.about ?? l.label ?? ""}`),
     ...(() => { const pbs = placeBuildsIn(script.lines.map((l) => l.text).join(" ")); return pbs.length ? [`MISSING PLACES (named by the script, not in the library: put each in WORLD + NEW BUILDS, built simply in its host place, and stage its lines there):`, ...pbs.map((p) => `- ${p.id} -> in ${p.host}: ${p.recipe}`)] : []; })(),
     builds.length ? `THINGS OUR CHECK FOUND THE STORY NEEDS (name, kind, lines): ${builds.map((b) => `${b.name} (${b.kind}; lines ${(b.lines ?? []).join(",")})`).join("; ")}` : "",
