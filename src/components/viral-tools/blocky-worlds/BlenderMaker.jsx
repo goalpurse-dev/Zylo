@@ -553,9 +553,11 @@ function RunStep({ flow, onAgain, onRetry }) {
       <Card n={4} title="This video didn't make it" sub={run.reason ?? "Something went wrong on our side."}>
         <p className="inline-flex items-center gap-2 rounded-2xl bg-[#18210f] px-4 py-3 text-[18px] font-black text-[#bef264]"><Check className="h-5 w-5" strokeWidth={3} />{run.credits > 0 ? (run.refunded ? <>All of it is back: <Cr n={run.credits} /></> : <>All of it comes back within a minute: <Cr n={run.credits} /></>) : <>Nothing was charged</>}</p>
         {run.canRetry && <p className="mt-3 text-[16px] font-bold leading-snug text-white/85" data-testid="bwm-retry-note">Try again continues from where it stopped (your script, voice and the shots that passed are kept). Nothing is taken now: we charge only when your video is ready.</p>}
+        {/* owner 2026-11-18: 2 free Try agains per paid script; after that only a new story */}
+        {run.engine === "studio" && !run.canRetry && <p className="mt-3 text-[16px] font-bold leading-snug text-white/85" data-testid="bwm-retries-used">We couldn't make this one, all credits are back. Try a new story.</p>}
         <div className="mt-6 flex flex-wrap justify-end gap-3">
-          <button type="button" className="bwm-btn-2" onClick={onAgain}>New story</button>
-          <button type="button" className="bwm-btn" onClick={onRetry} disabled={Boolean(flow.busy)}><RefreshCw className="h-6 w-6" />Try again</button>
+          <button type="button" className={run.engine === "studio" && !run.canRetry ? "bwm-btn" : "bwm-btn-2"} onClick={onAgain}>New story</button>
+          {!(run.engine === "studio" && !run.canRetry) && <button type="button" className="bwm-btn" onClick={onRetry} disabled={Boolean(flow.busy)}><RefreshCw className="h-6 w-6" />Try again</button>}
         </div>
       </Card>
     );

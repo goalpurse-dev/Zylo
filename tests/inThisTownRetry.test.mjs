@@ -102,3 +102,26 @@ test("Try again parts: the music beds and raw takes never go in the bundle (the 
   for (const f of ["music.wav", "music.raw.wav", "blender/video/audio/music_bed.wav", "blender/video/audio/music_bed.raw.wav", "voice/voice.orig.wav"]) assert.ok(SKIP_FILE.test(f), f);
   for (const f of ["voice/voice.wav", "blender/video/audio/voice.wav", "blender/state.json", "voice-result.json"]) assert.ok(!SKIP_FILE.test(f), f);
 });
+
+test("safety limits (owner 2026-11-18): 3 running, 6 a day, the $50 pause says 'back soon', 2 free retries, the shot cap", async () => {
+  const { decide, DEFAULT_SETTINGS, MAX_FREE_RETRIES, RETRIES_USED_UP, SPEND_ALERT_USD, PAUSED_MESSAGE } = await import("../supabase/functions/_shared/blockyWorlds/guard.js");
+  const { shotCap, tileShots } = await import("../scripts/blockyWorlds/blenderKit/director.mjs");
+  const base = { spent_24h: 0, user_running: 0, user_starts_1h: 0, user_starts_24h: 0, minutes_since_balance_fail: null };
+  assert.equal(DEFAULT_SETTINGS.user_max_running, 3);
+  assert.equal(decide(DEFAULT_SETTINGS, { ...base, user_running: 2 }, 3).ok, true);
+  assert.equal(decide(DEFAULT_SETTINGS, { ...base, user_running: 3 }, 3).ok, false);
+  assert.equal(decide(DEFAULT_SETTINGS, { ...base, user_starts_24h: 5 }, 3).ok, true);
+  assert.match(decide(DEFAULT_SETTINGS, { ...base, user_starts_24h: 6 }, 3).reason, /today's 6 videos/);
+  const paused = decide(DEFAULT_SETTINGS, { ...base, spent_24h: 48 }, 3);
+  assert.equal(paused.ok, false); assert.equal(paused.message, PAUSED_MESSAGE); assert.match(PAUSED_MESSAGE, /Back soon/);
+  assert.equal(decide({ ...DEFAULT_SETTINGS, paid_calls: false }, base, 0).message, PAUSED_MESSAGE, "the one switch");
+  assert.equal(DEFAULT_SETTINGS.daily_cap_usd, 50); assert.equal(SPEND_ALERT_USD, 25);
+  assert.equal(MAX_FREE_RETRIES, 2); assert.match(RETRIES_USED_UP, /all credits are back/);
+  assert.equal(shotCap(90), 75); assert.equal(shotCap(130), 85);
+  const words = Array.from({ length: 300 }, (_, i) => ({ word: "w", start: i * 0.36, end: i * 0.36 + 0.3 }));
+  const list = Array.from({ length: 104 }, (_, i) => ({ id: i + 1, w0: Math.round(i * 2.88), desc: "d", location: "x" }));
+  assert.equal(tileShots(list, words, { maxShots: shotCap(108) }).shots.length, 85);
+  const api = fs.readFileSync("supabase/functions/blocky-worlds-api/index.ts", "utf8");
+  assert.match(api, /retriesUsed\(failed\.draft_id\)\) >= MAX_FREE_RETRIES/);
+  assert.match(api, /in-this-town-spend-25/);
+});
