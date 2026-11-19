@@ -1,6 +1,7 @@
-// /welcome/first-video: the new-user tutorial. Pick a video, press Generate, watch its first 10 seconds for free (a real
-// render: every stage below reads the run's real state), then the plans; after an upgrade the same video is finished as a
-// gift. The server decides everything that costs money (cutaway-api, _shared/cutaway/freePreview.js).
+// /welcome/first-video: the new-user tutorial. Since 2026-11-19 (owner): premade example videos, nothing generated
+// (components/onboarding/ExampleTutorial.jsx, the list in src/data/onboardingExamples.js). Below it, the older flow, kept
+// for accounts that already have a generated preview (and the owner's ?onboarding=force&real=1): pick a video, press
+// Generate, watch its first 10 seconds for free, then the plans; after an upgrade the same video is finished as a gift.
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Check, Download, Hand, Loader2, Lock, Volume2, VolumeX } from "lucide-react";
@@ -13,7 +14,8 @@ import { cutawayServer, PRICES } from "../../components/viral-tools/cutaway-expl
 import { Confetti } from "../../components/onboarding/FirstGenFlow.jsx";
 import FloatingClips from "../../components/onboarding/FloatingClips.jsx";
 import UpgradeScreen, { ExploreButton, RECOMMENDED_PLAN, lockLineFor, usePlanCheckout } from "../../components/onboarding/UpgradeScreen.jsx";
-import { adminPreviewMode, browserId, endAdminPreview, lastSurveyGoals, trackFunnel } from "../../lib/onboarding";
+import { adminPreviewMode, browserId, endAdminPreview, fetchOnboardingStatus, lastSurveyGoals, trackFunnel } from "../../lib/onboarding";
+import ExampleTutorial from "../../components/onboarding/ExampleTutorial.jsx";
 import { demoPreviewRun, demoStateFor } from "../../lib/onboardingDemo";
 import { CUTAWAY_PATH } from "../../data/cutawayExplainer";
 import { PREVIEW_TOPIC_KEYS, topicsForGoals } from "../../../supabase/functions/_shared/cutaway/freePreview.js";
@@ -254,6 +256,7 @@ export default function FirstVideo() {
   const [blocked, setBlocked] = useState(false);
   const [starting, setStarting] = useState(false);
   const [retryNote, setRetryNote] = useState(false);
+  const [examples, setExamples] = useState(null); // { goals }: this account gets the premade examples (ExampleTutorial)
 
   useEffect(() => { document.title = "Your first video | Zyvo"; }, []);
 
@@ -275,7 +278,24 @@ export default function FirstVideo() {
 
   useEffect(() => {
     if (loading || !user) return;
-    load().then((s) => {
+    (async () => {
+      const s = await load().catch(() => null);
+      // No preview of their own (every new account since 2026-11-19): the premade examples, nothing generated. Only a free
+      // account in the new flow; the owner's real-render look (?onboarding=force&real=1) and anyone with a preview
+      // already made keep the generated path below.
+      if (!paidReturn && adminMode !== "real" && !s?.preview && !s?.finish) {
+        const status = demo ? { enrolled: true, goals: [] } : await fetchOnboardingStatus(user.id);
+        const plan = demo ? "free" : s?.plan ?? (await supabase.from("profiles").select("plan_code").eq("id", user.id).maybeSingle().then(({ data }) => data?.plan_code ?? "free", () => null));
+        if (status.enrolled && String(plan ?? "").toLowerCase().trim() === "free") {
+          const asked = lastSurveyGoals();
+          setExamples({ goals: asked.length ? asked : Array.isArray(status.goals) ? status.goals : [] });
+        } else navigate("/", { replace: true });
+        return { examples: true };
+      }
+      return { s };
+    })().then(({ s, examples: shown }) => {
+      if (shown) return;
+      if (!s) { navigate("/", { replace: true }); return; } // couldn't read their preview: Home, as before
       // Nothing to offer here (a paid plan, not in the rollout, no plan prepared yet): Home.
       if (!paidReturn && s && !s.preview && (!s.on || !s.topics?.length)) { navigate("/", { replace: true }); return; }
       if (s?.on && !s.preview) trackFunnel("tutorial_started");
@@ -353,6 +373,11 @@ export default function FirstVideo() {
   const adminBar = adminMode ? <AdminBar mode={adminMode} onFinished={() => { setRun(null); setFinish({ ...demoPreviewRun(), title: "Demo" }); }} onExit={() => { endAdminPreview(); navigate("/"); }} /> : null;
   const screen = `flex min-h-[100dvh] w-full flex-col bg-[#090A0A] px-4 pb-10 ${adminMode ? "pt-10" : "pt-4"} text-white`;
   const column = "mx-auto my-auto flex w-full max-w-[460px] flex-col items-center py-4";
+
+  // ---------- the premade examples: every account without a preview of its own ----------
+  if (examples) {
+    return <ExampleTutorial goals={examples.goals} startKey={params.get("example")} startOnPlans={params.get("plans") === "1"} adminLook={Boolean(adminMode)} adminBar={adminBar} onLeave={leave} />;
+  }
 
   // ---------- after the upgrade ----------
   if (paidReturn || (finish && !run)) {

@@ -1,5 +1,5 @@
-// Home, for accounts in the new flow: "Your video is waiting" with its frozen frame, a finish in progress, or the free
-// preview they haven't made yet. Everyone else never sees it, and never makes the call.
+// Home, for accounts in the new flow: "Your video is waiting" with its frozen frame, a finish in progress (accounts with a
+// generated preview from before 2026-11-19), or the premade examples they haven't watched yet. Everyone else never sees it, and never makes the call.
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Gift, Lock, Play, RotateCcw } from "lucide-react";
@@ -24,7 +24,7 @@ export default function FirstVideoHomeCard() {
     if (adminMode === "demo") { setState({ ...demoStateFor(), preview: { step: "done", poster: DEMO_POSTER } }); return undefined; }
     fetchOnboardingStatus(user.id).then((status) => {
       if (!status.enrolled && adminMode !== "real") return null;
-      return cutawayServer.freePreviewState({ force: adminMode === "real" }).then((s) => { if (live) setState(s); });
+      return cutawayServer.freePreviewState({ force: adminMode === "real" }).then((s) => { if (live) setState({ ...s, tutorialDone: Boolean(status.tutorialDone) }); });
     }).catch(() => {});
     return () => { live = false; };
   }, [loading, user?.id]);
@@ -39,9 +39,9 @@ export default function FirstVideoHomeCard() {
   else if (done && state.plan === "free" && state.unseen) card = { title: "Your free preview is ready 🎉", line: "Your 10-second video is made. Watch it now.", cta: "Watch it", to: FIRST_VIDEO_PATH, poster: preview.poster, testid: "ready" };
   else if (done && state.plan === "free") card = { title: "Your video is waiting", line: `${DONE_PCT}% done. The other ${VIDEO_SEC - PREVIEW.seconds} seconds are free when you start a plan.`, cta: "Finish my video", to: `${FIRST_VIDEO_PATH}?unlock=1`, poster: preview.poster, waiting: true };
   else if (preview && !done && preview.step !== "failed") card = { title: "Your first video is being made", line: "Your free 10-second preview will be ready in a moment.", cta: "Watch it", to: FIRST_VIDEO_PATH };
-  // their preview failed (it's theirs again): say so, and the page starts the same video again
-  else if (state.lastFailed && state.on && state.topics?.length) card = { title: "Your preview didn't go through", line: "That's on us, and it's still free. Try again: it takes about 2 minutes.", cta: "Try again", to: `${FIRST_VIDEO_PATH}?retry=1`, testid: "failed" };
-  else if (state.on && state.topics?.length) card = { title: "Make your first video free", line: "Pick an idea and get a free 10-second preview.", cta: "Start", to: FIRST_VIDEO_PATH };
+  // (a failed preview is no longer made again: the tutorial shows the premade examples instead, the card below)
+  // no preview of their own (every new account since 2026-11-19): the premade examples, until they've been through them
+  else if (!preview && state.plan === "free" && !state.tutorialDone) card = { title: "See what you can make", line: "Watch an example video made with Zyvo, then make your own.", cta: "Watch", to: FIRST_VIDEO_PATH, testid: "example" };
   if (!card) return null;
 
   return (
@@ -49,7 +49,7 @@ export default function FirstVideoHomeCard() {
       <Link to={card.to} className="flex flex-wrap items-center gap-x-4 gap-y-3 rounded-2xl border border-lime-300/40 bg-lime-300/[0.07] p-3 transition hover:bg-lime-300/[0.12] sm:flex-nowrap">
         <span className="relative grid h-[88px] w-[62px] shrink-0 place-items-center overflow-hidden rounded-xl bg-black/60">
           {card.poster && <img src={card.poster} alt="" className="absolute inset-0 h-full w-full scale-110 object-cover blur-[3px] brightness-50" />}
-          {card.testid === "failed" ? <RotateCcw className="relative h-5 w-5 text-lime-300" /> : card.testid === "ready" ? <Play className="relative h-5 w-5 fill-lime-300 text-lime-300" /> : <Lock className="relative h-5 w-5 text-lime-300" />}
+          {card.testid === "failed" ? <RotateCcw className="relative h-5 w-5 text-lime-300" /> : card.testid === "ready" || card.testid === "example" ? <Play className="relative h-5 w-5 fill-lime-300 text-lime-300" /> : <Lock className="relative h-5 w-5 text-lime-300" />}
         </span>
         <span className="min-w-0 flex-1 basis-[55%]">
           <span className="block text-[17px] font-black text-white">{card.title}</span>

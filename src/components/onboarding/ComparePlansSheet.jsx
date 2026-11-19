@@ -10,7 +10,9 @@ import { RECOMMENDED_PLAN } from "./planChoice";
 
 const LONG_FORM_TIER = "v2";
 
-export default function ComparePlansSheet({ prices, choose, busy, adminNote, onClose }) {
+// note: the line under the title. creditsEach: what one "video like this one" costs. firstMonth(id): the launch deal's first
+// month's price for that plan, formatted, or null: shown with the normal price struck through.
+export default function ComparePlansSheet({ prices, choose, busy, adminNote, onClose, note = "Your video finishes free with any plan. Monthly prices, cancel anytime.", creditsEach = PRICES.video.credits.premade[30], firstMonth = () => null }) {
   const lf = useLongFormTiers();
   const closeRef = useRef(null);
 
@@ -27,7 +29,7 @@ export default function ComparePlansSheet({ prices, choose, busy, adminNote, onC
     const plan = PRICING_PLANS[id], perMinute = lf.tiers?.[LONG_FORM_TIER]?.perMinute;
     return [
       ["Monthly credits", plan.credits.toLocaleString("en-US")],
-      ["Videos like this one", `about ${Math.floor(plan.credits / PRICES.video.credits.premade[30])}`],
+      ["Videos like this one", `about ${Math.floor(plan.credits / creditsEach)}`],
       ["Max quality", plan.modelAccess[plan.modelAccess.length - 1]],
       ["Templates and tools", "All included"],
       ["Long-form minutes", perMinute ? `about ${Math.floor(plan.credits / perMinute)} min at ${LONG_FORM_TIER.toUpperCase()}` : lf.status === "error" ? "—" : "…"],
@@ -43,7 +45,7 @@ export default function ComparePlansSheet({ prices, choose, busy, adminNote, onC
           <h2 id="compare-plans-title" className="text-[22px] font-black tracking-tight text-white">Compare plans</h2>
           <button ref={closeRef} type="button" onClick={onClose} aria-label="Close" data-testid="compare-plans-close" className="grid h-10 w-10 place-items-center rounded-full text-white/60 transition hover:bg-white/10"><X className="h-5 w-5" /></button>
         </div>
-        <p className="mt-0.5 text-[13.5px] text-white/60">Your video finishes free with any plan. Monthly prices, cancel anytime.</p>
+        <p className="mt-0.5 text-[13.5px] text-white/60">{note}</p>
         <div className="mt-4 grid gap-3 md:grid-cols-3">
           {PLAN_ORDER.filter((id) => PRICING_PLANS[id]).map((id) => {
             const best = id === RECOMMENDED_PLAN, money = prices.status === "ready" ? prices.prices?.plans?.[id]?.monthly : null;
@@ -51,7 +53,9 @@ export default function ComparePlansSheet({ prices, choose, busy, adminNote, onC
               <section key={id} data-testid="compare-plan" data-plan={id} className={`flex flex-col rounded-2xl border p-4 ${best ? "border-lime-300/70 bg-lime-300/[0.07]" : "border-white/10 bg-white/[0.03]"}`}>
                 <div className="flex items-baseline justify-between gap-2">
                   <h3 className="text-[17px] font-black text-white">{PRICING_PLANS[id].name}</h3>
-                  <p className="text-[13px] text-white/55"><span className="text-[22px] font-black text-white">{money != null ? formatMoney(money, prices.prices.currency) : "…"}</span> / month</p>
+                  {firstMonth(id) && money != null
+                    ? <p className="text-[13px] text-white/55" data-testid="compare-deal-price"><span className="mr-1 text-white/35 line-through">{formatMoney(money, prices.prices.currency)}</span><span className="text-[22px] font-black text-white">{firstMonth(id)}</span> first month</p>
+                    : <p className="text-[13px] text-white/55"><span className="text-[22px] font-black text-white">{money != null ? formatMoney(money, prices.prices.currency) : "…"}</span> / month</p>}
                 </div>
                 {/* The empty line keeps every card's rows level on desktop. */}
                 <p className={`mt-0.5 text-[11.5px] font-black uppercase tracking-wide text-lime-300 ${best ? "" : "invisible hidden md:block"}`}>Most popular</p>
