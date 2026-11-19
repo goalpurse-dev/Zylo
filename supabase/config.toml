@@ -227,3 +227,8 @@ verify_jwt = false
 # The owner's health check: called by the cron job ops-health with x-ops-secret (no user JWT).
 [functions.ops-health]
 verify_jwt = false
+
+# The unfinished-checkout emails: called every 10 minutes by the cron job checkout-reminders (only while
+# checkout_reminder_settings.on), which sends no Supabase JWT: the function checks x-ops-secret, or the owner's login.
+[functions.checkout-reminders]
+verify_jwt = false

@@ -52,6 +52,7 @@ const AuthCallback = lazy(() => import("./pages/auth/AuthCallback"));
 
 const BillingSuccess = lazy(() => import("./pages/billing/Success.jsx"));
 const BillingCancel = lazy(() => import("./pages/billing/Cancel.jsx"));
+const BillingContinue = lazy(() => import("./pages/billing/Continue.jsx"));
 
 const HelpCenter = lazy(() => import("./pages/help/HelpCenter"));
 const Feedback = lazy(() => import("./pages/help/Feedback"));
@@ -60,6 +61,7 @@ const OpsPage = lazy(() => import("./pages/admin/Ops"));
 const FunnelPage = lazy(() => import("./pages/admin/Funnel"));
 const ContentMachinePage = lazy(() => import("./pages/admin/ContentMachine"));
 const AffiliatesAdminPage = lazy(() => import("./pages/admin/Affiliates"));
+const CheckoutRemindersAdminPage = lazy(() => import("./pages/admin/CheckoutReminders"));
 const AffiliatePage = lazy(() => import("./pages/workspace/affiliate/AffiliatePage.jsx"));
 const TextToVoice = lazy(() => import("./pages/tools/TextToVoice"));
 
@@ -892,6 +894,7 @@ return (
           <Route path="/welcome/first-video" element={<RequireAuth><FirstVideo /></RequireAuth>} />
           <Route path="/billing/success" element={<BillingSuccess />} />
           <Route path="/billing/cancel" element={<BillingCancel />} />
+          <Route path="/billing/continue" element={<BillingContinue />} />
 
           {/* Forgot / Reset (guest-only) */}
           <Route
@@ -947,6 +950,7 @@ return (
           <Route path="/admin/funnel" element={<FunnelPage />} />
           <Route path="/admin/content-machine" element={<ContentMachinePage />} />
           <Route path="/admin/affiliates" element={<AffiliatesAdminPage />} />
+          <Route path="/admin/checkout-reminders" element={<CheckoutRemindersAdminPage />} />
 
         
           <Route path="/home" element={<Navigate to="/" replace />} />
