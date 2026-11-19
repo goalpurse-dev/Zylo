@@ -481,8 +481,15 @@ def role_finish(inp, job_id):
         post = finishx.post_finish(vdir, json.load(open(os.path.join(KIT, "config.json"))).get("caption_font", "Archivo Black"))
         post["seconds"] = round(time.time() - tp, 1)
         odir = os.path.join(vdir, "out")
+        # THE NO-MUSIC COPY (owner 2026-11-19: "Download without music", voice + SFX only, for a trending sound): only when
+        # the job asks for it; never fatal (the normal video is already made)
+        if "final_nomusic.mp4" in inp["uploads"]:
+            try:
+                post["noMusic"] = no_music_copy(ws, slug, vdir)
+            except Exception as e:  # noqa: BLE001
+                post["noMusicError"] = f"{type(e).__name__}: {str(e)[:300]}"
         ups = {}
-        for name in ("final.mp4", "final_nocaptions.mp4", "final_phone.mp4"):
+        for name in ("final.mp4", "final_nocaptions.mp4", "final_phone.mp4", "final_nomusic.mp4"):
             if name in inp["uploads"] and os.path.exists(os.path.join(odir, name)):
                 ups[name] = put_parts(os.path.join(odir, name), inp["uploads"][name], "video/mp4")
         dur = sh(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", os.path.join(odir, "final.mp4")])[1]
@@ -490,6 +497,32 @@ def role_finish(inp, job_id):
                 "finishLog": out.splitlines()[-8:], "post": post, "sandbox": STATE["sandbox"]["name"]}
     finally:
         shutil.rmtree(ws, ignore_errors=True)
+
+
+def no_music_copy(ws, slug, vdir):
+    """out/final_nomusic.mp4: the captioned final's picture + the kit's mix WITHOUT music (voice + its sound cues), at -14
+    LUFS. The kit's finish runs once more with --no-music; every file of the first finish is set aside and put back."""
+    a, o = os.path.join(vdir, "audio"), os.path.join(vdir, "out")
+    keep = [os.path.join(a, "mix.m4a"), os.path.join(a, "mix_norm.m4a"), os.path.join(o, "final.mp4"), os.path.join(o, "final_nocaptions.mp4"), os.path.join(o, "final_phone.mp4")]
+    for p in keep:
+        if os.path.exists(p):
+            os.replace(p, p + ".keep")
+    try:
+        t0 = time.time()
+        rc, out, secs, _ = run_sandboxed(["python3", os.path.join(ws, "tools", "finish.py"), slug, "--no-captions", "--no-music"], ws, 1800)
+        if rc != 0 or not os.path.exists(os.path.join(a, "mix.m4a")):
+            raise RuntimeError(f"finish.py --no-music rc {rc}: " + out[-600:])
+        norm = os.path.join(a, "mix_nomusic_norm.m4a")
+        finishx.loudnorm(os.path.join(a, "mix.m4a"), norm)
+        dst = os.path.join(vdir, "final_nomusic.tmp.mp4")
+        finishx.ff(["-i", os.path.join(o, "final.mp4.keep"), "-i", norm, "-map", "0:v", "-map", "1:a", "-c:v", "copy", "-c:a", "copy", "-shortest", "-movflags", "+faststart", dst])
+        level = finishx.lufs(dst)
+    finally:
+        for p in keep:
+            if os.path.exists(p + ".keep"):
+                os.replace(p + ".keep", p)
+    os.replace(dst, os.path.join(o, "final_nomusic.mp4"))
+    return {"seconds": round(time.time() - t0, 1), "lufs": level}
 
 
 def handler(job):

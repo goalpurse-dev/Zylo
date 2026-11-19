@@ -244,6 +244,8 @@ async function runView(r: any, { owner = false, queue = null }: { owner?: boolea
     doneEtaSec: working ? queue?.doneEtaSec ?? null : null, etaAt: working && queue ? Date.now() : null,
     // the light 720p copy plays on the page; the download is the full 1080p file
     finalUrl: done ? await signed(files.web ?? files.final) : null, downloadUrl: done ? await signed(files.final, `${(r.title || "blocky-world").replace(/[^\w -]/g, "").slice(0, 60)}.mp4`) : null,
+    // "Download without music" (owner 2026-11-19): the same video, voice + SFX only (Blender runs made after that day)
+    noMusicUrl: done && files.noMusic ? await signed(files.noMusic, `${(r.title || "blocky-world").replace(/[^\w -]/g, "").slice(0, 60)} (no music).mp4`) : null,
     poster: done ? await signed(files.poster) : null,
     error: r.status === "failed" ? FAILED_MESSAGE : null, refunded: Boolean(r.refunded_at),
     // "Try again" (owner 2026-11-18): a failed Studio video continues from its saved parts and is charged only when it is

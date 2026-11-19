@@ -104,7 +104,9 @@ export function makeBlenderSteps({ base, anthropicKey, cfg, env = process.env, n
     async final({ dir }) {
       const f = path.join(dir, "blender", "final.mp4");
       if (!fs.existsSync(f)) throw Object.assign(new Error("the Blender final is missing"), { code: "RENDER_FAILED" });
-      return { final: f, frames: null, jobs: null, wallSec: null, gate: null, cuts: null, mix: null };
+      // the no-music copy (voice + SFX only) when the finish made it; the runner uploads it next to the final
+      const nm = path.join(dir, "blender", "final_nomusic.mp4");
+      return { final: f, noMusic: fs.existsSync(nm) ? nm : null, frames: null, jobs: null, wallSec: null, gate: null, cuts: null, mix: null };
     },
   };
 }

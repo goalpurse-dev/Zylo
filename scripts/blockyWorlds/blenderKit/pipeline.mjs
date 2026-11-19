@@ -684,11 +684,13 @@ if (badC.length) throw new Error(`final chunks failed (no paid retry): ${badC.ma
 const renderWall = (Date.now() - tFinal) / 1000;
 const segments = [];
 for (let i = 0; i < groups.length; i++) segments.push(await R.signGetParts(state.chunks[i].name, state.chunks[i].parts));
-const uploads = { "final.mp4": await R.signPuts("final.mp4", 4), "final_nocaptions.mp4": await R.signPuts("final_nocaptions.mp4", 4), "final_phone.mp4": await R.signPuts("final_phone.mp4", 2) };
+// + the NO-MUSIC copy (owner 2026-11-19: "Download without music": the captioned video, voice + SFX only)
+const uploads = { "final.mp4": await R.signPuts("final.mp4", 4), "final_nocaptions.mp4": await R.signPuts("final_nocaptions.mp4", 4), "final_phone.mp4": await R.signPuts("final_phone.mp4", 2), "final_nomusic.mp4": await R.signPuts("final_nomusic.mp4", 4) };
 const fin = await L.step("finish", () => R.job("finish", { role: "finish", slug: SLUG, videoUrl: finalUrl, frames: NF, segments, uploads, music: true, musicDb: music.musicDb }, { maxRunSec: finishLimit, ledgerKey: "runpod_final" }));
 if (!fin.ok) throw new Error(`finish failed: ${String(fin.error).slice(0, 800)}`);
 for (const [name, u] of Object.entries(fin.output.uploads)) await R.fetchParts(name, u.parts, path.join(OUT, name));
 const finalWall = (Date.now() - tFinal) / 1000;
+say(`no-music copy: ${fs.existsSync(path.join(OUT, "final_nomusic.mp4")) ? `made (${fin.output.post?.noMusic?.seconds ?? "?"} s, ${fin.output.post?.noMusic?.lufs ?? "?"} LUFS)` : `not made${fin.output.post?.noMusicError ? `: ${fin.output.post.noMusicError}` : ""}`}`);
 say(`final: ${path.join(OUT, "final.mp4")} (${fin.output.duration} s; cues ${fin.output.cues?.count}); render wall ${renderWall.toFixed(0)} s, with finish ${finalWall.toFixed(0)} s`);
 // --defer-cleanup (the worker): the stored parts stay until the final is uploaded and the run is Ready (cleanup.mjs)
 if (has("defer-cleanup")) say(`cleanup deferred: ${state.rpPrefix} stays until the video is delivered`);
@@ -717,7 +719,7 @@ say(`library: ${saved.length} new build(s) saved PENDING the owner's approval: $
 
 const report = { title: plan.title, slug: SLUG, model: MODEL, duration: fin.output.duration, shots: plan.shots.length, frames: NF, overlap: state.overlap, approved: state.approved,
   rounds: state.rounds, merged: state.merged ?? [], stillFailing: failing, costs: L.costs, total: L.total(), steps: stepTimes(RUN),
-  final: { file: path.join(OUT, "final.mp4"), phone: path.join(OUT, "final_phone.mp4"), contact: sheet, renderWallS: +renderWall.toFixed(0), withFinishS: +finalWall.toFixed(0),
+  final: { file: path.join(OUT, "final.mp4"), phone: path.join(OUT, "final_phone.mp4"), noMusic: fs.existsSync(path.join(OUT, "final_nomusic.mp4")) ? path.join(OUT, "final_nomusic.mp4") : null, contact: sheet, renderWallS: +renderWall.toFixed(0), withFinishS: +finalWall.toFixed(0),
     chunks: Object.values(state.chunks).map((c) => ({ frames: c.out.frames, renderS: c.out.renderS, sPerFrame: c.out.sPerFrame, gpu: c.out.gpu?.renderer })), finish: { finishS: fin.output.finishS, cues: fin.output.cues } },
   frameScan: scan, library: saved, sandbox: fin.output.sandbox, gate: state.gate ?? null };
 fs.writeFileSync(path.join(OUT, "report.json"), JSON.stringify(report, null, 1));

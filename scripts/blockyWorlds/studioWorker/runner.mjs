@@ -198,15 +198,20 @@ export async function runStudioRun(run, deps, cfg = STUDIO) {
     await toStage("finishing");
     const out = await timed("outputs", () => steps.outputs({ final: fin.final, dir, maxBytes: cfg.maxUploadBytes }));
     const P = paths(run);
+    let noMusic = null;
     await timed("upload", async () => {
       await storage.upload(P.final, out.final, "video/mp4");
       await storage.upload(P.webFinal, out.web, "video/mp4");
       await storage.upload(P.poster, out.poster, "image/jpeg");
+      // THE NO-MUSIC COPY (owner 2026-11-19): voice + SFX only; never fatal (the video is delivered without it)
+      if (fin.noMusic && fs.existsSync(fin.noMusic) && fs.statSync(fin.noMusic).size <= cfg.maxUploadBytes) {
+        try { await storage.upload(P.noMusic, fin.noMusic, "video/mp4"); noMusic = P.noMusic; } catch (e) { log(`no-music upload skipped: ${e?.message ?? e}`); }
+      }
     });
     // the owner's Details: the director's summary (never the conversation, never the customer's script again)
     try { if (directed.report) await storage.upload(`${P.final.replace(/final\.mp4$/, "")}studio-report.json`, Buffer.from(JSON.stringify({ report: summary(directed.report), took, costs: L0.costs })), "application/json"); } catch (e) { log(`report upload skipped: ${e?.message ?? e}`); }
     stopShutdown();
-    const files = { final: P.final, web: P.webFinal, poster: P.poster, durationSec: out.durationSec ?? null, bytes: out.bytes ?? null };
+    const files = { final: P.final, web: P.webFinal, poster: P.poster, ...(noMusic ? { noMusic } : {}), durationSec: out.durationSec ?? null, bytes: out.bytes ?? null };
     await st.writing;
     const done = await db.updateRun(run.id, { status: "done", pct: 100, files, finished_at: iso(), stage_at: iso(), heartbeat_at: iso(), error_code: null, error_message: null, studio_stage: null }, { notTerminal: true, worker: workerId });
     if (!done) {
