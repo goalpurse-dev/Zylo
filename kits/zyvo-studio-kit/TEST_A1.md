@@ -16,9 +16,11 @@ Expect the last line `RESULT: ready` or `ready-with-warnings`.
 ## 3. Connect Claude Code
 1. In a terminal: `cd C:\Users\Public\Zylo` and start `claude`.
 2. Type `/mcp`. Roblox Studio must show as **connected**.
-   - Not listed? Close Claude Code and run once:
-     Windows `claude mcp add Roblox_Studio -- cmd.exe /c %LOCALAPPDATA%\Roblox\mcp.bat`
-     macOS `claude mcp add Roblox_Studio -- /Applications/RobloxStudio.app/Contents/MacOS/StudioMCP`
+   - Quick connect registers the server ONLY for Claude Code started in your home folder (seen 2026-11-19:
+     `C:\Users\<you>` only). Started anywhere else (e.g. `C:\Users\Public\Zylo`), it is not listed.
+   - Not listed? Close Claude Code and run once (`--scope user` = every folder):
+     Windows `claude mcp add --scope user Roblox_Studio -- cmd.exe /c %LOCALAPPDATA%\Roblox\mcp.bat`
+     macOS `claude mcp add --scope user Roblox_Studio -- /Applications/RobloxStudio.app/Contents/MacOS/StudioMCP`
      then start `claude` again and check `/mcp`.
 
 ## 4. The test (paste this into Claude Code)

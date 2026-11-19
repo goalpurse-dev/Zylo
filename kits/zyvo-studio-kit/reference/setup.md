@@ -32,9 +32,12 @@ the whole video for you." (https://www.tryzyvo.com/in-this-town-story-video-make
 5. Restart Claude Code (close this session and start `claude` again in the same folder), then type `/mcp`. The Roblox
    Studio server should show as connected.
 
-If Quick connect does not list Claude Code, add the server by hand (one line, then restart Claude Code):
-- Windows: `claude mcp add Roblox_Studio -- cmd.exe /c %LOCALAPPDATA%\Roblox\mcp.bat`
-- macOS: `claude mcp add Roblox_Studio -- /Applications/RobloxStudio.app/Contents/MacOS/StudioMCP`
+Quick connect registers the server only for Claude Code started in the user's HOME folder. If `/mcp` doesn't list
+it (Claude Code started in another folder, or Quick connect doesn't list Claude Code), add it for every folder (one
+line, then restart Claude Code):
+- Windows: `claude mcp add --scope user Roblox_Studio -- cmd.exe /c %LOCALAPPDATA%\Roblox\mcp.bat`
+- macOS: `claude mcp add --scope user Roblox_Studio -- /Applications/RobloxStudio.app/Contents/MacOS/StudioMCP`
+Studio must be OPEN (with a place) for the tools to answer.
 
 ## 3. The connection test (read-only first, then one tiny edit that is undone)
 
