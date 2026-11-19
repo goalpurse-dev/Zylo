@@ -43,3 +43,14 @@ test("town_launch2 pick: never-emailed first, then openers since 4 Nov, then 1 e
   assert.match(go, /'town-launch2-seed', '30 12 19 11 \*'/);
   assert.match(go, /set status = 'approved' where id = 'town_launch2' and status = 'waiting'/);
 });
+
+test("2,000 (owner, 2026-11-19 00:55): the unengaged rule off for ALL marketing, the 347 still first", () => {
+  const sql = read("supabase/migrations/20261208120000_town_launch2_fill_2000.sql");
+  assert.match(sql, /CREATE OR REPLACE FUNCTION public\.claim_email_send\(p_email text, p_kind text, p_category text\)/);
+  assert.doesNotMatch(sql, /'reason', 'unengaged'/, "the gate no longer refuses 2 emails without an open");
+  for (const keep of ["bad_address", "suppressed", "no_consent", "signed_up_today", "already_sent", "daily_limit"]) assert.match(sql, new RegExp(`'reason', '${keep}'`), keep);
+  assert.match(sql, /case when mk = 0 then 1 when ro_t is not null then 2\s+when not \(mk >= 2 and not opened_ever\) then 3\s+else 3 \+ least\(mk, 4\)::int - 1 end/);
+  assert.match(sql, /q\.campaign like 'town_launch%'/, "nobody who got the launch email");
+  assert.match(sql, /e\.sent_at > p_ends - interval '24 hours'/);
+  assert.match(sql, /fill_town_launch2\('town_launch2', 2000\)/);
+});
