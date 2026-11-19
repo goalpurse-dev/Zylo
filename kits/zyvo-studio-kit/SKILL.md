@@ -49,6 +49,15 @@ one line what was sent.
 The kit never makes the voice itself, never asks for or uses anyone's API keys (ElevenLabs or other), and never sends
 the script anywhere except, with the connector, to the user's own Zyvo account.
 
+**The Zyvo connector (optional).** Add it once: Claude desktop app > Settings > Connectors > Add custom connector >
+`https://mcp.tryzyvo.com/mcp`, or `claude mcp add --transport http --scope user zyvo https://mcp.tryzyvo.com/mcp`, then
+sign in with Zyvo in the browser window it opens. Its tools: `suggest_ideas`, `report_studio_project` /
+`update_project`, `get_studio_voice`, `check_progress`, `list_my_videos` (free); `write_script`, `make_voice`,
+`finish_my_video`, `make_video_in_zyvo` (paid). A paid tool's first call only returns the price and a confirm_token:
+show the price and the balance, and call again with the token only after the user clearly says yes.
+After the recording, with the connector: `finish_my_video` with the project_id gives an upload link (upload the raw
+recording or the 9:16 file with the curl line it shows), then the price; the first finish on an account is free.
+
 ## The flow
 
 Step 0. **Setup and system check**: follow `reference/setup.md` (system check + ffmpeg offer, Studio MCP on and

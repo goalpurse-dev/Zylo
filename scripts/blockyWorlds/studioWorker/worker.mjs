@@ -30,6 +30,7 @@ if (argv.includes("--smoke")) {
   // every module the loop can load, imported once (the Docker build fails on a missing file); no key is read
   keysFromEnv();
   await import("./steps.mjs");
+  await import("./studioJobs.mjs");
   await import("../blenderKit/workerSteps.mjs");
   await import("../blenderKit/director.mjs");
   await import("../blenderKit/notes.mjs");
@@ -70,6 +71,9 @@ const { makeSteps } = await import("./steps.mjs");
 const { ledger } = await import("../studio/ledger.mjs");
 const db = restDb({ url: cfg.supabaseUrl, key: cfg.serviceKey });
 const storage = restStorage({ url: cfg.supabaseUrl, key: cfg.serviceKey });
+const { restStudio, runStudioJob } = await import("./studioJobs.mjs");
+const studioDb = restStudio({ url: cfg.supabaseUrl, key: cfg.serviceKey });
+let studioSweptAt = 0;
 const steps = makeSteps({ anthropicKey: cfg.anthropicKey, elevenKey: cfg.elevenKey });
 // the Blender kit engine (blenderKit/workerSteps.mjs): OFF by default, owner-only. Used for a run only when
 // BLOCKY_WORLDS_RENDER_ENGINE=blender AND the run's user is in BLOCKY_WORLDS_BLENDER_OWNER_IDS; everyone else keeps Studio
@@ -79,7 +83,7 @@ if (String(process.env.BLOCKY_WORLDS_RENDER_ENGINE ?? "").trim().toLowerCase() =
 fs.mkdirSync(cfg.workDir, { recursive: true });
 
 const control = { stop: null };
-let current = null, stopping = false;
+let current = null, currentStudio = null, stopping = false;
 async function shutdown(signal) {
   if (stopping) return;
   stopping = true;
@@ -87,6 +91,11 @@ async function shutdown(signal) {
   if (current) {
     control.stop = { code: "WORKER_RESTART", message: `the worker was stopped (${signal}) while making it` };
     await makeStudioRuns({ db, log: say }).failRun(current, "WORKER_RESTART", control.stop.message, { worker: cfg.workerId }).catch((e) => say(`fail write: ${e?.message ?? e} (the sweeper refunds it)`));
+  }
+  if (currentStudio) {
+    // a voice / finish in progress: failed and refunded now (never left for the 30-minute sweep)
+    await studioDb.update(currentStudio.id, { status: "failed", stage: "failed", error_code: "WORKER_RESTART", error_message: "Our studio restarted while making it. Your credits were given back.", finished_at: new Date().toISOString() }, cfg.workerId).catch(() => {});
+    await studioDb.refund(currentStudio.id, "worker_restart").catch((e) => say(`studio refund: ${e?.message ?? e} (the sweep refunds it)`));
   }
   await db.workerGone(cfg.workerId);
   setTimeout(() => process.exit(0), 1500);
@@ -104,7 +113,29 @@ while (!stopping) {
     const d = decide(g.settings, g.counts, 0, { kind: "studio" });
     if (!d.ok) { if (Date.now() - idleNote > 600000) { say(`not taking runs: ${d.reason}`); idleNote = Date.now(); } await sleep(60000); continue; }
     const run = await db.claim(cfg.workerId);
-    if (!run) { if (argv.includes("--once")) break; await sleep(cfg.pollSec * 1000); continue; }
+    if (!run) {
+      // THE ZYVO CONNECTOR (studioJobs.mjs): a voice or a finish when no video run waits (video runs always first)
+      if (Date.now() - studioSweptAt > 300_000) {
+        studioSweptAt = Date.now();
+        const n = await studioDb.sweep(); if (n) say(`studio jobs: ${n} stuck job(s) failed and refunded`);
+        const old = await studioDb.oldRecordings().catch(() => []);
+        if (old.length) { await studioDb.remove(old.map((p) => p.recording?.path).filter(Boolean)); for (const p of old) await studioDb.saveProject(p.id, p.user_id, { recording: null }).catch(() => {}); say(`studio: ${old.length} recording(s) older than 7 days deleted`); }
+      }
+      const job = await studioDb.claim(cfg.workerId).catch((e) => { say(`studio claim: ${e?.message ?? e}`); return null; });
+      if (job) {
+        say(`took studio job ${job.id} (${job.kind})`);
+        await db.workerSeen(cfg.workerId, { version: cfg.version, busyRun: null }).catch(() => {});
+        const keepHello = setInterval(() => { db.workerSeen(cfg.workerId, { version: cfg.version, busyRun: null }).catch(() => {}); }, STUDIO.heartbeatSec * 1000);
+        currentStudio = job;
+        try {
+          const r = await runStudioJob(job, { db: studioDb, steps, makeLedger: ledger, workDir: cfg.workDir, workerId: cfg.workerId, anthropicKey: cfg.anthropicKey, keepWork: cfg.keepWork, log: say });
+          say(`studio job ${job.id}: ${r.ok ? "done" : `failed ${r.code}`} ($${(+r.usd).toFixed(4)})`);
+        } finally { clearInterval(keepHello); currentStudio = null; hello = 0; }
+        if (argv.includes("--once")) break;
+        continue;
+      }
+      if (argv.includes("--once")) break; await sleep(cfg.pollSec * 1000); continue;
+    }
     current = run;
     say(`took run ${run.id} ("${String(run.title).slice(0, 60)}", ${run.length_sec} s)`);
     await db.workerSeen(cfg.workerId, { version: cfg.version, busyRun: run.id }).catch(() => {});

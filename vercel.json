@@ -420,6 +420,16 @@
   "trailingSlash": false,
   "rewrites": [
     {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "mcp.tryzyvo.com"
+        }
+      ],
+      "destination": "https://ilpiwoxubnevmxxikyvx.supabase.co/functions/v1/zyvo-mcp/:path*"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "/api/$1"
     },

@@ -232,3 +232,8 @@ verify_jwt = false
 # checkout_reminder_settings.on), which sends no Supabase JWT: the function checks x-ops-secret, or the owner's login.
 [functions.checkout-reminders]
 verify_jwt = false
+
+# The Zyvo connector (remote MCP, mcp.tryzyvo.com): its own OAuth server; MCP clients send OUR opaque tokens, never a
+# Supabase JWT (docs/zyvo-studio-kit-plan.md B).
+[functions.zyvo-mcp]
+verify_jwt = false
