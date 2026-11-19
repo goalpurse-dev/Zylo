@@ -3,6 +3,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { PLAN_PRICE_IDS, TOPUP_PRICE_IDS } from "../_shared/stripePlanPrices.js";
 import { allowedAppUrl, appOriginFor, originOf, withCheckoutSessionId } from "../_shared/appOrigins.js";
+import { LAUNCH_DEAL, launchDealCheckoutExpiry, launchDealFor } from "../_shared/launchDeal.js";
 
 /* ---------- CORS helpers ---------- */
 function cors(req: Request) {
@@ -54,6 +55,44 @@ async function stripe(method: "GET" | "POST", path: string, body?: URLSearchPara
 function isMissingCustomer(data: any) {
   const err = data?.error;
   return err?.code === "resource_missing" && (err?.param === "customer" || /no such customer/i.test(String(err?.message ?? "")));
+}
+
+/** Which plan and billing a sold price is ("starter", "monthly"), or null. */
+function planOfPrice(priceId: string) {
+  for (const [plan, ids] of Object.entries(PLAN_PRICE_IDS as Record<string, { monthly: string; yearly: string }>)) {
+    if (ids.monthly === priceId) return { plan, billing: "monthly" };
+    if (ids.yearly === priceId) return { plan, billing: "yearly" };
+  }
+  return null;
+}
+
+/** Credit grants that only a payment makes (a plan bought or renewed, a top-up). */
+const PAID_GRANT_REASONS = ["plan_renewal", "plan_upgrade", "subscription_create", "topup", "annual_monthly_topup", "offer_bonus"];
+
+/**
+ * Has this account ever paid Zyvo? Our grants first, then Stripe: a successful charge on the stored customer or on any
+ * Stripe customer with the same email. true / false, or null when it couldn't be checked (then: no launch deal).
+ */
+async function paidBefore(sbAdmin: any, userId: string, email: string, customerId: string): Promise<boolean | null> {
+  const { data: grants, error } = await sbAdmin.from("credit_grants").select("id").eq("user_id", userId).in("reason", PAID_GRANT_REASONS).limit(1);
+  if (error) { console.error("[create-checkout-session] launch deal: grant check failed:", error.message); return null; }
+  if ((grants ?? []).length) return true;
+  const customers = new Set<string>(customerId ? [customerId] : []);
+  if (email) {
+    const found = await stripe("GET", `/v1/customers?email=${encodeURIComponent(email)}&limit=20`);
+    if (!found.ok) { console.error("[create-checkout-session] launch deal: customer search failed:", found.data?.error?.message); return null; }
+    for (const c of found.data?.data ?? []) if (c?.id) customers.add(c.id);
+  }
+  for (const id of customers) {
+    const charges = await stripe("GET", `/v1/charges?customer=${encodeURIComponent(id)}&limit=100`);
+    if (!charges.ok) {
+      if (isMissingCustomer(charges.data)) continue;
+      console.error("[create-checkout-session] launch deal: charge check failed:", charges.data?.error?.message);
+      return null;
+    }
+    if ((charges.data?.data ?? []).some((ch: any) => ch?.paid && ch?.status === "succeeded" && Number(ch?.amount) > 0)) return true;
+  }
+  return false;
 }
 
 /* ---------- main ---------- */
@@ -192,6 +231,31 @@ export default {
         body.set("subscription_data[metadata][kind]", "subscription");
       }
 
+      // The In This Town launch deal (_shared/launchDeal.js): Starter monthly, never paid before, until Sunday 23:59
+      // Finnish. Added by the server, never by the browser; Stripe allows a coupon or a code box, not both.
+      const sold = isSubscription ? planOfPrice(finalPriceId) : null;
+      let deal = false;
+      if (sold && launchDealFor({ plan: sold.plan, billing: sold.billing, paidBefore: false }).apply) {
+        const before = await paidBefore(sbAdmin, user.id, email, customerIsNew ? "" : stripeCustomerId);
+        deal = launchDealFor({ plan: sold.plan, billing: sold.billing, paidBefore: before }).apply;
+        if (!deal) console.log("[create-checkout-session] launch deal not applied:", user.id, before == null ? "check failed" : "paid before");
+      }
+      const withDeal = () => {
+        body.delete("allow_promotion_codes");
+        body.set("discounts[0][coupon]", LAUNCH_DEAL.coupon);
+        body.set("expires_at", String(launchDealCheckoutExpiry()));
+        body.set("metadata[deal]", LAUNCH_DEAL.id);
+        body.set("subscription_data[metadata][deal]", LAUNCH_DEAL.id);
+      };
+      const withoutDeal = () => {
+        body.set("allow_promotion_codes", "true");
+        body.delete("discounts[0][coupon]");
+        body.delete("expires_at");
+        body.delete("metadata[deal]");
+        body.delete("subscription_data[metadata][deal]");
+      };
+      if (deal) withDeal();
+
       let session = await stripe("POST", "/v1/checkout/sessions", body);
 
       // "No such customer": the stored id is dead. Make a new customer and try once more.
@@ -202,12 +266,20 @@ export default {
         session = await stripe("POST", "/v1/checkout/sessions", body);
       }
 
+      // Stripe turned the coupon down (it ended a moment ago, or was removed): the normal checkout, never no checkout.
+      if (!session.ok && deal && /coupon|discount/i.test(`${session.data?.error?.message ?? ""} ${session.data?.error?.param ?? ""}`)) {
+        console.warn("[create-checkout-session] launch deal coupon refused, normal checkout:", session.data?.error?.message, "user", user.id);
+        deal = false;
+        withoutDeal();
+        session = await stripe("POST", "/v1/checkout/sessions", body);
+      }
+
       if (!session.ok) {
         console.error("[create-checkout-session] Stripe refused the session:", session.status, JSON.stringify(session.data?.error ?? null), "user", user.id);
         return json(req, { error: session.data?.error?.message || "Stripe error", code: "STRIPE_ERROR" }, session.status);
       }
 
-      return json(req, { url: session.data.url });
+      return json(req, { url: session.data.url, deal });
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       console.error("[create-checkout-session] failed:", msg);

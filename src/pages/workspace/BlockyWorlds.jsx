@@ -3,6 +3,7 @@ import AuthModal from "../../components/AuthModal";
 import BlockyWorldsStudio from "../../components/viral-tools/blocky-worlds/BlockyWorldsStudio";
 import FaceAsmrPaywall from "../../components/viral-tools/face-asmr/FaceAsmrPaywall";
 import NoCreditsModal from "../../components/viral-tools/shared/NoCreditsModal";
+import { LaunchDealBar } from "../../components/offer/LaunchDealBanners.jsx";
 import { accessFor } from "../../../supabase/functions/_shared/blockyWorlds/access.js";
 import { DEV_MOCK } from "../../components/viral-tools/blocky-worlds/api/blockyWorldsApi";
 import { BLOCKY_WORLDS_PATH } from "../../data/blockyWorlds";
@@ -42,13 +43,19 @@ export default function BlockyWorlds() {
 
   return (
     <>
-      <BlockyWorldsStudio
-        access={access}
-        balance={DEV_AS ? 500 : balance}
-        onSignUp={() => setGate("signup")}
-        onUpgrade={() => setGate("upgrade")}
-        onNoCredits={(needed) => setNoCredits({ needed })}
-      />
+      {/* The launch deal bar (until Sunday 23:59 Finnish) for visitors without a paid plan; nothing after the end. */}
+      <div className="flex h-full w-full flex-col">
+        {(access === "guest" || access === "free") && <LaunchDealBar onClick={() => setGate(access === "guest" ? "signup" : "upgrade")} />}
+        <div className="min-h-0 w-full flex-1">
+          <BlockyWorldsStudio
+            access={access}
+            balance={DEV_AS ? 500 : balance}
+            onSignUp={() => setGate("signup")}
+            onUpgrade={() => setGate("upgrade")}
+            onNoCredits={(needed) => setNoCredits({ needed })}
+          />
+        </div>
+      </div>
       {gate === "signup" && (
         <AuthModal mode="signup" title="Sign up to start" subtitle="Free to join. Get story ideas and make your own blocky world videos." returnTo={BLOCKY_WORLDS_PATH} onClose={() => setGate(null)} />
       )}

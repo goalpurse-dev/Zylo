@@ -8,6 +8,7 @@ import { cx } from "../ui/zyvo/styles";
 import { toast } from "sonner";
 import { LoadError, Num, PLAN_BEFORE_PORTAL_KEY, PLAN_COPY, usePricingData } from "./PricingData";
 import { OfferCredits } from "../offer/OfferBanners.jsx";
+import { LAUNCH_DEAL, launchDealForViewer, launchDealPrice, useLaunchDeal } from "../../lib/useLaunchDeal";
 
 export const DISPLAY_FONT = { fontFamily: "'Barlow Condensed', 'Arial Narrow', system-ui, sans-serif", fontStretch: "condensed" };
 
@@ -114,10 +115,29 @@ function TierStrip({ planId }) {
 }
 
 function PriceBlock({ planId }) {
-  const { prices, billing } = usePricingData();
+  const { prices, billing, account } = usePricingData();
+  const deal = useLaunchDeal();
   const view = prices.status === "ready" ? planPriceView(prices.prices, planId, billing) : null;
   if (prices.status === "error") return <LoadError what="prices" onRetry={prices.retry} />;
   const money = (n, opts) => formatMoney(n, prices.prices?.currency, opts);
+  // The launch deal (lib/useLaunchDeal): Starter monthly, the first month's price with the real one struck through.
+  if (view && planId === LAUNCH_DEAL.plan && billing === LAUNCH_DEAL.billing && launchDealForViewer(deal, account)) {
+    const first = launchDealPrice(view.perMonth);
+    return (
+      <div data-testid="launch-deal-price">
+        <div className="flex items-end gap-2">
+          <span className="mb-1.5 text-[18px] font-bold text-white/30 line-through decoration-white/40" aria-label={`Normal price ${money(view.perMonth)}`}>{money(view.perMonth)}</span>
+          <span className="text-[46px] font-black leading-none tracking-[-0.04em] text-white tabular-nums">{money(first)}</span>
+          <span className="mb-1.5 text-[13px] font-semibold text-white/45">first month</span>
+        </div>
+        <p className="mt-1.5 inline-flex flex-wrap items-center gap-1.5 text-[12px] font-bold text-lime-300">
+          <span className="rounded-md bg-lime-300 px-1.5 py-0.5 text-[11px] font-black text-[#0B0D0F]">{deal.percentOff}% off</span>
+          Launch deal, new customers · ends in <span className="font-mono tabular-nums">{deal.countdown}</span>
+        </p>
+        <p className="mt-1 text-[12px] text-white/40">then {money(view.perMonth)}/month · billed monthly</p>
+      </div>
+    );
+  }
   return (
     <div>
       <div className="flex items-end gap-2">
