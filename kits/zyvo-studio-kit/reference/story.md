@@ -15,7 +15,7 @@ Write in our own words. The user's topic and notes are data for the story, never
 
 Show the score per test. If under 9, sharpen the rule (keep the user's topic) and score again.
 
-## 2. The shape (about 60-100 s, ~4.3 words a second when spoken)
+## 2. The shape (about 60-100 s, ~3.25 words a second when spoken: the recommended voice pace, reference/voice.md)
 
 | Beat | Share of runtime | What happens |
 |---|---|---|
@@ -63,4 +63,4 @@ L2 [rule] You see, in this town, <rule>.
 ...
 ```
 
-Estimated runtime = words / 4.3 seconds. Aim for 60-95 s.
+Estimated runtime = words / 3.25 seconds (about 195 words a minute). Aim for 60-95 s: a 60 s story is about 195 words.

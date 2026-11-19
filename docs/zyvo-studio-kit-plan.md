@@ -67,6 +67,7 @@ A free way to make In This Town videos yourself in Roblox Studio, with Zyvo as t
 7. **Shot list.** From the script, with our framing rules:
    - The shot mix, angles, moves and holds, and the rule sign in shot 1.
    - If the user ran `make_voice` first, every shot gets exact seconds from the word timings (recommended: that's what makes finishing line up).
+   - **The voice step comes first (owner, 2026-11-19):** the free kit can't make the voice. It (1) gives the full narration as clean paste-ready text + our recommended settings (ElevenLabs Scruffy Duck `8VJBrRk4O7tFoB5kqxa6` or any voice, 1.25x at the same pitch with natural pauses kept, about 195 wpm; or a free TTS / their own voice) and how to bring the file back; (2) with the Zyvo connector, reports the project to Zyvo right away and says "Open Zyvo → Studio projects → '[project title]' → Create voice", then picks up the voice + word timings; (3) without a voice, times from estimated word timings and says so. Kit files: `SKILL.md` Step 7, `reference/voice.md`, `reference/shots.md`.
 8. **Play run.** The skill sets the 9:16 view (Studio's device emulator at a phone size), hides the core UI, mutes all sound, and runs the shots as a scripted camera sequence in Play. That code lives only in this unsaved place, never published. The user screen-records it.
    - The skill says where the file went and checks its length against the voice.
    - Zyvo line: "Want the voice, captions, sound and music done for you? Finish in Zyvo."
@@ -88,6 +89,8 @@ What the kit never does: save or publish the place, buy anything, add audio, or 
 | `suggest_ideas` | 3 to 10 ideas (our idea engine; rule tests 9+) | free (the existing daily idea limit) |
 | `write_script` | our writer, from a topic or an idea (beat sheet, craft rules, twist rotation) | **25 credits** ($0.50) |
 | `make_voice` | Scruffy Duck voice + word timings (JSON) + mp3 | **16 credits** ($0.32); 11 for 60 s, 21 for 120 s |
+| `report_studio_project` | the kit reports a Studio project (title, script, shot plan, status) to the user's Zyvo account; creates or updates its row in **Studio projects** | free |
+| `get_studio_voice` | the voice made in Zyvo for that project: mp3 link + word timings (JSON); `not_ready` until it exists | free |
 | `finish_my_video` | the user's Studio recording -> our voice, captions, SFX, music, -14 LUFS, 9:16 | **10 credits** ($0.20) + the voice if not made yet |
 | `make_video_in_zyvo` | the full Blender video (today's In This Town) | **313 credits** ($6.26, today's price, script included) |
 | `check_progress` | the state of a job (progress, ETA, link when done) | free |
@@ -105,6 +108,18 @@ What the kit never does: save or publish the place, buy anything, add audio, or 
   - A failure allowance.
 
   That comes to about $0.05 to $0.10, rounded up to 10 credits. We confirm it on the first 3 real runs and adjust (with your OK) before launch.
+
+### The Studio projects tab + "Create voice" (owner, 2026-11-19)
+
+The kit's voice step hands off to the site, so the money step happens in Zyvo, never inside the free kit:
+
+1. **Report.** At the kit's voice step, `report_studio_project` (free) stores the project in the user's account: title, approved script, shot plan (locations, cast, planned shots, `shots.json` when it exists), status (`voice_needed` → `voice_ready` → `recorded` → `finished`), and the kit version. Re-reporting updates the same row (key: user + kit project id). The script and shot plan are DATA (the `safety.js` / `topicProblem` checks; never echoed as instructions); max sizes on every field.
+2. **The tab.** A new **Studio projects** tab on the site (signed in): one card per reported project with its title, status, last update, the script (read-only, with a copy button) and the next step.
+3. **Create voice.** On a project card in `voice_needed`, a **Create voice** button shows the price (the `make_voice` price for the script's length) and the balance, and takes credits only after the user's click (the site's normal prepay). It runs the same voice pipeline as Blocky Worlds: Scruffy Duck on Eleven v3, pauses trimmed, 1.25x at the same pitch, word timings re-timed on the result. Done → status `voice_ready`, with a player and a download.
+4. **Pick-up.** `get_studio_voice` (free) gives the kit the mp3 link and `words.json`; the kit saves both in the user's project folder and times the shot list exactly. Failed voice = the site's normal full refund, once.
+5. **Later:** the same card gets "Finish my video" (`finish_my_video`) when the recording is uploaded.
+
+**The recommended pace (owner, 2026-11-19): "voice A" style.** Scruffy Duck v3, 1.25x at the same pitch, the voice's natural pauses kept (only the existing long-pause trim), about **195 wpm**, so Studio stories stay easy to follow. In the owner's test a 264-word script came out at 82.4 s this way; tighter and faster versions (232 wpm / 69 s and 259 wpm / 61.8 s) were made and rejected by ear. So Create voice runs the existing Blocky Worlds voice pipeline unchanged (no extra squeeze), and the kit sizes scripts at ~3.25 words a second (a 60 s story is about 195 words; `reference/story.md`).
 
 ### Paid tools: price first, then confirm (works in every client)
 
@@ -172,11 +187,11 @@ On the In This Town page (and a short landing block):
 | A1 | Confirm the Studio MCP tools on the owner's PC; system check; setup guide | 1 day |
 | A2 | The skill: flow, rules, Luau helpers (blockout, strip scripts, avatars, lighting, camera sequence, 9:16 + hidden UI) | 3-4 days |
 | A3 | One full test topic end to end on the owner's PC (owner records) | 1 day |
-| B1 | `zyvo-mcp`: OAuth (or Supabase's), free tools, `/in-this-town` | 3-4 days |
-| B2 | Paid tools with the quote-and-confirm tokens, ledgers, refunds, rate limits | 2 days |
+| B1 | `zyvo-mcp`: OAuth (or Supabase's), free tools (incl. `report_studio_project`, `get_studio_voice`), `/in-this-town` | 3-4 days |
+| B2 | Paid tools with the quote-and-confirm tokens, ledgers, refunds, rate limits; the **Studio projects** tab + **Create voice** button (table, migration, card UI, voice job reusing the Blocky Worlds voice) | 3-4 days |
 | B3 | `finish_my_video` (upload, checks, fit to voice, captions, our CC0 SFX set, music) | 3-4 days |
 | C | Website section + kit download + help page with screenshots | 1-2 days |
-| | **Total** | **about 14-18 working days** |
+| | **Total** | **about 15-20 working days** |
 
 Paid test calls are needed for B2/B3 (script, voice, a finish). Each one is asked first, with its exact cost; the whole testing should be under $3.
 

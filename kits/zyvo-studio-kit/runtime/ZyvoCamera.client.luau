@@ -15,6 +15,10 @@ local story = workspace:WaitForChild("ZyvoStory")
 local spots = story:WaitForChild("Spots")
 local shots = data.shots
 local TAIL = 1.5
+local LEAD = data.leadIn or 3
+-- roll = 90: the camera is rolled so a tall 9:16 picture fills a wide viewport (Studio maximized, no phone
+-- emulator); the recording is turned upright and cropped to 1080x1920 afterwards (scripts/make_vertical.sh)
+local ROLL = data.roll or 0
 
 -- 1. no Roblox UI in any frame
 for _ = 1, 30 do
@@ -22,12 +26,17 @@ for _ = 1, 30 do
 	task.wait(0.1)
 end
 pcall(function() StarterGui:SetCore("ResetButtonCallback", false) end)
+pcall(function() StarterGui:SetCore("TopbarEnabled", false) end)
+pcall(function() game:GetService("GuiService").TouchControlsEnabled = false end) -- no thumbstick / jump button
 UserInputService.MouseIconEnabled = false
+UserInputService.ModalEnabled = true -- older Studio: this also hides the touch controls
 task.spawn(function()
 	pcall(function()
-		local module = require(player:WaitForChild("PlayerScripts"):WaitForChild("PlayerModule"))
-		module:GetControls():Disable() -- no touch thumbstick / jump button on the phone view
+		local pm = player:WaitForChild("PlayerScripts"):WaitForChild("PlayerModule", 10)
+		if pm then require(pm):GetControls():Disable() end
 	end)
+	local tg = player:WaitForChild("PlayerGui"):WaitForChild("TouchGui", 10)
+	if tg then tg.Enabled = false end
 end)
 
 -- 2. silence (the footage has no audio; sound is added later)
@@ -55,12 +64,29 @@ black.Size = UDim2.fromScale(1, 1)
 black.BackgroundColor3 = Color3.new(0, 0, 0)
 black.BorderSizePixel = 0
 black.Parent = gui
+-- the sync marker: half a second of magenta, 1.0 s before the story starts (late enough that the start time has
+-- reached the client), so the crop script finds the viewport and the voice's second 0 in the screen recording
+local marker = Instance.new("Frame")
+marker.Size = UDim2.fromScale(1, 1)
+marker.BackgroundColor3 = Color3.fromRGB(255, 0, 255)
+marker.BorderSizePixel = 0
+marker.Visible = false
+marker.ZIndex = 2
+marker.Parent = gui
 gui.Parent = player:WaitForChild("PlayerGui")
 
 -- 4. the camera maths
 local cam = workspace.CurrentCamera
 local focus = Lighting:FindFirstChild("ZyvoFocus")
 local function fovOf(lens) return math.deg(2 * math.atan(12 / math.max(8, lens))) end -- 24 mm sensor height
+local function fovFor(fovV) -- the story's vertical fov -> the viewport's FieldOfView (with the roll)
+	if ROLL == 0 then return fovV end
+	local vs = cam.ViewportSize
+	local r = vs.X / math.max(1, vs.Y)
+	local t = math.tan(math.rad(fovV / 2))
+	local tvp = (r >= 16 / 9) and (t * 9 / 16) or (t * vs.Y / vs.X) -- the 9:16 frame = the centered 16:9 box, on its side
+	return math.deg(2 * math.atan(tvp))
+end
 local function ease(a) a = math.clamp(a, 0, 1); return a * a * (3 - 2 * a) end
 local function spot(name)
 	local p = spots:FindFirstChild(name or "")
@@ -136,6 +162,7 @@ RunService:BindToRenderStep("ZyvoCamera", Enum.RenderPriority.Camera.Value + 1, 
 	local t = workspace:GetServerTimeNow() - start
 	if t < 0 or t >= endT then
 		black.BackgroundTransparency = 0
+		marker.Visible = t >= -1.0 and t < -0.5 -- the voice's second 0 = the marker's first frame + 1.0 s
 		if t >= endT + TAIL then RunService:UnbindFromRenderStep("ZyvoCamera") end
 		return
 	end
@@ -145,7 +172,8 @@ RunService:BindToRenderStep("ZyvoCamera", Enum.RenderPriority.Camera.Value + 1, 
 	local cf, fov = view(s, a)
 	if cf then
 		black.BackgroundTransparency = 1
-		cam.CFrame, cam.FieldOfView = cf, fov
+		marker.Visible = false
+		cam.CFrame, cam.FieldOfView = cf * CFrame.Angles(0, 0, math.rad(ROLL)), fovFor(fov)
 	else
 		black.BackgroundTransparency = 0
 	end

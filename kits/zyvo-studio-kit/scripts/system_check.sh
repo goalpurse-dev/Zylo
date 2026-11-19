@@ -25,4 +25,8 @@ if [ "$free" -ge 10 ]; then say OK "Free disk" "$free GB"; elif [ "$free" -ge 4 
 
 say OK "Screen recorder" "macOS Screenshot app (Cmd+Shift+5)"
 
+if command -v ffmpeg >/dev/null 2>&1 && command -v ffprobe >/dev/null 2>&1; then say OK ffmpeg "found (turns the recording upright and crops it to 9:16)"
+elif command -v brew >/dev/null 2>&1; then say WARN ffmpeg "not found: needed after the recording to make the 9:16 video. Free install (asks first): brew install ffmpeg"
+else say WARN ffmpeg "not found: needed after the recording. Install Homebrew (brew.sh), then: brew install ffmpeg"; fi
+
 if [ $fail -gt 0 ]; then echo "RESULT: not-ready"; elif [ $warn -gt 0 ]; then echo "RESULT: ready-with-warnings"; else echo "RESULT: ready"; fi

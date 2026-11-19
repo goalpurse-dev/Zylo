@@ -31,4 +31,9 @@ $obs = Test-Path "$env:ProgramFiles\obs-studio"
 $gamebar = Get-AppxPackage -Name "Microsoft.XboxGamingOverlay" -ErrorAction SilentlyContinue
 if ($obs -or $gamebar) { Say "OK" "Screen recorder" ((@($(if ($gamebar) { "Xbox Game Bar (Win+Alt+R)" }), $(if ($obs) { "OBS" })) | Where-Object { $_ }) -join ", ") } else { Say "WARN" "Screen recorder" "none found: install OBS Studio (free) or turn on Xbox Game Bar" }
 
+$ff = Get-Command ffmpeg -ErrorAction SilentlyContinue
+$fp = Get-Command ffprobe -ErrorAction SilentlyContinue
+if ($ff -and $fp) { Say "OK" "ffmpeg" "found (turns the recording upright and crops it to 9:16)" }
+else { Say "WARN" "ffmpeg" "not found: needed after the recording to make the 9:16 video. Free install (asks first): winget install --id Gyan.FFmpeg -e  (then open a new terminal)" }
+
 if ($fail -gt 0) { Write-Output "RESULT: not-ready" } elseif ($warn -gt 0) { Write-Output "RESULT: ready-with-warnings" } else { Write-Output "RESULT: ready" }

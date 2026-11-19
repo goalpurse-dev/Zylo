@@ -2,9 +2,13 @@
 
 ## Timing
 
-- With a Zyvo voice (word timings JSON): every shot starts on a word: `t0` = that word's start. Exact.
-- Without one: estimate 4.3 spoken words a second, from the script; the user reads the script aloud later or Zyvo
-  times it. Say plainly that the cut points are estimates.
+The timing source comes from the voice step (`reference/voice.md`), best first:
+- With a Zyvo voice (`words.json` from Zyvo → Studio projects → Create voice): every shot starts on a word: `t0` = that
+  word's start. Exact. The last shot ends at the last word's end + 0.3 s.
+- With the user's own file (`voice.mp3` they made): line starts from the file's pauses (or the estimates scaled to the
+  file's length). Say plainly that the cut points come from the pauses, not word timings.
+- Without any voice: estimate 3.25 spoken words a second (the recommended pace), from the script. Say plainly that the cut points are
+  estimates and that the voice made later must be timed again.
 - About 50 cuts a minute (~1.2 s a shot), never more than 85 shots, plus 1-2 HOLDS of 4-6 s at the twist or the ending.
   The last 15 seconds are paced differently from the rest (longer holds after a fast run, or the other way round).
 - Shots start on the first word of a sentence or on the key word.
