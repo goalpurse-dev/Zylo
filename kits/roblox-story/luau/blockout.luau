@@ -1,6 +1,8 @@
 -- Zyvo Studio Kit: the GREY BLOCKOUT (run with execute_luau in Edit). Plain grey boxes per location, each location far
 -- from the others (no location ever shows in another's background), plus the rule sign. Re-running replaces a location.
 -- Fill LOCATIONS: positions are relative to the location's origin; 1 stud ~ 0.28 m, a character is ~5 studs tall.
+-- Put the origins at least 3000 studs apart (e.g. X = 3000, 6000, 9000, 12000; Z = 0): the packed world
+-- (luau/backdrop.luau) puts hills ~900 studs round each one, and they must never stand inside another location.
 local LOCATIONS = {
 	-- { name = "street", origin = Vector3.new(0, 0, 0), ground = Vector3.new(120, 1, 120),
 	--   boxes = { { name = "shop_left", size = Vector3.new(24, 18, 16), pos = Vector3.new(-30, 9, 20) } },

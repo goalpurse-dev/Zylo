@@ -31,8 +31,15 @@ The timing source comes from the voice step (`reference/voice.md`), best first:
   object is in at least half of the shots, and every change of it is shown right away.
 - **The cast:** the hero on screen in at least half the shots; a named character is shown clearly (face or full body)
   on the line that names them; nobody walks through anybody; walkers never cross between the camera and the subject.
-- **Effects** (smoke, sparkles) go beside or behind a character, never over a face.
+- **Effects** (smoke, sparkles) go beside or behind a character, never over a face. A glowing rule object (a note,
+  a lamp) stays small and beside or above the head: the framing check fails a shot where its glow covers a face.
 - **No empty shots:** every shot shows a character or the thing its line names.
+- **No prop-only extreme close-ups** unless the line is about that object: an `insert` (or any shot with no
+  character in it) carries `"object": "<the thing's model name>"`, and only when the line names that thing (the
+  rule object changing, "the bell", "his lamp"). Otherwise frame a character. A lamp or a wall filling the frame on
+  a line about someone else fails the framing check.
+- **Packed frames:** no wide shows the end of the world or a field of bare ground: every location is packed
+  (`luau/backdrop.luau`) and the framing check fails a wide that is over 40% bare floor or looks past the ground.
 
 ## The file
 
@@ -54,6 +61,8 @@ The timing source comes from the voice step (`reference/voice.md`), best first:
 - `move`: static, push_slow, push_fast, pull_slow, orbit, track, whip, crash, handheld, dolly_zoom, rack_focus.
 - `spot`: a camera spot (Part in `workspace.ZyvoStory.Spots`); `spotEnd` (optional) glides to a second spot.
 - `lens`: mm (24 mm sensor height): the director turns it into Roblox's FieldOfView.
+- Optional: `object` (the prop an insert is about), `reveal` / `hint` (monster shots), `shadow` (a monster's shadow
+  statue in the last shot); the top-level `monsters` list ("Monsters on screen" below).
 - `actions` (optional, times inside the shot): `walk` (to a spot / mark name), `face` (a name), `jump`, `show` /
   `hide` (an instance under `workspace.ZyvoStory`, for the rule object's changes). In Luau (`luau/shotlist.luau`)
   the key is written `["do"] = "show"` (`do` is a reserved word; the shot list writes it that way itself).
@@ -72,6 +81,21 @@ The timing source comes from the voice step (`reference/voice.md`), best first:
 - A set you film from INSIDE (a bus, a room, a shop, a car) that is one big mesh: set `Hollow = true` on its model or
   folder. The framer then tests its real shape instead of its bounding box (otherwise every camera inside it "is
   inside a part"). A mesh with a character's head inside its box counts as hollow by itself.
+
+## Monsters on screen (every story with a monster, creature or villain)
+
+Every one the script names (script.md `Monster:` lines) is SHOWN, never only implied:
+- **The reveal line gets at least 3 shots** (each marked `"reveal": true`): a slow push-in on the monster
+  (`push_slow`, `push_fast` or `dolly_zoom`, the monster statue as the subject, seen clearly), a reaction close-up
+  of the hero (`close` or `reaction`), and a WIDE showing it among the others. Before them, a `hide` of its "before"
+  statue and a `show` of the monster statue (the monster statues start in `startHidden`).
+- **1-2 hint shots earlier** (`"hint": true`): a hint statue far off or half-hidden, a silhouette in a window, a
+  shadow pointing the wrong way, something slightly wrong; never the full reveal.
+- **A chilling callback as the last line:** the last story shot (before the end card) shows the monster or its
+  shadow (a `SHADOWS` statue: set the shot's `"shadow": "<its name>"`).
+- The shot list's top level lists them: `"monsters": [ { "name": "the Hush", "statues": ["hush_sq", "hush_end"],
+  "revealLine": 41, "callback": true } ]` (the statue names it may appear as, the script line of the reveal).
+  `luau/frame_check.luau` MODE "story" checks all of the above and fails the shot list before approval.
 
 ## The end card (Free and Starter plans)
 

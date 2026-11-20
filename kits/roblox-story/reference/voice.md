@@ -15,28 +15,34 @@ out to the user, and then times the shot list to whatever comes back. Three ways
    that the words match script.md (same words, same order); if not, say so and stop before timing anything.
 4. Time the shot list exactly to `words.json` (`reference/shots.md`, "With a Zyvo voice").
 
-## 2. The user makes the voice themselves (any tool, or their own voice)
+## 2. The user makes the voice themselves ("I'll make it myself": any tool, or their own voice)
 
-Give them the narration as clean text in ONE code block, ready to paste: the script lines in order, no line numbers, no
-beat tags, no stage notes, one line per sentence group, numbers written as they should be read ("three twelve", not
-"3:12"). Save the same text as `zyvo-project/<slug>/narration.txt`: the free captions step (`scripts/add_captions.sh`)
-times its captions from it. Then our recommended settings, in plain words:
+Everything in ONE message, so they never have to ask:
 
-- **ElevenLabs** (their own account): the voice "Scruffy Duck" (voice id `8VJBrRk4O7tFoB5kqxa6`) or any voice they like,
-  model Eleven v3. Download the mp3.
-- **Any free text-to-speech**, or **their own voice** (a phone recording in a quiet room is fine).
-- **The pace (recommended, owner 2026-11-19):** speed the finished file up 1.25x at the same pitch (Audacity: Effect >
-  Change Tempo, +25%; or ffmpeg `atempo=1.25`) and KEEP the voice's natural pauses between sentences; only trim
-  silences longer than about half a second (Audacity: Effect > Truncate Silence, threshold 0.5 s). That lands at about
-  195 words a minute, so the story stays easy to follow. Don't squeeze the pauses out or push it faster (the 230-280
-  wpm versions tested worse: too rushed to follow).
-- **Bring it back:** save the file as `zyvo-project/<slug>/voice.mp3` (or drop it in that folder and tell Claude its
-  name). Claude measures it locally and times the shot list to it (below). Nothing is uploaded anywhere.
+1. **The narration, one clean block ready to paste:** ONE code block with the script lines in order, no line
+   numbers, no beat tags, no stage notes, no speaker names, one line per sentence group, numbers written as they
+   should be read ("three twelve", not "3:12"). Save the same text as `zyvo-project/<slug>/narration.txt` (the
+   timing and the free captions use it).
+2. **The recommended settings, in plain words:**
+   - **ElevenLabs** (their own account, Text to Speech): voice **Scruffy Duck** (voice id `8VJBrRk4O7tFoB5kqxa6`:
+     paste it in the voice search), model Eleven Multilingual v2, stability ~85%, similarity ~85%, style 0,
+     **speed 1.0**: the kit speeds it up itself (about 1.25x, same pitch, the natural pauses kept, ~195 words a
+     minute). Generate, then Download.
+   - Or **any free text-to-speech**, or **their own voice** (a phone recording in a quiet room is fine).
+3. **Exactly where the file goes:** "Just download it. I'll pick up the newest ElevenLabs mp3 in your Downloads
+   folder. Or drop any voice file into `zyvo-project/<slug>/` and say 'done'."
+
+When they say it's there, do the rest without more questions:
+- Find it: the newest `ElevenLabs_*.mp3` in Downloads (made after the narration was given), else the newest audio
+  file in `zyvo-project/<slug>/`. Say which file in one line.
+- `bash <kit>/scripts/prep_voice.sh "<that file>" zyvo-project/<slug>/voice.mp3 <words in narration.txt>`: it trims
+  pauses longer than 0.5 s, speeds it to ~195 words a minute (1.25x for a file at normal speed; less if it is
+  already quick, never twice), and prints its length, its pace and every pause.
+- Time the shot list to it (below) and go on to the shot list. Nothing is uploaded anywhere.
 
 Timing a user's own file (free, local):
-- `ffprobe` gives its length. If ffmpeg is installed, `silencedetect` (noise -35 dB, d 0.12) finds the pauses; match
-  them in order to the sentence ends of script.md and give each line its real start and end. Words inside a line are
-  spread by their length in letters.
+- prep_voice.sh's `pause <start> <end>` lines: match them in order to the sentence ends of script.md and give each
+  line its real start and end. Words inside a line are spread by their length in letters.
 - Without ffmpeg (or if the pauses don't match the sentences): scale the estimated timings (below) to the file's real
   length.
 - Either way, say plainly: "These cut points come from the file's pauses (or its length), not from word timings; a few

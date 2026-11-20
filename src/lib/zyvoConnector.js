@@ -61,17 +61,21 @@ export function putFile(url, file, contentType, onProgress) {
 }
 
 // ---------------------------------------------------------------- "is it open for me" (once per visitor + session)
-const KEY = "zyvo_studio_open";
+const KEY = "zyvo_studio_open2"; // v2 (2026-11-21, opened to everyone): ignores a "closed" cached before the opening
 const pending = new Map();
 export function studioOpenFor(who) {
   if (CONNECTOR_MOCK) return Promise.resolve(true);
-  if (who === "guest") return Promise.resolve(false);
   try {
     const d = JSON.parse(sessionStorage.getItem(KEY) || "null");
     if (d && d.who === who && typeof d.open === "boolean") return Promise.resolve(d.open);
   } catch { /* no storage: ask */ }
   if (!pending.has(who)) {
-    pending.set(who, connector("/account/studio", { query: { peek: 1 } })
+    // signed out: the connector's public GET /open (the one switch, ZYVO_MCP_ACCESS): the pages and the In This Town
+    // section show to visitors once it's open for everyone; the kit download and the tools still need a sign-in
+    const ask = who === "guest"
+      ? fetch(`${BASE}/open`).then((r) => (r.ok ? r.json() : { open: false }))
+      : connector("/account/studio", { query: { peek: 1 } });
+    pending.set(who, ask
       .then((r) => { const open = r?.open === true; try { sessionStorage.setItem(KEY, JSON.stringify({ who, open })); } catch { /* fine */ } return open; })
       .catch(() => false)
       .finally(() => window.setTimeout(() => pending.delete(who), 0)));

@@ -49,10 +49,28 @@ streetlight blinks, freeze"). The dark-twist shape:
 - **"Slightly wrong" details**, 2-3 of them, shown on screen (a smile that's too wide, a shadow pointing the wrong
   way, a dog that won't bark at one house, a number that's one off).
 - **Someone to trust**: the ally who explains the rule and seems safe.
-- **The betrayal twist**: the trusted one is the thing (or was copied long ago); the clues were fair.
+- **The betrayal twist**: the trusted one is the thing (or was copied long ago); the clues were fair. The thing is
+  then SHOWN at the reveal, built as its own character (1c below).
 - **A chilling last line**: short and quiet, never explained ("Grandma blinked. Sideways.").
 Kid-safe always: no gore, no blood, no injuries, no death shown, no real-world violence; fear from wrongness, silence,
 lighting and the reveal. Darker lighting (a cold dusk, long shadows) but faces still readable.
+
+## 1c. The monster (any story with a monster, creature or villain)
+
+If the script names a monster, a creature or a villain (the Hush, the thing in the lake, the fake grandma), the
+viewer SEES it. Never only "he was the Hush" over a normal man.
+- **Built as its own character**, kid-safe and in our blocky style: a dark featureless silhouette, small glowing
+  eyes, a low mist, too tall, too still (`luau/cast.luau` MONSTERS). No gore, no teeth, no blood, no injuries.
+- **Two looks:** the "before" look (the trusted neighbour, as the town knows them) and the "revealed" look (the
+  monster). A detail they share (his top hat, her red scarf) is the fair clue that ties them together.
+- **The reveal** (one line) gets at least 3 shots: a slow push-in on the monster, the hero's reaction close-up, and a
+  wide with it standing among the others (`reference/shots.md` "Monsters on screen").
+- **Fair hints:** 1-2 earlier shots show something slightly wrong (a tall shadow, a silhouette far off, his shadow
+  without a hat) without the full reveal.
+- **A chilling callback ending:** the last shot shows the monster or its shadow.
+
+In script.md, one line per monster:
+`Monster: <name>; before: <statue / look>; revealed: <look>; reveal L<n>; hints L<a>, L<b>; callback: yes | no`
 
 ## 2. The shape (about 60-100 s, ~3.25 words a second when spoken: the recommended voice pace, reference/voice.md)
 
@@ -92,6 +110,7 @@ wording loophole; a wholesome inversion; the betrayal (spooky: the one you trust
 Rule: In this town, <rule>.        Rule score: <n>/12 (<the six scores>)
 Tone: <Spooky | Funny | Wholesome | Twist>
 Twist family: <family>             Motif: <motif>
+Monster: <name>; before: <look>; revealed: <look>; reveal L<n>; hints L<a>, L<b>; callback: yes | no   (one per monster / villain; none: leave out)
 Style sheet:
 - <Name> (hero): <one striking outfit>; colours <...>; looks: <how their look changes, with line numbers, or "same all video">
 - <Name>: <outfit>; colours <...>; looks: <...>

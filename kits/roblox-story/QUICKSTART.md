@@ -11,11 +11,16 @@ new, empty place: never one of your real games.
 **3. Turn on Studio's connection.** In Studio click **Assistant** (top right) > **...** > **Settings** > **MCP
 Servers**, and switch on **Enable Studio as MCP server**.
 
-**4. Add the kit.** Unzip it into your skills folder, so this file ends up at:
-- Windows: `C:\Users\<you>\.claude\skills\roblox-story\QUICKSTART.md`
-- macOS: `~/.claude/skills/roblox-story/QUICKSTART.md`
+**4. Add the kit (recommended: let Claude do it).** Download the kit (it lands in Downloads), open the Claude app's
+**Code** tab in any folder and paste:
 
-That folder name is the command you'll type in step 6: `/roblox-story`.
+> Install the roblox-story kit from my Downloads folder into my Claude skills folder
+
+Claude finds the newest `roblox-story*.zip` in Downloads, makes the skills folder if it isn't there, unzips the kit
+into it (replacing an older copy), checks that `roblox-story/SKILL.md` is in place, and tells you to start a NEW
+Code session and type `/roblox-story`. By hand instead: unzip it so this file ends up at
+`C:\Users\<you>\.claude\skills\roblox-story\QUICKSTART.md` (Windows) or `~/.claude/skills/roblox-story/QUICKSTART.md`
+(macOS). That folder name is the command you'll type in step 6: `/roblox-story`.
 
 **5. Connect Claude to Studio.** Make an empty folder for your videos (e.g. `Documents\ZyvoStudio`) and start a Code
 session in it. Ask Claude: *"Connect to Roblox Studio for every folder"*, or paste this into a terminal yourself:

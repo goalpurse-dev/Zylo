@@ -1,8 +1,14 @@
 -- Zyvo Studio Kit: THE FRAMING CHECK (run with execute_luau in Edit, after installing luau/framer.luau as
 -- game.ServerStorage.ZyvoFramer and the shot list as ReplicatedStorage.ZyvoShots).
 -- MODE "check": checks shots FROM..TO (every problem of reference/recording.md step 4) and lists the failures.
+--   It also checks, per shot: sign text never cut by the frame, no glowing rule object over a face, no world edge /
+--   void in view, no empty ground in a wide, no prop-only close-up unless the shot's `object` says the line is about it.
 -- MODE "solve": re-places the camera spots FROM..TO of PLAN (sorted by name) around their subjects; it MOVES those
 --   spot parts (Edit only, nothing is saved). Close and medium spots only; wide spots are placed by hand and checked.
+-- MODE "story": the whole-story checks: every monster / villain in the shot list's `monsters` is seen at its reveal
+--   (push-in, close-up / reaction, wide among the others), hinted before it, and in the last shot of a callback ending.
+-- MODE "glow": caps the glow of the cast and the rule objects (lights, neon, sparkles, the bloom) and lists glowing
+--   parts bigger than their owner's head. Run it once after the cast and the lighting, before "check".
 -- Run it in batches (about 20 shots or 8 spots a call): a long call times out ("Target is not reachable").
 -- PLAN: one entry per camera spot that frames characters (from shots.json: the shot's subject(s) and size).
 --   subjects: the characters (statue names) the shot is about; foreground: characters allowed in front of them
@@ -29,12 +35,29 @@ if MODE == "check" then
 			local cv = F.cover(shot, { subjects = cfg.subjects, foreground = cfg.foreground })
 			if cv then table.insert(probs, cv) end
 			if #probs == 0 then local lf = F.lowerFill(shot); if lf then table.insert(probs, lf) end end
+			for _, more in ipairs({ F.signs, F.glow, F.scan }) do
+				if #probs > 0 then break end
+				local p = more(shot, { subjects = cfg.subjects })
+				if p then table.insert(probs, p) end
+			end
 		end
 		if #probs > 0 then failed += 1; table.insert(out, string.format("#%d %s: %s", shot.id or k, shot.spot, probs[1])) end
 		task.wait()
 	end
 	return string.format("shots %d-%d of %d: %d fail%s", FROM, math.min(TO, #data.shots), #data.shots, failed,
 		#out > 0 and ("\n" .. table.concat(out, "\n")) or "")
+end
+
+if MODE == "story" then
+	local probs = F.monsters()
+	return #probs == 0 and string.format("story checks pass (%d monster%s)", #(data.monsters or {}), #(data.monsters or {}) == 1 and "" or "s")
+		or ("story checks FAIL:\n" .. table.concat(probs, "\n"))
+end
+if MODE == "glow" then
+	local changed, big = F.capGlow()
+	return string.format("glow capped: %d change%s%s%s", #changed, #changed == 1 and "" or "s",
+		#changed > 0 and ("\n" .. table.concat(changed, "\n")) or "",
+		#big > 0 and ("\nbigger than their head (make smaller or move above the head):\n" .. table.concat(big, "\n")) or "")
 end
 
 -- MODE "solve"

@@ -1,7 +1,9 @@
 # Roblox Story: the Zyvo Studio Kit (free)
 
-Make a Roblox "In This Town" story short in your own Roblox Studio, with Claude doing the building. Install the folder as
-`~/.claude/skills/roblox-story` (Windows: `C:\Users\<you>\.claude\skills\roblox-story`), then type **`/roblox-story`** in
+Make a Roblox "In This Town" story short in your own Roblox Studio, with Claude doing the building. Install it the easy
+way: download the zip, then in Claude Code paste *"Install the roblox-story kit from my Downloads folder into my Claude
+skills folder"* (or unzip it yourself so the folder is `~/.claude/skills/roblox-story`; Windows:
+`C:\Users\<you>\.claude\skills\roblox-story`). Start a new session, then type **`/roblox-story`** in
 Claude Code or the Claude desktop app's Code tab (or `/roblox-story <your rule>` to start straight away). Claude writes the
 story, builds the town, dresses the cast, places every camera, checks every shot in a 9:16 frame and runs the whole
 film in Play while you screen-record it. Free: the kit costs nothing, and nothing leaves your computer except what
@@ -21,10 +23,12 @@ Claude and Roblox Studio normally send.
 - `reference/`: setup, story writing, voice, shot list rules, recording.
 - `luau/`: the Studio helpers Claude runs: blockout, camera spots, asset check + clean, cast library + cast, lighting,
   shot list, the framing checker (framer + frame_check), the contact-sheet preview, the director installer, the
-  end card set (endcard) and show_build (moves your Studio camera to what was just built).
+  end card set (endcard), show_build (moves your Studio camera to what was just built) and backdrop (the packed
+  world: far ground, background buildings, hills, street dressing and people around every location).
 - `runtime/`: the three scripts that run during Play: the camera, the life (breathing, yawns, waves) and the actions.
 - `scripts/`: `system_check.*` (can this computer do it?) and `make_vertical.sh` (the recording -> an upright 9:16 mp4),
-  `add_captions.sh` (+ the voice and simple white one-word captions -> a postable mp4).
+  `add_captions.sh` (+ the voice and simple white one-word captions -> a postable mp4), `prep_voice.sh` (your own
+  voice file -> the recommended pace, with its pauses for timing) and `contact_sheet.sh` (the stills -> sheets).
 
 ## The rules it keeps
 It never saves or publishes your place, uses only free Creator Store models (and removes every script and sound from

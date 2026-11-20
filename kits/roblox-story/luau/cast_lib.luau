@@ -343,6 +343,76 @@ function L.make(c, parent)
 	return m
 end
 
+-- A MONSTER / VILLAIN, its REVEALED look (reference/story.md "The monster"). Kid-safe: no gore, no teeth, no blood,
+-- fear from the shape and the stillness. Its normal ("before") look is an ordinary cast statue; a show / hide pair
+-- swaps them at the reveal line. c: the fields of L.make (name, at, look, pose, hat, extras, extra...) plus
+--   form: "silhouette" (default: all one dark colour, a blank head, two small glowing eyes) | "mist" (the same with
+--         a low mist round the legs) | "tall" (1.45x, the mist too)
+--   body: the dark colour (default charcoal), eyes: a Color3 or false (no eyes), scale (default 1.25 / 1.45 tall)
+-- A hat from the "before" look (c.hat) is the fair clue that gives it away. It stands perfectly still (no Life)
+-- unless c.life is set. The eyes are small Neon parts with no light, so they never blow out the frame.
+function L.monster(c, parent)
+	local dark = c.body or C(24, 24, 32)
+	local mc = table.clone(c)
+	mc.scale = c.scale or (c.form == "tall" and 1.45 or 1.25)
+	mc.skin, mc.shirt, mc.trousers, mc.shoes = dark, dark, dark, dark
+	mc.hair = c.hair or { style = "none" }
+	mc.face = "neutral"
+	local m = L.make(mc, parent)
+	if not c.life then m:SetAttribute("Life", nil) end
+	for _, p in ipairs(m:GetDescendants()) do
+		if p:IsA("BasePart") and p.Name ~= "HumanoidRootPart" and not p:FindFirstAncestor("ZyvoOnHead") then
+			p.Material = Enum.Material.SmoothPlastic
+			if not p.Name:match("^Zyvo") then p.Color = dark end
+		end
+	end
+	local head = m.Head
+	local hs = head.Size
+	for _, d in ipairs(head:GetChildren()) do if d:IsA("Decal") or d:IsA("FaceControls") then d:Destroy() end end
+	pcall(function() head.TextureID = "" end)
+	-- a blank face: a dark shell over the head
+	local shell = part(m, "ZyvoShell", hs + V(0.06, 0.06, 0.06), head.CFrame, C(math.floor(dark.R * 200), math.floor(dark.G * 200), math.floor(dark.B * 200)))
+	shell:SetAttribute("Bone", "Head")
+	if c.eyes ~= false then
+		local col = c.eyes or Color3.fromHSV(0.56, 0.3, 0.82)
+		for _, sx in ipairs({ -1, 1 }) do
+			local e = part(m, "ZyvoEye", V(hs.X * 0.18, hs.Y * 0.1, 0.05), head.CFrame * CFrame.new(sx * hs.X * 0.2, hs.Y * 0.08, -hs.Z / 2 - 0.05), col, Enum.Material.Neon)
+			e.CastShadow = false
+			e:SetAttribute("Bone", "Head")
+		end
+	end
+	if c.form == "mist" or c.form == "tall" or c.mist then
+		local mist = Instance.new("Model"); mist.Name = "ZyvoMist"; mist.Parent = m
+		local feet = (m.LeftFoot.Position + m.RightFoot.Position) / 2
+		local mcol = typeof(c.mist) == "Color3" and c.mist or C(70, 74, 104)
+		for i = 1, 9 do
+			local a = i / 9 * math.pi * 2
+			local r = 1.2 + (i % 3) * 0.45
+			local sz = 1.6 + (i % 4) * 0.5
+			local p = part(mist, "mist", V(sz, sz * 0.55, sz), CFrame.new(feet + V(math.cos(a) * r, 0.35 + (i % 2) * 0.5, math.sin(a) * r)), mcol, Enum.Material.SmoothPlastic, Enum.PartType.Ball)
+			p.Transparency = 0.6; p.CastShadow = false
+			p:SetAttribute("Bone", "Body")
+		end
+	end
+	m:SetAttribute("Monster", true)
+	return m
+end
+
+-- a monster's SHADOW on the ground (a hint shot, or the last shot of a chilling callback): a flat dark shape of a tall
+-- figure from `at` along `dir` (a Model `name`, show / hide like any statue). Its height is the figure's (studs).
+function L.shadow(name, at, dir, height, parent)
+	local f = Instance.new("Model"); f.Name = name; f.Parent = parent
+	local d = (dir * V(1, 0, 1)).Unit
+	local len = (height or 7) * 1.6
+	local base = CFrame.lookAt(at, at + d)
+	local body = part(f, "shadow", V(len * 0.22, 0.05, len * 0.78), base * CFrame.new(0, 0.04, -len * 0.39), C(10, 10, 14))
+	local head = part(f, "shadow", V(len * 0.2, 0.05, len * 0.2), base * CFrame.new(0, 0.04, -len * 0.88), C(10, 10, 14), nil, Enum.PartType.Cylinder)
+	head.CFrame = base * CFrame.new(0, 0.04, -len * 0.88) * CFrame.Angles(0, 0, math.rad(90))
+	head.Size = V(0.05, len * 0.2, len * 0.2)
+	for _, p in ipairs({ body, head }) do p.Transparency = 0.3; p.CastShadow = false; p.CanQuery = false end
+	return f
+end
+
 function L.group(name, parent)
 	local old = parent:FindFirstChild(name); if old then old:Destroy() end
 	local f = Instance.new("Model"); f.Name = name; f.Parent = parent; return f

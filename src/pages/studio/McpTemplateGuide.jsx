@@ -30,6 +30,7 @@ export default function McpTemplateGuide() {
       <section className="mt-1 grid gap-5 rounded-2xl border border-lime-300/20 bg-gradient-to-b from-[#121a0d] to-[#0B0D0F] p-4 sm:p-6 md:grid-cols-[minmax(0,1fr)_150px] md:items-center">
         <div>
           <span className="rounded-full bg-lime-300 px-2.5 py-0.5 text-[11px] font-black uppercase tracking-wide text-[#11150D]">{t.badge}</span>
+          {t.beta && <span className="ml-1.5 rounded-full border border-white/30 px-2.5 py-0.5 text-[11px] font-black uppercase tracking-wide text-white">Beta</span>}
           <h2 style={DISPLAY} className="mt-2.5 text-[30px] font-extrabold uppercase leading-none text-white sm:text-[34px]">{t.title}</h2>
           <p className="mt-1.5 max-w-[560px] text-[14px] leading-relaxed text-white/75">{t.pitch}</p>
           <p className="mt-1.5 flex items-center gap-1.5 text-[12.5px] font-bold text-white/55"><Clock className="h-3.5 w-3.5" aria-hidden="true" />{t.time} · {t.steps.length} steps</p>
@@ -136,6 +137,8 @@ function StepCard({ s, n, kit }) {
             <p className="text-[16px] font-black leading-tight text-white sm:text-[17px]">{s.title}</p>
           </div>
           <p className="mt-2.5 text-[14px] leading-relaxed text-white/80">{s.text}</p>
+          {s.download && <div className="mt-3"><KitButton kit={kit} />{kit.notice && <p className="mt-2 text-[13px] text-amber-200" role="status">{kit.notice}</p>}</div>}
+          {s.prompt && <div className="mt-2.5"><CopyLine label={s.promptLabel ?? "The prompt"} value={s.prompt} big /></div>}
           {s.bullets && (
             <ul className="mt-2.5 space-y-1.5">
               {s.bullets.map((b) => <li key={b} className="flex gap-2 text-[13.5px] leading-relaxed text-white/80"><Check className="mt-1 h-3.5 w-3.5 shrink-0 text-lime-300" aria-hidden="true" /><span className="min-w-0 break-words">{b}</span></li>)}
@@ -149,8 +152,6 @@ function StepCard({ s, n, kit }) {
           )}
           {s.after && <p className="mt-2.5 text-[14px] leading-relaxed text-white/80">{s.after}</p>}
           {s.alt && <div className="mt-2.5"><CopyLine label={s.alt.label} value={s.alt.value} quiet /></div>}
-          {s.prompt && <div className="mt-2.5"><CopyLine label={s.promptLabel ?? "The prompt"} value={s.prompt} big /></div>}
-          {s.download && <div className="mt-3"><KitButton kit={kit} />{kit.notice && <p className="mt-2 text-[13px] text-amber-200" role="status">{kit.notice}</p>}</div>}
           {s.connectHelp && (
             <Link to={MCP_CONNECT_PATH} className={`mt-3 flex items-center justify-between gap-3 rounded-lg border border-dashed border-white/15 px-3.5 py-2.5 transition hover:border-lime-300/50 ${FOCUS}`}>
               <span className="flex items-center gap-2.5"><Plug className="h-4 w-4 shrink-0 text-lime-300" aria-hidden="true" /><span><span className="block text-[13.5px] font-bold text-white">The Connect tab</span><span className="text-[12.5px] text-white/55">Copy buttons, both ways and Test my connection</span></span></span>
@@ -296,7 +297,7 @@ function CopyLine({ label, value, big = false, quiet = false }) {
           {copied ? <Check className="h-3.5 w-3.5 text-lime-300" aria-hidden="true" /> : <Copy className="h-3.5 w-3.5" aria-hidden="true" />}{copied ? "Copied" : "Copy"}
         </button>
       </div>
-      <code className={`block select-all break-all px-3 py-2 font-mono leading-relaxed ${quiet ? "text-white/70" : "text-lime-100"} ${big ? "text-[14px]" : "text-[12.5px]"}`}>{value}</code>
+      <code className={`block select-all ${big ? "break-words" : "break-all"} px-3 py-2 font-mono leading-relaxed ${quiet ? "text-white/70" : "text-lime-100"} ${big ? "text-[14px]" : "text-[12.5px]"}`}>{value}</code>
     </div>
   );
 }
