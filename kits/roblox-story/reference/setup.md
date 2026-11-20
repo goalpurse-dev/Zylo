@@ -73,7 +73,7 @@ the whole video for you." (https://www.tryzyvo.com/in-this-town-story-video-make
 6. `search_asset` with the query `low poly tree`: a list. If missing, the user inserts models from the Toolbox by hand.
 
 Report: "Connected to Studio (<place name>). Tools: <n>. Missing: <list or none>." Write the tool list into
-`zyvo-project/tools.txt`.
+`zyvo-project/<slug>/tools.txt` (this story's own folder: another project's list is never overwritten).
 
 ## 4. Install the kit's Studio modules (once per place, Edit mode)
 

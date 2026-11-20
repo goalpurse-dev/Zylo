@@ -85,8 +85,11 @@ export const KIT = Object.freeze({
   // 1.1.0 (owner 2026-11-20): the skill is "roblox-story" (the /roblox-story command; the zip's folder is roblox-story/)
   // 1.2.0 (owner's real-user test, 2026-11-20): upright floating text, ["do"], walk actions, show respects hidden plates,
   // hollow sets, real close-ups, show_build, the end card, tone + spooky lane, keep the user's idea, silent Play run
-  version: "1.2.0",
-  path: "kit/roblox-story-1.2.0.zip",
+  // 1.3.0 (owner's spooky test, 2026-11-20): packed worlds (backdrop), no gizmos in stills, glow control, no prop-only
+  // close-ups, a fast contact sheet (capture plan + sheet script), the own-voice flow (prep_voice), install by Claude,
+  // monsters built and shown at their reveal (story check), the silent Play wait inside Studio
+  version: "1.3.0",
+  path: "kit/roblox-story-1.3.0.zip",
   fileName: "roblox-story.zip",
   linkTtlSec: 600,
 });

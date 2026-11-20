@@ -11,6 +11,11 @@
 -- put it INSIDE the character's model (or give it RuleFor = "<character name>"), mark its parts Rule = true.
 -- Hollow = true on a model / folder (a bus, a room, a shop interior) tests its meshes on their real shape, not their
 -- bounding box, so a camera can stand inside; a mesh with a character's head inside its box counts as hollow by itself.
+-- 1.3.0 adds (all run by luau/frame_check.luau "check"): signs() (sign text whole or out, never cut), glow() (a
+-- glowing rule object never over a face) + capGlow(), scan() (real raycasts: no world edge / void in view, no empty
+-- ground in a wide, no prop-only close-up unless the shot's `object` says the line is about it), and monsters() (every
+-- named monster / villain is seen at its reveal, hinted before it, and in the last shot when the ending calls back).
+-- It reads parts at their EDIT look (ZyEditT, set by the preview), so a preview left on never fakes a failure.
 -- Install: multi_edit, file_path game.ServerStorage.ZyvoFramer, className ModuleScript, the full text of this file.
 local F = {}
 local V3 = Vector3.new
@@ -92,8 +97,11 @@ local function hiddenAt(inst, t)
 	end
 	return false
 end
+-- a part's own look: the preview (luau/preview.luau) parks the edit value in ZyEditT while it shows a shot's state
+local function editT(p) local v = p:GetAttribute("ZyEditT"); return type(v) == "number" and v or p.Transparency end
+F.editT = editT
 local function visibleAt(part, t)
-	if part.Transparency >= 0.99 then return false end
+	if editT(part) >= 0.99 then return false end
 	return not hiddenAt(part, t)
 end
 F.visibleAt = visibleAt
@@ -158,7 +166,7 @@ function F.buildGrid()
 	for _, r in ipairs(roots) do
 		for _, p in ipairs(r:GetDescendants()) do
 			local hollow = false
-			if p:IsA("BasePart") and p.Name ~= "HumanoidRootPart" and p.Transparency < 0.99 and not p:IsA("Part") then
+			if p:IsA("BasePart") and p.Name ~= "HumanoidRootPart" and editT(p) < 0.99 and not p:IsA("Part") then
 				-- a mesh / union: hollow when marked, or when a head is inside its box (and the head isn't its own)
 				hollow = isHollowSet(p)
 				if not hollow and p.Size.Magnitude > 8 then
@@ -171,7 +179,7 @@ function F.buildGrid()
 			if hollow then
 				table.insert(hollowList, p)
 				n += 1
-			elseif p:IsA("BasePart") and p.Name ~= "HumanoidRootPart" and p.Transparency < 0.99 then
+			elseif p:IsA("BasePart") and p.Name ~= "HumanoidRootPart" and editT(p) < 0.99 then
 				local rad = p.Size.Magnitude / 2
 				if rad < 120 then
 					local c = p.Position
@@ -356,7 +364,9 @@ function F.check(shot, opts)
 						if not onScreen or math.abs(x) + hw > 1 or math.abs(y) + hh > 1 then table.insert(problems, string.format("a=%.1f subject %s out of frame", a, m.Name)) end
 						local d = head.Position - pos
 						local steps = math.floor(d.Magnitude / 0.4)
-						local own = function(p) return (ownedBy(p, subj) and (p.Name == "Head" or p:GetAttribute("Bone") == "Head" or p:FindFirstAncestor("ZyvoOnHead") ~= nil)) or ownedBy(p, fg) end
+						-- only the subjects' own heads (hair, hat, the thing on the head) may sit on the line to a face: a
+						-- foreground character (an over-the-shoulder) frames the face, it never hides it
+						local own = function(p) return ownedBy(p, subj) and (p.Name == "Head" or p:GetAttribute("Bone") == "Head" or p:FindFirstAncestor("ZyvoOnHead") ~= nil) end
 						local blocked = false
 						for k = 2, steps - 1 do
 							local pt = pos + d * (k / steps)
@@ -549,6 +559,305 @@ function F.lowerFill(shot)
 		if topN / total > 0.55 then return string.format("a=%.1f lower frame filled by %s (%d of %d rays)", a, top, topN, total) end
 	end
 	return nil
+end
+
+local function at(shot, a) return shot.t0 + (shot.t1 - shot.t0) * a end
+local function anyRule(d)
+	local a = d
+	while a and a ~= story do
+		if a:GetAttribute("Rule") == true or a:GetAttribute("Glow") == true or a.Name == "ZyvoOnHead" or type(a:GetAttribute("RuleFor")) == "string" then return true end
+		a = a.Parent
+	end
+	return false
+end
+-- the 9:16 screen box of a part (x, y in -1..1), nil when any corner is behind the camera
+local function screenBox(cf, tanV, p)
+	local h = p.Size / 2
+	local x0, x1, y0, y1 = math.huge, -math.huge, math.huge, -math.huge
+	for _, sx in ipairs({ -1, 1 }) do for _, sy in ipairs({ -1, 1 }) do for _, sz in ipairs({ -1, 1 }) do
+		local x, y = project(cf, tanV, p.CFrame:PointToWorldSpace(V3(h.X * sx, h.Y * sy, h.Z * sz)))
+		if not x then return nil end
+		x0, x1, y0, y1 = math.min(x0, x), math.max(x1, x), math.min(y0, y), math.max(y1, y)
+	end end end
+	return x0, x1, y0, y1
+end
+
+-- SIGNS: text on a part (a SurfaceGui with a TextLabel) is either whole inside the 9:16 frame or wholly outside it,
+-- never cut by an edge. Sampled 7 x 5 over the text face (a sign wider than the frame has its corners out, its middle
+-- in). A sign seen from behind, a tiny far one, or one marked CutOK = true is skipped.
+local signList
+function F.findSigns()
+	signList = {}
+	for _, g in ipairs(story:GetDescendants()) do
+		if g:IsA("SurfaceGui") and g:FindFirstChildWhichIsA("TextLabel", true) then
+			local p = g.Adornee or g.Parent
+			if p and p:IsA("BasePart") and not p:GetAttribute("CutOK") then table.insert(signList, { part = p, gui = g, n = Vector3.FromNormalId(g.Face) }) end
+		end
+	end
+	return #signList
+end
+local SX, SY = { -1, -0.66, -0.33, 0, 0.33, 0.66, 1 }, { -1, -0.5, 0, 0.5, 1 }
+function F.signs(shot)
+	if not signList then F.findSigns() end
+	for _, a in ipairs({ 0, 0.5, 0.97 }) do
+		local t = at(shot, a)
+		local pos, target, fov = F.view(shot, a)
+		if not pos then return nil end
+		local cf = CFrame.lookAt(pos, target)
+		local tanV = math.tan(math.rad(fov / 2))
+		for _, s in ipairs(signList) do
+			local p, n = s.part, s.n
+			if s.gui.Enabled and (p.Position - pos).Magnitude < 150 and visibleAt(p, t) and not hiddenAt(s.gui, t) then
+				local h = p.Size / 2
+				local c = V3(n.X * h.X, n.Y * h.Y, n.Z * h.Z)
+				local u = math.abs(n.X) > 0.5 and Vector3.zAxis or Vector3.xAxis
+				local v = math.abs(n.Y) > 0.5 and Vector3.zAxis or Vector3.yAxis
+				local hu, hv = math.abs(u:Dot(h)), math.abs(v:Dot(h))
+				local front = p.CFrame:PointToWorldSpace(c)
+				if (pos - front):Dot(p.CFrame:VectorToWorldSpace(n)) > 0 then
+					local inN, outN, ys = 0, 0, {}
+					for _, sx in ipairs(SX) do for _, sy in ipairs(SY) do
+						local x, y = project(cf, tanV, p.CFrame:PointToWorldSpace(c + u * (sx * hu) + v * (sy * hv)))
+						if x and math.abs(x) <= 1 and math.abs(y) <= 1 then inN += 1 else outN += 1 end
+						if y then table.insert(ys, y) end
+					end end
+					local tall = #ys > 1 and (math.max(table.unpack(ys)) - math.min(table.unpack(ys))) or 0
+					if inN > 0 and outN > 0 and tall > 0.06 then
+						return string.format("a=%.1f the sign %s is cut by the frame edge", a, (p:GetFullName():gsub("Workspace%.ZyvoStory%.", "")))
+					end
+				end
+			end
+		end
+	end
+	return nil
+end
+
+-- GLOW: a glowing rule object (Neon, a light, sparkles; or anything marked Glow = true) sits beside or above a head,
+-- never over a face: its screen box may cover at most 15% of any face that is on screen.
+local glowList
+function F.findGlow()
+	glowList = {}
+	for _, p in ipairs(story:GetDescendants()) do
+		if p:IsA("BasePart") and anyRule(p) and (p.Material == Enum.Material.Neon or p:GetAttribute("Glow") == true
+			or p:FindFirstChildWhichIsA("Light") or p:FindFirstChildWhichIsA("ParticleEmitter")) then
+			table.insert(glowList, p)
+		end
+	end
+	return #glowList
+end
+function F.glow(shot)
+	if not glowList then F.findGlow() end
+	if #glowList == 0 then return nil end
+	for _, a in ipairs({ 0, 0.5, 0.97 }) do
+		local t = at(shot, a)
+		local pos, target, fov = F.view(shot, a)
+		if not pos then return nil end
+		local cf = CFrame.lookAt(pos, target)
+		local tanV = math.tan(math.rad(fov / 2))
+		local boxes = {}
+		for _, g in ipairs(glowList) do
+			if visibleAt(g, t) then
+				local x0, x1, y0, y1 = screenBox(cf, tanV, g)
+				if x0 and x1 > -1 and x0 < 1 and y1 > -1 and y0 < 1 then table.insert(boxes, { g, x0, x1, y0, y1, (g.Position - pos).Magnitude }) end
+			end
+		end
+		if #boxes > 0 then
+			for _, m in ipairs(chars) do
+				local head = m.Head
+				if visibleAt(head, t) then
+					local x, y, z = project(cf, tanV, head.Position)
+					if x and math.abs(x) < 1 and math.abs(y) < 1 then
+						local hh = head.Size.Y / z / tanV / 2
+						local hw = head.Size.X / z / (tanV * ASPECT) / 2
+						if hh > 0.03 then
+							for _, b in ipairs(boxes) do
+								if b[6] < z + head.Size.Z then -- the glow is in front of the face (or level with it)
+									local ox = math.max(0, math.min(x + hw, b[3]) - math.max(x - hw, b[2]))
+									local oy = math.max(0, math.min(y + hh, b[5]) - math.max(y - hh, b[4]))
+									if ox * oy > 0.15 * (4 * hw * hh) then
+										return string.format("a=%.1f the glowing %s covers %s's face (keep it beside or above the head)", a, b[1].Name, m.Name)
+									end
+								end
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+	return nil
+end
+-- cap the glow so it never blows out a face: lights in the cast / rule objects at most `brightness` and `range`, neon
+-- rule parts no brighter than 85% value, sparkles soft, the bloom gentle. Returns what changed, and the glowing parts
+-- bigger than their owner's head (make those smaller by hand or move them above the head).
+function F.capGlow(opts)
+	opts = opts or {}
+	local maxB, maxR = opts.brightness or 1.2, opts.range or 8
+	local changed, big = {}, {}
+	local cast = story:FindFirstChild("Cast")
+	for _, d in ipairs(story:GetDescendants()) do
+		local inCast = cast and d:IsDescendantOf(cast)
+		if (d:IsA("PointLight") or d:IsA("SpotLight") or d:IsA("SurfaceLight")) and (inCast or anyRule(d)) then
+			if d.Brightness > maxB then d.Brightness = maxB; table.insert(changed, d:GetFullName() .. " brightness") end
+			if d.Range > maxR then d.Range = maxR; table.insert(changed, d:GetFullName() .. " range") end
+		elseif d:IsA("ParticleEmitter") and (inCast or anyRule(d)) then
+			if d.LightEmission > 0.4 then d.LightEmission = 0.4; table.insert(changed, d:GetFullName() .. " light emission") end
+			if d.Brightness > 1 then d.Brightness = 1; table.insert(changed, d:GetFullName() .. " brightness") end
+		elseif d:IsA("BasePart") and d.Material == Enum.Material.Neon and anyRule(d) then
+			local hue, s, v = d.Color:ToHSV()
+			if v > 0.85 then d.Color = Color3.fromHSV(hue, s, 0.85); table.insert(changed, d:GetFullName() .. " neon dimmed") end
+			local m = d:FindFirstAncestorWhichIsA("Model")
+			while m and not m:FindFirstChild("Head") do m = m.Parent and m.Parent:FindFirstAncestorWhichIsA("Model") end
+			if m and d.Size.Magnitude > m.Head.Size.Magnitude * 1.1 then table.insert(big, d:GetFullName()) end
+		end
+	end
+	local bloom = game:GetService("Lighting"):FindFirstChildWhichIsA("BloomEffect")
+	if bloom then
+		if bloom.Intensity > 0.3 then bloom.Intensity = 0.3; table.insert(changed, "bloom intensity") end
+		if bloom.Size > 24 then bloom.Size = 24; table.insert(changed, "bloom size") end
+		if bloom.Threshold < 1.4 then bloom.Threshold = 1.4; table.insert(changed, "bloom threshold") end
+	end
+	return changed, big
+end
+
+-- THE WORLD IN THE FRAME (real raycasts, 7 x 12 through the 9:16 frame at the shot's middle moment):
+--   edge:  a ray below the horizon that meets nothing = the world ends in view (fails at 2% of the frame)
+--   empty: a WIDE shot that is more than 40% bare ground (a big flat floor farther than 12 studs)
+--   prop:  one prop (not a character) fills over half the frame from close up while no character is in the shot,
+--          unless the shot's `object` names it (the line is about that thing); an insert with no object fails too
+local function ownerModel(p)
+	-- the highest Model under a folder (a location / the Assets / the World): "the prop"
+	local m, a = nil, p
+	while a and a ~= story do
+		if a:IsA("Model") then m = a end
+		a = a.Parent
+	end
+	return m or p
+end
+local function firstVisible(origin, dir, t)
+	local skip = {}
+	for _, n in ipairs({ "Spots", "Marks" }) do local f = story:FindFirstChild(n); if f then table.insert(skip, f) end end
+	local params = RaycastParams.new()
+	params.FilterType = Enum.RaycastFilterType.Exclude
+	params.FilterDescendantsInstances = skip
+	local o, left = origin, dir
+	for _ = 1, 10 do
+		local r = workspace:Raycast(o, left, params)
+		if not r then return nil end
+		local p = r.Instance
+		if p:IsA("Terrain") or visibleAt(p, t) then return r end
+		table.insert(skip, p); params.FilterDescendantsInstances = skip
+		o = r.Position
+		left = origin + dir - o
+		if left.Magnitude < 0.05 then return nil end
+	end
+	return nil
+end
+F.firstVisible = firstVisible
+function F.scan(shot, opts)
+	opts = opts or {}
+	local t = at(shot, 0.5)
+	local pos, target, fov = F.view(shot, 0.5)
+	if not pos then return nil end
+	local cf = CFrame.lookAt(pos, target)
+	local tanV = math.tan(math.rad(fov / 2))
+	local cast = story:FindFirstChild("Cast")
+	local down = firstVisible(pos, V3(0, -400, 0), t)
+	local gy = down and down.Position.Y or (pos.Y - 6)
+	local FAR, total, edge, bare, near, castHits = 2500, 0, 0, 0, {}, 0
+	local reach = math.max(6, (target - pos).Magnitude * 0.7)
+	for ix = 0, 6 do
+		for iy = 0, 11 do
+			total += 1
+			local x, y = (ix / 3 - 1) * 0.95, (iy / 5.5 - 1) * 0.95
+			local dir = cf:VectorToWorldSpace(V3(x * tanV * ASPECT, y * tanV, -1)).Unit
+			local r = firstVisible(pos, dir * FAR, t)
+			if not r then
+				if pos.Y + dir.Y * FAR < gy - 0.5 then edge += 1 end
+			else
+				local p, d = r.Instance, (r.Position - pos).Magnitude
+				if cast and p:IsDescendantOf(cast) then castHits += 1
+				elseif r.Normal.Y > 0.9 and d > 12 and (p:IsA("Terrain") or (p.Size.X > 40 and p.Size.Z > 40)) then bare += 1
+				elseif d < reach then local m = ownerModel(p); near[m] = (near[m] or 0) + 1 end
+			end
+		end
+	end
+	if edge / total > 0.02 then return string.format("the world ends in view: %d%% of the frame looks past the ground into the void (add far ground, hills or a skyline: luau/backdrop.luau)", edge / total * 100) end
+	if shot.size == "wide" and bare / total > 0.4 then return string.format("empty ground: %d%% of this wide is bare floor (add buildings, street dressing, people: luau/backdrop.luau)", bare / total * 100) end
+	local hasSubject = #(opts.subjects or {}) > 0 or castHits / total > 0.08
+	if not hasSubject then
+		if shot.size == "insert" and not shot.object then return "an insert with no `object`: name the thing the line is about, or show a character" end
+		local top, topN = nil, 0
+		for m, n in pairs(near) do if n > topN then top, topN = m, n end end
+		if top and topN / total > 0.5 and not (shot.object and (top.Name:lower():find(tostring(shot.object):lower(), 1, true))) then
+			return string.format("%s fills %d%% of the frame with no character in it: only when the line is about it (set the shot's object), else show a character", top.Name, topN / total * 100)
+		end
+	end
+	return nil
+end
+
+-- MONSTERS AND VILLAINS (reference/story.md "The monster"): data.monsters = { { name, statues = {...}, revealLine,
+-- callback = true when the last line calls back } }. Shots carry reveal = true / hint = true. Fails when a named
+-- monster isn't SEEN at its reveal (3 shots: a push-in on it, a close-up / reaction, a wide with it among others),
+-- has no fair hint before the reveal, or is missing from the last story shot of a chilling callback.
+function F.seen(m, shot, a, clear)
+	local t = at(shot, a)
+	if not (m and m:FindFirstChild("Head")) then return false, "no statue" end
+	if not visibleAt(m.Head, t) then return false, "hidden then" end
+	local pos, target, fov = F.view(shot, a)
+	if not pos then return false, "no spot" end
+	local cf = CFrame.lookAt(pos, target)
+	local tanV = math.tan(math.rad(fov / 2))
+	local x, y = project(cf, tanV, m.Head.Position)
+	if not x or math.abs(x) > 1 or math.abs(y) > 1 then return false, "out of the frame" end
+	if clear then
+		local r = firstVisible(pos, m.Head.Position - pos, t)
+		if r and not r.Instance:IsDescendantOf(m) and (r.Position - m.Head.Position).Magnitude > m.Head.Size.Magnitude then
+			return false, "hidden behind " .. r.Instance.Name
+		end
+	end
+	return true
+end
+function F.monsters()
+	local probs = {}
+	local story_shots = {}
+	for _, s in ipairs(data.shots) do if s.kind ~= "endcard" then table.insert(story_shots, s) end end
+	for _, mon in ipairs(data.monsters or {}) do
+		local ms = {}
+		for _, n in ipairs(mon.statues or {}) do local m = F.char(n); if m then table.insert(ms, m) else table.insert(probs, mon.name .. ": no statue " .. n) end end
+		local function seenAny(s, clear) for _, m in ipairs(ms) do if F.seen(m, s, 0.5, clear) then return m end end end
+		local firstReveal, push, closeUp, wideAmong = nil, false, false, false
+		for _, s in ipairs(story_shots) do
+			if s.reveal or (mon.revealLine and s.line == mon.revealLine) then
+				firstReveal = firstReveal or s
+				local m = seenAny(s, true)
+				if m and (s.move == "push_slow" or s.move == "push_fast" or s.move == "dolly_zoom" or s.move == "crash") then push = true end
+				if s.size == "close" or s.size == "reaction" then closeUp = true end
+				if m and s.size == "wide" then
+					for _, c in ipairs(chars) do if c ~= m and not table.find(ms, c) and F.seen(c, s, 0.5) then wideAmong = true; break end end
+				end
+			end
+		end
+		if not firstReveal then table.insert(probs, mon.name .. ": no reveal shots (mark them reveal = true)")
+		else
+			if not push then table.insert(probs, mon.name .. ": no push-in on the monster at its reveal (seen clearly, push_slow / push_fast / dolly_zoom)") end
+			if not closeUp then table.insert(probs, mon.name .. ": no close-up / reaction shot at the reveal") end
+			if not wideAmong then table.insert(probs, mon.name .. ": no wide showing it among the others at the reveal") end
+			local hint = false
+			for _, s in ipairs(story_shots) do
+				if s.t0 >= firstReveal.t0 then break end
+				if s.hint and seenAny(s, false) then hint = true end
+			end
+			if not hint then table.insert(probs, mon.name .. ": no hint shot before the reveal (hint = true, the shape half-hidden or far)") end
+		end
+		if mon.callback then
+			local last = story_shots[#story_shots]
+			if not (last and (seenAny(last, false) or (last.shadow and F.find(last.shadow) and visibleAt(F.find(last.shadow), at(last, 0.5))))) then
+				table.insert(probs, mon.name .. ": the last line calls back, but the last shot doesn't show it (or its shadow)")
+			end
+		end
+	end
+	return probs
 end
 
 return F
