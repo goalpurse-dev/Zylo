@@ -24,6 +24,8 @@ export const STUDIO_KIT_PUBLIC = false;
 
 export const MCP_URL = "https://mcp.tryzyvo.com/mcp";
 export const CLAUDE_CODE_COMMAND = `claude mcp add --transport http --scope user zyvo ${MCP_URL}`;
+/** the Claude app's connector shows up inside Claude Code under this name (so one connector covers both; never add both) */
+export const CLAUDE_CODE_NAME = "claude.ai Zyvo";
 
 /** what the connector can do, as the Connect Claude page lists it */
 export const CONNECTOR_TOOLS = [

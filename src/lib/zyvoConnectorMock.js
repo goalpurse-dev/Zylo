@@ -5,6 +5,9 @@
 // Studio test only (public/media/studio-kit).
 //   &empty=1           no projects (the empty state)
 //   &done=1            the Bedtime Story card starts finished
+//   &credits=0         the balance (default 480): low credits = the paid buttons say "Not enough credits"
+//   &free=0            the first finish is used up (Finish my video costs credits)
+//   &conn=0            no Claude connection (the Connect tab shows the setup steps)
 //   &consent=expired|closed   the consent screen's error states
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const ago = (min) => new Date(Date.now() - min * 60_000).toISOString();
@@ -17,10 +20,12 @@ const job = (kind, status, extra = {}) => ({ id: `j-${kind}-${Math.random().toSt
 
 function initial() {
   const done = params().get("done") === "1";
+  const credits = Number(params().get("credits"));
+  const freeLeft = !done && params().get("free") !== "0";
   return {
-    balance: 480,
-    freeFinish: !done,
-    connections: [
+    balance: params().has("credits") && Number.isFinite(credits) ? Math.max(0, Math.round(credits)) : 480,
+    freeFinish: freeLeft,
+    connections: params().get("conn") === "0" ? [] : [
       { id: "f1", client: "Claude", scopes: ["ideas", "scripts", "videos", "spend"], since: ago(60 * 26), lastUsed: ago(12) },
       { id: "f2", client: "Claude Code", scopes: ["ideas", "scripts", "videos", "spend"], since: ago(60 * 24 * 3), lastUsed: ago(60 * 5) },
     ],
@@ -37,25 +42,25 @@ function initial() {
         estimatedSeconds: 82, shots: 60,
         voice: { seconds: 82.4, madeAt: ago(60 * 3), mp3: "#", words: "#" }, recording: { bytes: 120_000_000, uploadedAt: ago(4) },
         final: done ? { ...BEDTIME_FINAL, madeAt: ago(2) } : null,
-        prices: { voice: 15, finish: 10, finishFree: !done }, job: null, busy: false,
+        prices: { voice: 15, finish: 10, finishFree: freeLeft }, job: null, busy: false,
       },
       {
         id: "p-shadow", kitProjectId: "shadow-talk", title: "In this town, your shadow tells everyone how you feel", status: "voice_needed", updatedAt: ago(3), createdAt: ago(90), kitVersion: "1.0.0",
         lines: lines(["In this town, your shadow says out loud how you feel.", "Mine just told the whole class I like Mia.", "So I did the only thing I could. I stood in the dark."]),
         estimatedSeconds: 61, shots: 14, voice: null, recording: null, final: null,
-        prices: { voice: 11, finish: 21, finishFree: !done }, job: job("voice", "running", { stage: "voice", pct: 35, credits: 11, startedAt: Date.now() - 2500 }), busy: true,
+        prices: { voice: 11, finish: 21, finishFree: freeLeft }, job: job("voice", "running", { stage: "voice", pct: 35, credits: 11, startedAt: Date.now() - 2500 }), busy: true,
       },
       {
         id: "p-rain", kitProjectId: "dream-rain", title: "In this town, it rains whatever you dreamed", status: "voice_needed", updatedAt: ago(8), createdAt: ago(40), kitVersion: "1.0.0",
         lines: lines(["In this town, it rains whatever you dreamed last night.", "Mostly socks. Sometimes pancakes.", "But last night, I dreamed about my sister's goldfish.", ["Mom", "Everybody, umbrellas up."]]),
         estimatedSeconds: 74, shots: 18, voice: null, recording: null, final: null,
-        prices: { voice: 13, finish: 23, finishFree: !done }, job: null, busy: false,
+        prices: { voice: 13, finish: 23, finishFree: freeLeft }, job: null, busy: false,
       },
       {
         id: "p-tower", kitProjectId: "coin-tower", title: "In this town, the higher you live, the richer you are", status: "voice_ready", updatedAt: ago(60 * 3), createdAt: ago(60 * 20), kitVersion: "1.0.0",
         lines: lines(["Every time a kid rides the lift up, a warm coin falls from the sky.", "You see, in this town, the higher you live, the richer you are.", "My little brother lives on the ground floor.", "So I built him a tower of our own."]),
         estimatedSeconds: 88, shots: 22, voice: { seconds: 87.4, madeAt: ago(60 * 3), mp3: "#", words: "#" }, recording: null, final: null,
-        prices: { voice: 16, finish: 10, finishFree: !done }, job: null, busy: false,
+        prices: { voice: 16, finish: 10, finishFree: freeLeft }, job: null, busy: false,
       },
     ],
   };
@@ -102,6 +107,7 @@ export async function mockConnector(path, { body = {}, query = {} } = {}) {
   const p = state.projects.find((x) => x.id === body.id);
   if (path === "/account/studio/voice") {
     if (body.credits !== p.prices.voice) fail("PRICE_CHANGED", `The price is now ${p.prices.voice} credits. Press the button again to pay that.`);
+    if (state.balance < p.prices.voice) fail("CREDITS", `You need ${p.prices.voice} credits. Nothing was charged.`, { credits: p.prices.voice, balance: state.balance });
     state.balance -= p.prices.voice;
     p.job = job("voice", "queued", { credits: p.prices.voice, startedAt: Date.now() });
     p.busy = true;
@@ -111,6 +117,7 @@ export async function mockConnector(path, { body = {}, query = {} } = {}) {
   if (path === "/account/studio/uploaded") { p.recording = { bytes: 180_000_000, uploadedAt: new Date().toISOString() }; p.status = "recorded"; return { ok: true }; }
   if (path === "/account/studio/finish") {
     const free = p.prices.finishFree;
+    if (!free && state.balance < p.prices.finish) fail("CREDITS", `You need ${p.prices.finish} credits. Nothing was charged.`, { credits: p.prices.finish, balance: state.balance });
     if (!free) state.balance -= p.prices.finish;
     state.freeFinish = false;
     for (const x of state.projects) x.prices.finishFree = false;
@@ -119,6 +126,6 @@ export async function mockConnector(path, { body = {}, query = {} } = {}) {
     return { ok: true, job: p.job };
   }
   if (path === "/account/studio/remove") { state.projects = state.projects.filter((x) => x.id !== body.id); return { ok: true }; }
-  if (path === "/account/kit") return { url: "#mock-kit-download", version: "1.1.0", fileName: "roblox-story.zip" };
+  if (path === "/account/kit") return { url: "#mock-kit-download", version: "1.2.0", fileName: "roblox-story.zip" };
   return fail("not_found", "Unknown mock route.");
 }

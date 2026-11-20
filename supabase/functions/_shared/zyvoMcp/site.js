@@ -15,6 +15,8 @@ import { randomToken } from "./crypto.js";
 import { statusOf } from "./tools.js";
 
 const UUID = /^[0-9a-f-]{36}$/i;
+// where "Buy credits" goes when the tool's quote doesn't name it (the site's pricing page)
+const BUY_URL = "https://www.tryzyvo.com/pricing";
 const json = (status, body) => ({ status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" }, body });
 const refuse = (status, code, message, extra = {}) => json(status, { error: code, message, ...extra });
 
@@ -69,13 +71,17 @@ export function makeSite({ store, storage, user, allowed, tools, now = () => Dat
     const q = await tools.call(c, tool, { project_id: projectId });
     const sc = q?.structuredContent ?? {};
     if (q?.isError) return refuse(sc.error === "NOT_FOUND" ? 404 : 409, sc.error ?? "ERROR", sc.message ?? "That didn't work. Nothing was charged.", sc.retry_after_sec ? { retryAfterSec: sc.retry_after_sec } : {});
+    // too few credits: the tool's quote has no confirm_token then (and finish says so before any upload link), so this
+    // comes first: a short balance is CREDITS (the card shows Not enough credits + Buy credits), never SERVER
+    const short = () => refuse(402, "CREDITS", `You need ${sc.price_credits} credits. You have ${sc.balance ?? 0}. Nothing was charged.`, { credits: sc.price_credits, balance: sc.balance ?? 0, buyUrl: sc.buy_url ?? BUY_URL });
+    if (sc.enough === false) return short();
     if (sc.step === "upload") return refuse(409, "NEED_UPLOAD", "Upload the recording first.");
     if (!sc.confirm_token) return refuse(500, "SERVER", "Something went wrong on our side. Nothing was charged.");
     if (Number(expect) !== Number(sc.price_credits)) return refuse(409, "PRICE_CHANGED", sc.free ? "This one is free now. Press the button again." : `The price is now ${sc.price_credits} credits. Press the button again to pay that.`, { credits: sc.price_credits, free: Boolean(sc.free) });
-    if (!sc.enough) return refuse(402, "CREDITS", `You need ${sc.price_credits} credits. Nothing was charged.`, { credits: sc.price_credits, balance: sc.balance });
+    if (!sc.enough) return short();
     const r = await tools.call(c, tool, { project_id: projectId, confirm_token: sc.confirm_token });
     const out = r?.structuredContent ?? {};
-    if (r?.isError) return refuse(out.error === "CREDITS" ? 402 : 409, out.error ?? "ERROR", out.message ?? "That didn't work. Nothing was charged.", out.credits ? { credits: out.credits } : {});
+    if (r?.isError) return refuse(out.error === "CREDITS" ? 402 : 409, out.error ?? "ERROR", out.message ?? "That didn't work. Nothing was charged.", { ...(out.credits ? { credits: out.credits } : {}), ...(out.error === "CREDITS" ? { buyUrl: out.buy_url ?? BUY_URL } : {}) });
     return json(200, { ok: true, job: { id: out.job_id, kind: out.kind, status: out.status, stage: out.stage, pct: out.pct, free: out.free, credits: out.credits } });
   }
 

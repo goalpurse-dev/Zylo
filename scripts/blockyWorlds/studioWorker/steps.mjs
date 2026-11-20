@@ -15,6 +15,7 @@ import { sfxCues } from "../engine/lib/sfx.js";
 import { simpleCues, AUDIO_SIMPLE } from "../engine/lib/audioPlan.js";
 import { processTake } from "../studio/pace.mjs";
 import { tightenTake } from "../studio/tighten.mjs";
+import { voiceEndProblem } from "../studio/voiceEnd.mjs";
 import { fixAnimalCast } from "../studio/castFix.mjs";
 import { directVideo, derive, MODELS } from "../studio/agent.mjs";
 import { assemble, allChecks } from "../studio/assemble.mjs";
@@ -33,17 +34,32 @@ export function makeSteps({ anthropicKey, elevenKey, cfg = STUDIO }) {
     async voice({ script, dir, L }) {
       const narrator = narratorFor(cfg.narrator);
       const chars = script.lines.map((l) => String(l.text).trim()).join("\n").length;
-      L.check("voice", +(chars * 0.5 * 0.0002).toFixed(4)); // worst case: 0.5 ElevenLabs credits a character
-      const out = path.join(dir, "voice");
-      await elevenVoice({ lines: script.lines, outDir: out, narrator, apiKey: elevenKey });
-      const v0 = await processTake({ outDir: out });
-      // THE MILO TIGHTENING (owner 2026-11-18, studio/tighten.mjs): the real silences cut like the golden Milo take (free;
-      // a failure keeps the take as processed)
-      const t = tightenTake({ wav: v0.wav, words: v0.words, lines: script.lines, inPlace: true });
-      const v = t.error || !t.duration ? v0 : { ...v0, wav: t.wav, words: t.words, duration: t.duration, tightened: t.removed };
-      L.add("voice", v.costUsd ?? +(chars * 0.44 * 0.0002).toFixed(4));
-      L.log({ step: "voice", chars, voice: narrator.voiceName, model: narrator.model, speed: v.speed, duration: v.duration, pace: v.pace, tightened: v.tightened ?? 0 });
-      return { wav: v.wav, words: v.words, duration: v.duration, chars };
+      const take = async (out, force) => {
+        L.check("voice", +(chars * 0.5 * 0.0002).toFixed(4)); // worst case: 0.5 ElevenLabs credits a character
+        await elevenVoice({ lines: script.lines, outDir: out, narrator, apiKey: elevenKey, force });
+        const v0 = await processTake({ outDir: out });
+        // THE MILO TIGHTENING (owner 2026-11-18, studio/tighten.mjs): the real silences cut like the golden Milo take
+        // (free; a failure keeps the take as processed)
+        const t = tightenTake({ wav: v0.wav, words: v0.words, lines: script.lines, inPlace: true });
+        const v = t.error || !t.duration ? v0 : { ...v0, wav: t.wav, words: t.words, duration: t.duration, tightened: t.removed };
+        L.add("voice", v.costUsd ?? +(chars * 0.44 * 0.0002).toFixed(4));
+        return v;
+      };
+      let v = await take(path.join(dir, "voice"), false);
+      // THE END CHECK (owner 2026-11-20, studio/voiceEnd.mjs): a take that stopped early (its last words squeezed into
+      // the last instant, silent) is never handed over. One new take, on us (the user pays once); a second bad take
+      // fails the step, and the job / run refunds as any failure does.
+      let problem = voiceEndProblem({ wav: v.wav, words: v.words, duration: v.duration });
+      let retakes = 0;
+      if (problem) {
+        L.log({ step: "voice", retake: problem });
+        retakes = 1;
+        v = await take(path.join(dir, "voice_retake"), true);
+        problem = voiceEndProblem({ wav: v.wav, words: v.words, duration: v.duration });
+        if (problem) throw Object.assign(new Error(`VOICE_CUT: the voice came out cut off twice (${problem})`), { code: "VOICE_CUT" });
+      }
+      L.log({ step: "voice", chars, voice: narrator.voiceName, model: narrator.model, speed: v.speed, duration: v.duration, pace: v.pace, tightened: v.tightened ?? 0, retakes });
+      return { wav: v.wav, words: v.words, duration: v.duration, chars, retakes };
     },
     /** the base plan (free): the real word timings + the free mock director; an animal cast as a person -> the pet */
     async plan({ script, card, words, lengthSec, dir }) {

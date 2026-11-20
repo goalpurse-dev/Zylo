@@ -103,3 +103,42 @@ test("ONE real finish, locally: marker found, upright 1080x1920, fitted, caption
   assert.equal(out.costUsd, 0, "no key: the vision check is skipped, nothing paid");
   fs.rmSync(dir, { recursive: true, force: true });
 });
+
+test("the end card: its words in the captions file after the story, no word over it", async () => {
+  const { END_CARD, endCardShot } = await import("../scripts/blockyWorlds/studioWorker/studioFinishPlan.mjs");
+  const cap = captionsAss({ words, lines: LINES, duration: 12, endCard: { start: 4.0, end: 6.0 } });
+  assert.match(cap.ass, /Dialogue: 1,0:00:04\.00,[^\n]*EndBig[^\n]*Made with Zyvo AI/);
+  assert.match(cap.ass, /EndUrl[^\n]*tryzyvo\.com/);
+  assert.match(cap.ass, /&H0064F2BE/, "the url in Zyvo lime");
+  const words4 = [...cap.ass.matchAll(/Dialogue: 0,(\S+),(\S+),Cap/g)].map((m) => m[2]);
+  assert.ok(words4.every((e) => e <= "0:00:04.00"), "no caption over the end card");
+  assert.equal(END_CARD.seconds, 2);
+  assert.equal(endCardShot([{ t0: 0, t1: 3 }, { kind: "endcard", t0: 3, t1: 5 }]).t0, 3);
+  assert.equal(endCardShot([{ t0: 0, t1: 3 }]), null);
+  assert.doesNotMatch(captionsAss({ words, lines: LINES, duration: 12 }).ass, /Made with Zyvo/, "off: no card");
+});
+
+test("a real finish WITH the end card: the kit's line-up shot, and a recording without one (held frame); +2 s, both masters", { skip: !hasFfmpeg && "no ffmpeg", timeout: 600_000 }, async () => {
+  const { finishStudio } = await import("../scripts/blockyWorlds/studioWorker/studioFinish.mjs");
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "zyvo-endcard-"));
+  const ff = (args) => { const r = spawnSync("ffmpeg", ["-hide_banner", "-v", "error", "-y", ...args], { encoding: "utf8", cwd: dir }); if (r.status) throw new Error(r.stderr); };
+  ff(["-f", "lavfi", "-i", "color=c=gray:s=1920x1080:d=1:r=30", "-f", "lavfi", "-i", "color=c=gray:s=1920x1080:d=0.5:r=30", "-f", "lavfi", "-i", "color=c=0xff00ff:s=1600x900:d=0.5:r=30", "-f", "lavfi", "-i", "color=c=black:s=1920x1080:d=1:r=30", "-f", "lavfi", "-i", "testsrc2=s=1920x1080:d=9:r=30",
+    "-filter_complex", "[1][2]overlay=160:90[mk];[0][mk][3][4]concat=n=4:v=1:a=0,format=yuv420p[v]", "-map", "[v]", "-c:v", "libx264", "-preset", "ultrafast", "recording.mp4"]);
+  ff(["-f", "lavfi", "-i", "sine=frequency=220:duration=6.2", "-c:a", "libmp3lame", "voice.mp3"]);
+  const short = words.slice(0, 20).map((w) => ({ ...w }));
+  const probe = (f) => JSON.parse(spawnSync("ffprobe", ["-v", "error", "-show_entries", "stream=codec_type,width,height:format=duration", "-of", "json", f], { encoding: "utf8" }).stdout);
+  for (const withShot of [true, false]) {
+    const shots = [{ t0: 0, t1: 3, location: "street" }, { t0: 3, t1: 6.25, location: "school" }, ...(withShot ? [{ kind: "endcard", location: "endcard", t0: 6.25, t1: 8.25 }] : [])];
+    const out = await finishStudio({ recording: path.join(dir, "recording.mp4"), voiceMp3: path.join(dir, "voice.mp3"), words: short, lines: LINES, shots, dir: path.join(dir, `work${withShot}`), anthropicKey: null, endCard: true });
+    assert.ok(Math.abs(out.seconds - 8.25) < 0.05, `the story + 2 s (${out.seconds})`);
+    for (const f of [out.files.final, out.files.noMusic]) {
+      const p = probe(f);
+      assert.ok(Math.abs(Number(p.format.duration) - out.seconds) < 0.2, `${f}: ${p.format.duration} vs ${out.seconds}`);
+      assert.ok(p.streams.some((s) => s.codec_type === "audio"));
+    }
+    assert.ok(Math.abs(out.stats.lufs + 14) < 1.0, `final LUFS ${out.stats.lufs}`);
+    assert.equal(out.notes.some((n) => /no end card shot/.test(n)), !withShot);
+    if (process.env.ZYVO_KEEP_ENDCARD) fs.copyFileSync(out.files.final, path.join(process.env.ZYVO_KEEP_ENDCARD, `endcard_${withShot ? "shot" : "held"}.mp4`));
+  }
+  fs.rmSync(dir, { recursive: true, force: true });
+});

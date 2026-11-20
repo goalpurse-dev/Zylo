@@ -3,13 +3,22 @@
 // whatever is listed. Steps follow the kit's own words (kits/roblox-story/QUICKSTART.md, reference/recording.md).
 //
 // A step's `shots` are REAL pictures (from the owner's Bedtime Story test). A step without real pictures shows a
-// `diagram` instead: our own drawing of the clicks, never a copy of another app's screen. Swapping a diagram for a
-// real screenshot = add { src, alt, caption } to `shots`.
+// `diagram` (or a list of them) instead: our own drawing of the clicks, never a copy of another app's screen. Swapping
+// a diagram for a real screenshot = add { src, alt, caption } to `shots`.
+import { CLAUDE_CODE_COMMAND, CLAUDE_CODE_NAME, MCP_URL } from "./studioKit.js";
 
 // the kit is the Claude Code skill "roblox-story" (kits/roblox-story/SKILL.md): its folder name is the slash command
 export const KIT_SKILL = "roblox-story";
 export const KIT_COMMAND = `/${KIT_SKILL}`;
 export const KIT_FIRST_QUESTION = "What's your In This Town rule? Type it, or say 'ideas' and I'll suggest some.";
+/** the tones /roblox-story offers after the rule (owner 2026-11-20) */
+export const KIT_TONES = ["Spooky (mimic horror)", "Funny", "Wholesome", "Twist"];
+/** the end card (owner 2026-11-20): Free and Starter videos end with it, Pro and higher don't */
+export const END_CARD = {
+  seconds: 2,
+  line: "Made with Zyvo AI · tryzyvo.com",
+  text: "On the Free and Starter plans, every video ends with a 2-second card: your cast lined up, with \"Made with Zyvo AI · tryzyvo.com\". Pro and higher plans have no end card.",
+};
 
 export const MCP_TEMPLATES = [
   {
@@ -27,6 +36,16 @@ export const MCP_TEMPLATES = [
     ],
     steps: [
       {
+        id: "connector",
+        title: "Add Zyvo in the Claude app",
+        text: "In the Claude desktop or web app: Settings > Connectors > Add custom connector. Name it Zyvo, paste this link, then sign in to Zyvo and press Allow. Connecting is free: anything that costs credits shows its price in Claude first.",
+        commands: [{ label: "The connector link", value: MCP_URL }],
+        after: `It works inside Claude Code too, where it shows up as "${CLAUDE_CODE_NAME}". So most people only need this one. Use Claude Code only in a terminal? The command below is the other way. Don't add both.`,
+        alt: { label: "Or, in a terminal (not both)", value: CLAUDE_CODE_COMMAND },
+        connectHelp: true,
+        diagram: { kind: "clicks", path: ["Settings", "Connectors", "Add custom connector"], fields: [["Name", "Zyvo"], ["URL", MCP_URL]] },
+      },
+      {
         id: "install",
         title: "Install the kit",
         text: `Download the kit (below), then unzip it into Claude's skills folder, so the folder ${KIT_SKILL} sits right inside skills. That folder name is the command you'll type in step 4.`,
@@ -35,23 +54,20 @@ export const MCP_TEMPLATES = [
         diagram: { kind: "folders", path: [".claude", "skills", KIT_SKILL], files: ["SKILL.md", "QUICKSTART.md", "luau", "scripts"] },
       },
       {
-        id: "studio-mcp",
-        title: "Turn on Studio's MCP server",
-        text: "Open Roblox Studio, then New > Baseplate: always a new, empty place, never one of your real games.",
+        id: "studio",
+        title: "Connect Roblox Studio",
+        text: "Open Roblox Studio, then New > Baseplate: always a new, empty place, never one of your real games. Turn on Studio's MCP server:",
         bullets: ["Click Assistant (top right) > ... > Settings > MCP Servers", "Switch on Enable Studio as MCP server"],
-        diagram: { kind: "clicks", path: ["Assistant", "...", "Settings", "MCP Servers"], toggle: "Enable Studio as MCP server" },
-      },
-      {
-        id: "connect",
-        title: "Connect Claude to Studio",
-        text: "Make an empty folder for your videos (for example Documents\\ZyvoStudio) and open a Code session in it. Ask Claude: \"Connect to Roblox Studio for every folder\". Or paste the line for your computer into a terminal:",
+        between: "Then make an empty folder for your videos (for example Documents\\ZyvoStudio) and open a Code session in it. Ask Claude: \"Connect to Roblox Studio for every folder\". Or paste the line for your computer into a terminal:",
         commands: [
           { label: "Windows", value: "claude mcp add --scope user Roblox_Studio -- cmd.exe /c %LOCALAPPDATA%\\Roblox\\mcp.bat" },
           { label: "Mac", value: "claude mcp add --scope user Roblox_Studio -- /Applications/RobloxStudio.app/Contents/MacOS/StudioMCP" },
         ],
-        after: "Then start a NEW Code session in the same folder, with Studio open, and type /mcp: Roblox_Studio should say connected.",
-        connectZyvo: true,
-        diagram: { kind: "terminal", lines: [{ t: "> /mcp", dim: false }, { t: "Roblox_Studio", ok: "connected" }, { t: "zyvo (optional)", ok: "connected" }] },
+        after: `Then start a NEW Code session in the same folder, with Studio open, and type /mcp: Roblox_Studio and ${CLAUDE_CODE_NAME} should both say connected.`,
+        diagram: [
+          { kind: "clicks", path: ["Assistant", "...", "Settings", "MCP Servers"], toggle: "Enable Studio as MCP server" },
+          { kind: "terminal", lines: [{ t: "> /mcp" }, { t: "Roblox_Studio", ok: "connected" }, { t: CLAUDE_CODE_NAME, ok: "connected" }] },
+        ],
       },
       {
         id: "prompt",
@@ -69,10 +85,20 @@ export const MCP_TEMPLATES = [
         ] },
       },
       {
+        id: "tone",
+        title: "Pick the tone",
+        text: "Claude asks how the story should feel. Pick one by its name or number.",
+        bullets: KIT_TONES,
+        diagram: { kind: "chat", lines: [
+          { who: "claude", t: `Which tone?\n${KIT_TONES.map((x, i) => `${i + 1}. ${x}`).join("\n")}` },
+          { who: "you", t: "2" },
+        ] },
+      },
+      {
         id: "approve",
         title: "Approve each step",
-        text: "Claude goes step by step: the idea, the script, a grey blockout, the world, the cast, the light, the voice and the shot list. Look at each one, say what to change, then say yes. When Claude asks to use a Studio tool, allow it.",
-        bullets: ["Before filming, it checks every shot and shows you a contact sheet of all of them."],
+        text: "Claude goes step by step: the script, a grey blockout, the world, the cast, the lighting and the shot list. Look at each one, say what to change, then say yes. When Claude asks to use a Studio tool, allow it.",
+        bullets: ["Studio's camera moves to whatever is being built, so you can watch it happen.", "Before filming, it checks every shot and shows you a contact sheet of all of them."],
         shots: [
           { src: "/media/studio-kit/build-1.webp", alt: "The grey blockout of the town in Roblox Studio", caption: "Blockout" },
           { src: "/media/studio-kit/build-2.webp", alt: "The town's world built in Roblox Studio", caption: "World" },
@@ -83,26 +109,29 @@ export const MCP_TEMPLATES = [
       },
       {
         id: "record",
-        title: "Record it",
-        text: "Claude plays the shots; you record the Studio window.",
+        title: "Record the Play run",
+        text: "Claude plays the shots; you record the Studio window. Claude stays silent while Play runs.",
         bullets: [
+          "First turn on Do not disturb (Windows: the bell by the clock, or Settings > System > Notifications. Mac: Control Center > Focus): no pop-ups in your recording",
           "Test tab > Device: None (no phone emulator)",
           "Maximize Studio (double-click its title bar) and close the panels around the view",
           "Windows: Win+G > Settings > Capturing > audio off. Mac: Cmd+Shift+5 > Options > Microphone: None",
           "Start recording (Win+Alt+R), then type \"ready\": Claude presses Play",
           "The picture looks sideways in Studio: that's expected. Stop recording when it goes black at the end.",
         ],
-        diagram: { kind: "checklist", items: ["Device: None", "Studio maximized", "Recorder audio off", "Recording, then \"ready\""] },
+        diagram: { kind: "checklist", items: ["Do not disturb on", "Device: None", "Studio maximized", "Recorder audio off", "Recording, then \"ready\""] },
       },
       {
         id: "finish",
         title: "Finish it",
-        text: "Give Claude the recording's file path. It turns it upright, crops it to 9:16 and lines it up with the voice.",
+        text: "Give Claude the recording's file path. It turns it upright, crops it to 9:16 and lines it up with the voice. Then finish it one of two ways. When it's done, the video and its folder open by themselves.",
         finish: true,
+        endCard: true,
       },
     ],
     problems: [
       { q: "\"claude\" is not recognized", a: "Your terminal can't find Claude Code: it isn't on your PATH yet. Use the Claude desktop app's Code tab (no terminal needed), or open a NEW terminal after installing Claude Code. Still not found on Windows? Add the folder the installer named (usually %USERPROFILE%\\.local\\bin) to PATH, then open a new terminal." },
+      { q: "Zyvo shows up twice in /mcp", a: `It was added both ways. Keep ${CLAUDE_CODE_NAME} (the Claude app's connector) and remove the terminal one: claude mcp remove --scope user zyvo` },
       { q: "The Roblox tools aren't loaded", a: "Open Roblox Studio first (with Enable Studio as MCP server on), then close Claude Code and start it again in your video folder. Type /mcp: Roblox_Studio must say connected. Started in another folder? Add it with --scope user (step 3) so it works in every folder." },
       { q: "Screenshots come out grey", a: "Keep Studio in front while Claude works: not minimized and not covered by another window. Studio only draws its view while you can see it." },
     ],

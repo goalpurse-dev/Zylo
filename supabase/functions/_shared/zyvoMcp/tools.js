@@ -9,7 +9,7 @@
 // PAID TOOLS: the first call never charges (price, balance, confirm_token); the second call with the token charges
 // (one transaction: the token is used up, the credits taken, the job created). Everything a user or the kit sends is
 // DATA: sizes capped, safety-checked, stored, never turned into instructions; replies carry our own words + the data.
-import { canWrite } from "../blockyWorlds/access.js";
+import { canRemoveEndCard, canWrite } from "../blockyWorlds/access.js";
 import { safetyProblems, storyTextProblem, topicProblem } from "../blockyWorlds/safety.js";
 import { FINISH_CREDITS, LIMITS, PROJECT_LIMITS, QUOTE, secondsOfScript, UPLOAD, URLS, VIDEO_CREDITS, voiceCredits, WORST_USD, WRITE_SCRIPT_CREDITS } from "./config.js";
 import { canonical, inputHash, randomToken, sha256Hex } from "./crypto.js";
@@ -20,6 +20,7 @@ export class ToolError extends Error {
 const UUID = /^[0-9a-f-]{36}$/i;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const usd = (credits) => +(credits * 0.02).toFixed(2);
+const BUY_URL = `${URLS.site}/pricing`;
 
 // ---------------------------------------------------------------- the tool list (names, descriptions, schemas)
 const str = (description, extra = {}) => ({ type: "string", description, ...extra });
@@ -58,6 +59,9 @@ export const TOOLS = [
   { name: "make_video_in_zyvo", title: "Make the whole video in Zyvo", scope: "videos", annotations: PAID,
     description: `Paid: ${VIDEO_CREDITS} credits ($${usd(VIDEO_CREDITS)}), script included. Zyvo builds, films and renders the whole In This Town video itself (no Roblox Studio needed). From a topic, a story text, or a script written with write_script. Price first, then confirm. Needs a paid Zyvo plan.`,
     inputSchema: { type: "object", properties: { topic: str("a topic (2-200 characters)"), story: str("or a longer story text (25 words to ~3,000 characters)"), draft_id: str("or a script id from write_script"), ...confirmProp } } },
+  { name: "get_my_plan", title: "My Zyvo plan", scope: null, annotations: FREE_RO,
+    description: "Free. The user's Zyvo plan, credit balance and whether videos get the 2-second end card (\"Made with Zyvo AI · tryzyvo.com\"): on for Free and Starter, off for Pro and higher. The Studio kit asks this before the shot list.",
+    inputSchema: { type: "object", properties: {} } },
   { name: "check_progress", title: "Check a job", scope: null, annotations: FREE_RO,
     description: "Free. The state of a job (a script, a voice, a finish or a video): progress, and the links when it is done.",
     inputSchema: { type: "object", properties: { job_id: str("the job_id a paid tool returned") }, required: ["job_id"] } },
@@ -154,29 +158,49 @@ export function makeTools(deps) {
     if (!g.ok) throw new ToolError(g.code ?? "BUSY", g.message ?? "Zyvo is paused on our side for a little while. Nothing was charged.", { retry_after_sec: g.retryAfterSec ?? 600 });
   }
 
+  /** a price the user can't pay: plain words, the buy link, and no confirm token */
+  function shortQuote(tool, credits, balance, what) {
+    const have = Number(balance ?? 0);
+    return textResult(
+      `NOT ENOUGH CREDITS: this costs ${credits} credits, you have ${have}. ${what} Tell the user exactly that ("This costs ${credits} credits, you have ${have}.") and give them the Buy credits link: ${BUY_URL} . There is no confirm_token: it can't be started until they have the credits. Nothing has been charged.`,
+      { tool, price_credits: credits, price_usd: usd(credits), free: false, balance: have, enough: false, missing_credits: credits - have, buy_url: BUY_URL, what },
+    );
+  }
+
   /** the paid step: no token -> a quote; a token -> one transaction (token used, credits taken, job made) */
   async function paid(ctx, tool, input, { credits, free = false, what, kind = tool, jobInput }) {
     const { confirm_token, ...rest } = input ?? {};
     const hash = await inputHash(tool, rest);
     if (!confirm_token) {
       const u = await user(ctx.userId);
+      // not enough credits: say so plainly and give NO confirm token (confirming is impossible; nothing half-charged)
+      if (!free && Number(u.balance ?? 0) < credits) return shortQuote(tool, credits, u.balance, what);
       const token = randomToken("zyvo_qt_", 24);
       await store.insertQuote({ token_hash: await sha256Hex(token), user_id: ctx.userId, tool, input_hash: hash, credits, free, expires_at: new Date(now() + QUOTE.ttlSec * 1000).toISOString() });
       const price = free ? "FREE (the first finish on this account)" : `${credits} credits ($${usd(credits)})`;
-      const short = !free && Number(u.balance ?? 0) < credits;
       return textResult(
-        `PRICE: ${price}. ${what} Balance: ${u.balance ?? 0} credits.${short ? ` Not enough credits: top up at ${URLS.site}/pricing first.` : ""} Show the user this price. Call ${tool} again with the same inputs plus confirm_token ONLY after they say yes. The token works once, for 10 minutes. Nothing has been charged.`,
-        { tool, price_credits: free ? 0 : credits, price_usd: free ? 0 : usd(credits), free, balance: u.balance ?? 0, enough: !short, what, confirm_token: token, expires_in_sec: QUOTE.ttlSec },
+        `PRICE: ${price}. ${what} Balance: ${u.balance ?? 0} credits. Show the user this price. Call ${tool} again with the same inputs plus confirm_token ONLY after they say yes. The token works once, for 10 minutes. Nothing has been charged.`,
+        { tool, price_credits: free ? 0 : credits, price_usd: free ? 0 : usd(credits), free, balance: u.balance ?? 0, enough: true, what, confirm_token: token, expires_in_sec: QUOTE.ttlSec },
       );
     }
     if (!ctx.scopes.includes("spend")) throw new ToolError("SCOPE", "This connection may not spend credits. Connect again and allow spending.");
+    // the whole video's money is taken later, inside its task (the site's prepay): check the balance here, so a short
+    // account never gets a job that can only fail
+    if (kind === "video") {
+      const u = await user(ctx.userId);
+      const have = Number(u.balance ?? 0);
+      if (have < credits) throw new ToolError("CREDITS", `This costs ${credits} credits, you have ${have}. Buy credits: ${BUY_URL} . Nothing was charged.`, { credits, balance: have, buy_url: BUY_URL });
+    }
     try {
       // make_video_in_zyvo: the token is used up here, the money is taken by the site's own prepay in the task
       return await store.startPaid({ tokenHash: await sha256Hex(String(confirm_token)), userId: ctx.userId, tool, inputHash: hash, kind, job: jobInput, charge: kind !== "video" });
     } catch (e) {
       const m = String(e?.message ?? e);
       if (/QUOTE_INVALID/.test(m)) throw new ToolError("CONFIRM", "That confirm_token is used, expired, or for other inputs. Call again without it for a new price.");
-      if (/INSUFFICIENT_CREDITS/.test(m)) throw new ToolError("CREDITS", `You need ${credits} credits. Top up at ${URLS.site}/pricing. Nothing was charged.`, { credits });
+      if (/INSUFFICIENT_CREDITS/.test(m)) {
+        const have = Number((await user(ctx.userId).catch(() => ({})))?.balance ?? 0);
+        throw new ToolError("CREDITS", `This costs ${credits} credits, you have ${have}. Buy credits: ${BUY_URL} . Nothing was charged.`, { credits, balance: have, buy_url: BUY_URL });
+      }
       if (/FREE_USED/.test(m)) throw new ToolError("CONFIRM", "The free finish on this account is already used. Call again without confirm_token for the price.");
       throw e;
     }
@@ -300,6 +324,12 @@ export function makeTools(deps) {
     async finish_my_video(ctx, a) {
       let p = await project(ctx.userId, a.project_id);
       if (await store.activeJob(ctx.userId, p.id, ["voice", "finish"])) throw new ToolError("LIMIT", "A voice or finish for this project is already being made. Check with check_progress.");
+      // 0. can the user pay for it at all? Say so before they upload anything (the first finish is free)
+      const sec0 = secondsOfScript(p.script?.lines);
+      const credits0 = FINISH_CREDITS + (p.voice?.mp3 ? 0 : voiceCredits(sec0));
+      const u0 = await user(ctx.userId);
+      const free0 = Boolean(u0.emailConfirmed) && !(await store.freeFinishUsed(ctx.userId)) && (await store.freeFinishesToday(day())) < LIMITS.freeFinishPerDay;
+      if (!free0 && !a.confirm_token && Number(u0.balance ?? 0) < credits0) return shortQuote("finish_my_video", credits0, u0.balance, `Finish "${p.title}"${p.voice?.mp3 ? "" : " (with the narrator's voice)"}.`);
       // 1. the recording: an upload link first; the next call sees the file
       if (!p.recording?.path) {
         const pending = p.upload?.path ? await storage.exists(p.upload.path) : null;
@@ -327,7 +357,10 @@ export function makeTools(deps) {
       const what = `Finish "${p.title}": ${needVoice ? "the narrator's voice, " : ""}upright 9:16, fitted to the voice, captions, sound effects, music, -14 LUFS, plus a copy without music.`;
       if (!a.confirm_token) return await paid(ctx, "finish_my_video", input, { credits, free, what });
       await capCheck(ctx.userId, WORST_USD.finish + (needVoice ? WORST_USD.voice(sec) : 0));
-      const job = await paid(ctx, "finish_my_video", input, { credits, free, kind: "finish", jobInput: { project_id: p.id, recording: p.recording.path, need_voice: needVoice } });
+      // the end card (owner 2026-11-20): Free and Starter videos end with it, Pro and higher don't; decided here from
+      // the plan at the moment of paying (the worker never guesses)
+      const endCard = !canRemoveEndCard(u.plan);
+      const job = await paid(ctx, "finish_my_video", input, { credits, free, kind: "finish", jobInput: { project_id: p.id, recording: p.recording.path, need_voice: needVoice, end_card: endCard } });
       return textResult(`Finishing (usually 3-6 minutes${needVoice ? ", the voice first" : ""}). Check with check_progress; the finished video is also on the project's card in MCP Studio.`, jobView(job));
     },
 
@@ -372,6 +405,16 @@ export function makeTools(deps) {
       const j = await waitFor(job, p);
       if (j.status === "failed") return errorResult(new ToolError(j.error_code ?? "SERVER", `${j.error_message} Nothing was charged for the video (or it was given back).`));
       return textResult("The video is being made (usually 10-25 minutes). Check with check_progress; it also shows up on tryzyvo.com.", jobView(j));
+    },
+
+    async get_my_plan(ctx) {
+      const u = await user(ctx.userId);
+      const plan = String(u.plan ?? "free").toLowerCase().trim() || "free";
+      const endCard = !canRemoveEndCard(plan);
+      return textResult(
+        `Plan: ${plan}. Balance: ${u.balance ?? 0} credits. End card: ${endCard ? "ON (Free and Starter plans: every video ends with the 2-second card, the cast lined up + \"Made with Zyvo AI · tryzyvo.com\")" : "OFF (Pro and higher: no end card)"}.`,
+        { plan, balance: Number(u.balance ?? 0), end_card: endCard, paid_plan: canWrite(plan), buy_url: BUY_URL, plans_url: BUY_URL },
+      );
     },
 
     async check_progress(ctx, a) {

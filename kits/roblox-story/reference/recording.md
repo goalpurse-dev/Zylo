@@ -27,6 +27,12 @@
    `screen_capture` with the spot's position and its Target attribute, crop the centre 9:16 of the image, then
    `preview.restore()` at the end. Tile the stills (6 a row) with ffmpeg or any image tool, label each with
    "#K t0-t1 + the line's first words", and show the sheet.
+6. **Text check on the sheet.** Every number, label and sign in the stills reads upright and whole (not cut by the
+   frame, not two numbers on top of each other). Floating labels (BillboardGuis) are turned for the rolled camera by
+   the Play run itself (runtime/ZyvoCamera: it turns each one 90 degrees clockwise with width and height swapped), so
+   they look upright here in Edit and upright in the final video. Don't turn them by hand in the place (that would
+   turn them twice); a label that must not be turned gets `ZyvoNoTurn = true`. Sign text on a part (SurfaceGui)
+   turns with the world and needs nothing.
 
 ## The view: no phone emulator (the user clicks; guide them)
 
@@ -46,9 +52,17 @@ The phone emulator makes the viewport small and cuts it off. Instead the camera 
   60 fps, video quality High. Win+Alt+R starts and stops. Or OBS with a Window Capture of Studio and no audio sources.
   macOS: Cmd+Shift+5 > Options > Microphone: None; record the Studio window.
 - Recording the whole Studio window is fine: the crop script finds the viewport itself.
+- **Do not disturb first.** Before recording, ask the user to turn on Windows **Do not disturb** (Win+N > Do not
+  disturb, or Settings > System > Notifications > Do not disturb) or macOS Focus > Do Not Disturb, so no pop-up
+  (mail, chat, Claude's own notifications) lands in the recording.
 - Start recording, THEN say "ready". You start Play with `start_stop_play`. The run: ~3 s black, a half-second
-  MAGENTA flash (the sync marker), 1 s of black, the story, then 1.5 s of black. Don't move the mouse into the
-  viewport. Stop recording at the end, then stop Play (`start_stop_play`).
+  MAGENTA flash (the sync marker), 1 s of black, the story (with the end card when it's on), then 1.5 s of black.
+  Don't move the mouse into the viewport.
+- **Silent while Play runs.** Before starting Play, say everything you need to say (one line: "Recording starts now;
+  I'll be quiet until it ends."). Then start Play and wait silently in ONE foreground wait for the whole run:
+  lead-in + runtime + tail + 3 s (e.g. `Start-Sleep -Seconds 100` in PowerShell, `sleep 100` on Mac/Linux). No
+  background tasks, no timers, no polling, no Monitor, no scheduled wake-ups, no messages, no other tool calls until
+  the wait ends. Then stop Play (`start_stop_play`) and tell the user to stop recording.
 - The camera hides every Roblox UI it can (core UI, top bar, touch controls). The Roblox menu button in the
   viewport's corner can't be hidden; the 9:16 crop cuts it off, and no face or sign is framed in that corner.
 
@@ -58,7 +72,9 @@ The phone emulator makes the viewport small and cuts it off. Instead the camera 
   magenta marker, measures the viewport, crops, turns the picture upright, crops the 9:16 frame, scales to
   1080x1920 at 30 fps and trims it to start exactly at the voice's second 0 (marker + 1.0 s). With the voice it also
   writes `<out>_with_voice.mp4` for a quick check by ear and eye.
-- Check: the output lasts the script's runtime; take 4-6 frames from it and look at them.
+- Check: the output lasts the script's runtime (with the end card: + its 2 s); take 4-6 frames from it and look at
+  them. In those frames every number and sign reads upright (not lying on its side); if one is sideways, stop and
+  fix the place before anything else (it never fixes itself in post).
 - **The free captioned video (postable):** run
   `scripts/add_captions.sh <out.mp4> zyvo-project/<slug>/voice.mp3 <timings> zyvo-project/<slug>/final_free.mp4`,
   where `<timings>` is `words.json` when it exists (a Zyvo voice: exact), else `narration.txt` (the exact text the

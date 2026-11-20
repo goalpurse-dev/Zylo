@@ -4,7 +4,7 @@ import { LayoutTemplate, Loader2, MonitorPlay, Plug } from "lucide-react";
 import AuthModal from "../../components/AuthModal";
 import { useAuth } from "../../context/AuthContext";
 import { MockBanner } from "../../components/studio-kit/StudioKitUI";
-import { CARD, DISPLAY, FOCUS, SECONDARY, useDisplayFont, useStudioOpen } from "../../components/studio-kit/studioKitShared";
+import { DISPLAY, FOCUS, MCP_CARD, MCP_SECONDARY, useDisplayFont, useStudioOpen } from "../../components/studio-kit/studioKitShared";
 import { MCP_CONNECT_PATH, MCP_STUDIO_PATH, MCP_TEMPLATES_PATH } from "../../data/studioKit";
 import "../../components/studio-kit/studioKit.css";
 
@@ -28,18 +28,18 @@ export default function McpLayout() {
   return (
     <div className="min-h-full w-full bg-[#0B0D0F] pb-16">
       <MockBanner />
-      <div className="mx-auto w-full max-w-[1040px] px-4 pt-6 sm:px-6 sm:pt-10">
-        <header className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="text-[13px] font-black uppercase tracking-[0.16em] text-lime-300">Claude × Roblox Studio</p>
-            <h1 style={DISPLAY} className="mt-1 text-[48px] font-extrabold uppercase leading-[0.9] text-white sm:text-[64px]">MCP</h1>
+      <div className="mx-auto w-full max-w-[960px] px-4 pt-5 sm:px-6 sm:pt-6">
+        <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-baseline gap-2.5">
+            <h1 style={DISPLAY} className="text-[30px] font-extrabold uppercase leading-none text-white">MCP</h1>
+            <p className="text-[11.5px] font-black uppercase tracking-[0.14em] text-lime-300">Claude × Roblox Studio</p>
           </div>
           {open === "open" && (
-            <nav aria-label="MCP" className="grid grid-cols-3 rounded-2xl border border-white/10 bg-white/[0.04] p-1.5 md:min-w-[470px]" data-testid="mcp-tabs">
+            <nav aria-label="MCP" className="grid grid-cols-3 rounded-xl border border-white/10 bg-white/[0.04] p-1 md:min-w-[380px]" data-testid="mcp-tabs">
               {MCP_TABS.map(({ id, label, path, icon: Icon }) => (
                 <NavLink key={id} to={path} data-testid={`mcp-tab-${id}`}
-                  className={({ isActive }) => `flex min-h-12 items-center justify-center gap-1.5 rounded-xl px-2 text-[14.5px] font-black transition sm:text-[15.5px] ${isActive ? "bg-lime-300 text-[#11150D]" : "text-white/70 hover:bg-white/[0.06] hover:text-white"} ${FOCUS}`}>
-                  <Icon className="hidden h-4 w-4 shrink-0 sm:block" aria-hidden="true" /><span className="whitespace-nowrap">{label}</span>
+                  className={({ isActive }) => `flex min-h-9 items-center justify-center gap-1.5 rounded-lg px-2 text-[13.5px] font-bold transition ${isActive ? "bg-lime-300 font-black text-[#11150D]" : "text-white/70 hover:bg-white/[0.06] hover:text-white"} ${FOCUS}`}>
+                  <Icon className="hidden h-3.5 w-3.5 shrink-0 sm:block" aria-hidden="true" /><span className="whitespace-nowrap">{label}</span>
                 </NavLink>
               ))}
             </nav>
@@ -47,12 +47,12 @@ export default function McpLayout() {
         </header>
 
         {open === "loading" ? (
-          <div className="grid place-items-center py-20"><Loader2 className="h-6 w-6 animate-spin text-lime-300" aria-label="Loading" /></div>
+          <div className="grid place-items-center py-16"><Loader2 className="h-5 w-5 animate-spin text-lime-300" aria-label="Loading" /></div>
         ) : open === "closed" ? (
-          <div className={`${CARD} mt-8 max-w-[560px] p-6`}>
-            <p className="text-[18px] font-black text-white">Coming soon</p>
-            <p className="mt-2 text-[14.5px] leading-relaxed text-white/65">Zyvo's MCP tools for Claude are being tested before launch.{user ? " They aren't open for this account yet." : " Signed up already? Sign in to check."}</p>
-            {!user && <button type="button" className={`${SECONDARY} mt-4`} onClick={() => setSignIn(true)}>Sign in</button>}
+          <div className={`${MCP_CARD} mt-6 max-w-[520px] p-5`}>
+            <p className="text-[15px] font-bold text-white">Coming soon</p>
+            <p className="mt-1.5 text-[13.5px] leading-relaxed text-white/65">Zyvo's MCP tools for Claude are being tested before launch.{user ? " They aren't open for this account yet." : " Signed up already? Sign in to check."}</p>
+            {!user && <button type="button" className={`${MCP_SECONDARY} mt-3`} onClick={() => setSignIn(true)}>Sign in</button>}
           </div>
         ) : (
           <Outlet />

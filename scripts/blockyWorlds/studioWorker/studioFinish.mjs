@@ -19,7 +19,7 @@ import { loudness } from "../engine/audio/mix.mjs";
 import * as base from "../engine/audio/sfx.mjs";
 import * as epic from "../engine/audio/sfxEpic.mjs";
 import { costOf } from "../../../supabase/functions/_shared/blockyWorlds/llm.js";
-import { captionsAss, fitPlan, sidewaysBox, soundCues, visionProblem } from "./studioFinishPlan.mjs";
+import { captionsAss, END_CARD, endCardShot, fitPlan, sidewaysBox, soundCues, visionProblem } from "./studioFinishPlan.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 // the tracked copy (engine/assets is git-ignored and never reaches the worker image); the same file
@@ -140,13 +140,15 @@ function premix({ dir, voiceWav, bed, sfx, D, musicGain, thr, withMusic, out }) 
   if (withMusic) maps.push("-map", "[mds]", "-t", D.toFixed(3), "-c:a", "pcm_f32le", path.join(dir, "stem_music.wav"));
   ff(["-i", voiceWav, "-i", bed, "-i", sfx, "-filter_complex", g.join(";"), ...maps]);
 }
-function master(pre, out, D) {
+function master(pre, out, D, fadeOut = 0) {
   const m = ff(["-i", pre, "-af", "loudnorm=I=-14:TP=-2:LRA=11:print_format=json", "-f", "null", "-"]);
   const j = JSON.parse(m.slice(m.lastIndexOf("{"), m.lastIndexOf("}") + 1));
   const ln = `loudnorm=I=-14:TP=-2:LRA=11:measured_I=${j.input_i}:measured_TP=${j.input_tp}:measured_LRA=${j.input_lra}:measured_thresh=${j.input_thresh}:offset=${j.target_offset}:linear=true`;
+  // the end card: the music fades out over its last second
+  const fade = fadeOut > 0 ? `,afade=t=out:st=${Math.max(0, D - fadeOut).toFixed(3)}:d=${fadeOut.toFixed(3)}` : "";
   let trim = 0, res;
   for (let pass = 0; pass < 3; pass++) {
-    ff(["-i", pre, "-af", `${ln},volume=${trim}dB,aresample=48000,apad,atrim=0:${D.toFixed(3)}`, "-t", D.toFixed(3), "-c:a", "aac", "-b:a", "192k", out]);
+    ff(["-i", pre, "-af", `${ln},volume=${trim}dB,aresample=48000,apad,atrim=0:${D.toFixed(3)}${fade}`, "-t", D.toFixed(3), "-c:a", "aac", "-b:a", "192k", out]);
     res = loudness(out);
     if (res.truePeak <= -1.5) break;
     trim -= res.truePeak + 1.5 + 0.2;
@@ -155,17 +157,25 @@ function master(pre, out, D) {
 }
 
 // ---------------------------------------------------------------- the whole finish
-export async function finishStudio({ recording, voiceMp3, words, lines, shots = [], dir, anthropicKey, log = () => {}, stage = async () => {} }) {
+export async function finishStudio({ recording, voiceMp3, words, lines, shots = [], dir, anthropicKey, log = () => {}, stage = async () => {}, endCard = false }) {
   fs.mkdirSync(dir, { recursive: true });
   const notes = [];
-  // the voice (the project's Zyvo voice) and its length = the video's length
-  const voiceWav = path.join(dir, "voice.wav");
-  ff(["-i", voiceMp3, "-af", `aresample=${SR},aformat=sample_fmts=fltp:channel_layouts=stereo,acompressor=threshold=-20dB:ratio=3:attack=5:release=90:makeup=2`, "-c:a", "pcm_s16le", voiceWav]);
-  const voiceSec = probe(voiceWav)?.seconds ?? Number(spawnSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", voiceWav], { encoding: "utf8" }).stdout);
+  // the voice (the project's Zyvo voice) and its length = the story's length
+  const voiceWav0 = path.join(dir, "voice.wav");
+  ff(["-i", voiceMp3, "-af", `aresample=${SR},aformat=sample_fmts=fltp:channel_layouts=stereo,acompressor=threshold=-20dB:ratio=3:attack=5:release=90:makeup=2`, "-c:a", "pcm_s16le", voiceWav0]);
+  const voiceSec = probe(voiceWav0)?.seconds ?? Number(spawnSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", voiceWav0], { encoding: "utf8" }).stdout);
   const D = +(Math.max(voiceSec, (words.at(-1)?.end ?? 0) + 0.3)).toFixed(3);
+  // THE END CARD (Free / Starter): 2 s after the story. The kit records it as its last shot (kind "endcard": the cast
+  // lined up); a recording without that shot gets the last frame held, dimmed, with the same words.
+  const ecShot = endCard ? endCardShot(shots) : null;
+  const cardStart = ecShot ? +Math.max(D - 0.5, Number(ecShot.t0)).toFixed(3) : D;
+  const DT = endCard ? +(cardStart + (ecShot ? Math.max(1, Number(ecShot.t1) - Number(ecShot.t0)) : END_CARD.seconds)).toFixed(3) : D;
+  // the voice padded with silence under the card (the music and the mix run to the very end)
+  let voiceWav = voiceWav0;
+  if (DT > D) { voiceWav = path.join(dir, "voice_pad.wav"); ff(["-i", voiceWav0, "-af", `apad=whole_dur=${DT.toFixed(3)}`, "-c:a", "pcm_s16le", voiceWav]); }
 
   await stage("upright", 15);
-  const up = uprightFootage({ recording, voiceSec: D, dir });
+  const up = uprightFootage({ recording, voiceSec: ecShot ? DT : D, dir });
   notes.push(...up.notes);
   log(`footage ${up.seconds.toFixed(1)} s (${up.landscape ? "landscape, marker at " + up.marker?.toFixed(2) + " s" : "upright"})`);
 
@@ -176,36 +186,43 @@ export async function finishStudio({ recording, voiceMp3, words, lines, shots = 
   log(`look: ${look.verdict ? JSON.stringify(look.verdict) : `skipped (${look.skipped})`} $${look.usd}`);
 
   await stage("fitting", 40);
-  const fit = fitPlan(up.seconds, D);
+  // with the kit's end card shot the recording holds story + card: fitted to the whole; else the story, then the card
+  const fitTo = ecShot ? DT : D;
+  const fit = fitPlan(up.seconds, fitTo);
   if (fit.note) notes.push(fit.note);
   const fitted = path.join(dir, "footage_fit.mp4");
-  ff(["-i", up.file, "-an", "-vf", `${fit.filter ? `${fit.filter},` : ""}fps=30,format=yuv420p`, "-t", D.toFixed(3), "-c:v", "libx264", "-preset", "veryfast", "-crf", "16", fitted]);
+  const held = endCard && !ecShot
+    ? `,tpad=stop_mode=clone:stop_duration=${(DT - D + 0.1).toFixed(3)},eq=brightness=-0.2:saturation=0.75:enable='gte(t,${D.toFixed(3)})',boxblur=10:enable='gte(t,${D.toFixed(3)})'`
+    : "";
+  ff(["-i", up.file, "-an", "-vf", `${fit.filter ? `${fit.filter},` : ""}fps=30${held},format=yuv420p`, "-t", DT.toFixed(3), "-c:v", "libx264", "-preset", "veryfast", "-crf", "16", fitted]);
+  if (endCard && !ecShot) notes.push("This recording has no end card shot (the kit's cast line-up): the end card uses the last frame.");
 
   await stage("sound", 55);
   const { cues, missing } = soundCues({ words, lines, shots });
   const sfx = path.join(dir, "sfx.wav");
-  const stem = sfxStem({ cues, voiceWav, D, file: sfx });
+  const stem = sfxStem({ cues, voiceWav: voiceWav0, D: DT, file: sfx });
   const bed = path.join(dir, "bed.wav");
-  await renderBed({ option: "A", seconds: D, out: bed });
-  const vL = loudness(voiceWav).lufs, UNDER = 14;
+  await renderBed({ option: "A", seconds: DT, out: bed });
+  const vL = loudness(voiceWav0).lufs, UNDER = 14;
   let musicGain = vL - UNDER + 3 - loudness(bed).lufs;
   const thr = Math.min(1, Math.max(0.001, 10 ** ((stem.vActive - 10) / 20)));
   const preM = path.join(dir, "pre_music.wav"), preN = path.join(dir, "pre_nomusic.wav");
-  premix({ dir, voiceWav, bed, sfx, D, musicGain, thr, withMusic: true, out: preM });
+  premix({ dir, voiceWav, bed, sfx, D: DT, musicGain, thr, withMusic: true, out: preM });
   let under = vL - loudness(path.join(dir, "stem_music.wav")).lufs;
-  if (Math.abs(under - UNDER) > 0.5) { musicGain += under - UNDER; premix({ dir, voiceWav, bed, sfx, D, musicGain, thr, withMusic: true, out: preM }); under = vL - loudness(path.join(dir, "stem_music.wav")).lufs; }
-  premix({ dir, voiceWav, bed, sfx, D, musicGain, thr, withMusic: false, out: preN });
+  if (Math.abs(under - UNDER) > 0.5) { musicGain += under - UNDER; premix({ dir, voiceWav, bed, sfx, D: DT, musicGain, thr, withMusic: true, out: preM }); under = vL - loudness(path.join(dir, "stem_music.wav")).lufs; }
+  premix({ dir, voiceWav, bed, sfx, D: DT, musicGain, thr, withMusic: false, out: preN });
   const mixM = path.join(dir, "mix_music.m4a"), mixN = path.join(dir, "mix_nomusic.m4a");
-  const mM = master(preM, mixM, D), mN = master(preN, mixN, D);
+  const fadeOut = DT > D ? Math.min(1, DT - D) : 0;
+  const mM = master(preM, mixM, DT, fadeOut), mN = master(preN, mixN, DT, fadeOut);
 
   await stage("captions", 75);
-  const cap = captionsAss({ words, lines, shots, duration: D });
+  const cap = captionsAss({ words, lines, shots, duration: DT, endCard: endCard ? { start: cardStart, end: DT } : null });
   fs.writeFileSync(path.join(dir, "captions.ass"), cap.ass);
   fs.mkdirSync(path.join(dir, "fonts"), { recursive: true });
   fs.copyFileSync(FONT, path.join(dir, "fonts", "LilitaOne-Regular.ttf"));
   const vf = "subtitles=captions.ass:fontsdir=fonts,format=yuv420p";
   const final = path.join(dir, "final.mp4"), noMusic = path.join(dir, "final_nomusic.mp4");
-  ff(["-i", "footage_fit.mp4", "-i", "mix_music.m4a", "-vf", vf, "-map", "0:v", "-map", "1:a", "-t", D.toFixed(3), "-c:v", "libx264", "-preset", "medium", "-crf", "19", "-r", "30", "-c:a", "copy", "-movflags", "+faststart", "final.mp4"], { cwd: dir });
+  ff(["-i", "footage_fit.mp4", "-i", "mix_music.m4a", "-vf", vf, "-map", "0:v", "-map", "1:a", "-t", DT.toFixed(3), "-c:v", "libx264", "-preset", "medium", "-crf", "19", "-r", "30", "-c:a", "copy", "-movflags", "+faststart", "final.mp4"], { cwd: dir });
   await stage("finishing", 90);
   ff(["-i", "final.mp4", "-i", "mix_nomusic.m4a", "-map", "0:v", "-map", "1:a", "-c:v", "copy", "-c:a", "copy", "-movflags", "+faststart", "final_nomusic.mp4"], { cwd: dir });
   const web = path.join(dir, "web.mp4"), poster = path.join(dir, "poster.jpg");
@@ -213,7 +230,7 @@ export async function finishStudio({ recording, voiceMp3, words, lines, shots = 
   ff(["-ss", Math.min(1.5, D / 2).toFixed(2), "-i", final, "-frames:v", "1", "-q:v", "3", poster]);
   if (missing.length) log(`sound words with no sound: ${missing.join(", ")}`);
   return {
-    files: { final, noMusic, web, poster }, seconds: D, notes,
+    files: { final, noMusic, web, poster }, seconds: DT, notes,
     stats: { captions: cap.captions, speakers: cap.speakers, sfxCues: stem.placed.length, musicUnderVoiceLu: +under.toFixed(1), lufs: mM.lufs, truePeak: mM.truePeak, noMusicLufs: mN.lufs, fit: fit.kind, landscape: up.landscape },
     costUsd: +look.usd.toFixed(5),
   };

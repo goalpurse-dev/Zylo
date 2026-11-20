@@ -8,6 +8,12 @@ The easiest way: the **Claude desktop app** (claude.ai/download) > the **Code** 
 for the project, e.g. `Documents\ZyvoStudio`. The terminal `claude` command works the same. Claude Code needs a Claude
 plan that includes it; the kit itself is free.
 
+**The Zyvo connector (optional) in Claude Code:** if the user added Zyvo in the Claude app (Settings > Connectors >
+Add custom connector > `https://mcp.tryzyvo.com/mcp`), it ALREADY works here: `/mcp` lists it as **claude.ai Zyvo**
+(its tools still start with `mcp__zyvo__` or `mcp__claude_ai_Zyvo__`). So most users only need the Claude app way.
+The terminal way (`claude mcp add --transport http --scope user zyvo https://mcp.tryzyvo.com/mcp`) is the
+alternative. Never both: if `/mcp` shows "claude.ai Zyvo" AND "zyvo", suggest removing one (`claude mcp remove zyvo`).
+
 ## 1. The system check (run the script, read the result to the user plainly)
 
 - Windows: `powershell -ExecutionPolicy Bypass -File <kit>/scripts/system_check.ps1`

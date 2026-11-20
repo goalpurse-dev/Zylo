@@ -55,6 +55,29 @@ The timing source comes from the voice step (`reference/voice.md`), best first:
 - `spot`: a camera spot (Part in `workspace.ZyvoStory.Spots`); `spotEnd` (optional) glides to a second spot.
 - `lens`: mm (24 mm sensor height): the director turns it into Roblox's FieldOfView.
 - `actions` (optional, times inside the shot): `walk` (to a spot / mark name), `face` (a name), `jump`, `show` /
-  `hide` (an instance under `workspace.ZyvoStory`, for the rule object's changes).
+  `hide` (an instance under `workspace.ZyvoStory`, for the rule object's changes). In Luau (`luau/shotlist.luau`)
+  the key is written `["do"] = "show"` (`do` is a reserved word; the shot list writes it that way itself).
+- **Show / hide is per named thing.** A part is visible only while nothing it sits in is hidden. Showing a whole
+  statue does NOT show a plate inside it that is in `startHidden` or was hidden: that plate needs its own `show`.
+  So a number that changes (40 → 41) is two plates inside the statue: `"num41"` in `startHidden`, then at the change
+  `hide num40` + `show num41`.
 - Before the Play run, check the file: every shot has a spot that exists, the times touch, the shares above hold.
   Fix what fails before recording.
+
+## The rule object over a head, hollow sets
+
+- A floating number, a plate or a thing on a head belongs INSIDE that character's statue model (or carries the
+  attribute `RuleFor = "<statue name>"`); its parts carry `Rule = true`. The framer then keeps it inside the frame
+  (a close-up pulls back or sits the face lower so the number fits) and fails a shot where it's cut.
+- A set you film from INSIDE (a bus, a room, a shop, a car) that is one big mesh: set `Hollow = true` on its model or
+  folder. The framer then tests its real shape instead of its bounding box (otherwise every camera inside it "is
+  inside a part"). A mesh with a character's head inside its box counts as hollow by itself.
+
+## The end card (Free and Starter plans)
+
+When the end card is ON (SKILL.md step 8: the plan from `get_my_plan`; Zyvo not connected = ON), the LAST shot is the
+end card: `{ "id": <n>, "kind": "endcard", "location": "endcard", "spot": "endcard", "size": "wide", "lens": 32,
+"move": "push_slow", "t0": <the story's last t1>, "t1": <t0 + 2.0>, "actions": [] }`. Build its set first with
+`luau/endcard.luau` (the cast lined up on a dark stage, the top third empty). The words "Made with Zyvo AI ·
+tryzyvo.com" are NOT built in Studio: `scripts/add_captions.sh` (free) or Zyvo's finish draws them. The runtime of
+the Play run then includes these 2 s. Off (Pro and higher): no end card shot.
