@@ -64,10 +64,21 @@ export function captionYAt(shots, t) {
   return Number.isFinite(y) ? Math.min(CAPTION.maxY, Math.max(CAPTION.minY, y)) : CAPTION.defaultY;
 }
 
-/** the ASS caption file: one word at a time, a small pop, the speaker's colour, sized to fit the 9:16 width */
-export function captionsAss({ words, lines, shots = [], duration }) {
+/** THE END CARD (owner 2026-11-20): Free and Starter videos end with 2 s of the cast lined up (the kit's endcard
+ *  shot) and these words in the top third, white + Zyvo lime (#BEF264), in the captions' font */
+export const END_CARD = Object.freeze({ seconds: 2.0, line1: "Made with Zyvo AI", line2: "tryzyvo.com", y1: 400, y2: 540 });
+/** the end card shot of the kit's shot plan (kind "endcard"), or null */
+export const endCardShot = (shots) => (shots ?? []).find((s) => s?.kind === "endcard" && Number(s.t1) > Number(s.t0)) ?? null;
+
+/** the ASS caption file: one word at a time, a small pop, the speaker's colour, sized to fit the 9:16 width; with
+ *  endCard { start, end } also the end card's words */
+export function captionsAss({ words, lines, shots = [], duration, endCard = null }) {
   const sp = speakersOf(lines, words.length);
-  let ass = `[Script Info]\nScriptType: v4.00+\nPlayResX: 1080\nPlayResY: 1920\nWrapStyle: 2\nScaledBorderAndShadow: yes\n\n[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\nStyle: Cap,${CAPTION.font},${CAPTION.size},&H00FFFFFF,&H00FFFFFF,&H00120A0B,&H73000000,0,0,0,0,100,100,0,0,1,12,7,5,0,0,0,1\n\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n`;
+  let ass = `[Script Info]\nScriptType: v4.00+\nPlayResX: 1080\nPlayResY: 1920\nWrapStyle: 2\nScaledBorderAndShadow: yes\n\n[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\nStyle: Cap,${CAPTION.font},${CAPTION.size},&H00FFFFFF,&H00FFFFFF,&H00120A0B,&H73000000,0,0,0,0,100,100,0,0,1,12,7,5,0,0,0,1\nStyle: EndBig,${CAPTION.font},118,&H00FFFFFF,&H00FFFFFF,&H000F0D0B,&H73000000,0,0,0,0,100,100,0,0,1,10,6,5,0,0,0,1\nStyle: EndUrl,${CAPTION.font},92,&H0064F2BE,&H0064F2BE,&H000F0D0B,&H73000000,0,0,0,0,100,100,0,0,1,9,5,5,0,0,0,1\n\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n`;
+  if (endCard && endCard.end > endCard.start) {
+    ass += `Dialogue: 1,${tc(endCard.start)},${tc(endCard.end + 0.5)},EndBig,,0,0,0,,{\\pos(540,${END_CARD.y1})\\fad(250,0)\\fscx80\\fscy80\\t(0,180,\\fscx100\\fscy100)}${END_CARD.line1}\n`;
+    ass += `Dialogue: 1,${tc(endCard.start + 0.15)},${tc(endCard.end + 0.5)},EndUrl,,0,0,0,,{\\pos(540,${END_CARD.y2})\\fad(250,0)}${END_CARD.line2}\n`;
+  }
   let n = 0;
   for (let i = 0; i < words.length; i++) {
     const text = escapeAss(captionWord(words[i].word));
@@ -76,6 +87,7 @@ export function captionsAss({ words, lines, shots = [], duration }) {
     let end = Math.max(words[i].end, start + 0.12) + 0.25;
     if (next && next.start < end) end = next.start;
     if (duration && end > duration) end = duration;
+    if (endCard && end > endCard.start) end = endCard.start; // no word over the end card
     if (end <= start) continue;
     const y = Math.round(captionYAt(shots, start) * 1920);
     const estW = text.length * 80 + 24; // Lilita One ~0.57 em a letter at 140 px

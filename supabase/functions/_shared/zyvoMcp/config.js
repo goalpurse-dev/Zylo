@@ -83,8 +83,10 @@ export const UPLOAD = Object.freeze({
 /** the free Studio Kit's zip in the private zyvo-studio bucket (scripts/studioKit/packKit.mjs builds it; phase 3 uploads it) */
 export const KIT = Object.freeze({
   // 1.1.0 (owner 2026-11-20): the skill is "roblox-story" (the /roblox-story command; the zip's folder is roblox-story/)
-  version: "1.1.0",
-  path: "kit/roblox-story-1.1.0.zip",
+  // 1.2.0 (owner's real-user test, 2026-11-20): upright floating text, ["do"], walk actions, show respects hidden plates,
+  // hollow sets, real close-ups, show_build, the end card, tone + spooky lane, keep the user's idea, silent Play run
+  version: "1.2.0",
+  path: "kit/roblox-story-1.2.0.zip",
   fileName: "roblox-story.zip",
   linkTtlSec: 600,
 });

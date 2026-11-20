@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 # Zyvo Studio Kit: the FREE finish. The upright 9:16 video + the voice -> a postable video with simple white
 # one-word captions (one word on screen at a time, timed to the voice).
-#   bash add_captions.sh <video_9x16.mp4> <voice.mp3> <words.json | narration.txt> <out.mp4>
+#   bash add_captions.sh <video_9x16.mp4> <voice.mp3> <words.json | narration.txt> <out.mp4> [end card seconds]
+# End card (Free and Starter plans, or Zyvo not connected; SKILL.md step 8): give its length (2). The video then runs
+# to its own end (the end card shot after the voice) and its last <seconds> get the words "Made with Zyvo AI" and
+# "tryzyvo.com" in the top third, over the cast line-up; the voice is padded with silence under it.
 # Timings:
 #   words.json      exact (a Zyvo voice: [{ "word": "...", "start": 0.12, "end": 0.40 }, ...], seconds)
 #   narration.txt   estimated: the text's words are lined up with the pauses ffmpeg hears in the voice (each
@@ -12,13 +15,14 @@
 # coloured captions per speaker, sound effects and a mixed music bed.
 set -euo pipefail
 export LC_ALL=C
-VIDEO="${1:?video}"; VOICE="${2:?voice}"; TEXT="${3:?words.json or narration.txt}"; OUT="${4:?out.mp4}"
+VIDEO="${1:?video}"; VOICE="${2:?voice}"; TEXT="${3:?words.json or narration.txt}"; OUT="${4:?out.mp4}"; ENDCARD="${5:-0}"
 for f in "$VIDEO" "$VOICE" "$TEXT"; do [ -f "$f" ] || { echo "not found: $f" >&2; exit 2; }; done
 command -v ffmpeg >/dev/null || { echo "ffmpeg is missing (the kit's setup step installs it)" >&2; exit 3; }
 # a relative temp folder: Windows ffmpeg can't open Git Bash's /tmp, and a relative path needs no escaping in a filter
 TMP=".zyvo_captions_$$"; mkdir -p "$TMP"; trap 'rm -rf "./.zyvo_captions_$$"' EXIT
 
 DUR="$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$VOICE")"
+VDUR="$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$VIDEO")"
 
 # ---------------------------------------------------------------- 1. word timings -> $TMP/words.tsv (start end word)
 case "$TEXT" in
@@ -102,7 +106,7 @@ N="$(wc -l < "$TMP/words.tsv" | tr -d ' ')"
 [ "$N" -gt 0 ] || { echo "no words found in $TEXT" >&2; exit 4; }
 
 # ---------------------------------------------------------------- 2. the captions (ASS): white, bold, black outline
-awk -F '\t' '
+awk -F '\t' -v ecs="$ENDCARD" -v ec1="$VDUR" '
 	function ts(x,   h, mi, s) { if (x < 0) x = 0; h = int(x / 3600); mi = int((x - h * 3600) / 60); s = x - h * 3600 - mi * 60; return sprintf("%d:%02d:%05.2f", h, mi, s) }
 	function clean(w) { gsub(/[{}\\]/, "", w); gsub(/^(["\047(\[]|“|‘)+/, "", w); gsub(/(["\047)\],.;:]|”|’)+$/, "", w); return w }
 	BEGIN {
@@ -110,10 +114,17 @@ awk -F '\t' '
 		print "[V4+ Styles]"
 		print "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding"
 		print "Style: Word,Arial,128,&H00FFFFFF,&H00FFFFFF,&H00000000,&H64000000,1,0,0,0,100,100,0,0,1,8,3,2,60,60,540,1"
+		# the end card words (Zyvo: white + lime #BEF264, dark outline)
+		print "Style: EndBig,Arial,104,&H00FFFFFF,&H00FFFFFF,&H000F0D0B,&H64000000,1,0,0,0,100,100,0,0,1,7,3,8,60,60,330,1"
+		print "Style: EndUrl,Arial,76,&H0064F2BE,&H0064F2BE,&H000F0D0B,&H64000000,1,0,0,0,100,100,0,0,1,6,3,8,60,60,470,1"
 		print ""; print "[Events]"; print "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text"
 	}
 	{ n++; s[n] = $1 + 0; e[n] = $2 + 0; w[n] = clean($3) }
 	END {
+		if (ecs > 0 && ec1 > ecs) {
+			printf "Dialogue: 1,%s,%s,EndBig,,0,0,0,,{\\fad(250,0)}Made with Zyvo AI\n", ts(ec1 - ecs), ts(ec1 + 1)
+			printf "Dialogue: 1,%s,%s,EndUrl,,0,0,0,,{\\fad(250,0)}tryzyvo.com\n", ts(ec1 - ecs + 0.15), ts(ec1 + 1)
+		}
 		for (i = 1; i <= n; i++) {
 			if (w[i] == "") continue
 			# on screen until the next word starts (a short hold before a pause, never over the next word)
@@ -124,8 +135,17 @@ awk -F '\t' '
 	}' "$TMP/words.tsv" > "$TMP/captions.ass"
 
 # ---------------------------------------------------------------- 3. burn them in, with the voice
-ffmpeg -v error -y -i "$VIDEO" -i "$VOICE" -map 0:v:0 -map 1:a:0 \
-	-vf "subtitles=$TMP/captions.ass" \
-	-c:v libx264 -preset medium -crf 18 -pix_fmt yuv420p -c:a aac -b:a 192k -shortest -movflags +faststart "$OUT"
+if awk -v e="$ENDCARD" 'BEGIN { exit !(e > 0) }'; then
+	# the end card: the video's full length (story + card); the voice padded with silence to it
+	ffmpeg -v error -y -i "$VIDEO" -i "$VOICE" -map 0:v:0 -map 1:a:0 \
+		-vf "subtitles=$TMP/captions.ass" -af "apad" -t "$VDUR" \
+		-c:v libx264 -preset medium -crf 18 -pix_fmt yuv420p -c:a aac -b:a 192k -movflags +faststart "$OUT"
+	CARD=", end card the last ${ENDCARD}s"
+else
+	ffmpeg -v error -y -i "$VIDEO" -i "$VOICE" -map 0:v:0 -map 1:a:0 \
+		-vf "subtitles=$TMP/captions.ass" \
+		-c:v libx264 -preset medium -crf 18 -pix_fmt yuv420p -c:a aac -b:a 192k -shortest -movflags +faststart "$OUT"
+	CARD=""
+fi
 cp "$TMP/words.tsv" "${OUT%.mp4}_captions.tsv"
-echo "$N words, timings $MODE -> $OUT (word timings in ${OUT%.mp4}_captions.tsv)"
+echo "$N words, timings $MODE$CARD -> $OUT (word timings in ${OUT%.mp4}_captions.tsv)"

@@ -8,6 +8,14 @@ export const FOCUS = "focus-visible:outline-none focus-visible:ring-2 focus-visi
 export const PRIMARY = `inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-lime-300 px-5 py-2.5 text-[15px] font-black text-[#11150D] transition hover:bg-lime-200 disabled:cursor-not-allowed disabled:opacity-50 ${FOCUS}`;
 export const SECONDARY = `inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/[0.05] px-4 py-2.5 text-[14px] font-bold text-white transition hover:border-white/35 hover:bg-white/[0.09] disabled:cursor-not-allowed disabled:opacity-50 ${FOCUS}`;
 export const CARD = "rounded-2xl border border-white/10 bg-white/[0.03]";
+// The MCP section (/workspace/mcp/*) is sized like the rest of the dashboard (owner 2026-11-20, item 15): 40px buttons,
+// 14px text, display headings near the dashboard's 22px page titles. The landing section + consent screen keep the above.
+export const MCP_PRIMARY = `inline-flex min-h-10 items-center justify-center gap-1.5 rounded-xl bg-lime-300 px-4 py-2 text-[14px] font-black text-[#11150D] transition hover:bg-lime-200 disabled:cursor-not-allowed disabled:opacity-50 ${FOCUS}`;
+export const MCP_SECONDARY = `inline-flex min-h-10 items-center justify-center gap-1.5 rounded-xl border border-white/15 bg-white/[0.04] px-3.5 py-2 text-[13.5px] font-bold text-white transition hover:border-white/30 hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-50 ${FOCUS}`;
+export const MCP_CARD = "rounded-xl border border-white/10 bg-white/[0.03]";
+/** page title of a tab (with style={DISPLAY}) and a section title inside it */
+export const MCP_H2 = "text-[26px] font-extrabold uppercase leading-none text-white sm:text-[28px]";
+export const MCP_H3 = "text-[20px] font-extrabold uppercase leading-none text-white";
 
 /** The Barlow Condensed headings (the landing pages load the same stylesheet). */
 export function useDisplayFont() {

@@ -75,6 +75,35 @@ marker.ZIndex = 2
 marker.Parent = gui
 gui.Parent = player:WaitForChild("PlayerGui")
 
+-- 3b. UPRIGHT FLOATING TEXT. A BillboardGui is drawn flat on the screen, and the screen is rolled 90 degrees (ROLL):
+--     make_vertical turns the recording 90 degrees counterclockwise, so a label drawn normally ends up lying on its
+--     side in the final video. So here, in Play only, every BillboardGui in the story is turned 90 degrees clockwise
+--     with its width and height swapped: upright in the final video, the same size as in Edit (the contact sheet's
+--     stills, taken in Edit without the roll, show it as it will look). SurfaceGuis (sign text on a part) turn with the
+--     world and need nothing. ZyvoNoTurn = true on a billboard leaves it alone.
+local function sizeOf(u) return (u.Scale ~= 0) and u.Scale or u.Offset end
+local function turnBillboard(g)
+	if ROLL == 0 or not g:IsA("BillboardGui") or g:GetAttribute("ZyvoTurned") or g:GetAttribute("ZyvoNoTurn") then return end
+	g:SetAttribute("ZyvoTurned", true)
+	local s = g.Size
+	local w, h = sizeOf(s.X), sizeOf(s.Y)
+	if w <= 0 or h <= 0 then return end
+	g.Size = UDim2.new(s.Y.Scale, s.Y.Offset, s.X.Scale, s.X.Offset)
+	-- the old content in a holder the old shape, turned about the centre: it fills the swapped box exactly
+	local holder = Instance.new("Frame")
+	holder.Name = "ZyvoUpright"
+	holder.BackgroundTransparency = 1
+	holder.BorderSizePixel = 0
+	holder.AnchorPoint = Vector2.new(0.5, 0.5)
+	holder.Position = UDim2.fromScale(0.5, 0.5)
+	holder.Size = UDim2.fromScale(w / h, h / w)
+	holder.Rotation = ROLL
+	for _, c in ipairs(g:GetChildren()) do c.Parent = holder end
+	holder.Parent = g
+end
+for _, d in ipairs(story:GetDescendants()) do pcall(turnBillboard, d) end
+story.DescendantAdded:Connect(function(d) pcall(turnBillboard, d) end)
+
 -- 4. the camera maths
 local cam = workspace.CurrentCamera
 local focus = Lighting:FindFirstChild("ZyvoFocus")

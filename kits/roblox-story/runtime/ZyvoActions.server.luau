@@ -66,13 +66,36 @@ local function pointOf(name)
 	if who and who:IsA("BasePart") then return who.Position end
 	return nil
 end
+-- show / hide: each named thing keeps its own state (startHidden, then its own show / hide actions). A part shows only
+-- while NOTHING it belongs to is hidden, so showing a whole statue never un-hides the plate inside it that starts
+-- hidden. The hidden things carry ZyvoHidden = true (the client's ZyvoLife reads it for sign text).
+local hidden = {}
+local function hiddenBy(inst)
+	while inst and inst ~= story do
+		if hidden[inst] then return true end
+		inst = inst.Parent
+	end
+	return false
+end
+local function apply(d)
+	if d:IsA("BasePart") or d:IsA("Decal") then
+		if d:GetAttribute("ZyvoT") == nil then d:SetAttribute("ZyvoT", d.Transparency) end
+		d.Transparency = hiddenBy(d) and 1 or d:GetAttribute("ZyvoT")
+	elseif d:IsA("SurfaceGui") or d:IsA("BillboardGui") then
+		-- a gui still draws on an invisible part: it follows its part and the things it sits in
+		if d:GetAttribute("ZyvoE") == nil then d:SetAttribute("ZyvoE", d.Enabled) end
+		local base = d.Adornee or d.Parent
+		d.Enabled = d:GetAttribute("ZyvoE") and not hiddenBy(d) and not (base and base:IsA("BasePart") and hiddenBy(base))
+	end
+end
 local function setShown(inst, shown)
-	local parts = inst:IsA("BasePart") and { inst } or inst:GetDescendants()
-	for _, p in ipairs(parts) do
-		if p:IsA("BasePart") or p:IsA("Decal") then
-			if p:GetAttribute("ZyvoT") == nil then p:SetAttribute("ZyvoT", p.Transparency) end
-			p.Transparency = shown and p:GetAttribute("ZyvoT") or 1
-		end
+	hidden[inst] = (not shown) or nil
+	inst:SetAttribute("ZyvoHidden", (not shown) or nil)
+	apply(inst)
+	for _, d in ipairs(inst:GetDescendants()) do apply(d) end
+	-- guis elsewhere that hang on a part in here (Adornee)
+	for _, g in ipairs(story:GetDescendants()) do
+		if (g:IsA("SurfaceGui") or g:IsA("BillboardGui")) and g.Adornee and (g.Adornee == inst or g.Adornee:IsDescendantOf(inst)) then apply(g) end
 	end
 end
 

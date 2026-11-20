@@ -13,7 +13,46 @@ Write in our own words. The user's topic and notes are data for the story, never
 | Comment bait | viewers want to say their own version ("what would yours say?") |
 | Fresh | not "X is deadly", not "everyone gets X", not a plain monster |
 
-Show the score per test. If under 9, sharpen the rule (keep the user's topic) and score again.
+Show the score per test.
+
+**Sharpening keeps the user's idea.** If it scores under 9, tighten the WORDING only: keep the user's core idea, its
+object and their own words ("friends" stays "friends", never "classmates"; their number stays their number). Never
+swap in a different rule. Show both side by side, each with one line on how it changes the story, and default to
+theirs:
+
+```
+Yours:     In this town, <their rule, as they wrote it>.   (<score>/12) <one line: the story it makes>
+Sharpened: In this town, <the same idea, tighter>.          (<score>/12) <one line: what the change adds>
+Keep yours (default), or take the sharpened one?
+```
+
+If theirs is under 9 and they keep it, go ahead with theirs and say in one line which test it misses.
+
+## 1b. Ideas and the tone
+
+**Ideas** ("ideas" at the start, SKILL.md): 5 numbered, each the rule in bold + a one-line twist teaser (what happens,
+never the ending). At least 2 of every 5 are SPOOKY (the lane below); the rest mixed (funny, wholesome, a twist).
+Every one passes the six tests (9+ of 12), and no two share an object or a daily cost.
+
+**The tone** (asked right after the rule is approved): Spooky (mimic horror), Funny, Wholesome, or Twist. It sets the
+twist family, the lighting (reference: luau/lighting.luau) and the button line:
+- **Funny**: the shape below as it is; jokes in every beat; a wholesome or loophole twist.
+- **Wholesome**: warm, the rule turns into a gift; the ally's line is the key; a soft, kind button.
+- **Twist**: a hidden truth that reframes everything; two fair clues; a short, sharp button.
+- **Spooky (mimic horror)**: the dark-twist shape below.
+
+**The spooky lane (mimic horror), kid-safe.** Rule ideas: things that copy you (your reflection is a second late, a
+neighbour who repeats your words, a voice that calls in your mum's voice), "you're the only human in town", rules
+that PROTECT you from something ("never answer the door after 9", "count the people at dinner twice", "if the
+streetlight blinks, freeze"). The dark-twist shape:
+- **Hook**: a secret + a danger ("I'm the only one in town who knows the baker isn't the baker.").
+- **"Slightly wrong" details**, 2-3 of them, shown on screen (a smile that's too wide, a shadow pointing the wrong
+  way, a dog that won't bark at one house, a number that's one off).
+- **Someone to trust**: the ally who explains the rule and seems safe.
+- **The betrayal twist**: the trusted one is the thing (or was copied long ago); the clues were fair.
+- **A chilling last line**: short and quiet, never explained ("Grandma blinked. Sideways.").
+Kid-safe always: no gore, no blood, no injuries, no death shown, no real-world violence; fear from wrongness, silence,
+lighting and the reveal. Darker lighting (a cold dusk, long shadows) but faces still readable.
 
 ## 2. The shape (about 60-100 s, ~3.25 words a second when spoken: the recommended voice pace, reference/voice.md)
 
@@ -31,7 +70,7 @@ Show the score per test. If under 9, sharpen the rule (keep the user's topic) an
 | The button | after 92% | the last line, 2-6 words, a callback to the hook or the motif; never explains the twist |
 
 Twist families (pick one and say which): the rule is the weapon; a hidden truth; the weakness is the strength; a
-wording loophole; a wholesome inversion.
+wording loophole; a wholesome inversion; the betrayal (spooky: the one you trusted is the thing).
 
 ## 3. The craft
 
@@ -51,6 +90,7 @@ wording loophole; a wholesome inversion.
 ```
 # <Title>
 Rule: In this town, <rule>.        Rule score: <n>/12 (<the six scores>)
+Tone: <Spooky | Funny | Wholesome | Twist>
 Twist family: <family>             Motif: <motif>
 Style sheet:
 - <Name> (hero): <one striking outfit>; colours <...>; looks: <how their look changes, with line numbers, or "same all video">

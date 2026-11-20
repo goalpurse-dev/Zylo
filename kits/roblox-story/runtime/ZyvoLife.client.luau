@@ -10,11 +10,21 @@ local cast = workspace:WaitForChild("ZyvoStory"):WaitForChild("Cast")
 task.wait(0.5)
 
 -- 0. sign text follows its board: the kit's hide only sets Transparency, and a SurfaceGui still draws on an invisible
---    part, so a SurfaceGui tagged ZyvoFollowPart switches off while its part is hidden
-for _, g in ipairs(workspace.ZyvoStory:GetDescendants()) do
+--    part, so a SurfaceGui tagged ZyvoFollowPart switches off while its part is hidden (the actions script also
+--    switches guis; this keeps a tagged one in step on the client), and never shows while something it sits in is
+--    hidden (ZyvoHidden, set by runtime/ZyvoActions)
+local storyRoot = workspace.ZyvoStory
+local function hiddenUp(inst)
+	while inst and inst ~= storyRoot do
+		if inst:GetAttribute("ZyvoHidden") then return true end
+		inst = inst.Parent
+	end
+	return false
+end
+for _, g in ipairs(storyRoot:GetDescendants()) do
 	if (g:IsA("SurfaceGui") or g:IsA("BillboardGui")) and g:GetAttribute("ZyvoFollowPart") and g.Parent:IsA("BasePart") then
 		local p = g.Parent
-		local function follow() g.Enabled = p.Transparency < 0.99 end
+		local function follow() g.Enabled = p.Transparency < 0.99 and not hiddenUp(g) end
 		follow()
 		p:GetPropertyChangedSignal("Transparency"):Connect(follow)
 	end

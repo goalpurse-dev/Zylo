@@ -1,12 +1,21 @@
 -- Zyvo Studio Kit: put the shot list in the place (run with execute_luau in Edit). Fill SHOTS from shots.json (same
 -- fields, as a Luau table). It becomes ReplicatedStorage.ZyvoShots (a ModuleScript the camera and the actions read).
+-- Write an action's key as ["do"] (a reserved word): { who = "Mo", at = 0.2, ["do"] = "walk", to = "street_mark_2" }.
+-- The end card (Free / Starter plans, reference/shots.md): the LAST shot is { kind = "endcard", spot = "endcard", ... }
+-- lasting 2.0 s, right after the story's last shot.
 local SHOTS = {
 	leadIn = 3,
+	roll = 90, -- the camera roll of the Play run (reference/recording.md); 0 = no roll
 	startHidden = {}, -- names under workspace.ZyvoStory that start hidden (a rule object that appears later)
 	shots = {
 		-- { id = 1, t0 = 0, t1 = 1.6, spot = "street_sign", lens = 24, move = "push_slow", actions = {} },
 	},
 }
+
+-- Luau's reserved words can't be bare table keys: an action's `do = "show"` would stop the module from loading, so
+-- those keys are written as ["do"] = ... (the camera, actions and framer read a["do"])
+local RESERVED = {}
+for w in ("and break do else elseif end false for function if in local nil not or repeat return then true until while"):gmatch("%a+") do RESERVED[w] = true end
 
 local function lit(v, indent)
 	local t = type(v)
@@ -23,7 +32,7 @@ local function lit(v, indent)
 		for k in pairs(v) do table.insert(keys, k) end
 		table.sort(keys)
 		for _, k in ipairs(keys) do
-			local key = (type(k) == "string" and k:match("^[%a_][%w_]*$")) and k or ("[" .. lit(k, 0) .. "]")
+			local key = (type(k) == "string" and k:match("^[%a_][%w_]*$") and not RESERVED[k]) and k or ("[" .. lit(k, 0) .. "]")
 			table.insert(out, pad .. key .. " = " .. lit(v[k], indent + 1))
 		end
 	end

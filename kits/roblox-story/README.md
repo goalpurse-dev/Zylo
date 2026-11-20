@@ -20,7 +20,8 @@ Claude and Roblox Studio normally send.
 - `SKILL.md`: the steps Claude follows (idea, script, blockout, world, cast, lighting, voice, shot list, Play run).
 - `reference/`: setup, story writing, voice, shot list rules, recording.
 - `luau/`: the Studio helpers Claude runs: blockout, camera spots, asset check + clean, cast library + cast, lighting,
-  shot list, the framing checker (framer + frame_check), the contact-sheet preview, the director installer.
+  shot list, the framing checker (framer + frame_check), the contact-sheet preview, the director installer, the
+  end card set (endcard) and show_build (moves your Studio camera to what was just built).
 - `runtime/`: the three scripts that run during Play: the camera, the life (breathing, yawns, waves) and the actions.
 - `scripts/`: `system_check.*` (can this computer do it?) and `make_vertical.sh` (the recording -> an upright 9:16 mp4),
   `add_captions.sh` (+ the voice and simple white one-word captions -> a postable mp4).
@@ -28,6 +29,10 @@ Claude and Roblox Studio normally send.
 ## The rules it keeps
 It never saves or publishes your place, uses only free Creator Store models (and removes every script and sound from
 them), adds no audio, shows no Roblox logos or UI, and never asks for any API key.
+
+Free and Starter plan videos (and videos made without Zyvo connected) end with a 2-second end card: the cast lined up
++ "Made with Zyvo AI · tryzyvo.com". Pro and higher: none. Zyvo connects ONE way: the Claude app's connector (it
+also shows in Claude Code as "claude.ai Zyvo") or the terminal command, not both.
 
 Want the voice, captions, sound and music done for you, or the whole video made for you? Zyvo:
 https://www.tryzyvo.com/in-this-town-story-video-maker

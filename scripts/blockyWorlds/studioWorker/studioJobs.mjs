@@ -108,6 +108,8 @@ export async function runStudioJob(job, deps) {
     const out = await finishStudio({
       recording: rec, voiceMp3: mp3, words, lines: project.script.lines, shots: Array.isArray(project.shot_plan?.shots) ? project.shot_plan.shots : [],
       dir: path.join(dir, "finish"), anthropicKey: deps.anthropicKey, log,
+      // the end card (Free / Starter, decided by the connector when the user paid; older jobs: none)
+      endCard: job.input?.end_card === true,
       stage: (stage, pct) => stillOurs(db, job, workerId, { stage, pct }),
     });
     usd += out.costUsd;
@@ -125,8 +127,10 @@ export async function runStudioJob(job, deps) {
     return { ok: true, usd };
   } catch (e) {
     const refused = e instanceof FinishRefused;
-    const code = refused ? e.code : e?.code === "STOPPED" ? "STOPPED" : "FAILED";
-    const message = refused ? e.message : "It didn't work on our side. Your credits were given back.";
+    const code = refused ? e.code : e?.code === "STOPPED" ? "STOPPED" : e?.code === "VOICE_CUT" ? "VOICE_CUT" : "FAILED";
+    const message = refused ? e.message
+      : code === "VOICE_CUT" ? "The voice came out cut off at the end twice, so we didn't hand it over. Your credits were given back. Try again in a few minutes."
+      : "It didn't work on our side. Your credits were given back.";
     log(`studio job ${job.id} (${job.kind}) failed ${code}: ${String(e?.message ?? e).slice(0, 400)}`);
     if (code !== "STOPPED") {
       await db.update(job.id, { status: "failed", stage: "failed", error_code: code, error_message: message, cost_usd: +usd.toFixed(5), finished_at: new Date().toISOString() }, workerId).catch(() => {});
