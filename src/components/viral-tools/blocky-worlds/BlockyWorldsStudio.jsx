@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Navigate } from "react-router-dom";
-import { Boxes, ChevronLeft, FlaskConical } from "lucide-react";
+import { Link, Navigate } from "react-router-dom";
+import { Boxes, ChevronLeft, FlaskConical, MonitorPlay } from "lucide-react";
+import { useStudioOpen } from "../../studio-kit/studioKitShared";
+import { STUDIO_PROJECTS_PATH } from "../../../data/studioKit";
 import useIsDesktop from "../cutaway-explainer/hooks/useIsDesktop";
 import { DEV_MOCK } from "./api/blockyWorldsApi";
 import useBlockyWorlds from "./hooks/useBlockyWorlds";
@@ -23,6 +25,7 @@ const UI = typeof window !== "undefined" ? new URLSearchParams(window.location.s
 export default function BlockyWorldsStudio({ access: pageAccess, onSignUp, onUpgrade, onNoCredits, balance = 0 }) {
   const isDesktop = useIsDesktop();
   const flow = useBlockyWorlds();
+  const studioOpen = useStudioOpen() === "open"; // the free Studio kit's projects (owner-only until launch)
   const [panel, setPanel] = useState("create");
   const [notice, setNotice] = useState(null);
   const [peek, setPeek] = useState(null); // the idea card under the pointer: the preview plays its first line
@@ -110,11 +113,18 @@ export default function BlockyWorldsStudio({ access: pageAccess, onSignUp, onUpg
             <p className="text-[9.5px] font-semibold uppercase tracking-[0.14em] text-lime-300/65">Story videos, built in blocks</p>
           </div>
         </div>
+        <div className="flex items-center gap-3">
+        {studioOpen && (
+          <Link to={STUDIO_PROJECTS_PATH} className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1.5 text-[12px] font-bold text-white/75 transition hover:border-lime-300/40 hover:text-white" data-testid="bw-studio-projects">
+            <MonitorPlay className="h-3.5 w-3.5 text-lime-300" aria-hidden="true" />Studio projects
+          </Link>
+        )}
         <ol className="flex items-center gap-1.5" aria-label={`Step ${step + 1} of 3: ${STEPS[step]}`}>
           {STEPS.map((s, i) => (
             <li key={s} className={`h-1.5 rounded-full transition-all duration-300 ${i === step ? "w-5 bg-lime-300" : i < step ? "w-1.5 bg-lime-300/50" : "w-1.5 bg-white/15"}`} title={s} />
           ))}
         </ol>
+        </div>
       </div>
       {/* opacity only: a transform here would pin the fixed action bar to the step instead of the screen */}
       <div key={stepKey} className="bw-fade-in flex min-h-0 flex-1 flex-col">
@@ -155,7 +165,7 @@ export default function BlockyWorldsStudio({ access: pageAccess, onSignUp, onUpg
             <ActionBar>
               {flow.draft
                 ? <ActionButton variant="secondary" onClick={() => setPanel("create")}><ChevronLeft className="h-4 w-4" />Back to the script</ActionButton>
-                : <ActionButton onClick={() => setPanel("create")}>Pick a world</ActionButton>}
+                : <ActionButton onClick={() => setPanel("create")}>Start with a topic</ActionButton>}
             </ActionBar>
           </>
         )}

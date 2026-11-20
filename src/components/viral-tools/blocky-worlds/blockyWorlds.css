@@ -148,3 +148,9 @@
 }
 .bw-range::-moz-range-thumb { width: 18px; height: 18px; border-radius: 999px; background: #fff; border: 3px solid #BEF264; }
 .bw-range:active::-webkit-slider-thumb { transform: scale(1.12); }
+
+/* the phone preview (owner 2026-11-20): the whole 9:16 frame fits between the tabs and the action bar, so the faces in
+   the lower half of a clip are never hidden behind the button (desktop keeps 330 px) */
+@media (max-width: 1023px) {
+  .bw-phone-fit { max-width: min(330px, max(210px, calc((100dvh - 400px) * 0.5625))); }
+}

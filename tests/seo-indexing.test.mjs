@@ -197,11 +197,14 @@ test("unreleased features: six feature-only posts are hidden, other posts drop t
 
 test("unknown addresses are a real 404; only app routes get the app shell, which is noindex with no canonical", () => {
   const config = JSON.parse(read("vercel.json"));
+  // The Zyvo connector (2026-11-19): the ONE rule with a host condition, only for mcp.tryzyvo.com (www keeps its 404s)
+  assert.deepEqual(config.rewrites.filter((r) => r.has), [{ source: "/:path*", has: [{ type: "host", value: "mcp.tryzyvo.com" }], destination: "https://ilpiwoxubnevmxxikyvx.supabase.co/functions/v1/zyvo-mcp/:path*" }]);
+  const site = { ...config, rewrites: config.rewrites.filter((r) => !r.has) };
   // No catch-all: nothing rewrites an unknown path to a page (Vercel then answers 404 with dist/404.html).
-  assert.equal(config.rewrites.some((r) => r.source === "/(.*)" || r.source === "/:path*"), false);
-  const shellSources = config.rewrites.filter((r) => r.destination === "/app-shell").map((r) => r.source);
+  assert.equal(site.rewrites.some((r) => r.source === "/(.*)" || r.source === "/:path*"), false);
+  const shellSources = site.rewrites.filter((r) => r.destination === "/app-shell").map((r) => r.source);
   assert.ok(shellSources.length > 0);
-  assert.deepEqual(config.rewrites.filter((r) => r.destination !== "/app-shell"), [{ source: "/api/(.*)", destination: "/api/$1" }]);
+  assert.deepEqual(site.rewrites.filter((r) => r.destination !== "/app-shell"), [{ source: "/api/(.*)", destination: "/api/$1" }]);
   const toShell = (pathname) => shellSources.some((source) => new RegExp(`^${source.replace(/\(\.\*\)/g, ".*")}$`).test(pathname));
   for (const stray of ["/$", "/&", "/blog/not-a-post", "/sitemax.xml", "/contact", "/worspace/home", "/anything"]) assert.equal(toShell(stray), false, `${stray} must be a 404`);
 

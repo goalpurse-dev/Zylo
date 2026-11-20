@@ -62,6 +62,7 @@ import { characterSpec, charactersNote, checkUpload, cleanCharacters, readCharac
 import { engineFrom, readyEmailOn, STUDIO, studioEtaText, studioStageOf } from "../_shared/blockyWorlds/studio.js";
 import { studioQueueInfo, studioWorkerAlive } from "../_shared/blockyWorlds/studioSupabase.ts";
 import { progressView } from "../_shared/blockyWorlds/studioStages.js";
+import { internalCaller } from "../_shared/zyvoMcp/internal.js";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -118,13 +119,24 @@ class ApiError extends Error {
 type Trace = { action: string; step: string; owner: boolean };
 
 // ---------- who is asking ----------
+// THE ZYVO CONNECTOR (zyvo-mcp, owner 2026-11-19): its server-to-server calls carry the shared secret + the user id and
+// act as that user here, with every rule, limit and charge of the site unchanged (_shared/zyvoMcp/internal.js)
+const MCP_SECRET = Deno.env.get("ZYVO_MCP_INTERNAL_SECRET") ?? "";
 async function whoIs(req: Request) {
-  const token = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "").trim();
-  if (!token || token === SUPABASE_ANON_KEY) return null;
-  const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { global: { headers: { Authorization: `Bearer ${token}` } } });
-  const { data, error } = await client.auth.getUser(token);
-  if (error || !data?.user) return null;
-  const user = data.user;
+  const viaMcp = internalCaller((k: string) => req.headers.get(k), MCP_SECRET);
+  let user: any;
+  if (viaMcp) {
+    const { data, error } = await admin.auth.admin.getUserById(viaMcp);
+    if (error || !data?.user) return null;
+    user = data.user;
+  } else {
+    const token = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "").trim();
+    if (!token || token === SUPABASE_ANON_KEY) return null;
+    const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { global: { headers: { Authorization: `Bearer ${token}` } } });
+    const { data, error } = await client.auth.getUser(token);
+    if (error || !data?.user) return null;
+    user = data.user;
+  }
   const { data: profile } = await admin.from("profiles").select("plan_code").eq("id", user.id).single();
   const plan = String(profile?.plan_code ?? "free").toLowerCase();
   // the owner always tests like a tester (BLOCKY_WORLDS_TEST_USERS may be empty): sees the template, dryRun, runs env

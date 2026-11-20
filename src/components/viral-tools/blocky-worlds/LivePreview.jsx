@@ -4,7 +4,7 @@
 import { Component, useEffect, useMemo, useRef, useState } from "react";
 import { EXAMPLE_IDEAS } from "../../../../supabase/functions/_shared/blockyWorlds/examples.js";
 import { cx } from "../../ui/zyvo";
-import { CLIPS, clipPoster, clipSrc, useReducedMotion } from "./clips";
+import { CLIP_CROP, CLIPS, clipPoster, clipSrc, useReducedMotion } from "./clips";
 import "./blockyWorlds.css";
 
 
@@ -46,7 +46,7 @@ export function Clip({ clip, playing = true, className = "" }) {
   }, [playing, still]);
   return (
     <video ref={ref} src={clipSrc(clip)} poster={clipPoster(clip)} muted loop playsInline preload="metadata" disablePictureInPicture aria-hidden="true"
-      className={cx("absolute inset-0 h-full w-full object-cover", className)} />
+      className={cx("absolute inset-0 h-full w-full object-cover", CLIP_CROP, className)} />
   );
 }
 
@@ -113,7 +113,7 @@ export default function LivePreview({ lines = null, label = null, meta = null })
   const playing = own.length ? own : SAMPLES[sample % SAMPLES.length] ?? [];
 
   return (
-    <div className="mx-auto flex w-full max-w-[330px] flex-col items-center gap-3">
+    <div className="bw-phone-fit mx-auto flex w-full max-w-[330px] flex-col items-center gap-3">
       <div className="relative aspect-[9/16] w-full overflow-hidden rounded-[30px] border border-white/10 bg-black shadow-[0_30px_80px_-30px_rgba(0,0,0,0.9)]">
         {CLIPS.map((c, i) => (
           <div key={c.key} className={cx("bw-xfade absolute inset-0", i === clip ? "opacity-100" : "opacity-0")}>
