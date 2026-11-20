@@ -86,11 +86,25 @@ test("render gate (calibrated on Milo): unwatchable shots are cut, weak ones kep
   assert.equal(g.weak.length, 7);
   // the free rule notes the checker did not confirm never count (the Sock run: 29 of its 73)
   assert.equal(classify({ kind: "shotcheck", text: "THE SHOT CHECK: no character in 2 or more of 6 shots" }), "ignore");
-  // a truly broken video still stops: too many unwatchable, or too few passing
+  // NEVER A STOP OVER WEAK SHOTS (owner 2026-11-21): too many unwatchable -> only MAX_CUT_SHARE cut, the rest kept as
+  // weak; too few passing -> rendered below the bar, logged; only a plan with no shot at all stops
   const broken = Object.fromEntries(shots.slice(0, 15).map((s) => [s.id, { kind: "vision", text: "the frame is black" }]));
-  assert.equal(renderGate({ shots, failing: broken }).ok, false);
+  const gb = renderGate({ shots, failing: broken });
+  assert.equal(gb.ok, true);
+  assert.equal(gb.cut.length, Math.floor(shots.length * 0.15));
+  assert.equal(gb.cut.length + gb.weak.length, 15);
+  assert.match(gb.reason, /cut, \d+ kept as weak/);
   const weakMany = Object.fromEntries(shots.slice(0, 20).map((s) => [s.id, { kind: "vision", text: "the framing is loose" }]));
-  assert.equal(renderGate({ shots, failing: weakMany }).ok, false);
+  const gw = renderGate({ shots, failing: weakMany });
+  assert.equal(gw.ok, true);
+  assert.equal(gw.belowBar, true);
+  assert.equal(gw.weak.length, 20);
+  assert.equal(renderGate({ shots: [], failing: {} }).ok, false);
+  // run 2120c23d (2026-11-20): 43 of 51 failing shots were "Monster named but not clearly visible"; a CREATURE note
+  // goes to the fix rounds but never counts against the video
+  assert.equal(classify({ kind: "vision", text: "the checker saw: CREATURE: Monster named but not readable: re-aim the camera" }), "ignore");
+  assert.equal(classify({ kind: "vision", text: "the checker saw: Only Pip's back is visible; CREATURE: Monster named but not readable" }), "weak");
+  assert.equal(classify({ kind: "vision", text: "the checker saw: FRAMING: a key line without a readable face" }), "ignore");
   // a line that names the hero must show the hero (as seen by the checker)
   const mentions = (t, h) => String(t).toLowerCase().includes(String(h).toLowerCase());
   assert.equal(heroLinesMissing({ lines: [{ line: 3, text: "Milo laughed", shots: [5, 6] }], seen: { 5: ["Grandpa"], 6: ["crowd"] }, hero: "Milo", mentions }).length, 1);

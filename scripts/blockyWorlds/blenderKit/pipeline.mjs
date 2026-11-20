@@ -624,19 +624,20 @@ if (crashed.length) mergeOut(crashed, "crash");
 // Only a truly unwatchable video stops before the final render (the worker refunds and keeps the parts for Try again).
 {
   const g = renderGate({ shots: plan.shots, failing });
-  state.gate = { cut: g.cut, weak: g.weak, ignored: g.ignored, shareAfter: g.shareAfter, ok: g.ok, reason: g.reason }; state.gate.list = weakShotList(state.gate, plan.shots); save();
+  state.gate = { cut: g.cut, weak: g.weak, ignored: g.ignored, shareAfter: g.shareAfter, ok: g.ok, belowBar: g.belowBar, reason: g.reason }; state.gate.list = weakShotList(state.gate, plan.shots); save();
   // the FULL weak-shot list in the log, one line each (the report keeps it too: report.gate.list)
   for (const w of state.gate.list) say(`weak shot ${w.id} (${w.status}): ${w.desc.slice(0, 80)} -> ${w.why.slice(0, 120)}`);
   // OWNER TEST (--force-render: the run card's owner_force_render, set only by our own tools): the final is rendered
   // even below the bar; the unwatchable shots are still cut and everything is logged
+  // NEVER A STOP OVER WEAK SHOTS (owner 2026-11-21): below the bar and the hero lines are LOGGED (state.gate, the run's
+  // report), the best version is rendered; only a plan with not one watchable shot stops (renderGate ok=false)
   const FORCE = has("force-render");
-  if (!g.ok && FORCE) say(`render gate: would BLOCK (${g.reason}), but this is an OWNER TEST (--force-render): rendering the final anyway`);
-  if (!g.ok && !FORCE) throw Object.assign(new Error(`the rules block the final: ${g.reason}: ${[...g.cut, ...g.weak.map((w) => w.id)].slice(0, 10).map((id) => `${id}: ${String(failing[id]?.text ?? "").slice(0, 80)}`).join(" | ")}: stopped before the final render`), { code: "RULES" });
+  if (!g.ok) throw Object.assign(new Error(`the rules block the final: ${g.reason}: stopped before the final render`), { code: "RULES" });
+  if (g.belowBar) say(`render gate: BELOW THE BAR (${g.reason})${FORCE ? " (owner test)" : ""}: rendering the best version, every weak shot logged`);
   if (g.cut.length && g.cut.length < plan.shots.length) mergeOut(g.cut, "unwatchable after the fix rounds");
   const heroName = heroOf(plan.styleSheet);
   const missing = heroLinesMissing({ lines: linesOfShots(plan.shots), seen: state.seen ?? {}, hero: heroName, mentions: mentionsHero });
-  if (missing.length && FORCE) say(`render gate: ${missing.length} hero line(s) without the hero (L${missing.map((m) => m.line).join(", L")}): OWNER TEST, rendering anyway`);
-  else if (missing.length) throw Object.assign(new Error(`the rules block the final: line L${missing[0].line} ("${String(missing[0].text).slice(0, 60)}") names ${heroName} but none of its shots shows ${heroName}: stopped before the final render`), { code: "RULES" });
+  if (missing.length) { state.gate.heroLinesMissing = missing.map((m) => ({ line: m.line, text: String(m.text).slice(0, 80), shots: m.shots })); save(); say(`render gate: ${missing.length} hero line(s) without ${heroName} as seen by the checker (L${missing.map((m) => m.line).join(", L")}): logged, rendering the best version`); }
   say(`render gate: RENDER (${Math.round(g.shareAfter * 100)}% pass; cut ${g.cut.length}${g.cut.length ? ` (${g.cut.join(", ")})` : ""}; ${g.weak.length} weak shot(s) kept${g.weak.length ? `: ${g.weak.slice(0, 8).map((w) => `${w.id}: ${w.text.slice(0, 60)}`).join(" | ")}` : ""}; ${g.ignored.length} rule note(s) not confirmed by the checker)`);
 }
 fs.writeFileSync(shotsFile, writeFile());

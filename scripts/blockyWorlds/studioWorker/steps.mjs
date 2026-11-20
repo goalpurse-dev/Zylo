@@ -7,7 +7,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { STUDIO } from "../../../supabase/functions/_shared/blockyWorlds/studio.js";
-import { elevenVoice, narratorFor } from "../engine/voice/eleven.mjs";
+import { narratorFor } from "../engine/voice/eleven.mjs";
 import { planVideo, checkTimeline, checkVisuals, checkSubjects } from "../engine/plan.mjs";
 import { directStory } from "../engine/lib/director/index.js";
 import { bedFromLoop, mixAudio } from "../engine/audio/mix.mjs";
@@ -16,6 +16,7 @@ import { simpleCues, AUDIO_SIMPLE } from "../engine/lib/audioPlan.js";
 import { processTake } from "../studio/pace.mjs";
 import { tightenTake } from "../studio/tighten.mjs";
 import { voiceEndProblem } from "../studio/voiceEnd.mjs";
+import { chunkedVoice } from "../studio/voiceChunks.mjs";
 import { fixAnimalCast } from "../studio/castFix.mjs";
 import { directVideo, derive, MODELS } from "../studio/agent.mjs";
 import { assemble, allChecks } from "../studio/assemble.mjs";
@@ -27,39 +28,34 @@ import { StudioStop } from "./runner.mjs";
 const FF = process.env.FFMPEG ?? "ffmpeg";
 const probe = (f) => Number(execFileSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", f]).toString()) || null;
 
-export function makeSteps({ anthropicKey, elevenKey, cfg = STUDIO }) {
+export function makeSteps({ anthropicKey, elevenKey, cfg = STUDIO, deps = {} }) {
   if (MODELS.sonnet !== cfg.model) throw new Error(`studio/agent.mjs's Sonnet is ${MODELS.sonnet}, the launch config says ${cfg.model}`);
   return {
-    /** the ONE paid take (Scruffy Duck on eleven_v3), then the pace: always 1.25x, the pause cuts (studio/pace.mjs) */
-    async voice({ script, dir, L }) {
+    /** the narration (Scruffy Duck on eleven_v3) IN CHUNKS (studio/voiceChunks.mjs), then the pace: always 1.25x, the
+     *  pause cuts (studio/pace.mjs) and the Milo tightening */
+    async voice({ script, dir, L, log = () => {} }) {
       const narrator = narratorFor(cfg.narrator);
       const chars = script.lines.map((l) => String(l.text).trim()).join("\n").length;
-      const take = async (out, force) => {
-        L.check("voice", +(chars * 0.5 * 0.0002).toFixed(4)); // worst case: 0.5 ElevenLabs credits a character
-        await elevenVoice({ lines: script.lines, outDir: out, narrator, apiKey: elevenKey, force });
-        const v0 = await processTake({ outDir: out });
-        // THE MILO TIGHTENING (owner 2026-11-18, studio/tighten.mjs): the real silences cut like the golden Milo take
-        // (free; a failure keeps the take as processed)
-        const t = tightenTake({ wav: v0.wav, words: v0.words, lines: script.lines, inPlace: true });
-        const v = t.error || !t.duration ? v0 : { ...v0, wav: t.wav, words: t.words, duration: t.duration, tightened: t.removed };
-        L.add("voice", v.costUsd ?? +(chars * 0.44 * 0.0002).toFixed(4));
-        return v;
-      };
-      let v = await take(path.join(dir, "voice"), false);
-      // THE END CHECK (owner 2026-11-20, studio/voiceEnd.mjs): a take that stopped early (its last words squeezed into
-      // the last instant, silent) is never handed over. One new take, on us (the user pays once); a second bad take
-      // fails the step, and the job / run refunds as any failure does.
-      let problem = voiceEndProblem({ wav: v.wav, words: v.words, duration: v.duration });
-      let retakes = 0;
-      if (problem) {
-        L.log({ step: "voice", retake: problem });
-        retakes = 1;
-        v = await take(path.join(dir, "voice_retake"), true);
-        problem = voiceEndProblem({ wav: v.wav, words: v.words, duration: v.duration });
-        if (problem) throw Object.assign(new Error(`VOICE_CUT: the voice came out cut off twice (${problem})`), { code: "VOICE_CUT" });
-      }
-      L.log({ step: "voice", chars, voice: narrator.voiceName, model: narrator.model, speed: v.speed, duration: v.duration, pace: v.pace, tightened: v.tightened ?? 0, retakes });
-      return { wav: v.wav, words: v.words, duration: v.duration, chars, retakes };
+      const out = path.join(dir, "voice");
+      // THE CHUNKED VOICE (owner 2026-11-21, after two runs failed VOICE_CUT): ~400-character chunks of whole lines, each
+      // chunk's end checked; a cut chunk is made again ALONE (eleven_v3 once more, then eleven_multilingual_v2); joined
+      // with natural gaps into one take. A cut never fails the video (the least-cut take is used and logged).
+      const made = await (deps.chunkedVoice ?? chunkedVoice)({ lines: script.lines, outDir: out, apiKey: elevenKey, narrator,
+        check: (usd) => L.check("voice", usd), book: (usd) => L.add("voice", usd), log });
+      const v0 = await processTake({ outDir: out });
+      // THE MILO TIGHTENING (owner 2026-11-18, studio/tighten.mjs): the real silences cut like the golden Milo take
+      // (free; a failure keeps the take as processed)
+      const t = tightenTake({ wav: v0.wav, words: v0.words, lines: script.lines, inPlace: true });
+      const v = t.error || !t.duration ? v0 : { ...v0, wav: t.wav, words: t.words, duration: t.duration, tightened: t.removed };
+      // THE END CHECK (owner 2026-11-20, studio/voiceEnd.mjs) on the joined take: information only now (each chunk was
+      // checked and retaken on its own above)
+      let endNote = null;
+      try { endNote = voiceEndProblem({ wav: v.wav, words: v.words, duration: v.duration }); } catch (e) { endNote = `end check skipped: ${e?.message ?? e}`; }
+      if (endNote) log(`voice: the joined take's end check says: ${endNote} (kept: the video goes on)`);
+      if (made.cut) log(`voice: ${made.cut} chunk(s) still cut after every try: the least-cut take is used`);
+      L.log({ step: "voice", chars, voice: narrator.voiceName, model: narrator.model, speed: v.speed, duration: v.duration, pace: v.pace, tightened: v.tightened ?? 0,
+        chunks: made.chunks.map((c) => ({ lines: `${c.lines[0]}-${c.lines.at(-1)}`, chars: c.chars, model: c.model, tries: c.tries.length, cut: c.cut, problem: c.problem })), retakes: made.retakes, fallbacks: made.fallbacks, endNote });
+      return { wav: v.wav, words: v.words, duration: v.duration, chars, retakes: made.retakes, fallbacks: made.fallbacks, chunks: made.chunks.length };
     },
     /** the base plan (free): the real word timings + the free mock director; an animal cast as a person -> the pet */
     async plan({ script, card, words, lengthSec, dir }) {

@@ -699,13 +699,27 @@ export function visionRuleProblems({ shots = [], answers = [], styleSheet = [] }
   for (const a of answers) {
     const s = byId.get(a.id); if (!s) continue;
     const seen = (a.people ?? []).map((p) => String(p).toLowerCase());
-    const sees = (c) => seen.some((p) => mentionsChar(p, c) || p.includes(String(c.name).toLowerCase()));
+    const sees = (c) => seen.some((p) => mentionsChar(p, c) || p.includes(String(c.name).toLowerCase()) || (isCreature(c) && CREATURE_SEEN_RE.test(p)));
     if (a.empty) out[a.id] = "EMPTY FRAME: only the place is on screen (no character, not the thing the words name): put the character / the named thing clearly in frame";
-    const miss = styleSheet.filter((c) => mentionsChar(s.desc, c) && !sees(c)).map((c) => c.name);
+    const named = styleSheet.filter((c) => mentionsChar(s.desc, c) && !sees(c));
+    const miss = named.filter((c) => !isCreature(c)).map((c) => c.name);
+    // THE MONSTER / VILLAIN (owner 2026-11-21): a creature the desc only HINTS at (a shadow, a silhouette, far away,
+    // outside, a hand) is never asked to fill a quarter of the frame; one meant to be seen goes to the fix rounds as a
+    // CREATURE note (re-aim / rebuild it), which the render gate never counts against the video (renderGate.mjs)
+    const creatures = named.filter((c) => isCreature(c) && !creatureTease(s.desc)).map((c) => c.name);
     if (miss.length) out[a.id] = `${out[a.id] ? `${out[a.id]}; ` : ""}${miss.join(", ")} named but not clearly visible: show ${miss.join(" and ")} (face or full body, at least a quarter of the frame height)`;
+    if (creatures.length) out[a.id] = `${out[a.id] ? `${out[a.id]}; ` : ""}CREATURE: ${creatures.join(", ")} named but not readable: re-aim the camera at ${creatures.join(" and ")} or rebuild it bigger / brighter against the background (face or full body in frame); if the line only hints at it, show a clear shadow or silhouette and say so in the desc`;
   }
   return out;
 }
+/** a style-sheet entry that is a monster / villain / creature (not a person the cast rules apply to) */
+const CREATURE_RE = /\b(monsters?|creatures?|ghosts?|goblins?|villains?|beasts?|demons?|aliens?|zombies?|mannequins?|trolls?|ogres?|spirits?|phantoms?|witch(?:es)?|dragons?|robots?|shadow ?(?:man|men|thing)|peeker|stalker)\b/i;
+export const isCreature = (c) => !c?.hero && CREATURE_RE.test(`${c?.role ?? ""} ${c?.name ?? ""}`);
+/** the checker names a creature it sees in its own words (a tall pale figure, a faceless shape) */
+const CREATURE_SEEN_RE = /\b(monsters?|creatures?|figures?|faceless|blank[- ]faced|shapes?|silhouettes?|shadows?|ghosts?|goblins?|beasts?|villains?|mannequins?)\b/i;
+/** the desc only hints at the creature (it is not meant to be read in full in this shot) */
+const TEASE_RE = /\b(shadows?|silhouettes?|far(?: away| down| off)?|distant|in the distance|outside|beyond|through the (?:window|glass|gap|crack)|behind the (?:glass|window|door)|glimpse|off[- ]?screen|hint|eyes in the dark)\b/i;
+export const creatureTease = (desc) => TEASE_RE.test(String(desc ?? "")) || PART_ONLY.test(String(desc ?? ""));
 /** the hero share as SEEN by the checker ({ id: [names] } over the current shots) -> { [id]: problem } for the shots
  *  that must add the hero (the ones whose desc names the hero first, then spread over the rest) */
 export function heroSeenProblems({ shots = [], seen = {}, hero = null, styleSheet = [] }) {
