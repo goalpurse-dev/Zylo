@@ -12,8 +12,10 @@ new, empty place: never one of your real games.
 Servers**, and switch on **Enable Studio as MCP server**.
 
 **4. Add the kit.** Unzip it into your skills folder, so this file ends up at:
-- Windows: `C:\Users\<you>\.claude\skills\zyvo-studio-kit\QUICKSTART.md`
-- macOS: `~/.claude/skills/zyvo-studio-kit/QUICKSTART.md`
+- Windows: `C:\Users\<you>\.claude\skills\roblox-story\QUICKSTART.md`
+- macOS: `~/.claude/skills/roblox-story/QUICKSTART.md`
+
+That folder name is the command you'll type in step 6: `/roblox-story`.
 
 **5. Connect Claude to Studio.** Make an empty folder for your videos (e.g. `Documents\ZyvoStudio`) and start a Code
 session in it. Ask Claude: *"Connect to Roblox Studio for every folder"*, or paste this into a terminal yourself:
@@ -23,8 +25,10 @@ session in it. Ask Claude: *"Connect to Roblox Studio for every folder"*, or pas
 Then start a NEW Code session in the same folder (with Studio open) and type `/mcp`: Roblox Studio should say
 connected.
 
-**6. Make it.** Type: *"Use the zyvo-studio-kit skill. Make an In This Town video about: in this town, ..."*. Claude
-checks your computer, then goes step by step: the idea, the script, a grey blockout, the world, the cast, the light,
+**6. Make it.** Type **`/roblox-story`**. Claude asks for your In This Town rule: type it, or say *ideas* and pick one
+of 5 by its number (*more* gives 5 new ones). Already know your rule? Type it right after the command, e.g.
+`/roblox-story every time you yawn, everyone around you falls asleep`. Claude checks your computer, then goes step by
+step: the idea, the script, a grey blockout, the world, the cast, the light,
 the voice, the shot list. You approve each step; say what to change. Before filming it checks every shot and shows
 you a contact sheet of all of them.
 

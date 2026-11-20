@@ -3,7 +3,7 @@
 ## Timing
 
 The timing source comes from the voice step (`reference/voice.md`), best first:
-- With a Zyvo voice (`words.json` from Zyvo → Studio projects → Create voice): every shot starts on a word: `t0` = that
+- With a Zyvo voice (`words.json` from Zyvo → MCP Studio → Create voice): every shot starts on a word: `t0` = that
   word's start. Exact. The last shot ends at the last word's end + 0.3 s.
 - With the user's own file (`voice.mp3` they made): line starts from the file's pauses (or the estimates scaled to the
   file's length). Say plainly that the cut points come from the pauses, not word timings.

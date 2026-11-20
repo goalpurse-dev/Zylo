@@ -3,14 +3,14 @@
 Do A1 first (TEST_A1.md): Studio connected, `/mcp` shows Roblox Studio.
 
 ## 1. Install the skill
-Windows (PowerShell): `Copy-Item -Recurse C:\Users\Public\Zylo\kits\zyvo-studio-kit $HOME\.claude\skills\zyvo-studio-kit`
-macOS: `cp -R kits/zyvo-studio-kit ~/.claude/skills/zyvo-studio-kit`
+Windows (PowerShell): `Copy-Item -Recurse C:\Users\Public\Zylo\kits\roblox-story $HOME\.claude\skills\roblox-story`
+macOS: `cp -R kits/roblox-story ~/.claude/skills/roblox-story`
 Start Claude Code in an empty folder (e.g. `C:\ZyvoTest`), so the project files land there.
 
 ## 2. Start
 Open Studio with a NEW Baseplate. In Claude Code:
 
-> Use the zyvo-studio-kit skill. Make an In This Town video about: "in this town, your shadow tells everyone how you
+> /roblox-story "in this town, your shadow tells everyone how you
 > really feel". About 60 seconds.
 
 ## 3. What should happen (approve or correct at each step)

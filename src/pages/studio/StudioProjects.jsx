@@ -1,19 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { AlertTriangle, Boxes, Check, ChevronDown, Clapperboard, Copy, Download, FileText, Loader2, Mic, PartyPopper, Play, Plug, Trash2, Upload } from "lucide-react";
+import { AlertTriangle, Boxes, Check, ChevronDown, Clapperboard, Copy, Download, FileText, LayoutTemplate, Loader2, Mic, PartyPopper, Play, Plug, Trash2, Upload } from "lucide-react";
 import AuthModal from "../../components/AuthModal";
 import CreditIcon from "../../components/ui/zyvo/CreditIcon.jsx";
 import NoCreditsModal from "../../components/viral-tools/shared/NoCreditsModal";
 import Confetti from "../../components/studio-kit/Confetti";
 import FlowLoop from "../../components/studio-kit/FlowLoop";
-import { MockBanner } from "../../components/studio-kit/StudioKitUI";
-import { CARD, DISPLAY, FOCUS, PRIMARY, SECONDARY, useDisplayFont, useStudioOpen } from "../../components/studio-kit/studioKitShared";
+import { CARD, DISPLAY, FOCUS, PRIMARY, SECONDARY, useStudioOpen } from "../../components/studio-kit/studioKitShared";
 import { useAuth } from "../../context/AuthContext";
 import { CONNECTOR_MOCK, connector, putFile } from "../../lib/zyvoConnector";
-import { CONNECT_CLAUDE_PATH, STUDIO_PROJECTS_PATH } from "../../data/studioKit";
+import { CONNECT_CLAUDE_PATH, MCP_TEMPLATES_PATH, STUDIO_PROJECTS_PATH } from "../../data/studioKit";
 import "../../components/studio-kit/studioKit.css";
 
-const KIT_PATH = "/in-this-town-story-video-maker#studio";
+const KIT_PATH = MCP_TEMPLATES_PATH;
 const STEPS = [
   { id: "script", label: "Script", icon: FileText },
   { id: "voice", label: "Voice", icon: Mic },
@@ -36,14 +35,13 @@ const mmss = (s) => (s == null ? "" : `${Math.floor(s / 60)}:${String(Math.round
 const withDownload = (url, name) => (url && /^https?:/.test(url) ? `${url}${url.includes("?") ? "&" : "?"}download=${encodeURIComponent(name)}` : url);
 
 /**
- * /workspace/studio-projects: the Studio projects tab (docs/zyvo-studio-kit-plan.md B2). One card per project the free
+ * MCP > MCP Studio (/workspace/mcp/studio; /workspace/studio-projects redirects here, keeping the #<id> card link) (docs/zyvo-studio-kit-plan.md B2). One card per project the free
  * Studio kit reported through the Zyvo connector: a thumbnail, the four-step progress (Script -> Voice -> Recording ->
  * Finished), ONE next-step panel with one primary button, the script folded to two lines. A project that turns
  * Finished while the page is open gets confetti. The server (supabase/functions/_shared/zyvoMcp/site.js) re-checks
  * every price and runs the same code as Claude's tool calls; a failed voice or finish refunds once.
  */
 export default function StudioProjects() {
-  useDisplayFont();
   const open = useStudioOpen();
   const { user, loading: authLoading } = useAuth() ?? {};
   const [data, setData] = useState(null);
@@ -54,7 +52,7 @@ export default function StudioProjects() {
   const seen = useRef(new Map()); // project id -> last status
   const signedIn = CONNECTOR_MOCK || Boolean(user);
 
-  useEffect(() => { document.title = "Studio projects | Zyvo"; }, []);
+  useEffect(() => { document.title = "MCP Studio | Zyvo"; }, []);
   const load = useCallback(async () => {
     try {
       const d = await connector("/account/studio");
@@ -86,9 +84,9 @@ export default function StudioProjects() {
 
   let body;
   if (!signedIn && !authLoading) {
-    body = <Empty title="Sign in to see your Studio projects" text="Projects you make with the free Studio kit show up here once Claude is connected to your Zyvo account." action={<button type="button" className={PRIMARY} onClick={() => setSignIn(true)}>Sign in</button>} />;
+    body = <Empty title="Sign in to see your projects" text="Projects you make with a free template show up here once Claude is connected to your Zyvo account." action={<button type="button" className={PRIMARY} onClick={() => setSignIn(true)}>Sign in</button>} />;
   } else if (open === "closed") {
-    body = <Empty title="Coming soon" text="Studio projects are being tested before launch. They aren't open for this account yet." />;
+    body = <Empty title="Coming soon" text="MCP Studio is being tested before launch. It isn't open for this account yet." />;
   } else if (error && !data) {
     body = <Empty title="We couldn't load your projects" text={error.message} action={<button type="button" className={PRIMARY} onClick={load}>Try again</button>} />;
   } else if (!data || open === "loading") {
@@ -106,30 +104,27 @@ export default function StudioProjects() {
   }
 
   return (
-    <div className="min-h-full w-full bg-[#0B0D0F] pb-16">
-      <MockBanner />
-      <div className="mx-auto w-full max-w-[1000px] px-4 pt-8 sm:px-6 sm:pt-10">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-[13px] font-black uppercase tracking-[0.16em] text-lime-300">In This Town · Roblox Studio</p>
-            <h1 style={DISPLAY} className="mt-1.5 text-[42px] font-extrabold uppercase leading-[0.95] text-white sm:text-[56px]">Studio projects</h1>
-          </div>
-          {data?.open && (
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-[14px] font-black text-white" title="Your credits">
-                <CreditIcon className="h-4 w-4 text-lime-300" />{data.balance}<span className="font-semibold text-white/55">credits</span>
-              </span>
-              <Link to={CONNECT_CLAUDE_PATH} className={SECONDARY}><Plug className="h-4 w-4" aria-hidden="true" />Connect Claude</Link>
-            </div>
-          )}
+    <div className="mt-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 style={DISPLAY} className="text-[34px] font-extrabold uppercase leading-[0.95] text-white sm:text-[46px]">MCP Studio</h2>
+          <p className="mt-1 text-[15px] text-white/65">What you make with Claude lands here: voice, recording, finished video.</p>
         </div>
-        {data?.open && data.projects.length > 0 && data.freeFinish && (
-          <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-lime-300/10 px-3 py-1.5 text-[13.5px] font-bold text-lime-100"><PartyPopper className="h-4 w-4 text-lime-300" aria-hidden="true" />Your first Finish my video is free.</p>
+        {data?.open && (
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-[14px] font-black text-white" title="Your credits">
+              <CreditIcon className="h-4 w-4 text-lime-300" />{data.balance}<span className="font-semibold text-white/60">credits</span>
+            </span>
+            <Link to={MCP_TEMPLATES_PATH} className={SECONDARY}><LayoutTemplate className="h-4 w-4" aria-hidden="true" />Templates</Link>
+          </div>
         )}
-        {body}
       </div>
+      {data?.open && data.projects.length > 0 && data.freeFinish && (
+        <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-lime-300/10 px-3 py-1.5 text-[13.5px] font-bold text-lime-100"><PartyPopper className="h-4 w-4 text-lime-300" aria-hidden="true" />Your first Finish my video is free.</p>
+      )}
+      {body}
       <Confetti fire={party.n} origin={party.origin} />
-      {signIn && <AuthModal mode="login" title="Sign in to Zyvo" subtitle="See your Studio projects." returnTo={STUDIO_PROJECTS_PATH} onClose={() => setSignIn(false)} />}
+      {signIn && <AuthModal mode="login" title="Sign in to Zyvo" subtitle="See your MCP Studio projects." returnTo={STUDIO_PROJECTS_PATH} onClose={() => setSignIn(false)} />}
       <NoCreditsModal open={Boolean(noCredits)} onClose={() => setNoCredits(null)} creditsNeeded={noCredits ?? 0} creditBalance={data?.balance ?? 0} />
     </div>
   );
@@ -149,11 +144,11 @@ function Empty({ title, text, action }) {
 function FirstSteps() {
   return (
     <div className="mt-8 rounded-[24px] border-2 border-lime-300/20 bg-gradient-to-b from-[#121a0d] to-[#0B0D0F] p-5 sm:p-8">
-      <p style={DISPLAY} className="text-center text-[30px] font-extrabold uppercase leading-none text-white sm:text-[38px]">Your first Studio video</p>
-      <p className="mx-auto mb-6 mt-2 max-w-[520px] text-center text-[15px] text-white/65">Claude writes the story, your Roblox Studio builds it, the video lands here.</p>
+      <p style={DISPLAY} className="text-center text-[30px] font-extrabold uppercase leading-none text-white sm:text-[38px]">Your first MCP video</p>
+      <p className="mx-auto mb-6 mt-2 max-w-[520px] text-center text-[15px] text-white/70">Pick a template, Claude builds it in your Roblox Studio, the video lands here.</p>
       <FlowLoop compact />
       <div className="mt-7 flex flex-col justify-center gap-2.5 sm:flex-row">
-        <Link to={KIT_PATH} className={`${PRIMARY} min-h-12 px-6 text-[16px]`}><Download className="h-5 w-5" aria-hidden="true" />Get the free kit</Link>
+        <Link to={KIT_PATH} className={`${PRIMARY} min-h-12 px-6 text-[16px]`}><LayoutTemplate className="h-5 w-5" aria-hidden="true" />Pick a free template</Link>
         <Link to={CONNECT_CLAUDE_PATH} className={`${SECONDARY} min-h-12 px-6 text-[16px]`}><Plug className="h-5 w-5" aria-hidden="true" />Connect Claude</Link>
       </div>
     </div>

@@ -3,8 +3,8 @@
 You need: Windows 10/11 or macOS 13+, Roblox Studio (create.roblox.com), Claude Code.
 
 ## 1. System check
-Windows (PowerShell): `powershell -ExecutionPolicy Bypass -File kits\zyvo-studio-kit\scripts\system_check.ps1`
-macOS (Terminal): `bash kits/zyvo-studio-kit/scripts/system_check.sh`
+Windows (PowerShell): `powershell -ExecutionPolicy Bypass -File kits\roblox-story\scripts\system_check.ps1`
+macOS (Terminal): `bash kits/roblox-story/scripts/system_check.sh`
 Expect the last line `RESULT: ready` or `ready-with-warnings`.
 
 ## 2. Turn on Studio's MCP server
@@ -25,7 +25,7 @@ Expect the last line `RESULT: ready` or `ready-with-warnings`.
 
 ## 4. The test (paste this into Claude Code)
 
-> Read kits/zyvo-studio-kit/reference/setup.md and run "3. The connection test" against my open Studio. Do not save
+> Read kits/roblox-story/reference/setup.md and run "3. The connection test" against my open Studio. Do not save
 > or publish anything. Then list every Roblox Studio MCP tool you have (exact names, one line each) and write them to
 > zyvo-project/tools.txt. Report: connected yes/no, the place name, the PlaceId, which test steps passed, and which of
 > these exist: execute_luau, insert_asset, search_asset, screen_capture, start_stop_play, multi_edit.

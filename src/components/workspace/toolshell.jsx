@@ -1,6 +1,8 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { createElement, useEffect, useState } from "react";
-import { ChevronRight, Clapperboard, DollarSign, Folder, Home, LayoutGrid, Pin, Sparkles, TrendingUp } from "lucide-react";
+import { ChevronRight, Clapperboard, DollarSign, Folder, Home, LayoutGrid, Pin, Plug, Sparkles, TrendingUp } from "lucide-react";
+import { useStudioOpen } from "../studio-kit/useStudioOpen";
+import { MCP_PATH } from "../../data/studioKit";
 import Logo from "../../assets/logo-mark.webp";
 import { optImg } from "../../lib/optImage";
 import { ALL_PINNABLE_TOOLS, DesktopCreatePanel, DesktopWorkspacePanel, useShortFormTools } from "./CreateMenu";
@@ -75,6 +77,7 @@ export default function ToolShell({ onClose }) {
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
   const [pinnedIds, setPinnedIds] = useState(getInitialPinnedTools);
   const shortFormTools = useShortFormTools();
+  const mcpOpen = useStudioOpen() === "open"; // owner-only until STUDIO_KIT_PUBLIC (the server decides)
 
   const isActive = (path) => location.pathname.startsWith(path);
   const anyPanelOpen = createOpen || workspaceOpen;
@@ -187,6 +190,15 @@ export default function ToolShell({ onClose }) {
                 setCreateOpen(false);
               }}
             />
+
+            {mcpOpen && (
+              <NavItem
+                icon={Plug}
+                label="MCP"
+                active={!anyPanelOpen && isActive(MCP_PATH)}
+                onClick={() => go(MCP_PATH)}
+              />
+            )}
 
             {SHOW_EARN_IN_NAV && (
               <NavItem

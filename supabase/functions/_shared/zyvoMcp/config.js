@@ -82,18 +82,20 @@ export const UPLOAD = Object.freeze({
 
 /** the free Studio Kit's zip in the private zyvo-studio bucket (scripts/studioKit/packKit.mjs builds it; phase 3 uploads it) */
 export const KIT = Object.freeze({
-  version: "1.0.0",
-  path: "kit/zyvo-studio-kit-1.0.0.zip",
-  fileName: "zyvo-studio-kit.zip",
+  // 1.1.0 (owner 2026-11-20): the skill is "roblox-story" (the /roblox-story command; the zip's folder is roblox-story/)
+  version: "1.1.0",
+  path: "kit/roblox-story-1.1.0.zip",
+  fileName: "roblox-story.zip",
   linkTtlSec: 600,
 });
 
 export const URLS = Object.freeze({
   site: "https://www.tryzyvo.com",
   page: "https://www.tryzyvo.com/in-this-town-story-video-maker",
-  projects: "https://www.tryzyvo.com/workspace/studio-projects",
+  // the MCP section's tabs (owner 2026-11-20); the old /workspace/studio-projects and /connect-claude redirect here
+  projects: "https://www.tryzyvo.com/workspace/mcp/studio",
   consent: "https://www.tryzyvo.com/connect/authorize",
-  connect: "https://www.tryzyvo.com/connect-claude",
+  connect: "https://www.tryzyvo.com/workspace/mcp/connect",
 });
 
 /** the access switch (owner 2026-11-19, phase 3): "owner" (default, fail closed) = only the owner list; "everyone" */

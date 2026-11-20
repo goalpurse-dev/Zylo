@@ -102,14 +102,14 @@ export function makeSite({ store, storage, user, allowed, tools, now = () => Dat
     },
 
     async voice(u, body) {
-      if (!(await allowed(u.id))) return refuse(403, "NOT_OPEN", "Studio projects aren't open for this account yet.");
+      if (!(await allowed(u.id))) return refuse(403, "NOT_OPEN", "MCP Studio isn't open for this account yet.");
       const p = await own(u.id, body?.id);
       if (!p) return refuse(404, "NOT_FOUND", "No such project on this account.");
       return await paidClick(u.id, "make_voice", p.id, body?.credits);
     },
 
     async finish(u, body) {
-      if (!(await allowed(u.id))) return refuse(403, "NOT_OPEN", "Studio projects aren't open for this account yet.");
+      if (!(await allowed(u.id))) return refuse(403, "NOT_OPEN", "MCP Studio isn't open for this account yet.");
       const p = await own(u.id, body?.id);
       if (!p) return refuse(404, "NOT_FOUND", "No such project on this account.");
       if (!p.recording?.path) return refuse(409, "NEED_UPLOAD", "Upload the recording first.");
@@ -117,7 +117,7 @@ export function makeSite({ store, storage, user, allowed, tools, now = () => Dat
     },
 
     async upload(u, body) {
-      if (!(await allowed(u.id))) return refuse(403, "NOT_OPEN", "Studio projects aren't open for this account yet.");
+      if (!(await allowed(u.id))) return refuse(403, "NOT_OPEN", "MCP Studio isn't open for this account yet.");
       const p = await own(u.id, body?.id);
       if (!p) return refuse(404, "NOT_FOUND", "No such project on this account.");
       if (await store.activeJob(u.id, p.id, ["voice", "finish"])) return refuse(409, "BUSY", "Wait until the voice or finish being made is done.");

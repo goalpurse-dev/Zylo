@@ -41,6 +41,16 @@
       "statusCode": 302
     },
     {
+      "source": "/connect-claude",
+      "destination": "/workspace/mcp/connect",
+      "statusCode": 301
+    },
+    {
+      "source": "/workspace/studio-projects",
+      "destination": "/workspace/mcp/studio",
+      "statusCode": 301
+    },
+    {
       "source": "/blog/ai-visual-styles-most-engagementd",
       "destination": "/blog/ai-visual-styles-most-engagement",
       "permanent": true

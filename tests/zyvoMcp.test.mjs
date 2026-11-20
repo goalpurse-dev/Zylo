@@ -456,7 +456,8 @@ test("the site: Studio projects cards, Create voice at the shown price only, upl
   // the kit: counted per download, owner-only while the connector is
   const kit = await site("POST", "/account/kit");
   assert.equal(kit.status, 200);
-  assert.match(kit.body.url, /kit\/zyvo-studio-kit/);
+  assert.match(kit.body.url, /kit\/roblox-story-/);
+  assert.equal(kit.body.fileName, "roblox-story.zip");
   assert.equal(s.store.kits.length, 1);
   assert.equal((await s.req("POST", "/account/kit", { headers: { Authorization: "Bearer site-other" } })).status, 403);
   assert.equal((await s.req("GET", "/account/studio", { headers: { Authorization: "Bearer site-other" } })).body.open, false);

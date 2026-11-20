@@ -91,7 +91,7 @@ export async function mockConnector(path, { body = {}, query = {} } = {}) {
     if (q.get("consent") === "expired") fail("expired", "This sign-in link expired. Go back to Claude and connect again.");
     return { client: q.get("client") ?? "Claude", redirectHost: "claude.ai", scopes: ["ideas", "scripts", "videos", "spend"], expiresAt: new Date(Date.now() + 600_000).toISOString(), allowed: q.get("consent") !== "closed", email: "you@example.com" };
   }
-  if (path === "/authorize/decision") return { redirect: "/connect-claude?mock=1&connected=1" };
+  if (path === "/authorize/decision") return { redirect: "/workspace/mcp/connect?mock=1&connected=1" };
   if (path === "/account/connections") return { connections: state.connections };
   if (path === "/account/connections/revoke") { state.connections = state.connections.filter((c) => c.id !== body.id); return { ok: true }; }
   if (path === "/account/studio") {
@@ -119,6 +119,6 @@ export async function mockConnector(path, { body = {}, query = {} } = {}) {
     return { ok: true, job: p.job };
   }
   if (path === "/account/studio/remove") { state.projects = state.projects.filter((x) => x.id !== body.id); return { ok: true }; }
-  if (path === "/account/kit") return { url: "#mock-kit-download", version: "1.0.0", fileName: "zyvo-studio-kit.zip" };
+  if (path === "/account/kit") return { url: "#mock-kit-download", version: "1.1.0", fileName: "roblox-story.zip" };
   return fail("not_found", "Unknown mock route.");
 }

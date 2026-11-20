@@ -1,6 +1,8 @@
 import { useEffect, useState, isValidElement } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Clapperboard, Home, Folder, LayoutGrid, Sparkles, X } from "lucide-react";
+import { Clapperboard, Home, Folder, LayoutGrid, Plug, Sparkles, X } from "lucide-react";
+import { useStudioOpen } from "../studio-kit/useStudioOpen";
+import { MCP_PATH } from "../../data/studioKit";
 import { createPortal } from "react-dom";
 import MobileCreateMenu, { WORKSPACE_TOOLS } from "./CreateMenu";
 import { BLOCKY_STORIES_PATH } from "../../data/blockyStories";
@@ -156,12 +158,16 @@ function NavItem({ name, icon: Icon, iconSrc, active, onClick, expanded, badge }
   );
 }
 
+// owner-only until STUDIO_KIT_PUBLIC: the MCP section in the phone Tools menu, shown only when the server says it's open
+const MCP_TOOL = { id: "mcp", label: "MCP", path: MCP_PATH, icon: <Plug className="h-5 w-5" /> };
+
 /* ─── Main component ─────────────────────────────────────────────────────── */
 export default function MobileBottomNav({ hidden }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [createOpen, setCreateOpen] = useState(false);
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
+  const mcpOpen = useStudioOpen() === "open";
 
   const NAV_HEIGHT = 78;
   const createActive =
@@ -179,7 +185,8 @@ export default function MobileBottomNav({ hidden }) {
   const anyMenuOpen = createOpen || workspaceOpen;
   const workspaceRouteActive =
     location.pathname.startsWith("/workspace/image-generator") ||
-    location.pathname.startsWith("/workspace/video-generator");
+    location.pathname.startsWith("/workspace/video-generator") ||
+    (mcpOpen && location.pathname.startsWith(MCP_PATH));
 
   useEffect(() => {
     const openCreate = () => {
@@ -202,7 +209,7 @@ export default function MobileBottomNav({ hidden }) {
         open={workspaceOpen}
         onClose={() => setWorkspaceOpen(false)}
         title="Tools"
-        items={WORKSPACE_TOOLS}
+        items={mcpOpen ? [...WORKSPACE_TOOLS, MCP_TOOL] : WORKSPACE_TOOLS}
         columns={2}
       />
       <div
