@@ -47,7 +47,7 @@ test("the result screen: separate Copy buttons for the title, the description an
 test("the old 'What we can film' chips are gone (owner 2026-11-20: 'Any rule, any town'); 'Move it to our town' shows only for a whole-premise miss", () => {
   const story = src("StoryStep.jsx"), script = src("ScriptStep.jsx"), hook = src("hooks/useBlockyWorlds.js");
   assert.match(story, /<AnyTown \/>/);
-  assert.match(story, /Any rule, any town: we build what your story needs\./);
+  assert.match(story, /Any rule\. Your story, set in our towns, with whatever props it needs\./);
   assert.ok(!/What we can film|<CanFilm|"5 monster looks"|"18 animals"/.test(story), "the board kit's chips are not shown");
   assert.match(script, /loose\.some\(\(x\) => x\.fix === "move"\)/);
   assert.match(script, /onClick=\{flow\.moveToTown\}/);

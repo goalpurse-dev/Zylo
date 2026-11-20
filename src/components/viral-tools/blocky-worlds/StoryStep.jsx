@@ -108,7 +108,7 @@ function AnyTown() {
   return (
     <p className="mt-3 flex items-center gap-2 rounded-xl border border-lime-300/15 bg-lime-300/[0.05] px-3 py-2.5 text-[12.5px] font-semibold leading-snug text-lime-100/85" data-testid="bw-any-town">
       <Sparkles className="h-4 w-4 shrink-0 text-lime-300" aria-hidden="true" />
-      Any rule, any town: we build what your story needs.
+      Any rule. Your story, set in our towns, with whatever props it needs.
     </p>
   );
 }

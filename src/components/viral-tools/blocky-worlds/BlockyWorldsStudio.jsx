@@ -165,7 +165,7 @@ export default function BlockyWorldsStudio({ access: pageAccess, onSignUp, onUpg
             <ActionBar>
               {flow.draft
                 ? <ActionButton variant="secondary" onClick={() => setPanel("create")}><ChevronLeft className="h-4 w-4" />Back to the script</ActionButton>
-                : <ActionButton onClick={() => setPanel("create")}>Pick a world</ActionButton>}
+                : <ActionButton onClick={() => setPanel("create")}>Start with a topic</ActionButton>}
             </ActionBar>
           </>
         )}

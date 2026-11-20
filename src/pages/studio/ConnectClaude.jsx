@@ -65,7 +65,9 @@ export default function ConnectClaude() {
               {[["claude", "Claude (web / desktop)"], ["code", "Claude Code"]].map(([id, label]) => (
                 <button key={id} type="button" role="tab" aria-selected={tab === id} onClick={() => setTab(id)}
                   className={`flex min-h-11 items-center justify-center gap-1.5 rounded-xl px-3 text-[14.5px] font-black transition ${tab === id ? "bg-lime-300 text-[#11150D]" : "text-white/65 hover:text-white"} ${FOCUS}`}>
-                  {id === "code" && <Terminal className="h-4 w-4" aria-hidden="true" />}{label}
+                  {id === "code" && <Terminal className="h-4 w-4" aria-hidden="true" />}
+                  {/* phone (owner 2026-11-20): the short label, so the tab fits on one line */}
+                  {id === "claude" ? <><span className="whitespace-nowrap sm:hidden">Claude app</span><span className="hidden whitespace-nowrap sm:inline">{label}</span></> : <span className="whitespace-nowrap">{label}</span>}
                 </button>
               ))}
             </div>
