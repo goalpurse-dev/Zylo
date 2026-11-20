@@ -119,6 +119,7 @@ function setup({ plan = "pro", access = "owner", writeFails = false } = {}) {
     user: async (u) => ({ ...users[u], balance: store.balance[u] }),
     guard: async () => ({ ok: true }),
     allowed: async (u) => access === "everyone" || users[u]?.owner === true,
+    openToAll: () => access === "everyone",
     siteUser: async (h) => (h === "Bearer site-owner" ? { id: OWNER, email: "owner@x.test" } : h === "Bearer site-other" ? { id: OTHER, email: "other@x.test" } : null),
     background: () => {},
   });
@@ -149,6 +150,15 @@ const rpc = (s, token, method, params, id = 1) => s.req("POST", "/mcp", { body: 
 const call = async (s, token, name, args) => (await rpc(s, token, "tools/call", { name, arguments: args })).body.result;
 
 // ---------------------------------------------------------------- the small pieces
+test("GET /open: public, follows the one switch (ZYVO_MCP_ACCESS)", async () => {
+  const shut = await setup().req("GET", "/open");
+  assert.equal(shut.status, 200);
+  assert.equal(shut.body.open, false);
+  const open = await setup({ access: "everyone" }).req("GET", "/open");
+  assert.equal(open.body.open, true);
+  assert.equal(open.headers["Access-Control-Allow-Origin"], "*");
+});
+
 test("crypto: PKCE S256, constant-time compare, the input hash ignores key order", async () => {
   const v = "a".repeat(43);
   const c = b64url(new Uint8Array(await webcrypto.subtle.digest("SHA-256", new TextEncoder().encode(v))));

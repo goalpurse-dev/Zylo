@@ -27,7 +27,8 @@ const rpcError = (id, code, message) => ({ jsonrpc: "2.0", id: id ?? null, error
 
 /**
  * deps: { store, api, storage, user, guard, background, siteUser(authHeader) -> { id, email } | null,
- *         allowed(userId) -> boolean (the owner-only switch), base, now }
+ *         allowed(userId) -> boolean (the owner-only switch), openToAll() -> boolean (the same switch, signed out),
+ *         base, now }
  */
 export function makeServer(deps) {
   const base = deps.base;
@@ -90,6 +91,9 @@ export function makeServer(deps) {
         if (path === "/" && method === "GET") return { status: 200, headers: { "Content-Type": "text/plain; charset=utf-8" }, body: `Zyvo MCP server. In Claude, add the connector ${base}/mcp (how: ${URLS.connect}).` };
         if (path.startsWith("/.well-known/oauth-protected-resource")) return json(200, protectedResourceMetadata(base), PUBLIC_CORS);
         if (path.startsWith("/.well-known/oauth-authorization-server") || path === "/.well-known/openid-configuration") return json(200, authServerMetadata(base), PUBLIC_CORS);
+        // public, no sign-in: is the connector open for everyone (ZYVO_MCP_ACCESS)? The site shows the MCP pages to
+        // signed-out visitors only then; one switch closes the pages, the kit and the tools together
+        if (path === "/open" && method === "GET") return json(200, { open: Boolean(deps.openToAll?.()) }, PUBLIC_CORS);
         if (path === "/register" && method === "POST") return withCors(await oauth.register(req.body ?? {}, { ip: req.ip }));
         if (path === "/authorize" && method === "GET") return await oauth.authorize(req.query ?? {});
         if (path === "/token" && method === "POST") return withCors(await oauth.token(req.body ?? {}));

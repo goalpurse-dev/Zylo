@@ -20,6 +20,8 @@ export const CONSENT_PATH = "/connect/authorize";
  * Before launch (phase 3 ships owner-only first): false = the In This Town section, the header link and the pages
  * show only to accounts the server says are open (GET /account/studio?peek=1). true = everyone sees the section.
  */
+// OPENED 2026-11-21 by the SERVER switch, not this flag: the zyvo-mcp secret ZYVO_MCP_ACCESS=everyone opens the pages
+// (signed out too, via GET /open), the kit and the tools; =owner closes them all again. Keep this false.
 export const STUDIO_KIT_PUBLIC = false;
 
 export const MCP_URL = "https://mcp.tryzyvo.com/mcp";

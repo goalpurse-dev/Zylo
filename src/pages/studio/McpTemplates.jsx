@@ -20,7 +20,10 @@ export default function McpTemplates() {
               {/* phone: a short 2:1 strip (the sign) so the title and the arrow show on the first screen; the tall frame from sm up */}
               <div className="relative aspect-[2/1] overflow-hidden bg-black sm:aspect-[4/5]">
                 <img src={t.thumb} alt={t.thumbAlt} className="h-full w-full object-cover object-[center_12%] sm:object-top transition duration-500 group-hover:scale-[1.03]" loading="lazy" />
-                <span className="absolute left-2.5 top-2.5 rounded-full bg-lime-300 px-2.5 py-0.5 text-[11px] font-black uppercase tracking-wide text-[#11150D] shadow-lg">{t.badge}</span>
+                <span className="absolute left-2.5 top-2.5 flex gap-1.5">
+                  <span className="rounded-full bg-lime-300 px-2.5 py-0.5 text-[11px] font-black uppercase tracking-wide text-[#11150D] shadow-lg">{t.badge}</span>
+                  {t.beta && <span className="rounded-full border border-white/30 bg-black/70 px-2.5 py-0.5 text-[11px] font-black uppercase tracking-wide text-white shadow-lg">Beta</span>}
+                </span>
                 <span className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/85 to-transparent" aria-hidden="true" />
                 <span className="absolute bottom-2.5 left-2.5 flex items-center gap-1.5 text-[11.5px] font-bold text-white/85"><Clock className="h-3 w-3" aria-hidden="true" />{t.time}</span>
               </div>

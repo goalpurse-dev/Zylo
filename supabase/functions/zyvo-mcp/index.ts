@@ -184,7 +184,7 @@ async function api(userId: string, body: any) {
 }
 
 const server = makeServer({
-  store, storage, api, user, guard, allowed, siteUser, base: BASE,
+  store, storage, api, user, guard, allowed, siteUser, base: BASE, openToAll: () => ACCESS === "everyone",
   background: (p: Promise<unknown>) => { try { (globalThis as any).EdgeRuntime?.waitUntil(p); } catch { /* local */ } },
 });
 

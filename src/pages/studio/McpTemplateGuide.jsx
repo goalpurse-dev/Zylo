@@ -30,6 +30,7 @@ export default function McpTemplateGuide() {
       <section className="mt-1 grid gap-5 rounded-2xl border border-lime-300/20 bg-gradient-to-b from-[#121a0d] to-[#0B0D0F] p-4 sm:p-6 md:grid-cols-[minmax(0,1fr)_150px] md:items-center">
         <div>
           <span className="rounded-full bg-lime-300 px-2.5 py-0.5 text-[11px] font-black uppercase tracking-wide text-[#11150D]">{t.badge}</span>
+          {t.beta && <span className="ml-1.5 rounded-full border border-white/30 px-2.5 py-0.5 text-[11px] font-black uppercase tracking-wide text-white">Beta</span>}
           <h2 style={DISPLAY} className="mt-2.5 text-[30px] font-extrabold uppercase leading-none text-white sm:text-[34px]">{t.title}</h2>
           <p className="mt-1.5 max-w-[560px] text-[14px] leading-relaxed text-white/75">{t.pitch}</p>
           <p className="mt-1.5 flex items-center gap-1.5 text-[12.5px] font-bold text-white/55"><Clock className="h-3.5 w-3.5" aria-hidden="true" />{t.time} · {t.steps.length} steps</p>
