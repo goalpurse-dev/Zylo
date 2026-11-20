@@ -36,3 +36,44 @@ export function useDisplayFont() {
     document.head.appendChild(link);
   }, []);
 }
+
+/** true under "reduce motion" (read once; SSR-safe) */
+export function useReducedMotion() {
+  const [still] = useState(() => typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true);
+  return still;
+}
+
+/** true while the element is on screen (videos play and loops run only then) */
+export function useInView(ref, threshold = 0.25) {
+  const [on, setOn] = useState(false);
+  useEffect(() => {
+    if (!ref.current || typeof IntersectionObserver === "undefined") { setOn(true); return undefined; }
+    const io = new IntersectionObserver(([e]) => setOn(e.isIntersecting), { threshold });
+    io.observe(ref.current);
+    return () => io.disconnect();
+  }, [ref, threshold]);
+  return on;
+}
+
+/** a CSS media query as state (SSR: false) */
+export function useMedia(query) {
+  const [on, setOn] = useState(() => typeof window !== "undefined" && window.matchMedia?.(query).matches === true);
+  useEffect(() => {
+    const m = window.matchMedia?.(query);
+    if (!m) return undefined;
+    const f = () => setOn(m.matches);
+    f(); m.addEventListener?.("change", f);
+    return () => m.removeEventListener?.("change", f);
+  }, [query]);
+  return on;
+}
+
+/** the real Studio Kit media (public/media/studio-kit): the owner's Bedtime Story test, 2026-11-19 */
+export const KIT_MEDIA = {
+  build: [1, 2, 3, 4].map((i) => `/media/studio-kit/build-${i}.webp`),
+  buildLabels: ["Blockout", "World", "Light", "Cast"],
+  free: { video: "/media/studio-kit/bedtime-free.mp4", poster: "/media/studio-kit/bedtime-free.webp" },
+  zyvo: { video: "/media/studio-kit/bedtime-zyvo.mp4", poster: "/media/studio-kit/bedtime-zyvo.webp" },
+  prompt: "Make an In This Town story: one yawn and everyone falls asleep.",
+  line: "And the Mayor just thanked me for knocking out the whole town.",
+};

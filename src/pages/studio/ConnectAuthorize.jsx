@@ -9,6 +9,7 @@ import { CONNECTOR_MOCK, connector } from "../../lib/zyvoConnector";
 import { CONNECT_CLAUDE_PATH, SCOPE_TEXT } from "../../data/studioKit";
 import { MockBanner } from "../../components/studio-kit/StudioKitUI";
 import { CARD, DISPLAY, PRIMARY, SECONDARY, useDisplayFont } from "../../components/studio-kit/studioKitShared";
+import "../../components/studio-kit/studioKit.css";
 
 const SCOPE_ICON = { ideas: Lightbulb, scripts: FileText, videos: Video, spend: Coins };
 
@@ -85,7 +86,7 @@ export default function ConnectAuthorize() {
   } else {
     body = (
       <>
-        <div className="flex items-center justify-center gap-3" aria-hidden="true">
+        <div className="sk-pop flex items-center justify-center gap-3" aria-hidden="true">
           <span className="grid h-12 w-12 place-items-center rounded-2xl border border-white/15 bg-white/[0.06] text-[20px] font-black text-white">{String(details.client).slice(0, 1).toUpperCase()}</span>
           <span className="h-px w-8 bg-gradient-to-r from-white/10 via-lime-300/60 to-white/10" />
           <img src={Logo} alt="" className="h-12 w-12 rounded-2xl" />
@@ -100,7 +101,7 @@ export default function ConnectAuthorize() {
           {details.scopes.map((s) => {
             const Icon = SCOPE_ICON[s] ?? Boxes;
             return (
-              <li key={s} className={`${CARD} flex items-center gap-3 px-4 py-3`}>
+              <li key={s} className={`${CARD} sk-fadeup flex items-center gap-3 px-4 py-3`} style={{ animationDelay: `${160 + details.scopes.indexOf(s) * 70}ms` }}>
                 <Icon className={`h-5 w-5 shrink-0 ${s === "spend" ? "text-amber-300" : "text-lime-300"}`} aria-hidden="true" />
                 <span className="text-[14.5px] font-semibold text-white/85">{SCOPE_TEXT[s] ?? s}</span>
               </li>
@@ -128,7 +129,7 @@ export default function ConnectAuthorize() {
             <img src={Logo} alt="" className="h-7 w-7 rounded-lg" />
             <span className="text-[17px] font-black tracking-tight">Zyvo</span>
           </Link>
-          <div className="rounded-[24px] border border-lime-300/[0.15] bg-[#0F1311] p-6 shadow-[0_30px_80px_rgba(0,0,0,.45)] sm:p-8">{body}</div>
+          <div className="sk-fadeup rounded-[24px] border border-lime-300/[0.15] bg-[#0F1311] p-6 shadow-[0_30px_80px_rgba(0,0,0,.45)] sm:p-8">{body}</div>
         </main>
       </div>
       {signIn && (

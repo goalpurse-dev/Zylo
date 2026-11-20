@@ -1,20 +1,22 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ArrowRight, CheckCircle2, Loader2, Plug, ShieldCheck, Terminal, Trash2 } from "lucide-react";
+import { ArrowRight, Check, CheckCircle2, Copy, ExternalLink, Loader2, LogIn, ShieldCheck, Terminal, Trash2 } from "lucide-react";
 import AuthModal from "../../components/AuthModal";
 import { useAuth } from "../../context/AuthContext";
 import { CONNECTOR_MOCK, connector } from "../../lib/zyvoConnector";
 import { CLAUDE_CODE_COMMAND, CONNECT_CLAUDE_PATH, CONNECTOR_TOOLS, MCP_URL, SCOPE_TEXT, STUDIO_PROJECTS_PATH } from "../../data/studioKit";
-import { CopyField, MockBanner } from "../../components/studio-kit/StudioKitUI";
-import { CARD, DISPLAY, PRIMARY, SECONDARY, useDisplayFont, useStudioOpen } from "../../components/studio-kit/studioKitShared";
+import { MockBanner } from "../../components/studio-kit/StudioKitUI";
+import { CARD, DISPLAY, FOCUS, PRIMARY, SECONDARY, useDisplayFont, useStudioOpen } from "../../components/studio-kit/studioKitShared";
+import "../../components/studio-kit/studioKit.css";
 
 const KIT_PATH = "/in-this-town-story-video-maker#studio";
+const CLAUDE_CONNECTORS = "https://claude.ai/settings/connectors";
 const when = (iso) => (iso ? new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : "never");
 
 /**
- * /connect-claude: how to add the Zyvo connector (claude.ai or Claude Code), what it can do and what it costs, and
- * the user's connections with a Sign out for each (the connector's /account/connections routes). It is also the
- * connector's documentation link (URLS.connect in _shared/zyvoMcp/config.js).
+ * /connect-claude: connect Claude to Zyvo in three steps (tabs: Claude on the web / desktop, Claude Code), what the
+ * connector can do (Free / credit badges), and the user's connections with a Sign out each (/account/connections).
+ * It is also the connector's documentation link (URLS.connect in _shared/zyvoMcp/config.js).
  */
 export default function ConnectClaude() {
   useDisplayFont();
@@ -22,23 +24,36 @@ export default function ConnectClaude() {
   const { user } = useAuth() ?? {};
   const location = useLocation();
   const connected = new URLSearchParams(location.search).get("connected") === "1";
+  const [tab, setTab] = useState(() => (new URLSearchParams(location.search).get("tab") === "code" ? "code" : "claude"));
   const [signIn, setSignIn] = useState(false);
   useEffect(() => { document.title = "Connect Claude to Zyvo"; }, []);
+
+  const steps = tab === "claude"
+    ? [
+      { title: "Copy the link", text: "Zyvo's connector address.", action: <CopyBig value={MCP_URL} label="Copy link" /> },
+      { title: "Open Claude's connectors", text: "Add custom connector, name it Zyvo, paste.", action: <a href={CLAUDE_CONNECTORS} target="_blank" rel="noreferrer" className={`${PRIMARY} w-full`}><ExternalLink className="h-4 w-4" aria-hidden="true" />Open Claude settings</a> },
+      { title: "Sign in + Allow", text: "Claude opens Zyvo. Sign in and press Allow.", action: <StepBadge icon={LogIn} text="Then ask Claude for story ideas" /> },
+    ]
+    : [
+      { title: "Copy the command", text: "Run it once in a terminal.", action: <CopyBig value={CLAUDE_CODE_COMMAND} label="Copy command" /> },
+      { title: "Type /mcp", text: "In Claude Code, pick zyvo, then Authenticate.", action: <CopyBig value="/mcp" label="Copy /mcp" small /> },
+      { title: "Sign in + Allow", text: "Zyvo opens in your browser. Sign in and press Allow.", action: <StepBadge icon={LogIn} text="Then try /mcp__zyvo__in-this-town" /> },
+    ];
 
   return (
     <div className="min-h-full w-full bg-[#0B0D0F] pb-16">
       <MockBanner />
-      <div className="mx-auto w-full max-w-[980px] px-4 pt-8 sm:px-6 sm:pt-12">
+      <div className="mx-auto w-full max-w-[1040px] px-4 pt-8 sm:px-6 sm:pt-12">
         {connected && (
-          <p role="status" className="mb-6 flex items-center gap-2 rounded-xl border border-lime-300/30 bg-lime-300/10 px-4 py-3 text-[14.5px] font-bold text-lime-100">
+          <p role="status" className="sk-fadeup mb-6 flex items-center gap-2 rounded-xl border border-lime-300/30 bg-lime-300/10 px-4 py-3 text-[14.5px] font-bold text-lime-100">
             <CheckCircle2 className="h-5 w-5 shrink-0 text-lime-300" aria-hidden="true" />Connected. Go back to Claude and ask it for story ideas.
           </p>
         )}
-        <p className="text-[13px] font-black uppercase tracking-[0.16em] text-lime-300">Zyvo connector</p>
-        <h1 style={DISPLAY} className="mt-2 text-balance text-[40px] font-extrabold uppercase leading-[0.95] text-white sm:text-[56px]">Connect Claude to Zyvo</h1>
-        <p className="mt-3 max-w-[680px] text-[16px] leading-7 text-white/70">
-          Use Zyvo right inside Claude while you build your In This Town story in Roblox Studio: story ideas, our writer, the narrator voice and Finish my video. Claude shows every price and waits for your yes.
-        </p>
+        <div className="text-center">
+          <p className="text-[13px] font-black uppercase tracking-[0.16em] text-lime-300">Zyvo connector</p>
+          <h1 style={DISPLAY} className="mt-2 text-balance text-[42px] font-extrabold uppercase leading-[0.95] text-white sm:text-[60px]">Connect Claude to Zyvo</h1>
+          <p className="mx-auto mt-3 max-w-[600px] text-[16px] leading-7 text-white/70">Ideas, our writer, the narrator voice and Finish my video, right inside Claude. Claude shows every price first.</p>
+        </div>
 
         {open === "closed" ? (
           <ClosedNote signedIn={Boolean(user)} onSignIn={() => setSignIn(true)} />
@@ -46,55 +61,56 @@ export default function ConnectClaude() {
           <div className="grid place-items-center py-16"><Loader2 className="h-6 w-6 animate-spin text-lime-300" aria-label="Loading" /></div>
         ) : (
           <>
-            <section className="mt-8 grid gap-4 md:grid-cols-2" aria-label="How to connect">
-              <div className={`${CARD} p-5`}>
-                <h2 className="flex items-center gap-2 text-[17px] font-black text-white"><Plug className="h-5 w-5 text-lime-300" aria-hidden="true" />In Claude (web or desktop app)</h2>
-                <ol className="mt-4 space-y-3 text-[14.5px] leading-relaxed text-white/75">
-                  <Step n={1}>Open <b className="text-white">Settings</b>, then <b className="text-white">Connectors</b>.</Step>
-                  <Step n={2}>Choose <b className="text-white">Add custom connector</b>, name it <b className="text-white">Zyvo</b> and paste this address:</Step>
-                </ol>
-                <div className="mt-3"><CopyField value={MCP_URL} label="Zyvo connector address" /></div>
-                <ol start={3} className="mt-3 space-y-3 text-[14.5px] leading-relaxed text-white/75">
-                  <Step n={3}>Press <b className="text-white">Connect</b>, sign in with your Zyvo login and press <b className="text-white">Allow</b>.</Step>
-                </ol>
-              </div>
-              <div className={`${CARD} p-5`}>
-                <h2 className="flex items-center gap-2 text-[17px] font-black text-white"><Terminal className="h-5 w-5 text-lime-300" aria-hidden="true" />In Claude Code</h2>
-                <ol className="mt-4 space-y-3 text-[14.5px] leading-relaxed text-white/75">
-                  <Step n={1}>Run this once in a terminal:</Step>
-                </ol>
-                <div className="mt-3"><CopyField value={CLAUDE_CODE_COMMAND} label="Claude Code command" /></div>
-                <ol start={2} className="mt-3 space-y-3 text-[14.5px] leading-relaxed text-white/75">
-                  <Step n={2}>In Claude Code, type <code className="rounded bg-white/10 px-1.5 py-0.5 text-[13px] text-lime-100">/mcp</code>, pick <b className="text-white">zyvo</b> and sign in.</Step>
-                  <Step n={3}>Start with <code className="rounded bg-white/10 px-1.5 py-0.5 text-[13px] text-lime-100">/mcp__zyvo__in-this-town</code>. Using our free Studio kit? It finds the connector by itself.</Step>
-                </ol>
-              </div>
-            </section>
+            <div className="mx-auto mt-8 grid max-w-[460px] grid-cols-2 rounded-2xl border border-white/10 bg-white/[0.04] p-1.5" role="tablist" aria-label="Which Claude">
+              {[["claude", "Claude (web / desktop)"], ["code", "Claude Code"]].map(([id, label]) => (
+                <button key={id} type="button" role="tab" aria-selected={tab === id} onClick={() => setTab(id)}
+                  className={`flex min-h-11 items-center justify-center gap-1.5 rounded-xl px-3 text-[14.5px] font-black transition ${tab === id ? "bg-lime-300 text-[#11150D]" : "text-white/65 hover:text-white"} ${FOCUS}`}>
+                  {id === "code" && <Terminal className="h-4 w-4" aria-hidden="true" />}{label}
+                </button>
+              ))}
+            </div>
 
-            <section className="mt-10" aria-labelledby="cc-tools">
+            <div className="relative mt-8">
+            {/* the line behind the numbers, with a green pulse travelling from step to step */}
+            <span className="sk-line pointer-events-none absolute left-[16.6%] right-[16.6%] top-[26px] hidden h-1 rounded-full bg-lime-300/20 md:block" aria-hidden="true"><span className="sk-pulse" /></span>
+            <ol key={tab} className="relative grid gap-4 md:grid-cols-3" aria-label="Three steps">
+              {steps.map((s, i) => (
+                <li key={s.title} className="sk-fadeup relative flex flex-col items-center text-center" style={{ animationDelay: `${i * 110}ms` }}>
+                  <span className="relative z-10 grid h-14 w-14 place-items-center rounded-full border-4 border-[#0B0D0F] bg-lime-300 text-[24px] font-black text-[#11150D] shadow-[0_0_30px_-4px_rgba(190,242,100,0.6)]">{i + 1}</span>
+                  <div className={`${CARD} mt-3 flex w-full flex-1 flex-col p-5`}>
+                    <p className="text-[18px] font-black text-white">{s.title}</p>
+                    <p className="mt-1 flex-1 text-[14px] leading-relaxed text-white/60">{s.text}</p>
+                    <div className="mt-4">{s.action}</div>
+                  </div>
+                </li>
+              ))}
+            </ol>
+            </div>
+            {tab === "code" && <p className="mt-3 break-all text-center font-mono text-[12px] text-white/40">{CLAUDE_CODE_COMMAND}</p>}
+
+            <section className="mt-12" aria-labelledby="cc-tools">
               <h2 id="cc-tools" style={DISPLAY} className="text-[30px] font-extrabold uppercase leading-none text-white">What it can do</h2>
-              <div className={`${CARD} mt-4 overflow-hidden`}>
-                <ul className="divide-y divide-white/[0.07]">
-                  {CONNECTOR_TOOLS.map((t) => (
-                    <li key={t.name} className="flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
-                      <div className="min-w-0">
-                        <p className="text-[15px] font-black text-white">{t.name}</p>
-                        <p className="text-[13.5px] text-white/60">{t.what}</p>
-                      </div>
-                      <p className={`shrink-0 text-[14px] font-black ${t.price === "Free" ? "text-lime-300" : "text-white"}`}>
-                        {t.price}{t.note && <span className="ml-1.5 rounded-md bg-lime-300/15 px-1.5 py-0.5 text-[11px] font-black uppercase tracking-wide text-lime-200">{t.note}</span>}
-                      </p>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              <ul className={`${CARD} mt-4 divide-y divide-white/[0.07] overflow-hidden`}>
+                {CONNECTOR_TOOLS.map((t) => (
+                  <li key={t.name} className="flex items-center justify-between gap-4 px-4 py-3.5">
+                    <div className="min-w-0">
+                      <p className="text-[15px] font-black text-white">{t.name}</p>
+                      <p className="text-[13.5px] text-white/55">{t.what}</p>
+                    </div>
+                    <span className="flex shrink-0 flex-col items-end gap-1">
+                      <span className={`rounded-full px-2.5 py-1 text-[12px] font-black ${t.price === "Free" ? "bg-lime-300 text-[#11150D]" : "border border-white/15 bg-white/[0.06] text-white"}`}>{t.price}</span>
+                      {t.note && <span className="text-[11px] font-black uppercase tracking-wide text-lime-200">{t.note}</span>}
+                    </span>
+                  </li>
+                ))}
+              </ul>
               <p className="mt-3 flex gap-2 text-[13.5px] leading-relaxed text-white/55">
                 <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-lime-300" aria-hidden="true" />
                 Nothing is charged until you say yes to the price in Claude. A voice, finish or video that fails gives every credit back.
               </p>
             </section>
 
-            <section className="mt-10" aria-labelledby="cc-connections">
+            <section className="mt-12" aria-labelledby="cc-connections">
               <h2 id="cc-connections" style={DISPLAY} className="text-[30px] font-extrabold uppercase leading-none text-white">Your connections</h2>
               {CONNECTOR_MOCK || user ? <Connections /> : (
                 <div className={`${CARD} mt-4 flex flex-col items-start gap-3 p-5 sm:flex-row sm:items-center sm:justify-between`}>
@@ -122,13 +138,23 @@ export default function ConnectClaude() {
   );
 }
 
-function Step({ n, children }) {
+/** one big one-click copy: "Copied!" pops for a moment */
+function CopyBig({ value, label, small = false }) {
+  const [n, setN] = useState(0);
+  const copy = async () => { try { await navigator.clipboard.writeText(value); } catch { /* the value is shown */ } setN((x) => x + 1); window.setTimeout(() => setN(0), 1800); };
   return (
-    <li className="flex gap-3">
-      <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-lime-300 text-[12px] font-black text-[#11150D]">{n}</span>
-      <span>{children}</span>
-    </li>
+    <div>
+      <button type="button" key={n} onClick={copy} className={`${PRIMARY} w-full ${small ? "" : "min-h-12 text-[16px]"} ${n ? "sk-copied" : ""}`}>
+        {n ? <Check className="h-5 w-5" aria-hidden="true" /> : <Copy className="h-5 w-5" aria-hidden="true" />}{n ? "Copied!" : label}
+      </button>
+      {!small && <p className="mt-2 truncate font-mono text-[12px] text-white/45" title={value}>{value}</p>}
+    </div>
   );
+}
+
+function StepBadge({ icon, text }) {
+  const Icon = icon;
+  return <p className="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-dashed border-lime-300/30 px-3 text-[13px] font-bold text-lime-100/85"><Icon className="h-4 w-4 text-lime-300" aria-hidden="true" />{text}</p>;
 }
 
 function Connections() {
@@ -171,7 +197,7 @@ function Connections() {
 
 function ClosedNote({ signedIn, onSignIn }) {
   return (
-    <div className={`${CARD} mt-8 max-w-[560px] p-6`}>
+    <div className={`${CARD} mx-auto mt-8 max-w-[560px] p-6`}>
       <p className="text-[17px] font-black text-white">Coming soon</p>
       <p className="mt-2 text-[14.5px] leading-relaxed text-white/65">The Zyvo connector is being tested before launch.{signedIn ? " It isn't open for this account yet." : " Signed up already? Sign in to check."}</p>
       {!signedIn && <button type="button" className={`${SECONDARY} mt-4`} onClick={onSignIn}>Sign in</button>}

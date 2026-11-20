@@ -44,10 +44,11 @@ test("the result screen: separate Copy buttons for the title, the description an
   assert.ok(!/postText/.test(panel), "no single combined Copy any more");
 });
 
-test("'What we can film' is the server's kit list; 'Move it to our town' shows only for a whole-premise miss", () => {
+test("the old 'What we can film' chips are gone (owner 2026-11-20: 'Any rule, any town'); 'Move it to our town' shows only for a whole-premise miss", () => {
   const story = src("StoryStep.jsx"), script = src("ScriptStep.jsx"), hook = src("hooks/useBlockyWorlds.js");
-  assert.match(story, /flow\.access\?\.film\?\.length > 0 && <CanFilm items=\{flow\.access\.film\} \/>/);
-  assert.ok(!/"5 monster looks"|"18 animals"/.test(story), "never hand-written");
+  assert.match(story, /<AnyTown \/>/);
+  assert.match(story, /Any rule, any town: we build what your story needs\./);
+  assert.ok(!/What we can film|<CanFilm|"5 monster looks"|"18 animals"/.test(story), "the board kit's chips are not shown");
   assert.match(script, /loose\.some\(\(x\) => x\.fix === "move"\)/);
   assert.match(script, /onClick=\{flow\.moveToTown\}/);
   assert.match(hook, /worldsCall\("rewrite", \{ draftId: draft\.id, move: true, lengthSec \}\)/);

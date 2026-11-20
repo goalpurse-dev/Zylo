@@ -4,7 +4,7 @@
 import { Component, useEffect, useMemo, useRef, useState } from "react";
 import { EXAMPLE_IDEAS } from "../../../../supabase/functions/_shared/blockyWorlds/examples.js";
 import { cx } from "../../ui/zyvo";
-import { CLIPS, clipPoster, clipSrc, useReducedMotion } from "./clips";
+import { CLIP_CROP, CLIPS, clipPoster, clipSrc, useReducedMotion } from "./clips";
 import "./blockyWorlds.css";
 
 
@@ -46,7 +46,7 @@ export function Clip({ clip, playing = true, className = "" }) {
   }, [playing, still]);
   return (
     <video ref={ref} src={clipSrc(clip)} poster={clipPoster(clip)} muted loop playsInline preload="metadata" disablePictureInPicture aria-hidden="true"
-      className={cx("absolute inset-0 h-full w-full object-cover", className)} />
+      className={cx("absolute inset-0 h-full w-full object-cover", CLIP_CROP, className)} />
   );
 }
 
