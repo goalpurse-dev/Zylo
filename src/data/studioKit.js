@@ -3,8 +3,17 @@
 // Prices are the connector's own (supabase/functions/_shared/zyvoMcp/config.js); the server always re-checks them.
 import { FINISH_CREDITS, VIDEO_CREDITS, WRITE_SCRIPT_CREDITS, voiceCredits } from "../../supabase/functions/_shared/zyvoMcp/config.js";
 
-export const STUDIO_PROJECTS_PATH = "/workspace/studio-projects";
-export const CONNECT_CLAUDE_PATH = "/connect-claude";
+// The MCP section in the tools shell (owner 2026-11-20): three tabs, Connect / Templates / MCP Studio.
+export const MCP_PATH = "/workspace/mcp";
+export const MCP_CONNECT_PATH = `${MCP_PATH}/connect`;
+export const MCP_TEMPLATES_PATH = `${MCP_PATH}/templates`;
+export const MCP_STUDIO_PATH = `${MCP_PATH}/studio`;
+export const mcpTemplatePath = (id) => `${MCP_TEMPLATES_PATH}/${id}`;
+// the names the pages already use, now pointing at the tabs; the old addresses only redirect (App.jsx, vercel.json)
+export const STUDIO_PROJECTS_PATH = MCP_STUDIO_PATH;
+export const CONNECT_CLAUDE_PATH = MCP_CONNECT_PATH;
+export const OLD_STUDIO_PROJECTS_PATH = "/workspace/studio-projects";
+export const OLD_CONNECT_CLAUDE_PATH = "/connect-claude";
 export const CONSENT_PATH = "/connect/authorize";
 
 /**
@@ -19,7 +28,7 @@ export const CLAUDE_CODE_COMMAND = `claude mcp add --transport http --scope user
 /** what the connector can do, as the Connect Claude page lists it */
 export const CONNECTOR_TOOLS = [
   { name: "Story ideas", what: "Ideas for your town, each rule checked by our idea engine", price: "Free" },
-  { name: "Save your Studio project", what: "Your script and shot plan show up under Studio projects", price: "Free" },
+  { name: "Save your Studio project", what: "Your script and shot plan show up in MCP Studio", price: "Free" },
   { name: "Check progress, list my videos", what: "Where a voice, finish or video is, with links", price: "Free" },
   { name: "Write the script", what: "Our tested writer, from your topic or idea", price: `${WRITE_SCRIPT_CREDITS} credits` },
   { name: "Make the voice", what: "Our narrator voice with exact word timings", price: `${voiceCredits(60)}-${voiceCredits(120)} credits` },

@@ -1,6 +1,8 @@
-# Zyvo Studio Kit (free)
+# Roblox Story: the Zyvo Studio Kit (free)
 
-Make a Roblox "In This Town" story short in your own Roblox Studio, with Claude doing the building. Claude writes the
+Make a Roblox "In This Town" story short in your own Roblox Studio, with Claude doing the building. Install the folder as
+`~/.claude/skills/roblox-story` (Windows: `C:\Users\<you>\.claude\skills\roblox-story`), then type **`/roblox-story`** in
+Claude Code or the Claude desktop app's Code tab (or `/roblox-story <your rule>` to start straight away). Claude writes the
 story, builds the town, dresses the cast, places every camera, checks every shot in a 9:16 frame and runs the whole
 film in Play while you screen-record it. Free: the kit costs nothing, and nothing leaves your computer except what
 Claude and Roblox Studio normally send.

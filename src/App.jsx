@@ -25,6 +25,7 @@ import LongFormScriptReadyNotifier from "./components/LongFormScriptReadyNotifie
 import { BLOCKY_STORIES_PATH } from "./data/blockyStories";
 import { CUTAWAY_PATH } from "./data/cutawayExplainer";
 import { BLOCKY_WORLDS_PATH } from "./data/blockyWorlds";
+import { MCP_CONNECT_PATH, MCP_PATH, MCP_STUDIO_PATH, OLD_CONNECT_CLAUDE_PATH, OLD_STUDIO_PROJECTS_PATH } from "./data/studioKit";
 import { AFFILIATE_PATH, captureRefFromUrl } from "./lib/affiliate";
 import BlockyWorldsGate from "./components/viral-tools/blocky-worlds/BlockyWorldsGate";
 
@@ -80,6 +81,9 @@ const CutawayExplainer = lazy(() => import("./pages/workspace/CutawayExplainer")
 const BlockyWorlds = lazy(() => import("./pages/workspace/BlockyWorlds"));
 const StudioProjects = lazy(() => import("./pages/studio/StudioProjects"));
 const ConnectClaude = lazy(() => import("./pages/studio/ConnectClaude"));
+const McpLayout = lazy(() => import("./pages/studio/McpLayout"));
+const McpTemplates = lazy(() => import("./pages/studio/McpTemplates"));
+const McpTemplateGuide = lazy(() => import("./pages/studio/McpTemplateGuide"));
 const ConnectAuthorize = lazy(() => import("./pages/studio/ConnectAuthorize"));
 const FirstVideo = lazy(() => import("./pages/onboarding/FirstVideo.jsx"));
 const SkeletonShorts = lazy(() => import("./pages/workspace/SkeletonShorts"));
@@ -831,9 +835,17 @@ return (
   {/* Blocky Worlds: the server decides who may see it (BLOCKY_WORLDS_ACCESS); everyone else is sent home */}
   <Route path="/workspace/blocky-worlds" element={<Navigate replace to={{ pathname: BLOCKY_WORLDS_PATH, search: location.search, hash: location.hash }} />} />
   <Route path={BLOCKY_WORLDS_PATH} element={<BlockyWorldsGate><BlockyWorlds /></BlockyWorldsGate>} />
-  {/* The Zyvo Studio Kit + connector (docs/zyvo-studio-kit-plan.md): the projects tab and the how-to page */}
-  <Route path="/workspace/studio-projects" element={<StudioProjects />} />
-  <Route path="/connect-claude" element={<ConnectClaude />} />
+  {/* The MCP section (Zyvo Studio Kit + connector, docs/zyvo-studio-kit-plan.md): Connect, Templates, MCP Studio.
+      The old addresses redirect to the tabs, keeping ?connected=1 / ?tab=code and a project's #<id>. */}
+  <Route path={MCP_PATH} element={<McpLayout />}>
+    <Route index element={<Navigate replace to={MCP_CONNECT_PATH} />} />
+    <Route path="connect" element={<ConnectClaude />} />
+    <Route path="templates" element={<McpTemplates />} />
+    <Route path="templates/:id" element={<McpTemplateGuide />} />
+    <Route path="studio" element={<StudioProjects />} />
+  </Route>
+  <Route path={OLD_STUDIO_PROJECTS_PATH} element={<Navigate replace to={{ pathname: MCP_STUDIO_PATH, search: location.search, hash: location.hash }} />} />
+  <Route path={OLD_CONNECT_CLAUDE_PATH} element={<Navigate replace to={{ pathname: MCP_CONNECT_PATH, search: location.search, hash: location.hash }} />} />
   <Route path="/workspace/face-asmr" element={<FaceAsmrPage />} />
   <Route path="/workspace/skeleton-shorts" element={<SkeletonShorts />} />
   <Route path="/workspace/micro-camera-animal" element={<MicroCameraAnimalPage />} />

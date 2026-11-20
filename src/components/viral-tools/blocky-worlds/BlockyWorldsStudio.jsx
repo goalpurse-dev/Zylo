@@ -116,7 +116,7 @@ export default function BlockyWorldsStudio({ access: pageAccess, onSignUp, onUpg
         <div className="flex items-center gap-3">
         {studioOpen && (
           <Link to={STUDIO_PROJECTS_PATH} className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1.5 text-[12px] font-bold text-white/75 transition hover:border-lime-300/40 hover:text-white" data-testid="bw-studio-projects">
-            <MonitorPlay className="h-3.5 w-3.5 text-lime-300" aria-hidden="true" />Studio projects
+            <MonitorPlay className="h-3.5 w-3.5 text-lime-300" aria-hidden="true" />MCP Studio
           </Link>
         )}
         <ol className="flex items-center gap-1.5" aria-label={`Step ${step + 1} of 3: ${STEPS[step]}`}>

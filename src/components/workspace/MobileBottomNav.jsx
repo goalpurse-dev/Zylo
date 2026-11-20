@@ -1,6 +1,8 @@
 import { useEffect, useState, isValidElement } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ChevronRight, Clapperboard, Home, Folder, HandCoins, LayoutGrid, Menu, Sparkles, X } from "lucide-react";
+import { ChevronRight, Clapperboard, Home, Folder, HandCoins, LayoutGrid, Menu, Plug, Sparkles, X } from "lucide-react";
+import { useStudioOpen } from "../studio-kit/useStudioOpen";
+import { MCP_PATH } from "../../data/studioKit";
 import EarnBadge from "../affiliate/EarnBadge.jsx";
 import { AFFILIATE_PATH } from "../../lib/affiliate";
 import { createPortal } from "react-dom";
@@ -124,10 +126,14 @@ const MORE_ITEMS = [
   { id: "creations", label: "Creations", sub: "Everything you've made", path: "/workspace/creations", icon: Folder },
   { id: "affiliate", label: "Affiliate", sub: "Share your code, get paid", path: AFFILIATE_PATH, icon: HandCoins, earn: true },
 ];
+// owner-only until STUDIO_KIT_PUBLIC: shown only when the server says MCP is open for this account
+const MCP_ITEM = { id: "mcp", label: "MCP", sub: "Claude + Roblox Studio templates", path: MCP_PATH, icon: Plug };
+const useMoreItems = () => (useStudioOpen() === "open" ? [MORE_ITEMS[0], MCP_ITEM, ...MORE_ITEMS.slice(1)] : MORE_ITEMS);
 
 function MoreSheet({ open, onClose }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const items = useMoreItems();
 
   useEffect(() => {
     if (!open) return undefined;
@@ -157,7 +163,7 @@ function MoreSheet({ open, onClose }) {
           </button>
         </div>
         <div className="grid gap-2">
-          {MORE_ITEMS.map((item) => {
+          {items.map((item) => {
             const active = location.pathname.startsWith(item.path);
             const Icon = item.icon;
             return (
@@ -243,7 +249,8 @@ export default function MobileBottomNav({ hidden }) {
     location.pathname.startsWith("/workspace/behind-the-scenes");
   const [moreOpen, setMoreOpen] = useState(false);
   const anyMenuOpen = createOpen || workspaceOpen || moreOpen;
-  const moreRouteActive = MORE_ITEMS.some((item) => location.pathname.startsWith(item.path));
+  const moreItems = useMoreItems();
+  const moreRouteActive = moreItems.some((item) => location.pathname.startsWith(item.path));
   const workspaceRouteActive =
     location.pathname.startsWith("/workspace/image-generator") ||
     location.pathname.startsWith("/workspace/video-generator");
