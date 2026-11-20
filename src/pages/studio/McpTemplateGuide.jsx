@@ -136,6 +136,8 @@ function StepCard({ s, n, kit }) {
             <p className="text-[16px] font-black leading-tight text-white sm:text-[17px]">{s.title}</p>
           </div>
           <p className="mt-2.5 text-[14px] leading-relaxed text-white/80">{s.text}</p>
+          {s.download && <div className="mt-3"><KitButton kit={kit} />{kit.notice && <p className="mt-2 text-[13px] text-amber-200" role="status">{kit.notice}</p>}</div>}
+          {s.prompt && <div className="mt-2.5"><CopyLine label={s.promptLabel ?? "The prompt"} value={s.prompt} big /></div>}
           {s.bullets && (
             <ul className="mt-2.5 space-y-1.5">
               {s.bullets.map((b) => <li key={b} className="flex gap-2 text-[13.5px] leading-relaxed text-white/80"><Check className="mt-1 h-3.5 w-3.5 shrink-0 text-lime-300" aria-hidden="true" /><span className="min-w-0 break-words">{b}</span></li>)}
@@ -149,8 +151,6 @@ function StepCard({ s, n, kit }) {
           )}
           {s.after && <p className="mt-2.5 text-[14px] leading-relaxed text-white/80">{s.after}</p>}
           {s.alt && <div className="mt-2.5"><CopyLine label={s.alt.label} value={s.alt.value} quiet /></div>}
-          {s.prompt && <div className="mt-2.5"><CopyLine label={s.promptLabel ?? "The prompt"} value={s.prompt} big /></div>}
-          {s.download && <div className="mt-3"><KitButton kit={kit} />{kit.notice && <p className="mt-2 text-[13px] text-amber-200" role="status">{kit.notice}</p>}</div>}
           {s.connectHelp && (
             <Link to={MCP_CONNECT_PATH} className={`mt-3 flex items-center justify-between gap-3 rounded-lg border border-dashed border-white/15 px-3.5 py-2.5 transition hover:border-lime-300/50 ${FOCUS}`}>
               <span className="flex items-center gap-2.5"><Plug className="h-4 w-4 shrink-0 text-lime-300" aria-hidden="true" /><span><span className="block text-[13.5px] font-bold text-white">The Connect tab</span><span className="text-[12.5px] text-white/55">Copy buttons, both ways and Test my connection</span></span></span>
@@ -296,7 +296,7 @@ function CopyLine({ label, value, big = false, quiet = false }) {
           {copied ? <Check className="h-3.5 w-3.5 text-lime-300" aria-hidden="true" /> : <Copy className="h-3.5 w-3.5" aria-hidden="true" />}{copied ? "Copied" : "Copy"}
         </button>
       </div>
-      <code className={`block select-all break-all px-3 py-2 font-mono leading-relaxed ${quiet ? "text-white/70" : "text-lime-100"} ${big ? "text-[14px]" : "text-[12.5px]"}`}>{value}</code>
+      <code className={`block select-all ${big ? "break-words" : "break-all"} px-3 py-2 font-mono leading-relaxed ${quiet ? "text-white/70" : "text-lime-100"} ${big ? "text-[14px]" : "text-[12.5px]"}`}>{value}</code>
     </div>
   );
 }

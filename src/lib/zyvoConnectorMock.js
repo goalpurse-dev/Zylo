@@ -126,6 +126,6 @@ export async function mockConnector(path, { body = {}, query = {} } = {}) {
     return { ok: true, job: p.job };
   }
   if (path === "/account/studio/remove") { state.projects = state.projects.filter((x) => x.id !== body.id); return { ok: true }; }
-  if (path === "/account/kit") return { url: "#mock-kit-download", version: "1.2.0", fileName: "roblox-story.zip" };
+  if (path === "/account/kit") return { url: "#mock-kit-download", version: "1.3.0", fileName: "roblox-story.zip" };
   return fail("not_found", "Unknown mock route.");
 }

@@ -10,6 +10,8 @@ import { CLAUDE_CODE_COMMAND, CLAUDE_CODE_NAME, MCP_URL } from "./studioKit.js";
 // the kit is the Claude Code skill "roblox-story" (kits/roblox-story/SKILL.md): its folder name is the slash command
 export const KIT_SKILL = "roblox-story";
 export const KIT_COMMAND = `/${KIT_SKILL}`;
+/** the recommended install (owner 2026-11-20, kit 1.3.0): the user pastes this into Claude Code, Claude does the rest */
+export const KIT_INSTALL_PROMPT = `Install the ${KIT_SKILL} kit from my Downloads folder into my Claude skills folder`;
 export const KIT_FIRST_QUESTION = "What's your In This Town rule? Type it, or say 'ideas' and I'll suggest some.";
 /** the tones /roblox-story offers after the rule (owner 2026-11-20) */
 export const KIT_TONES = ["Spooky (mimic horror)", "Funny", "Wholesome", "Twist"];
@@ -48,9 +50,14 @@ export const MCP_TEMPLATES = [
       {
         id: "install",
         title: "Install the kit",
-        text: `Download the kit (below), then unzip it into Claude's skills folder, so the folder ${KIT_SKILL} sits right inside skills. That folder name is the command you'll type in step 4.`,
-        bullets: [`Windows: C:\\Users\\<you>\\.claude\\skills\\${KIT_SKILL}`, `Mac: ~/.claude/skills/${KIT_SKILL}`],
+        text: "Download the kit, then open the Claude app's Code tab (any folder) and paste the line below. Claude makes the folders, unzips the kit into your skills folder and checks it.",
         download: true,
+        prompt: KIT_INSTALL_PROMPT,
+        promptLabel: "Paste this into Claude",
+        bullets: [
+          `When Claude says it's installed, start a NEW Code session: that's where ${KIT_COMMAND} works.`,
+          `By hand instead: unzip it so the folder ${KIT_SKILL} sits right inside skills. Windows: C:\\Users\\<you>\\.claude\\skills\\${KIT_SKILL}. Mac: ~/.claude/skills/${KIT_SKILL}.`,
+        ],
         diagram: { kind: "folders", path: [".claude", "skills", KIT_SKILL], files: ["SKILL.md", "QUICKSTART.md", "luau", "scripts"] },
       },
       {
@@ -130,6 +137,7 @@ export const MCP_TEMPLATES = [
       },
     ],
     problems: [
+      { q: `${KIT_COMMAND} isn't found`, a: `The kit isn't in the skills folder yet, or the session started before it was. Paste "${KIT_INSTALL_PROMPT}" into Claude, then start a NEW Code session and type ${KIT_COMMAND} again.` },
       { q: "\"claude\" is not recognized", a: "Your terminal can't find Claude Code: it isn't on your PATH yet. Use the Claude desktop app's Code tab (no terminal needed), or open a NEW terminal after installing Claude Code. Still not found on Windows? Add the folder the installer named (usually %USERPROFILE%\\.local\\bin) to PATH, then open a new terminal." },
       { q: "Zyvo shows up twice in /mcp", a: `It was added both ways. Keep ${CLAUDE_CODE_NAME} (the Claude app's connector) and remove the terminal one: claude mcp remove --scope user zyvo` },
       { q: "The Roblox tools aren't loaded", a: "Open Roblox Studio first (with Enable Studio as MCP server on), then close Claude Code and start it again in your video folder. Type /mcp: Roblox_Studio must say connected. Started in another folder? Add it with --scope user (step 3) so it works in every folder." },
