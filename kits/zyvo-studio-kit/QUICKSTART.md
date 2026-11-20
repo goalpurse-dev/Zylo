@@ -33,8 +33,9 @@ Cmd+Shift+5 > Options > Microphone: None). Maximize Studio, start recording (Win
 starts Play. The picture looks sideways in Studio: that's expected. Stop recording when it goes black at the end.
 
 **8. Finish it.** Give Claude the recording's file path. It turns it upright, crops it to 9:16 and lines it up with
-the voice (needs ffmpeg; Claude offers to install it). Add your voice, captions and music in any editor, or let Zyvo
-finish it for you: voice, captions, sound effects and music, with and without music.
+the voice (needs ffmpeg; Claude offers to install it), then adds your voice and simple white one-word captions:
+`final_free.mp4` is ready to post. Want more? Let Zyvo finish it: our voice, coloured captions per speaker, sound
+effects and music, with and without music.
 
 Never publish the place or save it to Roblox. File > Save to File (a copy on your computer) is fine if you want to
 come back later.

@@ -13,7 +13,9 @@
 // It does not take a run while paid calls are off or the emergency cap is reached (the run waits; the sweeper fails and
 // refunds it after maxWaitMin if nobody can take it).
 // SIGTERM (a deploy, a stop): stops taking runs; a run in progress is failed and refunded at once (WORKER_RESTART), so
-// deploy the worker while it is idle (the launch doc says how to check).
+// deploy the worker while it is idle (the launch doc says how to check). A studio-lane job (voice / finish) too.
+// Zyvo connector jobs run in the STUDIO LANE (studioLane.mjs): a child process at nice 19 beside the video loop, so a
+// full video never waits behind a finish.
 import fs from "node:fs";
 import { decide } from "../../../supabase/functions/_shared/blockyWorlds/guard.js";
 import { makeStudioRuns } from "../../../supabase/functions/_shared/blockyWorlds/studioRuns.js";
@@ -31,6 +33,7 @@ if (argv.includes("--smoke")) {
   keysFromEnv();
   await import("./steps.mjs");
   await import("./studioJobs.mjs");
+  await import("./studioLane.mjs");
   await import("../blenderKit/workerSteps.mjs");
   await import("../blenderKit/director.mjs");
   await import("../blenderKit/notes.mjs");
@@ -71,7 +74,8 @@ const { makeSteps } = await import("./steps.mjs");
 const { ledger } = await import("../studio/ledger.mjs");
 const db = restDb({ url: cfg.supabaseUrl, key: cfg.serviceKey });
 const storage = restStorage({ url: cfg.supabaseUrl, key: cfg.serviceKey });
-const { restStudio, runStudioJob } = await import("./studioJobs.mjs");
+const { restStudio } = await import("./studioJobs.mjs");
+const { startLane } = await import("./studioLane.mjs");
 const studioDb = restStudio({ url: cfg.supabaseUrl, key: cfg.serviceKey });
 let studioSweptAt = 0;
 const steps = makeSteps({ anthropicKey: cfg.anthropicKey, elevenKey: cfg.elevenKey });
@@ -83,7 +87,7 @@ if (String(process.env.BLOCKY_WORLDS_RENDER_ENGINE ?? "").trim().toLowerCase() =
 fs.mkdirSync(cfg.workDir, { recursive: true });
 
 const control = { stop: null };
-let current = null, currentStudio = null, stopping = false;
+let current = null, currentStudio = null, lane = null, stopping = false;
 async function shutdown(signal) {
   if (stopping) return;
   stopping = true;
@@ -93,7 +97,8 @@ async function shutdown(signal) {
     await makeStudioRuns({ db, log: say }).failRun(current, "WORKER_RESTART", control.stop.message, { worker: cfg.workerId }).catch((e) => say(`fail write: ${e?.message ?? e} (the sweeper refunds it)`));
   }
   if (currentStudio) {
-    // a voice / finish in progress: failed and refunded now (never left for the 30-minute sweep)
+    // a voice / finish in progress: its lane is stopped, the job failed and refunded now (never left for the sweep)
+    lane?.kill();
     await studioDb.update(currentStudio.id, { status: "failed", stage: "failed", error_code: "WORKER_RESTART", error_message: "Our studio restarted while making it. Your credits were given back.", finished_at: new Date().toISOString() }, cfg.workerId).catch(() => {});
     await studioDb.refund(currentStudio.id, "worker_restart").catch((e) => say(`studio refund: ${e?.message ?? e} (the sweep refunds it)`));
   }
@@ -114,27 +119,34 @@ while (!stopping) {
     if (!d.ok) { if (Date.now() - idleNote > 600000) { say(`not taking runs: ${d.reason}`); idleNote = Date.now(); } await sleep(60000); continue; }
     const run = await db.claim(cfg.workerId);
     if (!run) {
-      // THE ZYVO CONNECTOR (studioJobs.mjs): a voice or a finish when no video run waits (video runs always first)
+      // THE ZYVO CONNECTOR (studioJobs.mjs): a voice or a finish when no video run waits (video runs always first;
+      // a video that arrives while a finish runs is taken at the next poll, the finish carries on in its lane)
       if (Date.now() - studioSweptAt > 300_000) {
         studioSweptAt = Date.now();
         const n = await studioDb.sweep(); if (n) say(`studio jobs: ${n} stuck job(s) failed and refunded`);
         const old = await studioDb.oldRecordings().catch(() => []);
         if (old.length) { await studioDb.remove(old.map((p) => p.recording?.path).filter(Boolean)); for (const p of old) await studioDb.saveProject(p.id, p.user_id, { recording: null }).catch(() => {}); say(`studio: ${old.length} recording(s) older than 7 days deleted`); }
       }
-      const job = await studioDb.claim(cfg.workerId).catch((e) => { say(`studio claim: ${e?.message ?? e}`); return null; });
-      if (job) {
-        say(`took studio job ${job.id} (${job.kind})`);
-        await db.workerSeen(cfg.workerId, { version: cfg.version, busyRun: null }).catch(() => {});
-        const keepHello = setInterval(() => { db.workerSeen(cfg.workerId, { version: cfg.version, busyRun: null }).catch(() => {}); }, STUDIO.heartbeatSec * 1000);
-        currentStudio = job;
-        try {
-          const r = await runStudioJob(job, { db: studioDb, steps, makeLedger: ledger, workDir: cfg.workDir, workerId: cfg.workerId, anthropicKey: cfg.anthropicKey, keepWork: cfg.keepWork, log: say });
-          say(`studio job ${job.id}: ${r.ok ? "done" : `failed ${r.code}`} ($${(+r.usd).toFixed(4)})`);
-        } finally { clearInterval(keepHello); currentStudio = null; hello = 0; }
-        if (argv.includes("--once")) break;
-        continue;
+      // the studio lane (studioLane.mjs): a voice / finish in its own low-priority process; this loop goes straight
+      // back to polling for video runs, so a video never waits behind a finish (one lane job at a time)
+      if (!lane) {
+        const job = await studioDb.claim(cfg.workerId).catch((e) => { say(`studio claim: ${e?.message ?? e}`); return null; });
+        if (job) {
+          say(`took studio job ${job.id} (${job.kind}) into the studio lane`);
+          currentStudio = job;
+          lane = startLane(job, { workerId: cfg.workerId, workDir: cfg.workDir, log: say });
+          lane.promise.then(async (r) => {
+            say(`studio job ${job.id}: ${r.ok ? "done" : `failed ${r.code}`} ($${(+r.usd || 0).toFixed(4)})`);
+            // the lane died before it could write the job's end (a crash, not a refused finish): fail + refund now
+            if (!r.ok && (r.code === "LANE_CRASH") && !stopping) {
+              await studioDb.update(job.id, { status: "failed", stage: "failed", error_code: "FAILED", error_message: "It didn't work on our side. Your credits were given back.", finished_at: new Date().toISOString() }, cfg.workerId).catch(() => {});
+              await studioDb.refund(job.id, "lane_crash").catch((e) => say(`studio refund: ${e?.message ?? e} (the sweep refunds it)`));
+            }
+          }).finally(() => { lane = null; currentStudio = null; });
+        }
       }
-      if (argv.includes("--once")) break; await sleep(cfg.pollSec * 1000); continue;
+      if (argv.includes("--once")) { if (lane) await lane.promise; break; }
+      await sleep(cfg.pollSec * 1000); continue;
     }
     current = run;
     say(`took run ${run.id} ("${String(run.title).slice(0, 60)}", ${run.length_sec} s)`);

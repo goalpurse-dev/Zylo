@@ -80,10 +80,18 @@ export const UPLOAD = Object.freeze({
   keepDays: 7,
 });
 
+/** the free Studio Kit's zip in the private zyvo-studio bucket (scripts/studioKit/packKit.mjs builds it; phase 3 uploads it) */
+export const KIT = Object.freeze({
+  version: "1.0.0",
+  path: "kit/zyvo-studio-kit-1.0.0.zip",
+  fileName: "zyvo-studio-kit.zip",
+  linkTtlSec: 600,
+});
+
 export const URLS = Object.freeze({
   site: "https://www.tryzyvo.com",
   page: "https://www.tryzyvo.com/in-this-town-story-video-maker",
-  projects: "https://www.tryzyvo.com/studio-projects",
+  projects: "https://www.tryzyvo.com/workspace/studio-projects",
   consent: "https://www.tryzyvo.com/connect/authorize",
   connect: "https://www.tryzyvo.com/connect-claude",
 });

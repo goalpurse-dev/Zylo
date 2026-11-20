@@ -19,7 +19,8 @@ out to the user, and then times the shot list to whatever comes back. Three ways
 
 Give them the narration as clean text in ONE code block, ready to paste: the script lines in order, no line numbers, no
 beat tags, no stage notes, one line per sentence group, numbers written as they should be read ("three twelve", not
-"3:12"). Then our recommended settings, in plain words:
+"3:12"). Save the same text as `zyvo-project/<slug>/narration.txt`: the free captions step (`scripts/add_captions.sh`)
+times its captions from it. Then our recommended settings, in plain words:
 
 - **ElevenLabs** (their own account): the voice "Scruffy Duck" (voice id `8VJBrRk4O7tFoB5kqxa6`) or any voice they like,
   model Eleven v3. Download the mp3.

@@ -8,6 +8,7 @@ import { useFirstInteraction } from "../../lib/firstInteraction.js";
 import { stashTownTopic } from "../../lib/promptHandoff.js";
 import { STICKMAN_FONT_HREF } from "../../data/stickmanLandingPages.js";
 import { TutorialGrid } from "./TownTutorials.jsx";
+import StudioKitSection from "../../components/studio-kit/StudioKitSection.jsx";
 import {
   GENRE, IN_THIS_TOWN_PRICE, IN_THIS_TOWN_SEO, IN_THIS_TOWN_TOOL_PATH, TOWN_BLOG, TOWN_FAQ, TOWN_FEATURES, TOWN_IDEAS, TOWN_NOTICE,
   TOWN_STEPS, TOWN_STORIES, TOWN_WALL, townPreview,
@@ -353,6 +354,9 @@ export default function InThisTownLanding() {
           </div>
         </div>
       </section>
+
+      {/* MAKE IT IN ROBLOX STUDIO (free kit): only for open accounts until launch, never in the prerendered HTML */}
+      <StudioKitSection slug={SLUG} />
 
       {/* FAQ */}
       <section className={`${WRAP} py-12 sm:py-16`} aria-labelledby="itt-faq">

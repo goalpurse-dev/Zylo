@@ -45,3 +45,4 @@ scripts/blockyWorlds/look/ph/
 scripts/blockyWorlds/engine/assets/
 scripts/blockyWorlds/engine/node_modules/
 scripts/blockyWorlds/engine/out/
+dist-kit/

@@ -85,6 +85,8 @@ function memory() {
     async updateProject(u, pid, row) { const p = t.projects.find((x) => x.id === pid && x.user_id === u); Object.assign(p, row, { updated_at: iso() }); return { ...p }; },
     async listProjects(u) { return t.projects.filter((p) => p.user_id === u); },
     async voiceWords() { return [{ word: "And", start: 0, end: 0.2 }]; },
+    kits: [],
+    async logKitDownload(r) { store.kits.push(r); },
   };
   return store;
 }
@@ -107,6 +109,9 @@ function setup({ plan = "pro", access = "owner", writeFails = false } = {}) {
     async signUpload(path) { return { url: `https://storage.example/upload/${path}?token=t`, path }; },
     async signDownload(path) { return path ? `https://storage.example/dl/${path}` : null; },
     async exists(path) { return uploads.has(path) ? { bytes: 123456 } : null; },
+    async signDownloads(paths) { return new Map(paths.map((p) => [p, `https://storage.example/view/${p}`])); },
+    removed: [],
+    async remove(paths) { storage.removed.push(...paths); },
   };
   const users = { [OWNER]: { email: "owner@x.test", emailConfirmed: true, plan, owner: true }, [OTHER]: { email: "other@x.test", emailConfirmed: true, plan: "free", owner: false } };
   const server = makeServer({
@@ -118,7 +123,7 @@ function setup({ plan = "pro", access = "owner", writeFails = false } = {}) {
     background: () => {},
   });
   const req = (method, path, { body, query, headers = {} } = {}) => server.handle({ method, path, body, query, headers: Object.fromEntries(Object.entries(headers).map(([k, v]) => [k.toLowerCase(), v])), ip: "1.2.3.4" });
-  return { store, server, req, apiCalls, uploads };
+  return { store, server, req, apiCalls, uploads, storage };
 }
 
 /** the whole sign-in a client does; returns its tokens */
@@ -382,4 +387,77 @@ test("permissions: a connection without spend can quote but never charge; a clos
   const res = await call(closed, c.tok.body.access_token, "suggest_ideas", {});
   assert.equal(res.isError, true);
   assert.match(res.content[0].text, /isn't open/);
+});
+
+test("the site: Studio projects cards, Create voice at the shown price only, upload, finish, remove, the counted kit", async () => {
+  const s = setup();
+  const at = (await connect(s)).tok.body.access_token;
+  const lines = Array.from({ length: 30 }, (_, i) => ({ text: `Line ${i + 1} of the story, about the shadow and the town.` }));
+  const pid = (await call(s, at, "report_studio_project", { kit_project_id: "shadow-talk", title: "Shadow Talk", script: { lines } })).structuredContent.project_id;
+  const site = (method, path, body) => s.req(method, path, { body, headers: { Authorization: "Bearer site-owner", Origin: "https://www.tryzyvo.com" } });
+
+  // signed out: refused; another account: its own (empty) list
+  assert.equal((await s.req("GET", "/account/studio", { headers: {} })).status, 401);
+  const list = await site("GET", "/account/studio");
+  assert.equal(list.status, 200);
+  assert.equal(list.headers["Access-Control-Allow-Origin"], "https://www.tryzyvo.com");
+  const c0 = list.body.projects[0];
+  assert.equal(c0.status, "voice_needed");
+  assert.equal(c0.lines.length, 30);
+  assert.equal(list.body.freeFinish, true);
+
+  // Create voice: the card's price must match; a stale price charges nothing
+  const before = s.store.balance[OWNER];
+  const stalePrice = await site("POST", "/account/studio/voice", { id: pid, credits: c0.prices.voice + 3 });
+  assert.equal(stalePrice.status, 409);
+  assert.equal(stalePrice.body.error, "PRICE_CHANGED");
+  assert.equal(s.store.balance[OWNER], before);
+  const v = await site("POST", "/account/studio/voice", { id: pid, credits: c0.prices.voice });
+  assert.equal(v.status, 200);
+  assert.equal(s.store.balance[OWNER], before - c0.prices.voice);
+  assert.equal((await site("POST", "/account/studio/voice", { id: pid, credits: c0.prices.voice })).status, 409, "one voice at a time");
+  assert.equal(s.store.balance[OWNER], before - c0.prices.voice);
+  // someone else's project: not found, nothing charged
+  const other = await s.req("POST", "/account/studio/voice", { body: { id: pid, credits: c0.prices.voice }, headers: { Authorization: "Bearer site-other" } });
+  assert.ok([403, 404].includes(other.status));
+
+  // the worker made the voice
+  const job = s.store.t.jobs.find((j) => j.kind === "voice");
+  job.status = "done";
+  Object.assign(s.store.t.projects[0], { voice: { mp3: `${OWNER}/${pid}/voice.mp3`, words: `${OWNER}/${pid}/words.json`, seconds: 74.2 } });
+  const ready = (await site("GET", "/account/studio")).body.projects[0];
+  assert.equal(ready.status, "voice_ready");
+  assert.match(ready.voice.mp3, /storage\.example\/view/);
+  assert.equal(ready.prices.finish, 10);
+
+  // finish needs the recording; the upload link, then the file lands
+  assert.equal((await site("POST", "/account/studio/finish", { id: pid, credits: 0 })).body.error, "NEED_UPLOAD");
+  assert.equal((await site("POST", "/account/studio/upload", { id: pid, format: "exe", bytes: 10 })).status, 400);
+  assert.equal((await site("POST", "/account/studio/upload", { id: pid, format: "mp4", bytes: 600 * 1024 * 1024 })).body.error, "TOO_BIG");
+  const up = await site("POST", "/account/studio/upload", { id: pid, format: "mp4", bytes: 1000 });
+  assert.equal(up.status, 200);
+  assert.equal(up.body.method, "PUT");
+  assert.equal((await site("POST", "/account/studio/uploaded", { id: pid })).body.error, "NOT_UPLOADED");
+  s.uploads.add(s.store.t.projects[0].upload.path);
+  assert.equal((await site("POST", "/account/studio/uploaded", { id: pid })).status, 200);
+  const rec = (await site("GET", "/account/studio")).body.projects[0];
+  assert.equal(rec.status, "recorded");
+  assert.equal(rec.prices.finishFree, true);
+  // the first finish is free: the card said 0
+  const bal = s.store.balance[OWNER];
+  const fin = await site("POST", "/account/studio/finish", { id: pid, credits: 0 });
+  assert.equal(fin.status, 200);
+  assert.equal(fin.body.job.free, true);
+  assert.equal(s.store.balance[OWNER], bal);
+  assert.equal((await site("POST", "/account/studio/remove", { id: pid })).body.error, "BUSY");
+  s.store.t.jobs.find((j) => j.kind === "finish").status = "done";
+  assert.equal((await site("POST", "/account/studio/remove", { id: pid })).status, 200);
+
+  // the kit: counted per download, owner-only while the connector is
+  const kit = await site("POST", "/account/kit");
+  assert.equal(kit.status, 200);
+  assert.match(kit.body.url, /kit\/zyvo-studio-kit/);
+  assert.equal(s.store.kits.length, 1);
+  assert.equal((await s.req("POST", "/account/kit", { headers: { Authorization: "Bearer site-other" } })).status, 403);
+  assert.equal((await s.req("GET", "/account/studio", { headers: { Authorization: "Bearer site-other" } })).body.open, false);
 });

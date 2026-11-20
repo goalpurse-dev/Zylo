@@ -104,7 +104,9 @@ Step 9. **The Play run**: `reference/recording.md`. The camera is rolled 90 degr
 wide viewport (no phone emulator). The user starts recording, you start Play with `start_stop_play`; the director runs
 the shots silently (black lead-in, a magenta sync flash, the story, black tail). Stop Play. Ask for the file's path, run
 `scripts/make_vertical.sh` (needs ffmpeg) to turn it upright, crop it to 9:16 and trim it to the voice, check its length
-and a few frames. Then the Zyvo line for finishing.
+and a few frames. Then `scripts/add_captions.sh` for the free postable video: the voice + simple white one-word
+captions (exact from `words.json`, else timed from `narration.txt`). Then the Zyvo line for finishing (the pro
+version: our voice, coloured captions per speaker, sound effects, a mixed music bed).
 
 ## When something goes wrong
 

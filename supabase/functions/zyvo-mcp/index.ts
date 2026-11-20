@@ -112,6 +112,7 @@ const store = {
   async saveProject(userId: string, slug: string, row: any) { return must(await admin.from("zyvo_studio_projects").upsert({ user_id: userId, kit_project_id: slug, ...row, updated_at: iso() }, { onConflict: "user_id,kit_project_id" }).select("*").single()); },
   async updateProject(userId: string, id: string, row: any) { return must(await admin.from("zyvo_studio_projects").update({ ...row, updated_at: iso() }).eq("id", id).eq("user_id", userId).select("*").single()); },
   async listProjects(userId: string, n: number) { return (await admin.from("zyvo_studio_projects").select("*").eq("user_id", userId).is("deleted_at", null).order("updated_at", { ascending: false }).limit(n)).data ?? []; },
+  async logKitDownload(row: any) { await admin.from("zyvo_kit_downloads").insert(row); },
   async voiceWords(p: any) {
     if (!p.voice?.words) return null;
     const { data } = await bucket().download(p.voice.words);
@@ -121,7 +122,17 @@ const store = {
 
 const storage = {
   async signUpload(path: string) { const r = must(await bucket().createSignedUploadUrl(path)); return { url: r.signedUrl, token: r.token, path }; },
-  async signDownload(path: string | undefined, name?: string) { if (!path) return null; const { data } = await bucket().createSignedUrl(path, 3600, name ? { download: name } : undefined); return data?.signedUrl ?? null; },
+  async signDownload(path: string | undefined, name?: string, ttlSec = 3600) { if (!path) return null; const { data } = await bucket().createSignedUrl(path, ttlSec, name ? { download: name } : undefined); return data?.signedUrl ?? null; },
+  /** many view links in one call (the Studio projects tab): path -> signed URL (1 h) */
+  async signDownloads(paths: string[]) {
+    const out = new Map<string, string>();
+    const uniq = [...new Set(paths.filter(Boolean))];
+    if (!uniq.length) return out;
+    const { data } = await bucket().createSignedUrls(uniq, 3600);
+    for (const r of data ?? []) if (r.path && r.signedUrl) out.set(r.path, r.signedUrl);
+    return out;
+  },
+  async remove(paths: string[]) { const p = paths.filter(Boolean); if (p.length) await bucket().remove(p); },
   async exists(path: string) {
     const dir = path.split("/").slice(0, -1).join("/"), file = path.split("/").at(-1);
     const { data } = await bucket().list(dir, { search: file, limit: 5 });

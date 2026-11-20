@@ -3,6 +3,27 @@
 Status: APPROVED by the owner 2026-11-19. Building A1 + A2 first (the free kit), then STOP for the owner's A3 test.
 Date: 2026-11-19.
 
+## Phase 2 (2026-11-20, local, not deployed)
+
+- **Site pages:**
+  - `/workspace/studio-projects` (Studio projects tab: cards, Create voice at the shown price, recording upload, Finish my video, downloads).
+  - `/connect-claude` (how to connect, tools and prices, your connections + Sign out).
+  - `/connect/authorize` (the consent screen).
+  - The "Make it in Roblox Studio (free)" section on the In This Town page.
+  - A Studio projects link in the In This Town header.
+  - Everything is owner-only until `STUDIO_KIT_PUBLIC` (src/data/studioKit.js) and the connector's ZYVO_MCP_ACCESS open.
+  - `?mock=1` on localhost shows sample data.
+- **Server:**
+  - `_shared/zyvoMcp/site.js`: the site's account routes. Paid clicks run the same tool code: price first, must match the card, then the tool's own start.
+  - Migration `20261220110000_zyvo_kit_downloads.sql` (not run).
+  - Kit zip: `node scripts/studioKit/packKit.mjs` -> `dist-kit/` (phase 3 uploads it to `kit/` in the zyvo-studio bucket).
+- **Free kit captions (owner 2026-11-20):** `kits/zyvo-studio-kit/scripts/add_captions.sh` (bash + awk + ffmpeg) burns simple white one-word captions and lays the voice under the picture.
+  - With `words.json`: exact timings.
+  - From `narration.txt`: lined up with the voice's pauses. Measured against whisper on 3 real voices: 89-92 % of words within 0.25 s, 95 % within 0.4 s.
+- **Worker order (owner 2026-11-20):** connector voice/finish jobs run in the studio lane (`studioLane.mjs`).
+  - It is a child process at nice 19 beside the video loop, so a full video is claimed at the next poll and gets the CPU first.
+  - $0 extra, versus a second always-on Fly machine.
+
 ## What it is, in one paragraph
 
 A free way to make In This Town videos yourself in Roblox Studio, with Zyvo as the honest "finish it for me" option at each step:

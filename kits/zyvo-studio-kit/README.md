@@ -20,7 +20,8 @@ Claude and Roblox Studio normally send.
 - `luau/`: the Studio helpers Claude runs: blockout, camera spots, asset check + clean, cast library + cast, lighting,
   shot list, the framing checker (framer + frame_check), the contact-sheet preview, the director installer.
 - `runtime/`: the three scripts that run during Play: the camera, the life (breathing, yawns, waves) and the actions.
-- `scripts/`: `system_check.*` (can this computer do it?) and `make_vertical.sh` (the recording -> an upright 9:16 mp4).
+- `scripts/`: `system_check.*` (can this computer do it?) and `make_vertical.sh` (the recording -> an upright 9:16 mp4),
+  `add_captions.sh` (+ the voice and simple white one-word captions -> a postable mp4).
 
 ## The rules it keeps
 It never saves or publishes your place, uses only free Creator Store models (and removes every script and sound from

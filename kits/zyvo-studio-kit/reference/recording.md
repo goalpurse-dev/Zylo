@@ -59,7 +59,14 @@ The phone emulator makes the viewport small and cuts it off. Instead the camera 
   1080x1920 at 30 fps and trims it to start exactly at the voice's second 0 (marker + 1.0 s). With the voice it also
   writes `<out>_with_voice.mp4` for a quick check by ear and eye.
 - Check: the output lasts the script's runtime; take 4-6 frames from it and look at them.
+- **The free captioned video (postable):** run
+  `scripts/add_captions.sh <out.mp4> zyvo-project/<slug>/voice.mp3 <timings> zyvo-project/<slug>/final_free.mp4`,
+  where `<timings>` is `words.json` when it exists (a Zyvo voice: exact), else `narration.txt` (the exact text the
+  voice reads: the script lines up the words with the voice's pauses; most land within a quarter second). It burns in
+  simple white one-word captions (one word at a time, bold, black outline) and lays the voice under the picture.
+  Take 3 frames where words are on screen and check one against the voice by ear. Tell the user plainly: the
+  captions are simple on purpose; if a word sits visibly early or late, say so and offer the Zyvo finish.
 - If the playback stuttered (Studio dropped frames), suggest: lower graphics quality, closing other apps, then
   record again.
 - Remind: don't publish or Save to Roblox. A local File > Save to File copy is fine if they want to come back.
-- Then: "Want the voice, captions, sound and music done for you? Finish in Zyvo."
+- Then: "Want our voice, coloured captions per speaker, sound effects and music? Finish in Zyvo."

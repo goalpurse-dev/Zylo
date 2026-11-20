@@ -5,9 +5,11 @@
 //   /authorize/request  /authorize/decision            the consent screen on tryzyvo.com (the user's site login)
 //   /account/connections  /account/connections/revoke   the account page: see and sign out connections
 //   (not /connections: the site redirects that path to its home page, and redirects run before the host rewrite)
+//   /account/studio[/voice|/finish|/upload|/uploaded|/remove]  /account/kit   the Studio projects tab + the kit (site.js)
 // req: { method, path, query, headers (lowercase), body, ip } -> { status, headers, body }
 import { OAUTH, SERVER, URLS } from "./config.js";
 import { authServerMetadata, makeOAuth, protectedResourceMetadata } from "./oauth.js";
+import { makeSite } from "./site.js";
 import { makeTools, promptText, PROMPTS, TOOLS } from "./tools.js";
 
 export const INSTRUCTIONS = [
@@ -31,6 +33,7 @@ export function makeServer(deps) {
   const base = deps.base;
   const oauth = makeOAuth({ store: deps.store, base, now: deps.now });
   const tools = makeTools(deps);
+  const site = makeSite({ ...deps, tools });
   const resourceMeta = `${base}/.well-known/oauth-protected-resource`;
   const unauthorized = (why = "invalid_token") => json(401, { error: why, error_description: "Connect Zyvo again (sign in)." }, { ...PUBLIC_CORS, "WWW-Authenticate": `Bearer resource_metadata="${resourceMeta}", error="${why}", scope="${OAUTH.scopes.join(" ")}"` });
 
@@ -102,6 +105,10 @@ export function makeServer(deps) {
         });
         if (path === "/account/connections" && method === "GET") return await siteOnly(req, async (u) => json(200, { connections: await deps.store.listConnections(u.id) }));
         if (path === "/account/connections/revoke" && method === "POST") return await siteOnly(req, async (u) => json(200, { ok: await deps.store.revokeConnection(u.id, String(req.body?.id ?? "")) }));
+        if (path === "/account/studio" && method === "GET") return await siteOnly(req, (u) => site.studio(u, req.query ?? {}));
+        const studioAction = /^\/account\/studio\/(voice|finish|upload|uploaded|remove)$/.exec(path);
+        if (studioAction && method === "POST") return await siteOnly(req, (u) => site[studioAction[1]](u, req.body ?? {}));
+        if (path === "/account/kit" && method === "POST") return await siteOnly(req, (u) => site.kit(u));
         if (path === "/mcp") {
           if (method === "POST") return await mcp(req);
           return { status: 405, headers: { ...PUBLIC_CORS, Allow: "POST" }, body: "" };

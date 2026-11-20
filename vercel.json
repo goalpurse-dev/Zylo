@@ -486,6 +486,14 @@
       "destination": "/app-shell"
     },
     {
+      "source": "/connect-claude",
+      "destination": "/app-shell"
+    },
+    {
+      "source": "/connect/(.*)",
+      "destination": "/app-shell"
+    },
+    {
       "source": "/unsubscribe",
       "destination": "/app-shell"
     },
