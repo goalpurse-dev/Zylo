@@ -130,6 +130,19 @@ test("the monster rule FIXES, never fails: a hinted monster is not asked to fill
   assert.equal(creatureTease("The monster tilts its head"), false);
 });
 
+test("a shot body with a flush first line (fix test b2f15139) is assembled valid; a syntax error belongs to its shot, never the header", async () => {
+  const { assemble, shotAtLine } = await import("../scripts/blockyWorlds/blenderKit/director.mjs");
+  const body = "I = zw_build('downtown_plaza', t0, t1, ZW_STORY_DRESS)\n    H = hero_c(t0, t1, 'joy')\n    if H:\n        H.pose(t0)\n    cam = Cam()";
+  const text = assemble({ title: "t", header: "def hero_c(a, b, c):\n    return None", shots: [{ id: 1, w0: 0, w1: 3, desc: "d" }], bodies: { 1: body }, slug: "s" });
+  const def = text.split("\n").findIndex((l) => l.startsWith("def s01("));
+  assert.deepEqual(text.split("\n").slice(def + 1, def + 6), ["    I = zw_build('downtown_plaza', t0, t1, ZW_STORY_DRESS)", "    H = hero_c(t0, t1, 'joy')", "    if H:", "        H.pose(t0)", "    cam = Cam()"]);
+  // a body that opens a block on its first line keeps its indent as it is
+  const block = assemble({ title: "t", header: "", shots: [{ id: 2, w0: 0, w1: 1, desc: "d" }], bodies: { 2: "for i in range(2):\n    pass" }, slug: "s" });
+  assert.ok(block.includes("    for i in range(2):\n        pass"));
+  assert.equal(shotAtLine(text, def + 3), 1);
+  assert.equal(shotAtLine(text, 3), null);
+});
+
 test("the worker keeps the pipeline's real error (2120c23d said only 'the director wrote no cut')", () => {
   const err = "file:///app/pipeline.mjs:634\n  if (!g.ok) throw ...\n\nError: the rules block the final: only 41% of the shots pass: stopped before the final render\n    at file:///app/pipeline.mjs:634:21 {\n  code: 'RULES'\n}\n\nNode.js v22";
   assert.match(thrownError(err), /^the rules block the final: only 41%/);

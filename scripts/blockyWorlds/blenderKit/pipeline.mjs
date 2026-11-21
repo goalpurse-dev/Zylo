@@ -335,8 +335,9 @@ if (!sc.ok && !state.prefixed) {
   state.convo = D.convo; save();
   sc = staticCheck(writeFile(), shotsFile);
 }
-if (!sc.ok) {
-  const hdr = sc.problems.filter((p) => p.shot == null);
+// the shots still refused are merged out; a syntax error shows ONE shot at a time, so this repeats (at most 12 times)
+for (let k = 0; !sc.ok && k < 12; k++) {
+  const hdr = sc.problems.filter((p) => p.shot == null || !shotById(p.shot));
   if (hdr.length) throw new Error(`the header still fails the static check: ${hdr.map((p) => p.problem).join("; ")}`);
   mergeOut([...new Set(sc.problems.map((p) => p.shot))], "static");
   sc = staticCheck(writeFile(), shotsFile);

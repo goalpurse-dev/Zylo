@@ -926,6 +926,14 @@ const dedent = (src) => {
   const lines = String(src ?? "").replace(/\t/g, "    ").replace(/\r/g, "").split("\n");
   while (lines.length && !lines[0].trim()) lines.shift();
   while (lines.length && !lines[lines.length - 1].trim()) lines.pop();
+  // THE FLUSH FIRST LINE (2026-11-21, fix test b2f15139: "unexpected indent" stopped the video): a body whose first
+  // line lost its indent while the rest kept theirs; the rest move left by the difference (the first line opens no block)
+  const indOf = (l) => l.match(/^ */)[0].length;
+  const rest = lines.slice(1).filter((l) => l.trim());
+  if (rest.length && !/:\s*(#.*)?$/.test(lines[0])) {
+    const shift = Math.min(...rest.map(indOf)) - indOf(lines[0]);
+    if (shift > 0) for (let i = 1; i < lines.length; i++) lines[i] = lines[i].slice(Math.min(shift, indOf(lines[i])));
+  }
   const ind = Math.min(...lines.filter((l) => l.trim()).map((l) => l.match(/^ */)[0].length), 99);
   return lines.map((l) => l.slice(Math.min(ind, l.match(/^ */)[0].length)));
 };
@@ -948,7 +956,21 @@ export function assemble({ title, header, shots, bodies, slug }) {
 export function staticCheck(text, file) {
   fs.writeFileSync(file, text);
   const r = spawnSync("python", ["-I", path.join(HERE, "shotcheck.py"), file, "--json"], { encoding: "utf8" });
-  try { return JSON.parse(r.stdout.trim().split("\n").pop()); } catch { return { ok: false, problems: [{ line: null, shot: null, problem: `shotcheck failed: ${(r.stderr || r.stdout).slice(-300)}` }] }; }
+  let out;
+  try { out = JSON.parse(r.stdout.trim().split("\n").pop()); } catch { return { ok: false, problems: [{ line: null, shot: null, problem: `shotcheck failed: ${(r.stderr || r.stdout).slice(-300)}` }] }; }
+  // a SYNTAX error has no shot (the whole file fails to parse): the shot whose def holds its line owns it, so the shot is
+  // fixed or merged out instead of the run stopping as if the header were broken
+  for (const p of out?.problems ?? []) if (p.shot == null && Number.isInteger(p.line)) p.shot = shotAtLine(text, p.line);
+  return out;
+}
+/** the shot id whose `def sNN(` holds a 1-based line of an assembled file, or null (the header) */
+export function shotAtLine(text, line) {
+  const lines = String(text).split("\n");
+  for (let i = Math.min(line, lines.length) - 1; i >= 0; i--) {
+    const m = lines[i].match(/^def s(\d+)\s*\(/);
+    if (m) return Number(m[1]);
+  }
+  return null;
 }
 
 // ---------------------------------------------------------------- the director
