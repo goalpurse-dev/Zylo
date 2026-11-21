@@ -22,6 +22,8 @@ import { loadEnv } from "../engine/runpod/client.mjs";
 import { styleSheetLine } from "../../../supabase/functions/_shared/blockyWorlds/characterRef.js";
 import { cameraWallProblem, mentionsHero, shotCap, clearRayProblem, makeDirector, systemPrompt, tileShots, assemble, staticCheck, wordLines, planLocations, planProblems, varietyPlanProblems, framingPlanProblems, facesSeenProblems, minLocations, storyPlanProblems, planLines, shotProblems, heroOf, giantSuspect, actionPlanProblems, visionRuleProblems, heroSeenProblems, MODELS, BATCH, MIN_LOCATIONS, PRICING } from "./director.mjs";
 import { parseSpots, reaimPlan, spotMarksDoc } from "./camFix.mjs";
+import { parseGate, gateProblems } from "./frameGate.mjs";
+import { creatureTease } from "./director.mjs";
 import { heroLinesMissing, renderGate, weakShotList } from "./renderGate.mjs";
 import { captionColors } from "./speakers.mjs";
 import { LOCATIONS, DRESS } from "./worlds/locations.mjs";
@@ -460,7 +462,10 @@ async function previewRound(tag, ids) {
   const pixBad = Object.fromEntries(Object.entries(pixel).filter(([id, p]) => (p.mean < 12 || p.std < 4) && !(shotById(Number(id)) && darkOk(shotById(Number(id))))).map(([id, p]) => [id, p.mean < 12 ? `the frame is black (mean ${p.mean})` : `the frame is one flat colour (std ${p.std})`]));
   // GIANT-PROP suspects (director.mjs giantSuspect: one flat region over the screen-share cap below the sky line)
   const giants = Object.fromEntries(Object.entries(pixel).filter(([id, p]) => giantSuspect(p) && !failed[id] && !slabs[id]).map(([id, p]) => [id, p]));
-  return { failed, sheets, pixel, pixBad, slabs, giants, renderS: outs.reduce((a, o) => a + (o.out.renderS ?? 0), 0) };
+  // THE FRAMING GATE (owner 2026-11-21, frameGate.mjs): the faces / monsters worlds.py measured in Blender
+  // (the worker's output.gate: Blender's own lines; needs the image with the 2026-11-21 handler.py)
+  const gate = outs.flatMap((o) => parseGate((o.out.gate ?? []).join("\n")));
+  return { failed, sheets, pixel, pixBad, slabs, giants, gate, renderS: outs.reduce((a, o) => a + (o.out.renderS ?? 0), 0) };
 }
 async function vision(tag, sheets, ids, suspects = {}, giants = {}) {
   if (!sheets.length) return {};
@@ -518,6 +523,11 @@ function mergeProblems(p, vis) {
   for (const [id, t] of Object.entries(p.failed)) f[id] = { kind: "crash", text: `the shot CRASHED in Blender: ${t}` };
   for (const [id, t] of Object.entries(p.pixBad)) if (!f[id]) f[id] = { kind: "pixel", text: t };
   for (const [id, t] of Object.entries(vis)) if (!f[id]) f[id] = { kind: "vision", text: `the checker saw: ${t}` };
+  // THE FRAMING GATE (owner 2026-11-21): a face cut by the edge / under the captions, a monster as a flat wall, a monster
+  // never shown in full: measured, so it goes to the fix round like the checker notes
+  const gp = gateProblems({ gate: p.gate ?? [], shots: plan.shots, tease: creatureTease, shownBefore: state.monsterShown ?? {} });
+  state.monsterShown = gp.shown;
+  for (const [id, t] of Object.entries(gp.problems)) { if (!f[id]) f[id] = { kind: "framing", text: t }; else if (f[id].kind !== "crash") f[id].text += `; ${t}`; }
   // the shot check's problems when its writing fix was skipped by the caps (round 0 only; urgent like a crash)
   if (!state.previewed) for (const [id, t] of Object.entries(state.shotLeft ?? {})) if (shotById(Number(id))) f[id] = { kind: f[id]?.kind === "crash" ? "crash" : "shotcheck", text: `${f[id] ? `${f[id].text}; ` : ""}THE SHOT CHECK: ${t}` };
   return f;

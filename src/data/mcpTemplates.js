@@ -1,19 +1,22 @@
 // THE MCP TEMPLATES (owner 2026-11-20): the cards on MCP > Templates and each template's tutorial page.
 // A new template = one more entry here (and its media in public/media/<folder>); the grid and the tutorial page render
-// whatever is listed. Steps follow the kit's own words (kits/roblox-story/QUICKSTART.md, reference/recording.md).
+// whatever is listed. Steps follow the kit's own words (kits/zyvo-roblox-story/QUICKSTART.md, reference/recording.md).
 //
 // A step's `shots` are REAL pictures (from the owner's Bedtime Story test). A step without real pictures shows a
 // `diagram` (or a list of them) instead: our own drawing of the clicks, never a copy of another app's screen. Swapping
 // a diagram for a real screenshot = add { src, alt, caption } to `shots`.
 import { CLAUDE_CODE_COMMAND, CLAUDE_CODE_NAME, MCP_URL } from "./studioKit.js";
 
-// the kit is the Claude Code skill "roblox-story" (kits/roblox-story/SKILL.md): its folder name is the slash command
-export const KIT_SKILL = "roblox-story";
+// the kit is the Claude Code skill "zyvo-roblox-story" (kits/zyvo-roblox-story/SKILL.md): its folder name is the slash command.
+// Kit 1.4.0 (2026-11-21) renamed it from "roblox-story": another creator's skill uses that folder, installing one replaced the other.
+export const KIT_SKILL = "zyvo-roblox-story";
+/** the name up to kit 1.3.0 (the problems list tells people who type it) */
+export const KIT_OLD_COMMAND = "/roblox-story";
 export const KIT_COMMAND = `/${KIT_SKILL}`;
-/** the recommended install (owner 2026-11-20, kit 1.3.0): the user pastes this into Claude Code, Claude does the rest */
-export const KIT_INSTALL_PROMPT = `Install the ${KIT_SKILL} kit from my Downloads folder into my Claude skills folder`;
+/** the recommended install (owner 2026-11-20; kit 1.4.0 names its own folder): the user pastes this into Claude Code, Claude does the rest */
+export const KIT_INSTALL_PROMPT = `Install the ${KIT_SKILL} kit from my Downloads folder into my Claude skills folder as its own folder ${KIT_SKILL}; don't overwrite any other skill`;
 export const KIT_FIRST_QUESTION = "What's your In This Town rule? Type it, or say 'ideas' and I'll suggest some.";
-/** the tones /roblox-story offers after the rule (owner 2026-11-20) */
+/** the tones /zyvo-roblox-story offers after the rule (owner 2026-11-20) */
 export const KIT_TONES = ["Spooky (mimic horror)", "Funny", "Wholesome", "Twist"];
 /** the end card (owner 2026-11-20): Free and Starter videos end with it, Pro and higher don't */
 export const END_CARD = {
@@ -140,6 +143,7 @@ export const MCP_TEMPLATES = [
     ],
     problems: [
       { q: `${KIT_COMMAND} isn't found`, a: `The kit isn't in the skills folder yet, or the session started before it was. Paste "${KIT_INSTALL_PROMPT}" into Claude, then start a NEW Code session and type ${KIT_COMMAND} again.` },
+      { q: `${KIT_OLD_COMMAND} opens a different skill`, a: `Our kit is now ${KIT_COMMAND} (it was ${KIT_OLD_COMMAND} up to version 1.3.0, the same name as another creator's skill). Download the kit again, paste "${KIT_INSTALL_PROMPT}" into Claude, start a NEW Code session and type ${KIT_COMMAND}. Leave the other skill's roblox-story folder alone; only delete it if it is our old kit.` },
       { q: "\"claude\" is not recognized", a: "Your terminal can't find Claude Code: it isn't on your PATH yet. Use the Claude desktop app's Code tab (no terminal needed), or open a NEW terminal after installing Claude Code. Still not found on Windows? Add the folder the installer named (usually %USERPROFILE%\\.local\\bin) to PATH, then open a new terminal." },
       { q: "Zyvo shows up twice in /mcp", a: `It was added both ways. Keep ${CLAUDE_CODE_NAME} (the Claude app's connector) and remove the terminal one: claude mcp remove --scope user zyvo` },
       { q: "The Roblox tools aren't loaded", a: "Open Roblox Studio first (with Enable Studio as MCP server on), then close Claude Code and start it again in your video folder. Type /mcp: Roblox_Studio must say connected. Started in another folder? Add it with --scope user (step 3) so it works in every folder." },

@@ -7,7 +7,8 @@ out to the user, and then times the shot list to whatever comes back. Three ways
 
 1. Right away, report the project to Zyvo with `report_studio_project` (free): the title, the approved script
    (script.md text), the shot plan so far (locations, cast, planned shot count; `shots.json` if it exists) and the
-   status (`voice_needed`). Tell the user in one line what was sent. It is their own story, stored in their Zyvo account.
+   status (`voice_needed`), with `kit_version` "zyvo-roblox-story 1.4.0". Tell the user in one line what was sent.
+   It is their own story, stored in their Zyvo account.
 2. Tell them exactly: "Open Zyvo → MCP Studio → '<project title>' → Create voice." (Zyvo shows the price there,
    and the user decides there. The kit never buys anything.)
 3. When they say it's done, fetch it with `get_studio_voice` (free): it returns the mp3 and the word timings. Save them as

@@ -17,7 +17,7 @@ Date: 2026-11-19.
   - `_shared/zyvoMcp/site.js`: the site's account routes. Paid clicks run the same tool code: price first, must match the card, then the tool's own start.
   - Migration `20261220110000_zyvo_kit_downloads.sql` (not run).
   - Kit zip: `node scripts/studioKit/packKit.mjs` -> `dist-kit/` (phase 3 uploads it to `kit/` in the zyvo-studio bucket).
-- **Free kit captions (owner 2026-11-20):** `kits/zyvo-studio-kit/scripts/add_captions.sh` (bash + awk + ffmpeg) burns simple white one-word captions and lays the voice under the picture.
+- **Free kit captions (owner 2026-11-20):** `kits/zyvo-roblox-story/scripts/add_captions.sh` (bash + awk + ffmpeg) burns simple white one-word captions and lays the voice under the picture.
   - With `words.json`: exact timings.
   - From `narration.txt`: lined up with the voice's pauses. Measured against whisper on 3 real voices: 89-92 % of words within 0.25 s, 95 % within 0.4 s.
 - **Worker order (owner 2026-11-20):** connector voice/finish jobs run in the studio lane (`studioLane.mjs`).
@@ -44,7 +44,9 @@ A free way to make In This Town videos yourself in Roblox Studio, with Zyvo as t
   - Custom avatars only, built from free items and colours, never the default classic avatar.
 - **Honest Zyvo option.** Each step ends with one plain line, never hype: "Want the voice, captions, sound and music done for you? Finish in Zyvo." (The wording varies by step.)
 
-## A) The free local kit (Claude skill: `zyvo-studio-kit`)
+## A) The free local kit (Claude skill: `zyvo-roblox-story`)
+
+Named `zyvo-studio-kit` (1.0), then `roblox-story` (1.1-1.3), renamed `zyvo-roblox-story` in 1.4.0 (2026-11-21): another creator's popular skill also installs into `~/.claude/skills/roblox-story`, so installing one overwrote the other. The 1.4.0 kit tells users of our old `roblox-story` folder once that they can delete it (only when that folder is ours); the server takes any `kit_version` text, so old kits keep reporting.
 
 ### What the user installs
 

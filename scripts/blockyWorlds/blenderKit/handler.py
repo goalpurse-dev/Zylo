@@ -424,7 +424,9 @@ def role_preview(inp, job_id):
         return {"ok": True, "role": "preview", "rendered": have, "failed": {str(k): v for k, v in fails.items()},
                 "timeline": [x for x in failed if x.startswith("TIMELINE:")][:10], "renderS": secs, "shotS": shot_s, "sheets": sheets,
                 "upload": up, "gpu": {"mode": gpu["mode"], **gpu["info"]}, "gpuWatch": gw, "sandbox": STATE["sandbox"]["name"],
-                "tail": [] if have else out.splitlines()[-12:]}
+                "tail": [] if have else out.splitlines()[-12:],
+                # THE FRAMING GATE (owner 2026-11-21): worlds.py's measured lines (Blender's stdout, not the kit's log)
+                "gate": [l for l in out.splitlines() if l.startswith(("ZW_GATE|", "ZW_LOOK|", "ZW_FRAMED|"))][:600]}
     finally:
         shutil.rmtree(ws, ignore_errors=True)
 

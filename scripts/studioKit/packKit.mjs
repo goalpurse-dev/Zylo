@@ -1,5 +1,6 @@
-// Builds the free Zyvo Studio Kit's download: kits/roblox-story -> dist-kit/roblox-story-<version>.zip, the
-// folder "roblox-story/" at its root (unzipped into ~/.claude/skills it is the skill, started with /roblox-story). Free and local: no upload.
+// Builds the free Zyvo Studio Kit's download: kits/zyvo-roblox-story -> dist-kit/zyvo-roblox-story-<version>.zip, the
+// folder "zyvo-roblox-story/" at its root (unzipped into ~/.claude/skills it is the skill, started with /zyvo-roblox-story;
+// renamed from roblox-story in 1.4.0, another creator's skill has that folder name). Free and local: no upload.
 // Phase 3 uploads the zip to the private zyvo-studio bucket at KIT.path (supabase/functions/_shared/zyvoMcp/config.js),
 // which POST /account/kit signs for signed-in users.
 //   node scripts/studioKit/packKit.mjs            build it, print the file list and size
@@ -11,7 +12,7 @@ import { fileURLToPath } from "node:url";
 import { KIT } from "../../supabase/functions/_shared/zyvoMcp/config.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const SRC = path.join(ROOT, "kits", "roblox-story");
+const SRC = path.join(ROOT, "kits", KIT.skill);
 const OUT = path.join(ROOT, "dist-kit", path.basename(KIT.path));
 const SKIP = [/^TEST_.*\.md$/i, /^\./, /__pycache__/, /\.pyc$/, /^node_modules$/, /\.log$/];
 
@@ -58,7 +59,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const entries = files.map((f) => {
     let data = fs.readFileSync(path.join(SRC, f));
     if (/\.sh$/.test(f)) data = Buffer.from(data.toString("utf8").replace(/\r\n/g, "\n"), "utf8");
-    return { name: `roblox-story/${f}`, data };
+    return { name: `${KIT.skill}/${f}`, data };
   });
   fs.mkdirSync(path.dirname(OUT), { recursive: true });
   const buf = zip(entries);
