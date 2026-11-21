@@ -14,6 +14,9 @@ export const CUTAWAY_URL = `${APP_URL}/workspace/cutaway-explainer`;
 export const BLOCKY_URL = `${APP_URL}/workspace/blocky-stories`;
 // The In This Town page (src/data/blockyWorlds.js: BLOCKY_WORLDS_PATH; open to everyone, signed-out visitors may browse).
 export const TOWN_URL = `${APP_URL}/workspace/in-this-town`;
+// The free In This Town: the MCP template page with the free Roblox Studio kit (src/data/studioKit.js:
+// mcpTemplatePath("in-this-town"); open to every signed-in account since 2026-11-21, no plan or credits needed).
+export const TOWN_FREE_URL = `${APP_URL}/workspace/mcp/templates/in-this-town`;
 
 const esc = (s = "") =>
   String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -234,6 +237,29 @@ const townLaunch2 = {
 // The owner's 14:00 rule: if the deal isn't built and tested by then, the email goes without the deal line (set false).
 export const TOWN_LAUNCH2_DEAL = true;
 
+// "You can try it free now" (owner, 2026-11-21): the free In This Town (the free kit's template page), the deal line
+// while the launch deal runs (left out by itself after Sunday 23:59 Finnish). One link plus the unsubscribe.
+const townFree1Lines = (deal) => [
+  "Hey,",
+  "It's Niko from Zyvo.",
+  "Some of you told me you wanted to try In This Town before paying. So now you can.",
+  "There's a free version of In This Town. Make your first Roblox short without paying anything.",
+  "Try it here: tryzyvo.com",
+  "(or in Zyvo: MCP → Templates → In This Town)",
+  ...(deal ? ["And if you want the full version, Starter is still 20% off until Sunday."] : []),
+  "Send me what you make, I want to see it.",
+];
+const townFree1 = {
+  from: ROOT_NIKO,
+  replyTo: REPLY_TO.niko,
+  subject: "you can try it free now",
+  why: CAMPAIGN_WHY,
+  plain: true,
+  opensTracked: true,
+  linkTo: "town_free",
+  render: (footer, opts = {}) => plainEmailInlineLink(townFree1Lines(launchDealLive(opts.at ?? Date.now())), "Niko", { fullLinkText: true })(footer, opts),
+};
+
 export const CAMPAIGNS = {
   // Day 1 (2026-10-11): the 200 newest people who are ON. Sent before open tracking was switched on.
   warmup_day1: warmup("You signed up recently"),
@@ -286,6 +312,9 @@ export const CAMPAIGNS = {
   // came back since 4 Nov, then active 30 days with no marketing email yet.
   town_launch1: townLaunch,
   town_launch2: townLaunch2,
+  // Owner, 2026-11-21: Sat 21 Nov 16:00–21:00 Finnish, up to 3,000: real openers of the In This Town emails, came
+  // back since 4 Nov, real openers since 4 Nov, then never had a marketing email.
+  town_free1: townFree1,
 };
 
 // The 12-hour open check (owner, 2026-10-29): opens of a day under its min_open_rate 12 hours after

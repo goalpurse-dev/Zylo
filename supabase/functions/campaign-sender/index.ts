@@ -23,7 +23,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { alertAdmin } from "../_shared/adminAlert.ts";
-import { BLOCKY_URL, CAMPAIGNS, CUTAWAY_URL, TOWN_URL, campaignNumbers, campaignReportText, campaignStopReason, openRateProblem, ownerEmailsFrom, previousCampaignProblem, providerProblem, realOpenCount, realOpensProblem } from "../_shared/campaigns.js";
+import { BLOCKY_URL, CAMPAIGNS, CUTAWAY_URL, TOWN_FREE_URL, TOWN_URL, campaignNumbers, campaignReportText, campaignStopReason, openRateProblem, ownerEmailsFrom, previousCampaignProblem, providerProblem, realOpenCount, realOpensProblem } from "../_shared/campaigns.js";
 import { APP_URL } from "../_shared/emailRules.js";
 import { claimEmail, sendClaimedEmailWithId } from "../_shared/userEmail.ts";
 
@@ -47,6 +47,7 @@ async function finish(c: any, status: "done" | "stopped", reason: string | null)
 function linkFor(def: any): string {
   if (def.linkTo === "blocky") return BLOCKY_URL;
   if (def.linkTo === "town") return TOWN_URL;
+  if (def.linkTo === "town_free") return TOWN_FREE_URL; // the free In This Town (the free kit), 2026-11-21
   return def.linkTo === "cutaway" && (Deno.env.get("CUTAWAY_ENABLED") ?? "").trim().toLowerCase() === "true" ? CUTAWAY_URL : APP_URL;
 }
 
