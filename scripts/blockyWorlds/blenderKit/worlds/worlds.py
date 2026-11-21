@@ -2278,6 +2278,20 @@ ZW_EMO_WORDS = [
     ("happy", ("happy", "smile", "love", "yay", "fun", "best", "great")),
 ]
 ZW_EMOTED = {}   # character name -> the expression this shot gave it
+# THE FIRST LIVE RUNS (2026-11-21, run df9b8ec8: 26 of 74 shots crashed): the director also calls the kit's own
+# ch.face(t, "terrified") with OUR emotion names (KeyError in the kit's EXPR) and writes ch.armR / ch.legL (the pose
+# keyword names; the kit's pivots are shL / shR / hpL / hpR). Both work now: our names are added to the kit's EXPR,
+# and armL / armR / legL / legR read the matching pivot.
+try:
+    for zk, zv in ZW_EMO.items():
+        if zk not in story.acting.EXPR and zv in story.acting.EXPR:
+            story.acting.EXPR[zk] = story.acting.EXPR[zv]
+    chars.Char.armL = property(lambda c: c.shL)
+    chars.Char.armR = property(lambda c: c.shR)
+    chars.Char.legL = property(lambda c: c.hpL)
+    chars.Char.legR = property(lambda c: c.hpR)
+except Exception as e:
+    print("zw_compat skipped: %s" % e)
 
 
 def zw_emo_of(text):

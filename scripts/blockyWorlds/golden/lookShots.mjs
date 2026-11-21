@@ -47,5 +47,7 @@ export function goldenShots(variant) {
   out.push(room("living_room", "close", -1.0, 0.0, 0, "room", "happy"));
   out.push(room("shop", "wide", 0.0, 2.6, 0, "room", "confused"));
   out.push(room("classroom", "wide", -1.5, 9.6, 0, "set", "smirk"));
+  // the director's own way (live run df9b8ec8 crashed on it): the kit's face() with our emotion names + ch.armR
+  if (A) out.push({ story: ROOMS.id, kind: "set", desc: `${ROOMS.title}: compat (director-style face + armR)`, body: [build(DAY), hero(DAY), `h.face(t0, "terrified")\nh.face(t0 + 0.5, "surprised")\nh.face(t0 + 0.9, "sad")\nh.armR.rotation_euler[0] = math.radians(-120)\nh.legL.rotation_euler[0] = math.radians(20)`, `zw_frame(cam, [h], t0, t1, kind="close")`].join("\n") });
   return out;
 }
