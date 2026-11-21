@@ -88,9 +88,15 @@ export const KIT = Object.freeze({
   // 1.3.0 (owner's spooky test, 2026-11-20): packed worlds (backdrop), no gizmos in stills, glow control, no prop-only
   // close-ups, a fast contact sheet (capture plan + sheet script), the own-voice flow (prep_voice), install by Claude,
   // monsters built and shown at their reveal (story check), the silent Play wait inside Studio
-  version: "1.3.0",
-  path: "kit/roblox-story-1.3.0.zip",
-  fileName: "roblox-story.zip",
+  // 1.4.0 (2026-11-21): renamed to "zyvo-roblox-story" (the /zyvo-roblox-story command; the zip's folder is
+  // zyvo-roblox-story/): "roblox-story" is also another creator's skill folder, so installing one replaced the other.
+  // Old 1.x kits keep working: report_studio_project / update_project take any kit_version text.
+  version: "1.4.0",
+  skill: "zyvo-roblox-story",
+  path: "kit/zyvo-roblox-story-1.4.0.zip",
+  fileName: "zyvo-roblox-story.zip",
+  // until the new zip is in the bucket the download falls back to the last uploaded one (never a broken button)
+  previous: Object.freeze({ version: "1.3.0", path: "kit/roblox-story-1.3.0.zip", fileName: "roblox-story.zip" }),
   linkTtlSec: 600,
 });
 

@@ -1,15 +1,20 @@
-# Roblox Story: the Zyvo Studio Kit (free)
+# Zyvo Roblox Story: the Zyvo Studio Kit (free)
 
 Make a Roblox "In This Town" story short in your own Roblox Studio, with Claude doing the building. Install it the easy
-way: download the zip, then in Claude Code paste *"Install the roblox-story kit from my Downloads folder into my Claude
-skills folder"* (or unzip it yourself so the folder is `~/.claude/skills/roblox-story`; Windows:
-`C:\Users\<you>\.claude\skills\roblox-story`). Start a new session, then type **`/roblox-story`** in
-Claude Code or the Claude desktop app's Code tab (or `/roblox-story <your rule>` to start straight away). Claude writes the
+way: download the zip, then in Claude Code paste *"Install the zyvo-roblox-story kit from my Downloads folder into my Claude
+skills folder as its own folder zyvo-roblox-story; don't overwrite any other skill"* (or unzip it yourself so the folder is `~/.claude/skills/zyvo-roblox-story`; Windows:
+`C:\Users\<you>\.claude\skills\zyvo-roblox-story`). Start a new session, then type **`/zyvo-roblox-story`** in
+Claude Code or the Claude desktop app's Code tab (or `/zyvo-roblox-story <your rule>` to start straight away). Claude writes the
 story, builds the town, dresses the cast, places every camera, checks every shot in a 9:16 frame and runs the whole
 film in Play while you screen-record it. Free: the kit costs nothing, and nothing leaves your computer except what
 Claude and Roblox Studio normally send.
 
 **Start here:** [QUICKSTART.md](QUICKSTART.md), 8 steps in plain English.
+
+**Version 1.4.0: renamed.** Up to 1.3.0 this kit was `/roblox-story` in the folder `skills/roblox-story`, the same
+name as another creator's skill, so installing one replaced the other. It is now `/zyvo-roblox-story` in its own folder
+`skills/zyvo-roblox-story`. Had the old one? You can delete its folder (only if it is this kit: its SKILL.md says "Zyvo
+Studio Kit"); the first `/zyvo-roblox-story` run offers to do it for you.
 
 ## What you need
 - Windows 10/11 or macOS 13+, 8 GB RAM or more (16 GB is smoother).

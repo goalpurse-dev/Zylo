@@ -9,8 +9,8 @@ import { makeServer } from "../supabase/functions/_shared/zyvoMcp/server.js";
 import { b64url, inputHash, pkceOk, safeEqual, sha256Hex } from "../supabase/functions/_shared/zyvoMcp/crypto.js";
 import { redirectMatches, redirectOk, scopesOf } from "../supabase/functions/_shared/zyvoMcp/oauth.js";
 import { internalCaller } from "../supabase/functions/_shared/zyvoMcp/internal.js";
-import { cleanScript, TOOLS } from "../supabase/functions/_shared/zyvoMcp/tools.js";
-import { FINISH_CREDITS, VIDEO_CREDITS, voiceCredits, WRITE_SCRIPT_CREDITS } from "../supabase/functions/_shared/zyvoMcp/config.js";
+import { cleanScript, promptText, TOOLS } from "../supabase/functions/_shared/zyvoMcp/tools.js";
+import { FINISH_CREDITS, KIT, VIDEO_CREDITS, voiceCredits, WRITE_SCRIPT_CREDITS } from "../supabase/functions/_shared/zyvoMcp/config.js";
 
 if (!globalThis.crypto) globalThis.crypto = webcrypto;
 const BASE = "https://mcp.tryzyvo.com";
@@ -304,6 +304,13 @@ test("the Studio project flow: report (data), voice quote -> confirm once, finis
   const pid = rep.structuredContent.project_id;
   assert.equal(rep.structuredContent.status, "voice_needed");
   assert.equal((await call(s, at, "report_studio_project", { kit_project_id: "Bad Slug!", title: "x", script: { lines } })).isError, true);
+  // kit 1.4.0 renamed the skill (zyvo-roblox-story): old kits ("1.3.0") and the new one both report and update
+  const old = await call(s, at, "report_studio_project", { kit_project_id: "old-kit", title: "Old Kit", script: { lines }, kit_version: "1.3.0" });
+  assert.ok(!old.isError);
+  assert.equal(s.store.t.projects.find((p) => p.kit_project_id === "old-kit").kit_version, "1.3.0");
+  assert.ok(!(await call(s, at, "update_project", { project_id: old.structuredContent.project_id, kit_version: "zyvo-roblox-story 1.4.0" })).isError);
+  assert.equal(s.store.t.projects.find((p) => p.kit_project_id === "old-kit").kit_version, "zyvo-roblox-story 1.4.0");
+  assert.match(promptText(), /type \/zyvo-roblox-story in Claude Code/);
 
   // the voice: a quote first, nothing charged
   const before = s.store.balance[OWNER];
@@ -534,9 +541,20 @@ test("the site: Studio projects cards, Create voice at the shown price only, upl
   // the kit: counted per download, owner-only while the connector is
   const kit = await site("POST", "/account/kit");
   assert.equal(kit.status, 200);
-  assert.match(kit.body.url, /kit\/roblox-story-/);
-  assert.equal(kit.body.fileName, "roblox-story.zip");
+  assert.match(kit.body.url, /kit\/zyvo-roblox-story-/);
+  assert.equal(kit.body.fileName, "zyvo-roblox-story.zip");
+  assert.equal(kit.body.version, KIT.version);
   assert.equal(s.store.kits.length, 1);
+  // the renamed zip not uploaded yet: the previous one is served, never a broken download
+  const sign = s.storage.signDownload;
+  s.storage.signDownload = async (p, ...rest) => (p === KIT.path ? null : sign(p, ...rest));
+  const prev = await site("POST", "/account/kit");
+  assert.equal(prev.status, 200);
+  assert.match(prev.body.url, /kit\/roblox-story-1\.3\.0\.zip/);
+  assert.equal(prev.body.version, KIT.previous.version);
+  s.storage.signDownload = async () => null;
+  assert.equal((await site("POST", "/account/kit")).body.error, "NOT_READY");
+  s.storage.signDownload = sign;
   assert.equal((await s.req("POST", "/account/kit", { headers: { Authorization: "Bearer site-other" } })).status, 403);
   assert.equal((await s.req("GET", "/account/studio", { headers: { Authorization: "Bearer site-other" } })).body.open, false);
 });

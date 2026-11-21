@@ -14,13 +14,13 @@ Servers**, and switch on **Enable Studio as MCP server**.
 **4. Add the kit (recommended: let Claude do it).** Download the kit (it lands in Downloads), open the Claude app's
 **Code** tab in any folder and paste:
 
-> Install the roblox-story kit from my Downloads folder into my Claude skills folder
+> Install the zyvo-roblox-story kit from my Downloads folder into my Claude skills folder as its own folder zyvo-roblox-story; don't overwrite any other skill
 
-Claude finds the newest `roblox-story*.zip` in Downloads, makes the skills folder if it isn't there, unzips the kit
-into it (replacing an older copy), checks that `roblox-story/SKILL.md` is in place, and tells you to start a NEW
-Code session and type `/roblox-story`. By hand instead: unzip it so this file ends up at
-`C:\Users\<you>\.claude\skills\roblox-story\QUICKSTART.md` (Windows) or `~/.claude/skills/roblox-story/QUICKSTART.md`
-(macOS). That folder name is the command you'll type in step 6: `/roblox-story`.
+Claude finds the newest `zyvo-roblox-story*.zip` in Downloads, makes the skills folder if it isn't there, unzips the kit
+into it as its own folder `zyvo-roblox-story` (replacing only an older copy of this kit, never another skill), checks that `zyvo-roblox-story/SKILL.md` is in place, and tells you to start a NEW
+Code session and type `/zyvo-roblox-story`. By hand instead: unzip it so this file ends up at
+`C:\Users\<you>\.claude\skills\zyvo-roblox-story\QUICKSTART.md` (Windows) or `~/.claude/skills/zyvo-roblox-story/QUICKSTART.md`
+(macOS). That folder name is the command you'll type in step 6: `/zyvo-roblox-story`.
 
 **5. Connect Claude to Studio.** Make an empty folder for your videos (e.g. `Documents\ZyvoStudio`) and start a Code
 session in it. Ask Claude: *"Connect to Roblox Studio for every folder"*, or paste this into a terminal yourself:
@@ -35,9 +35,9 @@ custom connector > `https://mcp.tryzyvo.com/mcp`, then sign in. It works in the 
 **claude.ai Zyvo**). The terminal command `claude mcp add --transport http --scope user zyvo https://mcp.tryzyvo.com/mcp`
 is the other way: use one, not both.
 
-**6. Make it.** Type **`/roblox-story`**. Claude asks for your In This Town rule: type it, or say *ideas* and pick one
+**6. Make it.** Type **`/zyvo-roblox-story`**. Claude asks for your In This Town rule: type it, or say *ideas* and pick one
 of 5 by its number (*more* gives 5 new ones). Already know your rule? Type it right after the command, e.g.
-`/roblox-story every time you yawn, everyone around you falls asleep`. Claude keeps your idea and your words (if it
+`/zyvo-roblox-story every time you yawn, everyone around you falls asleep`. Claude keeps your idea and your words (if it
 suggests a tighter version, you see both and yours is the default), then asks the tone: Spooky (mimic horror), Funny,
 Wholesome or Twist. Then it checks your computer and goes step by step: the script, a grey blockout, the world, the
 cast, the light, the voice, the shot list. After each build Studio's camera jumps to what was just made. You approve

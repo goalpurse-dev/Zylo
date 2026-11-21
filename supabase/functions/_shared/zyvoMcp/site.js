@@ -159,10 +159,12 @@ export function makeSite({ store, storage, user, allowed, tools, now = () => Dat
     /** the free kit: signed-in users only, each download counted (owner 2026-11-19) */
     async kit(u) {
       if (!(await allowed(u.id))) return refuse(403, "NOT_OPEN", "The Studio kit isn't open for this account yet.");
-      const url = await storage.signDownload(KIT.path, KIT.fileName, KIT.linkTtlSec);
+      // the newest zip; while it isn't uploaded yet, the previous one (a missing object signs to null)
+      let kit = KIT, url = await storage.signDownload(KIT.path, KIT.fileName, KIT.linkTtlSec);
+      if (!url && KIT.previous) { kit = KIT.previous; url = await storage.signDownload(kit.path, kit.fileName, KIT.linkTtlSec); }
       if (!url) return refuse(503, "NOT_READY", "The kit download isn't ready yet. Try again in a few minutes.");
-      await store.logKitDownload({ user_id: u.id, version: KIT.version }).catch(() => {});
-      return json(200, { url, version: KIT.version, fileName: KIT.fileName });
+      await store.logKitDownload({ user_id: u.id, version: kit.version }).catch(() => {});
+      return json(200, { url, version: kit.version, fileName: kit.fileName });
     },
   };
 }
