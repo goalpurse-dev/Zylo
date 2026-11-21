@@ -257,6 +257,9 @@ const townFree1 = {
   plain: true,
   opensTracked: true,
   linkTo: "town_free",
+  // Owner, 2026-11-21 17:25 ("move it to today at 17.30"): Runware was paused (balance under $3) and moved this email
+  // to Sunday; the free kit uses neither Runware nor the voice provider, so this one email skips that start check.
+  skipProviderCheck: true,
   render: (footer, opts = {}) => plainEmailInlineLink(townFree1Lines(launchDealLive(opts.at ?? Date.now())), "Niko", { fullLinkText: true })(footer, opts),
 };
 

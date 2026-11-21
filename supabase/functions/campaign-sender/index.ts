@@ -161,7 +161,8 @@ async function tick() {
     }
     // Not started yet: Runware or the voice provider failing in the last 3 hours → this day and every
     // later day move one day forward (nothing is cancelled), and the owner is told (owner, 2026-10-26).
-    if (c.status === "approved") {
+    // skipProviderCheck: a campaign whose link needs neither (the owner's call for that one email, 2026-11-21).
+    if (c.status === "approved" && def?.skipProviderCheck !== true) {
       const down = await providersFailing();
       if (down) { out[c.id] = await postpone(c, `${down} in the last 3 hours`); continue; }
     }

@@ -22,6 +22,8 @@ test("town_free1: the owner's text, the deal line during the deal, one link to t
   assert.equal(c.subject, "you can try it free now");
   assert.equal(c.linkTo, "town_free");
   assert.equal(c.plain, true);
+  assert.equal(c.skipProviderCheck, true, "owner 2026-11-21: this one email skips the Runware/voice start check");
+  for (const [id, d] of Object.entries(CAMPAIGNS)) if (id !== "town_free1") assert.notEqual(d.skipProviderCheck, true, id);
   const sat = c.render(footer, { link: TOWN_FREE_URL, at: "2026-11-21T15:00:00Z" });
   assert.ok(sat.text.startsWith(HEAD + DEAL + TAIL), sat.text.slice(0, 900));
   assert.equal([...sat.html.matchAll(/<a href=/g)].length, 2, "the page link plus the unsubscribe");
@@ -34,6 +36,7 @@ test("town_free1: the owner's text, the deal line during the deal, one link to t
 test("the sender links town_free to the free In This Town", () => {
   const src = read("supabase/functions/campaign-sender/index.ts");
   assert.match(src, /if \(def\.linkTo === "town_free"\) return TOWN_FREE_URL;/);
+  assert.match(src, /if \(c\.status === "approved" && def\?\.skipProviderCheck !== true\) \{\s+const down = await providersFailing\(\);/);
 });
 
 test("town_free1 pick + the unengaged rule back ON in the gate", () => {
