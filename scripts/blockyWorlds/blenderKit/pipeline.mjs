@@ -24,7 +24,7 @@ import { cameraWallProblem, mentionsHero, shotCap, clearRayProblem, makeDirector
 import { parseSpots, reaimPlan, spotMarksDoc } from "./camFix.mjs";
 import { parseGate, gateProblems } from "./frameGate.mjs";
 import { creatureTease } from "./director.mjs";
-import { heroLinesMissing, renderGate, weakShotList } from "./renderGate.mjs";
+import { heroLinesMissing, renderGate, weakShotList, passShareOf, customerGate, topReasons, reasonsLine, DELIVER_MIN_PASS } from "./renderGate.mjs";
 import { captionColors } from "./speakers.mjs";
 import { LOCATIONS, DRESS } from "./worlds/locations.mjs";
 import { runpod, RATE, BOOT_S, GPU, finalEstimate, previewEstimate, fitLimits, chunkLimitS, chunkFloorS, finishLimitS, finishFloorS } from "./rp.mjs";
@@ -71,6 +71,8 @@ const SLUG = arg("slug", "plane_town"), ROUNDS = Math.min(2, Number(arg("rounds"
 const MODEL = MODELS[arg("model", "sonnet")] ?? MODELS.sonnet;
 const L = ledger(RUN, { capUsd: Number(arg("cap", 5)), agentCapUsd: Number(arg("agent-cap", 2.5)) });
 const OUT = path.join(RUN, "blender"); fs.mkdirSync(OUT, { recursive: true });
+// the customer gate's stop note (3c) is this process's own: an old one (a Try again's restored parts) never counts
+fs.rmSync(path.join(OUT, "stop.json"), { force: true });
 const say = (m) => { const l = `[${new Date().toISOString().slice(11, 19)}] ${m}`; console.log(l); fs.appendFileSync(path.join(OUT, "pipeline.log"), l + "\n"); };
 const py = (code, ...args) => { const r = spawnSync("python", ["-P", "-c", code, ...args], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }); if (r.status !== 0) throw new Error(`python: ${(r.stderr || r.stdout).slice(-600)}`); return r.stdout; };
 /** the plan's dress (a JSON string) -> only the known keys, plain values */
@@ -512,7 +514,7 @@ if (!state.previewed) {
 if (STOP_AFTER_CHECK) {
   // the golden stills verdict: what the checker says of the plan as it renders today, and what the render gate would do
   const g = renderGate({ shots: plan.shots, failing });
-  const verdict = { shots: plan.shots.length, failing: Object.keys(failing).length, kinds: Object.values(failing).reduce((a, f) => ({ ...a, [f.kind]: (a[f.kind] ?? 0) + 1 }), {}), gate: { ok: g.ok, reason: g.reason, cut: g.cut, weak: g.weak, ignored: g.ignored.length, passShare: g.shareAfter }, reaimed: Object.keys(state.reaimed ?? {}).length, sheets: (state.rounds.at(-1)?.sheets ?? []), spentUsd: L.total() };
+  const verdict = { shots: plan.shots.length, failing: Object.keys(failing).length, kinds: Object.values(failing).reduce((a, f) => ({ ...a, [f.kind]: (a[f.kind] ?? 0) + 1 }), {}), gate: { ok: g.ok, reason: g.reason, cut: g.cut, weak: g.weak, ignored: g.ignored.length, passShare: g.shareAfter }, customer: (({ passShare, pass, shots }) => ({ passShare: +passShare.toFixed(3), pass, shots, verdict: customerGate({ passShare }) }))(passShareOf({ shots: plan.shots, failing })), reaimed: Object.keys(state.reaimed ?? {}).length, sheets: (state.rounds.at(-1)?.sheets ?? []), spentUsd: L.total() };
   fs.writeFileSync(path.join(OUT, "golden-stills.json"), JSON.stringify(verdict, null, 1));
   say(`STOP AFTER CHECK: ${verdict.failing} of ${verdict.shots} flagged ${JSON.stringify(verdict.kinds)}; gate ${g.ok ? "RENDER" : `BLOCK (${g.reason})`}; $${L.total().toFixed(3)}`);
   process.exit(0);
@@ -555,9 +557,13 @@ if (has("more-rounds") && (state.round ?? 0) >= ROUNDS && Object.keys(failing).l
   state.retries = (state.retries ?? 0) + 1;
   state.round = 0; save();
 }
-for (let round = (state.round ?? 0) + 1; round <= ROUNDS && Object.keys(failing).length; round++) {
-  if (FIX_NOTES?.shots && round === 1) for (const id of Object.keys(FIX_NOTES.shots)) if (shotById(Number(id)) && !failing[id]) failing[id] = { kind: "owner", text: "the owner asked for this shot to be fixed (see THE OWNER'S ORDER)" };
-  const ids = Object.keys(failing).map(Number).filter((id) => shotById(id));
+/**
+ * ONE FIX ROUND: the director rewrites the bodies of `ids`, the camera fix, the static check, the free shot check, the
+ * previews + the checker on those shots. round: its number (the header mark, the step names); tag: the previews' storage
+ * tag; heading: the director's first line; extra: THE CUSTOMER GATE's extra round (owner 2026-11-21): only the re-previewed
+ * shots get a new verdict, the rest of `failing` stays as it is. -> { skipped } (the caps could not fund the director)
+ */
+async function fixRound({ round, ids, tag, heading, extra = false }) {
   const prev = Object.fromEntries(ids.map((id) => [id, state.bodies[id]]));
   // the owner's order first (--fix-notes order), then crashes / shot-check blocks, then the rest; at most FIX_PER_CALL
   // shots a call (fix round 1 of the first test sent 36 at once and hit the output limit)
@@ -567,7 +573,7 @@ for (let round = (state.round ?? 0) + 1; round <= ROUNDS && Object.keys(failing)
   let skipped = null;
   for (let k = 0; k < order.length && !skipped; k += FIX_PER_CALL) {
     const part = order.slice(k, k + FIX_PER_CALL);
-    const text = [primer, `FIX ROUND ${round} of ${ROUNDS} (part ${k / FIX_PER_CALL + 1} of ${Math.ceil(order.length / FIX_PER_CALL)}). These shots failed in the preview (the kit's preview mode, middle frame at 25% res). Rewrite each body so it renders and reads clearly; a slab / blocked / cropped frame: pull the camera back to a medium shot with the character's head and shoulders, make the small prop bigger, keep the camera 3.5+ units from the subject and 2+ units from any wall, seat or box. Crashes first: read the traceback and use only kit functions and parameters from the toolkit map. If a header helper is broken, fix it in the added header code (it may redefine the function).`,
+    const text = [primer, `${heading} (part ${k / FIX_PER_CALL + 1} of ${Math.ceil(order.length / FIX_PER_CALL)}). These shots failed in the preview (the kit's preview mode, middle frame at 25% res). Rewrite each body so it renders and reads clearly; a slab / blocked / cropped frame: pull the camera back to a medium shot with the character's head and shoulders, make the small prop bigger, keep the camera 3.5+ units from the subject and 2+ units from any wall, seat or box. Crashes first: read the traceback and use only kit functions and parameters from the toolkit map. If a header helper is broken, fix it in the added header code (it may redefine the function).`,
       FIX_NOTES?.general ? `THE OWNER'S FIX RULES (they come first):\n${FIX_NOTES.general}` : "",
       ...part.map((id) => { const s = shotById(id); const o = FIX_NOTES?.shots?.[id]; return `shot ${id} (${secs(s)}; ${s.location}; words "${wordsText(s)}"; desc: ${s.desc})${o ? `\nTHE OWNER'S ORDER: ${o}` : ""}\nPROBLEM: ${failing[id].text}\nCURRENT BODY:\n${state.bodies[id]}`; })].filter(Boolean).join("\n\n");
     let r;
@@ -579,8 +585,8 @@ for (let round = (state.round ?? 0) + 1; round <= ROUNDS && Object.keys(failing)
   }
   if (skipped && Object.values(prev).every((b, i) => state.bodies[ids[i]] === b)) {
     state.rounds.push({ round, skipped }); save();
-    say(`round ${round} SKIPPED: the caps cannot fund it (${skipped}); going on to the final with ${ids.length} shot(s) still flagged`);
-    break;
+    say(`round ${round} SKIPPED: the caps cannot fund it (${skipped}); ${extra ? "" : "going on to the final "}with ${ids.length} shot(s) still flagged`);
+    return { skipped };
   }
   reaim(plan.shots.filter((s) => ids.includes(s.id)), `fix round ${round}`);
   let c = staticCheck(writeFile(), shotsFile);
@@ -595,18 +601,26 @@ for (let round = (state.round ?? 0) + 1; round <= ROUNDS && Object.keys(failing)
     state.roundShotLeft = sp;
     say(`round ${round} shot check after the fixes: ${Object.keys(sp).length ? Object.entries(sp).map(([k, v]) => `${k}: ${v.slice(0, 90)}`).join(" | ") : "ok"}`);
   }
-  // a retry's rounds get their own tags (their storage files never collide with the last run's r1 / r2)
-  const rtag = `r${round}${state.retries ? `x${state.retries}` : ""}`;
-  const p = await L.step(`preview_round${round}`, () => previewRound(rtag, ids));
-  const vis = await vision(rtag, p.sheets, ids.filter((id) => !p.failed[id]), p.slabs, p.giants);
+  const p = await L.step(`preview_round${round}`, () => previewRound(tag, ids));
+  const vis = await vision(tag, p.sheets, ids.filter((id) => !p.failed[id]), p.slabs, p.giants);
   state.dirty = (state.dirty ?? []).filter((id) => !ids.includes(id)); // just previewed
-  failing = mergeProblems(p, vis);
+  const fresh = mergeProblems(p, vis);
   // the free check's ACTION RULE problems on the fixed bodies count as failing too (the checker may miss them)
-  for (const [id, t] of Object.entries(state.roundShotLeft ?? {})) if (!failing[id] && shotById(Number(id)) && ACTION_RULE_RE.test(t)) failing[id] = { kind: "shotcheck", text: `THE SHOT CHECK: ${t}` };
-  state.round = round;
-  state.rounds.push({ round, fixed: ids.length, crashed: Object.keys(p.failed).length, pixel: Object.keys(p.pixBad).length, vision: Object.keys(vis).length, failing: Object.keys(failing).length, sheets: p.sheets.map((s) => s.file) });
+  for (const [id, t] of Object.entries(state.roundShotLeft ?? {})) if (!fresh[id] && shotById(Number(id)) && ACTION_RULE_RE.test(t)) fresh[id] = { kind: "shotcheck", text: `THE SHOT CHECK: ${t}` };
+  // a normal round re-previews every failing shot (the fresh verdict is the whole list); the extra round only some of them
+  if (extra) { for (const id of ids) { if (fresh[id]) failing[id] = fresh[id]; else delete failing[id]; } } else failing = fresh;
+  if (!extra) state.round = round;
+  state.rounds.push({ round, ...(extra ? { extra: true } : {}), fixed: ids.length, crashed: Object.keys(p.failed).length, pixel: Object.keys(p.pixBad).length, vision: Object.keys(vis).length, failing: Object.keys(failing).length, sheets: p.sheets.map((s) => s.file) });
   state.failing = failing; save();
-  say(`round ${round}: ${ids.length} shots re-previewed: ${Object.keys(p.failed).length} crashed, ${Object.keys(p.pixBad).length} pixel, ${Object.keys(vis).length} vision -> ${Object.keys(failing).length} still failing`);
+  say(`round ${round}${extra ? " (extra)" : ""}: ${ids.length} shots re-previewed: ${Object.keys(p.failed).length} crashed, ${Object.keys(p.pixBad).length} pixel, ${Object.keys(vis).length} vision -> ${Object.keys(failing).length} still failing`);
+  return { skipped: null };
+}
+for (let round = (state.round ?? 0) + 1; round <= ROUNDS && Object.keys(failing).length; round++) {
+  if (FIX_NOTES?.shots && round === 1) for (const id of Object.keys(FIX_NOTES.shots)) if (shotById(Number(id)) && !failing[id]) failing[id] = { kind: "owner", text: "the owner asked for this shot to be fixed (see THE OWNER'S ORDER)" };
+  const ids = Object.keys(failing).map(Number).filter((id) => shotById(id));
+  // a retry's rounds get their own tags (their storage files never collide with the last run's r1 / r2)
+  const r = await fixRound({ round, ids, tag: `r${round}${state.retries ? `x${state.retries}` : ""}`, heading: `FIX ROUND ${round} of ${ROUNDS}` });
+  if (r.skipped) break;
 }
 
 // ---------------------------------------------------------------- 3b. no stale verdicts (owner 2026-11-18)
@@ -626,13 +640,60 @@ for (let round = (state.round ?? 0) + 1; round <= ROUNDS && Object.keys(failing)
   }
 }
 
+// ---------------------------------------------------------------- 3c. THE CUSTOMER GATE (owner 2026-11-21)
+// "If under 70% of shots pass after the retries, don't deliver: retry the weak shots once more; if it still fails,
+// refund the credits automatically and email me. Never again deliver a 'best version' like video 1 (21%)."
+// The share counts ALL the video's shots (renderGate.mjs passShareOf: a crash or an unwatchable shot fails too); under
+// DELIVER_MIN_PASS: ONE extra fix round for the failing shots only (the same fix-round code), then the gate again; still
+// under: stop BEFORE the final render (no GPU final money) with QUALITY_GATE + blender/stop.json, which the worker turns
+// into a failed run with the full refund and the owner's alert (workerSteps.mjs -> runner.mjs -> studioRuns.js failRun).
+// --force-render (the run card's owner_force_render, our own tools only): logged, the video is rendered anyway.
+const FORCE = has("force-render");
+{
+  const pct = (x) => `${Math.floor(x * 100 + 1e-9)}%`; // rounded down: 69.6% never reads "70%" under a 70% bar
+  let share = passShareOf({ shots: plan.shots, failing });
+  let verdict = customerGate({ passShare: share.passShare, extraRoundDone: state.extraRound?.retries === (state.retries ?? 0) });
+  say(`customer gate: ${pct(share.passShare)} of the shots pass (${share.pass} of ${share.shots}); the bar for delivery is ${pct(DELIVER_MIN_PASS)}: ${verdict.toUpperCase()}`);
+  if (verdict === "retry") {
+    const ids = share.failing.map((r) => r.id).filter((id) => shotById(id));
+    const round = Math.max(state.round ?? 0, ROUNDS) + 1;
+    state.extraRound = { retries: state.retries ?? 0, round, ids, before: +share.passShare.toFixed(3) }; save();
+    say(`customer gate: ONE extra fix round for the ${ids.length} failing shot(s): ${ids.join(", ")}`);
+    try {
+      // the extra round + the final must both fit in the cap (never a round that leaves the final unfunded)
+      L.check("the extra fix round + the final", previewEstimate({ shots: ids.length, jobs: ids.length > 24 ? 3 : 1 }) + CHECK_USD + finalEst());
+      const r = await fixRound({ round, ids, tag: `r${round}${state.retries ? `x${state.retries}` : ""}`, heading: `EXTRA FIX ROUND (the last chance: under ${pct(DELIVER_MIN_PASS)} of the shots pass, so the video is NOT delivered unless these shots are fixed now)`, extra: true });
+      if (r.skipped) state.extraRound.skipped = r.skipped;
+    } catch (e) {
+      if (!["CAP", "AGENT_CAP"].includes(e.code)) throw e;
+      state.extraRound.skipped = e.message; save();
+      say(`customer gate: the extra round SKIPPED: the caps cannot fund it (${e.message})`);
+    }
+    state.failing = failing; save();
+    share = passShareOf({ shots: plan.shots, failing });
+    verdict = customerGate({ passShare: share.passShare, extraRoundDone: true });
+    state.extraRound.after = +share.passShare.toFixed(3); save();
+    say(`customer gate after the extra round: ${pct(share.passShare)} of the shots pass (${share.pass} of ${share.shots}): ${verdict.toUpperCase()}`);
+  }
+  const top = topReasons(share.failing);
+  state.customerGate = { passShare: +share.passShare.toFixed(3), pass: share.pass, shots: share.shots, bar: DELIVER_MIN_PASS, verdict, reasons: top, extraRound: state.extraRound ?? null }; save();
+  if (verdict === "refund" && FORCE) say(`customer gate: under ${pct(DELIVER_MIN_PASS)} (owner test --force-render): rendering anyway`);
+  else if (verdict === "refund") {
+    const message = `QUALITY_GATE: only ${pct(share.passShare)} of the shots pass (${share.pass} of ${share.shots}) after the fix rounds and one extra round for the failing shots; the bar for delivery is ${pct(DELIVER_MIN_PASS)}: stopped before the final render, not delivered, refund. Top reasons: ${reasonsLine(top) || "-"}`.replace(/\s+/g, " ").slice(0, 900);
+    fs.writeFileSync(path.join(OUT, "stop.json"), JSON.stringify({ code: "QUALITY_GATE", message, title: plan.title, passShare: state.customerGate.passShare, pass: share.pass, shots: share.shots, bar: DELIVER_MIN_PASS, reasons: top, extraRound: state.extraRound ?? null, spentUsd: L.total(), at: new Date().toISOString() }, null, 1));
+    say(`customer gate: NOT DELIVERED (${pct(share.passShare)} < ${pct(DELIVER_MIN_PASS)}): stopped before the final render; the worker refunds the run and tells the owner`);
+    throw Object.assign(new Error(message), { code: "QUALITY_GATE" });
+  }
+}
+
 // ---------------------------------------------------------------- 4. no holes: a shot that still crashes joins its neighbour
 const crashed = Object.entries(failing).filter(([, f]) => f.kind === "crash").map(([id]) => Number(id));
 if (crashed.length) mergeOut(crashed, "crash");
 // THE RENDER GATE (owner 2026-11-18, renderGate.mjs, calibrated on Milo): the best version is RENDERED when, after the
 // fix rounds, the unwatchable shots (black / blank / a wall / something filling the frame) are few enough to cut, at
 // least PASS_MIN of the rest pass and every line naming the hero shows the hero; the weak shots are kept and logged.
-// Only a truly unwatchable video stops before the final render (the worker refunds and keeps the parts for Try again).
+// A video under DELIVER_MIN_PASS never gets here (3c, THE CUSTOMER GATE: refunded, never a best version); a plan with not
+// one watchable shot stops too (the worker refunds and keeps the parts for Try again).
 {
   const g = renderGate({ shots: plan.shots, failing });
   state.gate = { cut: g.cut, weak: g.weak, ignored: g.ignored, shareAfter: g.shareAfter, ok: g.ok, belowBar: g.belowBar, reason: g.reason }; state.gate.list = weakShotList(state.gate, plan.shots); save();
@@ -641,10 +702,10 @@ if (crashed.length) mergeOut(crashed, "crash");
   // OWNER TEST (--force-render: the run card's owner_force_render, set only by our own tools): the final is rendered
   // even below the bar; the unwatchable shots are still cut and everything is logged
   // NEVER A STOP OVER WEAK SHOTS (owner 2026-11-21): below the bar and the hero lines are LOGGED (state.gate, the run's
-  // report), the best version is rendered; only a plan with not one watchable shot stops (renderGate ok=false)
-  const FORCE = has("force-render");
+  // report), the video is rendered (it already passed the customer gate, 3c); only a plan with not one watchable shot stops
+// (renderGate ok=false)
   if (!g.ok) throw Object.assign(new Error(`the rules block the final: ${g.reason}: stopped before the final render`), { code: "RULES" });
-  if (g.belowBar) say(`render gate: BELOW THE BAR (${g.reason})${FORCE ? " (owner test)" : ""}: rendering the best version, every weak shot logged`);
+  if (g.belowBar) say(`render gate: BELOW THE BAR (${g.reason})${FORCE ? " (owner test)" : ""}: rendering (${FORCE ? "the owner test skips the customer gate" : `the customer gate's ${Math.round(DELIVER_MIN_PASS * 100)}% passed`}), every weak shot logged`);
   if (g.cut.length && g.cut.length < plan.shots.length) mergeOut(g.cut, "unwatchable after the fix rounds");
   const heroName = heroOf(plan.styleSheet);
   const missing = heroLinesMissing({ lines: linesOfShots(plan.shots), seen: state.seen ?? {}, hero: heroName, mentions: mentionsHero });

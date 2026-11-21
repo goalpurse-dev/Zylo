@@ -38,7 +38,18 @@ export const capOf = (cfg, card) => Math.min(cfg.runCapUsd, Number(card?.cap_usd
 /** the fix rounds: 2, like the local Milo run (STUDIO.rounds = 1 is the three.js engine's; cfg.blenderRounds overrides) */
 export const blenderRounds = (cfg = {}) => Math.max(1, Math.min(2, Number(cfg.blenderRounds ?? 2) || 2));
 
-export function makeBlenderSteps({ base, anthropicKey, cfg, env = process.env, node = process.execPath }) {
+/**
+ * THE CUSTOMER GATE's stop note (owner 2026-11-21, pipeline.mjs 3c: blender/stop.json, written just before the pipeline
+ * throws QUALITY_GATE) -> { code, message, ... } | null. Only the known code counts; anything else is an ordinary failure.
+ */
+export function readStop(dir) {
+  try {
+    const s = JSON.parse(fs.readFileSync(path.join(dir, "blender", "stop.json"), "utf8"));
+    return s?.code === "QUALITY_GATE" && typeof s.message === "string" ? s : null;
+  } catch { return null; }
+}
+
+export function makeBlenderSteps({ base, anthropicKey, cfg, env = process.env, node = process.execPath, pipeline = path.join(HERE, "pipeline.mjs") }) {
   const childEnvOf = () => ({ PATH: env.PATH, SystemRoot: env.SystemRoot, HOME: env.HOME, BLOCKY_WORLDS_KEYS_FROM_ENV: "1", ANTHROPIC_API_KEY: anthropicKey,
     RUNPOD_API_KEY: env.RUNPOD_API_KEY, SUPABASE_URL: env.SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY: env.SUPABASE_SERVICE_ROLE_KEY,
     ...(env.BLOCKY_WORLDS_KIT_DIR ? { BLOCKY_WORLDS_KIT_DIR: env.BLOCKY_WORLDS_KIT_DIR } : {}) });
@@ -72,10 +83,12 @@ export function makeBlenderSteps({ base, anthropicKey, cfg, env = process.env, n
       // before the plan and re-picks a scene plan that is only the free keyword pick (notes.mjs)
       const cardFile = card ? path.join(dir, "card.json") : null;
       if (cardFile) fs.writeFileSync(cardFile, JSON.stringify(card));
-      const args = [path.join(HERE, "pipeline.mjs"), "--run", dir, "--voice-dir", path.join(dir, "voice"), "--model", cfg.blenderModel ?? "sonnet", "--worlds",
+      const args = [pipeline, "--run", dir, "--voice-dir", path.join(dir, "voice"), "--model", cfg.blenderModel ?? "sonnet", "--worlds",
         "--rounds", String(blenderRounds(cfg)), "--cap", String(capOf(cfg, card)), "--agent-cap", String(Math.min(cfg.agentCapUsd, capOf(cfg, card))), "--chunks", String(cfg.blenderChunks ?? 6),
         ...(plan ? ["--scene-plan", plan] : []), ...(chars ? ["--characters", chars] : []), ...(cardFile ? ["--card", cardFile] : []), ...(card?.topic ? ["--topic", String(card.topic).slice(0, 200)] : []), "--defer-cleanup", "--yes", ...(resume ? ["--more-rounds"] : []), ...(card?.owner_force_render === true ? ["--force-render"] : [])];
       const childEnv = childEnvOf();
+      // an old stop note (a Try again's restored parts) is never this run's verdict
+      fs.rmSync(path.join(dir, "blender", "stop.json"), { force: true });
       // LIVE PROGRESS (progress.mjs): every line the pipeline prints feeds the tracker; its snapshot goes to the run row
       // every few seconds (onProgress), so the page always moves
       const tracker = makeProgress();
@@ -103,6 +116,13 @@ export function makeBlenderSteps({ base, anthropicKey, cfg, env = process.env, n
         // THE REAL REASON FIRST (2026-11-21: run 2120c23d said only "the director wrote no cut" + three weak-shot log
         // lines; the error the pipeline threw went to stderr and was lost): the thrown error, then the log's last lines
         const tail = fs.existsSync(path.join(dir, "blender", "pipeline.log")) ? fs.readFileSync(path.join(dir, "blender", "pipeline.log"), "utf8").trim().split("\n").slice(-3).join(" | ") : `exit ${code}`;
+        // THE CUSTOMER GATE (owner 2026-11-21): under 70% of the shots pass after the extra round: not delivered; the runner
+        // fails the run as QUALITY_GATE (the full refund + the owner's alert, studioRuns.js failRun)
+        const stop = readStop(dir);
+        if (stop) {
+          log(`stopping: the quality gate: ${stop.message}`);
+          return { plan: null, report: { finished: { code: stop.code, reason: stop.message, gate: stop } } };
+        }
         const why = thrownError(errTail);
         const reason = why ? `${why} || ${tail}` : tail;
         log(`stopping: the Blender pipeline failed: ${reason}`);

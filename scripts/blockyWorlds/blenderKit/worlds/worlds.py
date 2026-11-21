@@ -2005,6 +2005,7 @@ ZW_MON = {}      # name -> the monster Char (zw_monster), this shot
 ZW_MON_RIM = {}  # name -> its rim light colour
 ZW_EXTRAS = set()  # background extras this shot (zw_flee): not measured by the face gate
 ZW_FRAMED = {}   # what zw_frame / zw_monster_cam did this shot (for the log)
+ZW_LASTFIT = {}  # the last zw_fit: loc, aim, lens, clear, ok (round 2: zw_scene_cam keys start + end from it)
 
 
 def zw_pts(obs):
@@ -2141,6 +2142,8 @@ def zw_fit(cam, pts, fwd, t0, t1, lens, safe, frac=None, cam_dz=0.0, yaws=(0.0,)
     cam.key(t0, tuple(loc), tuple(aim_v), lens=lens)
     cam.key(t1, tuple(end), tuple(aim_v), lens=lens)
     ZW_FRAMED[tag] = "yaw %d d %.1f lens %d fits %s clear %s" % (yaw, d, lens, ok, clear)
+    ZW_LASTFIT.clear()
+    ZW_LASTFIT.update(loc=loc.copy(), aim=aim_v.copy(), lens=lens, clear=clear, ok=ok)
     return loc, aim_v
 
 
@@ -2335,6 +2338,114 @@ def zw_auto_faces(S):
         zw_emote(ch, t0, t1, emo)
         n += 1
     return n
+
+
+# ---------------------------------------------------------------- ROUND 2 (owner 2026-11-21): shot cards -> the stage
+# The director's shot cards (director2.mjs) are compiled by cards.mjs into calls of these helpers: the stage of a place
+# (where the cast stands, facing the camera side), a cast member with the plan's exact look, and ONE camera for every
+# card type, measured on the things the card must show (zw_fit).
+def zw_stage(place):
+    """(centre (x, y), forward (unit, from the camera side INTO the place), right (unit), rot in degrees for people facing
+    the camera side) from the place's tested close spot"""
+    loc, tgt, ln = ZW_SPOTS.get(place, ZW_SPOTS["downtown_street"])["close"]
+    d = Vector((tgt[0] - loc[0], tgt[1] - loc[1], 0))
+    d = d.normalized() if d.length > 1e-3 else Vector((0, 1, 0))
+    right = Vector((d.y, -d.x, 0))
+    rot = math.degrees(math.atan2(-d.x, d.y))   # a kit character at rot a faces (sin a, -cos a); we want it to face -d
+    return Vector((tgt[0], tgt[1], 0)), d, right, rot
+
+
+def zw_spotpos(place, k, n, depth=0.0, spacing=2.6):
+    """the k-th of n stage marks (left to right as the camera sees them), `depth` units further into the place"""
+    c, d, right, rot = zw_stage(place)
+    p = c + right * ((k - (n - 1) / 2.0) * spacing) + d * depth
+    return (p.x, p.y, 0.0)
+
+
+def zw_person(name, look, loc, rot, t0):
+    """a cast member with the plan's look: {skin, shirt, pants, hair, hair_color, face, kid}; adults 1.15x"""
+    lk = look or {}
+    hair = lk.get("hair", "short") if lk.get("hair") in ("spiky", "slick", "short", "messy", "cap", "bob", "buzz", "bun", "tophat", "bald", "none") else "short"
+    face = lk.get("face", "kid") if lk.get("face") in ("kid", "girl", "hero", "plain", "mustache", "villain") else "kid"
+    col = lambda v, d: v if isinstance(v, str) and len(v) == 7 and v.startswith("#") else d
+    ch = chars.Char(name, skin=col(lk.get("skin"), "#f1dfc6"), shirt=col(lk.get("shirt"), "#4aa5e8"), pants=col(lk.get("pants"), "#2f3f7a"),
+                    hair=hair, hair_color=col(lk.get("hair_color"), "#3a2a1e"), face=face, scale=1.0 if lk.get("kid", True) else 1.15)
+    ch.pose(t0, loc=tuple(loc), rot=rot)
+    return ch
+
+
+ZW_SHOT_KINDS = {
+    # lens, safe area, frac (box share of the frame height; None = as big as fits), camera height over the box centre
+    "wide": (22, {"l": 0.06, "r": 0.94, "t": 0.08, "b": 0.92}, 0.42, 3.0),
+    "medium": (30, ZW_SAFE, None, 0.6),
+    "insert": (34, {"l": 0.1, "r": 0.9, "t": 0.12, "b": 0.6}, 0.45, 1.2),
+    "low": (26, {"l": 0.06, "r": 0.94, "t": 0.05, "b": 0.9}, None, -2.2),
+    "high": (24, {"l": 0.06, "r": 0.94, "t": 0.08, "b": 0.92}, 0.5, 9.0),
+}
+
+
+def zw_shot(cam, kind, t0, t1, people=(), things=(), yaw=14.0, move="push"):
+    """ONE camera for a card: the box of the card's people (hips up; the whole body for wide / low / high) and things,
+    fitted into the frame (zw_fit: measured, tries other sides when a wall is in the way); move: push / pull / still / pan"""
+    bpy.context.scene.frame_set(F(t0))
+    people = [p for p in people if p is not None]
+    things = [t for t in things if t is not None]
+    if kind == "close" and people:
+        return zw_frame(cam, people[:1], t0, t1, kind="close", push=0.05 if move == "push" else 0.0)
+    if kind == "two" and people:
+        return zw_frame(cam, people, t0, t1, kind="two", push=0.04 if move == "push" else 0.0)
+    if kind in ("monster_reveal", "monster_full") and people:
+        mon = [p for p in people if p.name in ZW_MON]
+        if mon:
+            return zw_monster_cam(cam, mon[0], t0, t1, view="reveal" if kind == "monster_reveal" else "full")
+    lens, safe, frac, dz = ZW_SHOT_KINDS.get(kind, ZW_SHOT_KINDS["medium"])
+    pts = []
+    for p in people:
+        pts += zw_pts([p.root]) if kind in ("wide", "low", "high") or p.name in ZW_MON else zw_body_pts(p)
+    for t in things:
+        pts += zw_pts([t])
+    if not pts:
+        return None
+    s = max([p.root.scale[2] for p in people] + [1.0])
+    front = zw_front(people) if people else Vector((0, -1, 0))
+    push = {"push": 0.06, "pull": -0.05, "still": 0.0, "pan": 0.0}.get(move, 0.04)
+    yaws = (yaw, -yaw, 0.0, 2 * yaw, -2 * yaw, 3 * yaw, -3 * yaw) if move != "pan" else (yaw + 10, -yaw - 10, yaw, -yaw)
+    skip = tuple(p.name + "_" for p in people)
+    r = zw_fit(cam, pts, front, t0, t1, lens, safe, frac=frac, cam_dz=dz * s, yaws=yaws, push=push, skip=skip, tag=kind)
+    if not ZW_LASTFIT.get("clear", True) and ZW_T.get("_place") in ZW_SPOTS:
+        # round 2 (the first storyboards: a wide camera backed into a wall / the fountain = one flat colour): the TESTED spot
+        sp = "wide" if kind in ("wide", "high") else ("street" if "street" in ZW_SPOTS[ZW_T["_place"]] else "close")
+        loc, tgt = zw_spot(cam, ZW_T["_place"], sp, t0, t1)
+        ZW_FRAMED[kind] = "tested %s spot (the measured camera was blocked)" % sp
+        ZW_LASTFIT.update(loc=Vector(loc), aim=Vector(tgt), lens=ZW_SPOTS[ZW_T["_place"]][sp][2], clear=True, ok=False)
+    return r
+
+
+def zw_scene_cam(cam, t0, t1, a, b, yaw=14.0):
+    """ROUND 2 SCENE CARDS: the camera of the START frame and of the END frame, each measured on that frame's own people and
+    things (a = (kind, people, things, side) at t0, b = the same at t1); the camera moves between them over the scene.
+    side: front / left / right / behind -> the yaw the solver starts from."""
+    def one(spec, ta, tb):
+        kind, people, things, side = spec
+        y = {"left": -40.0, "right": 40.0, "behind": 160.0}.get(side, yaw)
+        ZW_LASTFIT.clear()
+        if people or things:
+            zw_shot(cam, kind, ta, tb, people=people, things=things, yaw=y, move="still")
+        return ZW_LASTFIT.get("loc"), ZW_LASTFIT.get("aim"), ZW_LASTFIT.get("lens", 30)
+    eps = 0.04
+    lb, ab, nb = one(b, t1 - eps, t1)
+    la, aa, na = one(a, t0, t0 + eps)
+    for o in (cam.ob, cam.cd):
+        if o.animation_data:
+            o.animation_data_clear()
+    if la is None and lb is None:
+        return zw_spot(cam, ZW_T.get("_place", "downtown_street"), "wide", t0, t1)
+    if la is None:
+        la, aa, na = lb, ab, nb
+    cam.key(t0, tuple(la), tuple(aa), lens=na)
+    if lb is not None:
+        cam.key(t1, tuple(lb), tuple(ab), lens=nb)
+    return la, aa
 
 
 # ---------------------------------------------------------------- the after-build hook (every shot, after the kit's build)

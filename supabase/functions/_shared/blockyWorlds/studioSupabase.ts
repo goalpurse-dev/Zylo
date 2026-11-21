@@ -6,7 +6,7 @@
 // Function secrets read here:
 //   BLOCKY_WORLDS_ENGINE=studio        new videos are made by the Studio worker (studio.js engineFrom)
 //   BLOCKY_WORLDS_READY_EMAIL=on       the ready email (default off)
-import { makeStudioRuns } from "./studioRuns.js";
+import { makeStudioRuns, studioFailAlert } from "./studioRuns.js";
 import { readyEmail, readyEmailKind, readyEmailOn, READY_WHY, studioQueue, workerAlive } from "./studio.js";
 import { claimEmail, FINAL_REASONS, sendClaimedEmail } from "../userEmail.ts";
 import { checkEmailAddress, REPLY_TO, WELCOME_SENDER } from "../emailRules.js";
@@ -84,7 +84,10 @@ export async function sweepStudio(admin: any) {
       .eq("engine", "studio").eq("status", "failed").not("worker_id", "is", null).gt("finished_at", since).limit(20);
     for (const r of data ?? []) {
       if (["QUEUE_TIMEOUT", "WORKER_LOST", "TIMEOUT"].includes(r.error_code)) continue; // the sweeper's own: mailed already
-      await alertOnce(admin, `blocky-worlds-studio-${r.error_code}`, 3600, `Blocky Worlds Studio: a video failed (${r.error_code})`, `Run ${r.id} (${r.title ?? ""}) failed in the worker: ${r.error_code} ${String(r.error_message ?? "").slice(0, 600)}. Refunded ${r.credits_refunded ?? 0} credits.`);
+      // THE CUSTOMER GATE (owner 2026-11-21: "refund the credits automatically and email me"): one email PER RUN (not one
+      // per code an hour), with the pass share and the top failing reasons (the run's error message: studioRuns.js studioFailAlert)
+      const m = studioFailAlert(r);
+      await alertOnce(admin, m.key, 3600, m.subject, m.text);
       alerted++;
     }
   } catch (e: any) { console.error("[blocky-worlds-studio] failure alerts:", e?.message ?? e); }

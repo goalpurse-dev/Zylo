@@ -184,6 +184,11 @@ export async function runStudioRun(run, deps, cfg = STUDIO) {
     await book();
     if (!directed?.plan?.shots?.length || !directed?.plan?.bible?.homes) {
       stopNow(); // the director stops quietly when a check refused its next call: the reason is here
+      // THE CUSTOMER GATE (owner 2026-11-21): under 70% of the shots pass after the extra fix round, the Blender pipeline
+      // stopped before the final render: never a "best version"; failed as QUALITY_GATE -> the full refund + the owner's
+      // alert (failRun below, once)
+      const fin = directed?.report?.finished;
+      if (fin?.code === "QUALITY_GATE") throw new StudioStop("QUALITY_GATE", String(fin.reason ?? "the quality gate stopped the video before the final render").slice(0, 900));
       const why = st.lastStop ?? directed?.report?.finished?.reason ?? "no cut was written";
       // the Blender engine's director did write its cuts; "no cut" there means the pipeline stopped (the reason follows)
       const head = /Blender pipeline failed/.test(why) ? "the video pipeline stopped before the final" : "the director wrote no cut";

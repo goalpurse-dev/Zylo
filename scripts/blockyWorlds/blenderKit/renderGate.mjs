@@ -7,9 +7,14 @@
 //   WEAK shots (everything else the checker still flags) are KEPT and logged
 //   the free shot check's rule notes that the vision checker did not confirm are NOT failures (they were 29 of the
 //     73 "still failing" shots of "The Sock That Heard ...")
-//   RENDER the best version (since 2026-11-21 ALWAYS, owner: "the run must never stop over weak shots"): below PASS_MIN,
-//     or a hero line without the hero, is logged in the run's report, never a stop
+//   between DELIVER_MIN_PASS and PASS_MIN, or a hero line without the hero: logged in the run's report, the video is
+//     rendered (renderGate below)
+// THE CUSTOMER GATE (owner 2026-11-21, after a live video was delivered at 21%: "If under 70% of shots pass after the
+// retries, don't deliver: retry the weak shots once more; if it still fails, refund the credits automatically and email
+// me. Never again deliver a 'best version'"): customerGate below; the pipeline runs ONE extra fix round on the failing
+// shots, then stops before the final render with QUALITY_GATE (the worker fails + refunds the run, the owner is told)
 export const PASS_MIN = 0.85;
+export const DELIVER_MIN_PASS = 0.70;
 export const MAX_CUT_SHARE = 0.15;
 const UNWATCHABLE_RE = /\b(black|blank|empty (?:frame|room|street|set|place)|EMPTY FRAME|flat (?:[\w-]+ ){0,2}(?:colou?r|wall)|(?:mostly|just|only) (?:a |the |an )?(?:[\w-]+ )?(?:wall|sky|floor|ceiling|legs?)|(?:fills?|filling|covers?|covering) (?:most of |much of |all of )?the (?:whole )?frame|nothing (?:is )?(?:visible|readable)|not readable at all|only the place)\b/i;
 
@@ -84,3 +89,57 @@ export function heroLinesMissing({ lines, seen = {}, hero, mentions }) {
   const has = (id) => (seen[id] ?? []).some((p) => mentions(String(p), hero) || String(p).toLowerCase().includes(String(hero).toLowerCase()));
   return lines.filter((l) => mentions(l.text, hero) && l.shots.length && l.shots.every((id) => Array.isArray(seen[id])) && !l.shots.some(has));
 }
+
+/**
+ * THE CUSTOMER GATE's number: the share of ALL the video's shots that pass. A crashed, black or unwatchable shot and a
+ * weak one count as failing (a cut shot is not a passing one); the rule notes the checker did not confirm and the
+ * fix-only notes (classify -> "ignore") do not. shots + failing -> { shots, pass, passShare, failing: [{ id, kind, status, text }] }
+ */
+export function passShareOf({ shots, failing }) {
+  const rows = [];
+  for (const s of shots) {
+    const f = failing?.[s.id] ?? failing?.[String(s.id)];
+    const c = classify(f);
+    // the text without its fix-only notes (they never count, so they never name the reason either)
+    if (c !== "ignore") rows.push({ id: s.id, kind: f.kind ?? null, status: c, text: String(f.text ?? "").split(/;\s*/).filter((p) => p.trim() && !FIX_ONLY_RE.test(p.trim())).join("; ").slice(0, 300) });
+  }
+  const n = shots.length, pass = n - rows.length;
+  return { shots: n, pass, passShare: n ? pass / n : 0, failing: rows };
+}
+
+/**
+ * THE CUSTOMER GATE (owner 2026-11-21): passShare (0..1) after the normal fix rounds -> "deliver" at or above
+ * DELIVER_MIN_PASS; under it "retry" (ONE extra fix round for the failing shots) when that round was not run yet, else
+ * "refund" (never a "best version": the run stops before the final render, refunded, the owner told)
+ */
+export function customerGate({ passShare, extraRoundDone = false, bar = DELIVER_MIN_PASS }) {
+  if (Number(passShare) >= bar - 1e-9) return "deliver";
+  return extraRoundDone ? "refund" : "retry";
+}
+
+// the failing reasons in a few plain groups (the owner's email: what went wrong most)
+const REASONS = [
+  ["crashed in Blender", (r) => r.kind === "crash"],
+  ["a black / flat frame", (r) => r.kind === "pixel"],
+  ["unwatchable (a wall, an empty frame, something filling the frame)", (r) => r.status === "cut"],
+  ["a line's key thing not on screen", (r) => /not shown literally/i.test(r.text)],
+  ["a named character or thing not visible", (r) => /not (?:clearly )?(?:visible|seen|readable)|is missing|nowhere|no character|can'?t see|cannot see/i.test(r.text)],
+  ["the view is blocked", (r) => /block|in the foreground|obstruct|covers? the/i.test(r.text)],
+  ["the framing (cropped, too far, too close)", (r) => /crop|cut off|too (?:far|close|small|tight)|framing/i.test(r.text)],
+  ["other checker notes", () => true],
+];
+const clean = (t) => String(t ?? "").replace(/^the checker saw:\s*/i, "").replace(/^the shot CRASHED in Blender:\s*/i, "").split(/;\s*/)[0].replace(/\s+/g, " ").trim();
+
+/** passShareOf(...).failing -> the top n reasons [{ reason, count, example: { id, text } }], the biggest group first */
+export function topReasons(rows = [], n = 3) {
+  const groups = new Map();
+  for (const r of rows) {
+    const [reason] = REASONS.find(([, test]) => test(r));
+    const g = groups.get(reason) ?? { reason, count: 0, example: { id: r.id, text: clean(r.text).slice(0, 90) } };
+    g.count++; groups.set(reason, g);
+  }
+  return [...groups.values()].sort((a, b) => b.count - a.count).slice(0, n);
+}
+
+/** one line for the run's error message / the owner's email: "a line's key thing not on screen (9, e.g. shot 12: ...)" */
+export const reasonsLine = (top) => top.map((t) => `${t.reason} (${t.count}${t.example?.text ? `, e.g. shot ${t.example.id}: ${t.example.text}` : ""})`).join("; ");

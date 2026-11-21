@@ -107,6 +107,8 @@ export function failReason(code, message = null) {
   }
   // THE QUALITY CHECKER (owner 2026-11-18): the Blender pipeline's checker blocked the final (shots still failing after
   // the fix rounds): said honestly, never "something broke"
+  // THE CUSTOMER GATE (owner 2026-11-21): under 70% of the shots pass after the extra fix round: not delivered, refunded
+  if (c === "QUALITY_GATE") return { kind: "quality", text: FAIL_TEXT.quality };
   if (/rules block the final|still fail(?:ing)? after|-> \d+ still failing|shot\(s\) still fail/i.test(String(message ?? ""))) return { kind: "quality", text: FAIL_TEXT.quality };
   const kind = Object.keys(FAIL_KINDS).find((k) => FAIL_KINDS[k].includes(c)) ?? "ours";
   return { kind, text: FAIL_TEXT[kind] };
