@@ -22,6 +22,8 @@ import { loadEnv } from "../engine/runpod/client.mjs";
 import { styleSheetLine } from "../../../supabase/functions/_shared/blockyWorlds/characterRef.js";
 import { cameraWallProblem, mentionsHero, shotCap, clearRayProblem, makeDirector, systemPrompt, tileShots, assemble, staticCheck, wordLines, planLocations, planProblems, varietyPlanProblems, framingPlanProblems, facesSeenProblems, minLocations, storyPlanProblems, planLines, shotProblems, heroOf, giantSuspect, actionPlanProblems, visionRuleProblems, heroSeenProblems, MODELS, BATCH, MIN_LOCATIONS, PRICING } from "./director.mjs";
 import { parseSpots, reaimPlan, spotMarksDoc } from "./camFix.mjs";
+import { parseGate, gateProblems } from "./frameGate.mjs";
+import { creatureTease } from "./director.mjs";
 import { heroLinesMissing, renderGate, weakShotList } from "./renderGate.mjs";
 import { captionColors } from "./speakers.mjs";
 import { LOCATIONS, DRESS } from "./worlds/locations.mjs";
@@ -335,8 +337,9 @@ if (!sc.ok && !state.prefixed) {
   state.convo = D.convo; save();
   sc = staticCheck(writeFile(), shotsFile);
 }
-if (!sc.ok) {
-  const hdr = sc.problems.filter((p) => p.shot == null);
+// the shots still refused are merged out; a syntax error shows ONE shot at a time, so this repeats (at most 12 times)
+for (let k = 0; !sc.ok && k < 12; k++) {
+  const hdr = sc.problems.filter((p) => p.shot == null || !shotById(p.shot));
   if (hdr.length) throw new Error(`the header still fails the static check: ${hdr.map((p) => p.problem).join("; ")}`);
   mergeOut([...new Set(sc.problems.map((p) => p.shot))], "static");
   sc = staticCheck(writeFile(), shotsFile);
@@ -459,7 +462,10 @@ async function previewRound(tag, ids) {
   const pixBad = Object.fromEntries(Object.entries(pixel).filter(([id, p]) => (p.mean < 12 || p.std < 4) && !(shotById(Number(id)) && darkOk(shotById(Number(id))))).map(([id, p]) => [id, p.mean < 12 ? `the frame is black (mean ${p.mean})` : `the frame is one flat colour (std ${p.std})`]));
   // GIANT-PROP suspects (director.mjs giantSuspect: one flat region over the screen-share cap below the sky line)
   const giants = Object.fromEntries(Object.entries(pixel).filter(([id, p]) => giantSuspect(p) && !failed[id] && !slabs[id]).map(([id, p]) => [id, p]));
-  return { failed, sheets, pixel, pixBad, slabs, giants, renderS: outs.reduce((a, o) => a + (o.out.renderS ?? 0), 0) };
+  // THE FRAMING GATE (owner 2026-11-21, frameGate.mjs): the faces / monsters worlds.py measured in Blender
+  // (the worker's output.gate: Blender's own lines; needs the image with the 2026-11-21 handler.py)
+  const gate = outs.flatMap((o) => parseGate((o.out.gate ?? []).join("\n")));
+  return { failed, sheets, pixel, pixBad, slabs, giants, gate, renderS: outs.reduce((a, o) => a + (o.out.renderS ?? 0), 0) };
 }
 async function vision(tag, sheets, ids, suspects = {}, giants = {}) {
   if (!sheets.length) return {};
@@ -517,6 +523,11 @@ function mergeProblems(p, vis) {
   for (const [id, t] of Object.entries(p.failed)) f[id] = { kind: "crash", text: `the shot CRASHED in Blender: ${t}` };
   for (const [id, t] of Object.entries(p.pixBad)) if (!f[id]) f[id] = { kind: "pixel", text: t };
   for (const [id, t] of Object.entries(vis)) if (!f[id]) f[id] = { kind: "vision", text: `the checker saw: ${t}` };
+  // THE FRAMING GATE (owner 2026-11-21): a face cut by the edge / under the captions, a monster as a flat wall, a monster
+  // never shown in full: measured, so it goes to the fix round like the checker notes
+  const gp = gateProblems({ gate: p.gate ?? [], shots: plan.shots, tease: creatureTease, shownBefore: state.monsterShown ?? {} });
+  state.monsterShown = gp.shown;
+  for (const [id, t] of Object.entries(gp.problems)) { if (!f[id]) f[id] = { kind: "framing", text: t }; else if (f[id].kind !== "crash") f[id].text += `; ${t}`; }
   // the shot check's problems when its writing fix was skipped by the caps (round 0 only; urgent like a crash)
   if (!state.previewed) for (const [id, t] of Object.entries(state.shotLeft ?? {})) if (shotById(Number(id))) f[id] = { kind: f[id]?.kind === "crash" ? "crash" : "shotcheck", text: `${f[id] ? `${f[id].text}; ` : ""}THE SHOT CHECK: ${t}` };
   return f;
@@ -624,19 +635,20 @@ if (crashed.length) mergeOut(crashed, "crash");
 // Only a truly unwatchable video stops before the final render (the worker refunds and keeps the parts for Try again).
 {
   const g = renderGate({ shots: plan.shots, failing });
-  state.gate = { cut: g.cut, weak: g.weak, ignored: g.ignored, shareAfter: g.shareAfter, ok: g.ok, reason: g.reason }; state.gate.list = weakShotList(state.gate, plan.shots); save();
+  state.gate = { cut: g.cut, weak: g.weak, ignored: g.ignored, shareAfter: g.shareAfter, ok: g.ok, belowBar: g.belowBar, reason: g.reason }; state.gate.list = weakShotList(state.gate, plan.shots); save();
   // the FULL weak-shot list in the log, one line each (the report keeps it too: report.gate.list)
   for (const w of state.gate.list) say(`weak shot ${w.id} (${w.status}): ${w.desc.slice(0, 80)} -> ${w.why.slice(0, 120)}`);
   // OWNER TEST (--force-render: the run card's owner_force_render, set only by our own tools): the final is rendered
   // even below the bar; the unwatchable shots are still cut and everything is logged
+  // NEVER A STOP OVER WEAK SHOTS (owner 2026-11-21): below the bar and the hero lines are LOGGED (state.gate, the run's
+  // report), the best version is rendered; only a plan with not one watchable shot stops (renderGate ok=false)
   const FORCE = has("force-render");
-  if (!g.ok && FORCE) say(`render gate: would BLOCK (${g.reason}), but this is an OWNER TEST (--force-render): rendering the final anyway`);
-  if (!g.ok && !FORCE) throw Object.assign(new Error(`the rules block the final: ${g.reason}: ${[...g.cut, ...g.weak.map((w) => w.id)].slice(0, 10).map((id) => `${id}: ${String(failing[id]?.text ?? "").slice(0, 80)}`).join(" | ")}: stopped before the final render`), { code: "RULES" });
+  if (!g.ok) throw Object.assign(new Error(`the rules block the final: ${g.reason}: stopped before the final render`), { code: "RULES" });
+  if (g.belowBar) say(`render gate: BELOW THE BAR (${g.reason})${FORCE ? " (owner test)" : ""}: rendering the best version, every weak shot logged`);
   if (g.cut.length && g.cut.length < plan.shots.length) mergeOut(g.cut, "unwatchable after the fix rounds");
   const heroName = heroOf(plan.styleSheet);
   const missing = heroLinesMissing({ lines: linesOfShots(plan.shots), seen: state.seen ?? {}, hero: heroName, mentions: mentionsHero });
-  if (missing.length && FORCE) say(`render gate: ${missing.length} hero line(s) without the hero (L${missing.map((m) => m.line).join(", L")}): OWNER TEST, rendering anyway`);
-  else if (missing.length) throw Object.assign(new Error(`the rules block the final: line L${missing[0].line} ("${String(missing[0].text).slice(0, 60)}") names ${heroName} but none of its shots shows ${heroName}: stopped before the final render`), { code: "RULES" });
+  if (missing.length) { state.gate.heroLinesMissing = missing.map((m) => ({ line: m.line, text: String(m.text).slice(0, 80), shots: m.shots })); save(); say(`render gate: ${missing.length} hero line(s) without ${heroName} as seen by the checker (L${missing.map((m) => m.line).join(", L")}): logged, rendering the best version`); }
   say(`render gate: RENDER (${Math.round(g.shareAfter * 100)}% pass; cut ${g.cut.length}${g.cut.length ? ` (${g.cut.join(", ")})` : ""}; ${g.weak.length} weak shot(s) kept${g.weak.length ? `: ${g.weak.slice(0, 8).map((w) => `${w.id}: ${w.text.slice(0, 60)}`).join(" | ")}` : ""}; ${g.ignored.length} rule note(s) not confirmed by the checker)`);
 }
 fs.writeFileSync(shotsFile, writeFile());

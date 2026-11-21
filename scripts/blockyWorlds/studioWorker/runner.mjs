@@ -166,7 +166,7 @@ export async function runStudioRun(run, deps, cfg = STUDIO) {
     // a restored take is reused (no second paid voice)
     const kept = resumed ? readVoiceResult(dir) : null;
     if (kept) log("resume: the voice take is reused");
-    const voice = kept ?? await timed("voice", () => steps.voice({ script, dir, L, run }));
+    const voice = kept ?? await timed("voice", () => steps.voice({ script, dir, L, run, log }));
     if (!kept) saveVoiceResult(dir, voice);
     await book();
     stopNow();
@@ -185,7 +185,9 @@ export async function runStudioRun(run, deps, cfg = STUDIO) {
     if (!directed?.plan?.shots?.length || !directed?.plan?.bible?.homes) {
       stopNow(); // the director stops quietly when a check refused its next call: the reason is here
       const why = st.lastStop ?? directed?.report?.finished?.reason ?? "no cut was written";
-      throw Object.assign(new StudioStop(/credit balance|insufficient|quota/i.test(why) ? "PROVIDER_BALANCE" : "DIRECTOR_FAILED", `the director wrote no cut: ${why}`.slice(0, 600)));
+      // the Blender engine's director did write its cuts; "no cut" there means the pipeline stopped (the reason follows)
+      const head = /Blender pipeline failed/.test(why) ? "the video pipeline stopped before the final" : "the director wrote no cut";
+      throw Object.assign(new StudioStop(/credit balance|insufficient|quota/i.test(why) ? "PROVIDER_BALANCE" : "DIRECTOR_FAILED", `${head}: ${why}`.slice(0, 600)));
     }
     // the Blender engine made the final inside `direct` (directed.blender): from here only a shutdown stops it (THE
     // LATE-VIDEO RESCUE); the three.js engine still checks the limits before paying for its final

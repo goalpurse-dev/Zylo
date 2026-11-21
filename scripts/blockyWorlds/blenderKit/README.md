@@ -176,3 +176,31 @@ offset from `ZW_INFO['sidewalk_west']` (-8.0, 0.7 from the lane: -8 + 1 = -7 is 
 on the sidewalks (`avoid=` parts it around the hero; `street=True` only when the line says so), the sidewalk marks
 sit in the sidewalks' middle (+-9.5 downtown, +-9 brick), and the body check reads those offsets. New helpers in
 `worlds.py`: `zw_top`, `zw_ground` (feet on a surface's measured top), `zw_knock` (a hit car slides and spins away).
+
+## Upgrade round 1 (2026-11-21, owner): colour, night, monsters, faces (worlds.py + frameGate.mjs; not deployed)
+Learned from the owner's downloaded kits (techniques and numbers only; their licences forbid reuse, nothing copied).
+- COLOUR: the kit renders AgX + "AgX - Punchy" with per-shot exposure. The street places (downtown, suburb, brick) now
+  render with the STANDARD view transform, look None, exposure 0 (set in the after-build hook, so a shot can't override
+  it). Light set for Standard (`ZW_SKY_STD`): sun 2.6 at 40 degrees, sky light 0.5, two shadowless side fills 0.4, a
+  deeper blue sky; bloom per time (day 0.1, night 0.35 at threshold 0.85). Interiors and the kit's sets keep AgX this
+  round.
+- NIGHT: a dark navy sky, moon 0.32, sky light 0.09; every street lamp is a real warm point light (1500 W, soft); shop
+  sign letters glow; lit windows as before; a thin haze (a volume box, density 0.0028; a world volume would swallow the
+  sky); each character near the camera gets a warm lamp/window spill and a cool moon rim (`zw_night_cast_light`).
+  Character lights don't light the haze (`zw_novol`).
+- MONSTERS: `zw_monster(name, loc, rot, size=2..4, style=horns|slime|ember|frost)`: a kit character scaled up in its
+  own colours with glowing eyes (the only glow), brows, a mouth with teeth, horns, back spikes; `zw_monster_rim` gives
+  it rim lights from behind + a soft key. `zw_monster_cam(cam, m, t0, t1, view="full"|"face")`: low camera, the whole
+  outline (or head) inside the frame.
+- FACES: `zw_frame(cam, chars, t0, t1, kind="close"|"two")` measures the head box (close: head ~27% of the frame,
+  lens 34) or the hips-up boxes (two) and solves distance + aim so they sit in the safe area (u 0.06-0.94, v 0.05-0.64:
+  above the captions at 62-76%); tries other sides when a wall blocks the view (5 sight lines).
+- THE GATE (`zw_gate` in Blender -> `ZW_GATE|shot|name|kind|why` -> `frameGate.mjs` -> failing kind "framing" -> fix
+  round): face_cut, face_under_captions, monster_wall (over 80% of the frame or 3+ edges crossed), monster_hidden
+  (something between the lens and its head), and "every monster shown in full at least once" (monster_shown). Hint
+  shots (director.mjs creatureTease) may stay partial.
+- NEEDS AN IMAGE REBUILD: the gate lines come from Blender's stdout; `handler.py` now returns them as `output.gate`
+  (the kit's render log keeps only "shot N ok"). worlds.py itself travels in the video tar (no rebuild for the look).
+- GOLDEN LOOK STILLS: `golden/lookShots.mjs` (3 fixed stories x 3 shots, no AI call), `golden/lookGolden.mjs --variant
+  before|after [--lib old worlds.py] [--gate-lib] [--reports-only]` (one preview job, ~$0.02-0.03; + free "report"
+  shots that return the gate's numbers in their error text), `golden/lookCompare.py` (before | after sheet).

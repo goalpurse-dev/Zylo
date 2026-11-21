@@ -141,8 +141,72 @@ def zw_world(stops, amb, amb_str, cam_str=1.0):
     return w
 
 
+# LOOK v3 (owner 2026-11-21, upgrade round 1): the street places render with Blender's STANDARD view transform (no AgX /
+# Filmic: Roblox colours are bright and saturated, not filmic), so their light is set for Standard: a warm sun at 40
+# degrees, a neutral sky light, two shadowless side fills so both sides of a street read, a deeper blue sky. NEVER
+# exposure (zw_look_apply keeps it at 0). Night: a dark navy sky, a weak cool moon, a thin haze; the light comes from
+# the lamps, lit windows and glowing signs (+ zw_night_cast_light on the cast). Interiors and the kit's sets keep the
+# kit's AgX look this round.
+# round 1b (owner 2026-11-21): EVERY library place, the rooms and the kit's own sets included
+ZW_STD_PLACES = ("downtown_street", "downtown_plaza", "downtown_landmark", "suburb_street", "suburb_porch", "brick_street", "brick_alley",
+                 "living_room", "bedroom", "kitchen", "shop", "big_hall", "plane_cabin", "cockpit", "moon", "sky_airliner", "classroom", "hallway")
+ZW_SKY_STD = {
+    "day": dict(cam=[(0.0, (0.40, 0.68, 1.0)), (0.16, (0.12, 0.42, 1.0)), (0.6, (0.03, 0.19, 0.86))], amb=(0.86, 0.92, 1.0), amb_str=0.5,
+                sun=(1.0, 0.94, 0.82), sun_str=2.6, sun_rot=(50, 0, -24), fill=0.4),
+    "sunset": dict(cam=[(0.0, (1.0, 0.5, 0.18)), (0.18, (0.9, 0.3, 0.28)), (0.62, (0.16, 0.08, 0.38))], amb=(1.0, 0.8, 0.68), amb_str=0.42,
+                   sun=(1.0, 0.6, 0.32), sun_str=2.4, sun_rot=(70, 0, -38), fill=0.25),
+    "night": dict(cam=[(0.0, (0.03, 0.05, 0.14)), (0.25, (0.008, 0.016, 0.06)), (0.8, (0.002, 0.004, 0.02))], amb=(0.32, 0.4, 0.8), amb_str=0.09,
+                  sun=(0.6, 0.72, 1.0), sun_str=0.32, sun_rot=(45, 0, -40), fill=0.0, fog=0.0028),
+}
+
+
+def zw_fog(density, color=(0.55, 0.62, 0.85)):
+    """a thin haze: one big volume box around the street (a world volume would also swallow the sky), Principled Volume"""
+    m = D.materials.get("zw_fogm")
+    if m is None:
+        m = D.materials.new("zw_fogm")
+        m.use_nodes = True
+        nt = m.node_tree
+        for n in list(nt.nodes):
+            if n.type != "OUTPUT_MATERIAL":
+                nt.nodes.remove(n)
+        out = next(n for n in nt.nodes if n.type == "OUTPUT_MATERIAL")
+        v = nt.nodes.new("ShaderNodeVolumePrincipled")
+        v.inputs["Density"].default_value = density
+        v.inputs["Color"].default_value = (color[0], color[1], color[2], 1)
+        try:
+            v.inputs["Anisotropy"].default_value = 0.35
+        except Exception:
+            pass
+        nt.links.new(v.outputs[0], out.inputs["Volume"])
+    ob = box("zw_fog", (420, 520, 36), (0, 60, 17.5), m, 0.0)
+    ob.visible_shadow = False
+    ee = bpy.context.scene.eevee
+    try:
+        ee.volumetric_end = 170.0
+    except Exception:
+        pass
+    return ob
+
+
 def zw_sky_time(time="day", weather="clear", sun=True):
     ZW_T["time"] = time
+    if ZW_T.get("_std") and sun:
+        S = dict(ZW_SKY.get(time, ZW_SKY["day"]))
+        S.update(ZW_SKY_STD.get(time, ZW_SKY_STD["day"]))
+        stops, amb, amb_str, sun_str = S["cam"], S["amb"], S["amb_str"], S["sun_str"]
+        if weather in ("rain", "snow"):
+            g = (0.5, 0.55, 0.62) if weather == "rain" else (0.78, 0.82, 0.9)
+            stops = [(p, tuple(c[k] * 0.35 + g[k] * 0.65 for k in range(3))) for p, c in stops]
+            amb_str, sun_str = amb_str * 1.3, sun_str * 0.35
+        zw_world(stops, amb, amb_str)
+        light("zw_sun", "SUN", (0, 0, 50), sun_str, S["sun"], 3, rot=S["sun_rot"])
+        if S.get("fill"):
+            for k, zr in enumerate((80, -80)):
+                light("zw_fill%d" % k, "SUN", (0, 0, 50), S["fill"], (1.0, 0.97, 0.94) if k == 0 else (0.92, 0.95, 1.0), 10, rot=(72, 0, zr), shadow=False)
+        if S.get("fog"):
+            zw_fog(S["fog"])
+        return
     S = ZW_SKY.get(time, ZW_SKY["day"])
     stops, amb, amb_str, sun_str = S["cam"], S["amb"], S["amb_str"], S["sun_str"]
     if weather in ("rain", "snow"):
@@ -203,7 +267,8 @@ def zw_b_lamp(src, nm):
     cyl(nm + "_pole", 0.14, 6.6, (0, 0, 3.3), Mp, 10, coll=src)
     cyl(nm + "_base", 0.32, 0.5, (0, 0, 0.25), Mp, 10, coll=src)
     on = zw_time() in ("night", "sunset")
-    sphere(nm + "_bulb", 0.42, (0, 0, 6.9), zw_m("lampbulb" + ("_on" if on else ""), "#fff3c4", 0.3, emit="#ffd27a", estr=6.0 if on else 0.6), coll=src, seg=12)
+    b = sphere(nm + "_bulb", 0.42, (0, 0, 6.9), zw_m("lampbulb" + ("_on" if on else ""), "#fff3c4", 0.3, emit="#ffd27a", estr=6.0 if on else 0.6), coll=src, seg=12)
+    b.visible_shadow = False
 
 
 def zw_b_bench(src, nm):
@@ -286,10 +351,25 @@ ZW_SRC = {"tree": zw_b_tree, "tree2": zw_b_tree2, "lamp": zw_b_lamp, "bench": zw
           "rock2": zw_b_rock, "star": zw_b_star}
 
 
+def zw_novol(ob, k=0.0):
+    """a light's share in the haze (0 = it lights things, never the fog itself)"""
+    try:
+        ob.data.volume_factor = k
+    except Exception:
+        pass
+    return ob
+
+
 def zw_inst(kind, loc, rot=0, scale=1.0):
     ZW_N["n"] += 1
     src = zw_src("zw_src_" + kind, ZW_SRC[kind])
     s = scale if isinstance(scale, (tuple, list)) else (scale, scale, scale)
+    if kind == "lamp" and zw_night() and ZW_T.get("_std"):
+        # NIGHT (look v3): a street lamp is a REAL warm light, not only a glowing bulb (a pool of light on the street and
+        # on whoever stands near it); soft shadow from the bulb's size
+        sz = s[2]
+        zw_novol(light("zw_lamppool%d" % ZW_N["n"], "SPOT", (loc[0], loc[1], loc[2] + 6.64 * sz), 10000.0 * sz * sz, (1.0, 0.72, 0.42), 0.4 * sz, spot=100, blend=0.7), 0.15)
+        zw_novol(light("zw_lamplight%d" % ZW_N["n"], "POINT", (loc[0], loc[1], loc[2] + 6.9 * sz), 450.0 * sz * sz, (1.0, 0.7, 0.4), 0.5 * sz), 0.35)
     return instance("zw_%s_i%d" % (kind, ZW_N["n"]), src, loc, s, rot=(0, 0, rot))
 
 
@@ -627,7 +707,10 @@ def zw_shop(i, side, y, w, h, sign, fx=None):
         box("zw_awn%d_%d" % (i, k), (3.2, w / n, 0.16), (fx - side * 1.5, yy, 7.0), zw_m("awn" + (a if k % 2 == 0 else b)[1:], a if k % 2 == 0 else b, 0.6), 0.0, rot=(0, -18 * side, 0))
     # the sign board + its text (dressed per story)
     box("zw_signb%d" % i, (0.3, w * 0.8, 1.6), (fx - side * 0.2, y, 8.9), zw_m("signboard", "#fffdf5", 0.5), 0.08)
-    text("zw_signt%d" % i, sign, (fx - side * 0.4, y, 8.9), 1.05, zw_m("signtxt%d" % (i % 4), ["#e2405b", "#2a7f74", "#5b4bd6", "#e07a1f"][i % 4], 0.4), rot=(90, 0, -90 * side), extrude=0.06)
+    # NIGHT (look v3): the sign's letters glow in their own colour (a lit shop sign), the board stays matt
+    stc = ["#e2405b", "#2a7f74", "#5b4bd6", "#e07a1f"][i % 4]
+    glow = zw_night() and ZW_T.get("_std")
+    text("zw_signt%d" % i, sign, (fx - side * 0.4, y, 8.9), 1.05, zw_m("signtxt%d" % (i % 4) + ("_n" if glow else ""), stc, 0.4, emit=("#ff5a7a", "#3fe0c8", "#8a7bff", "#ffa040")[i % 4] if glow else None, estr=3.0 if glow else 0.0), rot=(90, 0, -90 * side), extrude=0.06)
     # upper floors: framed windows with sills (2 or 3 a floor)
     cols = 3 if w >= 16 else 2
     fl, z = 0, 12.4
@@ -967,7 +1050,7 @@ def zw_apartment(i, side, y, w, h):
     base = ["#b0533c", "#93452f", "#bf6a4a", "#a35a46", "#c97a52"][i % 5]
     box("zw_apt%d" % i, (16, w, h), (cx, y, h / 2), zw_brick("apt%d" % (i % 5), base), 0.05)
     box("zw_aptcap%d" % i, (16.6, w + 0.6, 0.8), (cx, y, h + 0.4), zw_m("aptcap", "#d8cfc4", 0.7), 0.05)
-    lit_share = 0.7 if zw_night() else (0.45 if zw_time() == "sunset" else 0.3)
+    lit_share = 0.85 if zw_night() else (0.45 if zw_time() == "sunset" else 0.3)
     Gl = zw_m("aptlit", "#ffd38a", 0.3, emit="#ffbf66", estr=1.8 if not zw_night() else 2.6)
     Gd = zw_m("aptdark", "#3d4f66", 0.12, 0.2)
     Mf = zw_m("aptframe", "#efe6d8", 0.6)
@@ -1014,7 +1097,7 @@ def zw_apartment(i, side, y, w, h):
     pc = ["#ff4f7e", "#ffcf1f", "#22b5a3", "#7b5cf6", "#2f86fd"][i % 5]
     card("zw_apost%d" % i, 1.6, 2.2, (fx - side * 0.04, y - w * 0.15, 3.0), zw_m("poster" + pc[1:], pc, 0.6), "-X" if side > 0 else "+X")
     card("zw_aposti%d" % i, 1.0, 0.5, (fx - side * 0.05, y - w * 0.15, 3.3), zw_m("postin", "#ffffff", 0.6), "-X" if side > 0 else "+X")
-    if i % 3 == 0:
+    if i % 3 == 0 or (zw_night() and i % 3 == 1):   # night: two of every three shopfronts lit
         box("zw_ashop%d" % i, (0.2, w * 0.36, 3.0), (fx - side * 0.07, y + w * 0.12, 2.0), zw_m("shoplit", "#ffd9a0", 0.3, emit="#ffc070", estr=1.6), 0.0)
         a = ZW_AWN[i % len(ZW_AWN)][0]
         for k in range(5):
@@ -1138,6 +1221,8 @@ def zw_brick_city(t0, t1, dress):
     zw_people(t0, t1, n, [((8.0, 10.6), (48, 140), 0.3), ((-10.6, -8.0), (12, 56), 0.3), ((-10.6, -8.0), (88, 140), 0.3),
                           ((8.0, 10.6), (8, 28), 0.3), ((-27, -25), (79, 82), 0.1)], seed=9, modes=("walk", "stand", "talk", "walk"))
     zw_weather(dress.get("weather", "clear"))
+    if zw_night() and ZW_T.get("_std") and dress.get("people", 16) > 0:
+        zw_people(t0, t1, 3, [((7.6, 10.4), (6, 20), 0.3), ((-10.4, -7.6), (6, 20), 0.3), ((-3.0, 3.0), (10, 18), 0.0)], seed=23, modes=("walk", "walk", "talk"))
     if zw_night():
         for k in range(5):
             light("zw_bnl%d" % k, "POINT", ((-1) ** k * 9, 10 + k * 30, 7), 900, (1.0, 0.78, 0.5), 1.5)
@@ -1672,6 +1757,8 @@ def zw_build(place, t0, t1, dress=None):
     d.update(dress or {})
     ZW_T.clear()
     ZW_T.update(d)
+    ZW_T["_place"] = place
+    ZW_T["_std"] = place in ZW_STD_PLACES   # look v3: Standard colour + the Standard light set
     ZW_N["n"] = 0
     ZA["c"].clear()
     return ZW_PLACES[place](t0, t1, d)
@@ -1906,6 +1993,525 @@ def zw_clear_view(t0, t1, step=12):
     return len(hidden)
 
 
+# ================================================================ ROUND 1 (owner 2026-11-21): look, night, monsters, faces
+# SAFE AREA of a 9:16 frame (u = 0 left .. 1 right, v = 0 top .. 1 bottom): faces sit inside it; below v 0.64 is the
+# caption zone (captions run at about 66-73 % of the height)
+ZW_SAFE = {"l": 0.06, "r": 0.94, "t": 0.05, "b": 0.64}
+# rooms + the kit's sets in Standard (round 1b): their AgX-tuned lights x this (walls stayed white-hot at 1.0)
+ZW_INDOOR_LIGHT = {"living_room": 0.6, "bedroom": 0.6, "kitchen": 0.6, "shop": 0.7, "big_hall": 0.7, "plane_cabin": 0.65,
+                   "cockpit": 0.65, "classroom": 0.6, "hallway": 0.6, "moon": 0.8, "sky_airliner": 0.8}
+ZW_CAPTION = (0.62, 0.76)
+ZW_MON = {}      # name -> the monster Char (zw_monster), this shot
+ZW_MON_RIM = {}  # name -> its rim light colour
+ZW_EXTRAS = set()  # background extras this shot (zw_flee): not measured by the face gate
+ZW_FRAMED = {}   # what zw_frame / zw_monster_cam did this shot (for the log)
+
+
+def zw_pts(obs):
+    """the 8 world corners of the bounding box of these objects' visible meshes (children included)"""
+    lo, hi = Vector((1e9, 1e9, 1e9)), Vector((-1e9, -1e9, -1e9))
+    for ob in obs:
+        for m in [ob] + list(ob.children_recursive):
+            if m.type not in ("MESH", "CURVE", "FONT") or not m.visible_get():
+                continue
+            for c in m.bound_box:
+                w = m.matrix_world @ Vector(c)
+                lo = Vector((min(lo.x, w.x), min(lo.y, w.y), min(lo.z, w.z)))
+                hi = Vector((max(hi.x, w.x), max(hi.y, w.y), max(hi.z, w.z)))
+    if lo.x > 1e8:
+        return []
+    return [Vector((x, y, z)) for x in (lo.x, hi.x) for y in (lo.y, hi.y) for z in (lo.z, hi.z)]
+
+
+def zw_head_pts(ch):
+    return zw_pts([ch.head])
+
+
+def zw_body_pts(ch):
+    """head + torso + arms (not the legs: a two-shot frames people from the hips up)"""
+    obs = [ch.head, ch.torso] + [o for o in ch.root.children_recursive if o.name.endswith("_armL") or o.name.endswith("_armR")]
+    return zw_pts(obs)
+
+
+def zw_uv(cam, p):
+    """a world point -> (u, v) on the 9:16 frame (0..1, v from the top), or None behind the lens"""
+    q = cam.matrix_world.inverted() @ p
+    if q.z > -0.05:
+        return None
+    tv = cam.data.sensor_height / (2.0 * cam.data.lens)
+    th = tv * 9.0 / 16.0
+    return (0.5 + 0.5 * (q.x / -q.z) / th, 0.5 - 0.5 * (q.y / -q.z) / tv)
+
+
+def zw_span(cam, pts):
+    uv = [zw_uv(cam, p) for p in pts]
+    if not uv or any(x is None for x in uv):
+        return None
+    us, vs = [x[0] for x in uv], [x[1] for x in uv]
+    return min(us), max(us), min(vs), max(vs)
+
+
+def zw_front(chars):
+    """the average facing of these characters (a kit character at rot 0 faces -y)"""
+    f = Vector((0, 0, 0))
+    for ch in chars:
+        a = ch.root.rotation_euler[2]
+        f += Vector((math.sin(a), -math.cos(a), 0))
+    if f.length < 1e-3:
+        return Vector((0, -1, 0))
+    return f.normalized()
+
+
+def zw_blocked(a, b, skip):
+    """True when a solid object (not a character in `skip`, not a library tree / lamp / prop that zw_clear_view hides)
+    sits between the points a and b"""
+    try:
+        dg = bpy.context.evaluated_depsgraph_get()
+        d = b - a
+        hit, loc, nrm, idx, ob, mw = bpy.context.scene.ray_cast(dg, a, d.normalized(), distance=d.length)
+    except Exception:
+        return False
+    if not hit or ob is None:
+        return False
+    n = ob.name
+    if any(n.startswith(s) for s in skip) or n.startswith("zw_fog"):
+        return False
+    return not any(k in n for k in ("tree", "lamp", "bench", "bush", "flower", "hydrant", "bin", "planter", "person", "car", "za_"))
+
+
+def zw_fit(cam, pts, fwd, t0, t1, lens, safe, frac=None, cam_dz=0.0, yaws=(0.0,), push=0.05, skip=(), tag="frame"):
+    """THE FRAMING SOLVER: put the camera in front of `fwd` (turned by the first clear yaw) so the box of `pts` sits INSIDE
+    `safe` (u/v limits) at the start AND the end of the push; `frac` = the box's wanted share of the frame height
+    (None: as big as fits). Distance from the box and the lens's field of view; the aim corrected until it fits."""
+    sc = bpy.context.scene
+    lo = Vector((min(p.x for p in pts), min(p.y for p in pts), min(p.z for p in pts)))
+    hi = Vector((max(p.x for p in pts), max(p.y for p in pts), max(p.z for p in pts)))
+    c = (lo + hi) / 2
+    h = max(0.3, hi.z - lo.z)
+    w = max(0.3, hi.x - lo.x, hi.y - lo.y)
+    tv = 12.0 / lens
+    th = tv * 9.0 / 16.0
+    bv, bu = safe["b"] - safe["t"], safe["r"] - safe["l"]
+    want_v, want_u = (safe["t"] + safe["b"]) / 2, (safe["l"] + safe["r"]) / 2
+    d0 = h / ((frac or bv * 0.92) * 2 * tv)
+    d0 = max(d0, w / (bu * 2 * th))
+    up = Vector((0, 0, 1))
+    best = None
+    for yaw in yaws:
+        a = math.radians(yaw)
+        f = Vector((fwd.x * math.cos(a) - fwd.y * math.sin(a), fwd.x * math.sin(a) + fwd.y * math.cos(a), 0))
+        d = d0
+        aim = c.copy()
+        ok, loc, aim_v = False, c + f * d, c.copy()
+        for it in range(24):
+            loc = c + f * d + up * cam_dz
+            aim_v = aim.copy()
+            end = loc + (aim_v - loc) * push
+            cam.key(t0, tuple(loc), tuple(aim_v), lens=lens)
+            cam.key(t1, tuple(end), tuple(aim_v), lens=lens)
+            spans = []
+            for fr in (F(t0), max(F(t0), F(t1) - 1)):
+                sc.frame_set(fr)
+                spans.append(zw_span(cam.ob, pts))
+            sc.frame_set(F(t0))
+            if any(s is None for s in spans):
+                d *= 1.15
+                continue
+            u0, u1 = min(s[0] for s in spans), max(s[1] for s in spans)
+            v0, v1 = min(s[2] for s in spans), max(s[3] for s in spans)
+            ok = u0 >= safe["l"] and u1 <= safe["r"] and v0 >= safe["t"] and v1 <= safe["b"]
+            if ok:
+                break
+            if (u1 - u0) > bu or (v1 - v0) > bv:
+                d *= 1.08
+                continue
+            # move the aim so the box's centre lands in the middle of the safe area
+            vis_h, vis_w = 2 * tv * d, 2 * th * d
+            right = up.cross(f).normalized()   # the camera looks along -f: its right is up x f
+            dv, du = (v0 + v1) / 2 - want_v, (u0 + u1) / 2 - want_u
+            aim = aim - up * (dv * vis_h) + right * (du * vis_w)
+        sights = [c] + [c + (p - c) * 0.8 for p in (pts[0], pts[3], pts[4], pts[7])]
+        clear = not any(zw_blocked(q + (loc - q).normalized() * min(1.5, d * 0.2), loc, skip) for q in sights)
+        if best is None or (clear and not best[2]):
+            best = (loc, aim_v, clear, yaw, d, ok)
+        if clear and ok:
+            break
+    loc, aim_v, clear, yaw, d, ok = best
+    end = loc + (aim_v - loc) * push
+    cam.key(t0, tuple(loc), tuple(aim_v), lens=lens)
+    cam.key(t1, tuple(end), tuple(aim_v), lens=lens)
+    ZW_FRAMED[tag] = "yaw %d d %.1f lens %d fits %s clear %s" % (yaw, d, lens, ok, clear)
+    return loc, aim_v
+
+
+def zw_frame(cam, chars, t0, t1, kind="close", yaw=16.0, lens=None, push=0.05):
+    """A FACE THAT IS NEVER CROPPED (owner 2026-11-21): the camera is placed by MEASURING the head box (kind "close") or
+    the hips-up box of every character listed (kind "two", any number of people), so the whole head / bodies sit inside
+    the safe area (top 64 % of the frame, 6 % from the sides, 5 % from the top), above the captions. Close-up: the head
+    about 27 % of the frame height, lens 34 (a 39 degree view); two-shot: lens 30, as big as fits. The camera stays in
+    front of the faces (their average facing), turned `yaw` degrees; a wall in the way tries the other side / straight on."""
+    chars = list(chars)
+    bpy.context.scene.frame_set(F(t0))   # the pose at the start: new objects have no world matrix before an update
+    pts = []
+    for ch in chars:
+        pts += zw_head_pts(ch) if kind == "close" else zw_body_pts(ch)
+    if not pts:
+        return None
+    s = max(ch.root.scale[2] for ch in chars)
+    skip = tuple(ch.name + "_" for ch in chars)
+    yaws = (yaw, -yaw, 0.0, 2 * yaw, -2 * yaw, 3 * yaw, -3 * yaw)
+    if kind == "close":
+        # round 1b (owner): head + the TOP OF THE SHOULDERS only (round 1 was a waist shot): the box is the head and a
+        # 0.7-unit band at the top of the torso and arms; it fills half the frame height, so the head is about a third of it
+        for ch in chars:
+            sh = zw_pts([ch.torso])   # the arms may leave the 9:16 frame at the sides (a close-up), the face never
+            if sh:
+                top = max(p.z for p in sh)
+                pts += [Vector((p.x, p.y, max(p.z, top - 0.7 * ch.root.scale[2]))) for p in sh]
+        return zw_fit(cam, pts, zw_front(chars), t0, t1, lens or 34, ZW_SAFE, frac=0.5, cam_dz=0.1 * s, yaws=yaws, push=push, skip=skip, tag="close")
+    return zw_fit(cam, pts, zw_front(chars), t0, t1, lens or 30, ZW_SAFE, frac=None, cam_dz=0.1 * s, yaws=yaws, push=push, skip=skip, tag="two")
+
+
+# ---------------------------------------------------------------- MONSTERS AS CHARACTERS (owner 2026-11-21)
+ZW_MON_STYLES = {
+    # skin, shirt, pants, eyes, brows/mouth, rim light
+    "horns": ("#8a4fe0", "#3b2470", "#24163f", "#ffe14d", "#1a0f2e", (0.55, 0.85, 1.0)),
+    "slime": ("#4fd16a", "#1f7a3a", "#14502a", "#ff4040", "#0d2a14", (1.0, 0.55, 0.85)),
+    "ember": ("#e0503a", "#5a1d1a", "#2e0f0e", "#ffe680", "#200806", (0.6, 0.8, 1.0)),
+    "frost": ("#7fd3ff", "#2a5f9e", "#163a66", "#ff5ad1", "#0b1d33", (1.0, 0.75, 0.45)),
+}
+
+
+def zw_monster(name, loc, rot=0.0, size=3.5, style="horns", skin=None, shirt=None, pants=None, eyes=None):
+    """A MONSTER IS A CHARACTER, NOT A WALL: a blocky kit character `size` times a kid (2-4), in its OWN colours (never
+    plain grey), with a face you can read from far away: glowing eyes (the only thing that glows), angry brows, a wide
+    mouth with teeth, horns (style "horns") and back spikes for a clear outline. A rim light behind it (zw_after_build,
+    from the camera's side) separates its outline from the background. Returns the Char: pose / walk / zw_grow it like
+    any character; film it with zw_monster_cam."""
+    st = ZW_MON_STYLES.get(style, ZW_MON_STYLES["horns"])
+    size = min(4.0, max(3.0, float(size)))   # owner 2026-11-21: 3-4x a person's height
+    sk, sh, pa, ey, dk = skin or st[0], shirt or st[1], pants or st[2], eyes or st[3], st[4]
+    m = chars.Char(name, skin=sk, shirt=sh, pants=pa, hair="spiky", hair_color=dk, face=None, loc=tuple(loc), rot=rot, scale=size)
+    n, H = name, m.head
+    Me = zw_m("mon_eye_" + ey[1:], "#ffffff", 0.3, emit=ey, estr=9.0)
+    Md = zw_m("mon_dark_" + dk[1:], dk, 0.6)
+    Mt = zw_m("mon_teeth", "#fff8e8", 0.4)
+    # head-local: the head is a 0.62-radius cylinder centred on its object, front face at y = -0.62
+    for sx in (-1, 1):
+        # meaner (round 1b), still kid-safe: narrow slanted eyes, steep heavy brows, two fangs; nothing gory
+        box(n + "_eye%d" % sx, (0.3, 0.05, 0.14), (sx * 0.24, -0.63, 0.1), Me, 0.03, rot=(0, sx * -10, 0), parent=H, coll=m.coll)
+        box(n + "_pupil%d" % sx, (0.06, 0.03, 0.13), (sx * 0.22, -0.665, 0.1), Md, 0.0, parent=H, coll=m.coll)
+        box(n + "_brow%d" % sx, (0.4, 0.09, 0.11), (sx * 0.25, -0.65, 0.3), Md, 0.02, rot=(0, sx * -32, 0), parent=H, coll=m.coll)
+        box(n + "_fang%d" % sx, (0.09, 0.06, 0.2), (sx * 0.24, -0.66, -0.36), Mt, 0.0, parent=H, coll=m.coll)
+        cyl(n + "_horn%d" % sx, 0.16, 0.7, (sx * 0.36, 0.0, 0.85), Md, 12, rot=(0, sx * 24, 0), parent=H, coll=m.coll, r2=0.02) if style == "horns" else None
+    box(n + "_mouth", (0.62, 0.05, 0.2), (0, -0.63, -0.24), Md, 0.04, parent=H, coll=m.coll)
+    for k in range(4):
+        box(n + "_tooth%d" % k, (0.1, 0.06, 0.09), (-0.22 + k * 0.147, -0.655, -0.17), Mt, 0.0, parent=H, coll=m.coll)
+    for k in range(3):
+        cyl(n + "_spike%d" % k, 0.22, 0.55, (0, 0.62, 1.7 - k * 0.6), zw_m("mon_spike_" + dk[1:], dk, 0.5), 8, rot=(-70, 0, 0), parent=m.hip, coll=m.coll, r2=0.02)
+    ZW_MON[name] = m
+    ZW_MON_RIM[name] = st[5]
+    return m
+
+
+def zw_monster_cam(cam, m, t0, t1, view="full", yaw=14.0, push=0.05):
+    """the monster SHOWN: view "full" = the whole body with its outline clear of the frame edges, from a low camera
+    (looking up: it is big), feet in frame for scale; "face" = the whole head above the captions (a close-up that never
+    turns into a wall of skin). Uses the same measuring solver as zw_frame."""
+    bpy.context.scene.frame_set(F(t0))
+    s = m.root.scale[2]
+    yaws = (yaw, -yaw, 0.0, 2 * yaw, -2 * yaw, 3 * yaw, -3 * yaw)
+    skip = (m.name + "_",)
+    if view == "face":
+        return zw_fit(cam, zw_head_pts(m), zw_front([m]), t0, t1, 32, ZW_SAFE, frac=0.3, cam_dz=-0.4 * s, yaws=yaws, push=push, skip=skip, tag="monster_face")
+    safe = {"l": 0.08, "r": 0.92, "t": 0.06, "b": 0.93}
+    if view == "reveal":
+        # THE REVEAL (owner 2026-11-21): from a LOW angle (the lens 1.2 above the street, looking up), the whole monster
+        # with its face inside the frame, the street and the people running away at its feet
+        safe = {"l": 0.07, "r": 0.93, "t": 0.05, "b": 0.95}
+        box = zw_pts([m.root])
+        mid_z = (min(p.z for p in box) + max(p.z for p in box)) / 2
+        return zw_fit(cam, box, zw_front([m]), t0, t1, 22, safe, frac=None, cam_dz=1.2 - mid_z, yaws=yaws, push=push, skip=skip, tag="monster_reveal")
+    return zw_fit(cam, zw_pts([m.root]), zw_front([m]), t0, t1, 26, safe, frac=None, cam_dz=-(2.6 * s) + 2.2, yaws=yaws, push=push, skip=skip, tag="monster_full")
+
+
+def zw_flee(m, t0, t1, n=3, seed=5):
+    """people RUNNING AWAY from the monster: n kids start near its feet (in front of it, to both sides) and run out and
+    toward the front, terrified faces; returns them"""
+    rnd = random.Random(seed)
+    p = Vector(m.root.location)
+    s = m.root.scale[2]
+    f = zw_front([m])
+    side = Vector((f.y, -f.x, 0))
+    out = []
+    for k in range(n):
+        sx = (-1) ** k
+        a = p + f * (1.2 * s + 1.4 * k) + side * sx * (1.4 * s + rnd.uniform(0.0, 2.0))
+        b = a + (f * 0.55 + side * sx * 0.85).normalized() * (5.0 + 2.0 * k)
+        ch = chars.kid(40 + k + seed)
+        ch.run(t0, t1, (a.x, a.y, 0.0), (b.x, b.y, 0.0))
+        zw_emote(ch, t0, t1, "terrified")
+        ZW_EXTRAS.add(ch.name)
+        out.append(ch)
+    return out
+
+
+# ---------------------------------------------------------------- EXPRESSIONS (owner 2026-11-21, round 1b)
+# Faces match the line, never one blank stare: our emotion names -> the kit's layered face expressions (eyes + mouth
+# cells). zw_emote(ch, t0, t1, emo, talk=False): the face from t0, lip flaps on the shot's words when talk=True (the mouth
+# rests in the emotion's shape between words), blinks every 2-4 s. A character the shot code gave no face gets one from
+# the shot's words + desc in the after-build hook (zw_auto_faces).
+ZW_EMO = {"neutral": "neutral", "scared": "scared", "terrified": "terror", "shocked": "shock", "happy": "happy",
+          "laughing": "joy", "sad": "worried", "crying": "cry", "angry": "angry", "confused": "confused",
+          "smirk": "smug", "determined": "determined", "surprised": "gasp", "panic": "panic"}
+ZW_EMO_WORDS = [
+    ("terrified", ("terrif", "horrif", "run for", "screams", "scream", "run!", "runs away", "panic")),
+    ("crying", ("cry", "cries", "tears", "sob")),
+    ("laughing", ("laugh", "giggl", "haha", "joke", "funny")),
+    ("angry", ("angry", "mad ", "furious", "yell", "shout")),
+    ("shocked", ("shock", "gasp", "can't believe", "suddenly", "what?!", "no way", "wait")),
+    ("scared", ("scared", "afraid", "fear", "creep", "monster", "dark", "shadow", "noise", "behind")),
+    ("sad", ("sad", "lonely", "miss ", "sorry", "lost", "alone")),
+    ("confused", ("confus", "why", "huh", "weird", "strange", "how")),
+    ("smirk", ("smirk", "sneak", "trick", "secret", "plan")),
+    ("determined", ("determin", "decide", "must", "brave", "stop it", "fight", "save")),
+    ("happy", ("happy", "smile", "love", "yay", "fun", "best", "great")),
+]
+ZW_EMOTED = {}   # character name -> the expression this shot gave it
+# THE FIRST LIVE RUNS (2026-11-21, run df9b8ec8: 26 of 74 shots crashed): the director also calls the kit's own
+# ch.face(t, "terrified") with OUR emotion names (KeyError in the kit's EXPR) and writes ch.armR / ch.legL (the pose
+# keyword names; the kit's pivots are shL / shR / hpL / hpR). Both work now: our names are added to the kit's EXPR,
+# and armL / armR / legL / legR read the matching pivot.
+try:
+    for zk, zv in ZW_EMO.items():
+        if zk not in story.acting.EXPR and zv in story.acting.EXPR:
+            story.acting.EXPR[zk] = story.acting.EXPR[zv]
+    chars.Char.armL = property(lambda c: c.shL)
+    chars.Char.armR = property(lambda c: c.shR)
+    chars.Char.legL = property(lambda c: c.hpL)
+    chars.Char.legR = property(lambda c: c.hpR)
+except Exception as e:
+    print("zw_compat skipped: %s" % e)
+
+
+def zw_emo_of(text):
+    t = " %s " % str(text or "").lower()
+    for emo, keys in ZW_EMO_WORDS:
+        if any(k in t for k in keys):
+            return emo
+    return "neutral"
+
+
+def zw_emote(ch, t0, t1, emo="neutral", talk=False, blink=True):
+    """the character's FACE for this shot: emo = scared | terrified | shocked | happy | laughing | sad | crying | angry |
+    confused | smirk | determined | surprised | panic | neutral; talk=True flaps the lips on the shot's spoken words"""
+    expr = ZW_EMO.get(emo, emo if emo in story.acting.EXPR else "neutral")
+    ch.face(t0, expr)
+    if talk:
+        e_eyes, e_mouth = story.acting.EXPR[expr]
+        ch.talk(t0, t1, V.span(t0, t1), rest=e_mouth)
+    if blink:
+        ch.blink(t0, t1, every=(2.0, 4.0))
+    ZW_EMOTED[ch.name] = expr
+    return ch
+
+
+def zw_auto_faces(S):
+    """the hook's fallback: every visible character the shot code gave no face in this shot gets the emotion of the shot's
+    words and desc (and blinks); a character the code DID give a face keeps it (+ blinks)"""
+    t0, t1 = S["t0"], S["t1"]
+    try:
+        words = " ".join(w.get("word", "") for w in V.span(t0, t1))
+    except Exception:
+        words = ""
+    emo = zw_emo_of(words + " " + str(S.get("desc", "")))
+    n = 0
+    for nm, ch in zw_cast():
+        if nm in ZW_MON or nm in ZW_EMOTED or not hasattr(ch, "_eye_track"):
+            continue
+        if any(t0 - 0.01 <= t < t1 for t, _ in ch._eye_track):
+            ch.blink(t0, t1, every=(2.0, 4.0))
+            continue
+        zw_emote(ch, t0, t1, emo)
+        n += 1
+    return n
+
+
+# ---------------------------------------------------------------- the after-build hook (every shot, after the kit's build)
+def zw_cast():
+    """(name, Char) of the shot's visible characters (kit Chars; the library's instanced background people are not Chars)"""
+    out = []
+    for nm, ch in list(chars.CHARS.items()):
+        try:
+            if ch.root.name in D.objects and ch.head.visible_get():
+                out.append((nm, ch))
+        except Exception:
+            continue
+    return out
+
+
+def zw_look_apply():
+    """the colour mode: Standard on the street places (look v3), never a raised exposure; the bloom per time of day"""
+    sc = bpy.context.scene
+    vs = sc.view_settings
+    if ZW_T.get("_std"):
+        vs.view_transform = "Standard"
+        try:
+            vs.look = "None"
+        except TypeError:
+            pass
+    vs.exposure = 0.0
+    vs.gamma = 1.0
+    t = zw_time()
+    pl = ZW_T.get("_place", "")
+    if ZW_T.get("_std") and pl in ZW_INDOOR_LIGHT:
+        k = ZW_INDOOR_LIGHT[pl]
+        for o in D.objects:
+            if o.type == "LIGHT" and not o.name.startswith(("zw_spill", "zw_moonrim", "zw_mon")):
+                o.data.energy *= k
+        try:
+            for n in sc.world.node_tree.nodes:
+                if n.type == "BACKGROUND":
+                    n.inputs[1].default_value *= k
+        except Exception:
+            pass
+    try:
+        gl = next(n for n in sc.compositing_node_group.nodes if n.type == "GLARE")
+        if ZW_T.get("_std"):
+            thr, stg, siz = {"night": (0.85, 0.35, 0.75), "sunset": (0.95, 0.2, 0.7)}.get(t, (1.0, 0.1, 0.6))
+            gl.inputs["Threshold"].default_value = thr
+            gl.inputs["Strength"].default_value = stg
+            gl.inputs["Size"].default_value = siz
+    except Exception as e:
+        print("zw_look_apply glare: %s" % e)
+    print("ZW_LOOK|%s|%s|%s|exposure %.1f" % (ZW_T.get("_place", "-"), t, vs.view_transform, vs.exposure))
+
+
+def zw_night_cast_light(t0, t1):
+    """NIGHT, CHARACTERS STILL READABLE: each character near the camera gets the spill of a warm lamp / lit window from
+    the camera's side (soft, from above) and a cool moon rim from behind; the scene itself stays dark"""
+    sc = bpy.context.scene
+    cam = sc.camera
+    if cam is None or not (zw_night() and ZW_T.get("_std")):
+        return 0
+    sc.frame_set((F(t0) + max(F(t0), F(t1) - 1)) // 2)
+    c = cam.matrix_world.translation.copy()
+    n = 0
+    for nm, ch in zw_cast():
+        if nm in ZW_MON:
+            continue
+        pts = zw_head_pts(ch)
+        if not pts or n >= 6:
+            continue
+        hd = sum(pts, Vector((0, 0, 0))) / len(pts)
+        if (hd - c).length > 34:
+            continue
+        s = ch.root.scale[2]
+        to = Vector((c.x - hd.x, c.y - hd.y, 0))
+        if to.length < 1e-3:
+            continue
+        to.normalize()
+        side = to.cross(Vector((0, 0, 1)))
+        key = hd + to * 3.2 * s + side * 2.2 * s + Vector((0, 0, 2.0 * s))
+        zw_novol(light("zw_spill_%s" % nm, "AREA", tuple(key), 260.0 * s * s, (1.0, 0.78, 0.52), 1.6 * s, target=tuple(hd), shadow=False))
+        rim = hd - to * 3.0 * s - side * 1.2 * s + Vector((0, 0, 1.6 * s))
+        zw_novol(light("zw_moonrim_%s" % nm, "AREA", tuple(rim), 220.0 * s * s, (0.6, 0.75, 1.0), 1.2 * s, target=tuple(hd), shadow=False))
+        n += 1
+    sc.frame_set(F(t0))
+    return n
+
+
+def zw_monster_rim(t0, t1):
+    """each monster: a strong rim light BEHIND it (seen from the camera), in a colour that is not its own, so its outline
+    cuts out of any background; plus a soft under-fill on the face so the features read"""
+    sc = bpy.context.scene
+    cam = sc.camera
+    if cam is None or not ZW_MON:
+        return 0
+    sc.frame_set((F(t0) + max(F(t0), F(t1) - 1)) // 2)
+    c = cam.matrix_world.translation.copy()
+    for nm, m in ZW_MON.items():
+        pts = zw_pts([m.root])
+        if not pts:
+            continue
+        s = m.root.scale[2]
+        mid = sum(pts, Vector((0, 0, 0))) / len(pts)
+        top = Vector((mid.x, mid.y, max(p.z for p in pts)))
+        to = Vector((c.x - mid.x, c.y - mid.y, 0))
+        to = to.normalized() if to.length > 1e-3 else Vector((0, -1, 0))
+        side = to.cross(Vector((0, 0, 1)))
+        for k, sx in enumerate((-1, 1)):
+            p = top - to * 2.6 * s + side * sx * 2.2 * s + Vector((0, 0, 0.6 * s))
+            zw_novol(light("zw_monrim_%s_%d" % (nm, k), "AREA", tuple(p), 650.0 * s * s, ZW_MON_RIM.get(nm, (0.55, 0.85, 1.0)), 1.4 * s, target=tuple(mid + Vector((0, 0, 0.8 * s))), shadow=False))
+        hd = sum(zw_head_pts(m), Vector((0, 0, 0))) / 8
+        zw_novol(light("zw_monfill_%s" % nm, "AREA", tuple(hd + to * 3.0 * s - Vector((0, 0, 1.6 * s))), 160.0 * s * s, (1.0, 0.9, 0.8), 1.2 * s, target=tuple(hd), shadow=False))
+        k = hd + to * 4.0 * s + side * 2.5 * s + Vector((0, 0, 1.2 * s))
+        zw_novol(light("zw_monkey_%s" % nm, "AREA", tuple(k), (320.0 if zw_night() else 140.0) * s * s, (1.0, 0.92, 0.85), 2.0 * s, target=tuple(hd), shadow=False))
+    sc.frame_set(F(t0))
+    return len(ZW_MON)
+
+
+def zw_gate(S):
+    """THE FRAMING GATE (owner 2026-11-21), measured on the geometry at the start, middle and end frame; one log line per
+    problem, read by the pipeline (frameGate.mjs):
+      ZW_GATE|<shot>|<name>|face_cut|...           a face (head box over 5 % of the frame height) cut by the frame edge
+      ZW_GATE|<shot>|<name>|face_under_captions|... over half of that face inside the caption band (62-76 % down)
+      ZW_GATE|<shot>|<name>|monster_wall|...        a monster covering over 80 % of the frame or crossing 3+ edges
+      ZW_GATE|<shot>|<name>|monster_shown|...       a monster fully readable: outline inside the frame (at most 1 edge
+                                                    crossed), the whole head in frame and over 6 % of the height"""
+    sc = bpy.context.scene
+    cam = sc.camera
+    if cam is None:
+        return {}
+    f0 = F(S["t0"])
+    f1 = max(f0, F(S["t1"]) - 1)
+    bad, shown = {}, {}
+    for fr in sorted(set([f0, (f0 + f1) // 2, f1])):
+        sc.frame_set(fr)
+        for nm, ch in zw_cast():
+            if nm in ZW_EXTRAS:
+                continue
+            sp = zw_span(cam, zw_head_pts(ch))
+            if sp is None:
+                continue
+            u0, u1, v0, v1 = sp
+            if u1 < 0 or u0 > 1 or v1 < 0 or v0 > 1:
+                continue
+            hh = v1 - v0
+            if hh < 0.05:
+                continue
+            if u0 < -0.005 or u1 > 1.005 or v0 < -0.005 or v1 > 1.005:
+                bad[(nm, "face_cut")] = "head u %.2f-%.2f v %.2f-%.2f" % (u0, u1, v0, v1)
+            ov = max(0.0, min(v1, ZW_CAPTION[1]) - max(v0, ZW_CAPTION[0]))
+            if ov > 0.5 * hh:
+                bad[(nm, "face_under_captions")] = "head v %.2f-%.2f" % (v0, v1)
+        for nm, m in ZW_MON.items():
+            sp = zw_span(cam, zw_pts([m.root]))
+            if sp is None:
+                continue
+            u0, u1, v0, v1 = sp
+            if u1 < 0 or u0 > 1 or v1 < 0 or v0 > 1:
+                continue
+            cover = max(0.0, min(u1, 1) - max(u0, 0)) * max(0.0, min(v1, 1) - max(v0, 0))
+            edges = (u0 < 0) + (u1 > 1) + (v0 < 0) + (v1 > 1)
+            if cover > 0.8 or edges >= 3:
+                bad[(nm, "monster_wall")] = "covers %d%% of the frame, crosses %d edges" % (round(cover * 100), edges)
+            hs = zw_span(cam, zw_head_pts(m))
+            hp = zw_head_pts(m)
+            seen = hp and not zw_blocked(cam.matrix_world.translation.copy(), sum(hp, Vector((0, 0, 0))) / len(hp), (nm + "_",))
+            if not seen:
+                bad[(nm, "monster_hidden")] = "something stands between the lens and its head"
+            if seen and edges <= 1 and cover <= 0.8 and hs and hs[0] >= 0 and hs[1] <= 1 and hs[2] >= 0 and hs[3] <= 1 and hs[3] - hs[2] >= 0.06:
+                shown[nm] = "covers %d%%" % round(cover * 100)
+    sc.frame_set(f0)
+    lines = ["ZW_GATE|%s|%s|%s|%s" % (S.get("id", "?"), nm, kind, why) for (nm, kind), why in bad.items()]
+    lines += ["ZW_GATE|%s|%s|monster_shown|%s" % (S.get("id", "?"), nm, why) for nm, why in shown.items() if (nm, "monster_wall") not in bad]
+    lines += ["ZW_FRAMED|%s|%s|%s" % (S.get("id", "?"), k, v) for k, v in ZW_FRAMED.items()]
+    for l in lines:
+        print(l)
+    return lines
+
+
 ZW_BUILD0 = []
 try:
     ZW_BUILD0.append(V.build)
@@ -1914,12 +2520,24 @@ except NameError:
 
 
 def zw_guarded_build(i, *a, **k):
+    ZW_T.clear()
+    ZW_MON.clear()
+    ZW_FRAMED.clear()
+    ZW_EMOTED.clear()
+    ZW_EXTRAS.clear()
     S = ZW_BUILD0[0](i, *a, **k)
     zw_cam_guard(S["t0"], S["t1"])
     try:
         zw_clear_view(S["t0"], S["t1"])
     except Exception as e:   # best effort: a clear-view failure never fails a shot
         print("zw_clear_view skipped: %s" % e)
+    # round 1 (owner 2026-11-21): the colour mode, the night light on the cast, the monsters' rim, the framing gate.
+    # Best effort like the camera rules: a failure here never fails a shot (the gate only reports)
+    for step in (zw_look_apply, lambda: zw_auto_faces(S), lambda: zw_night_cast_light(S["t0"], S["t1"]), lambda: zw_monster_rim(S["t0"], S["t1"]), lambda: zw_gate(S)):
+        try:
+            step()
+        except Exception as e:
+            print("zw_round1 step skipped: %s" % e)
     return S
 
 

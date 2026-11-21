@@ -26,6 +26,12 @@ export function pickSteps(run, { studio, blender, env = process.env }) {
   return on && blender && run?.user_id && (env.BLOCKY_WORLDS_BLENDER_ACCESS === "everyone" || owners.includes(run.user_id)) ? blender : studio;
 }
 
+/** a child's stderr -> the error it died of ("Error: the rules block the final: ..."), or null */
+export function thrownError(stderr = "") {
+  const m = [...String(stderr).matchAll(/^(?:Uncaught )?(?:\w*Error|Error \[\w+\]): (.+)$/gm)].at(-1);
+  return m ? m[1].trim().slice(0, 500) : null;
+}
+
 /** a run's own LOWER cap (card.cap_usd: our golden test), never above the live one */
 export const capOf = (cfg, card) => Math.min(cfg.runCapUsd, Number(card?.cap_usd) > 0 ? Number(card.cap_usd) : Infinity);
 
@@ -81,10 +87,11 @@ export function makeBlenderSteps({ base, anthropicKey, cfg, env = process.env, n
       };
       const timer = onProgress ? setInterval(tick, progressEveryMs) : null;
       tick();
+      let errTail = "";
       const code = await new Promise((resolve) => {
         const p = spawn(node, args, { env: childEnv, stdio: ["ignore", "pipe", "pipe"] });
         p.stdout.on("data", (b) => String(b).split("\n").filter(Boolean).forEach((l) => { tracker.feed(l); log(`blender: ${l}`); }));
-        p.stderr.on("data", (b) => log(`blender stderr: ${String(b).slice(0, 400)}`));
+        p.stderr.on("data", (b) => { errTail = (errTail + String(b)).slice(-8000); log(`blender stderr: ${String(b).slice(0, 400)}`); });
         p.on("close", resolve);
       });
       if (timer) clearInterval(timer);
@@ -93,9 +100,13 @@ export function makeBlenderSteps({ base, anthropicKey, cfg, env = process.env, n
       try { Object.assign(L.costs, JSON.parse(fs.readFileSync(path.join(dir, "costs.json"), "utf8"))); } catch { /* nothing booked */ }
       const repFile = path.join(dir, "blender", "report.json");
       if (code !== 0 || !fs.existsSync(repFile)) {
+        // THE REAL REASON FIRST (2026-11-21: run 2120c23d said only "the director wrote no cut" + three weak-shot log
+        // lines; the error the pipeline threw went to stderr and was lost): the thrown error, then the log's last lines
         const tail = fs.existsSync(path.join(dir, "blender", "pipeline.log")) ? fs.readFileSync(path.join(dir, "blender", "pipeline.log"), "utf8").trim().split("\n").slice(-3).join(" | ") : `exit ${code}`;
-        log(`stopping: the Blender pipeline failed: ${tail}`);
-        return { plan: null, report: { finished: { reason: tail } } };
+        const why = thrownError(errTail);
+        const reason = why ? `${why} || ${tail}` : tail;
+        log(`stopping: the Blender pipeline failed: ${reason}`);
+        return { plan: null, report: { finished: { reason } } };
       }
       const report = JSON.parse(fs.readFileSync(repFile, "utf8"));
       return { plan: { shots: Array.from({ length: report.shots }, (_, i) => ({ id: i + 1 })), bible: { homes: { blender: true } } }, report, blender: report };
