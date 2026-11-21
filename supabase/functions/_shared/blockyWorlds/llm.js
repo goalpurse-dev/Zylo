@@ -81,7 +81,7 @@ export const worstCaseUsd = (model, maxTokens, inputTokens = 12000, ttl = "5m") 
 export const usageOf = (u = {}) => ({ input: u?.input_tokens ?? 0, cacheRead: u?.cache_read_input_tokens ?? 0, cacheWrite: u?.cache_creation_input_tokens ?? 0, output: u?.output_tokens ?? 0, ...(u?.cache_creation?.ephemeral_1h_input_tokens ? { cacheWrite1h: u.cache_creation.ephemeral_1h_input_tokens } : {}) });
 
 /** The request body of one JSON call (exported for the tests: the cached prefix must be byte-identical across calls). */
-export function requestBody({ model, system, user, schema, effort, maxTokens, cache = true, ttl = "5m" }) {
+export function requestBody({ model, system, user, schema, effort, maxTokens, cache = true, ttl = "5m", inline = false }) {
   const sonnet = FALLBACK_MODELS.some((m) => model.startsWith(m));
   return {
     model,
@@ -89,8 +89,9 @@ export function requestBody({ model, system, user, schema, effort, maxTokens, ca
     // a list of system texts, each a cached block (the reference examples come first); cache: false / ttl "off" for a
     // one-off call (a cache write costs 1.25x the input and nothing would read it)
     system: systemBlocks(system, { cache, ttl }),
-    messages: [{ role: "user", content: user }],
-    output_config: { effort, format: { type: "json_schema", schema } },
+    // inline (GRAMMAR_FALLBACK): the schema rides in the user message instead of structured outputs
+    messages: [{ role: "user", content: inline ? inlineSchemaUser(user, schema) : user }],
+    output_config: inline ? { effort } : { effort, format: { type: "json_schema", schema } },
     ...(sonnet ? { fallbacks: "default" } : {}),
   };
 }
@@ -109,27 +110,49 @@ export function resumeUser(user, partial) {
   return `${user}\n\nRESUME: your previous answer was cut off at the output limit ${done ? `after this much of the JSON:\n<<<\n${done.slice(0, 60000)}\n>>>\nReturn the COMPLETE JSON object now: keep every finished part word for word and finish the rest.` : "before any of the JSON was written. Return the COMPLETE JSON object now."} Keep your thinking short.`;
 }
 
+/**
+ * THE GRAMMAR FALLBACK (2026-11-21): the API refuses a structured-output schema whose compiled grammar is "too large"
+ * (400, nothing charged; from 2026-11-20 ~23:40 UTC it refused the hybrid writer's plan schema, so every new script
+ * failed with WRITER). Such a call is sent ONCE more with the same schema written into the user message (no
+ * output_config.format) and the JSON read from the reply; the writer's own checks judge the result as always.
+ */
+export const GRAMMAR_TOO_LARGE = /compiled grammar is too large/i;
+export function inlineSchemaUser(user, schema) {
+  return `${user}\n\nANSWER FORMAT: reply with ONE JSON object and nothing else (no prose, no code fence). It must match this JSON Schema exactly (every required key, the enum values as written):\n${JSON.stringify(schema)}`;
+}
+/** the first JSON object in a reply (a code fence or a sentence around it is tolerated) */
+export function parseJsonReply(text) {
+  const t = String(text ?? "").trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "");
+  try { return JSON.parse(t); } catch { /* fall through */ }
+  const a = t.indexOf("{"), b = t.lastIndexOf("}");
+  if (a >= 0 && b > a) return JSON.parse(t.slice(a, b + 1));
+  throw new Error("no JSON object in the reply");
+}
+
 /** One call that returns JSON matching `schema`. Thinking stays adaptive; effort keeps it short. A cut-off reply is resumed (CONTINUE). */
 export async function callJson({ apiKey, model, system, user, schema, effort = "low", maxTokens = 16000, timeoutMs = 120_000, meter = null, cache = true, ttl = "5m", continues = CONTINUE.max }) {
   const sonnet = FALLBACK_MODELS.some((m) => model.startsWith(m)); // (name kept: any model with the fallback)
-  let ask = user, mt = maxTokens, spent = 0;
+  let ask = user, mt = maxTokens, spent = 0, inline = false;
   for (let k = 0; ; k++) {
     // a money cap: the call is never sent when its worst case (every output token, input at the cache-write price) could
     // pass it; what a call cost (failed ones too) is added to the meter
     if (meter) meter.check(worstCaseUsd(model, mt, Math.ceil(([system].flat().join("").length + ask.length) / 3) + 200, cache ? ttl : "5m"), model);
     try {
-      const r = await sendJson({ apiKey, model, system, user: ask, schema, effort, maxTokens: mt, timeoutMs, sonnet, meter, cache, ttl });
-      return k ? { ...r, costUsd: Number((spent + r.costUsd).toFixed(5)), continued: k } : r;
+      const r = await sendJson({ apiKey, model, system, user: ask, schema, effort, maxTokens: mt, timeoutMs, sonnet, meter, cache, ttl, inline });
+      const out = inline ? { ...r, inlineSchema: true } : r;
+      return k ? { ...out, costUsd: Number((spent + r.costUsd).toFixed(5)), continued: k } : out;
     } catch (e) {
       if (meter && !e?.counted) meter.add(e?.costUsd ?? 0);
       spent += Number(e?.costUsd ?? 0);
+      // the grammar fallback: once, the same call with the schema in the message (the refused call cost nothing)
+      if (e?.grammar && !inline) { inline = true; continue; }
       if (!e?.truncated || k >= continues) throw Object.assign(e, { costUsd: Number(spent.toFixed(5)), continued: k });
       ask = resumeUser(user, e.partial);
       mt = Math.min(CONTINUE.maxTokens, Math.ceil(mt * CONTINUE.grow));
     }
   }
 }
-async function sendJson({ apiKey, model, system, user, schema, effort, maxTokens, timeoutMs, sonnet, meter, cache = true, ttl = "5m" }) {
+async function sendJson({ apiKey, model, system, user, schema, effort, maxTokens, timeoutMs, sonnet, meter, cache = true, ttl = "5m", inline = false }) {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -137,7 +160,7 @@ async function sendJson({ apiKey, model, system, user, schema, effort, maxTokens
       // a policy decline on Sonnet 5.5 is re-run on a fallback model inside the same call (server-side)
       ...(sonnet ? { "anthropic-beta": "server-side-fallback-2026-07-01" } : {}),
     },
-    body: JSON.stringify(requestBody({ model, system, user, schema, effort, maxTokens, cache, ttl })),
+    body: JSON.stringify(requestBody({ model, system, user, schema, effort, maxTokens, cache, ttl, inline })),
     signal: AbortSignal.timeout(timeoutMs),
   });
   const body = await res.json().catch(() => null);
@@ -146,13 +169,14 @@ async function sendJson({ apiKey, model, system, user, schema, effort, maxTokens
   const counted = Boolean(meter);
   if (!res.ok) {
     const balance = res.status === 400 && /credit balance/i.test(JSON.stringify(body?.error ?? ""));
-    throw Object.assign(new Error(`anthropic ${res.status} ${JSON.stringify(body?.error ?? body).slice(0, 300)}`), { costUsd, balance, counted });
+    const grammar = res.status === 400 && GRAMMAR_TOO_LARGE.test(JSON.stringify(body?.error ?? ""));
+    throw Object.assign(new Error(`anthropic ${res.status} ${JSON.stringify(body?.error ?? body).slice(0, 300)}`), { costUsd, balance, grammar, counted });
   }
   if (body?.stop_reason === "refusal") throw Object.assign(new Error("REFUSED: the writer declined this one"), { costUsd, refused: true, counted });
   const text = (body?.content ?? []).filter((b) => b?.type === "text").map((b) => b.text).join("");
   if (body?.stop_reason === "max_tokens") throw Object.assign(new Error("output truncated"), { costUsd, counted, truncated: true, partial: text });
   try {
-    return { data: JSON.parse(text), costUsd, usage: usageOf(body?.usage) };
+    return { data: inline ? parseJsonReply(text) : JSON.parse(text), costUsd, usage: usageOf(body?.usage) };
   } catch {
     throw Object.assign(new Error("the reply was not JSON"), { costUsd, counted });
   }
