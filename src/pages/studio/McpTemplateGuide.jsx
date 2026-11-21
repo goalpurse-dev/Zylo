@@ -3,6 +3,7 @@ import { Link, Navigate, useParams } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Check, ChevronDown, Clock, Copy, Download, ExternalLink, Folder, FileText, Film, Loader2, MonitorPlay, Plug, Wrench } from "lucide-react";
 import AuthModal from "../../components/AuthModal";
 import BeforeAfter from "../../components/studio-kit/BeforeAfter";
+import TemplateVideo from "../../components/studio-kit/TemplateVideo";
 import { DISPLAY, FOCUS, MCP_CARD as CARD, MCP_H3, MCP_PRIMARY as PRIMARY, MCP_SECONDARY as SECONDARY } from "../../components/studio-kit/studioKitShared";
 import { useKitDownload } from "../../components/studio-kit/useKitDownload";
 import { FREE_VS_FINISH, MCP_CONNECT_PATH, MCP_STUDIO_PATH, MCP_TEMPLATES_PATH, REQUIREMENTS, mcpTemplatePath } from "../../data/studioKit";
@@ -42,6 +43,9 @@ export default function McpTemplateGuide() {
         </div>
         <img src={t.thumb} alt={t.thumbAlt} className="mx-auto hidden aspect-[9/16] w-[150px] rounded-xl border border-white/10 object-cover md:block" />
       </section>
+
+      {/* the owner's video tutorial of this template */}
+      {t.video && <TemplateVideo id={t.video} slug={`mcp-template-${t.id}`} headingClass={MCP_H3} className="mt-8" />}
 
       {/* what you need */}
       <section className="mt-8" aria-labelledby="g-needs">

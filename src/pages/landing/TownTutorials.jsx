@@ -41,7 +41,7 @@ export function LiteYouTube({ video, slug, eager = false }) {
 /** The landing page's grid of all tutorials. */
 export function TutorialGrid({ slug }) {
   return (
-    <ul className="grid gap-5 md:grid-cols-3">
+    <ul className="grid gap-5 md:grid-cols-2">
       {TOWN_TUTORIALS.map((v) => (
         <li key={v.id} className="flex flex-col gap-3">
           <LiteYouTube video={v} slug={slug} />

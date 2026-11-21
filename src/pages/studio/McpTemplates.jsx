@@ -1,7 +1,8 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Clock, Plus } from "lucide-react";
-import { DISPLAY, FOCUS, MCP_H2 } from "../../components/studio-kit/studioKitShared";
+import { DISPLAY, FOCUS, MCP_H2, MCP_H3 } from "../../components/studio-kit/studioKitShared";
+import TemplateVideo from "../../components/studio-kit/TemplateVideo";
 import { mcpTemplatePath } from "../../data/studioKit";
 import { MCP_TEMPLATES } from "../../data/mcpTemplates";
 
@@ -42,6 +43,10 @@ export default function McpTemplates() {
           <p className="text-[13.5px] font-bold text-white/60">More templates coming</p>
         </li>
       </ul>
+      {/* the templates' video tutorials (the owner's YouTube videos) */}
+      {MCP_TEMPLATES.filter((t) => t.video).map((t) => (
+        <TemplateVideo key={t.id} id={t.video} slug="mcp-templates" heading={`Watch: ${t.title} tutorial`} headingClass={MCP_H3} className="mt-8" />
+      ))}
     </div>
   );
 }

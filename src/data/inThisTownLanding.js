@@ -92,6 +92,11 @@ export const TOWN_IDEAS = [
  *  use the designed thumbnails, logo included). The player loads only on tap. */
 export const TOWN_TUTORIALS = [
   {
+    id: "jjNl8NhYptY", cover: "maxresdefault", label: "Free: make one in Roblox Studio with Claude", seconds: 251, uploadDate: "2026-11-20T15:32:33-08:00",
+    blurb: "The free Zyvo Studio kit, step by step: install it, connect Claude to Roblox Studio, then film your story.",
+    title: 'How to Make Roblox "In This Town" Videos for FREE with Claude AI (Step-by-Step)',
+  },
+  {
     id: "nb9acc6kWzo", cover: "maxresdefault", label: "Full tutorial: make one with Claude AI", seconds: 121, uploadDate: "2026-11-16T07:31:48-08:00",
     blurb: "The whole workflow, step by step, from the idea to the finished animation.",
     title: 'How to Make VIRAL Roblox "In This Town" Animations With Claude AI (FULL TUTORIAL)',

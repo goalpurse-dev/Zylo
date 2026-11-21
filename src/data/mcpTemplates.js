@@ -29,6 +29,7 @@ export const MCP_TEMPLATES = [
     pitch: "Claude writes a Roblox-style town story and builds it in your own Roblox Studio.",
     badge: "Free kit",
     beta: true, // owner 2026-11-21: opened to everyone, still labelled Beta
+    video: "jjNl8NhYptY", // the owner's YouTube tutorial of this kit (data/inThisTownLanding.js TOWN_TUTORIALS)
     thumb: "/media/studio-kit/bedtime-zyvo.webp",
     thumbAlt: "A frame of our Bedtime Story video, made with the kit in Roblox Studio",
     time: "About 1-2 hours the first time",

@@ -298,7 +298,7 @@ export default function InThisTownLanding() {
 
       {/* TUTORIALS (the owner's YouTube videos) */}
       <section className={`${WRAP} py-12 sm:py-16`} aria-labelledby="itt-tutorials">
-        <SectionTitle id="itt-tutorials" kicker="Video tutorials" lead="Prefer to watch? Three short tutorials from our channel: the full workflow with Claude, the phone version, and a test of an AI maker.">Watch how it&rsquo;s done</SectionTitle>
+        <SectionTitle id="itt-tutorials" kicker="Video tutorials" lead="Prefer to watch? Four short tutorials from our channel: the free Roblox Studio kit with Claude, the full workflow with Claude, the phone version, and a test of an AI maker.">Watch how it&rsquo;s done</SectionTitle>
         <div className="mt-8"><TutorialGrid slug={SLUG} /></div>
       </section>
 
