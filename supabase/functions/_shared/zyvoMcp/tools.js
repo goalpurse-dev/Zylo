@@ -121,9 +121,14 @@ export function statusOf(p) {
   if (p.voice?.mp3) return "voice_ready";
   return "voice_needed";
 }
-function projectView(p) {
+// THE FREE PATH (owner 2026-11-23: "nobody finished a free video since Saturday"): the two furthest free users stopped
+// at the voice step, where the kit sends everyone to Create voice (~11-21 credits) and a 0-credit account hits "you have
+// 0". The account's first finish is free AND makes the voice, and the finish fits the recording to it (<= 8 % speed,
+// else trim / hold), so a free account skips the paid voice: estimated timings, record, then the free finish_my_video.
+export const FREE_PATH = "FREE PATH: this account's first finish is FREE and it makes the narrator's voice too. So don't send the user to Create voice (it costs credits they don't have). Instead: time the shot list from estimated word timings (the kit's reference/voice.md, way 3 \"No voice yet\"), record the Play run, then call finish_my_video with this project_id: Zyvo makes the voice, fits the recording to it, and adds captions, sound effects and music, free. Tell the user that in one line (\"Your first finish in Zyvo is free and makes the voice too, so we'll skip the voice for now and record next.\").";
+function projectView(p, { freeFinish = false } = {}) {
   const s = statusOf(p);
-  const next = { voice_needed: "Make the voice (make_voice, or in Zyvo: MCP Studio > the project > Create voice), or use your own voice file.", voice_ready: "Time the shot list to the voice (get_studio_voice), record the Play run, then finish_my_video.", recorded: "finish_my_video turns the recording into the finished video.", finished: "Done: the finished video is on the project's card in MCP Studio." }[s];
+  const next = { voice_needed: freeFinish ? "Free path: skip the voice (estimated timings), record the Play run, then finish_my_video: the first finish is free and makes the voice." : "Make the voice (make_voice, or in Zyvo: MCP Studio > the project > Create voice), or use your own voice file.", voice_ready: "Time the shot list to the voice (get_studio_voice), record the Play run, then finish_my_video.", recorded: "finish_my_video turns the recording into the finished video.", finished: "Done: the finished video is on the project's card in MCP Studio." }[s];
   return { project_id: p.id, kit_project_id: p.kit_project_id, title: p.title, status: s, lines: p.script?.lines?.length ?? 0, estimated_seconds: secondsOfScript(p.script?.lines), updated_at: p.updated_at, next_step: next, card_url: `${URLS.projects}#${p.id}` };
 }
 
@@ -156,6 +161,16 @@ export function makeTools(deps) {
   async function capCheck(userId, addUsd) {
     const g = await guard(userId, addUsd);
     if (!g.ok) throw new ToolError(g.code ?? "BUSY", g.message ?? "Zyvo is paused on our side for a little while. Nothing was charged.", { retry_after_sec: g.retryAfterSec ?? 600 });
+  }
+  /** the account's first finish is still free (the same rule finish_my_video uses) */
+  async function freeFinishLeft(userId, u) {
+    return Boolean(u?.emailConfirmed) && !(await store.freeFinishUsed(userId)) && (await store.freeFinishesToday(day())) < LIMITS.freeFinishPerDay;
+  }
+  /** a free account at the voice step: can't pay for the voice, and the free finish would make it */
+  async function freeVoicePath(userId, p) {
+    if (p.voice?.mp3) return false;
+    const u = await user(userId);
+    return Number(u.balance ?? 0) < voiceCredits(secondsOfScript(p.script?.lines)) && (await freeFinishLeft(userId, u));
   }
 
   /** a price the user can't pay: plain words, the buy link, and no confirm token */
@@ -280,7 +295,8 @@ export function makeTools(deps) {
       if (!existing && (await store.countProjects(ctx.userId)) >= LIMITS.projectsPerUser) throw new ToolError("LIMIT", "That's a lot of projects. Remove old ones in MCP Studio on tryzyvo.com first.");
       const row = { title, script, shot_plan: cleanShotPlan(a.shot_plan) ?? existing?.shot_plan ?? null, kit_version: cleanText(a.kit_version, PROJECT_LIMITS.kitVersionMax) || existing?.kit_version || null };
       const p = await store.saveProject(ctx.userId, slug, stale(existing, row));
-      return textResult(`Saved to MCP Studio on the user's Zyvo account. Tell the user in one line what was sent (title, ${script.lines.length} lines${row.shot_plan ? ", the shot plan" : ""}) and that it's in Zyvo: MCP > MCP Studio.`, projectView(p));
+      const freePath = await freeVoicePath(ctx.userId, p);
+      return textResult(`Saved to MCP Studio on the user's Zyvo account. Tell the user in one line what was sent (title, ${script.lines.length} lines${row.shot_plan ? ", the shot plan" : ""}) and that it's in Zyvo: MCP > MCP Studio.${freePath ? `\n\n${FREE_PATH}` : ""}`, { ...projectView(p, { freeFinish: freePath }), first_finish_free_with_voice: freePath });
     },
 
     async update_project(ctx, a) {
@@ -303,7 +319,17 @@ export function makeTools(deps) {
       await dailyLimit(ctx.userId, "make_voice");
       const credits = voiceCredits(sec);
       const input = { project_id: p.id, script: canonical(p.script), confirm_token: a.confirm_token };
-      if (!a.confirm_token) return await paid(ctx, "make_voice", input, { credits, what: `The narrator's voice for "${p.title}" (~${sec} s, ${p.script.lines.length} lines) with word timings.` });
+      const what = `The narrator's voice for "${p.title}" (~${sec} s, ${p.script.lines.length} lines) with word timings.`;
+      // a free account that can't pay for it: the same short answer (no confirm token; the site shows Buy credits), plus
+      // the free path, so the kit records next instead of stopping here
+      if (!a.confirm_token && (await freeVoicePath(ctx.userId, p))) {
+        const have = Number((await user(ctx.userId)).balance ?? 0);
+        return textResult(
+          `NOT ENOUGH CREDITS for the voice on its own. This costs ${credits} credits, you have ${have}. Nothing has been charged. There is no confirm_token.\n\n${FREE_PATH}`,
+          { tool: "make_voice", price_credits: credits, price_usd: usd(credits), free: false, balance: have, enough: false, missing_credits: credits - have, buy_url: BUY_URL, what, first_finish_free_with_voice: true },
+        );
+      }
+      if (!a.confirm_token) return await paid(ctx, "make_voice", input, { credits, what });
       await capCheck(ctx.userId, WORST_USD.voice(sec));
       const job = await paid(ctx, "make_voice", input, { credits, kind: "voice", jobInput: { project_id: p.id } });
       return textResult(`Making the voice (about a minute). ${credits} credits. Check with check_progress, then get_studio_voice.`, jobView(job));
@@ -411,9 +437,10 @@ export function makeTools(deps) {
       const u = await user(ctx.userId);
       const plan = String(u.plan ?? "free").toLowerCase().trim() || "free";
       const endCard = !canRemoveEndCard(plan);
+      const firstFree = await freeFinishLeft(ctx.userId, u);
       return textResult(
-        `Plan: ${plan}. Balance: ${u.balance ?? 0} credits. End card: ${endCard ? "ON (Free and Starter plans: every video ends with the 2-second card, the cast lined up + \"Made with Zyvo AI · tryzyvo.com\")" : "OFF (Pro and higher: no end card)"}.`,
-        { plan, balance: Number(u.balance ?? 0), end_card: endCard, paid_plan: canWrite(plan), buy_url: BUY_URL, plans_url: BUY_URL },
+        `Plan: ${plan}. Balance: ${u.balance ?? 0} credits. End card: ${endCard ? "ON (Free and Starter plans: every video ends with the 2-second card, the cast lined up + \"Made with Zyvo AI · tryzyvo.com\")" : "OFF (Pro and higher: no end card)"}. First finish: ${firstFree ? "FREE on this account (finish_my_video, and it makes the narrator's voice too: with few credits, skip the paid voice and record, then finish)" : "already used (finish_my_video is paid)"}.`,
+        { plan, balance: Number(u.balance ?? 0), end_card: endCard, paid_plan: canWrite(plan), first_finish_free: firstFree, buy_url: BUY_URL, plans_url: BUY_URL },
       );
     },
 

@@ -558,3 +558,45 @@ test("the site: Studio projects cards, Create voice at the shown price only, upl
   assert.equal((await s.req("POST", "/account/kit", { headers: { Authorization: "Bearer site-other" } })).status, 403);
   assert.equal((await s.req("GET", "/account/studio", { headers: { Authorization: "Bearer site-other" } })).body.open, false);
 });
+
+test("the free path (owner 2026-11-23): a free 0-credit account at the voice step is told to skip the voice, record and use the free finish, which makes the voice", async () => {
+  const s = setup({ access: "everyone" });
+  const at = (await connect(s, { siteAuth: "Bearer site-other" })).tok.body.access_token;
+  s.store.balance[OTHER] = 0;
+  const lines = Array.from({ length: 20 }, (_, i) => ({ text: `Line ${i + 1} of the story, about the shadow and the town.` }));
+  const rep = await call(s, at, "report_studio_project", { kit_project_id: "free-path", title: "Free Path", script: { lines } });
+  const pid = rep.structuredContent.project_id;
+  assert.equal(rep.structuredContent.first_finish_free_with_voice, true);
+  assert.match(rep.content[0].text, /FREE PATH: this account's first finish is FREE and it makes the narrator's voice too/);
+  assert.match(rep.structuredContent.next_step, /^Free path: skip the voice/);
+  const plan = await call(s, at, "get_my_plan", {});
+  assert.equal(plan.structuredContent.first_finish_free, true);
+  // the voice on its own: the same short answer (no token, Buy credits) plus the free path
+  const v = await call(s, at, "make_voice", { project_id: pid });
+  assert.equal(v.structuredContent.enough, false);
+  assert.equal(v.structuredContent.confirm_token, undefined);
+  assert.equal(v.structuredContent.first_finish_free_with_voice, true);
+  assert.match(v.content[0].text, /This costs \d+ credits, you have 0\./);
+  assert.match(v.content[0].text, /FREE PATH/);
+  // and the free path really goes: no voice, the upload, then FREE with the voice, nothing charged
+  const up = await call(s, at, "finish_my_video", { project_id: pid });
+  assert.equal(up.structuredContent.step, "upload");
+  s.uploads.add(s.store.t.projects.find((p) => p.id === pid).upload.path);
+  const fq = await call(s, at, "finish_my_video", { project_id: pid });
+  assert.equal(fq.structuredContent.free, true);
+  assert.ok(fq.structuredContent.confirm_token);
+  const fj = await call(s, at, "finish_my_video", { project_id: pid, confirm_token: fq.structuredContent.confirm_token });
+  assert.equal(fj.structuredContent.free, true);
+  assert.equal(s.store.balance[OTHER], 0, "nothing charged");
+  assert.equal(s.store.t.jobs.at(-1).input.need_voice, true, "the finish makes the voice");
+  // once the free finish is used, the normal words come back (no free path)
+  const rep2 = await call(s, at, "report_studio_project", { kit_project_id: "free-path-2", title: "Free Path 2", script: { lines } });
+  assert.equal(rep2.structuredContent.first_finish_free_with_voice, false);
+  assert.doesNotMatch(rep2.content[0].text, /FREE PATH/);
+  assert.match(rep2.structuredContent.next_step, /^Make the voice/);
+  assert.equal((await call(s, at, "get_my_plan", {})).structuredContent.first_finish_free, false);
+  // a paying account never sees the free path
+  s.store.balance[OTHER] = 500;
+  const rep3 = await call(s, at, "report_studio_project", { kit_project_id: "free-path-3", title: "Free Path 3", script: { lines } });
+  assert.equal(rep3.structuredContent.first_finish_free_with_voice, false);
+});
