@@ -88,11 +88,26 @@ test("captions: a speaker's words carry their name (the tag), the narrator's non
   assert.ok(c.colors[2] && !c.colors[0]);
 });
 
-test("writer: a 40 s story is 14-19 lines; the quoted line is required when asked", () => {
-  assert.deepEqual(lineRange(40), [14, 19]);
+test("writer: a 40 s story is 16-22 lines (round 6 budget); the quoted line is required when asked", () => {
+  assert.deepEqual(lineRange(40), [16, 22]);
   assert.deepEqual(lineRange(90), [32, 38]);
-  const s = { opening: "rule_first", rule_again_line: 2, lines: Array.from({ length: 16 }, (_, i) => ({ text: i ? "We go home." : "In this town, every night, nobody goes out.", speaker: "" })), cast: [], self_test: ["a", "b", "c"], kid_gets_it: true };
+  const s = { opening: "rule_first", rule_again_line: 2, lines: Array.from({ length: 16 }, (_, i) => ({ text: i ? "We go home." : "In this town, every night, nobody goes out.", speaker: "" })), cast: [], self_test: ["a", "b", "c"], kid_gets_it: true,
+    where: Array.from({ length: 16 }, (_, i) => ({ line: i + 1, who_where: i === 5 ? "Me: on the porch; Mom: at the open door" : "Me: on the street" })) };
   assert.ok(writer2Problems(s, { lengthSec: 40, needQuote: true }).some((x) => /QUOTED/.test(x)));
   s.lines[5] = { text: '"Get inside now!"', speaker: "Mom" };
+  // round 6: the narrator must introduce the quoted line right before it
+  assert.ok(writer2Problems(s, { lengthSec: 40, needQuote: true }).some((x) => /introduce/.test(x)));
+  s.lines[4] = { text: "Mom opened the door and said,", speaker: "" };
   assert.deepEqual(writer2Problems(s, { lengthSec: 40, needQuote: true }), []);
+});
+
+test("writer (round 6): at most 2 quoted lines; the speaker must be placed in the who-is-where", () => {
+  const L = (t, sp = "") => ({ text: t, speaker: sp });
+  const lines = [L("In this town, every night, nobody goes out.")];
+  for (let i = 0; i < 3; i++) lines.push(L("Then Max said,"), L('"Run!"', "Max"));
+  while (lines.length < 16) lines.push(L("We go home."));
+  const s = { opening: "rule_first", rule_again_line: 2, lines, cast: [{ name: "Max" }], self_test: ["a", "b", "c"], kid_gets_it: true, where: lines.map((_, i) => ({ line: i + 1, who_where: "Me: on the street; Max: next to me" })) };
+  assert.ok(writer2Problems(s, { lengthSec: 40 }).some((x) => /3 quoted lines/.test(x)));
+  s.where[2].who_where = "Me: on the street";
+  assert.ok(writer2Problems(s, { lengthSec: 40 }).some((x) => /does not place Max/.test(x)));
 });

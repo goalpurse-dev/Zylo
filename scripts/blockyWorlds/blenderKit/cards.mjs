@@ -120,7 +120,9 @@ export function compileScene(card, { plan, scene, speaker = null, world = null, 
   const keepProp = (p) => !(["lamp_bulb", "light_bulb"].includes(p.kind) && !/\bbulbs?\b/i.test(scene.words));
   S.props = (S.props ?? []).filter(keepProp); E.props = (E.props ?? []).filter(keepProp);
   // everyone in either frame OR named by a motion step (the director sometimes puts the monster only in the motion)
-  const names = [...new Set([...(S.people ?? []), ...(E.people ?? []), ...(card.motion ?? [])].map((p) => String(p.who)).filter(Boolean))];
+  // (round 6: the monster is made LAST, so its spot can be cleared of everyone already standing there)
+  const names = [...new Set([...(S.people ?? []), ...(E.people ?? []), ...(card.motion ?? [])].map((p) => String(p.who)).filter(Boolean))]
+    .sort((a, b) => (/^monster$/i.test(a) ? 1 : 0) - (/^monster$/i.test(b) ? 1 : 0));
   const at0 = (f, who) => (f.people ?? []).find((p) => String(p.who).toLowerCase() === who.toLowerCase()) ?? null;
   // a monster that only climbs out in the motion: hidden at the start, standing at the thing it climbs out of at the end
   const climb = (card.motion ?? []).find((m) => /^monster$/i.test(m.who) && m.action === "climb_out");
@@ -176,11 +178,16 @@ export function compileScene(card, { plan, scene, speaker = null, world = null, 
     const heldK = [...(S.props ?? []), ...(E.props ?? [])].some((p) => p.kind === kind && p.state === "held");
     // next to the MONSTER (3-4x a person) a named thing scales with it (round 5: "it plays with my shoe": a speck)
     const monScene = names.some((n) => /^monster$/i.test(n)) && plan.monster?.present;
-    const sz = `ZW_THING_SIZE.get(${py(kind)}, ${size})${named ? (monScene ? " * 3.2" : heldK ? " * 1.3" : " * 1.7") : ""}`;
+    // (round 6: zw_tsize = the real size at this shot's people's scale, town.py)
+    const sz = `zw_tsize(${py(kind)}, ${size})${named ? (monScene ? " * 3.2" : heldK ? " * 1.3" : " * 1.7") : ""}`;
     if ((a?.state ?? b?.state) === "falling") { L.push(`zw_rain(${py(kind)}, t0, t1, area=((st_c.x - 8, st_c.x + 8), (st_c.y - 4, st_c.y + 10)), n=${Math.min(50, Math.max(12, (a ?? b).count || 30))})`); return; }
     const id = ident(kind, 100 + k); tv[kind] = id;
     const mark = (a && a.state !== "hidden" ? a.mark : b?.mark) ?? "center";
-    L.push(`${id} = zw_thing(${py(kind)}, (zw_mark(${py(place)}, ${py(mark)})[0] - st_d.x * 1.2 + st_r.x * 1.2, zw_mark(${py(place)}, ${py(mark)})[1] - st_d.y * 1.2 + st_r.y * 1.2, 0.0), size=${sz})`);
+    // a BIG thing that appears (pops in) gets room: nobody stands on it (round 6)
+    const pops = (!a || a.state === "hidden") && b && b.state !== "hidden";
+    const big = Number(size) >= 3 || ["ice_cream_cart", "tree_small", "fridge", "door", "wall_boards", "crate", "sign"].includes(kind);
+    const at3 = `(zw_mark(${py(place)}, ${py(mark)})[0] - st_d.x * 1.2 + st_r.x * 1.2, zw_mark(${py(place)}, ${py(mark)})[1] - st_d.y * 1.2 + st_r.y * 1.2, 0.0)`;
+    L.push(`${id} = zw_thing(${py(kind)}, ${pops && big ? `zw_clear_spot(${at3}, 3.5 * zw_ps())` : at3}, size=${sz})`);
     const n = Math.min(6, Math.max(1, (b ?? a)?.count || 1));
     for (let j = 1; j < n; j++) L.push(`zw_thing(${py(kind)}, (${id}.location.x + st_r.x * ${(j * 1.4).toFixed(1)}, ${id}.location.y + st_r.y * ${(j * 1.4).toFixed(1)} + st_d.y * ${((j % 2) * 1.1).toFixed(1)}, 0.0), size=${sz})`);
   });
@@ -206,7 +213,14 @@ export function compileScene(card, { plan, scene, speaker = null, world = null, 
     const endPos = b ? `zw_mark(${py(place)}, ${py(b.mark)})` : null;
     switch (m.action) {
       case "walk": case "hide": moved.add(id); L.push(`zw_walk_to(${id}, ${ta}, t1, ${endPos ?? T ?? "st_c"})`); break;
-      case "run_away": moved.add(id); L.push(endPos ? `${id}.run(${ta}, t1, tuple(za_here(${id}, ${ta})), ${endPos})` : `zw_run_away(${id}, ${ta}, t1, ${T ?? (v.monster ?? "st_c")}, dist=9.0)`); break;
+      // (round 6: the kit's own run was the "running on the spot": always the motion library's run, the body moves)
+      case "run_away": moved.add(id); L.push(endPos ? `zm_walk(${id}, ${ta}, t1, ${endPos}, run=True)` : `zw_run_away(${id}, ${ta}, t1, ${T ?? (v.monster ?? "st_c")}, dist=9.0 * zw_ps())`); break;
+      // round 6: full actions: kids PLAY (tag round a circle with whoever the target is, or a ball kicked between two);
+      // GIVE / SELL a thing from hand to hand (the taker walks up, takes it, walks off happy)
+      case "play": { moved.add(id); const other = T && !Object.values(tv).includes(T) && T !== id ? T : null; if (other) moved.add(other);
+        L.push(tv.ball && other ? `zm_pass_ball(${id}, ${other}, ${ta}, t1, ${tv.ball})` : `zm_tag([${[id, other].filter(Boolean).join(", ")}], ${ta}, t1, za_here(${id}, ${ta}))`); break; }
+      case "give": case "sell": { const taker = T && !Object.values(tv).includes(T) && T !== id ? T : null; const thing = Object.entries(tv).find(([k]) => !/cart/.test(k))?.[1] ?? null;
+        if (taker) { moved.add(taker); L.push(`zm_give(${id}, ${taker}, ${thing ?? "None"}, ${ta}, t1)`); } break; }
       // a THING to follow (round 3 test: "the monster follows the shoe" crashed: zw_follow takes a character) = walk to it
       case "follow": moved.add(id); if (T && T !== id) L.push(Object.values(tv).includes(T) ? `zw_walk_to(${id}, ${ta}, t1, (${T}.location.x, ${T}.location.y, 0.0))` : `zw_follow(${id}, ${T}, ${ta}, t1)`); break;
       case "hug": moved.add(id); if (T && T !== id) L.push(`zm_hug(${id}, ${T}, ${ta}, t1)`); break;
@@ -237,7 +251,8 @@ export function compileScene(card, { plan, scene, speaker = null, world = null, 
       case "cry": L.push(`zm_cry(${id}, ${ta}, t1)`); break;
       case "cheer": L.push(`zm_cheer(${id}, ${ta})`); break;
       case "wave": L.push(`zm_wave(${id}, ${ta}, t1)`); break;
-      case "climb_out": if (id === "mon") { moved.add(id); L.push(`zw_climb_out(mon, ${ta} - 0.9 * dur, min(t1, ${ta} + 0.35 * dur), hole=${b ? `zw_mark(${py(place)}, ${py(b.mark)})` : "(mon.root.location.x, mon.root.location.y)"})`); } break;
+      // (round 6: the hole is where the monster was made: a spot already cleared of every person)
+      case "climb_out": if (id === "mon") { moved.add(id); L.push(`zw_climb_out(mon, ${ta} - 0.9 * dur, min(t1, ${ta} + 0.35 * dur), hole=(mon.root.location.x, mon.root.location.y))`); } break;
       case "roar": L.push(`${id}.act(${ta}, "fists")`); break;
       case "scream": L.push(`${id}.act(${ta}, "hands_head")`); break;
       case "laugh": L.push(`${id}.act(${ta}, "cheer")`); break;
@@ -249,9 +264,16 @@ export function compileScene(card, { plan, scene, speaker = null, world = null, 
     const id = v[who.toLowerCase()]; if (!id || moved.has(id)) continue;
     const a = at(S, who), b = at(E, who);
     if (b && (!a || a.mark !== b.mark || a.pose === "hidden")) {
-      if (id === "mon" && a?.pose === "climb") L.push(`zw_climb_out(mon, t0, t0 + 0.85 * dur, hole=zw_mark(${py(place)}, ${py(b.mark)}))`);
-      else L.push(`zw_walk_to(${id}, t0, t1 - 0.05, zw_mark(${py(place)}, ${py(b.mark)}))`);
+      if (id === "mon" && a?.pose === "climb") L.push(`zw_climb_out(mon, t0, t0 + 0.85 * dur, hole=(mon.root.location.x, mon.root.location.y))`);
+      else { moved.add(id); L.push(`zm_walk(${id}, t0, t1 - 0.05, zw_mark(${py(place)}, ${py(b.mark)}), run=${(a?.pose ?? b.pose) === "run" ? "True" : "False"})`); }
     }
+  }
+  // NO RUNNING ON THE SPOT (round 6): a person posed walking / running who no step moves goes forward
+  for (const who of names) {
+    const id = v[who.toLowerCase()]; if (!id || id === "mon" || moved.has(id)) continue;
+    const a = at(S, who), b = at(E, who);
+    const pose = [a?.pose, b?.pose].find((p) => p === "run" || p === "walk");
+    if (pose) L.push(`zm_walk(${id}, t0, t1, zw_ahead(${id}, t0, ${pose === "run" ? 7 : 3.5} * zw_ps() * (t1 - t0)), run=${pose === "run" ? "True" : "False"}, turn=False)`);
   }
   // end poses + faces (reached by t1)
   for (const who of names) {

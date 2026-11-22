@@ -11,6 +11,7 @@
 #   TRAFFIC: driving cars in their lanes, evenly spaced, one steady speed; parked cars in driveways / at the kerb only;
 #          no jams; "no moving cars" = an empty road apart from the parked ones
 ZW_CROWD_ON[0] = True
+ZW_PSF = [lambda: 1.0]   # the people's scale (town.py sets it: 0.55 outdoors in round 6)
 
 # ---------------------------------------------------------------- PROPS
 ZW_THING_SIZE.update({"book": 1.0, "phone": 0.8, "ball": 0.9, "shoe": 0.8, "bag": 1.1, "box": 2.0, "key": 0.5, "apple": 0.6,
@@ -96,7 +97,7 @@ def zm_hold_front(ch, t, obj, z=None, dist=None):
     obj.keyframe_insert("location", frame=max(1, F(t) - 1))
     obj.keyframe_insert("rotation_euler", frame=max(1, F(t) - 1))
     # a hidden twin holds the thing from t (parenting cannot be keyed): the ground copy goes, the held copy comes
-    held = zw_thing(zt_kind(obj), (0, 0, 0), size=max(0.3, obj.scale[2]))
+    held = zw_thing(zt_kind(obj), (0, 0, 0), size=max(0.2, obj.scale[2] / max(0.1, ch.root.scale[2])))   # the hip is scaled with the person
     held.parent = ch.hip
     held.location = (0.0, yc, zc - size * 0.45)
     zt_vis(held, t, show=True)
@@ -219,7 +220,8 @@ def zw_crowd(t0, t1, n):
     lanes = W["lanes"]
     per = [n_walk // len(lanes) + (1 if i < n_walk % len(lanes) else 0) for i in range(len(lanes))]
     mode0 = "run" if thr == "react" else ("hurry" if mv == "hurrying" else "walk")
-    v = ZW_MOVERS[mode0]
+    ps = ZW_PSF[0]()
+    v = ZW_MOVERS[mode0] * ps   # smaller people walk shorter distances (the steps stay matched: the instance is scaled too)
     for li, (lane, sgn) in enumerate(lanes):
         k = per[li]
         if k <= 0:
@@ -227,7 +229,7 @@ def zw_crowd(t0, t1, n):
         seg = (hi - lo) / k
         for j in range(k):
             a0 = lo + seg * (j + rnd.uniform(0.25, 0.75))
-            dist = min(v * (t1 - t0), 14.0)
+            dist = min(v * (t1 - t0), 14.0 * ps)
             if thr == "react":   # running AWAY from the danger
                 sgn = 1 if a0 > s_al else -1
             a1 = a0 + sgn * dist
@@ -280,7 +282,7 @@ def zw_crowd(t0, t1, n):
             else:
                 for q in range(3):
                     ang = math.radians(90 + q * 120)
-                    px, py = cx + math.cos(ang) * 1.7, cy + math.sin(ang) * 1.7
+                    px, py = cx + math.cos(ang) * 1.7 * ps, cy + math.sin(ang) * 1.7 * ps
                     m = "phone" if (q == 2 and "phone" in ex) else ("stand" if q != 1 else "look")
                     instance("zw_cs%d_%d" % (made, q), zw_person_src(m, (made + q) % 3, t0, t1), (px, py, 0.0), rot=(0, 0, zw_yaw_to(cx - px, cy - py)))
             made += g

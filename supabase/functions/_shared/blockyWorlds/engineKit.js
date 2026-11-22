@@ -21,12 +21,14 @@ export const ACTIONS = Object.freeze({
   read: "read a book", phone: "look at a phone", kick: "kick a ball", catch: "catch a ball", nod: "nod yes", shake_head: "shake the head no",
   pick_up: "pick a thing up", carry: "carry a thing somewhere", open_door: "open a door", close_door: "close a door", peek: "hide behind something and peek out",
   shiver: "shake with fear",
+  // round 6: full actions
+  play: "kids play: tag (running round each other) or kick a ball to each other (target = the other kid)", give: "give / sell a thing to someone (target = the person who gets it; the thing in a frame's props)",
 });
 /** the things the engine can build and animate (worlds/acts.py zw_thing kinds) */
 export const THINGS = Object.freeze(["flower", "daisy", "tulip", "sunflower", "vine", "thorn_vine", "tree_small", "lamp_bulb", "light_bulb",
   "flashlight", "umbrella", "kazoo", "cake", "pencil", "book", "ball", "box", "crate", "sign", "bucket", "bell", "phone", "key", "shoe",
   "hat", "wall_boards", "door", "fridge", "nightlight", "drain_grate", "rock", "star", "heart", "coin", "balloon", "candy", "pizza",
-  "bone", "fish", "leaf", "snowflake", "raindrop", "apple", "ice_cream"]);
+  "bone", "fish", "leaf", "snowflake", "raindrop", "apple", "ice_cream", "ice_cream_cart"]);
 /** what can happen to things */
 export const EFFECTS = Object.freeze({ pop: "a thing pops into the scene", grow: "a thing grows bigger", shrink: "a thing shrinks",
   rain: "many things fall from the sky", glow: "lamps / windows / signs glow at night", knock: "a thing gets knocked over" });

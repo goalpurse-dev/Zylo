@@ -8,7 +8,9 @@ import { compileScene } from "../scripts/blockyWorlds/blenderKit/cards.mjs";
 
 const lines = (n, f = (i) => `Line ${i} is short and simple.`) => Array.from({ length: n }, (_, i) => ({ text: f(i), speaker: "" }));
 const good = () => ({ opening: "rule_first", story_type: "rescue_rule", title: "T", rule: "r", rule_again_line: 3, cast: [{ name: "Max", who: "a kid" }],
-  lines: [{ text: "In this town, every time you laugh, a flower grows.", speaker: "" }, ...lines(33)], self_test: ["a", "b", "c"], kid_gets_it: true });
+  lines: [{ text: "In this town, every time you laugh, a flower grows.", speaker: "" }, ...lines(33)], self_test: ["a", "b", "c"], kid_gets_it: true,
+  // round 6: the who-is-where self-test, one entry per line
+  where: Array.from({ length: 34 }, (_, i) => ({ line: i + 1, who_where: "Me: on the street" })) });
 
 test("writer v2: a clean script passes; the openings, hard words, names and self-test are caught", () => {
   assert.deepEqual(writer2Problems(good()), []);

@@ -13,7 +13,7 @@ import { NARRATOR } from "../supabase/functions/_shared/blockyWorlds/config.js";
 
 test("rules: exactly 12 short global rules, the same text in every step that reads them", () => {
   assert.equal(GLOBAL_RULES.length, 12);
-  for (const r of GLOBAL_RULES) assert.ok(r.length < 190, r);
+  for (const r of GLOBAL_RULES) assert.ok(r.length < 230, r);
   for (const n of RULES_FOR.writer) assert.ok(WRITER2_SYSTEM.includes(GLOBAL_RULES[n - 1]));
   for (const n of RULES_FOR.plan) assert.ok(PLAN_SYSTEM.includes(GLOBAL_RULES[n - 1]));
   for (const n of RULES_FOR.scene) assert.ok(SCENE_SYSTEM.includes(GLOBAL_RULES[n - 1]));
@@ -44,7 +44,7 @@ test("motion: the new actions are in the engine kit and compile to the motion li
   const scene = { start: 0, end: 2.4, words: "Mia reads a book", wordList: [{ word: "Mia", start: 0 }, { word: "reads", start: 0.4 }, { word: "a", start: 0.8 }, { word: "book", start: 1.0 }] };
   const py = compileScene(card, { plan: { cast: [{ name: "Mia" }] }, scene, cut: true });
   assert.match(py, /zm_read\(mia_0, .*book_100\)/); assert.match(py, /zm_nod\(mia_0/);
-  assert.match(py, /size=ZW_THING_SIZE\.get\("book", 1\.2\) \* 1\.7/, "a thing the words name is drawn bigger (real size x 1.7; x 1.3 when held)");
+  assert.match(py, /size=zw_tsize\("book", 1\.2\) \* 1\.7/, "a thing the words name is drawn bigger (real size at the people's scale x 1.7; x 1.3 when held)");
   assert.match(py, /zw_scene_cam\(.*"left"\), cut=True\)/, "a cut halfway; equal framings: the second half from another side");
   const est = compileScene(card, { plan: { cast: [{ name: "Mia" }] }, scene, establish: "follow" });
   assert.match(est, /zw_establish\(cam, t0, t1, "suburb_street", "follow", follow=mia_0, end=\("medium", \[mia_0\]/, "it ends on the card's end framing");

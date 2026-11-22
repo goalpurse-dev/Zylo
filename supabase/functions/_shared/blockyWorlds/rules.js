@@ -6,15 +6,15 @@
 
 export const GLOBAL_RULES = Object.freeze([
   "SIMPLE + KID-SAFE: words a 9-year-old learning English knows, short lines; scary is fine, nobody gets hurt.",
-  "ONE TOWN RULE: said in the first line, every line follows from the one before, the ending uses that same rule.",
+  "ONE TOWN RULE + LOGIC: the rule is said in the first line, every line follows from the one before (who is where, who can see or hear whom), the ending uses that same rule.",
   "SHOWABLE: every line is something the engine can show (the engine kit).",
-  "NAMED = SEEN: what a line names (a person, a thing, an action, the monster) is in the frame, big enough to read, and the one the line is about does it.",
+  "NAMED = SEEN: what a line names (a person, a thing, an action, the monster) is in the frame, big enough to read, and the one the line is about does it FULLY, with the props it needs (sound off, you still know what happens).",
   "FACES: never cut by the frame, never under the captions; close-ups only for a reaction or a speaker, at most 1 shot in 4.",
   "CAMERA: never inside a wall or a body, never under the ground, never just one flat surface or a glare blob.",
-  "ALIVE: nobody is frozen (everyone breathes, blinks and moves), every action blends into the next, walking feet move with the ground.",
+  "ALIVE: nobody is frozen (everyone breathes, blinks and moves), every action blends into the next, walking and running always move the body forward.",
   "SHOW THE PLACE: the first shot of every place moves through it (a street glide, a low drone or a follow walk), never just one house.",
   "THE STORY'S WORLD: nothing on screen contradicts the story rules (who is outside, what moves, what is lit).",
-  "SAME CAST: a character keeps one look and one voice all story; only the one speaking moves their mouth.",
+  "SAME CAST: a character keeps one look and one voice all story; only the one speaking moves their mouth; at most one quoted line, introduced by the narrator.",
   "ONE SCENE, ONE PLACE: a scene stays in one of the story's own places.",
   "EVERY LINE A NEW PICTURE: each line changes what we see (a new shot or a new action), never the same shot twice in a row.",
 ]);

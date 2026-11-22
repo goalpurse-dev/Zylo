@@ -51,7 +51,8 @@ export function planSchema() {
   });
 }
 export const numbered = (script) => script.lines.map((l, i) => `${i + 1}. ${l.speaker && !/^(narrator|)$/i.test(l.speaker) ? `[${l.speaker}] ` : ""}${l.text}`).join("\n");
-export const planUser = (script) => `THE SCRIPT (data): "${script.title}"\n${numbered(script)}`;
+// round 6: the writer's WHO IS WHERE comes with the script: every line's place, world.outside and the cast in it follow it
+export const planUser = (script) => `THE SCRIPT (data): "${script.title}"\n${numbered(script)}${(script.where ?? []).length ? `\n\nWHO IS WHERE (the writer's self-test; the plan follows it: places, who is outside, who is in each line):\n${script.where.map((w) => `${w.line}. ${w.who_where}`).join("\n")}` : ""}`;
 
 /**
  * ROUND 3: the story plan alone (cast + voices, places, the town, a world state per line), the code checks (every line

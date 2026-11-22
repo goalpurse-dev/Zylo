@@ -687,6 +687,8 @@ def zw_cars(spots, t0=None, t1=None, speed=8.0, reach=18.0, lights=False):
         ob = zw_asset(aid, (x, y, 0.06), r + (180 if ZA_CAR_FRONT < 0 else 0)) if ZA["c"].get(aid) is not None else None
         if ob is None:
             ob = W.car("zw_car%d_%d" % (int(x), int(y)), (x, y, 0.06), c, rot=r)
+        if drive and ob is not None:
+            ZW_DRIVING.append(ob)   # round 6: a driving car is never let through the lens (town.py)
         if drive and t0 is not None and ob is not None:
             a = math.radians(r)
             d = min(speed * (t1 - t0), reach)
@@ -2665,7 +2667,8 @@ def zw_establish0(cam, t0, t1, place, style="glide", follow=None):
 # curtains (open / closed), threat (none / near / react / after: the background looks, runs away from the stage, cars
 # drive off; after = relief). A dress without these keys builds the place as before.
 ZW_BUSY = {"busy": 1.7, "normal": 1.0, "quiet": 0.35, "empty": 0.0}
-ZW_CROWD_ON = [False]   # round 5: worlds/crowds.py (crowds + traffic with logic) sets it when it is pasted in
+ZW_CROWD_ON = [False]
+ZW_DRIVING = []   # this shot's driving cars   # round 5: worlds/crowds.py (crowds + traffic with logic) sets it when it is pasted in
 ZW_DOTCHARS = set()   # the shot's characters with OUR dot face
 ZW_DOTSEQ = {}        # name -> {"seq": [(t, expr)], "talk": (t0, t1) | None}
 ZW_DOT = {"happy": "smile", "laughing": "smile", "smirk": "smile", "scared": "scared", "terrified": "scared", "panic": "scared",
@@ -3071,6 +3074,7 @@ def zw_guarded_build(i, *a, **k):
     ZW_EXTRAS.clear()
     ZW_DOTCHARS.clear()
     ZW_DOTSEQ.clear()
+    del ZW_DRIVING[:]
     S = ZW_BUILD0[0](i, *a, **k)
     if ZW_T.get("copy"):
         try:
