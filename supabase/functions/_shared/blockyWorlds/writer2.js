@@ -65,11 +65,19 @@ export function writer2Schema() {
 
 const wordsOf = (t) => String(t ?? "").toLowerCase().match(/[a-z']+/g) ?? [];
 
-/** the rules the code can measure -> [problem] (empty = pass) */
-export function writer2Problems(s) {
+/** the line count for a length (90 s = 32-38 lines, the round 2 rule; round 3: a 40 s story ~14-19) */
+/** the word budget: the 1.25x voice says about 3 words a second (the replica take: 151 words in 49.8 s) */
+export const wordBudget = (lengthSec = 90) => Math.round(lengthSec * 3.0);
+export const lineRange = (lengthSec = 90) => (lengthSec >= 80 ? [32, 38] : [Math.round(lengthSec * 0.36), Math.round(lengthSec * 0.47)]);
+/** the rules the code can measure -> [problem] (empty = pass); opts: { lengthSec, needQuote } */
+export function writer2Problems(s, { lengthSec = 90, needQuote = false } = {}) {
   const out = [];
   const lines = (s?.lines ?? []).map((l) => String(l?.text ?? "").trim()).filter(Boolean);
-  if (lines.length < 28 || lines.length > 42) out.push(`${lines.length} lines: write 32-38`);
+  const [lo, hi] = lineRange(lengthSec);
+  if (lines.length < lo - 3 || lines.length > hi + 4) out.push(`${lines.length} lines: write ${lo}-${hi}`);
+  const nw = lines.flatMap(wordsOf).length, wb = wordBudget(lengthSec);
+  if (lengthSec < 80 && nw > wb * 1.12) out.push(`${nw} words is too long for ${lengthSec} s: at most about ${wb} words (shorter lines, fewer examples)`);
+  if (needQuote && !(s?.lines ?? []).some((l) => l?.speaker && !/^(narrator|me|i|)$/i.test(String(l.speaker).trim()) && /["“”]/.test(String(l.text)))) out.push("at least one line must be a QUOTED line spoken by another named character (speaker = their name, the words in double quotes)");
   const l1 = lines[0] ?? "", l2 = lines[1] ?? "";
   if (s?.opening === "rule_first" && !/^in this town,?\s+every\s+(time|day|night|kid|person|morning|year|one)/i.test(l1)) out.push(`rule_first: line 1 must be "In this town, every time you ___, ___." (it is: "${l1}")`);
   if (s?.opening === "result_first" && (!/^and i just\b/i.test(l1) || !/^you see,?\s+in this town/i.test(l2))) out.push(`result_first: line 1 must start "And I just", line 2 "You see, in this town," (they are: "${l1}" / "${l2}")`);
@@ -94,11 +102,13 @@ export function openingHint(recent = []) {
   return "";
 }
 
-export function writer2User({ topic, recent = [], lengthSec = 90, problems = [], previous = null, when = null }) {
+export function writer2User({ topic, recent = [], lengthSec = 90, problems = [], previous = null, when = null, needQuote = false }) {
+  const [lo, hi] = lineRange(lengthSec);
   return [
-    `THE TOPIC (data): "${String(topic).slice(0, 240)}"`,
-    `LENGTH: about ${lengthSec} seconds.`,
-    when === "day" ? "WHEN: the whole story happens in the DAY (bright daylight); no night scenes." : when === "night" ? "WHEN: the story happens at NIGHT (dark sky, street lamps on)." : "",
+    `THE TOPIC (data): "${String(topic).slice(0, 400)}"`,
+    `LENGTH: about ${lengthSec} seconds = ${lo}-${hi} lines and AT MOST ${wordBudget(lengthSec)} WORDS in total (this replaces the 32-38 lines of rule 6; keep its shape, shorter).`,
+    needQuote ? "DIALOGUE: at least one line is a QUOTED line by another named character (mark the speaker, the words in double quotes)." : "",
+    when === "day_to_night" ? "WHEN: the story moves through the day: it starts in bright DAY, goes through DUSK (sunset, people going home) and ends at NIGHT (dark, street lamps on). Say the time changes in the words (\"In the day...\", \"When the sun goes down...\", \"At night...\")." : when === "day" ? "WHEN: the whole story happens in the DAY (bright daylight); no night scenes." : when === "night" ? "WHEN: the story happens at NIGHT (dark sky, street lamps on)." : "",
     openingHint(recent),
     previous ? `YOUR PREVIOUS DRAFT (fix it, keep what works):\n${JSON.stringify(previous).slice(0, 6000)}` : "",
     problems.length ? `IT BROKE THESE RULES, FIX ALL OF THEM:\n- ${problems.join("\n- ")}` : "",
@@ -109,13 +119,13 @@ export function writer2User({ topic, recent = [], lengthSec = 90, problems = [],
  * write a script: one call, the code check, at most one rewrite. callJson = llm.js callJson (injected: the caller picks
  * the key / meter). -> { script, problems, opening, storyType, costUsd, tries }
  */
-export async function writeScript2({ callJson, apiKey, topic, recent = [], when = null, lengthSec = 90, model = "claude-opus-5-5", effort = "medium", meter = null }) {
+export async function writeScript2({ callJson, apiKey, topic, recent = [], when = null, lengthSec = 90, needQuote = false, model = "claude-opus-5-5", effort = "medium", meter = null }) {
   let costUsd = 0, previous = null, problems = [], s = null;
   for (let tries = 1; tries <= 2; tries++) {
-    const r = await callJson({ apiKey, model, system: WRITER2_SYSTEM, user: writer2User({ topic, recent, lengthSec, problems, previous, when }), schema: writer2Schema(), effort, maxTokens: 12000, meter, cache: true, ttl: "5m" });
+    const r = await callJson({ apiKey, model, system: WRITER2_SYSTEM, user: writer2User({ topic, recent, lengthSec, problems, previous, when, needQuote }), schema: writer2Schema(), effort, maxTokens: 12000, meter, cache: true, ttl: "5m" });
     costUsd += Number(r.costUsd ?? 0);
     s = r.data;
-    problems = writer2Problems(s);
+    problems = writer2Problems(s, { lengthSec, needQuote });
     if (!problems.length) return { script: s, problems, opening: s.opening, storyType: s.story_type, costUsd: +costUsd.toFixed(5), tries };
     previous = s;
   }

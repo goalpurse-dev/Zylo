@@ -1,3 +1,4 @@
+import { dressOf } from "../../../supabase/functions/_shared/blockyWorlds/worldState.js";
 // THE CARD COMPILER (owner 2026-11-21, round 2): the director's shot cards (director2.mjs, data) -> the engine's shot code
 // (Python bodies for worlds.py + worlds/acts.py). The model never writes code: every card field maps to one helper, so a
 // card can only ask for what the engine has. Pure (no I/O).
@@ -104,12 +105,14 @@ const MOVE_ACTIONS = new Set(["walk", "run_away", "follow", "hide", "hug"]);
  * appear / grow / shrink / get grabbed / thrown / fall from the sky on their words; the camera goes from the start
  * framing to the end framing (zw_scene_cam).
  */
-export function compileScene(card, { plan, scene, speaker = null } = {}) {
+export function compileScene(card, { plan, scene, speaker = null, world = null, indoor = false } = {}) {
   const L = [];
   const S = card.start, E = card.end, place = S.place;
   const sdur = Math.max(0.4, scene.end - scene.start);
   const u = (i) => Math.max(0, Math.min(0.95, ((scene.wordList[i]?.start ?? scene.start) - scene.start) / sdur)).toFixed(3);
-  L.push(`ZW_INFO = zw_build(${py(place)}, t0, t1, ${py({ time: S.time ?? "day" })})`);
+  // round 3: the line's WORLD STATE is the dress (worldState.js dressOf: busy / walkers / extras / cars / windows / curtains / threat)
+  const dress = world ? dressOf({ ...world, time: S.time ?? world.time }, { indoor }) : { time: S.time ?? "day" };
+  L.push(`ZW_INFO = zw_build(${py(place)}, t0, t1, ${py(dress)})`);
   L.push("cam = Cam()", "dur = max(0.4, t1 - t0)", `st_c, st_d, st_r, st_rot = zw_stage(${py(place)})`);
   // the people: everyone in either frame
   // a lamp bulb prop on a street is the world's own street lamp (the first storyboards: a glare blob on the ground)
@@ -185,7 +188,8 @@ export function compileScene(card, { plan, scene, speaker = null } = {}) {
     switch (m.action) {
       case "walk": case "hide": moved.add(id); L.push(`zw_walk_to(${id}, ${ta}, t1, ${endPos ?? T ?? "st_c"})`); break;
       case "run_away": moved.add(id); L.push(endPos ? `${id}.run(${ta}, t1, tuple(za_here(${id}, ${ta})), ${endPos})` : `zw_run_away(${id}, ${ta}, t1, ${T ?? (v.monster ?? "st_c")}, dist=9.0)`); break;
-      case "follow": moved.add(id); if (T && T !== id) L.push(`zw_follow(${id}, ${T}, ${ta}, t1)`); break;
+      // a THING to follow (round 3 test: "the monster follows the shoe" crashed: zw_follow takes a character) = walk to it
+      case "follow": moved.add(id); if (T && T !== id) L.push(Object.values(tv).includes(T) ? `zw_walk_to(${id}, ${ta}, t1, (${T}.location.x, ${T}.location.y, 0.0))` : `zw_follow(${id}, ${T}, ${ta}, t1)`); break;
       case "hug": moved.add(id); if (T && T !== id) L.push(`zw_hug(${id}, ${T}, ${ta}, t1)`); break;
       case "fall": L.push(`zw_fall(${id}, ${ta})`); break;
       case "sit": L.push(`zw_sit(${id}, ${ta}, seat=${T && tv[String(m.target).toLowerCase()] ? T : "None"})`); break;
@@ -216,7 +220,7 @@ export function compileScene(card, { plan, scene, speaker = null } = {}) {
     const id = v[who.toLowerCase()]; if (!id) continue;
     const a = at(S, who), b = at(E, who); if (!b) continue;
     if (b.pose !== (a?.pose ?? "") && b.pose !== "walk" && b.pose !== "run") L.push(`zw_posed(${id}, max(t0 + 0.3 * dur, t1 - 0.3), ${py(b.pose)}, ${tgt(b.looks_at) ?? "None"})`);
-    if (id !== "mon" && b.face && b.face !== a?.face) L.push(`${id}.face(max(t0 + 0.3 * dur, t1 - 0.3), ${py(b.face)})`);
+    if (id !== "mon" && b.face && b.face !== a?.face) L.push(`zw_face_at(${id}, max(t0 + 0.3 * dur, t1 - 0.3), ${py(b.face)})`);
   }
   // the things' changes (appear / grow / shrink / grabbed)
   for (const kind of kinds) {

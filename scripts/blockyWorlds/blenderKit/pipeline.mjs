@@ -740,6 +740,7 @@ state.music = music; save();
 // line.speaker + quotes); the finish burns them in the kit's caption style (finishx.py)
 const cap = captionColors(script, words);
 fs.writeFileSync(path.join(vdir, "audio", "caption_colors.json"), JSON.stringify(cap.colors));
+fs.writeFileSync(path.join(vdir, "audio", "caption_speakers.json"), JSON.stringify(cap.speakers)); // round 3: the name tags
 state.captions = { legend: cap.legend, exact: cap.exact }; save();
 say(`captions: narrator white${Object.keys(cap.legend).length ? `, ${Object.entries(cap.legend).map(([k, v]) => `${k} ${v}`).join(", ")}` : ""}${cap.exact ? "" : " (the words do not match the lines: all white)"}`);
 say(`music: engine bed A x1.25, kit --music-db ${music.musicDb} (voice ${music.voiceLufs} LUFS, bed ${music.bedLufs} LUFS)`);

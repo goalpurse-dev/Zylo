@@ -388,23 +388,10 @@ ZR_ELEV = {"eye": 2.0, "low": -14.0, "high": 32.0, "top": 68.0}
 
 
 def zr_vpts(obs, cap=600):
-    """the world positions of the VERTICES these objects render (children included, render-hidden ones skipped): the
-    exact outline on the frame (replica c2: bounding boxes counted the empty space around spiky hair, heads came out
-    about 20 % small)"""
-    out = []
-    for ob in obs:
-        for m in [ob] + list(ob.children_recursive):
-            if m.type != "MESH" or m.hide_render:
-                continue
-            vs = m.data.vertices
-            step = max(1, len(vs) // cap)
-            mw = m.matrix_world
-            for i in range(0, len(vs), step):
-                out.append(mw @ vs[i].co)
-    return out
+    return zw_vpts(obs, cap)
 
 
-ZR_TRACE = True   # replica round 2: print every correction step (ZW_FRAMED|card|step ...)
+ZR_TRACE = False   # replica round 2: print every correction step (ZW_FRAMED|card|step ...)
 
 
 def zr_match(cam, t0, t1, subj, frac, u=0.5, v=0.5, angle="eye", side=0.0, lens=30, part="body", push=0.03, card=0, zmin=0.8, maxd=None, minlens=10.0):

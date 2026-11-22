@@ -58,7 +58,11 @@ export function narratorFor(key = process.env.BLOCKY_WORLDS_NARRATOR) {
   const n = NARRATORS[key]; if (!n) throw new Error(`unknown narrator "${key}" (one of ${Object.keys(NARRATORS).join(", ")})`);
   return n;
 }
+/** the speed-up after the take: a narrator with a target pace (round 3: made at 1.2, sped to 1.25) gets pace / its own
+ * speed; the older narrators keep SPEED on top of theirs */
+export const tempoFor = (narrator) => (Number(narrator?.pace) > 0 ? +(Number(narrator.pace) / (Number(narrator?.settings?.speed) || 1)).toFixed(4) : SPEED);
 export async function elevenVoice({ lines, outDir, apiKey = null, force = false, narrator = narratorFor() }) {
+  const TEMPO = tempoFor(narrator);
   fs.mkdirSync(outDir, { recursive: true });
   const mp3 = path.join(outDir, "voice.mp3"), takeJson = path.join(outDir, "take.json");
   const text = lines.map((l) => String(l.text ?? l).trim()).filter(Boolean).join("\n");
@@ -77,15 +81,15 @@ export async function elevenVoice({ lines, outDir, apiKey = null, force = false,
   const rawDur = Number(execFileSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", mp3]).toString());
   const ranges = keepRanges(take.spoken, rawDur);
   const parts = ranges.map(([a, b], i) => `[s${i}]atrim=${a.toFixed(3)}:${b.toFixed(3)},asetpts=PTS-STARTPTS,afade=t=in:d=0.008,afade=t=out:st=${Math.max(0, b - a - 0.008).toFixed(3)}:d=0.008[p${i}]`);
-  const graph = `[0:a]asplit=${ranges.length}${ranges.map((_, i) => `[s${i}]`).join("")};${parts.join(";")};${ranges.map((_, i) => `[p${i}]`).join("")}concat=n=${ranges.length}:v=0:a=1${SPEED !== 1 ? `[cat];[cat]atempo=${SPEED}` : ""}[out]`;
+  const graph = `[0:a]asplit=${ranges.length}${ranges.map((_, i) => `[s${i}]`).join("")};${parts.join(";")};${ranges.map((_, i) => `[p${i}]`).join("")}concat=n=${ranges.length}:v=0:a=1${TEMPO !== 1 ? `[cat];[cat]atempo=${TEMPO}` : ""}[out]`;
   const graphFile = path.join(outDir, "trim.graph");
   fs.writeFileSync(graphFile, graph);
   const wav = path.join(outDir, "voice.wav");
   execFileSync(FF, ["-v", "error", "-y", "-i", mp3, "-/filter_complex", graphFile, "-map", "[out]", "-ac", "1", "-ar", "44100", "-c:a", "pcm_s16le", wav]);
-  const words = take.spoken.map((w) => ({ word: w.w, start: +(remap(w.s, ranges) / SPEED).toFixed(3), end: +(remap(w.e, ranges) / SPEED).toFixed(3) }));
+  const words = take.spoken.map((w) => ({ word: w.w, start: +(remap(w.s, ranges) / TEMPO).toFixed(3), end: +(remap(w.e, ranges) / TEMPO).toFixed(3) }));
   const duration = Number(execFileSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", wav]).toString());
   fs.writeFileSync(path.join(outDir, "words.json"), JSON.stringify(words));
-  return { wav, words, duration, rawDuration: rawDur, speed: SPEED, pace: paceStats(words), wpm: Math.round(words.length / (duration / 60)), costUsd: take.costUsd, billedChars: take.billedChars, chars: take.chars };
+  return { wav, words, duration, rawDuration: rawDur, speed: TEMPO, pace: paceStats(words), wpm: Math.round(words.length / (duration / 60)), costUsd: take.costUsd, billedChars: take.billedChars, chars: take.chars };
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

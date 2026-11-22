@@ -46,6 +46,8 @@ export const ROBLOX_STORY = Object.freeze({
   // ElevenLabs allows speed 0.7-1.2, so the API call asks for its top 1.2 (not deployed yet)
   settings: Object.freeze({ stability: 0.35, similarity_boost: 0.8, style: 0.3, use_speaker_boost: true, speed: 1.2 }),
   outputFormat: "mp3_44100_128",
+  // round 3 (owner): made at 1.2, then sped up to 1.25 afterwards, pitch kept (voice/eleven.mjs: atempo pace / speed)
+  pace: 1.25,
 });
 export const NARRATOR = ROBLOX_STORY;
 

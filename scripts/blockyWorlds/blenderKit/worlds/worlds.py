@@ -34,12 +34,28 @@ def zw_copy():
     return bool(ZW_T.get("copy"))
 
 
-def zw_glass(name="glass"):
+def zw_win_lit(k=0):
+    """ROUND 3 world state: is window group k lit? dress "windows": lit (default) | some (about 2 in 3) | dark"""
+    w = ZW_T.get("windows", "lit")
+    if w == "some":
+        return (k * 7 + 3) % 3 != 0
+    return w != "dark"
+
+
+def zw_glass(name="glass", k=0):
     # windows: blue glass by day, warm light at night (copy mode: dark glass at night: lit only where the shot says)
+    # ROUND 3: the world state's windows (lit / some / dark, per group k) and curtains (open / closed)
     if zw_night() and zw_copy():
         return zw_m(name + "_c", "#1c2742", 0.2, 0.2)
-    if zw_night():
+    closed = ZW_T.get("curtains") == "closed"
+    if zw_night() or (zw_time() == "sunset" and "windows" in ZW_T):
+        if not zw_win_lit(k):
+            return zw_m(name + ("_dkc" if closed else "_dk"), "#262b40" if closed else "#1c2742", 0.6 if closed else 0.2, 0.0 if closed else 0.2)
+        if closed:
+            return zw_m(name + "_cl", "#d9a066", 0.85, emit="#c98b5a", estr=0.7)
         return zw_m(name + "_n", "#ffd9a0", 0.3, emit="#ffc070", estr=2.2)
+    if closed:
+        return zw_m(name + "_cd", "#c8b89a", 0.85)
     return zw_m(name + "_d", "#4f86c6", 0.12, 0.15)
 
 
@@ -95,8 +111,10 @@ def zw_brick(name, base="#a5523e", mortar="#d8cfc4"):
 
 def zw_windows(name, glass="#5aaee8", glass2="#8cc8f2", wall="#f4f1ea"):
     """a window grid on a whole facade (cheap background buildings): glass panes in a wall colour; lit at night"""
-    if zw_night() and zw_copy():
+    if zw_night() and (zw_copy() or ZW_T.get("windows") == "dark"):
         return zw_pattern("win_" + name + "_c", "#1c2742", "#26324e", "#2a3550", 0.32, 1.0, 0.7, 0.16, 0.5, 0.0, 0.0, 0.0)
+    if zw_night() and ZW_T.get("curtains") == "closed":
+        return zw_pattern("win_" + name + "_cl", "#c98b5a", "#22304f", "#2a3550", 0.32, 1.0, 0.7, 0.16, 0.8, 0.0, 0.5, 0.0)
     if zw_night():
         return zw_pattern("win_" + name + "_n", "#ffd890", "#22304f", "#2a3550", 0.32, 1.0, 0.7, 0.16, 0.5, 0.0, 1.3, 0.0)
     return zw_pattern("win_" + name, glass, glass2, wall, 0.32, 1.0, 0.7, 0.16, 0.35, 0.0, 0.0, 0.0)
@@ -378,8 +396,8 @@ def zw_inst(kind, loc, rot=0, scale=1.0):
         # NIGHT (look v3): a street lamp is a REAL warm light, not only a glowing bulb (a pool of light on the street and
         # on whoever stands near it); soft shadow from the bulb's size
         sz = s[2]
-        zw_novol(light("zw_lamppool%d" % ZW_N["n"], "SPOT", (loc[0], loc[1], loc[2] + 6.64 * sz), 10000.0 * sz * sz * (0.3 if zw_copy() else 1.0), (0.82, 0.88, 1.0) if zw_copy() else (1.0, 0.72, 0.42), 0.4 * sz, spot=100, blend=0.7), 0.15)
-        zw_novol(light("zw_lamplight%d" % ZW_N["n"], "POINT", (loc[0], loc[1], loc[2] + 6.9 * sz), 450.0 * sz * sz * (0.3 if zw_copy() else 1.0), (0.82, 0.88, 1.0) if zw_copy() else (1.0, 0.7, 0.4), 0.5 * sz), 0.35)
+        zw_novol(light("zw_lamppool%d" % ZW_N["n"], "SPOT", (loc[0], loc[1], loc[2] + 6.64 * sz), 10000.0 * sz * sz * (0.3 if zw_copy() else 0.55), (0.82, 0.88, 1.0) if zw_copy() else (1.0, 0.72, 0.42), 0.4 * sz, spot=100, blend=0.7), 0.15)
+        zw_novol(light("zw_lamplight%d" % ZW_N["n"], "POINT", (loc[0], loc[1], loc[2] + 6.9 * sz), 450.0 * sz * sz * (0.3 if zw_copy() else 0.5), (0.82, 0.88, 1.0) if zw_copy() else (1.0, 0.7, 0.4), 0.5 * sz), 0.35)
     return instance("zw_%s_i%d" % (kind, ZW_N["n"]), src, loc, s, rot=(0, 0, rot))
 
 
@@ -478,7 +496,9 @@ def zw_asset_fit(aid, loc, maxw, maxh, rot=0, coll=None, grow=1.5):
 
 
 # ---------------------------------------------------------------- people that MOVE (walk, talk, sit, stand) and cars that drive
-ZW_KID_BASE = {"walk": 11, "stand": 41, "sit": 71, "talk": 101}
+ZW_KID_BASE = {"walk": 11, "stand": 41, "sit": 71, "talk": 101, "bag": 131, "play": 161, "hurry": 191, "run": 221, "dog": 251,
+               "cheer": 281, "look": 311}
+ZW_MOVERS = {"walk": 2.8, "bag": 2.6, "dog": 2.4, "hurry": 5.2, "run": 7.0}   # round 3: units a second
 
 
 def zw_person_src(mode, j, t0, t1):
@@ -502,9 +522,24 @@ def zw_person_src(mode, j, t0, t1):
         ch = chars.kid(b, coll=src)
         ch.pose(t0, loc=(0, 0, 0), rot=0)
         ch.blink(t0, t1)
-        if mode == "walk":
-            ch.walk(t0, t1, (0, 0, 0), (0, -0.001, 0), face_dir=False, start_phase=j, swing=38, arm=34, bob=0.16)
-            ch.pose(t0, torso=(0, 5, 0), head=((-1) ** j * 12, -4, 0))
+        if mode in ZW_MOVERS:
+            fast = mode in ("hurry", "run")
+            ch.walk(t0, t1, (0, 0, 0), (0, -0.001, 0), face_dir=False, start_phase=j, swing=58 if mode == "run" else (48 if fast else 38),
+                    arm=50 if fast else 34, bob=0.2 if fast else 0.16, rate=4.2 if mode == "run" else (3.6 if fast else 2.4))
+            ch.pose(t0, torso=(0, 12 if fast else 5, 0), head=((-1) ** j * 12, -4, 0))
+            if mode == "bag":   # a shopping bag in the right hand
+                box("zw_bag_%s" % nm, (0.7, 0.45, 0.9), (0.0, 0.0, -2.0), zw_m("bag%d" % (j % 3), ["#c98a4e", "#e8e2d4", "#d8352a"][j % 3], 0.8), 0.04, parent=ch.shR, coll=src)
+            if mode == "dog":
+                zw_dog_into(src, (1.3, -0.2, 0.0), j)
+        elif mode == "play":   # kids playing: jumping, arms up
+            ch.pose(t0, armL=(150, 20), armR=(150, 20), head=(0, 10, 0))
+            for k in range(int((t1 - t0) / 0.8) + 1):
+                ch.jump(t0 + 0.1 + j * 0.25 + k * 0.8)
+        elif mode == "cheer":   # relief after the threat: arms up
+            ch.pose(t0, armL=(160, 30), armR=(160, 30), head=(-10, 0, 0))
+            ch.idle(1.5)
+        elif mode == "look":    # the threat is near: still, staring
+            ch.pose(t0, armL=(4, 6), armR=(4, 6), head=(-6, 0, 0), torso=(-4, 0, 0))
         elif mode == "sit":
             ch.pose(t0, legL=(85, 3 + j * 6), legR=(85, -3 - j * 6), armL=(30, 10), armR=(55 if j else 20, 12), torso=(0, -4, 0), head=(15 - j * 30, 0, 0), hipz=-0.8)
             ch.talk(t0 + 0.2, t1)
@@ -553,10 +588,13 @@ def zw_people(t0, t1, n, areas, seed=7, modes=("walk", "walk", "stand", "talk", 
         along_y = (ar[1][1] - ar[1][0]) >= (ar[0][1] - ar[0][0])
         src = zw_person_src(mode, (i // len(modes)) % 3, t0, t1)
         name = "zw_person%d_%d" % (seed, i)
-        if mode == "walk":
+        if mode in ZW_MOVERS:
             sgn = rnd.choice((-1, 1))
+            ta = ZW_T.get("threat_at")
+            if mode == "run" and ta:   # away from the threat
+                sgn = (1 if y > ta[1] else -1) if along_y else (1 if x > ta[0] else -1)
             rot = (180 if sgn > 0 else 0) if along_y else (90 if sgn > 0 else -90)
-            dist = min(2.8 * (t1 - t0), 6.0)
+            dist = min(ZW_MOVERS[mode] * (t1 - t0), 12.0 if mode in ("hurry", "run") else 6.0)
             dx, dy = (0.0, sgn * dist) if along_y else (sgn * dist, 0.0)
             if zw_in_lane(x - dx / 2, y - dy / 2) or zw_in_lane(x + dx / 2, y + dy / 2):
                 dx, dy = 0.0, 0.0      # never walk into the traffic lane
@@ -630,13 +668,16 @@ ZA_SHELF = ["kfood_soda_bottle", "kfood_carton", "kfood_can", "kfood_bag", "kfoo
 ZA_FRUIT = ["kfood_apple", "kfood_orange", "kfood_lemon", "kfood_pear", "kfood_banana"]
 
 
-def zw_cars(spots, t0=None, t1=None, speed=8.0, reach=18.0):
+def zw_cars(spots, t0=None, t1=None, speed=8.0, reach=18.0, lights=False):
     """cars: spots = [(x, y, colour, heading, drive)] (heading 0 = toward +Y, 180 = -Y, 90 = -X, -90 = +X); a car with
-    drive=True moves along its heading during the shot (at most `reach` units); library cars when present, else W.car"""
+    drive=True moves along its heading during the shot (at most `reach` units); library cars when present, else W.car;
+    lights=True (round 3): two glowing headlights at the front of every driving car"""
     za_load(ZA_CARS)
     for k, sp in enumerate(spots):
         x, y, c, r = sp[:4]
         drive = sp[4] if len(sp) > 4 else False
+        if lights and drive:
+            zw_headlights(k, x, y, r, t0, t1, min(speed * (t1 - t0), reach) if t0 is not None else 0.0)
         aid = ZA_CARS[k % len(ZA_CARS)]
         ob = zw_asset(aid, (x, y, 0.06), r + (180 if ZA_CAR_FRONT < 0 else 0)) if ZA["c"].get(aid) is not None else None
         if ob is None:
@@ -921,17 +962,19 @@ def zw_downtown(t0, t1, dress):
     # cars on the street (the close-up spot's lane kept clear)
     if "cars" in (dress.get("props") or ["cars"]):
         # west lane drives +Y, east lane -Y; nobody drives into a tested camera or a target (east-lane cars start at 66+)
-        zw_cars(((-3.5, 12, "#22b5a3", 0, False), (-3.5, 50, "#7b5cf6", 0, True), (-3.5, 66, "#f6f1e7", 0, True), (-3.5, 84, "#ffd23f", 0, True),
+        zw_life_cars(dress, ((-3.5, 12, "#22b5a3", 0, False), (-3.5, 50, "#7b5cf6", 0, True), (-3.5, 66, "#f6f1e7", 0, True), (-3.5, 84, "#ffd23f", 0, True),
                  (-3.5, 102, "#4cbf45", 0, True), (-3.5, 120, "#e2405b", 0, True), (-3.5, 146, "#e2405b", 0, False),
                  (3.5, 66, "#3d8bfd", 180, True), (3.5, 82, "#ff8c2a", 180, True), (3.5, 98, "#2f86fd", 180, True), (3.5, 114, "#ff6fa8", 180, True),
                  (3.5, 130, "#22b5a3", 180, True)), t0, t1)
     zw_landmark(dress.get("landmark", "bank"), (dress.get("landmark_text") or "").upper()[:16])
     if "blimp" in (dress.get("props") or []):
         zw_blimp((dress.get("blimp_text") or "ZYVO").upper()[:10])
-    n = int(dress.get("people", 24))
+    n = zw_life_n(dress, 24)
     zw_people(t0, t1, n, [((8.4, 11.6), (46, 140), 0.3), ((-11.6, -8.4), (14, 140), 0.3), ((8.4, 11.6), (8, 22), 0.3),
-                          ((6, 13), (-44, -6), 0.12), ((-26, -14), (-20, -6), 0.12), ((8.5, 11.5), (146, 166), 0.3)])
-    zw_sitters(t0, t1, [(11.2, 31, 0.3, 90), (-11.2, 82, 0.3, -90), (11.2, 133, 0.3, 90), (-12, -16, 0.12, 90), (12, -34, 0.12, -90)])
+                          ((6, 13), (-44, -6), 0.12), ((-26, -14), (-20, -6), 0.12), ((8.5, 11.5), (146, 166), 0.3)], modes=zw_life_modes(dress, ("walk", "walk", "stand", "talk", "walk")))
+    zw_life_extras(dress, t0, t1, ((-20, 20), (0, 80)))
+    if n > 0:
+        zw_sitters(t0, t1, [(11.2, 31, 0.3, 90), (-11.2, 82, 0.3, -90), (11.2, 133, 0.3, 90), (-12, -16, 0.12, 90), (12, -34, 0.12, -90)])
     zw_weather(dress.get("weather", "clear"))
     if zw_night():
         for k in range(6):
@@ -973,20 +1016,20 @@ def zw_house(i, x, side, col):
         box("zw_hdeck%d" % i, (4, 2.4, 0.5), (x, fy - side * 1.2, 0.25), zw_m("porch", "#e9dcc6", 0.7), 0.05)
         box("zw_hcan%d" % i, (4.4, 2.2, 0.3), (x, fy - side * 1.1, 5.4), Mr, 0.05)
     box("zw_hdoor%d" % i, (2.2, 0.25, 4.0), (x, fy - side * 0.08, 2.6), zw_m("hdoor%d" % (i % 3), ["#c0392b", "#2e6f95", "#3e7b4f"][i % 3], 0.5), 0.05)
-    lit = zw_time() in ("night", "sunset") and not zw_copy()
+    lit = zw_time() in ("night", "sunset") and not zw_copy() and zw_win_lit(i)
     sphere("zw_hplamp%d" % i, 0.3, (x + 1.7, fy - side * 0.3, 4.6), zw_m("plamp" + ("_on" if lit else ""), "#fff3c4", 0.3, emit="#ffd27a", estr=5.0 if lit else 0.4), seg=8)
     Msh = zw_m("shutter%d" % (i % 3), ["#2e6f95", "#3e7b4f", "#8a3a4a"][i % 3], 0.6)
     for wx in (-4.2, 4.2):
-        box("zw_hwin%d_%d" % (i, int(wx)), (2.6, 0.2, 2.4), (x + wx, fy - side * 0.06, 3.2), zw_glass("hwin"), 0.02)
+        box("zw_hwin%d_%d" % (i, int(wx)), (2.6, 0.2, 2.4), (x + wx, fy - side * 0.06, 3.2), zw_glass("hwin", i), 0.02)
         box("zw_hwinf%d_%d" % (i, int(wx)), (3.0, 0.22, 0.3), (x + wx, fy - side * 0.08, 4.5), Mtrim, 0.02)
         box("zw_hwins%d_%d" % (i, int(wx)), (3.0, 0.4, 0.22), (x + wx, fy - side * 0.15, 1.9), Mtrim, 0.0)
         for s in (-1, 1):
             box("zw_hsh%d_%d_%d" % (i, int(wx), s), (0.7, 0.18, 2.6), (x + wx + s * 1.75, fy - side * 0.1, 3.2), Msh, 0.0)
         zh = 7.1 if not two else 9.2
-        box("zw_hwin2%d_%d" % (i, int(wx)), (2.2, 0.2, 2.0 if not two else 2.6), (x + wx, fy - side * 0.06, zh), zw_glass("hwin"), 0.02)
+        box("zw_hwin2%d_%d" % (i, int(wx)), (2.2, 0.2, 2.0 if not two else 2.6), (x + wx, fy - side * 0.06, zh), zw_glass("hwin", i), 0.02)
         box("zw_hwin2f%d_%d" % (i, int(wx)), (2.6, 0.22, 0.25), (x + wx, fy - side * 0.08, zh + (1.15 if not two else 1.45)), Mtrim, 0.02)
     if two:
-        box("zw_hwin3%d" % i, (1.8, 0.2, 2.2), (x, fy - side * 0.06, 9.2), zw_glass("hwin"), 0.02)
+        box("zw_hwin3%d" % i, (1.8, 0.2, 2.2), (x, fy - side * 0.06, 9.2), zw_glass("hwin", i), 0.02)
     # a garage on the one-storey houses
     if not two:
         box("zw_hgar%d" % i, (6.2, 10, 6.4), (x + 10.1, y + side * 0.6, 3.2), zw_m("house%d" % (i % len(ZW_HOUSE)), col, 0.7), 0.1)
@@ -1043,15 +1086,16 @@ def zw_suburb(t0, t1, dress):
     for k in range(12):
         zw_inst("lamp", (-110 + k * 20, 10.2, 0.2))
     if "cars" in (dress.get("props") or ["cars"]):
-        zw_cars(((-14, 3.2, "#e2405b", 90, True), (22, -3.2, "#3d8bfd", -90, True), (48, 3.2, "#ffcf1f", 90, True), (-52, -3.2, "#22b5a3", -90, True)), t0, t1)
+        zw_life_cars(dress, ((-14, 3.2, "#e2405b", 90, True), (22, -3.2, "#3d8bfd", -90, True), (48, 3.2, "#ffcf1f", 90, True), (-52, -3.2, "#22b5a3", -90, True)), t0, t1)
     if "blimp" in (dress.get("props") or []):
         zw_blimp((dress.get("blimp_text") or "ZYVO").upper()[:10], (20, 80, 50))
-    n = int(dress.get("people", 10))
+    n = zw_life_n(dress, 10)
     zw_people(t0, t1, n, [((16, 60), (7.0, 9.0), 0.25), ((24, 36), (12, 14), 0.0), ((0, 60), (-9.0, -7.0), 0.25), ((-80, -20), (-9.0, -7.0), 0.25),
-                          ((-36, -24), (12, 14), 0.0), ((-70, -22), (7.0, 9.0), 0.25)], seed=12, modes=("walk", "talk", "stand", "walk"))
+                          ((-36, -24), (12, 14), 0.0), ((-70, -22), (7.0, 9.0), 0.25)], seed=12, modes=zw_life_modes(dress, ("walk", "talk", "stand", "walk")))
+    zw_life_extras(dress, t0, t1, ((-40, 40), (-10, 30)))
     zw_weather(dress.get("weather", "clear"), ((-60, 60), (-40, 40)))
     if zw_night():
-        for k in range(0 if zw_copy() else 5):
+        for k in range(0 if (zw_copy() or ZW_T.get("windows") == "dark") else 5):
             light("zw_snl%d" % k, "POINT", (-60 + k * 30, 10, 7), 800, (1.0, 0.82, 0.55), 1.5)
     return dict(street=(0, 0, 0), porch=(0, 15.5, 0.6), sidewalk=(0, 8, 0.25), mailbox=(6.6, 11.4, 0), yard=(0, 13, 0))
 
@@ -1230,11 +1274,12 @@ def zw_brick_city(t0, t1, dress):
         W.car("zw_bcar0", (3.5, 50, 0.06), "#2f4a7a", rot=180)
     if "blimp" in (dress.get("props") or []):
         zw_blimp((dress.get("blimp_text") or "ZYVO").upper()[:10], (-25, 100, 60))
-    n = int(dress.get("people", 16))
+    n = zw_life_n(dress, 16)
     zw_people(t0, t1, n, [((8.0, 10.6), (48, 140), 0.3), ((-10.6, -8.0), (12, 56), 0.3), ((-10.6, -8.0), (88, 140), 0.3),
-                          ((8.0, 10.6), (8, 28), 0.3), ((-27, -25), (79, 82), 0.1)], seed=9, modes=("walk", "stand", "talk", "walk"))
+                          ((8.0, 10.6), (8, 28), 0.3), ((-27, -25), (79, 82), 0.1)], seed=9, modes=zw_life_modes(dress, ("walk", "stand", "talk", "walk")))
+    zw_life_extras(dress, t0, t1, ((-20, 20), (0, 80)))
     zw_weather(dress.get("weather", "clear"))
-    if zw_night() and ZW_T.get("_std") and dress.get("people", 16) > 0:
+    if zw_night() and ZW_T.get("_std") and n > 0 and "busy" not in dress:
         zw_people(t0, t1, 3, [((7.6, 10.4), (6, 20), 0.3), ((-10.4, -7.6), (6, 20), 0.3), ((-3.0, 3.0), (10, 18), 0.0)], seed=23, modes=("walk", "walk", "talk"))
     if zw_night():
         for k in range(5):
@@ -1772,9 +1817,13 @@ def zw_build(place, t0, t1, dress=None):
     ZW_T.update(d)
     ZW_T["_place"] = place
     ZW_T["_std"] = place in ZW_STD_PLACES   # look v3: Standard colour + the Standard light set
+    if d.get("threat") in ("near", "react", "after") and place in ZW_SPOTS:
+        ZW_T["threat_at"] = tuple(ZW_SPOTS[place]["close"][1][:2])
     ZW_N["n"] = 0
     ZA["c"].clear()
-    return ZW_PLACES[place](t0, t1, d)
+    info = ZW_PLACES[place](t0, t1, d)
+    zw_life_near(place, d, t0, t1)
+    return info
 
 
 def zw_spot(cam, place, spot, t0, t1, push=0.08, lens=None):
@@ -1861,6 +1910,12 @@ def zw_cam_guard(t0, t1, step=6):
     moved = 0
     for f in frames:
         sc.frame_set(f)
+        if cam.matrix_world.translation.z < 0.6 and not cam.parent:   # round 3: never under the ground
+            cam.location.z = 0.6
+            cam.keyframe_insert("location", frame=f)
+            moved += 1
+            print("zw_cam_guard: frame %d: the camera was under the ground, raised" % f)
+            sc.frame_set(f)
         boxes = []
         for name, lo, hi in zw_cast_boxes():
             m = 0.12 * max(1.0, (hi.z - lo.z) / 5.2)
@@ -2119,6 +2174,8 @@ def zw_fit(cam, pts, fwd, t0, t1, lens, safe, frac=None, cam_dz=0.0, yaws=(0.0,)
         ok, loc, aim_v = False, c + f * d, c.copy()
         for it in range(24):
             loc = c + f * d + up * cam_dz
+            if loc.z < 0.8:   # round 3 (the replica lesson): never under the ground
+                loc.z = 0.8
             aim_v = aim.copy()
             end = loc + (aim_v - loc) * push
             cam.key(t0, tuple(loc), tuple(aim_v), lens=lens)
@@ -2321,6 +2378,10 @@ def zw_emo_of(text):
 def zw_emote(ch, t0, t1, emo="neutral", talk=False, blink=True):
     """the character's FACE for this shot: emo = scared | terrified | shocked | happy | laughing | sad | crying | angry |
     confused | smirk | determined | surprised | panic | neutral; talk=True flaps the lips on the shot's spoken words"""
+    if ch.name in ZW_DOTCHARS:   # round 3: our dot face (the In This Town default)
+        zw_dot_apply(ch, t0 - 0.05, emo, talk=(t0, t1) if talk else None)
+        ZW_EMOTED[ch.name] = emo
+        return ch
     expr = ZW_EMO.get(emo, emo if emo in story.acting.EXPR else "neutral")
     ch.face(t0, expr)
     if talk:
@@ -2343,7 +2404,13 @@ def zw_auto_faces(S):
     emo = zw_emo_of(words + " " + str(S.get("desc", "")))
     n = 0
     for nm, ch in zw_cast():
-        if nm in ZW_MON or nm in ZW_EMOTED or not hasattr(ch, "_eye_track"):
+        if nm in ZW_MON or nm in ZW_EMOTED:
+            continue
+        if ch.name in ZW_DOTCHARS:
+            zw_emote(ch, t0, t1, emo)
+            n += 1
+            continue
+        if not hasattr(ch, "_eye_track"):
             continue
         if any(t0 - 0.01 <= t < t1 for t, _ in ch._eye_track):
             ch.blink(t0, t1, every=(2.0, 4.0))
@@ -2381,18 +2448,22 @@ def zw_person(name, look, loc, rot, t0):
     hair = lk.get("hair", "short") if lk.get("hair") in ("spiky", "slick", "short", "messy", "cap", "bob", "buzz", "bun", "tophat", "bald", "none") else "short"
     face = lk.get("face", "kid") if lk.get("face") in ("kid", "girl", "hero", "plain", "mustache", "villain") else "kid"
     col = lambda v, d: v if isinstance(v, str) and len(v) == 7 and v.startswith("#") else d
+    dot = zw_dot_style()
     ch = chars.Char(name, skin=col(lk.get("skin"), "#f1dfc6"), shirt=col(lk.get("shirt"), "#4aa5e8"), pants=col(lk.get("pants"), "#2f3f7a"),
-                    hair=hair, hair_color=col(lk.get("hair_color"), "#3a2a1e"), face=face, scale=1.0 if lk.get("kid", True) else 1.15)
+                    hair=hair, hair_color=col(lk.get("hair_color"), "#3a2a1e"), face=None if dot else face, scale=1.0 if lk.get("kid", True) else 1.15)
     ch.pose(t0, loc=tuple(loc), rot=rot)
+    if dot:
+        ZW_DOTCHARS.add(ch.name)
+        zw_dot_apply(ch, t0 - 1.0, "neutral")
     return ch
 
 
 ZW_SHOT_KINDS = {
     # lens, safe area, frac (box share of the frame height; None = as big as fits), camera height over the box centre
     "wide": (22, {"l": 0.06, "r": 0.94, "t": 0.08, "b": 0.92}, 0.42, 3.0),
-    "medium": (30, ZW_SAFE, None, 0.6),
+    "medium": (30, ZW_SAFE, 0.55, 0.6),   # round 3: measured to a target size (hips-up box 55% of the height), not as big as fits
     "insert": (34, {"l": 0.1, "r": 0.9, "t": 0.12, "b": 0.6}, 0.45, 1.2),
-    "low": (26, {"l": 0.06, "r": 0.94, "t": 0.05, "b": 0.9}, None, -2.2),
+    "low": (26, {"l": 0.06, "r": 0.94, "t": 0.05, "b": 0.9}, 0.62, -2.2),
     "high": (24, {"l": 0.06, "r": 0.94, "t": 0.08, "b": 0.92}, 0.5, 9.0),
 }
 
@@ -2414,7 +2485,10 @@ def zw_shot(cam, kind, t0, t1, people=(), things=(), yaw=14.0, move="push"):
     lens, safe, frac, dz = ZW_SHOT_KINDS.get(kind, ZW_SHOT_KINDS["medium"])
     pts = []
     for p in people:
-        pts += zw_pts([p.root]) if kind in ("wide", "low", "high") or p.name in ZW_MON else zw_body_pts(p)
+        # round 3: the RENDERED outline (vertices), not boxes (spiky hair's empty box made heads ~20% small)
+        obs = [p.root] if kind in ("wide", "low", "high") or p.name in ZW_MON else [p.head, p.torso] + [o for o in p.root.children_recursive if o.name.endswith("_armL") or o.name.endswith("_armR")]
+        vp = zw_vpts(obs)
+        pts += vp if len(vp) >= 8 else (zw_pts([p.root]) if kind in ("wide", "low", "high") or p.name in ZW_MON else zw_body_pts(p))
     for t in things:
         pts += zw_pts([t])
     if not pts:
@@ -2461,6 +2535,208 @@ def zw_scene_cam(cam, t0, t1, a, b, yaw=14.0):
     return la, aa
 
 
+
+# ================================================================ ROUND 3 (owner 2026-11-22): A LIVING WORLD
+# The story plan gives every scene a WORLD STATE (worldState.js dressOf -> the dress): how busy (busy / normal / quiet /
+# empty), how people move (walking / hurrying / still / none), extras (pairs, bags, kids_playing, dogs, birds,
+# people_at_windows), cars (driving / parked / leaving / none; headlights at dusk and night), windows (lit / some / dark),
+# curtains (open / closed), threat (none / near / react / after: the background looks, runs away from the stage, cars
+# drive off; after = relief). A dress without these keys builds the place as before.
+ZW_BUSY = {"busy": 1.7, "normal": 1.0, "quiet": 0.35, "empty": 0.0}
+ZW_DOTCHARS = set()   # the shot's characters with OUR dot face
+ZW_DOTSEQ = {}        # name -> {"seq": [(t, expr)], "talk": (t0, t1) | None}
+ZW_DOT = {"happy": "smile", "laughing": "smile", "smirk": "smile", "scared": "scared", "terrified": "scared", "panic": "scared",
+          "shocked": "o", "surprised": "o", "angry": "angry", "determined": "angry", "sad": "sad", "crying": "sad",
+          "neutral": "neutral", "confused": "neutral", "smile": "smile", "o": "o"}
+
+
+def zw_dot_style():
+    """the face style: dress "faces": dot (the In This Town default since round 3) | kit (the old big-eye faces)"""
+    return ZW_T.get("faces", "dot") == "dot"
+
+
+def zw_dot_apply(ch, t, emo, talk=None):
+    """one more face moment for a dot-face character (all its moments are rebuilt together: pieces.py zp_dotface)"""
+    st = ZW_DOTSEQ.setdefault(ch.name, {"seq": [], "talk": None})
+    st["seq"] = sorted([x for x in st["seq"] if abs(x[0] - t) > 0.02] + [(t, ZW_DOT.get(emo, "neutral"))])
+    if talk:
+        st["talk"] = talk
+    zp_dotface(ch, st["seq"], talk=st["talk"])
+    return ch
+
+
+def zw_face_at(ch, t, emo):
+    """the face at time t (the scene card's end face): dot or kit"""
+    if ch.name in ZW_DOTCHARS:
+        return zw_dot_apply(ch, t, emo)
+    ch.face(t, ZW_EMO.get(emo, emo if emo in story.acting.EXPR else "neutral"))
+    return ch
+
+
+def zw_vpts(obs, cap=600):
+    """the world positions of the VERTICES these objects render (children included, render-hidden ones skipped)"""
+    out = []
+    for ob in obs:
+        if ob is None:
+            continue
+        for m in [ob] + list(ob.children_recursive):
+            if m.type != "MESH" or m.hide_render:
+                continue
+            vs = m.data.vertices
+            step = max(1, len(vs) // cap)
+            mw = m.matrix_world
+            for i in range(0, len(vs), step):
+                out.append(mw @ vs[i].co)
+    return out
+
+
+def zw_life_n(dress, base):
+    """how many background people: the world state's busy x the place's base (no busy key: the old "people" count)"""
+    b = dress.get("busy")
+    if b is None:
+        return int(dress.get("people", base))
+    return int(round(base * ZW_BUSY.get(b, 1.0)))
+
+
+def zw_life_modes(dress, base):
+    """how the background people move this scene"""
+    thr = dress.get("threat", "none")
+    if thr == "react":
+        return ("run",)
+    if thr == "near":
+        return ("look", "look", "stand")
+    if thr == "after":
+        return ("cheer", "stand", "talk")
+    mv = dress.get("walkers")
+    if mv == "hurrying":
+        return ("hurry", "hurry", "bag", "hurry")
+    if mv in ("still", "none"):
+        return ("stand", "talk")
+    ex = set(dress.get("extras") or ())
+    modes = list(base)
+    for key, m in (("bags", "bag"), ("kids_playing", "play"), ("dogs", "dog"), ("pairs", "talk")):
+        if key in ex:
+            modes.append(m)
+    return tuple(modes)
+
+
+def zw_life_cars(dress, spots, t0, t1):
+    """the street's cars by the world state: driving (the place's own) | parked (at the kerb, still) | leaving (fast,
+    away) | none; driving cars have headlights at dusk and night. No "cars" key: as before."""
+    mode = dress.get("cars")
+    lights = zw_time() in ("sunset", "night")
+    if mode is None:
+        return zw_cars(spots, t0, t1, lights=lights)
+    if mode == "none":
+        return None
+    if mode == "parked":
+        park = []
+        for sp in spots:
+            x, y, c, rr = sp[:4]
+            if rr in (90, -90):
+                y = y + (1.4 if y > 0 else -1.4)
+            else:
+                x = x + (1.4 if x > 0 else -1.4)
+            park.append((x, y, c, rr, False))
+        return zw_cars(park, t0, t1)
+    if mode == "leaving":
+        return zw_cars([tuple(sp[:4]) + (True,) for sp in spots], t0, t1, speed=17.0, reach=45.0, lights=lights)
+    return zw_cars(spots, t0, t1, lights=lights)
+
+
+def zw_headlights(k, x, y, r, t0, t1, dist):
+    """two glowing headlights at a car's front (heading r), moving with it when it drives"""
+    a = math.radians(r)
+    fx, fy = -math.sin(a), math.cos(a)
+    px, py = math.cos(a), math.sin(a)
+    M = zw_m("headlight", "#fff6dc", 0.2, emit="#fff1c8", estr=6.0)
+    for s2 in (-1, 1):
+        ob = sphere("zw_hl%d_%d" % (k, s2), 0.22, (x + fx * 2.25 + px * 0.7 * s2, y + fy * 2.25 + py * 0.7 * s2, 0.95), M, (1, 1, 0.8), seg=8)
+        ob.visible_shadow = False
+        if t0 is not None and dist > 0:
+            ob.keyframe_insert("location", frame=F(t0))
+            ob.location = (ob.location.x + fx * dist, ob.location.y + fy * dist, 0.95)
+            ob.keyframe_insert("location", frame=F(t1))
+            set_interp(ob, "location", F(t0), "LINEAR")
+
+
+def zw_dog_into(coll, off, j):
+    """a small blocky dog (into a person source collection), walking beside its owner"""
+    M = zw_m("dog%d" % (j % 3), ["#a86b3c", "#e8d8b8", "#3a3030"][j % 3], 0.8)
+    ox, oy, oz = off
+    box("zw_dogb%d" % j, (0.7, 1.5, 0.7), (ox, oy, oz + 0.95), M, 0.08, coll=coll)
+    box("zw_dogh%d" % j, (0.6, 0.6, 0.6), (ox, oy - 0.95, oz + 1.45), M, 0.08, coll=coll)
+    box("zw_dogn%d" % j, (0.32, 0.3, 0.26), (ox, oy - 1.35, oz + 1.32), zw_m("dognose", "#222222", 0.6), 0.04, coll=coll)
+    for k, (lx, ly) in enumerate(((-0.22, -0.55), (0.22, -0.55), (-0.22, 0.55), (0.22, 0.55))):
+        box("zw_dogl%d_%d" % (j, k), (0.2, 0.2, 0.62), (ox + lx, oy + ly, oz + 0.31), M, 0.02, coll=coll)
+    box("zw_dogt%d" % j, (0.14, 0.5, 0.14), (ox, oy + 0.95, oz + 1.25), M, 0.02, rot=(35, 0, 0), coll=coll)
+
+
+def zw_birds(t0, t1, n, area, seed=4):
+    """birds crossing the sky (day): small dark V shapes moving across"""
+    rnd = random.Random(seed)
+    M = zw_m("bird", "#2a2a33", 0.6)
+    for k in range(n):
+        x, y, z = rnd.uniform(*area[0]), rnd.uniform(*area[1]), rnd.uniform(9, 15)
+        root = empty("zw_bird%d" % k, (x, y, z))
+        for s2 in (-1, 1):
+            box("zw_birdw%d_%d" % (k, s2), (0.9, 0.12, 0.06), (s2 * 0.4, 0, 0.12), M, 0.0, rot=(0, s2 * -25, 0), parent=root)
+        root.keyframe_insert("location", frame=F(t0))
+        root.location = (x + rnd.choice((-1, 1)) * 6.0 * (t1 - t0), y + rnd.uniform(-1, 1), z + rnd.uniform(-0.5, 0.5))
+        root.keyframe_insert("location", frame=F(t1))
+        set_interp(root, "location", F(t0), "LINEAR")
+
+
+def zw_watchers(t0, xs, side=1, look=None):
+    """people behind house windows (suburb, north side), each window with a WALL around it (the replica lesson: only
+    what is inside the window shows, never a body below a floating sill)"""
+    out = []
+    for k, x in enumerate(xs):
+        col = (ZW_HOUSE_COPY if zw_copy() else ZW_HOUSE)[k % len(ZW_HOUSE)]
+        w = zp_window((x, 16.9, 2.0), 0.0, 2.6, 2.4, lit=zw_win_lit(k), glow="#d9b48f" if zw_win_lit(k) else "#26324e", estr=0.4, surround=col, mullion=False)
+        ch = zw_person("Watcher%d" % k, look or {}, (x, 17.5, 0.0), 0.0, t0)
+        zp_behind_window(ch, w, 0.6)
+        # the threat arc on their faces (near: staring, react: scared, after: relief); a soft cool light so a face in a
+        # dark window still reads
+        thr = ZW_T.get("threat", "none")
+        if thr != "none":
+            zw_dot_apply(ch, t0 - 0.5, {"near": "shocked", "react": "terrified", "after": "happy"}.get(thr, "neutral"))
+        if zw_night():
+            zw_novol(light("zw_wfill%d" % k, "AREA", (x, 16.9 - 4.5, 4.6), 70.0, (0.62, 0.72, 1.0), 3.0, target=(x, 17.6, 3.4), shadow=False))
+        out.append((w, ch))
+    return out
+
+
+ZW_NEAR = {"busy": 7, "normal": 4, "quiet": 2, "empty": 0}
+
+
+def zw_life_near(place, dress, t0, t1):
+    """the world state IN THE SHOT (engine check 2026-11-22: a busy day framed on the cast showed an empty street; the
+    town's people were further down the road): a few background people and the birds just behind the stage, where every
+    camera of the scene looks"""
+    if "busy" not in dress or place not in ZW_SPOTS or place not in ("downtown_street", "downtown_plaza", "downtown_landmark", "suburb_street", "suburb_porch", "brick_street", "brick_alley"):
+        return
+    loc, tgt, ln = ZW_SPOTS[place]["close"]
+    dv = Vector((tgt[0] - loc[0], tgt[1] - loc[1], 0))
+    dv = dv.normalized() if dv.length > 1e-3 else Vector((0, 1, 0))
+    rv = Vector((dv.y, -dv.x, 0))
+    c = Vector((tgt[0], tgt[1], 0))
+    n = ZW_NEAR.get(dress.get("busy"), 0)
+    if n > 0:
+        pts = [c + dv * a + rv * b for a in (6.0, 15.0) for b in (-8.0, 8.0)]
+        area = ((min(p.x for p in pts), max(p.x for p in pts)), (min(p.y for p in pts), max(p.y for p in pts)), 0.25)
+        zw_people(t0, t1, n, [area], seed=31, modes=zw_life_modes(dress, ("walk", "talk", "stand", "walk")))
+    if "birds" in set(dress.get("extras") or ()) and zw_time() == "day":
+        b0 = c + dv * 14.0
+        zw_birds(t0, t1, 6, ((b0.x - 10, b0.x + 10), (b0.y - 4, b0.y + 6)))
+
+
+def zw_life_extras(dress, t0, t1, area):
+    """the world state's extras the people modes do not cover: birds (day), people at windows"""
+    ex = set(dress.get("extras") or ())
+    if "people_at_windows" in ex and ZW_T.get("_place") in ("suburb_street", "suburb_porch"):
+        zw_watchers(t0, (-28.0, 2.0, 31.0))
+
 # ---------------------------------------------------------------- the after-build hook (every shot, after the kit's build)
 def zw_cast():
     """(name, Char) of the shot's visible characters (kit Chars; the library's instanced background people are not Chars)"""
@@ -2506,6 +2782,8 @@ def zw_look_apply():
             thr, stg, siz = {"night": (0.85, 0.35, 0.75), "sunset": (0.95, 0.2, 0.7)}.get(t, (1.0, 0.1, 0.6))
             if zw_copy() and t == "night":
                 thr, stg = 0.95, 0.12   # copy mode: the reference's lamps glow softly (ours were white blobs)
+            elif t == "night":
+                thr, stg = 0.9, 0.2     # round 3: the replica's softer glare in normal videos too
             gl.inputs["Threshold"].default_value = thr
             gl.inputs["Strength"].default_value = stg
             gl.inputs["Size"].default_value = siz
@@ -2652,6 +2930,8 @@ def zw_guarded_build(i, *a, **k):
     ZW_FRAMED.clear()
     ZW_EMOTED.clear()
     ZW_EXTRAS.clear()
+    ZW_DOTCHARS.clear()
+    ZW_DOTSEQ.clear()
     S = ZW_BUILD0[0](i, *a, **k)
     if ZW_T.get("copy"):
         try:

@@ -24,6 +24,7 @@ ScaledBorderAndShadow: yes
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
 Style: Word,{FONT},150,&H00FFFFFF,&H00FFFFFF,&H00000000,&H64000000,0,0,0,0,100,100,1,0,1,9,3,5,20,20,20,1
+Style: Tag,{FONT},60,&H00FFFFFF,&H00FFFFFF,&H00000000,&H64000000,0,0,0,0,100,100,2,0,1,5,2,5,20,20,20,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -40,9 +41,32 @@ def ass_colour(hex_rgb):
     return f"&H00{h[4:6]}{h[2:4]}{h[0:2]}&".upper()
 
 
-def captions_ass(words, colors, font):
-    """the kit finish.py's captions (same words, timing and style), each word with its speaker's colour"""
-    lines = []
+def tag_lines(words, colors, speakers):
+    """round 3 (owner 2026-11-22): a small NAME TAG above a speaker's spoken words (one per run of their words), in their colour"""
+    out, i = [], 0
+    while speakers and i < len(words):
+        who = speakers[i] if i < len(speakers) else None
+        if not who:
+            i += 1
+            continue
+        j = i
+        while j + 1 < len(words) and j + 1 < len(speakers) and speakers[j + 1] == who:
+            j += 1
+        s = 0.0 if i == 0 else words[i]["start"] + LAG
+        e = (words[j + 1]["start"] + LAG) if j + 1 < len(words) else words[j]["end"] + 0.4
+        c = colors[i] if colors and i < len(colors) else None
+        col = f"\\c{ass_colour(c)}" if c and re.match(r"^#[0-9A-Fa-f]{6}$", c) else ""
+        name = re.sub(r"[^\w' ]", "", str(who)).strip().upper()[:16]
+        if name:
+            out.append(f"Dialogue: 1,{ts(s)},{ts(e)},Tag,,0,0,0,,{{\\pos(540,1505){col}}}{name}")
+        i = j + 1
+    return out
+
+
+def captions_ass(words, colors, font, speakers=None):
+    """the kit finish.py's captions (same words, timing and style), each word with its speaker's colour; a name tag above
+    a speaker's words"""
+    lines = tag_lines(words, colors, speakers)
     for i, w in enumerate(words):
         txt = re.sub(r"[^\w'$%,.]", "", w["word"]).strip(",.").upper()
         if not txt:
@@ -82,6 +106,8 @@ def post_finish(vdir, font, preset="slow", seconds=None):
     words = json.load(open(os.path.join(a, "words.json"), encoding="utf-8"))
     cp = os.path.join(a, "caption_colors.json")
     colors = json.load(open(cp, encoding="utf-8")) if os.path.exists(cp) else []
+    sp = os.path.join(a, "caption_speakers.json")
+    speakers = json.load(open(sp, encoding="utf-8")) if os.path.exists(sp) else []
     mix, mixn = os.path.join(a, "mix.m4a"), os.path.join(a, "mix_norm.m4a")
     before = lufs(mix)
     loudnorm(mix, mixn)
@@ -92,7 +118,7 @@ def post_finish(vdir, font, preset="slow", seconds=None):
     nocap = os.path.join(o, "final_nocaptions.norm.mp4")
     ff(["-i", nocap0, "-i", mixn, "-map", "0:v", "-map", "1:a", "-c:v", "copy", "-c:a", "copy", "-t", f"{dur:.3f}", "-movflags", "+faststart", nocap])
     ass = os.path.join(vdir, "captions_speakers.ass")
-    open(ass, "w", encoding="utf-8").write(captions_ass(words, colors, font))
+    open(ass, "w", encoding="utf-8").write(captions_ass(words, colors, font, speakers))
     final = os.path.join(o, "final.mp4")
     cwd = os.getcwd()
     os.chdir(vdir)  # the ass filter takes a plain relative name (no drive letters / colons to escape)
