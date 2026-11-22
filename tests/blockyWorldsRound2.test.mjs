@@ -63,7 +63,8 @@ test("the compiler: marks, poses, the monster climbing out of the drain, a grab 
   const code = compileScene(card, { plan, scene });
   assert.match(code, /mon = zw_monster\("Monster", zw_mark\("downtown_street", "far"/);
   assert.match(code, /zw_climb_out\(mon, \(t0 \+ 0\.250 \* dur\)/);
-  assert.match(code, /zw_scene_cam\(cam, t0, t1, \("monster_reveal", \[\]/);   // the start frame frames the drain (the monster is still under the street)
+  // round 5 (owner): the climbing monster IS framed with its drain (it is already half out when the words begin)
+  assert.match(code, /zw_scene_cam\(cam, t0, t1, \("monster_reveal", \[mon\], \[drain_grate_100\]/);
   assert.match(code, /\("monster_full", \[mon\]/);
   assert.doesNotMatch(code, /lamp_bulb/);                                       // the street lamp is the world's own lamp
   assert.match(code, /zw_flee\(mon, t0, t1, n=3\)/);
