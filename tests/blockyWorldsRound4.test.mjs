@@ -44,10 +44,10 @@ test("motion: the new actions are in the engine kit and compile to the motion li
   const scene = { start: 0, end: 2.4, words: "Mia reads a book", wordList: [{ word: "Mia", start: 0 }, { word: "reads", start: 0.4 }, { word: "a", start: 0.8 }, { word: "book", start: 1.0 }] };
   const py = compileScene(card, { plan: { cast: [{ name: "Mia" }] }, scene, cut: true });
   assert.match(py, /zm_read\(mia_0, .*book_100\)/); assert.match(py, /zm_nod\(mia_0/);
-  assert.match(py, /size=max\(1\.2, ZW_THING_SIZE\.get\("book", 1\.2\)\) \* 2\.2/, "a thing the words name is drawn bigger");
+  assert.match(py, /size=ZW_THING_SIZE\.get\("book", 1\.2\) \* 1\.7/, "a thing the words name is drawn bigger (real size x 1.7; x 1.3 when held)");
   assert.match(py, /zw_scene_cam\(.*"left"\), cut=True\)/, "a cut halfway; equal framings: the second half from another side");
   const est = compileScene(card, { plan: { cast: [{ name: "Mia" }] }, scene, establish: "follow" });
-  assert.match(est, /zw_establish\(cam, t0, t1, "suburb_street", "follow", follow=mia_0\)/);
+  assert.match(est, /zw_establish\(cam, t0, t1, "suburb_street", "follow", follow=mia_0, end=\("medium", \[mia_0\]/, "it ends on the card's end framing");
 });
 
 test("motion: the engine library has the reel's actions and the walk matches the ground", () => {
@@ -65,6 +65,6 @@ test("pace: pauses after a sentence become 0.15 s (inside a line 0.08 s); 1.25x 
   assert.equal(r.length, 3);
   assert.equal(+((r[0][1] - 0.5) + (1.2 - r[1][0])).toFixed(3), 0.15, "the sentence pause keeps 0.15 s");
   assert.equal(+(1.9 - r[2][0]).toFixed(3), 0.04);
-  assert.equal(tempoFor(NARRATOR), 1.0417);
-  assert.equal(tempoFor({ ...NARRATOR, pace: 1.3 }), 1.0833);
+  assert.equal(tempoFor({ ...NARRATOR, pace: 1.25 }), 1.0417);
+  assert.equal(tempoFor(NARRATOR), 1.0833, "1.3x is the default (round 5)");
 });

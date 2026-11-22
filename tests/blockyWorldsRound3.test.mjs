@@ -72,12 +72,12 @@ test("voices: one voice per character, the plan's type first, a SAVED choice alw
   assert.equal(b.voices.noah.type, "whisper", "the saved voice wins (same character = same voice in later videos)");
   assert.equal(VOICE_TYPES.narrator.voiceId, "NUklOYr6pNs1RxzJVQB5");
   for (const [k, v] of Object.entries(VOICE_TYPES)) assert.equal(v.settings.speed, 1.2, `${k} is made at 1.2`);
-  assert.equal(PACE, 1.25);
+  assert.equal(PACE, 1.3);
 });
 
-test("pace: made at 1.2, sped up to 1.25 after (atempo 1.0417), never 1.2 x 1.25", () => {
-  assert.equal(tempoFor(NARRATOR), 1.0417);
-  assert.equal(tempoFor(VOICE_TYPES.mom), 1.0417);
+test("pace: made at 1.2, sped up to 1.3 after (atempo 1.0833; the default since round 5), never 1.2 x 1.3", () => {
+  assert.equal(tempoFor(NARRATOR), 1.0833);
+  assert.equal(tempoFor(VOICE_TYPES.mom), 1.0833);
 });
 
 test("captions: a speaker's words carry their name (the tag), the narrator's none", () => {

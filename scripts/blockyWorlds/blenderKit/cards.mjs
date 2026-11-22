@@ -1,3 +1,4 @@
+import { THINGS } from "../../../supabase/functions/_shared/blockyWorlds/engineKit.js";
 import { dressOf } from "../../../supabase/functions/_shared/blockyWorlds/worldState.js";
 // THE CARD COMPILER (owner 2026-11-21, round 2): the director's shot cards (director2.mjs, data) -> the engine's shot code
 // (Python bodies for worlds.py + worlds/acts.py). The model never writes code: every card field maps to one helper, so a
@@ -150,6 +151,19 @@ export function compileScene(card, { plan, scene, speaker = null, world = null, 
     const look = (plan.cast ?? []).find((c) => String(c.name).toLowerCase() === who.toLowerCase()) ?? {};
     L.push(`${id} = zw_person(${py(who)}, ${py(look)}, ${markPos(startMark)}, st_rot, t0)`);
   });
+  // round 5 (rule 4: what a line names is seen): a THING the words name that neither frame has comes in, at the first
+  // person's mark, held when the words say so ("I grab my ball": the ball was never there)
+  {
+    const have = new Set([...(S.props ?? []), ...(E.props ?? [])].map((p) => p.kind));
+    const first = (S.people ?? []).find((p) => p.pose !== "hidden" && !/^offscreen/.test(p.mark) && !/^monster$/i.test(p.who)) ?? (E.people ?? [])[0];
+    const holdW = /\b(grab|grabs|hold|holds|holding|carry|carries|take|takes|pick|picks|throw|throws)\b/i.test(scene.words ?? "");
+    for (const k of THINGS) {
+      if (have.has(k) || !new RegExp(`\\b${k.replace("_", " ")}s?\\b`, "i").test(scene.words ?? "")) continue;
+      const held = holdW && first ? { state: "held", held_by: first.who } : { state: "normal", held_by: "" };
+      S.props = [...(S.props ?? []), { kind: k, mark: first?.mark ?? "center", count: 1, ...(/^monster$/i.test(first?.who ?? "") ? { state: "normal", held_by: "" } : held) }];
+      E.props = [...(E.props ?? []), { kind: k, mark: first?.mark ?? "center", count: 1, state: "normal", held_by: "" }];
+    }
+  }
   // the things: everything in either frame (by kind)
   const kinds = [...new Set([...(S.props ?? []), ...(E.props ?? [])].map((p) => p.kind))];
   const pa = (f, kind) => (f.props ?? []).find((p) => p.kind === kind) ?? null;
@@ -158,7 +172,11 @@ export function compileScene(card, { plan, scene, speaker = null, world = null, 
     const a = pa(S, kind), b = pa(E, kind);
     const size = (plan.props ?? []).find((x) => x.kind === kind)?.size ?? 1.2;
     const named = new RegExp(`\\b${kind.replace("_", " ")}s?\\b`, "i").test(scene.words ?? "");
-    const sz = `max(${size}, ZW_THING_SIZE.get(${py(kind)}, ${size}))${named ? " * 2.2" : ""}`;
+    // real sizes (crowds.py ZW_THING_SIZE: next to a 5.2-unit kid); a named thing bigger to read on a phone, less when held
+    const heldK = [...(S.props ?? []), ...(E.props ?? [])].some((p) => p.kind === kind && p.state === "held");
+    // next to the MONSTER (3-4x a person) a named thing scales with it (round 5: "it plays with my shoe": a speck)
+    const monScene = names.some((n) => /^monster$/i.test(n)) && plan.monster?.present;
+    const sz = `ZW_THING_SIZE.get(${py(kind)}, ${size})${named ? (monScene ? " * 3.2" : heldK ? " * 1.3" : " * 1.7") : ""}`;
     if ((a?.state ?? b?.state) === "falling") { L.push(`zw_rain(${py(kind)}, t0, t1, area=((st_c.x - 8, st_c.x + 8), (st_c.y - 4, st_c.y + 10)), n=${Math.min(50, Math.max(12, (a ?? b).count || 30))})`); return; }
     const id = ident(kind, 100 + k); tv[kind] = id;
     const mark = (a && a.state !== "hidden" ? a.mark : b?.mark) ?? "center";
@@ -219,7 +237,7 @@ export function compileScene(card, { plan, scene, speaker = null, world = null, 
       case "cry": L.push(`zm_cry(${id}, ${ta}, t1)`); break;
       case "cheer": L.push(`zm_cheer(${id}, ${ta})`); break;
       case "wave": L.push(`zm_wave(${id}, ${ta}, t1)`); break;
-      case "climb_out": if (id === "mon") { moved.add(id); L.push(`zw_climb_out(mon, ${ta} - 0.45 * dur, min(t1, ${ta} + 0.6 * dur), hole=${b ? `zw_mark(${py(place)}, ${py(b.mark)})` : "(mon.root.location.x, mon.root.location.y)"})`); } break;
+      case "climb_out": if (id === "mon") { moved.add(id); L.push(`zw_climb_out(mon, ${ta} - 0.9 * dur, min(t1, ${ta} + 0.35 * dur), hole=${b ? `zw_mark(${py(place)}, ${py(b.mark)})` : "(mon.root.location.x, mon.root.location.y)"})`); } break;
       case "roar": L.push(`${id}.act(${ta}, "fists")`); break;
       case "scream": L.push(`${id}.act(${ta}, "hands_head")`); break;
       case "laugh": L.push(`${id}.act(${ta}, "cheer")`); break;
@@ -253,15 +271,18 @@ export function compileScene(card, { plan, scene, speaker = null, world = null, 
     else if (a && a.state !== "hidden" && b?.state === "hidden") L.push(`zw_grow_obj(${id}, ${ta}, ${ta} + 0.2, 1.0, 0.001)`);
     if (b?.state === "held" && a?.state !== "held" && tgt(b.held_by) && !(card.motion ?? []).some((m) => m.action === "grab" && String(m.target).toLowerCase() === kind)) L.push(`zw_grab(${tgt(b.held_by)}, ${ta}, ${id})`);
   }
-  if (hasMon && (S.camera.type === "monster_reveal" || E.camera.type === "monster_reveal")) L.push("zw_flee(mon, t0, t1, n=3)");
+  // the fleeing extras only where the world state has people (round 4: "strangers" on the empty night street)
+  if (hasMon && (S.camera.type === "monster_reveal" || E.camera.type === "monster_reveal") && !(world && (world.busy === "empty" || indoor))) L.push("zw_flee(mon, t0, t1, n=3)");
   // the camera: start framing -> end framing, each on what that frame shows
   const vis = (f) => ({
-    // a monster still under the street (pose climb) is not framed: the start frame shows the drain it comes out of
-    p: (f.people ?? []).filter((p) => p.pose !== "hidden" && p.pose !== "climb" && !/^offscreen/.test(p.mark)).map((p) => v[String(p.who).toLowerCase()]).filter(Boolean),
+    // round 5: a monster climbing out IS framed (it is already half out when the words begin: card 10 showed only spikes)
+    p: (f.people ?? []).filter((p) => p.pose !== "hidden" && !/^offscreen/.test(p.mark)).map((p) => v[String(p.who).toLowerCase()]).filter(Boolean),
     t: (f.props ?? []).filter((p) => p.state !== "hidden" && p.state !== "falling").map((p) => tv[p.kind]).filter(Boolean),
   });
   const camSpec = (f) => {
-    const x = vis(f);
+    let x = vis(f);
+    // an end frame everyone has left (walked off / gone inside) keeps the start's people (round 5: a flat empty wall)
+    if (f === E && !x.p.length && !x.t.length) x = vis(S);
     let people = x.p;
     if (f.camera.type === "close") { const sp = speaker && v[String(speaker).toLowerCase()]; people = sp && people.includes(sp) ? [sp] : people.filter((p) => p !== "mon").slice(0, 1); }
     // a cut between two equal framings would be a jump: the second half from another side
@@ -271,7 +292,7 @@ export function compileScene(card, { plan, scene, speaker = null, world = null, 
   };
   const any = vis(S).p.length + vis(S).t.length + vis(E).p.length + vis(E).t.length;
   const walker = (card.motion ?? []).find((m) => ["walk", "run_away", "carry"].includes(m.action) && v[String(m.who).toLowerCase()] && v[String(m.who).toLowerCase()] !== "mon");
-  if (establish) L.push(`zw_establish(cam, t0, t1, ${py(place)}, ${py(establish)}, follow=${establish === "follow" && walker ? v[String(walker.who).toLowerCase()] : "None"})`);
+  if (establish) L.push(`zw_establish(cam, t0, t1, ${py(place)}, ${py(establish)}, follow=${establish === "follow" && walker ? v[String(walker.who).toLowerCase()] : "None"}${any ? `, end=${camSpec(E)}` : ""})`);
   else L.push(any ? `zw_scene_cam(cam, t0, t1, ${camSpec(S)}, ${camSpec(E)}${cut ? ", cut=True" : ""})` : `zw_spot(cam, ${py(place)}, "wide", t0, t1)`);
   return L.join("\n");
 }

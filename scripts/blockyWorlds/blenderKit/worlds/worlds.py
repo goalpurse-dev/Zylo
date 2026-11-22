@@ -579,6 +579,10 @@ def zw_people(t0, t1, n, areas, seed=7, modes=("walk", "walk", "stand", "talk", 
     swinging), talkers come in pairs facing each other, standers idle; a talking pair counts as two"""
     if n <= 0 or not areas:
         return
+    if ZW_CROWD_ON[0] and "busy" in ZW_T and seed in (7, 9, 12):
+        return zw_crowd(t0, t1, n)
+    if ZW_CROWD_ON[0] and "busy" in ZW_T and seed == 31:
+        return None   # the crowd already spreads people along the whole street (the stage included)
     rnd = random.Random(seed)
     i = made = 0
     while made < n:
@@ -1018,7 +1022,7 @@ def zw_house(i, x, side, col):
         box("zw_hcan%d" % i, (4.4, 2.2, 0.3), (x, fy - side * 1.1, 5.4), Mr, 0.05)
     box("zw_hdoor%d" % i, (2.2, 0.25, 4.0), (x, fy - side * 0.08, 2.6), zw_m("hdoor%d" % (i % 3), ["#c0392b", "#2e6f95", "#3e7b4f"][i % 3], 0.5), 0.05)
     lit = zw_time() in ("night", "sunset") and not zw_copy() and zw_win_lit(i)
-    sphere("zw_hplamp%d" % i, 0.3, (x + 1.7, fy - side * 0.3, 4.6), zw_m("plamp" + ("_on" if lit else ""), "#fff3c4", 0.3, emit="#ffd27a", estr=5.0 if lit else 0.4), seg=8)
+    sphere("zw_hplamp%d" % i, 0.3, (x + 1.7, fy - side * 0.3, 4.6), zw_m("plamp" + ("_on" if lit else ""), "#fff3c4", 0.3, emit="#ffd27a", estr=2.0 if lit else 0.4), seg=8)
     Msh = zw_m("shutter%d" % (i % 3), ["#2e6f95", "#3e7b4f", "#8a3a4a"][i % 3], 0.6)
     for wx in (-4.2, 4.2):
         box("zw_hwin%d_%d" % (i, int(wx)), (2.6, 0.2, 2.4), (x + wx, fy - side * 0.06, 3.2), zw_glass("hwin", i), 0.02)
@@ -2294,7 +2298,7 @@ def zw_monster_cam(cam, m, t0, t1, view="full", yaw=14.0, push=0.05):
     turns into a wall of skin). Uses the same measuring solver as zw_frame."""
     bpy.context.scene.frame_set(F(t0))
     s = m.root.scale[2]
-    yaws = (yaw, -yaw, 0.0, 2 * yaw, -2 * yaw, 3 * yaw, -3 * yaw)
+    yaws = (yaw, -yaw, 0.0, 2 * yaw, -2 * yaw, 3 * yaw, -3 * yaw, 70.0, -70.0, 100.0, -100.0)   # round 5: the street sides too (a roof blocked every near angle)
     skip = (m.name + "_",)
     if view == "face":
         return zw_fit(cam, zw_head_pts(m), zw_front([m]), t0, t1, 32, ZW_SAFE, frac=0.3, cam_dz=-0.4 * s, yaws=yaws, push=push, skip=skip, tag="monster_face")
@@ -2559,7 +2563,62 @@ ZW_GLIDE = {
 }
 
 
-def zw_establish(cam, t0, t1, place, style="glide", follow=None):
+def zw_est_clear(pts):
+    """no path point inside a character (incl. the monsters) or right next to one"""
+    boxes = [(lo - Vector((1.2, 1.2, 1.2)), hi + Vector((1.2, 1.2, 1.2))) for _, lo, hi in zw_cast_boxes()]
+    for nm, m in ZW_MON.items():
+        try:
+            pp = zw_pts([m.root])
+            lo = Vector((min(p.x for p in pp), min(p.y for p in pp), min(p.z for p in pp)))
+            hi = Vector((max(p.x for p in pp), max(p.y for p in pp), max(p.z for p in pp)))
+            boxes.append((lo - Vector((2.0, 2.0, 2.0)), hi + Vector((2.0, 2.0, 2.0))))
+        except Exception:
+            pass
+    for p in pts:
+        for lo, hi in boxes:
+            if lo.x <= p.x <= hi.x and lo.y <= p.y <= hi.y and lo.z <= p.z <= hi.z:
+                return False
+    return True
+
+
+def zw_establish(cam, t0, t1, place, style="glide", follow=None, end=None):
+    """round 5: with end = the card's END framing spec (kind, people, things, side), the move ends exactly on it (the
+    people the words are about in frame), from the place's glide / drone start; the path stays clear of every body"""
+    if end is not None and (end[1] or end[2]):
+        ZW_LASTFIT.clear()
+        kind, people, things, side = end
+        y = {"left": -40.0, "right": 40.0, "behind": 120.0}.get(side, 14.0)
+        zw_shot(cam, kind, t1 - 0.04, t1, people=people, things=things, yaw=y, move="still")
+        lb, ab, nb = ZW_LASTFIT.get("loc"), ZW_LASTFIT.get("aim"), ZW_LASTFIT.get("lens", 26)
+        if lb is not None:
+            for o in (cam.ob, cam.cd):
+                if o.animation_data:
+                    o.animation_data_clear()
+            g = ZW_GLIDE.get(place)
+            lb, ab = Vector(lb), Vector(ab)
+            if g is not None and style != "follow":
+                a, la = Vector(g["a"]), Vector(g["la"])
+                if style == "drone":
+                    a = a + Vector((0, 0, 9.0))
+            else:
+                back = (lb - ab)
+                back.z = 0
+                back = back.normalized() if back.length > 1e-3 else Vector((0, -1, 0))
+                a, la = lb + back * 9.0 + Vector((0, 0, 2.5 if style == "drone" else 0.6)), ab
+            mid = a.lerp(lb, 0.5)
+            for k in range(4):
+                if zw_est_clear([a.lerp(lb, u / 6.0) for u in range(7)]):
+                    break
+                a = a + Vector((0, 0, 2.5))   # over the heads
+            cam.key(t0, tuple(a), tuple(la), lens=24)
+            cam.key((t0 + t1) / 2.0, tuple(mid + Vector((0, 0, 0.8))), tuple(la.lerp(ab, 0.6)), lens=int(round((24 + nb) / 2)))
+            cam.key(t1, tuple(lb), tuple(ab), lens=nb)
+            ZW_FRAMED["establish"] = "%s -> the card's end framing" % style
+            return a, la
+    return zw_establish0(cam, t0, t1, place, style, follow)
+
+
+def zw_establish0(cam, t0, t1, place, style="glide", follow=None):
     """the place's MOVING establishing shot: glide / drone / follow (a character walking); indoors: a slow move through
     the room from its tested wide spot"""
     g = ZW_GLIDE.get(place)
@@ -2606,6 +2665,7 @@ def zw_establish(cam, t0, t1, place, style="glide", follow=None):
 # curtains (open / closed), threat (none / near / react / after: the background looks, runs away from the stage, cars
 # drive off; after = relief). A dress without these keys builds the place as before.
 ZW_BUSY = {"busy": 1.7, "normal": 1.0, "quiet": 0.35, "empty": 0.0}
+ZW_CROWD_ON = [False]   # round 5: worlds/crowds.py (crowds + traffic with logic) sets it when it is pasted in
 ZW_DOTCHARS = set()   # the shot's characters with OUR dot face
 ZW_DOTSEQ = {}        # name -> {"seq": [(t, expr)], "talk": (t0, t1) | None}
 ZW_DOT = {"happy": "smile", "laughing": "smile", "smirk": "smile", "scared": "scared", "terrified": "scared", "panic": "scared",
@@ -2688,6 +2748,8 @@ def zw_life_cars(dress, spots, t0, t1):
     away) | none; driving cars have headlights at dusk and night. No "cars" key: as before."""
     mode = dress.get("cars")
     lights = zw_time() in ("sunset", "night")
+    if ZW_CROWD_ON[0] and "busy" in dress and zw_traffic(t0, t1):
+        return None
     if mode is None:
         return zw_cars(spots, t0, t1, lights=lights)
     if mode == "none":
