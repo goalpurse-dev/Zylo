@@ -282,6 +282,15 @@ function NextStep({ p, balance, onChanged, onNoCredits }) {
   const job = p.job;
   if (p.busy && job) return <Panel title={job.kind === "voice" ? "Making the voice" : "Finishing your video"}><Making job={job} /></Panel>;
   if (p.status === "voice_needed") {
+    // THE FREE PATH (owner 2026-11-23): a free account that can't pay for the voice skips it. The first finish is free
+    // and makes the voice, fitted to the recording. Without this, the card's only button was a voice they can't pay for.
+    if (p.prices.finishFree && !(Number(balance) >= Number(p.prices.voice))) {
+      return (
+        <Panel title="Next: drop your recording" text="Your first Finish my video is free and makes the voice too. So skip the voice: record the Play run in Studio, then drop the file here (or let Claude upload it).">
+          <UploadDrop p={p} onChanged={onChanged} />
+        </Panel>
+      );
+    }
     return (
       <Panel title="Next: create the voice" text="Our narrator reads your script with exact word timings. Or record your own in the kit: free.">
         <PaidAction icon={Mic} label="Create voice" credits={p.prices.voice} balance={balance} path="/account/studio/voice" id={p.id} what={`The voice for "${p.title}" (about ${mmss(p.estimatedSeconds)})`} onChanged={onChanged} onNoCredits={onNoCredits} />
