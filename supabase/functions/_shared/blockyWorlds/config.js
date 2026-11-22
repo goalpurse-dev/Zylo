@@ -28,7 +28,7 @@ export const LITTLE_DUDE_II = Object.freeze({
   }),
   outputFormat: "mp3_44100_128",
 });
-export const NARRATOR = Object.freeze({
+export const SCRUFFY_DUCK = Object.freeze({
   provider: "elevenlabs",
   voiceId: "8VJBrRk4O7tFoB5kqxa6",
   voiceName: "Scruffy Duck",
@@ -36,6 +36,16 @@ export const NARRATOR = Object.freeze({
   settings: Object.freeze({ stability: 0.5, similarity_boost: 0.75, style: 0, use_speaker_boost: true, speed: 1.2 }),
   outputFormat: "mp3_44100_128",
 });
+/** the owner's own ElevenLabs voice "roblox-story" (owner 2026-11-22: the default narrator of In This Town from now on) */
+export const ROBLOX_STORY = Object.freeze({
+  provider: "elevenlabs",
+  voiceId: "NUklOYr6pNs1RxzJVQB5",
+  voiceName: "roblox-story",
+  model: "eleven_multilingual_v2",
+  settings: Object.freeze({ stability: 0.5, similarity_boost: 0.8, style: 0, use_speaker_boost: true, speed: 1.0 }),
+  outputFormat: "mp3_44100_128",
+});
+export const NARRATOR = ROBLOX_STORY;
 
 /**
  * The narrators to choose from: scruffy_duck = NARRATOR, the default (2026-11-12); little_dude_ii, the one before. The
@@ -43,7 +53,8 @@ export const NARRATOR = Object.freeze({
  * option skghcThhrhzKre1Ny7M7 is gone: the voice never reached the account.)
  */
 export const NARRATORS = Object.freeze({
-  scruffy_duck: NARRATOR,
+  roblox_story: ROBLOX_STORY,
+  scruffy_duck: SCRUFFY_DUCK,
   little_dude_ii: LITTLE_DUDE_II,
 });
 

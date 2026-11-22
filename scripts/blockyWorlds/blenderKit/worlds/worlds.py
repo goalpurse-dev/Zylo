@@ -267,7 +267,7 @@ def zw_b_lamp(src, nm):
     cyl(nm + "_pole", 0.14, 6.6, (0, 0, 3.3), Mp, 10, coll=src)
     cyl(nm + "_base", 0.32, 0.5, (0, 0, 0.25), Mp, 10, coll=src)
     on = zw_time() in ("night", "sunset")
-    b = sphere(nm + "_bulb", 0.42, (0, 0, 6.9), zw_m("lampbulb" + ("_on" if on else ""), "#fff3c4", 0.3, emit="#ffd27a", estr=6.0 if on else 0.6), coll=src, seg=12)
+    b = sphere(nm + "_bulb", 0.42, (0, 0, 6.9), zw_m("lampbulb" + ("_on" if on else ""), "#fff3c4", 0.3, emit="#ffd27a", estr=3.2 if on else 0.6), coll=src, seg=12)
     b.visible_shadow = False
 
 
