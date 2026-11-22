@@ -263,6 +263,27 @@ const townFree1 = {
   render: (footer, opts = {}) => plainEmailInlineLink(townFree1Lines(launchDealLive(opts.at ?? Date.now())), "Niko", { fullLinkText: true })(footer, opts),
 };
 
+// "Your In This Town video is waiting" (owner, 2026-11-23): the free In This Town again (the free kit's template page),
+// one link plus the unsubscribe. The owner's text; the menu path says MCP → Templates (the live menu has no top-level
+// Templates: In This Town under Short Form is the paid one).
+const townFree2 = {
+  from: ROOT_NIKO,
+  replyTo: REPLY_TO.niko,
+  subject: "your in this town video is waiting",
+  why: CAMPAIGN_WHY,
+  plain: true,
+  opensTracked: true,
+  linkTo: "town_free",
+  render: plainEmailInlineLink([
+    "Hey,",
+    "It's Niko from Zyvo.",
+    "In This Town is the best thing we've ever made, and people are already making their first Roblox shorts with it.",
+    "You can make yours for free. Open Zyvo, go to MCP, then Templates, then In This Town.",
+    "Make yours here: tryzyvo.com",
+    "Send me what you make, I want to see it.",
+  ], "Niko", { fullLinkText: true }),
+};
+
 export const CAMPAIGNS = {
   // Day 1 (2026-10-11): the 200 newest people who are ON. Sent before open tracking was switched on.
   warmup_day1: warmup("You signed up recently"),
@@ -318,6 +339,9 @@ export const CAMPAIGNS = {
   // Owner, 2026-11-21: Sat 21 Nov 16:00–21:00 Finnish, up to 3,000: real openers of the In This Town emails, came
   // back since 4 Nov, real openers since 4 Nov, then never had a marketing email.
   town_free1: townFree1,
+  // Owner, 2026-11-23: Mon 23 Nov 13:00–21:00 Finnish, up to 4,000: real openers of any In This Town email (incl.
+  // town_free1), came back since 4 Nov, real openers since 4 Nov, then never had a marketing email.
+  town_free2: townFree2,
 };
 
 // The 12-hour open check (owner, 2026-10-29): opens of a day under its min_open_rate 12 hours after
