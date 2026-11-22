@@ -19,7 +19,8 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const KIT = path.join(HERE, "..", "blenderKit");
 const argv = process.argv.slice(2), has = (k) => argv.includes(`--${k}`), arg = (k, d = null) => (has(k) ? argv[argv.indexOf(`--${k}`) + 1] : d);
 const DIR = path.resolve(arg("dir"));
-const OUT = path.join(DIR, "final"); fs.mkdirSync(path.join(OUT, "video", "audio"), { recursive: true });
+// round 2: --out final_r2 (a folder that has segments is reused)
+const OUT = path.join(DIR, arg("out", "final")); fs.mkdirSync(path.join(OUT, "video", "audio"), { recursive: true });
 const L = ledger(DIR, { capUsd: 3, agentCapUsd: 3 });
 const say = (m) => { const l = `[${new Date().toISOString().slice(11, 19)}] ${m}`; console.log(l); fs.appendFileSync(path.join(DIR, "run.log"), l + "\n"); };
 const words = JSON.parse(fs.readFileSync(path.join(DIR, "voice", "words.json"), "utf8"));
@@ -69,7 +70,8 @@ if (!has("finish-only")) {
 
 // ---- 2. the captions (ASS), like the reference
 const KEY = new Set(["10", "pm", "9:59", "neighbors", "curtains", "doors", "lights", "nobody", "noah", "disappeared", "moved", "away", "10:03", "bedroom", "window", "streetlight", "same", "closer", "directly", "three", "words", "lied", "suddenly", "door", "open", "behind", "outside", "gone", "terrifying", "neighbor", "house", "my"]);
-const TAGS = [["your mom lied", "NOAH", "&H00B87AFF&"], ["i told you never to look outside", "MOM", "&H00A8B32A&"]];
+// spoken lines coloured like the reference (ASS colours are &HBBGGRR&): Noah blue #5aa8ff, Mom pink #ff7ab8
+const TAGS = [["your mom lied", "NOAH", "&H00FFA85A&"], ["i told you never to look outside", "MOM", "&H00B87AFF&"]];
 const clean = (w) => String(w).toLowerCase().replace(/[^a-z0-9:]/g, "");
 const groups = [];
 let cur = [];
@@ -89,8 +91,10 @@ groups.forEach((g, gi) => {
   const shout = /^(noah|my house)$/.test(g.map((w) => clean(w.word)).join(" ")) ? true : false;
   const txt = g.map((w, i) => { const s = w.word.replace(/^"|"$/g, "").replace(/\.\.\.$/, "..."); const u = (clean(w.word) === "noah" && gi > 10) || (gi === groups.length - 1 && /my|house/.test(clean(w.word))) ? s.toUpperCase() : s; return i === keyIdx ? `{\\c&H00D7FF&}${u}{\\c&HFFFFFF&}` : u; }).join(" ");
   const tg = tagOf(g);
+  // spoken lines take the speaker's colour (Noah blue, Mom pink), like the reference; the key-word reset goes back to it
+  const body = tg ? txt.split("{\\c&HFFFFFF&}").join(`{\\c${tg.col}}`) : txt;
   if (tg) lines.push(`Dialogue: 0,${assT(t0)},${assT(t1)},Tag,,0,0,0,,{\\an5\\pos(540,1060)\\c${tg.col}}${tg.tag}`);
-  lines.push(`Dialogue: 0,${assT(t0)},${assT(t1)},Cap,,0,0,0,,{\\an5\\pos(540,1130)}${txt}`);
+  lines.push(`Dialogue: 0,${assT(t0)},${assT(t1)},Cap,,0,0,0,,{\\an5\\pos(540,1130)${tg ? `\\c${tg.col}` : ""}}${body}`);
   void shout;
 });
 const ass = `[Script Info]\nScriptType: v4.00+\nPlayResX: 1080\nPlayResY: 1920\nWrapStyle: 2\n\n[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\nStyle: Cap,Arial Black,98,&H00FFFFFF,&H00FFFFFF,&H00000000,&H64000000,1,0,0,0,100,100,0,0,1,8,3,5,50,50,0,1\nStyle: Tag,Arial Black,46,&H00FFFFFF,&H00FFFFFF,&H00000000,&H64000000,1,0,0,0,100,100,1,0,1,5,1,5,50,50,0,1\n\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n${lines.join("\n")}\n`;
@@ -100,12 +104,13 @@ say(`captions: ${groups.length} groups, ${lines.filter((l) => l.includes(",Tag,"
 // ---- 3. the finish (local): join, voice, vignette, captions, fade to black at the reference's length; side-by-side
 const raw = path.join(OUT, "ours_raw.mp4");
 ff(["-f", "concat", "-safe", "0", "-i", path.join(segs, "list.txt"), "-c", "copy", raw]);
+const ourDur = +(words.at(-1).end + 0.9).toFixed(2);   // round 2: the video ends on OUR voice (shorter than the reference)
 const refDur = Number(execFileSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", path.join(DIR, "reference.mp4")]).toString());
 const ours = path.join(OUT, "ours.mp4");
 const assPath = path.join(OUT, "captions.ass").replace(/\\/g, "/").replace(/^([A-Za-z]):/, "$1\\:");
 ff(["-i", raw, "-i", path.join(DIR, "voice", "voice.wav"), "-filter_complex",
-  `[0:v]scale=1080:1920,tpad=stop_mode=clone:stop_duration=3,trim=duration=${refDur.toFixed(2)},vignette=PI/5,subtitles='${assPath}',fade=t=out:st=${(refDur - 0.9).toFixed(2)}:d=0.9[v];[1:a]apad,atrim=duration=${refDur.toFixed(2)}[a]`,
+  `[0:v]scale=1080:1920,tpad=stop_mode=clone:stop_duration=3,trim=duration=${ourDur},vignette=PI/3.6,subtitles='${assPath}',fade=t=out:st=${(ourDur - 0.9).toFixed(2)}:d=0.9[v];[1:a]apad,atrim=duration=${ourDur}[a]`,
   "-map", "[v]", "-map", "[a]", "-c:v", "libx264", "-crf", "18", "-preset", "medium", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "160k", "-movflags", "+faststart", ours]);
 const sbs = path.join(OUT, "side_by_side.mp4");
-ff(["-i", path.join(DIR, "reference.mp4"), "-i", ours, "-filter_complex", "[0:v]scale=540:960,setsar=1[l];[1:v]scale=540:960,setsar=1[r];[l][r]hstack=inputs=2[v]", "-map", "[v]", "-map", "1:a", "-c:v", "libx264", "-crf", "20", "-preset", "medium", "-pix_fmt", "yuv420p", "-c:a", "aac", "-shortest", sbs]);
+ff(["-i", path.join(DIR, "reference.mp4"), "-i", ours, "-filter_complex", `[0:v]scale=540:960,setsar=1[l];[1:v]scale=540:960,setsar=1,tpad=stop_mode=add:color=black:stop_duration=${Math.max(0, refDur - ourDur + 0.5).toFixed(2)}[r];[l][r]hstack=inputs=2[v];[1:a]apad[a]`, "-map", "[v]", "-map", "[a]", "-t", refDur.toFixed(2), "-c:v", "libx264", "-crf", "20", "-preset", "medium", "-pix_fmt", "yuv420p", "-c:a", "aac", sbs]);
 say(`done: ${ours} + ${sbs}; spent $${L.total()} of $3`);

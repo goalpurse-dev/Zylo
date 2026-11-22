@@ -29,8 +29,15 @@ def zw_night():
     return zw_time() == "night"
 
 
+def zw_copy():
+    """COPY MODE (a replica of a reference): the engine adds nothing the reference frame does not have"""
+    return bool(ZW_T.get("copy"))
+
+
 def zw_glass(name="glass"):
-    # windows: blue glass by day, warm light at night
+    # windows: blue glass by day, warm light at night (copy mode: dark glass at night: lit only where the shot says)
+    if zw_night() and zw_copy():
+        return zw_m(name + "_c", "#1c2742", 0.2, 0.2)
     if zw_night():
         return zw_m(name + "_n", "#ffd9a0", 0.3, emit="#ffc070", estr=2.2)
     return zw_m(name + "_d", "#4f86c6", 0.12, 0.15)
@@ -88,6 +95,8 @@ def zw_brick(name, base="#a5523e", mortar="#d8cfc4"):
 
 def zw_windows(name, glass="#5aaee8", glass2="#8cc8f2", wall="#f4f1ea"):
     """a window grid on a whole facade (cheap background buildings): glass panes in a wall colour; lit at night"""
+    if zw_night() and zw_copy():
+        return zw_pattern("win_" + name + "_c", "#1c2742", "#26324e", "#2a3550", 0.32, 1.0, 0.7, 0.16, 0.5, 0.0, 0.0, 0.0)
     if zw_night():
         return zw_pattern("win_" + name + "_n", "#ffd890", "#22304f", "#2a3550", 0.32, 1.0, 0.7, 0.16, 0.5, 0.0, 1.3, 0.0)
     return zw_pattern("win_" + name, glass, glass2, wall, 0.32, 1.0, 0.7, 0.16, 0.35, 0.0, 0.0, 0.0)
@@ -267,7 +276,8 @@ def zw_b_lamp(src, nm):
     cyl(nm + "_pole", 0.14, 6.6, (0, 0, 3.3), Mp, 10, coll=src)
     cyl(nm + "_base", 0.32, 0.5, (0, 0, 0.25), Mp, 10, coll=src)
     on = zw_time() in ("night", "sunset")
-    b = sphere(nm + "_bulb", 0.42, (0, 0, 6.9), zw_m("lampbulb" + ("_on" if on else ""), "#fff3c4", 0.3, emit="#ffd27a", estr=3.2 if on else 0.6), coll=src, seg=12)
+    cool = zw_copy()
+    b = sphere(nm + "_bulb", 0.42, (0, 0, 6.9), zw_m("lampbulb" + ("_on" if on else "") + ("_c" if cool else "") + ("_k" if zw_copy() else ""), "#eef3ff" if cool else "#fff3c4", 0.3, emit="#dfe8ff" if cool else "#ffd27a", estr=(1.4 if zw_copy() else 3.2) if on else 0.6), coll=src, seg=12)
     b.visible_shadow = False
 
 
@@ -368,8 +378,8 @@ def zw_inst(kind, loc, rot=0, scale=1.0):
         # NIGHT (look v3): a street lamp is a REAL warm light, not only a glowing bulb (a pool of light on the street and
         # on whoever stands near it); soft shadow from the bulb's size
         sz = s[2]
-        zw_novol(light("zw_lamppool%d" % ZW_N["n"], "SPOT", (loc[0], loc[1], loc[2] + 6.64 * sz), 10000.0 * sz * sz, (1.0, 0.72, 0.42), 0.4 * sz, spot=100, blend=0.7), 0.15)
-        zw_novol(light("zw_lamplight%d" % ZW_N["n"], "POINT", (loc[0], loc[1], loc[2] + 6.9 * sz), 450.0 * sz * sz, (1.0, 0.7, 0.4), 0.5 * sz), 0.35)
+        zw_novol(light("zw_lamppool%d" % ZW_N["n"], "SPOT", (loc[0], loc[1], loc[2] + 6.64 * sz), 10000.0 * sz * sz * (0.3 if zw_copy() else 1.0), (0.82, 0.88, 1.0) if zw_copy() else (1.0, 0.72, 0.42), 0.4 * sz, spot=100, blend=0.7), 0.15)
+        zw_novol(light("zw_lamplight%d" % ZW_N["n"], "POINT", (loc[0], loc[1], loc[2] + 6.9 * sz), 450.0 * sz * sz * (0.3 if zw_copy() else 1.0), (0.82, 0.88, 1.0) if zw_copy() else (1.0, 0.7, 0.4), 0.5 * sz), 0.35)
     return instance("zw_%s_i%d" % (kind, ZW_N["n"]), src, loc, s, rot=(0, 0, rot))
 
 
@@ -930,6 +940,8 @@ def zw_downtown(t0, t1, dress):
 
 
 # ---------------------------------------------------------------- SUBURB (street along X)
+# copy mode: the reference's white / blue-grey house fronts
+ZW_HOUSE_COPY = ["#e9edf3", "#cdd5e2", "#dde2ea", "#b9c4d6", "#f2f4f7"]
 ZW_HOUSE = ["#ffd27f", "#9fe3c8", "#c3a8f5", "#ff9fbf", "#fff08a", "#8fcaf7", "#ffb48a", "#b5ec8f", "#f4f1ea"]
 ZW_ROOF = ["#a8483a", "#4a5568", "#6b4f8a", "#3f6f8f", "#7a4a2e"]
 
@@ -961,7 +973,7 @@ def zw_house(i, x, side, col):
         box("zw_hdeck%d" % i, (4, 2.4, 0.5), (x, fy - side * 1.2, 0.25), zw_m("porch", "#e9dcc6", 0.7), 0.05)
         box("zw_hcan%d" % i, (4.4, 2.2, 0.3), (x, fy - side * 1.1, 5.4), Mr, 0.05)
     box("zw_hdoor%d" % i, (2.2, 0.25, 4.0), (x, fy - side * 0.08, 2.6), zw_m("hdoor%d" % (i % 3), ["#c0392b", "#2e6f95", "#3e7b4f"][i % 3], 0.5), 0.05)
-    lit = zw_time() in ("night", "sunset")
+    lit = zw_time() in ("night", "sunset") and not zw_copy()
     sphere("zw_hplamp%d" % i, 0.3, (x + 1.7, fy - side * 0.3, 4.6), zw_m("plamp" + ("_on" if lit else ""), "#fff3c4", 0.3, emit="#ffd27a", estr=5.0 if lit else 0.4), seg=8)
     Msh = zw_m("shutter%d" % (i % 3), ["#2e6f95", "#3e7b4f", "#8a3a4a"][i % 3], 0.6)
     for wx in (-4.2, 4.2):
@@ -1019,8 +1031,9 @@ def zw_suburb(t0, t1, dress):
         box("zw_sedge%d" % side, (300, 0.22, 0.02), (0, side * 5.5, 0.07), zw_m("dash_w", "#fbfaf5", 0.6), 0)
         box("zw_swalk%d" % side, (300, 3.6, 0.25), (0, side * 8.0, 0.12), zw_m("sidewalk", "#ece8e1", 0.85), 0)
     for k, x in enumerate((-120, -90, -60, -30, 0, 30, 60, 90, 120)):
-        zw_house(2 * k, x, 1, ZW_HOUSE[k % len(ZW_HOUSE)])
-        zw_house(2 * k + 1, x + 12, -1, ZW_HOUSE[(k + 4) % len(ZW_HOUSE)])
+        pal = ZW_HOUSE_COPY if zw_copy() else ZW_HOUSE
+        zw_house(2 * k, x, 1, pal[k % len(pal)])
+        zw_house(2 * k + 1, x + 12, -1, pal[(k + 4) % len(pal)])
     rnd = random.Random(21)
     for side in (-1, 1):
         for k in range(22):
@@ -1038,7 +1051,7 @@ def zw_suburb(t0, t1, dress):
                           ((-36, -24), (12, 14), 0.0), ((-70, -22), (7.0, 9.0), 0.25)], seed=12, modes=("walk", "talk", "stand", "walk"))
     zw_weather(dress.get("weather", "clear"), ((-60, 60), (-40, 40)))
     if zw_night():
-        for k in range(5):
+        for k in range(0 if zw_copy() else 5):
             light("zw_snl%d" % k, "POINT", (-60 + k * 30, 10, 7), 800, (1.0, 0.82, 0.55), 1.5)
     return dict(street=(0, 0, 0), porch=(0, 15.5, 0.6), sidewalk=(0, 8, 0.25), mailbox=(6.6, 11.4, 0), yard=(0, 13, 0))
 
@@ -2471,7 +2484,8 @@ def zw_look_apply():
             vs.look = "None"
         except TypeError:
             pass
-    vs.exposure = 0.0
+    # copy mode (replica round 2) may darken: the reference's night is darker than ours (dress "exposure", e.g. -0.6)
+    vs.exposure = float(ZW_T.get("exposure", 0.0)) if zw_copy() else 0.0
     vs.gamma = 1.0
     t = zw_time()
     pl = ZW_T.get("_place", "")
@@ -2490,6 +2504,8 @@ def zw_look_apply():
         gl = next(n for n in sc.compositing_node_group.nodes if n.type == "GLARE")
         if ZW_T.get("_std"):
             thr, stg, siz = {"night": (0.85, 0.35, 0.75), "sunset": (0.95, 0.2, 0.7)}.get(t, (1.0, 0.1, 0.6))
+            if zw_copy() and t == "night":
+                thr, stg = 0.95, 0.12   # copy mode: the reference's lamps glow softly (ours were white blobs)
             gl.inputs["Threshold"].default_value = thr
             gl.inputs["Strength"].default_value = stg
             gl.inputs["Size"].default_value = siz
@@ -2637,6 +2653,13 @@ def zw_guarded_build(i, *a, **k):
     ZW_EMOTED.clear()
     ZW_EXTRAS.clear()
     S = ZW_BUILD0[0](i, *a, **k)
+    if ZW_T.get("copy"):
+        try:
+            zw_look_apply()
+            zw_gate(S)
+        except Exception as e:
+            print("zw_copy hook skipped: %s" % e)
+        return S
     zw_cam_guard(S["t0"], S["t1"])
     try:
         zw_clear_view(S["t0"], S["t1"])

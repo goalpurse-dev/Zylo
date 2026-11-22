@@ -63,17 +63,26 @@ def zp_clock(loc, rot=0.0, size=1.0, t_change=None, a="9:58", b="9:59"):
     return r
 
 
-def zp_window(loc, rot=0.0, w=3.2, h=3.0, lit=True, curtain=None, frame="#c8ccd8", glow="#e8b878"):
+def zp_window(loc, rot=0.0, w=3.2, h=3.0, lit=True, curtain=None, frame="#c8ccd8", glow="#e8b878", surround=None, ext=3.0, estr=0.55, mullion=True):
     """a window on a wall plane through loc (its front faces -y of its root): frame bars, an inside light panel 0.9 behind
-    (lit at night: the room's glow), optional curtain panels (colour) open at the sides"""
+    (lit at night: the room's glow), optional curtain panels (colour) open at the sides; surround = a wall colour: a
+    wall plate around the opening (ext on each side), so only what is inside the window shows (replica round 2: the
+    neighbors' bodies showed below a floating sill)"""
     r = zp_root(loc, rot)
+    if surround:
+        Ms = zw_m("winwall" + surround[1:], surround, 0.85)
+        for sx in (-1, 1):
+            box(zp_id("wws"), (ext, 0.2, h + 2 * ext), (sx * (w / 2 + ext / 2), 0.12, h / 2), Ms, 0.0, parent=r)
+        box(zp_id("wwb"), (w, 0.2, ext), (0, 0.12, -ext / 2), Ms, 0.0, parent=r)
+        box(zp_id("wwt"), (w, 0.2, ext), (0, 0.12, h + ext / 2), Ms, 0.0, parent=r)
     Mf = zw_m("winframe" + frame[1:], frame, 0.4)
     for sx in (-1, 1):
         box(zp_id("wfs"), (0.2, 0.3, h + 0.4), (sx * (w / 2 + 0.1), 0, h / 2), Mf, 0.03, parent=r)
     for sz in (0, 1):
         box(zp_id("wfh"), (w + 0.6, 0.3, 0.2), (0, 0, sz * h), Mf, 0.03, parent=r)
-    box(zp_id("wfm"), (0.1, 0.25, h), (0, 0, h / 2), Mf, 0.0, parent=r)
-    Mg = zw_m("winglow" + glow[1:], glow, 0.5, emit=glow, estr=0.55 if lit else 0.0)
+    if mullion:
+        box(zp_id("wfm"), (0.1, 0.25, h), (0, 0, h / 2), Mf, 0.0, parent=r)
+    Mg = zw_m("winglow" + glow[1:] + ("%d" % int(estr * 100)), glow, 0.5, emit=glow, estr=estr if lit else 0.0)
     panel = box(zp_id("wpanel"), (w + 0.4, 0.1, h + 0.4), (0, 1.0, h / 2), Mg, 0.0, parent=r)
     dark = box(zp_id("wpaneld"), (w + 0.4, 0.1, h + 0.4), (0, 1.02, h / 2), zw_m("windark", "#141a2e", 0.8), 0.0, parent=r)
     dark.hide_render = True
@@ -172,7 +181,8 @@ def zp_mailbox(loc, rot=0.0):
 def zp_streetpool(loc, power=4500.0):
     if not zw_night():
         return None
-    return zw_novol(light(zp_id("pool"), "SPOT", (loc[0], loc[1], 7.6), power, (1.0, 0.86, 0.62), 0.6, spot=95, blend=0.6), 0.2)
+    col = (0.9, 0.92, 1.0) if zw_copy() else (1.0, 0.86, 0.62)   # copy mode: the reference's lamp is cold white
+    return zw_novol(light(zp_id("pool"), "SPOT", (loc[0], loc[1], 7.6), power, col, 0.6, spot=95, blend=0.6), 0.2)
 
 
 def zp_room(loc, rot=0.0, w=12.0, d=10.0, h=9.0, win_w=5.0, win_h=4.0, wall="#6f80b8", floor="#5a4436"):
@@ -203,9 +213,12 @@ def zp_room(loc, rot=0.0, w=12.0, d=10.0, h=9.0, win_w=5.0, win_h=4.0, wall="#6f
     box(zp_id("rwt"), (win_w + 0.4, 0.45, 0.2), (0, 0, top), Mf, 0.02, parent=r)
     box(zp_id("rwm"), (0.12, 0.3, win_h), (0, 0, sill + win_h / 2), Mf, 0.0, parent=r)
     door = zp_door(tuple(zp_l2w(loc, rot, (dx, d - 0.05, 0))), rot, "#efe8dc", dw, dh)
-    zw_novol(light(zp_id("rmoon"), "AREA", tuple(zp_l2w(loc, rot, (0, -3.0, sill + win_h / 2))), 260.0, (0.5, 0.62, 1.0), 4.0, target=tuple(zp_l2w(loc, rot, (0, d / 2, 2.0))), shadow=True))
-    zw_novol(light(zp_id("rfill"), "AREA", tuple(zp_l2w(loc, rot, (0, d * 0.45, h - 0.6))), 60.0, (0.55, 0.65, 1.0), 6.0, target=tuple(zp_l2w(loc, rot, (0, d * 0.45, 0.0))), shadow=False))
-    zw_novol(light(zp_id("rlamp"), "POINT", tuple(zp_l2w(loc, rot, (-w / 2 + 1.5, d - 1.5, h - 2.0))), 120.0, (1.0, 0.8, 0.55), 1.0))
+    # copy mode (replica round 2): the reference's room is all cold moonlight, dim, no warm lamp (faces came out white)
+    k = 0.8 if zw_copy() else 1.0
+    zw_novol(light(zp_id("rmoon"), "AREA", tuple(zp_l2w(loc, rot, (0, -3.0, sill + win_h / 2))), 260.0 * k, (0.5, 0.62, 1.0), 4.0, target=tuple(zp_l2w(loc, rot, (0, d / 2, 2.0))), shadow=True))
+    zw_novol(light(zp_id("rfill"), "AREA", tuple(zp_l2w(loc, rot, (0, d * 0.45, h - 0.6))), 60.0 * k, (0.55, 0.65, 1.0), 6.0, target=tuple(zp_l2w(loc, rot, (0, d * 0.45, 0.0))), shadow=False))
+    if not zw_copy():
+        zw_novol(light(zp_id("rlamp"), "POINT", tuple(zp_l2w(loc, rot, (-w / 2 + 1.5, d - 1.5, h - 2.0))), 120.0, (1.0, 0.8, 0.55), 1.0))
     return {"root": r, "door": door, "w": w, "d": d, "h": h, "sill": sill, "win_top": top, "loc": (loc[0], loc[1], 0.0), "rot": rot}
 
 
@@ -306,4 +319,169 @@ def zr_top_down(cam, t0, t1, ch, height=11.0, lens=30, push=0.06):
 def zr_street_long(cam, t0, t1, frm=(40, -2, 3.2), to=(-120, 2, 3.0), lens=24, push=0.08):
     p0, tg = Vector(frm), Vector(to)
     zr_key(cam, t0, t1, p0, tg, p0 + (tg - p0).normalized() * 3.0 * push * 10, tg, lens)
+# ---------------------------------------------------------------- the DOT FACE (owner 2026-11-22, replica round 2)
+# A simple face style of our own (like the reference's): two small dot eyes, a small mouth; "o" (shocked / surprised),
+# angry / scared brows, a smile. Built as small meshes on a plain head (a Char made with face=None); the expression
+# switches at given times, and a speaker's mouth opens and closes on the words.
+ZP_FACES = ("neutral", "smile", "o", "angry", "scared", "sad")
+
+
+def zp_face_set(ch, expr, M, Mk):
+    H, n = ch.head, zp_id("f" + expr)
+    obs = []
+    ey = 0.11 if expr != "scared" else 0.12
+    for sx in (-1, 1):
+        obs.append(sphere(n + "_eye%d" % sx, 0.075 if expr != "scared" else 0.09, (sx * 0.21, -0.625, ey), Mk, (1, 0.35, 1.25), parent=H, seg=10))
+    if expr == "neutral":
+        obs.append(box(n + "_m", (0.2, 0.04, 0.035), (0, -0.635, -0.2), Mk, 0.01, parent=H))
+    elif expr == "smile":
+        obs.append(box(n + "_m0", (0.13, 0.04, 0.035), (0, -0.635, -0.25), Mk, 0.01, parent=H))
+        for sx in (-1, 1):
+            obs.append(box(n + "_m%d" % sx, (0.12, 0.04, 0.035), (sx * 0.115, -0.635, -0.215), Mk, 0.01, rot=(0, sx * -32, 0), parent=H))
+    elif expr in ("o", "scared"):
+        obs.append(sphere(n + "_o", 0.08 if expr == "o" else 0.065, (0, -0.62, -0.22), Mk, (1, 0.3, 1.35), parent=H, seg=10))
+    elif expr == "angry":
+        for k in range(4):
+            obs.append(box(n + "_z%d" % k, (0.09, 0.04, 0.03), (-0.135 + k * 0.09, -0.635, -0.22), Mk, 0.0, rot=(0, 38 if k % 2 else -38, 0), parent=H))
+    elif expr == "sad":
+        obs.append(box(n + "_m0", (0.13, 0.04, 0.035), (0, -0.635, -0.2), Mk, 0.01, parent=H))
+        for sx in (-1, 1):
+            obs.append(box(n + "_m%d" % sx, (0.11, 0.04, 0.035), (sx * 0.11, -0.635, -0.235), Mk, 0.01, rot=(0, sx * 32, 0), parent=H))
+    if expr in ("angry", "scared", "sad"):
+        tilt = {"angry": -26, "scared": 24, "sad": 18}[expr]
+        for sx in (-1, 1):
+            obs.append(box(n + "_b%d" % sx, (0.2, 0.04, 0.045), (sx * 0.21, -0.64, 0.29 if expr == "angry" else 0.32), Mk, 0.01, rot=(0, sx * tilt, 0), parent=H))
+    return obs
+
+
+def zp_dotface(ch, seq, talk=None):
+    """seq: [(t, expr)] (expr in ZP_FACES); talk: (t0, t1) -> the mouth goes "o" on each spoken word in it"""
+    Mk = zw_m("dotface", "#111114", 0.6)
+    exprs = sorted(set([e for _, e in seq] + (["o", "neutral"] if talk else [])))
+    # a new face replaces the character's earlier dot face (never two mouths)
+    for obs in (ch.zp_faces.values() if hasattr(ch, "zp_faces") else []):
+        for o in obs:
+            D.objects.remove(o, do_unlink=True)
+    sets = {e: zp_face_set(ch, e, None, Mk) for e in exprs if e in ZP_FACES}
+    ch.zp_faces = sets
+    keys = sorted(seq)
+    if talk:
+        base = dict(keys)
+        for w in V.span(talk[0], talk[1]):
+            s, e = w.get("start", 0.0), w.get("end", 0.0)
+            cur = [x for t, x in keys if t <= s]
+            now = cur[-1] if cur else keys[0][1]
+            keys.append((s, "o"))
+            keys.append((s + max(0.08, (e - s) * 0.55), now if now != "o" else "neutral"))
+        keys = sorted(keys)
+    for t, e in [(-10.0, keys[0][1])] + keys:
+        f = max(-300, F(t))
+        for ex, obs in sets.items():
+            for o in obs:
+                o.hide_render = ex != e
+                o.keyframe_insert("hide_render", frame=f)
+    return sets
+
+
+# ---------------------------------------------------------------- MATCH A REFERENCE FRAME BY MEASURING
+ZR_ELEV = {"eye": 2.0, "low": -14.0, "high": 32.0, "top": 68.0}
+
+
+def zr_vpts(obs, cap=600):
+    """the world positions of the VERTICES these objects render (children included, render-hidden ones skipped): the
+    exact outline on the frame (replica c2: bounding boxes counted the empty space around spiky hair, heads came out
+    about 20 % small)"""
+    out = []
+    for ob in obs:
+        for m in [ob] + list(ob.children_recursive):
+            if m.type != "MESH" or m.hide_render:
+                continue
+            vs = m.data.vertices
+            step = max(1, len(vs) // cap)
+            mw = m.matrix_world
+            for i in range(0, len(vs), step):
+                out.append(mw @ vs[i].co)
+    return out
+
+
+ZR_TRACE = True   # replica round 2: print every correction step (ZW_FRAMED|card|step ...)
+
+
+def zr_match(cam, t0, t1, subj, frac, u=0.5, v=0.5, angle="eye", side=0.0, lens=30, part="body", push=0.03, card=0, zmin=0.8, maxd=None, minlens=10.0):
+    """the camera that puts `subj` at frac of the frame height with its box centre at (u, v) (v from the top), seen from
+    `angle` (eye / low / high / top) and turned `side` degrees from its front: placed by the lens's view, then MEASURED
+    on the frame (zw_span) and corrected until it fits (8 steps); the measurement is printed for the comparison:
+    ZW_FRAMED|<card>|meas|h u v|target h u v
+    zmin: the camera never goes below this height (replica c0: "low" from far away = under the ground); maxd: the
+    farthest it may go (a room's depth): past it the LENS widens instead (down to minlens)"""
+    sc = bpy.context.scene
+    sc.frame_set(F(t0))
+    if hasattr(subj, "root"):
+        obs = [subj.head] if part == "head" else ([subj.head, subj.torso] + [o for o in subj.root.children_recursive if o.name.endswith("_armL") or o.name.endswith("_armR")] if part == "upper" else [subj.root])
+        pts = zr_vpts(obs)
+        f = zw_front([subj])
+    else:
+        pts = zr_vpts([subj])
+        f = subj.matrix_world.to_3x3() @ Vector((0, -1, 0))
+        f.z = 0
+        f = f.normalized() if f.length > 1e-3 else Vector((0, -1, 0))
+    if not pts:
+        return None
+    a = math.radians(side)
+    f = Vector((f.x * math.cos(a) - f.y * math.sin(a), f.x * math.sin(a) + f.y * math.cos(a), 0)).normalized()
+    lo = Vector((min(p.x for p in pts), min(p.y for p in pts), min(p.z for p in pts)))
+    hi = Vector((max(p.x for p in pts), max(p.y for p in pts), max(p.z for p in pts)))
+    c, h = (lo + hi) / 2, max(0.2, hi.z - lo.z)
+    tv = 12.0 / lens
+    th = tv * 9.0 / 16.0
+    el = math.radians(ZR_ELEV.get(angle, 2.0))
+    d = h / (max(0.02, frac) * 2 * tv)
+    if maxd and d > maxd:
+        lens = max(minlens, lens * maxd / d)
+        d = maxd
+        tv = 12.0 / lens
+        th = tv * 9.0 / 16.0
+    aim = c.copy()
+    got = None
+
+    def measure():
+        # frame_set to the frame we are already on does NOT re-apply the new keys (replica c0: a stale camera, every
+        # subject measured tiny, the distance halved 8 times = giant heads): step off the frame and back
+        sc.frame_set(F(t0) - 1)
+        sc.frame_set(F(t0))
+        return zw_span(cam.ob, pts)
+
+    for it in range(10):
+        loc = c + f * (d * math.cos(el)) + Vector((0, 0, d * math.sin(el)))
+        if loc.z < zmin:
+            loc.z = zmin
+        cam.key(t0, tuple(loc), tuple(aim), lens=lens)
+        cam.key(t1, tuple(loc + (aim - loc) * push), tuple(aim), lens=lens)
+        sp = measure()
+        if sp is None:
+            d *= 1.25
+            continue
+        u0, u1, v0, v1 = sp
+        mh, mu, mv = v1 - v0, (u0 + u1) / 2, (v0 + v1) / 2
+        got = (mh, mu, mv)
+        if ZR_TRACE:
+            print("ZW_FRAMED|%d|step %d|d %.2f lens %.1f h %.2f box %.2f|loc %.1f %.1f %.1f|cam %.1f %.1f %.1f|meas %.3f %.3f %.3f" % (card, it, d, lens, h, len(pts), loc.x, loc.y, loc.z, cam.ob.matrix_world.translation.x, cam.ob.matrix_world.translation.y, cam.ob.matrix_world.translation.z, mh, mu, mv))
+        if abs(mh - frac) < 0.015 and abs(mu - u) < 0.015 and abs(mv - v) < 0.015:
+            break
+        nd = d * max(0.5, min(2.0, mh / max(0.02, frac)))
+        if maxd and nd > maxd:
+            lens = max(minlens, lens * maxd / nd)
+            nd = maxd
+            tv = 12.0 / lens
+            th = tv * 9.0 / 16.0
+        d = nd
+        R3 = cam.ob.matrix_world.to_3x3()
+        right, upv = R3 @ Vector((1, 0, 0)), R3 @ Vector((0, 1, 0))
+        aim = aim + (right * ((mu - u) * 2 * th * d) - upv * ((mv - v) * 2 * tv * d)) * 0.7   # damped (close + wide swung back and forth)
+    sp = measure()   # what the frame really shows with the last keys
+    if sp:
+        got = (sp[3] - sp[2], (sp[0] + sp[1]) / 2, (sp[2] + sp[3]) / 2)
+    if got:
+        print("ZW_FRAMED|%d|meas|%.3f %.3f %.3f|target %.3f %.3f %.3f" % (card, got[0], got[1], got[2], frac, u, v))
+    return loc, aim
 # ===== END OF PIECES + SHOT RECIPES =================================================================================

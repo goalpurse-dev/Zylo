@@ -64,7 +64,12 @@ if (has("stills")) {
   const map = {};
   for (const f of fs.existsSync(path.join(out, "preview")) ? fs.readdirSync(path.join(out, "preview")) : []) { const m = f.match(/^shot_(\d+)\.png$/); if (m) { const s = stills[Number(m[1]) - 1]; map[`${s.x.k}.${s.which}`] = path.join(out, "preview", f); } }
   const failed = Object.fromEntries(Object.entries(r.output.failed ?? {}).map(([k, v]) => [`${stills[Number(k) - 1].x.k}.${stills[Number(k) - 1].which}`, String(v).split("\n").filter(Boolean).slice(-2).join(" ").slice(0, 300)]));
-  fs.writeFileSync(path.join(out, "stills.json"), JSON.stringify({ map, failed }, null, 1));
+  // the measured frames (zr_match prints ZW_FRAMED|card|meas|h u v|target h u v; the worker returns them as output.gate)
+  const meas = (r.output.gate ?? []).filter((l) => l.includes("|meas|")).map((l) => { const [, card, , m, t] = l.split("|"); const [h, u, v] = m.split(" ").map(Number), [th, tu, tv] = t.replace("target ", "").split(" ").map(Number); return { card: Number(card), h, u, v, th, tu, tv, off: +Math.max(Math.abs(h - th) / th, Math.abs(u - tu) / 0.5, Math.abs(v - tv) / 0.5).toFixed(3) }; });
+  fs.writeFileSync(path.join(out, "stills.json"), JSON.stringify({ map, failed, meas }, null, 1));
+  fs.writeFileSync(path.join(out, "gate.txt"), (r.output.gate ?? []).join("\n"));
+  const bad = meas.filter((m) => m.off > 0.1);
+  if (meas.length) say(`measured ${meas.length} framings: ${bad.length} off by more than 10%${bad.length ? `: ${[...new Set(bad.map((m) => m.card))].join(", ")}` : ""}`);
   say(`stills ${TAG}: ${Object.keys(map).length}/${N} rendered, ${Object.keys(failed).length} crashed${Object.keys(failed).length ? `: ${Object.entries(failed).slice(0, 4).map(([k, v]) => `${k} ${v}`).join(" | ")}` : ""}; spent $${L.total()} of $3`);
 }
 
@@ -90,7 +95,9 @@ if (has("compare")) {
     if (!fs.existsSync(f)) execFileSync("ffmpeg", ["-v", "error", "-y", "-ss", String(t), "-i", path.join(DIR, "reference.mp4"), "-frames:v", "1", "-vf", "scale=270:480", f]);
   }
   const stills = {};
-  for (const d of fs.readdirSync(DIR).filter((d) => d.startsWith("stills_")).sort()) {
+  // newest round last (by when its stills.json was written; NOT by name: "r2" sorted after "c0" and hid the new stills)
+  const mt = (d) => { try { return fs.statSync(path.join(DIR, d, "stills.json")).mtimeMs; } catch { return 0; } };
+  for (const d of fs.readdirSync(DIR).filter((d) => d.startsWith("stills_")).sort((a, b) => mt(a) - mt(b))) {
     const sj = path.join(DIR, d, "stills.json");
     if (fs.existsSync(sj)) Object.assign(stills, JSON.parse(fs.readFileSync(sj, "utf8")).map);   // later rounds replace earlier
   }

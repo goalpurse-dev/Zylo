@@ -42,7 +42,9 @@ export const ROBLOX_STORY = Object.freeze({
   voiceId: "NUklOYr6pNs1RxzJVQB5",
   voiceName: "roblox-story",
   model: "eleven_multilingual_v2",
-  settings: Object.freeze({ stability: 0.5, similarity_boost: 0.8, style: 0, use_speaker_boost: true, speed: 1.0 }),
+  // owner 2026-11-22 (replica round 2): more expressive (stability 0.35, style 0.3) and faster. The pick was 1.25x;
+  // ElevenLabs allows speed 0.7-1.2, so the API call asks for its top 1.2 (not deployed yet)
+  settings: Object.freeze({ stability: 0.35, similarity_boost: 0.8, style: 0.3, use_speaker_boost: true, speed: 1.2 }),
   outputFormat: "mp3_44100_128",
 });
 export const NARRATOR = ROBLOX_STORY;
