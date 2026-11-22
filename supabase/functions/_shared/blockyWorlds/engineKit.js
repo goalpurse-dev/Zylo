@@ -16,6 +16,11 @@ export const ACTIONS = Object.freeze({
   shrug: "shrug", facepalm: "hand on face", think: "hand on chin, thinking", hands_head: "hands on head (oh no)",
   talk: "talk (lips move on the line)", laugh: "laugh out loud", cry: "cry", scream: "scream", hide: "hide behind something",
   follow: "follow someone", climb_out: "(monster) climb out of a drain / a hole / the ground", roar: "(monster) roar",
+  // round 4: the motion library (worlds/motion.py)
+  turn: "turn around (the head first)", look_around: "look around", stand_up: "stand up from sitting", lie_down: "lie down",
+  read: "read a book", phone: "look at a phone", kick: "kick a ball", catch: "catch a ball", nod: "nod yes", shake_head: "shake the head no",
+  pick_up: "pick a thing up", carry: "carry a thing somewhere", open_door: "open a door", close_door: "close a door", peek: "hide behind something and peek out",
+  shiver: "shake with fear",
 });
 /** the things the engine can build and animate (worlds/acts.py zw_thing kinds) */
 export const THINGS = Object.freeze(["flower", "daisy", "tulip", "sunflower", "vine", "thorn_vine", "tree_small", "lamp_bulb", "light_bulb",

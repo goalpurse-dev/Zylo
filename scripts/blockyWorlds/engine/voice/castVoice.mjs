@@ -12,7 +12,7 @@ import { VOICE_TYPES, voiceParts, spokenText } from "../../../../supabase/functi
 import { keepRanges, remap, tempoFor } from "./eleven.mjs";
 
 const FF = process.env.FFMPEG ?? "ffmpeg";
-const GAP_S = 0.12;
+const GAP_S = 0.15;   // round 4: about 0.15 s between the parts (the lines)
 const dur = (f) => Number(execFileSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", f]).toString());
 
 /** the narrator config of a part */
@@ -24,7 +24,7 @@ export function voiceOf(who, voices = {}) {
 }
 
 /** one part: a take (cached), trimmed + sped up -> { wav, words (local times), costUsd } */
-export async function partTake({ text, narrator, dir, apiKey }) {
+export async function partTake({ text, narrator, dir, apiKey, pace = null }) {
   fs.mkdirSync(dir, { recursive: true });
   const mp3 = path.join(dir, "take.mp3"), tj = path.join(dir, "take.json");
   let take = fs.existsSync(tj) && fs.existsSync(mp3) ? JSON.parse(fs.readFileSync(tj, "utf8")) : null;
@@ -38,23 +38,23 @@ export async function partTake({ text, narrator, dir, apiKey }) {
     costUsd = take.costUsd;
   }
   const ranges = keepRanges(take.spoken, dur(mp3));
-  const tempo = tempoFor(narrator);
+  const tempo = tempoFor(pace ? { ...narrator, pace } : narrator);
   const parts = ranges.map(([a, b], i) => `[s${i}]atrim=${a.toFixed(3)}:${b.toFixed(3)},asetpts=PTS-STARTPTS[p${i}]`);
   const graph = `[0:a]asplit=${ranges.length}${ranges.map((_, i) => `[s${i}]`).join("")};${parts.join(";")};${ranges.map((_, i) => `[p${i}]`).join("")}concat=n=${ranges.length}:v=0:a=1${tempo !== 1 ? `[c];[c]atempo=${tempo}` : ""}[out]`;
   const gf = path.join(dir, "trim.graph"); fs.writeFileSync(gf, graph);
-  const wav = path.join(dir, "part.wav");
+  const wav = path.join(dir, `part_${tempo}.wav`);
   execFileSync(FF, ["-v", "error", "-y", "-i", mp3, "-/filter_complex", gf, "-map", "[out]", "-ac", "1", "-ar", "44100", "-c:a", "pcm_s16le", wav]);
   const words = take.spoken.map((w) => ({ word: w.w, start: +(remap(w.s, ranges) / tempo).toFixed(3), end: +(remap(w.e, ranges) / tempo).toFixed(3) }));
   return { wav, words, costUsd, seconds: dur(wav), tempo };
 }
 
-export async function castVoice({ script, voices = {}, outDir, apiKey, log = () => {} }) {
+export async function castVoice({ script, voices = {}, outDir, apiKey, pace = null, log = () => {} }) {
   const parts = voiceParts(script);
   let costUsd = 0, t = 0;
   const words = [], wavs = [];
   for (const [i, p] of parts.entries()) {
     const narrator = voiceOf(p.who, voices);
-    const r = await partTake({ text: spokenText(p.text), narrator, dir: path.join(outDir, "parts", String(i).padStart(2, "0")), apiKey });
+    const r = await partTake({ text: spokenText(p.text), narrator, dir: path.join(outDir, "parts", String(i).padStart(2, "0")), apiKey, pace });
     costUsd += r.costUsd;
     for (const w of r.words) words.push({ word: w.word, start: +(t + w.start).toFixed(3), end: +(t + w.end).toFixed(3), who: p.who });
     wavs.push(r.wav);

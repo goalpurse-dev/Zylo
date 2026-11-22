@@ -105,7 +105,7 @@ const MOVE_ACTIONS = new Set(["walk", "run_away", "follow", "hide", "hug"]);
  * appear / grow / shrink / get grabbed / thrown / fall from the sky on their words; the camera goes from the start
  * framing to the end framing (zw_scene_cam).
  */
-export function compileScene(card, { plan, scene, speaker = null, world = null, indoor = false } = {}) {
+export function compileScene(card, { plan, scene, speaker = null, world = null, indoor = false, establish = null, cut = false } = {}) {
   const L = [];
   const S = card.start, E = card.end, place = S.place;
   const sdur = Math.max(0.4, scene.end - scene.start);
@@ -157,7 +157,8 @@ export function compileScene(card, { plan, scene, speaker = null, world = null, 
   kinds.forEach((kind, k) => {
     const a = pa(S, kind), b = pa(E, kind);
     const size = (plan.props ?? []).find((x) => x.kind === kind)?.size ?? 1.2;
-    const sz = `max(${size}, ZW_THING_SIZE.get(${py(kind)}, ${size}))`;
+    const named = new RegExp(`\\b${kind.replace("_", " ")}s?\\b`, "i").test(scene.words ?? "");
+    const sz = `max(${size}, ZW_THING_SIZE.get(${py(kind)}, ${size}))${named ? " * 2.2" : ""}`;
     if ((a?.state ?? b?.state) === "falling") { L.push(`zw_rain(${py(kind)}, t0, t1, area=((st_c.x - 8, st_c.x + 8), (st_c.y - 4, st_c.y + 10)), n=${Math.min(50, Math.max(12, (a ?? b).count || 30))})`); return; }
     const id = ident(kind, 100 + k); tv[kind] = id;
     const mark = (a && a.state !== "hidden" ? a.mark : b?.mark) ?? "center";
@@ -190,16 +191,35 @@ export function compileScene(card, { plan, scene, speaker = null, world = null, 
       case "run_away": moved.add(id); L.push(endPos ? `${id}.run(${ta}, t1, tuple(za_here(${id}, ${ta})), ${endPos})` : `zw_run_away(${id}, ${ta}, t1, ${T ?? (v.monster ?? "st_c")}, dist=9.0)`); break;
       // a THING to follow (round 3 test: "the monster follows the shoe" crashed: zw_follow takes a character) = walk to it
       case "follow": moved.add(id); if (T && T !== id) L.push(Object.values(tv).includes(T) ? `zw_walk_to(${id}, ${ta}, t1, (${T}.location.x, ${T}.location.y, 0.0))` : `zw_follow(${id}, ${T}, ${ta}, t1)`); break;
-      case "hug": moved.add(id); if (T && T !== id) L.push(`zw_hug(${id}, ${T}, ${ta}, t1)`); break;
-      case "fall": L.push(`zw_fall(${id}, ${ta})`); break;
+      case "hug": moved.add(id); if (T && T !== id) L.push(`zm_hug(${id}, ${T}, ${ta}, t1)`); break;
+      case "fall": L.push(`zm_fall(${id}, ${ta})`); break;
       case "sit": L.push(`zw_sit(${id}, ${ta}, seat=${T && tv[String(m.target).toLowerCase()] ? T : "None"})`); break;
       case "point": L.push(`zw_point(${id}, ${ta}, ${T ?? "None"})`); break;
       case "reach": L.push(`zw_reach(${id}, ${ta}, ${T ?? "None"})`); break;
       case "stomp": L.push(`zw_stomp(${id}, ${ta})`); break;
       case "grab": if (T && tv[String(m.target).toLowerCase()]) L.push(`zw_grab(${id}, ${ta}, ${T})`); break;
       case "throw": { const k = String(m.target).toLowerCase(); const thing = tv[k] ?? Object.values(tv)[0]; const land = pa(E, k) ? `zw_mark(${py(place)}, ${py(pa(E, k).mark)})` : "(st_c.x + st_d.x * 4, st_c.y + st_d.y * 4, 0.0)"; if (thing) L.push(`zw_throw(${id}, ${ta}, t1, ${thing}, ${land})`); break; }
-      case "jump": L.push(`${id}.jump(${ta})`); break;
-      case "climb_out": if (id === "mon") { moved.add(id); L.push(`zw_climb_out(mon, ${ta}, min(t1, ${ta} + 0.8 * dur), hole=${b ? `zw_mark(${py(place)}, ${py(b.mark)})` : "(mon.root.location.x, mon.root.location.y)"})`); } break;
+      case "jump": L.push(`zm_jump(${id}, ${ta})`); break;
+      case "turn": L.push(`zm_turn(${id}, ${ta}, ${T ? `za_yaw(za_here(${id}, ${ta}), za_pos(${T}))` : "zm_yaw_at(" + id + ", " + ta + ") + 180.0"})`); break;
+      case "look_around": L.push(`zm_look_around(${id}, ${ta}, t1)`); break;
+      case "stand_up": L.push(`zm_stand_up(${id}, ${ta})`); break;
+      case "lie_down": L.push(`zm_lie(${id}, ${ta})`); break;
+      case "read": L.push(`zm_read(${id}, ${ta}, t1${tv.book ? `, ${tv.book}` : ""})`); break;
+      case "phone": L.push(`zm_phone(${id}, ${ta}, t1${tv.phone ? `, ${tv.phone}` : ""})`); break;
+      case "kick": L.push(`zm_kick(${id}, ${ta}, ${tv.ball ?? T ?? "zm_ball()"}, ${b ? `zw_mark(${py(place)}, ${py(b.mark)})` : "(st_c.x + st_d.x * 6, st_c.y + st_d.y * 6, 0.45)"})`); break;
+      case "catch": L.push(`zm_catch(${id}, ${ta})`); break;
+      case "talk": L.push(`zm_talk(${id}, ${ta}, t1)`); break;
+      case "nod": L.push(`zm_nod(${id}, ${ta})`); break;
+      case "shake_head": L.push(`zm_shake_head(${id}, ${ta})`); break;
+      case "pick_up": if (T && tv[String(m.target).toLowerCase()]) L.push(`zm_pick_up(${id}, ${ta}, ${T})`); break;
+      case "carry": moved.add(id); if (T && tv[String(m.target).toLowerCase()]) L.push(`zm_carry(${id}, ${ta}, t1, ${endPos ?? "st_c"}, ${T})`); break;
+      case "open_door": case "close_door": L.push(`zm_door(${id}, ${ta}, None)`); break;
+      case "peek": moved.add(id); L.push(`zm_hide_peek(${id}, ${ta}, t1, ${T ?? "(st_c.x + st_r.x * 3, st_c.y + st_r.y * 3, 0.0)"})`); break;
+      case "shiver": L.push(`zm_shiver(${id}, ${ta}, t1)`); break;
+      case "cry": L.push(`zm_cry(${id}, ${ta}, t1)`); break;
+      case "cheer": L.push(`zm_cheer(${id}, ${ta})`); break;
+      case "wave": L.push(`zm_wave(${id}, ${ta}, t1)`); break;
+      case "climb_out": if (id === "mon") { moved.add(id); L.push(`zw_climb_out(mon, ${ta} - 0.45 * dur, min(t1, ${ta} + 0.6 * dur), hole=${b ? `zw_mark(${py(place)}, ${py(b.mark)})` : "(mon.root.location.x, mon.root.location.y)"})`); } break;
       case "roar": L.push(`${id}.act(${ta}, "fists")`); break;
       case "scream": L.push(`${id}.act(${ta}, "hands_head")`); break;
       case "laugh": L.push(`${id}.act(${ta}, "cheer")`); break;
@@ -244,10 +264,15 @@ export function compileScene(card, { plan, scene, speaker = null, world = null, 
     const x = vis(f);
     let people = x.p;
     if (f.camera.type === "close") { const sp = speaker && v[String(speaker).toLowerCase()]; people = sp && people.includes(sp) ? [sp] : people.filter((p) => p !== "mon").slice(0, 1); }
-    return `(${py(f.camera.type)}, [${people.join(", ")}], [${f.camera.type === "close" ? "" : x.t.join(", ")}], ${py(f.camera.side ?? "front")})`;
+    // a cut between two equal framings would be a jump: the second half from another side
+    const same = cut && f === E && S.camera.type === E.camera.type && (S.camera.side ?? "front") === (E.camera.side ?? "front");
+    const side = same ? ((S.camera.side ?? "front") === "front" ? "left" : "front") : (f.camera.side ?? "front");
+    return `(${py(f.camera.type)}, [${people.join(", ")}], [${f.camera.type === "close" ? "" : x.t.join(", ")}], ${py(side)})`;
   };
   const any = vis(S).p.length + vis(S).t.length + vis(E).p.length + vis(E).t.length;
-  L.push(any ? `zw_scene_cam(cam, t0, t1, ${camSpec(S)}, ${camSpec(E)})` : `zw_spot(cam, ${py(place)}, "wide", t0, t1)`);
+  const walker = (card.motion ?? []).find((m) => ["walk", "run_away", "carry"].includes(m.action) && v[String(m.who).toLowerCase()] && v[String(m.who).toLowerCase()] !== "mon");
+  if (establish) L.push(`zw_establish(cam, t0, t1, ${py(place)}, ${py(establish)}, follow=${establish === "follow" && walker ? v[String(walker.who).toLowerCase()] : "None"})`);
+  else L.push(any ? `zw_scene_cam(cam, t0, t1, ${camSpec(S)}, ${camSpec(E)}${cut ? ", cut=True" : ""})` : `zw_spot(cam, ${py(place)}, "wide", t0, t1)`);
   return L.join("\n");
 }
 

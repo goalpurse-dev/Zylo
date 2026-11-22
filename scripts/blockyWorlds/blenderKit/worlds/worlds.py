@@ -524,8 +524,9 @@ def zw_person_src(mode, j, t0, t1):
         ch.blink(t0, t1)
         if mode in ZW_MOVERS:
             fast = mode in ("hurry", "run")
-            ch.walk(t0, t1, (0, 0, 0), (0, -0.001, 0), face_dir=False, start_phase=j, swing=58 if mode == "run" else (48 if fast else 38),
-                    arm=50 if fast else 34, bob=0.2 if fast else 0.16, rate=4.2 if mode == "run" else (3.6 if fast else 2.4))
+            sw = 40.0 if mode == "run" else (32.0 if fast else 24.0)
+            rt = max(0.6, min(2.3, ZW_MOVERS[mode] / (4.0 * 2.0 * math.sin(math.radians(sw)))))   # round 4: no sliding feet
+            ch.walk(t0, t1, (0, 0, 0), (0, -0.001, 0), face_dir=False, start_phase=j, swing=sw, arm=sw * 1.15, bob=0.18 if fast else 0.1, rate=rt)
             ch.pose(t0, torso=(0, 12 if fast else 5, 0), head=((-1) ** j * 12, -4, 0))
             if mode == "bag":   # a shopping bag in the right hand
                 box("zw_bag_%s" % nm, (0.7, 0.45, 0.9), (0.0, 0.0, -2.0), zw_m("bag%d" % (j % 3), ["#c98a4e", "#e8e2d4", "#d8352a"][j % 3], 0.8), 0.04, parent=ch.shR, coll=src)
@@ -2304,8 +2305,8 @@ def zw_monster_cam(cam, m, t0, t1, view="full", yaw=14.0, push=0.05):
         safe = {"l": 0.07, "r": 0.93, "t": 0.05, "b": 0.95}
         box = zw_pts([m.root])
         mid_z = (min(p.z for p in box) + max(p.z for p in box)) / 2
-        return zw_fit(cam, box, zw_front([m]), t0, t1, 22, safe, frac=None, cam_dz=1.2 - mid_z, yaws=yaws, push=push, skip=skip, tag="monster_reveal")
-    return zw_fit(cam, zw_pts([m.root]), zw_front([m]), t0, t1, 26, safe, frac=None, cam_dz=-(2.6 * s) + 2.2, yaws=yaws, push=push, skip=skip, tag="monster_full")
+        return zw_fit(cam, box, zw_front([m]), t0, t1, 22, safe, frac=0.62, cam_dz=1.2 - mid_z, yaws=yaws, push=push, skip=skip, tag="monster_reveal")
+    return zw_fit(cam, zw_pts([m.root]), zw_front([m]), t0, t1, 26, safe, frac=0.6, cam_dz=-(2.6 * s) + 2.2, yaws=yaws, push=push, skip=skip, tag="monster_full")
 
 
 def zw_flee(m, t0, t1, n=3, seed=5):
@@ -2508,13 +2509,13 @@ def zw_shot(cam, kind, t0, t1, people=(), things=(), yaw=14.0, move="push"):
     return r
 
 
-def zw_scene_cam(cam, t0, t1, a, b, yaw=14.0):
+def zw_scene_cam(cam, t0, t1, a, b, yaw=14.0, cut=False):
     """ROUND 2 SCENE CARDS: the camera of the START frame and of the END frame, each measured on that frame's own people and
     things (a = (kind, people, things, side) at t0, b = the same at t1); the camera moves between them over the scene.
     side: front / left / right / behind -> the yaw the solver starts from."""
     def one(spec, ta, tb):
         kind, people, things, side = spec
-        y = {"left": -40.0, "right": 40.0, "behind": 160.0}.get(side, yaw)
+        y = {"left": -40.0, "right": 40.0, "behind": 120.0}.get(side, yaw)
         ZW_LASTFIT.clear()
         if people or things:
             zw_shot(cam, kind, ta, tb, people=people, things=things, yaw=y, move="still")
@@ -2529,10 +2530,72 @@ def zw_scene_cam(cam, t0, t1, a, b, yaw=14.0):
         return zw_spot(cam, ZW_T.get("_place", "downtown_street"), "wide", t0, t1)
     if la is None:
         la, aa, na = lb, ab, nb
+    if cut and lb is not None and (t1 - t0) > 1.2:
+        # round 4 (owner: a cut about every 1.2 s): the start framing (a small push) to halfway, a hard CUT, the end framing
+        tm = (t0 + t1) / 2.0
+        cam.key(t0, tuple(la), tuple(aa), lens=na)
+        cam.key(tm - 1.0 / 30.0, tuple(Vector(la) + (Vector(aa) - Vector(la)) * 0.04), tuple(aa), lens=na, interp="CONSTANT")
+        cam.key(tm, tuple(lb), tuple(ab), lens=nb)
+        cam.key(t1, tuple(Vector(lb) + (Vector(ab) - Vector(lb)) * 0.04), tuple(ab), lens=nb)
+        return la, aa
     cam.key(t0, tuple(la), tuple(aa), lens=na)
     if lb is not None:
         cam.key(t1, tuple(lb), tuple(ab), lens=nb)
     return la, aa
+
+
+# ---------------------------------------------------------------- SHOW THE TOWN (owner 2026-11-22, round 4)
+# The first shot of every place MOVES through the set: STREET GLIDE (down the street past houses, people and cars, at
+# eye level), LOW DRONE (low over the street, looking down a little), FOLLOW WALK (behind a character walking along the
+# street). Never one house. Paths per place: a = start, b = end; la / lb = where the lens looks.
+ZW_GLIDE = {
+    "suburb_street": dict(a=(-40, -2.2, 4.4), b=(-12, -0.8, 4.0), la=(-14, 13, 3.6), lb=(3, 9, 3.4)),
+    "suburb_porch": dict(a=(-34, -2.2, 4.4), b=(-8, 1.0, 4.0), la=(-10, 14, 3.6), lb=(0, 16, 3.6)),
+    "downtown_street": dict(a=(3.5, -14, 4.6), b=(2.5, 16, 4.2), la=(-2, 26, 5.5), lb=(7, 38, 4.4)),
+    "downtown_plaza": dict(a=(-16, -64, 5.0), b=(-7, -38, 4.2), la=(-4, -40, 4.0), lb=(0, -18, 3.4)),
+    "downtown_landmark": dict(a=(3, 96, 5.0), b=(1.5, 126, 4.4), la=(0, 130, 8), lb=(0, 160, 10)),
+    "brick_street": dict(a=(3.5, -14, 4.6), b=(3.0, 16, 4.2), la=(-2, 22, 5), lb=(6, 38, 4.4)),
+    "brick_alley": dict(a=(3, 46, 4.4), b=(-6, 62, 4.0), la=(-8, 66, 3.6), lb=(-18, 74, 3.2)),
+}
+
+
+def zw_establish(cam, t0, t1, place, style="glide", follow=None):
+    """the place's MOVING establishing shot: glide / drone / follow (a character walking); indoors: a slow move through
+    the room from its tested wide spot"""
+    g = ZW_GLIDE.get(place)
+    if follow is not None and g is not None:
+        style = "follow"
+    if g is None:
+        loc, tgt, ln = ZW_SPOTS.get(place, ZW_SPOTS["downtown_street"])["wide"]
+        lv, tv = Vector(loc), Vector(tgt)
+        side = Vector(((tv - lv).y, -(tv - lv).x, 0)).normalized() if (tv - lv).length > 1e-3 else Vector((1, 0, 0))
+        cam.key(t0, tuple(lv - side * 1.6), tuple(tv), lens=ln)
+        cam.key(t1, tuple(lv + (tv - lv) * 0.16 + side * 1.2), tuple(tv), lens=ln)
+        ZW_FRAMED["establish"] = "room move"
+        return lv, tv
+    a, b, la, lb = Vector(g["a"]), Vector(g["b"]), Vector(g["la"]), Vector(g["lb"])
+    if style == "follow" and follow is not None:
+        # behind the walker, a little to the side, the street ahead of them in frame
+        p0, p1 = za_here(follow, t0), za_here(follow, t1)
+        d = p1 - p0
+        d.z = 0
+        d = d.normalized() if d.length > 0.3 else (lb - la).normalized()
+        sd = Vector((d.y, -d.x, 0))
+        for t, p in ((t0, p0), ((t0 + t1) / 2.0, za_here(follow, (t0 + t1) / 2.0)), (t1, p1)):
+            c = Vector((p.x, p.y, 0)) - d * 7.5 + sd * 2.2 + Vector((0, 0, 4.2))
+            cam.key(t, tuple(c), tuple(Vector((p.x, p.y, 2.8)) + d * 6.0), lens=26)
+        ZW_FRAMED["establish"] = "follow walk"
+        return a, la
+    if style == "drone":
+        a2, b2 = a + Vector((0, 0, 9.0)), b + Vector((0, 0, 6.5))
+        cam.key(t0, tuple(a2), tuple(la - Vector((0, 0, 2.5))), lens=24)
+        cam.key(t1, tuple(b2), tuple(lb - Vector((0, 0, 1.5))), lens=24)
+        ZW_FRAMED["establish"] = "low drone"
+        return a2, la
+    cam.key(t0, tuple(a), tuple(la), lens=24)
+    cam.key(t1, tuple(b), tuple(lb), lens=24)
+    ZW_FRAMED["establish"] = "street glide"
+    return a, la
 
 
 
@@ -2924,6 +2987,20 @@ except NameError:
     pass
 
 
+ZW_PREVIEW = {"pct": 0, "samples": 0}   # round 4: a cheap preview video (the shots file sets these: resolution %, samples)
+
+
+def zw_preview_res():
+    sc = bpy.context.scene
+    if ZW_PREVIEW.get("pct"):
+        sc.render.resolution_percentage = int(ZW_PREVIEW["pct"])
+    if ZW_PREVIEW.get("samples"):
+        try:
+            sc.eevee.taa_render_samples = int(ZW_PREVIEW["samples"])
+        except Exception:
+            pass
+
+
 def zw_guarded_build(i, *a, **k):
     ZW_T.clear()
     ZW_MON.clear()
@@ -2947,7 +3024,7 @@ def zw_guarded_build(i, *a, **k):
         print("zw_clear_view skipped: %s" % e)
     # round 1 (owner 2026-11-21): the colour mode, the night light on the cast, the monsters' rim, the framing gate.
     # Best effort like the camera rules: a failure here never fails a shot (the gate only reports)
-    for step in (zw_look_apply, lambda: zw_auto_faces(S), lambda: zw_night_cast_light(S["t0"], S["t1"]), lambda: zw_monster_rim(S["t0"], S["t1"]), lambda: zw_gate(S)):
+    for step in (zw_look_apply, lambda: zw_auto_faces(S), lambda: zm_alive_all(S), lambda: zw_night_cast_light(S["t0"], S["t1"]), lambda: zw_monster_rim(S["t0"], S["t1"]), zw_preview_res, lambda: zw_gate(S)):
         try:
             step()
         except Exception as e:

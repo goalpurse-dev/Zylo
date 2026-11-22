@@ -105,7 +105,7 @@ export function worldText(world, { indoor = false } = {}) {
   if (!indoor) {
     const who = (world.outside ?? []).filter(Boolean);
     parts.push(world.busy === "empty" ? `background: EMPTY (no strangers at all; the story's own characters ${who.length ? `(${who.join(", ")}, "Me" = the narrator)` : ""} may be there)` : `background people: ${world.busy}, ${world.walkers}${world.extras?.length ? ` (${world.extras.join(", ").replace(/_/g, " ")})` : ""}`);
-    parts.push({ driving: "cars driving", parked: "cars PARKED ONLY (no car may be driving)", leaving: "cars driving AWAY", none: "NO cars" }[world.cars] ?? "");
+    parts.push({ driving: "cars driving", parked: "cars PARKED ONLY (cars standing still at the kerb with their lights off are FINE; none may be driving)", leaving: "cars driving AWAY", none: "NO cars" }[world.cars] ?? "");
     if (world.threat === "react") parts.push("the background people RUN away / hide");
   }
   if (world.time !== "day") parts.push(`windows ${String(world.windows).toUpperCase()}`);

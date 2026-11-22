@@ -16,7 +16,7 @@ const FF = process.env.FFMPEG ?? "ffmpeg";
 // THE VIRAL PACE (2026-11-12): every silence over MAX_GAP is cut to GAP, then the take is sped up SPEED x at the same
 // pitch (ffmpeg atempo); the words are timed on the result. Targets: 255-280 wpm, ~70 words in the first 15 s, no pause
 // over 0.6 s (paceStats). BLOCKY_WORLDS_VOICE_SPEED overrides (1 = the old pace).
-const GAP = 0.08, MAX_GAP = 0.15, EDGE = 0.04;
+const GAP = 0.08, MAX_GAP = 0.15, EDGE = 0.04, LINE_GAP = 0.15;
 export const SPEED = Number(process.env.BLOCKY_WORLDS_VOICE_SPEED) > 0 ? Number(process.env.BLOCKY_WORLDS_VOICE_SPEED) : 1.25;
 /** the pace of timed words: wpm, words in the first 15 s, the longest pause, the first word */
 export function paceStats(words = []) {
@@ -37,7 +37,9 @@ export function keepRanges(spoken, duration) {
   let a = Math.max(0, spoken[0].s - EDGE);
   for (let i = 0; i < spoken.length - 1; i++) {
     const gap = spoken[i + 1].s - spoken[i].e;
-    if (gap > MAX_GAP) { out.push([a, spoken[i].e + GAP / 2]); a = spoken[i + 1].s - GAP / 2; }
+    // round 4 (owner: the pauses between lines about 0.15 s): after a sentence 0.15, inside a line the old 0.08
+    const keep = /[.!?…]["”]?$/.test(String(spoken[i].w ?? "")) ? LINE_GAP : GAP;
+    if (gap > Math.max(MAX_GAP, keep)) { out.push([a, spoken[i].e + keep / 2]); a = spoken[i + 1].s - keep / 2; }
   }
   out.push([a, Math.min(duration, spoken.at(-1).e + EDGE * 3)]);
   return out;

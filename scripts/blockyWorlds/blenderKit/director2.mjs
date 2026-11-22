@@ -8,6 +8,7 @@
 import { engineKitText, ACTIONS, THINGS, EFFECTS, MONSTERS, FACES, PLACES, STREET_PLACES } from "../../../supabase/functions/_shared/blockyWorlds/engineKit.js";
 import { WORLD_PROMPT, worldSchema, townSchema, worldProblems, threatArc } from "../../../supabase/functions/_shared/blockyWorlds/worldState.js";
 import { VOICE_TYPES } from "../../../supabase/functions/_shared/blockyWorlds/castVoices.js";
+import { globalRulesText, RULES_FOR, STORY_RULES_PROMPT, storyRulesSchema } from "../../../supabase/functions/_shared/blockyWorlds/rules.js";
 
 export const CAMERAS = Object.freeze({
   wide: "the whole place and everyone in it (a new place always starts with one)",
@@ -27,10 +28,12 @@ const obj = (props, req = Object.keys(props)) => ({ type: "object", additionalPr
 
 // ---------------------------------------------------------------- step 1: the story plan
 export const PLAN_SYSTEM = `You plan an "In This Town" story video (Roblox-style blocky 3D, 9:16) for our engine, before any shot is written.
+${globalRulesText(RULES_FOR.plan)}
 ${engineKitText()}
+${STORY_RULES_PROMPT}
 Plan:
 - CAST: every person in the story incl. the narrator ("Me" unless the script names them). Exact looks so every shot draws them the same: skin (hex), shirt (hex), pants (hex), hair (one of: spiky, slick, short, messy, cap, bob, buzz, bun, tophat, bald), hair_color (hex), face (one of: kid, girl, hero, plain, mustache), kid or adult. Clearly different colours per person; the narrator one bright hero outfit.
-- PLACES: at most 3 library places the story really happens in (ids from the list); every line gets its place and time (day / sunset / night). Stay in the story's places: never an unrelated set (a classroom, a bedroom, a shop) unless a line happens there.
+- PLACES: at most 3 library places the story really happens in (ids from the list); every line gets its place and time (day / sunset / night).
 - PROPS: the key things (kinds from the THINGS list) with their size (1 = a hand-held thing, 3 = waist high, 6 = as tall as a person).
 - MONSTER: if there is one: ONE look for the whole story (style + size 3-4); which lines it is in.
 - VOICES: every cast member who SPEAKS a quoted line gets ONE voice type for the whole story: ${Object.keys(VOICE_TYPES).filter((k) => k !== "narrator").join(", ")} (whisper = a creepy / ghostly character). The narrator ("Me") is "narrator"; someone who never speaks: the closest type.
@@ -40,6 +43,7 @@ export function planSchema() {
   return obj({
     cast: { type: "array", items: obj({ name: s, kid: { type: "boolean" }, skin: s, shirt: s, pants: s, hair: s, hair_color: s, face: s, voice_type: { type: "string", enum: Object.keys(VOICE_TYPES) } }) },
     town: townSchema(),
+    story_rules: storyRulesSchema(),
     places: { type: "array", items: { type: "string", enum: PLACES.map((p) => p.id) } },
     lines: { type: "array", items: obj({ line: { type: "integer" }, place: { type: "string", enum: PLACES.map((p) => p.id) }, time: { type: "string", enum: ["day", "sunset", "night"] }, world: worldSchema() }) },
     props: { type: "array", items: obj({ kind: { type: "string", enum: [...THINGS] }, what: s, size: { type: "number" } }) },
