@@ -525,6 +525,11 @@ def zs_cam_hand(t0, t1, ppl, Tt):
         arm = D.objects.get(holder.name + "_armR")
         if arm is not None:
             obs.append(arm)
+        # (round 9h: the holder's head + body too: a medium close, the chalk a hand-sized stick, never a big block)
+        for part in ("_head", "_torso"):
+            ob = D.objects.get(holder.name + part)
+            if ob is not None:
+                obs.append(ob)
         pk = ZS_POCKETS.get(holder.name)
         if pk is not None:
             obs.append(pk)

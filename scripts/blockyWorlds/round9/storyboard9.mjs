@@ -103,7 +103,7 @@ if (!C) {
 }
 
 // ---- 5. the takes + the shots
-const LIB = ["worlds/worlds.py", "actions/actions.py", "worlds/acts.py", "worlds/pieces.py", "worlds/motion.py", "worlds/crowds.py", "worlds/town.py", "worlds/effects.py", "worlds/stage.py", "worlds/stage9.py", "worlds/stage9b.py", "worlds/stage9c.py", "worlds/stage9d.py", "worlds/stage9e.py", "worlds/stage9f.py", "worlds/stage9g.py"].map((f) => fs.readFileSync(path.join(KIT, f), "utf8")).join("\n\n");
+const LIB = ["worlds/worlds.py", "actions/actions.py", "worlds/acts.py", "worlds/pieces.py", "worlds/motion.py", "worlds/crowds.py", "worlds/town.py", "worlds/effects.py", "worlds/stage.py", "worlds/stage9.py", "worlds/stage9b.py", "worlds/stage9c.py", "worlds/stage9d.py", "worlds/stage9e.py", "worlds/stage9f.py", "worlds/stage9g.py", "worlds/stage9h.py"].map((f) => fs.readFileSync(path.join(KIT, f), "utf8")).join("\n\n");
 const RO = plan.rule?.object ?? {};
 const RULE_PY = RO.thing ? `ZW_RULE.update(${py({ thing: RO.thing, heads: 1.3, where: "over_head", how: "pop", glow: true })})` : "";
 const HEAD = (title) => [`"""${title}"""`, "from shotkit import *", "from rbx import story", "from rbx.story import *", "import math, random", "from mathutils import Vector", "", "V = Video(__file__)", "story.bind(V)", "", LIB, "", RULE_PY, ""];

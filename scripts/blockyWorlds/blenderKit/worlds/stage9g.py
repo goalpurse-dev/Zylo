@@ -74,7 +74,7 @@ def zs_rule_check2(H, allowed, times, tag):
                 continue
             inside = zs_inside_any(pts, areas)
             ok_out = k in allowed and t >= allowed[k] - 0.01
-            if hasattr(v, "root"):
+            if hasattr(v, "root") and t == times[len(times) // 2]:
                 print("ZW_GATE|%s|%s|pos|%.1f,%.1f|%s|t=%.2f" % (tag, k, p.x, p.y, "in" if inside else ("out-allowed" if ok_out else "OUT"), t))
             if not inside and not ok_out and k not in seen:
                 print("ZW_GATE|%s|%s|rule_break|outside its line at %.2f (%.1f, %.1f)" % (tag, k, t, p.x, p.y))

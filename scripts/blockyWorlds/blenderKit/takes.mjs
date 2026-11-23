@@ -427,7 +427,9 @@ export function compileTakes({ plan, cards, states, lines, looks }) {
       if (kd === "drain_grate") I("zs_hole(_p)");
       // a pre-drawn chalk circle round a thing that has one (the dog's circle, the car's box): "<kind>#..." with ring
       if ((plan.rings_around ?? []).includes(k)) I(`H[${py(`chalk_line#${ident(k)}`)}] = zs_chalk_path(${py(`zs_ring_${ident(k)}`)}, ${kd === "car" ? `zs_rect_pts(H[${py(k)}].location.x - 3.6, H[${py(k)}].location.y - 2.0, H[${py(k)}].location.x + 3.6, H[${py(k)}].location.y + 2.0, 1.2)` : `zs_circle_pts((H[${py(k)}].location.x, H[${py(k)}].location.y), 2.6, 18)`}, closed=True)`);
-      if (!(t?.here || t?.held_by) && !isRule) I(`zs_hide(H[${py(k)}])`);
+      // (round 9h: a thing held by someone who is not in this scene is not here either: the pizza guy's box floated after he left)
+      const heldHere = t?.held_by && people.has(t.held_by);
+      if (!isRule && !heldHere && (!t?.here || t?.held_by)) I(`zs_hide(H[${py(k)}])`);
       if (t?.held_by && people.has(t.held_by)) I(t.pocket ? `zs_in_pocket(H[${py(t.held_by)}], H[${py(k)}], T0 - 0.3)` : `zw_grab(H[${py(t.held_by)}], T0 - 0.3, H[${py(k)}])`);
       else if (isRule && rule.where === "in_hand" && ruleWho && !t?.mark) I(`zw_grab(H[${py(ruleWho)}], T0 - 0.3, H[${py(k)}])`);
     }

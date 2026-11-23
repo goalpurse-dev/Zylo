@@ -511,7 +511,7 @@ def zs_wall_flash(center, rad, height, t, hit=None):
     d = Vector((h.x - c.x, h.y - c.y, 0.0))
     d = d.normalized() if d.length > 1e-3 else Vector((1, 0, 0))
     a0 = math.atan2(d.y, d.x)
-    M = zw_m("wallshimmer9e", "#cfeaff", 0.1, emit="#dff2ff", estr=1.8, alpha=0.3)
+    M = zw_m("wallshimmer9e", "#cfeaff", 0.1, emit="#dff2ff", estr=0.9, alpha=0.16)
     r = empty("zs_wall%d" % F(t), (c.x, c.y, 0.0), None)
     hh = max(3.5, min(height, h.z + 3.0))
     for k in range(-7, 8):
