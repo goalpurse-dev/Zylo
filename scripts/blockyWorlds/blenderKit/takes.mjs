@@ -23,7 +23,7 @@ export const MOVE_ACTIONS = Object.freeze(["enter", "exit", "walk_to", "run_to",
 export const MARKS8 = Object.freeze(["left", "center", "right", "back_left", "back", "back_right", "front_left", "front", "front_right"]);
 export const SIDE_DEG = Object.freeze({ front: 0, front_left: 28, front_right: -28 });
 export const TIMES8 = Object.freeze(["day", "sunset", "night", "storm", "morning"]);
-export const SHOTS8 = Object.freeze(["wide", "medium", "two", "close", "insert", "low", "top", "place", "street", "aerial", "high", "legs", "house"]);
+export const SHOTS8 = Object.freeze(["wide", "medium", "two", "close", "insert", "low", "top", "place", "street", "aerial", "high", "legs", "house", "hand", "behind"]);
 /** a stage mark, or an exact ground point "@x,y" (round 9: the car at the kerb, the monster on the road) */
 export const isMark = (m) => MARKS8.includes(m) || /^@-?[\d.]+,-?[\d.]+$/.test(String(m ?? ""));
 export const MOVES8 = Object.freeze(["push_in", "tilt_up", "track", "top_down", "static"]);
@@ -35,7 +35,8 @@ export const ACTIONS8 = Object.freeze({
   point: "points at someone / something", wave: "waves", cheer: "cheers (arms up)", laugh: "laughs", scream: "screams (hands on head)", cry: "cries", shiver: "shivers with fear",
   shrug: "shrugs", facepalm: "facepalm", think: "thinks", nod: "nods", shake_head: "shakes the head", jump: "jumps", stomp: "stomps", roar: "roars", talk: "talks",
   hug: "hugs someone", fall: "falls over", sit: "sits down", stand_up: "stands up", lie_down: "lies down", look_around: "looks around",
-  pick_up: "picks up a thing (then holds it)", give: "gives the held thing to someone", drop: "drops the held thing", throw: "throws the held thing to a mark",
+  pick_up: "picks up a thing (then holds it)", give: "gives the held thing to someone (it is held up between them, then goes hand to hand)",
+  put_in_pocket: "puts the held thing into someone's pocket (target = who; held up first, then into the pocket; they look down at it)", take_out: "takes the thing out of their own pocket (it comes into the hand)", drop: "drops the held thing", throw: "throws the held thing to a mark",
   kick: "kicks a thing", read: "reads (a book)", phone: "looks at a phone",
   appear: "a THING appears (pops in) at a mark / next to someone", disappear: "a THING disappears", move: "a THING moves to a mark / a person",
   turn_on: "a THING switches on (glows)", turn_off: "a THING switches off", open: "a door opens", close: "a door closes",
@@ -50,7 +51,7 @@ export const ACTIONS8 = Object.freeze({
   run_door_to_door: "runs from house door to house door, knocking",
   hit_wall: "the MONSTER's hand slams into the invisible wall of a chalk circle (a see-through wall flashes up, a ripple where it hits)",
 });
-const PEOPLE_ACTIONS = new Set(["enter", "exit", "walk_to", "run_to", "turn_to", "follow", "point", "wave", "cheer", "laugh", "scream", "cry", "shiver", "shrug", "facepalm", "think", "nod", "shake_head", "jump", "stomp", "talk", "hug", "fall", "sit", "stand_up", "lie_down", "look_around", "pick_up", "give", "drop", "throw", "kick", "read", "phone", "rule_effect", "star_eyes", "x_eyes", "sweat", "splat", "sign", "roar", "draw_around", "draw_line", "run_door_to_door"]);
+const PEOPLE_ACTIONS = new Set(["enter", "exit", "walk_to", "run_to", "turn_to", "follow", "point", "wave", "cheer", "laugh", "scream", "cry", "shiver", "shrug", "facepalm", "think", "nod", "shake_head", "jump", "stomp", "talk", "hug", "fall", "sit", "stand_up", "lie_down", "look_around", "pick_up", "give", "put_in_pocket", "take_out", "drop", "throw", "kick", "read", "phone", "rule_effect", "star_eyes", "x_eyes", "sweat", "splat", "sign", "roar", "draw_around", "draw_line", "run_door_to_door"]);
 const THING_ACTIONS = new Set(["appear", "disappear", "move", "turn_on", "turn_off", "open", "close", "wash_away"]);
 const WORLD_ACTIONS = new Set(["switch_on", "switch_off", "switch_all_on", "switch_all_off", "windows_open", "crowd"]);
 const MONSTER_ONLY = new Set(["climb_out", "dive_in", "roar", "hit_wall"]);
@@ -192,11 +193,16 @@ export function applyCard(state, card, { place, line, plan, time = null } = {}) 
           if (me.holding) { bad(`${a0.who} already holds ${me.holding}`); continue; }
           th.held_by = a.who; th.mark = null; me.holding = T; break;
         }
-        case "give": {
+        case "give": case "put_in_pocket": {
+          if (a.do === "put_in_pocket" && !(isPerson(T) && here(T))) { bad(`put_in_pocket: the target "${a0.target}" must be a person in the scene`); continue; }
           if (!me.holding) { bad(`${a0.who} holds nothing to give`); continue; }
           const taker = P.people[T];
           if (taker.holding) { bad(`${a0.target} already holds ${taker.holding}`); continue; }
-          P.things[me.holding].held_by = T; taker.holding = me.holding; a.thing = me.holding; me.holding = null; break;
+          P.things[me.holding].held_by = T; P.things[me.holding].pocket = a.do === "put_in_pocket"; taker.holding = me.holding; a.thing = me.holding; me.holding = null; break;
+        }
+        case "take_out": {
+          if (!me.holding || !P.things[me.holding]?.pocket) { bad(`${a0.who} has nothing in a pocket to take out`); continue; }
+          P.things[me.holding].pocket = false; a.thing = me.holding; break;
         }
         case "drop": case "throw": {
           if (!me.holding) { bad(`${a0.who} holds nothing to ${a.do}`); continue; }
@@ -215,7 +221,7 @@ export function applyCard(state, card, { place, line, plan, time = null } = {}) 
         case "draw_line": {
           if (kindOf(T) !== "chalk_line") { bad(`draw_line: target a chalk line (e.g. chalk_line#house), got "${a0.target}"`); continue; }
           const th = (P.things[T] ??= { here: false, mark: "back", held_by: null, state: null });
-          a.redraw = !th.here; th.here = true; break;
+          a.redraw = !th.here; th.here = true; if (isMark(a.to)) me.mark = a.to; break;
         }
         default: break;
       }
@@ -397,7 +403,7 @@ export function compileTakes({ plan, cards, states, lines, looks }) {
         continue;
       }
       // the rule object READABLE in every shot (round 8 first test: a bell in a hand at 1.5x was "not visible" in 30 stills)
-      const sz = `zw_tsize(${py(kd)}, ${size})${isRule ? " * 1.8" : kd === "drain_grate" ? " * 2.2" : named ? (monUsed ? " * 2.4" : " * 1.5") : ""}`;
+      const sz = `zw_tsize(${py(kd)}, ${size})${isRule ? " * 1.8" : kd === "drain_grate" ? " * 2.2" : named && kd !== "chalk" ? (monUsed ? " * 2.4" : " * 1.5") : ""}`;
       const mk = t?.mark ?? (isRule ? (plan.stage?.[place]?.marks?.[k] ?? "front") : "center");
       I(`_p = ${markAt(mk)}`);
       // the drain in the open, ON its mark (item 18); the rule object beside / at the feet of its person; other things
@@ -414,7 +420,7 @@ export function compileTakes({ plan, cards, states, lines, looks }) {
       // a pre-drawn chalk circle round a thing that has one (the dog's circle, the car's box): "<kind>#..." with ring
       if ((plan.rings_around ?? []).includes(k)) I(`H[${py(`chalk_line#${ident(k)}`)}] = zs_chalk_path(${py(`zs_ring_${ident(k)}`)}, ${kd === "car" ? `zs_rect_pts(H[${py(k)}].location.x - 3.6, H[${py(k)}].location.y - 2.0, H[${py(k)}].location.x + 3.6, H[${py(k)}].location.y + 2.0, 1.2)` : `zs_circle_pts((H[${py(k)}].location.x, H[${py(k)}].location.y), 2.6, 18)`}, closed=True)`);
       if (!(t?.here || t?.held_by) && !isRule) I(`zs_hide(H[${py(k)}])`);
-      if (t?.held_by && people.has(t.held_by)) I(`zw_grab(H[${py(t.held_by)}], T0 - 0.3, H[${py(k)}])`);
+      if (t?.held_by && people.has(t.held_by)) I(t.pocket ? `zs_in_pocket(H[${py(t.held_by)}], H[${py(k)}], T0 - 0.3)` : `zw_grab(H[${py(t.held_by)}], T0 - 0.3, H[${py(k)}])`);
       else if (isRule && rule.where === "in_hand" && ruleWho && !t?.mark) I(`zw_grab(H[${py(ruleWho)}], T0 - 0.3, H[${py(k)}])`);
     }
     if (monUsed) {
@@ -437,10 +443,14 @@ export function compileTakes({ plan, cards, states, lines, looks }) {
         const face = Object.entries(c.faces ?? {}).find(([w]) => low(w) === k)?.[1];
         if (face || k === sp) I(`if H[${py(k)}] is not None: zw_emote(H[${py(k)}], o + ${la0.toFixed(3)}, o + ${la1.toFixed(3)}, ${py(FACES8.includes(face) ? face : "neutral")}${k === sp ? ", talk=True" : ""})`);
       }
+      for (const a of c.actions ?? []) if (["pick_up", "take_out", "give", "put_in_pocket"].includes(a.do) && low(a.who) !== "monster") I(`zs_arm_hold(H.get(${py(low(a.who))}), o + ${(tOf(Ln, a.on_word) - (a.do === "take_out" ? 0.45 : 0.0)).toFixed(3)})`);
       for (const a of c.actions ?? []) {
         const who = low(a.who), T = low(a.target), to = low(a.to);
         const ta = `o + ${tOf(Ln, a.on_word).toFixed(3)}`;
-        const tb = `o + ${Math.max(tOf(Ln, a.on_word) + 0.8, la1 - 0.05).toFixed(3)}`;
+        // (a hand-only action: taking a thing out, talking, pointing: happens DURING the walk / run, it does not end it)
+        const nxt = (c.actions ?? []).filter((b) => low(b.who) === who && Number(b.on_word) > Number(a.on_word) && !["take_out", "talk", "point", "wave", "nod", "shake_head"].includes(b.do)).map((b) => tOf(Ln, b.on_word));
+        const tEnd = nxt.length ? Math.min(la1 - 0.05, Math.min(...nxt) - 0.05) : la1 - 0.05;
+        const tb = `o + ${Math.max(tOf(Ln, a.on_word) + 0.8, tEnd).toFixed(3)}`;
         const W = `H.get(${py(who)})`, TT = `H.get(${py(T)})`;
         const toPt = isMark(to) ? markAt(to) : to && (people.has(to) || things.has(to) || to === "monster") ? `zs_beside(H.get(${py(to)}), ${ta}, 1)` : null;
         switch (a.do) {
@@ -470,7 +480,8 @@ export function compileTakes({ plan, cards, states, lines, looks }) {
           case "lie_down": I(`zm_lie(${W}, ${ta})`); break;
           case "look_around": I(`zm_look_around(${W}, ${ta}, ${tb})`); break;
           case "pick_up": I(`zm_pick_up(${W}, ${ta}, ${TT})`); break;
-          case "give": I(`zm_give(${W}, ${TT}, H.get(${py(a.thing)}), ${ta}, ${tb})`); break;
+          case "give": case "put_in_pocket": I(`zs_hand_over(${W}, ${TT}, H.get(${py(a.thing)}), ${ta}, ${tb}, pocket=${a.do === "put_in_pocket" ? "True" : "False"})`); break;
+          case "take_out": I(`zs_take_out(${W}, H.get(${py(a.thing)}), ${ta})`); break;
           case "drop": I(`zo_drop(${W}, H.get(${py(a.thing)}), ${ta})`); break;
           case "throw": I(`zw_throw(${W}, ${ta}, ${tb}, H.get(${py(a.thing)}), ${toPt ?? markAt("front")})`); break;
           case "kick": I(`zm_kick(${W}, ${ta}, ${TT}, ${toPt ?? markAt("front")})`); break;
@@ -494,7 +505,7 @@ export function compileTakes({ plan, cards, states, lines, looks }) {
           case "sign": I(`zf_sign(${W}, ${ta}, ${tb}, ${py(String(a.text ?? "").slice(0, 18))})`); break;
           // round 9: chalk, crowds, door to door
           case "draw_around": I(`H[${py(a.line_id)}] = zs_draw_around(${W}, ${TT}, ${ta}, ${tb}, ${py(`zs_circ_${ident(a.line_id)}`)})`); break;
-          case "draw_line": I(a.redraw ? `zs_reveal(H[${py(T)}], ${ta}, ${tb}) if H.get(${py(T)}) is not None else None` : "pass"); I(`zs_draw_path(${W}, zs_ring_front(H.get(${py(T)}), za_here(${W}, ${ta})), ${ta}, ${tb}, ${py(`zs_fresh_${ident(T)}_${c.line}`)}, style="crouch")`); break;
+          case "draw_line": I(a.redraw ? `zs_reveal(H[${py(T)}], ${ta}, ${tb}) if H.get(${py(T)}) is not None else None` : "pass"); I(`zs_draw_path(${W}, zs_ring_front(H.get(${py(T)}), za_here(${W}, ${ta})${toPt ? `, end=${toPt}` : ""}), ${ta}, ${tb}, ${py(`zs_fresh_${ident(T)}_${c.line}`)}, style="crouch")`); break;
           case "wash_away": I(`zs_wash(H[${py(T)}], ${ta}, ${tb}) if H.get(${py(T)}) is not None else None`); break;
           case "crowd": I(`_c = zs_crowd(${ta}, ${tb}, n=10, thing=${T ? py(kindOf(T)) : "None"}, do=${py(String(a.text || "cheer").toLowerCase())})`); I(`H["crowd0"], H["crowd1"] = (_c + [None, None])[0], (_c + [None, None])[1]`); break;
           case "run_door_to_door": I(`zs_door_to_door(${W}, ${ta}, ${tb}, n=3)`); break;
