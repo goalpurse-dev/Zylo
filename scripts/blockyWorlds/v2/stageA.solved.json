@@ -1,0 +1,179 @@
+{
+ "house_wide": {
+  "loc": [
+   7,
+   -2,
+   5
+  ],
+  "tgt": [
+   0,
+   15,
+   3.5
+  ],
+  "lens": 22,
+  "shot": "wide",
+  "people": [
+   "porch_left",
+   "porch_right"
+  ]
+ },
+ "porch_two": {
+  "loc": [
+   0,
+   8,
+   2.9
+  ],
+  "tgt": [
+   0,
+   16,
+   2.25
+  ],
+  "lens": 24,
+  "shot": "two",
+  "people": [
+   "porch_left",
+   "porch_right"
+  ]
+ },
+ "porch_door_med": {
+  "loc": [
+   0.6,
+   12.59,
+   2.7
+  ],
+  "tgt": [
+   0,
+   16.8,
+   2.75
+  ],
+  "lens": 32,
+  "shot": "medium",
+  "people": [
+   "porch_door"
+  ]
+ },
+ "porch_low": {
+  "loc": [
+   1.01,
+   13.71,
+   0.9
+  ],
+  "tgt": [
+   0,
+   16.8,
+   2.25
+  ],
+  "lens": 20,
+  "shot": "low",
+  "people": [
+   "porch_door"
+  ]
+ },
+ "from_porch": {
+  "loc": [
+   0.57,
+   14.76,
+   3
+  ],
+  "tgt": [
+   0,
+   10.8,
+   2.25
+  ],
+  "lens": 24,
+  "shot": "medium",
+  "people": [
+   "gate"
+  ],
+  "creature": "cr_road_south"
+ },
+ "pave_two": {
+  "loc": [
+   1.38,
+   0.23,
+   2.2
+  ],
+  "tgt": [
+   -1.4,
+   8,
+   1.75
+  ],
+  "lens": 24,
+  "shot": "two",
+  "people": [
+   "pave_left",
+   "pave_mid"
+  ]
+ },
+ "pave_close": {
+  "loc": [
+   0.55,
+   3.28,
+   2.5
+  ],
+  "tgt": [
+   0,
+   8,
+   2.5
+  ],
+  "lens": 40,
+  "shot": "close",
+  "people": [
+   "pave_mid"
+  ]
+ },
+ "street_dark": {
+  "loc": [
+   5.5,
+   9,
+   2.4
+  ],
+  "tgt": [
+   -16,
+   1,
+   4
+  ],
+  "lens": 19,
+  "fixed": true,
+  "shot": "medium",
+  "people": [
+   "pave_mid"
+  ],
+  "creature": "cr_road_far"
+ },
+ "step_med": {
+  "loc": [
+   2.95,
+   11.31,
+   2.6
+  ],
+  "tgt": [
+   0,
+   13.2,
+   2.25
+  ],
+  "lens": 28,
+  "shot": "medium",
+  "people": [
+   "step"
+  ]
+ },
+ "house_side_cr": {
+  "loc": [
+   -3.48,
+   11.81,
+   2.2
+  ],
+  "tgt": [
+   0,
+   13.2,
+   1.75
+  ],
+  "lens": 20,
+  "shot": "medium",
+  "people": [
+   "step"
+  ],
+  "creature": "cr_house_side"
+ }
+}
