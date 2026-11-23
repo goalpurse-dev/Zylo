@@ -42,3 +42,21 @@ test("town_free2 pick: 4 groups, the In This Town emails incl. town_free1, the r
   assert.match(sql, /status in \('approved', 'sending'\)\);\nselect cron\.unschedule\('town-free2-seeds'\);/, "seeds only once approved");
   assert.match(sql, /'town-free2-only-today', '5 19 23 11 \*'/);
 });
+
+test("town_free2 without the rules (owner 2026-11-23 16:07): 16:30, 4,000, only this email skips the choice rules", () => {
+  const sql = read("supabase/migrations/20261223120000_town_free2_no_rules.sql");
+  assert.match(sql, /v_no_rules boolean := \(p_kind = 'campaign:town_free2'\)/);
+  assert.match(sql, /if not v_no_rules and v_signed_up > now\(\) - interval '24 hours'/);
+  assert.match(sql, /if not v_no_rules\n\s+and \(select count\(\*\) from email_sends where email = v_email and category = 'marketing'\) >= 2/);
+  assert.match(sql, /return jsonb_build_object\('ok', false, 'reason', 'suppressed'\)/, "unsubscribed / bounced / complained are never emailed");
+  assert.match(sql, /return jsonb_build_object\('ok', false, 'reason', 'no_consent'\)/, "email updates must be ON");
+  assert.match(sql, /'reason', 'already_sent'/);
+  assert.match(sql, /p\.email_updates is true/);
+  assert.match(sql, /not exists \(select 1 from email_suppressions s/);
+  assert.match(sql, /when mk = 0 then 4 else 5 end/);
+  assert.match(sql, /starts_at = timestamptz '2026-11-23 14:30\+00'/);
+  assert.match(sql, /fill_town_free2\('town_free2', 4000\)/);
+  assert.match(sql, /schedule := '3 seconds'/);
+  assert.match(sql, /'town-free2-pace-back', '10 19 23 11 \*'/);
+  assert.match(sql, /schedule := '10 seconds'/);
+});
