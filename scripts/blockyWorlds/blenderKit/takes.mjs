@@ -332,6 +332,9 @@ export function compileTakes({ plan, cards, states, lines, looks }) {
     const L = [];
     const time = TIMES8.includes(sc.time) ? sc.time : "day";
     const dress = { time: time === "storm" ? "night" : time === "morning" ? "day" : time, ...(time === "storm" ? { weather: "rain" } : {}), faces: "dot", busy: sc.busy ?? "empty", walkers: sc.busy && sc.busy !== "empty" ? "walking" : "none", cars: sc.cars ?? "parked", extras: [], windows: S0.windows === "dark" ? "dark" : "lit", curtains: "open", threat: "none" };
+    // round 9c: THE TOWN RULE as a hard constraint: in its times of day no unboxed parked cars (the story's own cars sit in their boxes)
+    const ruled = (plan.rule_check?.times ?? []).includes(time);
+    if (ruled) dress.props = ["nocars"];
     L.push(`def take_${sc.id}(o):`);
     const I = (s) => L.push(`    ${s}`);
     I(`T0, T1 = o + ${T0.toFixed(3)}, o + ${T1.toFixed(3)}`);
@@ -403,6 +406,8 @@ export function compileTakes({ plan, cards, states, lines, looks }) {
       if (!S0.monster?.here) I(`H["monster"].set_visible(-10.0, False)`);
     }
     for (const x of later) I(x);
+    // the engine PLACES the safe ones inside a closed chalk line (everyone the story does not let outside on this scene's first line)
+    if (ruled) { const out = new Set((plan.rule_check.outside?.[la] ?? []).map(low)); const safe = [...people].filter((k) => !out.has(k)); if (safe.length) I(`zs_rule_place(H, ${py(safe)}, T0)`); }
     if (S0.lamps === "off") I(`zs_switch_all("lamps", T0 - 1.0, False, stagger=0.0)`);
     if (S0.windows === "open") I(`zs_windows_open(T0 - 1.0, stagger=0.0)`);
     // the timeline: every line's actions at their word times, the faces per line

@@ -72,7 +72,7 @@ const SPEC = {
   20: ["medium", ["me"], "push_in", 0.7], 21: ["high", ["chalk_line#house"], "push_in", null], 22: ["medium", ["dad"], "push_in", 0.55], 23: ["medium", ["dad"], "tilt_up", 0.4],
   25: ["close", ["dad"], "push_in", 0.7], 26: ["medium", ["dad"], "push_in", 0.35], 27: ["street", [], "push_in", null], 28: ["close", ["me"], "push_in", 0.75],
   29: ["low", ["monster"], "track", 0.9], 30: ["wide", ["dad"], "push_in", 0.2], 31: ["low", ["dad", "monster"], "push_in", 0.5], 32: ["medium", ["me"], "push_in", 0.45],
-  33: ["medium", ["me", "chalk#dad"], "push_in", 0.7], 34: ["medium", ["me"], "push_in", 0.6], 35: ["low", ["me", "monster"], "track", 0.6], 36: ["wide", ["monster", "me"], "push_in", 0.9],
+  33: ["medium", ["me", "chalk#dad"], "push_in", 0.7], 34: ["medium", ["me"], "push_in", 0.6], 35: ["low", ["me", "monster"], "track", 0.6], 36: ["low", ["monster", "me"], "push_in", 0.9],
   37: ["low", ["me", "monster"], "track", 0.55], 38: ["top", ["chalk_line#monster"], "top_down", null], 39: ["low", ["monster", "me"], "tilt_up", 1.0], 40: ["low", ["me", "monster"], "tilt_up", 0.6],
   41: ["legs", ["monster", "chalk_line#monster"], "push_in", 1.0], 42: ["wide", ["monster", "chalk_line#monster"], "push_in", 0.6], 43: ["medium", ["me"], "tilt_up", 0.7], 44: ["low", ["monster"], "tilt_up", 1.0],
   45: ["wide", ["monster", "roof#monster"], "push_in", 0.6], 46: ["low", ["monster", "roof#monster"], "push_in", 0.8], 47: ["low", ["roof#monster"], "tilt_up", 0.9],
@@ -91,35 +91,37 @@ for (const s of SH) {
 for (let k = 0; k < refCuts.length; k++) refCuts[k].refT1 = k + 1 < refCuts.length ? SH.find((s) => s.n === refCuts[k + 1].n).t0 : 65.9;
 
 const NEEDS = {
-  2: ["aerial camera (high, down the road at an angle)", "low brick houses + big lawns", "chalk line round every house", "dusk light"], 3: ["dad (older, moustache, balding, white t-shirt, pajamas)", "crouch drawing pose", "chalk in hand", "line appears behind the chalk"],
+  2: ["aerial camera (high, down the road at an angle)", "low brick houses + big lawns", "chalk line round every house", "dusk light", "the dark suburb (brick, tiles, porches, chimneys, driveways, fences, bins, pines, kerbs, slabs, crossing, hills)"], 3: ["dad (older, moustache, balding, white t-shirt, pajamas)", "crouch drawing pose", "a small chalk stick in the fist", "line appears behind the chalk", "matte chalk line (not glowing)"],
   4: ["dad", "kid (red)", "two-shot keeping both faces"], 5: ["kid", "ball outside the line", "chalk line"], 6: ["dog (full size)", "chalk circle round the dog"], 7: ["top-down camera", "dog in its circle"], 8: ["car parallel to the kerb", "straight chalk box"], 9: ["top-down camera", "car in its box"],
-  10: ["pizza delivery guy (own look, cap)", "pizza box (two hands)"], 11: ["low brick house at night", "dim windows"], 12: ["high camera over a house", "the house's chalk line"], 13: ["kid's legs at the line", "low camera"], 14: ["kid worried face"], 15: ["dad", "track move"], 16: ["dad + kid", "give the chalk"], 17: ["dad close", "talking"],
+  10: ["pizza delivery guy (dark hair, red uniform)", "pizza box (two hands)", "dusk light"], 11: ["low brick house at night", "dim windows"], 12: ["high camera over a house", "the house's chalk line"], 13: ["kid's legs at the line", "low camera"], 14: ["kid worried face"], 15: ["dad", "track move"], 16: ["dad + kid", "give the chalk"], 17: ["dad close", "talking"],
   18: ["storm: dark sky", "rain streaks you can see"], 20: ["kid in the rain", "rain streaks"], 21: ["the line washing away (fades, streaks)"], 22: ["dad's panic run in the rain"], 23: ["dad holding chalk", "tilt up"], 25: ["chalk melting in the hand (disappears)"], 26: ["rain stops"], 27: ["street lamps going out one by one"],
-  28: ["kid startled by a window"], 29: ["the monster: black, thin, jointed, taller than the lamps, glowing eyes", "the monster's own walk (slow, stiff, arms dragging, head tilting)"], 30: ["dad on the lawn, small"], 31: ["dad in front, the monster coming", "low camera near the kid looking up"], 32: ["the kid's sprint"], 33: ["chalk out of the pocket"], 34: ["kid looking at dad"],
-  35: ["kid + monster legs, low"], 36: ["kid running round the monster's legs"], 37: ["the kid's bent-over chalk run", "the circle growing behind the chalk"], 38: ["top-down: the closed circle round the monster's feet"], 39: ["the monster reaching down", "tilt"], 40: ["kid inside the circle, the giant hand"],
-  41: ["the invisible wall flashing up from the line", "a ripple where the hand hits", "only the monster's legs + hanging arms"], 42: ["the monster standing in its circle"], 43: ["kid to camera"], 44: ["the monster's silhouette, eyes"], 45: ["morning light", "the monster in its circle"], 46: ["a roof on posts sized to the monster", "low camera up"], 47: ["the roof, tilt up"],
+  28: ["kid startled by a window"], 29: ["the monster: black, thin, jointed, taller than the lamps, glowing eyes", "the monster's own walk (slow, stiff, arms dragging, head tilting)"], 30: ["dad on the lawn, small"], 31: ["dad in front, the monster coming", "low camera near the kid looking up"], 32: ["the kid's sprint"], 33: ["chalk out of the pocket", "a small chalk stick in the fist"], 34: ["kid looking at dad"],
+  35: ["kid + monster legs, low"], 36: ["kid running round the monster's legs", "the kid + monster camera (both in frame)"], 37: ["the kid's bent-over chalk run", "the circle growing behind the chalk"], 38: ["top-down: the closed circle round the monster's feet"], 39: ["the monster reaching down", "tilt", "the kid + monster camera (both in frame)"], 40: ["kid inside the circle, the giant hand"],
+  41: ["a faint wall shimmer where the hand hits", "a ripple where the hand hits", "only the monster's legs + hanging arms"], 42: ["the monster standing in its circle"], 43: ["kid to camera"], 44: ["the monster's silhouette, eyes"], 45: ["morning light", "the monster in its circle"], 46: ["a roof on posts sized to the monster", "low camera up"], 47: ["the roof, tilt up"],
   48: ["kids playing at night (a crowd, lit)"], 49: ["high wide: the monster in its ring in the street"], 50: ["the monster's head close, still"],
 };
-const BUILT9B = ["aerial camera (high, down the road at an angle)", "low brick houses + big lawns", "crouch drawing pose", "line appears behind the chalk", "dad (older, moustache, balding, white t-shirt, pajamas)", "dog (full size)", "car parallel to the kerb", "straight chalk box", "pizza delivery guy (own look, cap)", "pizza box (two hands)", "high camera over a house", "dim windows", "rain streaks you can see", "storm: dark sky", "the line washing away (fades, streaks)", "dad's panic run in the rain", "the kid's sprint", "the kid's bent-over chalk run", "the circle growing behind the chalk", "the monster: black, thin, jointed, taller than the lamps, glowing eyes", "the monster's own walk (slow, stiff, arms dragging, head tilting)", "the invisible wall flashing up from the line", "a ripple where the hand hits", "only the monster's legs + hanging arms", "a roof on posts sized to the monster", "kids playing at night (a crowd, lit)", "chalk line round every house"];
+const BUILT9B = ["aerial camera (high, down the road at an angle)", "low brick houses + big lawns", "crouch drawing pose", "line appears behind the chalk", "dad (older, moustache, balding, white t-shirt, pajamas)", "dog (full size)", "car parallel to the kerb", "straight chalk box", "pizza delivery guy (dark hair, red uniform)", "pizza box (two hands)", "high camera over a house", "dim windows", "rain streaks you can see", "storm: dark sky", "the line washing away (fades, streaks)", "dad's panic run in the rain", "the kid's sprint", "the kid's bent-over chalk run", "the circle growing behind the chalk", "the monster: black, thin, jointed, taller than the lamps, glowing eyes", "the monster's own walk (slow, stiff, arms dragging, head tilting)", "the invisible wall flashing up from the line", "a ripple where the hand hits", "only the monster's legs + hanging arms", "a roof on posts sized to the monster", "kids playing at night (a crowd, lit)", "chalk line round every house", "the town rule checked on every shot (inside a closed line)", "the dark suburb (brick, tiles, porches, chimneys, driveways, fences, bins, pines, kerbs, slabs, crossing, hills)", "a small chalk stick in the fist", "matte chalk line (not glowing)", "a faint wall shimmer where the hand hits", "the kid + monster camera (both in frame)"];
 const needs = Object.entries(NEEDS).map(([n, xs]) => ({ ref: Number(n), needs: xs.map((x) => ({ need: x, status: BUILT9B.includes(x) ? "build (built in round 9b)" : "have" })) }));
 fs.writeFileSync(path.join(OUT, "have_build.json"), JSON.stringify(needs, null, 1));
 fs.writeFileSync(path.join(OUT, "have_build.md"), ["# The chalk-line replica: what every shot needs", "", "| ref shot | needs | have / build |", "|---|---|---|", ...needs.flatMap((x) => x.needs.map((y, i) => `| ${i ? "" : x.ref} | ${y.need} | ${y.status} |`))].join("\n"));
 
 // ---- 3. THE PLAN + THE LINE CARDS (the story's actions; the code checks them against the state)
 const plan = {
-  title: script.title, house_rings: true, low_houses: true, rings_around: ["dog#lawn", "car#kerb"],
-  cast: [{ name: "Me", kid: true, hair: "spiky", hair_color: "#d4381c", shirt: "#d62a1e", pants: "#c42a1c" }, { name: "Dad", kid: false, hair: "short", hair_color: "#5a3a1e", shirt: "#f4f4f4", pants: "#7fa8e0", style: "dad" }, { name: "Guy", kid: false, hair: "cap", hair_color: "#c0392b", shirt: "#d35400", pants: "#2c3e50" }],
+  title: script.title, house_rings: true, low_houses: true, rings_around: ["dog#lawn", "car#kerb", "car#kerb2", "car#kerb3"],
+  rule_check: { times: ["night", "storm"], what: "at night every person, pet and car that is safe is INSIDE a closed chalk line",
+    outside: { 2: ["ball#lawn"], 7: ["me", "dad"], 8: ["me", "dad"], 9: ["me", "dad"], 10: ["me", "dad"], 11: ["me", "dad", "monster"], 12: ["me", "dad", "monster"], 13: ["me", "dad", "monster"], 14: ["me", "dad", "monster"], 15: ["me", "dad", "monster"], 16: ["me", "dad"], 17: ["me", "dad"], 19: ["me", "dad"], 20: ["me", "dad"], 21: ["me", "dad"] } },
+  cast: [{ name: "Me", kid: true, hair: "spiky", hair_color: "#d4381c", shirt: "#d62a1e", pants: "#c42a1c" }, { name: "Dad", kid: false, hair: "short", hair_color: "#5a3a1e", shirt: "#f4f4f4", pants: "#7fa8e0", style: "dad" }, { name: "Guy", kid: false, hair: "short", hair_color: "#1a1a1a", shirt: "#c0392b", pants: "#a93226" }],
   monster: { present: true, style: "shadow", size: 4 },
   rule: { sentence: "a chalk line makes a house", object: { thing: "chalk_line", where: "on_ground" } },
-  stage: { suburb_street: { camera_side: "front", marks: { Me: "@-3,11", Dad: "@0,15", Guy: "@9,11", "pizza_box#guy": "@9,11", "ball#lawn": "@5,12.5", "dog#lawn": "@-14,13.5", "car#kerb": "@12,4.2", "chalk#dad": "@0,15" } } },
-  scenes: [[1, 1, "sunset"], [2, 6, "night"], [7, 8, "storm"], [9, 17, "night"], [18, 18, "morning"], [19, 21, "night"]].map(([a, b, t], i) => ({ id: i + 1, lines: [a, b], place: "suburb_street", time: t, busy: "empty" })),
-  props: [{ kind: "chalk", size: 1.5 }, { kind: "ball", size: 1.7 }, { kind: "dog", size: 1.9 }, { kind: "car", size: 1.0 }, { kind: "roof", size: 1.6 }],
+  stage: { suburb_street: { camera_side: "front", marks: { Me: "@-3,18", Dad: "@1.5,18.6", Guy: "@4,10.5", "pizza_box#guy": "@4,10.5", "car#kerb2": "@-22,4.2", "car#kerb3": "@26,-4.2", "ball#lawn": "@5,12.5", "dog#lawn": "@-14,13.5", "car#kerb": "@12,4.2", "chalk#dad": "@0,15" } } },
+  scenes: [[1, 1, "sunset"], [2, 3, "night"], [4, 4, "sunset"], [5, 6, "night"], [7, 8, "storm"], [9, 17, "night"], [18, 18, "morning"], [19, 21, "night"]].map(([a, b, t], i) => ({ id: i + 1, lines: [a, b], place: "suburb_street", time: t, busy: "empty" })),
+  props: [{ kind: "chalk", size: 1.0 }, { kind: "ball", size: 1.7 }, { kind: "dog", size: 1.9 }, { kind: "car", size: 1.0 }, { kind: "roof", size: 1.6 }],
 };
 const A_ = (who, d, o = {}) => ({ who, do: d, target: "", to: "", text: "", on_word: 0, ...o });
 const ACTS = {
   1: [A_("dad", "draw_line", { target: "chalk_line#house", on_word: 3 })],
   2: [A_("me", "turn_to", { target: "ball#lawn", on_word: 7 })],
-  4: [A_("guy", "shake_head", { on_word: 2 }), A_("guy", "exit", { on_word: 10 })],
+  4: [A_("guy", "shake_head", { on_word: 2 }), A_("guy", "exit", { on_word: 17 })],
   5: [A_("me", "look_around", { on_word: 0 })],
   6: [A_("dad", "draw_line", { target: "chalk_line#house", on_word: 3 }), A_("dad", "give", { target: "me", on_word: 12 })],
   7: [A_("dad", "talk", { on_word: 0 }), A_("chalk_line#house", "wash_away", { target: "chalk_line#house", on_word: 17 })],
@@ -127,7 +129,7 @@ const ACTS = {
   9: [A_("monster", "switch_all_off", { target: "lamps", text: "one by one", on_word: 6 })],
   10: [A_("me", "shiver", { on_word: 5 })],
   11: [A_("monster", "enter", { to: "@-6,1.5", on_word: 0 })],
-  12: [A_("monster", "walk_to", { to: "@1,3.2", on_word: 6 })],
+  12: [A_("monster", "walk_to", { to: "@1,3.2", on_word: 6 }), A_("dad", "turn_to", { target: "monster", on_word: 7 })],
   13: [A_("me", "run_to", { to: "@-2,6.5", text: "sprint", on_word: 1 }), A_("me", "turn_to", { target: "dad", on_word: 12 })],
   14: [A_("me", "draw_around", { target: "monster", on_word: 1 })],
   15: [A_("monster", "turn_to", { target: "me", on_word: 1 }), A_("monster", "point", { target: "me", on_word: 3 })],
@@ -159,7 +161,7 @@ save("cards.json", { cards, refCuts, problems });
 // ---- 4. THE TAKES + THE SHOTS (a line without a cut continues the cut before: the shots tile on the cut words only)
 const T = compileTakes({ plan, cards: cards.map((c, i) => (c.cuts.length || i === 0 ? c : { ...c, cuts: [] })), states, lines, looks });
 T.shots.forEach((s, k) => { s.ta = k === 0 ? 0 : tw[s.w0].start; s.tb = s.w1 == null ? tw.at(-1).end + 0.25 : tw[s.w1].start; s.ref = refCuts[k]?.n; s.refh = refCuts[k]?.spec?.[3]; s.refT0 = refCuts[k]?.refT0; s.refT1 = refCuts[k]?.refT1; s.frac = s.refh ? Math.min(0.95, s.refh) : null; s.v = REFV[s.ref] ?? null; if (s.ref === 30) s.side = 160; });
-const LIB = ["worlds/worlds.py", "actions/actions.py", "worlds/acts.py", "worlds/pieces.py", "worlds/motion.py", "worlds/crowds.py", "worlds/town.py", "worlds/effects.py", "worlds/stage.py", "worlds/stage9.py", "worlds/stage9b.py"].map((f) => fs.readFileSync(path.join(KIT, f), "utf8")).join("\n\n");
+const LIB = ["worlds/worlds.py", "actions/actions.py", "worlds/acts.py", "worlds/pieces.py", "worlds/motion.py", "worlds/crowds.py", "worlds/town.py", "worlds/effects.py", "worlds/stage.py", "worlds/stage9.py", "worlds/stage9b.py", "worlds/stage9c.py"].map((f) => fs.readFileSync(path.join(KIT, f), "utf8")).join("\n\n");
 const HEAD = (title) => [`"""${title}"""`, "from shotkit import *", "from rbx import story", "from rbx.story import *", "import math, random", "from mathutils import Vector", "", "V = Video(__file__)", "story.bind(V)", "", LIB, ""];
 const ind = (s) => s.split("\n").map((l) => `    ${l}`).join("\n");
 const pyRun = (code, ...a) => { const r = spawnSync("python", ["-P", "-c", code, ...a], { encoding: "utf8" }); if (r.status) throw new Error(r.stderr.slice(-400)); return r.stdout; };
@@ -172,7 +174,9 @@ async function stills(tag) {
   if (fs.existsSync(path.join(dir, "done.json"))) return JSON.parse(fs.readFileSync(path.join(dir, "done.json"), "utf8"));
   fs.mkdirSync(path.join(dir, "video", "audio"), { recursive: true });
   const N = T.shots.length;
-  const body = (s, k) => [`o = (t0 + t1) / 2.0 - ${((s.ta + s.tb) / 2).toFixed(3)}`, `H = take_${s.scene}(o)`, T.cutCall(s, `o + ${s.ta.toFixed(3)}`, `o + ${s.tb.toFixed(3)}`, `S${k + 2}`)].join("\n");
+  const ruleOn = (s) => (plan.rule_check?.times ?? []).includes(plan.scenes.find((x) => x.id === s.scene)?.time);
+  const allowed = (line) => (plan.rule_check?.outside?.[line] ?? []).map((x) => String(x).toLowerCase());
+  const body = (s, k) => [`o = (t0 + t1) / 2.0 - ${((s.ta + s.tb) / 2).toFixed(3)}`, `H = take_${s.scene}(o)`, T.cutCall(s, `o + ${s.ta.toFixed(3)}`, `o + ${s.tb.toFixed(3)}`, `S${k + 2}`), ...(ruleOn(s) ? [`zs_rule_check(H, ${JSON.stringify(allowed(s.line))}, (t0 + t1) / 2.0, "R${k + 2}")`] : [])].join("\n");
   const src = [...HEAD(`Replica stills ${tag}`), "ZW_PREVIEW.update(pct=30, samples=6)", "", ...Object.values(T.takes), "",
     `@S(1, 0, 1, "unused")\ndef s001(t0, t1):\n    zw_build("suburb_street", t0, t1, {"time": "day"})\n    Cam().key(t0, (0, -20, 5), (0, 0, 2), lens=30)\n`,
     ...T.shots.map((s, k) => `@S(${k + 2}, ${2 * k + 1}, ${k + 1 < N ? 2 * k + 3 : "None"}, ${JSON.stringify(`ref shot ${s.ref}`)})\ndef s${String(k + 2).padStart(3, "0")}(t0, t1):\n${ind(body(s, k))}\n`)].join("\n");
@@ -204,6 +208,26 @@ async function stills(tag) {
 }
 
 // ---- 6. THE COMPARISON (free): the reference's mid frame next to ours, the measured subject size vs the reference's
+// the last round's (r5) positions under the same rule (in code: the house's line, the dog's circle, the car's box, the
+// suburb's own unboxed parked cars near the stage)
+function ruleBefore() {
+  const inRect = (p, a) => p[0] > a[0] && p[0] < a[2] && p[1] > a[1] && p[1] < a[3];
+  const house = [-9, 16.5, 9, 34.5];
+  const scenes5 = [[1, 1, "sunset"], [2, 6, "night"], [7, 8, "storm"], [9, 17, "night"], [18, 18, "morning"], [19, 21, "night"]];
+  const time = (n) => scenes5.find(([a, b]) => n >= a && n <= b)[2];
+  const pos = (who, n) => who === "me" ? (n >= 13 ? [-2, 6.5] : [-3, 11]) : who === "dad" ? (n >= 8 ? [3, 11] : [0, 15]) : who === "guy" ? (n <= 4 ? [9, 11] : null) : null;
+  const per = [];
+  for (const s of T.shots) {
+    if (!["night", "storm"].includes(time(s.line))) continue;
+    const allow = new Set((plan.rule_check.outside[s.line] ?? []).map((x) => x.toLowerCase()));
+    if (s.line === 4) allow.add("guy");
+    const br = [];
+    for (const who of ["me", "dad", "guy"]) { const q = pos(who, s.line); if (q && !allow.has(who) && !inRect(q, house)) br.push(who); }
+    br.push("parked car (-14, 3.2) unboxed", "parked car (22, -3.2) unboxed");
+    per.push({ ref: s.ref, breaks: br });
+  }
+  return { total: per.reduce((a, x) => a + x.breaks.length, 0), shots: per.length, perShot: per };
+}
 function compare(tag, r) {
   const rows = T.shots.map((s, k) => ({ k: k + 1, ref: s.ref, line: s.line, refPng: path.join(A, "frames", `s${String(s.ref).padStart(3, "0")}_mid.jpg`), ours: r.pngs[k + 1] ?? null, refh: s.refh, h: r.meas[k + 1]?.h ?? null, camz: r.meas[k + 1]?.camz ?? null, spec: `${s.shot} ${s.show.join("+")} ${s.move}` }));
   const vr = fs.existsSync(path.join(OUT, `verdicts_${tag}.json`)) ? JSON.parse(fs.readFileSync(path.join(OUT, `verdicts_${tag}.json`), "utf8")) : {};
@@ -216,6 +240,9 @@ function compare(tag, r) {
     const m = r.meas[x.k] ?? null;
     x.v = m?.v ?? null; x.refv = REFV[x.ref] ?? null;
     const why = [];
+    const rb = (r.gate ?? []).filter((g) => String(g).startsWith(`ZW_GATE|R${x.k + 1}|`) && String(g).includes("|rule_break|")).map((g) => String(g).split("|")[2]);
+    x.rule = rb;
+    if (rb.length) why.push(`RULE BREAK: ${rb.join(", ")} outside a closed chalk line`);
     if (!x.ours) why.push("no still");
     else {
       if ((luma[x.ours] ?? 1) < Math.max(0.035, 0.45 * (lumaRef[x.refPng] ?? 0.1))) why.push(`black frame (${(luma[x.ours] ?? 0).toFixed(2)} vs the reference ${(lumaRef[x.refPng] ?? 0).toFixed(2)})`);
@@ -232,6 +259,9 @@ function compare(tag, r) {
     x.pass = !why.length; x.why = why.join("; ");
   }
   const within = rows.filter((x) => x.pass).length;
+  const after = rows.reduce((a, x) => a + (x.rule?.length ?? 0), 0);
+  fs.writeFileSync(path.join(OUT, `rule_${tag}.json`), JSON.stringify({ after, perShot: rows.filter((x) => x.rule?.length).map((x) => ({ ref: x.ref, breaks: x.rule })), before: ruleBefore() }, null, 1));
+  say(`THE RULE: ${after} break(s) in this round's shots (in the engine); the last round's positions: ${ruleBefore().total} (the same rule in code)`);
   const measured = rows.length;
   fs.writeFileSync(path.join(OUT, `compare_${tag}.json`), JSON.stringify({ rows, within, measured }, null, 1));
   pyRun(fs.readFileSync(path.join(HERE, "compare9.py"), "utf8"), path.join(OUT, `compare_${tag}.json`), path.join(OUT, `compare_${tag}.jpg`));

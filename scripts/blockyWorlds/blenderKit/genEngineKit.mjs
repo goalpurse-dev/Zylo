@@ -14,7 +14,7 @@ import { fileURLToPath } from "node:url";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const W = (f) => fs.readFileSync(path.join(HERE, "worlds", f), "utf8");
 const acts = W("acts.py"), worlds = W("worlds.py");
-const extra = ["crowds.py", "town.py", "effects.py", "stage.py", "stage9.py", "stage9b.py"].map(W).join("\n");
+const extra = ["crowds.py", "town.py", "effects.py", "stage.py", "stage9.py", "stage9b.py", "stage9c.py"].map(W).join("\n");
 
 // things: the kinds with their own build branch
 const zt = acts.slice(acts.indexOf("def zt_build("), acts.indexOf("def zw_thing("));
