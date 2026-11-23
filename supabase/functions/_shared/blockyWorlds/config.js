@@ -47,8 +47,8 @@ export const ROBLOX_STORY = Object.freeze({
   settings: Object.freeze({ stability: 0.35, similarity_boost: 0.8, style: 0.3, use_speaker_boost: true, speed: 1.2 }),
   outputFormat: "mp3_44100_128",
   // round 3 (owner): made at 1.2, then sped up afterwards, pitch kept (voice/eleven.mjs: atempo pace / speed);
-  // round 5 (owner 2026-11-22): 1.3x is the default (it was 1.25)
-  pace: 1.3,
+  // round 5 (owner 2026-11-22): 1.3x was the default; round 9d (owner 2026-11-23): 1.2x (slower, the reference's length)
+  pace: 1.2,
 });
 export const NARRATOR = ROBLOX_STORY;
 

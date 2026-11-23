@@ -59,12 +59,13 @@ test("motion: the engine library has the reel's actions and the walk matches the
   assert.match(w, /lambda: zm_alive_all\(S\)/, "idle life on every character in the hook");
 });
 
-test("pace: pauses after a sentence become 0.15 s (inside a line 0.08 s); 1.25x and 1.3x from the same take", () => {
+test("pace: pauses after a sentence become 0.15 s (inside a line 0.08 s); 1.25x and 1.3x from the same take (1.2x the default since round 9d)", () => {
   const spoken = [{ w: "home.", s: 0, e: 0.5 }, { w: "Then", s: 1.2, e: 1.5 }, { w: "we", s: 1.9, e: 2.1 }];
   const r = keepRanges(spoken, 3);
   assert.equal(r.length, 3);
   assert.equal(+((r[0][1] - 0.5) + (1.2 - r[1][0])).toFixed(3), 0.15, "the sentence pause keeps 0.15 s");
   assert.equal(+(1.9 - r[2][0]).toFixed(3), 0.04);
   assert.equal(tempoFor({ ...NARRATOR, pace: 1.25 }), 1.0417);
-  assert.equal(tempoFor(NARRATOR), 1.0833, "1.3x is the default (round 5)");
+  assert.equal(tempoFor({ ...NARRATOR, pace: 1.3 }), 1.0833);
+  assert.equal(tempoFor(NARRATOR), 1, "1.2x is the default (round 9d)");
 });

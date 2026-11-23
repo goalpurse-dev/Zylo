@@ -23,7 +23,7 @@ export const MOVE_ACTIONS = Object.freeze(["enter", "exit", "walk_to", "run_to",
 export const MARKS8 = Object.freeze(["left", "center", "right", "back_left", "back", "back_right", "front_left", "front", "front_right"]);
 export const SIDE_DEG = Object.freeze({ front: 0, front_left: 28, front_right: -28 });
 export const TIMES8 = Object.freeze(["day", "sunset", "night", "storm", "morning"]);
-export const SHOTS8 = Object.freeze(["wide", "medium", "two", "close", "insert", "low", "top", "place", "street", "aerial", "high", "legs"]);
+export const SHOTS8 = Object.freeze(["wide", "medium", "two", "close", "insert", "low", "top", "place", "street", "aerial", "high", "legs", "house"]);
 /** a stage mark, or an exact ground point "@x,y" (round 9: the car at the kerb, the monster on the road) */
 export const isMark = (m) => MARKS8.includes(m) || /^@-?[\d.]+,-?[\d.]+$/.test(String(m ?? ""));
 export const MOVES8 = Object.freeze(["push_in", "tilt_up", "track", "top_down", "static"]);
@@ -288,6 +288,23 @@ export function cutProblems(card, { line, plan, stateBefore, stateAfter, place, 
   const all = [prevCut, ...cuts].filter(Boolean);
   for (let i = 1; i < all.length; i++) if (sig(all[i]) === sig(all[i - 1])) out.push(`cut ${i}${all[0] === prevCut ? "" : " + 1"}: the same shot of the same thing as the cut before (every shot shows something new)`);
   return out;
+}
+
+/**
+ * ROUND 9d (owner): THE RULE HAS NO EXCEPTIONS EXCEPT THE STORY'S OWN WORDS. plan.rule_check.exceptions = [{ who,
+ * from_line, to_line, because }]: an exception counts only when its `because` is in the words of its from_line (the
+ * script line that causes it: "our line wash away", "Dad ran outside"); one with no line is not applied (the person stays
+ * under the rule, so the shot measures a rule break). -> { outside: { line: [who] }, invalid: [..] }
+ */
+export function ruleExceptions(plan, lines) {
+  const norm = (t) => String(t ?? "").toLowerCase().replace(/[^a-z0-9' ]/g, " ").replace(/\s+/g, " ").trim();
+  const outside = {}, invalid = [];
+  for (const e of plan.rule_check?.exceptions ?? []) {
+    const L = lines[(Number(e.from_line) || 0) - 1];
+    if (!L || !e.because || !norm(L.text).includes(norm(e.because))) { invalid.push({ ...e, why: L ? `"${e.because}" is not in line ${e.from_line} ("${L.text}")` : `line ${e.from_line} does not exist` }); continue; }
+    for (let n = Number(e.from_line); n <= Number(e.to_line ?? e.from_line); n++) (outside[n] ??= []).push(low(e.who));
+  }
+  return { outside, invalid };
 }
 
 /** ONE THING PER CUT (rule 14; round 8 first test: cuts of 3-4 people made everyone tiny in 9:16): a cut other than the

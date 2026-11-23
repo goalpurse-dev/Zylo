@@ -52,7 +52,7 @@ test("the compiler: a thing the words name comes into the frame (held when grabb
   assert.match(mpy, /zw_thing\("shoe".*\* 3\.2\)/, "a shoe next to the monster is drawn at the monster's scale");
 });
 
-test("voice: 1.3x is the default", () => {
-  assert.equal(PACE, 1.3);
-  assert.equal(NARRATOR.pace, 1.3);
+test("voice: 1.2x is the default (round 9d; it was 1.3x)", () => {
+  assert.equal(PACE, 1.2);
+  assert.equal(NARRATOR.pace, 1.2);
 });

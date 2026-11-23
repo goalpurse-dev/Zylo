@@ -7,7 +7,7 @@ import { ROBLOX_STORY } from "./config.js";
 
 /** every voice is made at the API's top speed (1.2) and sped up to PACE afterwards (pitch kept, atempo PACE / 1.2);
  * round 5 (owner 2026-11-22): 1.3x by default */
-export const PACE = 1.3;
+export const PACE = 1.2;   // round 9d (owner 2026-11-23): 1.2x is the In This Town default (it was 1.3)
 const S = (stability, style) => Object.freeze({ stability, similarity_boost: 0.8, style, use_speaker_boost: true, speed: 1.2 });
 const V = (voiceId, voiceName, settings, about) => Object.freeze({ provider: "elevenlabs", voiceId, voiceName, model: "eleven_multilingual_v2", settings, outputFormat: "mp3_44100_128", pace: PACE, about });
 

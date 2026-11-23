@@ -3,7 +3,7 @@
 // worlds.py (places, monsters, faces) and worlds/acts.py (actions, things, effects).
 import { LOCATIONS } from "./locations.js";
 // round 7 (owner): the lists come FROM THE CODE (scripts/blockyWorlds/blenderKit/genEngineKit.mjs writes this file)
-import { GEN_THINGS, GEN_ACTIONS, GEN_PLACES, GEN_RECIPES, GEN_ACTIONS8, GEN_SHOTS8, GEN_MOVES8 } from "./engineKitGenerated.js";
+import { GEN_THINGS, GEN_ACTIONS, GEN_PLACES, GEN_RECIPES, GEN_ACTIONS8, GEN_SHOTS8, GEN_MOVES8, GEN_LIBRARY } from "./engineKitGenerated.js";
 
 export const PLACES = LOCATIONS.filter((l) => GEN_PLACES.includes(l.id)).map((l) => ({ id: l.id, label: l.label, about: l.about }));
 /** places a story may use outdoors / indoors (the kit's plane, moon and school sets only when the story is there) */
@@ -64,6 +64,8 @@ export function engineKitText() {
 export const ACTIONS8 = GEN_ACTIONS8;
 export const SHOTS8 = GEN_SHOTS8;
 export const MOVES8 = GEN_MOVES8;
+/** round 9d: the LIBRARY of pieces built on the spot (animations, effects, characters, places, set pieces, cameras) */
+export const LIBRARY = GEN_LIBRARY;
 export const TIMES8 = Object.freeze(["day", "sunset", "night", "storm", "morning"]);
 export const MONSTERS8 = Object.freeze({ shadow: "a tall black silhouette with two glowing eyes and long thin limbs (scary stories)", ...MONSTERS });
 /** the round 8 list (generated from the take compiler + the prop builders): the writer and the plan only use these */
@@ -76,6 +78,7 @@ export function engineKitText8() {
     `- ACTIONS: ${Object.entries(ACTIONS8).map(([k, v]) => `${k} (${v})`).join("; ")}.`,
     `- THINGS: ${THINGS.join(", ")}.`,
     `- MONSTERS: ${Object.entries(MONSTERS8).map(([k, v]) => `${k}: ${v}`).join("; ")}.`,
+    `- THE LIBRARY (built before, reuse it): ${Object.entries(LIBRARY).map(([k, v]) => `${k} (${v.kind}: ${v.what.split(" (")[0]})`).join("; ")}.`,
     "- NOT POSSIBLE: written text except one short sign, tiny details, liquids, fire spreading, flying people, transformations, fast fights.",
     "- ONLY THESE. Anything not on these lists is never written: swap it for the closest thing on the list.",
   ].join("\n");

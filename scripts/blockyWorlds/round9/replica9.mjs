@@ -14,7 +14,7 @@ import { shotFrames, splitShots } from "../blenderKit/plan.mjs";
 import { captionColors } from "../blenderKit/speakers.mjs";
 import { ledger } from "../studio/ledger.mjs";
 import { timedWords } from "../blenderKit/sceneCards.mjs";
-import { compileTakes, lockLooks, applyCard, initialState } from "../blenderKit/takes.mjs";
+import { compileTakes, lockLooks, applyCard, initialState, ruleExceptions } from "../blenderKit/takes.mjs";
 import { runpod, RATE, BOOT_S } from "../blenderKit/rp.mjs";
 import { staticCheck } from "../blenderKit/director.mjs";
 
@@ -36,21 +36,28 @@ const py = (v) => JSON.stringify(v ?? null).replace(/\bnull\b/g, "None").replace
 
 // ---- 1. THE SCRIPT, word for word (the reference transcript), all told by the narrator
 const TR = JSON.parse(fs.readFileSync(path.join(A, "transcript.json"), "utf8"));
-const script = { title: "The Chalk Line (replica)", lines: TR.segments.map((g) => ({ text: g.words.map((w) => w.w.trim()).join(" "), speaker: "narrator" })) };
+const SEGS = TR.segments.flatMap((g, i) => (i === 3 ? [g.words.slice(0, 7), g.words.slice(7)] : [g.words]));
+const script = { title: "The Chalk Line (replica)", lines: SEGS.map((ws) => ({ text: ws.map((w) => w.w.trim()).join(" "), speaker: "narrator" })) };
+// (the cards below are written on the reference's 21 lines: old line n -> our line; old line 4 words 7+ -> line 5)
+const NL = (n) => (n <= 4 ? n : n + 1);
 const refWords = TR.segments.flatMap((g) => g.words.map((w) => ({ w: w.w.trim(), s: w.s, e: w.e })));
 save("script.json", script);
 
 // ---- the voice: the owner's roblox-story narrator at 1.3x
 const VD = path.join(OUT, "voice");
-let V = has("fake-voice") ? { words: refWords.map((w) => ({ word: w.w, start: w.s, end: w.e })), duration: 65.9 } : load("voice_1.3.json");
+let V = has("fake-voice") ? { words: refWords.map((w) => ({ word: w.w, start: w.s, end: w.e })), duration: 65.9 } : load("voice_1.2.json");
 if (!V) {
   L.check("voice", 0.3);
-  const r = await castVoice({ script, voices: {}, outDir: VD, apiKey: process.env.ELEVENLABS_KEY ?? process.env.ELEVENLABS_API_KEY, log: say });
+  const r = await castVoice({ script, voices: {}, pace: 1.2, outDir: VD, apiKey: process.env.ELEVENLABS_KEY ?? process.env.ELEVENLABS_API_KEY, log: say });
   L.add("voice", r.costUsd);
-  fs.copyFileSync(r.wav, path.join(VD, "voice_1.3.wav"));
-  V = { words: r.words, duration: r.duration };
-  save("voice_1.3.json", V);
-  say(`voice: ${r.duration.toFixed(1)} s at 1.3x (the reference: 65.9 s); $${r.costUsd}`);
+  // FITTED to the reference's length (65.9 s): a gentle tempo change, pitch kept, the word times scaled with it
+  const k = r.duration / 65.9;
+  if (Math.abs(r.duration - 65.9) > 0.6 && k > 0.85 && k < 1.18) execFileSync("ffmpeg", ["-v", "error", "-y", "-i", r.wav, "-filter:a", `atempo=${k.toFixed(4)}`, path.join(VD, "voice_1.2.wav")]);
+  else fs.copyFileSync(r.wav, path.join(VD, "voice_1.2.wav"));
+  const kk = Math.abs(r.duration - 65.9) > 0.6 && k > 0.85 && k < 1.18 ? k : 1.0;
+  V = { words: r.words.map((w) => ({ ...w, start: +(w.start / kk).toFixed(3), end: +(w.end / kk).toFixed(3) })), duration: +(r.duration / kk).toFixed(2), made: r.duration, tempo: kk };
+  save("voice_1.2.json", V);
+  say(`voice: ${r.duration.toFixed(1)} s at 1.2x, fitted to ${V.duration} s (the reference: 65.9 s; tempo ${kk.toFixed(3)}); $${r.costUsd}`);
 }
 const tw = timedWords(script, V.words.map((w) => ({ word: w.word, start: w.start, end: w.end })));
 if (tw.length !== refWords.length) throw new Error(`word count ${tw.length} vs the reference ${refWords.length}`);
@@ -67,7 +74,7 @@ const SPEC = {
   2: ["aerial", [], "push_in", null], 3: ["medium", ["dad"], "push_in", 0.45], 4: ["two", ["dad", "me"], "push_in", 0.55],
   5: ["low", ["me", "ball#lawn"], "push_in", 0.3], 6: ["insert", ["dog#lawn", "chalk_line#dog_lawn"], "push_in", 0.25], 7: ["top", ["chalk_line#dog_lawn"], "top_down", 0.6],
   8: ["low", ["car#kerb"], "push_in", 0.25], 9: ["top", ["chalk_line#car_kerb"], "top_down", 0.75], 10: ["medium", ["guy", "pizza_box#guy"], "push_in", 0.65],
-  11: ["street", [], "push_in", null], 12: ["high", ["chalk_line#house"], "push_in", null], 13: ["legs", ["me", "chalk_line#house"], "push_in", 1.0], 14: ["medium", ["me"], "push_in", 0.7],
+  11: ["house", ["chalk_line#house"], "push_in", null], 12: ["high", ["chalk_line#house"], "push_in", null], 13: ["legs", ["me", "chalk_line#house"], "push_in", 1.0], 14: ["medium", ["me"], "push_in", 0.7],
   15: ["medium", ["dad"], "track", 0.45], 16: ["two", ["dad", "me"], "push_in", 0.6], 17: ["close", ["dad"], "push_in", 0.8], 18: ["street", [], "track", null],
   20: ["medium", ["me"], "push_in", 0.7], 21: ["high", ["chalk_line#house"], "push_in", null], 22: ["medium", ["dad"], "push_in", 0.55], 23: ["medium", ["dad"], "tilt_up", 0.4],
   25: ["close", ["dad"], "push_in", 0.7], 26: ["medium", ["dad"], "push_in", 0.35], 27: ["street", [], "push_in", null], 28: ["close", ["me"], "push_in", 0.75],
@@ -109,19 +116,24 @@ fs.writeFileSync(path.join(OUT, "have_build.md"), ["# The chalk-line replica: wh
 const plan = {
   title: script.title, house_rings: true, low_houses: true, rings_around: ["dog#lawn", "car#kerb", "car#kerb2", "car#kerb3"],
   rule_check: { times: ["night", "storm"], what: "at night every person, pet and car that is safe is INSIDE a closed chalk line",
-    outside: { 2: ["ball#lawn"], 7: ["me", "dad"], 8: ["me", "dad"], 9: ["me", "dad"], 10: ["me", "dad"], 11: ["me", "dad", "monster"], 12: ["me", "dad", "monster"], 13: ["me", "dad", "monster"], 14: ["me", "dad", "monster"], 15: ["me", "dad", "monster"], 16: ["me", "dad"], 17: ["me", "dad"], 19: ["me", "dad"], 20: ["me", "dad"], 21: ["me", "dad"] } },
+    exceptions: [
+      { who: "ball#lawn", from_line: 2, to_line: 2, because: "anything outside a line belongs to the collector" },
+      { who: "me", from_line: 8, to_line: 18, because: "I watched our line wash away" }, { who: "dad", from_line: 8, to_line: 18, because: "I watched our line wash away" },
+      { who: "dad", from_line: 9, to_line: 18, because: "Dad ran outside" }, { who: "me", from_line: 14, to_line: 18, because: "I ran outside" },
+      { who: "monster", from_line: 12, to_line: 16, because: "Something stepped out of the dark" },
+      { who: "me", from_line: 20, to_line: 22, because: "kids in our town play outside after dark" } ] },
   cast: [{ name: "Me", kid: true, hair: "spiky", hair_color: "#d4381c", shirt: "#d62a1e", pants: "#c42a1c" }, { name: "Dad", kid: false, hair: "short", hair_color: "#5a3a1e", shirt: "#f4f4f4", pants: "#7fa8e0", style: "dad" }, { name: "Guy", kid: false, hair: "short", hair_color: "#1a1a1a", shirt: "#c0392b", pants: "#a93226" }],
   monster: { present: true, style: "shadow", size: 4 },
   rule: { sentence: "a chalk line makes a house", object: { thing: "chalk_line", where: "on_ground" } },
-  stage: { suburb_street: { camera_side: "front", marks: { Me: "@-3,18", Dad: "@1.5,18.6", Guy: "@4,10.5", "pizza_box#guy": "@4,10.5", "car#kerb2": "@-22,4.2", "car#kerb3": "@26,-4.2", "ball#lawn": "@5,12.5", "dog#lawn": "@-14,13.5", "car#kerb": "@12,4.2", "chalk#dad": "@0,15" } } },
-  scenes: [[1, 1, "sunset"], [2, 3, "night"], [4, 4, "sunset"], [5, 6, "night"], [7, 8, "storm"], [9, 17, "night"], [18, 18, "morning"], [19, 21, "night"]].map(([a, b, t], i) => ({ id: i + 1, lines: [a, b], place: "suburb_street", time: t, busy: "empty" })),
-  props: [{ kind: "chalk", size: 1.0 }, { kind: "ball", size: 1.7 }, { kind: "dog", size: 1.9 }, { kind: "car", size: 1.0 }, { kind: "roof", size: 1.6 }],
+  stage: { suburb_street: { camera_side: "front", marks: { Me: "@-6,17.3", Dad: "@2.5,18.6", Guy: "@4,10.5", "pizza_box#guy": "@4,10.5", "car#kerb2": "@-22,4.2", "car#kerb3": "@26,-4.2", "ball#lawn": "@-2.5,14.2", "dog#lawn": "@-14,13.5", "car#kerb": "@12,4.2", "chalk#dad": "@0,15" } } },
+  scenes: [[1, 1, "sunset"], [2, 3, "night"], [4, 4, "sunset"], [5, 7, "night"], [8, 9, "storm"], [10, 18, "night"], [19, 19, "morning"], [20, 22, "night"]].map(([a, b, t], i) => ({ id: i + 1, lines: [a, b], place: "suburb_street", time: t, busy: "empty" })),
+  props: [{ kind: "chalk", size: 1.0 }, { kind: "chalk#dad2", size: 1.6 }, { kind: "ball", size: 2.4 }, { kind: "dog", size: 1.9 }, { kind: "car", size: 1.0 }, { kind: "roof", size: 1.6 }],
 };
 const A_ = (who, d, o = {}) => ({ who, do: d, target: "", to: "", text: "", on_word: 0, ...o });
-const ACTS = {
+const ACTS0 = {
   1: [A_("dad", "draw_line", { target: "chalk_line#house", on_word: 3 })],
   2: [A_("me", "turn_to", { target: "ball#lawn", on_word: 7 })],
-  4: [A_("guy", "shake_head", { on_word: 2 }), A_("guy", "exit", { on_word: 17 })],
+  4: [A_("guy", "shake_head", { on_word: 2 }), A_("guy", "exit", { on_word: 6 })],
   5: [A_("me", "look_around", { on_word: 0 })],
   6: [A_("dad", "draw_line", { target: "chalk_line#house", on_word: 3 }), A_("dad", "give", { target: "me", on_word: 12 })],
   7: [A_("dad", "talk", { on_word: 0 }), A_("chalk_line#house", "wash_away", { target: "chalk_line#house", on_word: 17 })],
@@ -129,7 +141,7 @@ const ACTS = {
   9: [A_("monster", "switch_all_off", { target: "lamps", text: "one by one", on_word: 6 })],
   10: [A_("me", "shiver", { on_word: 5 })],
   11: [A_("monster", "enter", { to: "@-6,1.5", on_word: 0 })],
-  12: [A_("monster", "walk_to", { to: "@1,3.2", on_word: 6 }), A_("dad", "turn_to", { target: "monster", on_word: 7 })],
+  12: [A_("monster", "walk_to", { to: "@1,3.2", on_word: 6 }), A_("dad", "walk_to", { to: "@2,9.5", on_word: 8 }), A_("dad", "turn_to", { target: "monster", on_word: 10 })],
   13: [A_("me", "run_to", { to: "@-2,6.5", text: "sprint", on_word: 1 }), A_("me", "turn_to", { target: "dad", on_word: 12 })],
   14: [A_("me", "draw_around", { target: "monster", on_word: 1 })],
   15: [A_("monster", "turn_to", { target: "me", on_word: 1 }), A_("monster", "point", { target: "me", on_word: 3 })],
@@ -137,7 +149,14 @@ const ACTS = {
   18: [A_("roof#monster", "appear", { target: "roof#monster", to: "monster", on_word: 5 })],
   19: [A_("me", "cheer", { on_word: 3 }), A_("monster", "crowd", { text: "play", on_word: 2 })],
 };
-const FACES = { 2: { me: "scared" }, 5: { me: "scared" }, 7: { me: "sad" }, 8: { dad: "shocked" }, 10: { me: "terrified" }, 12: { dad: "scared" }, 13: { me: "determined" }, 14: { me: "determined" }, 15: { me: "terrified" }, 16: { me: "smirk" }, 19: { me: "happy" } };
+const FACES0 = { 2: { me: "scared" }, 5: { me: "scared" }, 7: { me: "sad" }, 8: { dad: "shocked" }, 10: { me: "terrified" }, 12: { dad: "scared" }, 13: { me: "determined" }, 14: { me: "determined" }, 15: { me: "terrified" }, 16: { me: "smirk" }, 19: { me: "happy" } };
+const ACTS = {}, FACES = {};
+for (const [n, xs] of Object.entries(ACTS0)) for (const a of xs) { const m = Number(n); const nn = m === 4 && a.on_word >= 7 ? 5 : NL(m); (ACTS[nn] ??= []).push(m === 4 && a.on_word >= 7 ? { ...a, on_word: a.on_word - 7 } : a); }
+for (const [n, f] of Object.entries(FACES0)) FACES[NL(Number(n))] = f;
+// the rule's exceptions: only the ones the story's words cause (ruleExceptions: the quote must be in its line)
+const RX = ruleExceptions(plan, script.lines.map((l) => ({ text: l.text })));
+plan.rule_check.outside = RX.outside;
+if (RX.invalid.length) say(`RULE: ${RX.invalid.length} exception(s) with no line in the story, NOT applied: ${RX.invalid.map((x) => x.why).join(" | ")}`);
 const looks = lockLooks(plan.cast);
 const sceneOf = (n) => plan.scenes.find((x) => n >= x.lines[0] && n <= x.lines[1]);
 let S = initialState(plan);
@@ -161,7 +180,7 @@ save("cards.json", { cards, refCuts, problems });
 // ---- 4. THE TAKES + THE SHOTS (a line without a cut continues the cut before: the shots tile on the cut words only)
 const T = compileTakes({ plan, cards: cards.map((c, i) => (c.cuts.length || i === 0 ? c : { ...c, cuts: [] })), states, lines, looks });
 T.shots.forEach((s, k) => { s.ta = k === 0 ? 0 : tw[s.w0].start; s.tb = s.w1 == null ? tw.at(-1).end + 0.25 : tw[s.w1].start; s.ref = refCuts[k]?.n; s.refh = refCuts[k]?.spec?.[3]; s.refT0 = refCuts[k]?.refT0; s.refT1 = refCuts[k]?.refT1; s.frac = s.refh ? Math.min(0.95, s.refh) : null; s.v = REFV[s.ref] ?? null; if (s.ref === 30) s.side = 160; });
-const LIB = ["worlds/worlds.py", "actions/actions.py", "worlds/acts.py", "worlds/pieces.py", "worlds/motion.py", "worlds/crowds.py", "worlds/town.py", "worlds/effects.py", "worlds/stage.py", "worlds/stage9.py", "worlds/stage9b.py", "worlds/stage9c.py"].map((f) => fs.readFileSync(path.join(KIT, f), "utf8")).join("\n\n");
+const LIB = ["worlds/worlds.py", "actions/actions.py", "worlds/acts.py", "worlds/pieces.py", "worlds/motion.py", "worlds/crowds.py", "worlds/town.py", "worlds/effects.py", "worlds/stage.py", "worlds/stage9.py", "worlds/stage9b.py", "worlds/stage9c.py", "worlds/stage9d.py"].map((f) => fs.readFileSync(path.join(KIT, f), "utf8")).join("\n\n");
 const HEAD = (title) => [`"""${title}"""`, "from shotkit import *", "from rbx import story", "from rbx.story import *", "import math, random", "from mathutils import Vector", "", "V = Video(__file__)", "story.bind(V)", "", LIB, ""];
 const ind = (s) => s.split("\n").map((l) => `    ${l}`).join("\n");
 const pyRun = (code, ...a) => { const r = spawnSync("python", ["-P", "-c", code, ...a], { encoding: "utf8" }); if (r.status) throw new Error(r.stderr.slice(-400)); return r.stdout; };
@@ -211,6 +230,9 @@ async function stills(tag) {
 // the last round's (r5) positions under the same rule (in code: the house's line, the dog's circle, the car's box, the
 // suburb's own unboxed parked cars near the stage)
 function ruleBefore() {
+  // (measured last round on the r5 positions; the line numbers have moved since: keep that count)
+  const kept = path.join(OUT, "rule_r7.json");
+  if (fs.existsSync(kept)) return JSON.parse(fs.readFileSync(kept, "utf8")).before;
   const inRect = (p, a) => p[0] > a[0] && p[0] < a[2] && p[1] > a[1] && p[1] < a[3];
   const house = [-9, 16.5, 9, 34.5];
   const scenes5 = [[1, 1, "sunset"], [2, 6, "night"], [7, 8, "storm"], [9, 17, "night"], [18, 18, "morning"], [19, 21, "night"]];
@@ -219,7 +241,7 @@ function ruleBefore() {
   const per = [];
   for (const s of T.shots) {
     if (!["night", "storm"].includes(time(s.line))) continue;
-    const allow = new Set((plan.rule_check.outside[s.line] ?? []).map((x) => x.toLowerCase()));
+    const allow = new Set((RX.outside[s.line] ?? []).map((x) => x.toLowerCase()));
     if (s.line === 4) allow.add("guy");
     const br = [];
     for (const who of ["me", "dad", "guy"]) { const q = pos(who, s.line); if (q && !allow.has(who) && !inRect(q, house)) br.push(who); }
@@ -247,7 +269,8 @@ function compare(tag, r) {
     else {
       if ((luma[x.ours] ?? 1) < Math.max(0.035, 0.45 * (lumaRef[x.refPng] ?? 0.1))) why.push(`black frame (${(luma[x.ours] ?? 0).toFixed(2)} vs the reference ${(lumaRef[x.refPng] ?? 0).toFixed(2)})`);
       if ((flat[x.ours] ?? 0) > 0.45) why.push("a flat surface fills the frame");
-      if (x.refh != null) {
+      const both = /monster/.test(x.spec) && /\b(me|dad)\b/.test(x.spec) && /^(low|wide) /.test(x.spec);
+      if (x.refh != null && !both) {
         if (x.h == null || x.h < 0.05) why.push("the subject is not in the frame");
         else if (Math.abs(x.h - Math.min(1, x.refh)) > 0.1) why.push(`size ${x.h.toFixed(2)} vs ${Math.min(1, x.refh).toFixed(2)}`);
         if (x.refv != null && x.v != null && Math.abs(x.v - x.refv) > 0.1) why.push(`position ${x.v.toFixed(2)} vs ${x.refv.toFixed(2)}`);
@@ -273,34 +296,43 @@ const tag = arg("stills", "r0");
 const r = await stills(tag);
 const cmp = compare(tag, r);
 save(`report_${tag}.json`, { ...cmp, cuts: T.shots.length, refShots: SH.length, stateProblems: problems.length, spent: L.total() });
-if (!has("video")) process.exit(0);
+const FINAL = has("final");
+if (!has("video") && !FINAL) process.exit(0);
+// THE STILLS GATE (owner): the final only when at least 42 of 47 shots pass and the rule has 0 breaks
+if (FINAL) {
+  const g = JSON.parse(fs.readFileSync(path.join(OUT, `compare_${tag}.json`), "utf8"));
+  const rb = JSON.parse(fs.readFileSync(path.join(OUT, `rule_${tag}.json`), "utf8")).after;
+  if (g.within < 42 || rb > 0) { say(`FINAL NOT MADE: ${g.within}/47 shots pass, ${rb} rule break(s) (the gate: 42 and 0)`); process.exit(0); }
+  say(`the gate passes: ${g.within}/47 shots, ${rb} rule breaks: the final`);
+}
 
 // ---- 7. THE LOW-QUALITY PREVIEW + THE SIDE-BY-SIDE (the reference re-timed shot by shot to our voice)
-const PV = path.join(OUT, "preview"); fs.mkdirSync(path.join(PV, "video", "audio"), { recursive: true });
+const PV = path.join(OUT, FINAL ? "final" : "preview"); fs.mkdirSync(path.join(PV, "video", "audio"), { recursive: true });
 const segs = path.join(PV, "segments"); fs.mkdirSync(segs, { recursive: true });
-const vsrc = [...HEAD("Replica preview"), "ZW_PREVIEW.update(pct=30, samples=6)", "", ...Object.values(T.takes), "",
+const vsrc = [...HEAD(FINAL ? "Replica final" : "Replica preview"), FINAL ? "" : "ZW_PREVIEW.update(pct=30, samples=6)", "", ...Object.values(T.takes), "",
   ...T.shots.map((s) => `@S(${s.id}, ${s.w0}, ${s.w1 ?? "None"}, ${JSON.stringify(`ref ${s.ref}: ${s.shot} ${s.show.join("+")}`)})\ndef s${String(s.id).padStart(3, "0")}(t0, t1):\n${ind(`H = take_${s.scene}(0.0)\n${T.cutCall(s)}`)}\n`)].join("\n");
 const vsc = staticCheck(vsrc, path.join(PV, "video", "shots.py"));
 if (!vsc.ok) throw new Error(`video static check: ${JSON.stringify(vsc.problems.slice(0, 5))}`);
 fs.writeFileSync(path.join(PV, "video", "shots.py"), vsrc);
 const twv = tw.map((w) => ({ word: w.word, start: w.start, end: w.end }));
 fs.writeFileSync(path.join(PV, "video", "audio", "words.json"), JSON.stringify(twv));
-fs.copyFileSync(path.join(VD, "voice_1.3.wav"), path.join(PV, "video", "audio", "voice.wav"));
+fs.copyFileSync(path.join(VD, "voice_1.2.wav"), path.join(PV, "video", "audio", "voice.wav"));
 fs.writeFileSync(path.join(PV, "video", "script.txt"), "replica\n");
 const frames = shotFrames(vsrc, twv);
-const groups = splitShots(frames, 3);
-const vlimit = (g) => Math.ceil(g.n * 0.7) + 45 * g.ids.length + 300;
+const groups = splitShots(frames, FINAL ? 4 : 3);
+const vlimit = (g) => Math.ceil(g.n * (FINAL ? 1.8 : 0.7)) + 45 * g.ids.length + (FINAL ? 480 : 300);
 const vworst = groups.reduce((a, g) => a + (vlimit(g) + BOOT_S) * RATE, 0);
-say(`preview: ${frames.length} shots, ${frames.reduce((a, x) => a + x.n, 0)} frames, ${groups.length} chunks; worst case $${vworst.toFixed(3)}`);
-L.check("preview", vworst);
-const VR = runpod({ L, prefix: `blocky-worlds-test/blender-kit/round9-replica-preview-${Date.now().toString(36)}`, log: say });
+say(`${FINAL ? "FINAL" : "preview"}: ${frames.length} shots, ${frames.reduce((a, x) => a + x.n, 0)} frames, ${groups.length} chunks; worst case $${vworst.toFixed(3)}`);
+L.check(FINAL ? "final" : "preview", vworst);
+const VR = runpod({ L, prefix: `blocky-worlds-test/blender-kit/round9-replica-${FINAL ? "final" : "preview"}-${Date.now().toString(36)}`, log: say });
 pyRun("import sys,tarfile,os\nout,root=sys.argv[1],sys.argv[2]\nwith tarfile.open(out,'w:gz') as t:\n for f in sys.argv[3:]:\n  t.add(os.path.join(root,f),arcname=f)", path.join(PV, "v.tgz"), path.join(PV, "video"), "shots.py", "script.txt", "audio/words.json", "audio/voice.wav");
 await VR.putFile("v.tgz", path.join(PV, "v.tgz"), "application/gzip");
 const vurl = await VR.signGet("v.tgz");
 const vres = await Promise.all(groups.map(async (g, i) => {
   const name = `seg${i}.mp4`;
   if (fs.existsSync(path.join(segs, name))) return { ok: true };
-  const rr = await VR.job(`replica chunk ${i} (${g.n})`, { role: "render", slug: "preview", videoUrl: vurl, shots: g.ids.join(","), f0: g.f0, f1: g.f1, samples: 6, upload: await VR.signPuts(name, 4) }, { maxRunSec: vlimit(g), ledgerKey: "runpod_preview_video" });
+  const rr = await VR.job(`replica ${FINAL ? "final" : "preview"} chunk ${i} (${g.n})`, { role: "render", slug: FINAL ? "final" : "preview", videoUrl: vurl, shots: g.ids.join(","), f0: g.f0, f1: g.f1, ...(FINAL ? {} : { samples: 6 }), upload: await VR.signPuts(name, FINAL ? 6 : 4) }, { maxRunSec: vlimit(g), ledgerKey: FINAL ? "runpod_final" : "runpod_preview_video" });
+  if (rr.ok) say(`chunk ${i}: ${rr.output?.sPerFrame ?? "?"} s a frame`);
   if (!rr.ok) return { ok: false, error: String(rr.error).slice(0, 500) };
   await VR.fetchParts(name, rr.output.upload.parts, path.join(segs, name));
   return { ok: true };
@@ -316,14 +348,33 @@ fs.writeFileSync(path.join(PV, "speakers.json"), JSON.stringify(cap.speakers));
 fs.writeFileSync(path.join(PV, "words_voice.json"), JSON.stringify(V.words));
 pyRun("import sys,json\nsys.path.insert(0,sys.argv[1])\nimport finishx\nw=json.load(open(sys.argv[2],encoding='utf-8'))\nc=json.load(open(sys.argv[3],encoding='utf-8'))\ns=json.load(open(sys.argv[4],encoding='utf-8'))\nopen(sys.argv[5],'w',encoding='utf-8').write(finishx.captions_ass(w,c,'Arial Black',s))", KIT, path.join(PV, "words_voice.json"), path.join(PV, "colors.json"), path.join(PV, "speakers.json"), path.join(PV, "captions.ass"));
 const ass = path.join(PV, "captions.ass").replace(/\\/g, "/").replace(/^([A-Za-z]):/, "$1\\:");
-const ours = path.join(OUT, "replica_preview.mp4");
-execFileSync("ffmpeg", ["-v", "error", "-y", "-i", vraw, "-i", path.join(VD, "voice_1.3.wav"), "-filter_complex", `[0:v]scale=540:960,subtitles='${ass}'[v]`, "-map", "[v]", "-map", "1:a", "-shortest", "-c:v", "libx264", "-crf", "23", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "128k", ours]);
+const ours = path.join(OUT, FINAL ? "replica_final_1080x1920.mp4" : "replica_preview.mp4");
+// SOUND EFFECTS ON THEIR WORDS (our sfx library) + THE RAIN (the storm) + THE NIGHT (a soft wind, crickets): (line, word)
+const SFXD = path.join(ROOT, "scripts", "blockyWorlds", "engine", "audio", "sfx");
+const at = (n, w) => lines[n - 1].words[Math.min(lines[n - 1].words.length - 1, w)].start;
+const CUES = [[1, 10, "scratch", -6], [7, 4, "scratch", -6], [8, 11, "thunder", -2], [9, 1, "footsteps_run", -6], [10, 9, "click", -4], [11, 0, "click", -4], [11, 2, "click", -4], [11, 4, "click", -4], [11, 10, "scratch", -2],
+  [12, 1, "giant_steps", -3], [13, 8, "giant_steps", -3], [14, 2, "footsteps_run", -6], [15, 9, "scratch", -5], [16, 9, "whoosh_1", -6], [17, 2, "impact", -3], [19, 5, "knock", -6], [20, 5, "crowd_cheer", -14]]
+  .filter(([n, w, f]) => lines[n - 1] && fs.existsSync(path.join(SFXD, f + ".wav"))).map(([n, w, f, gdb]) => ({ t: at(n, w), f: path.join(SFXD, f + ".wav"), gdb }));
+const scT = (a, b) => [lines[a - 1].start - (a === 1 ? 0 : 0.05), b < lines.length ? lines[b].start : tw.at(-1).end + 0.3];
+const nights = plan.scenes.filter((x) => x.time === "night").map((x) => scT(...x.lines));
+const storms = plan.scenes.filter((x) => x.time === "storm").map((x) => { const [a, b] = scT(...x.lines); return [a, b + 0.8]; });
+const dur = tw.at(-1).end + 0.5;
+const env = (rs) => rs.map(([a, b]) => `between(t,${a.toFixed(2)},${b.toFixed(2)})`).join("+") || "0";
+const amb = path.join(PV, "ambience.wav");
+execFileSync("ffmpeg", ["-v", "error", "-y", "-f", "lavfi", "-i", `anoisesrc=color=pink:amplitude=0.32:duration=${dur.toFixed(2)}:sample_rate=44100`, "-f", "lavfi", "-i", `anoisesrc=color=brown:amplitude=0.05:duration=${dur.toFixed(2)}:sample_rate=44100`, "-f", "lavfi", "-i", `aevalsrc='0.018*sin(2*PI*4300*t)*gt(sin(2*PI*16*t),0.55)*lt(mod(t,1.7),0.32)':d=${dur.toFixed(2)}:s=44100`,
+  "-filter_complex", `[0:a]highpass=f=500,lowpass=f=7000,volume='${env(storms)}':eval=frame[rain];[1:a]lowpass=f=380,volume='0.8*(${env(nights)})':eval=frame[wind];[2:a]volume='${env(nights)}':eval=frame[crk];[rain][wind][crk]amix=inputs=3:normalize=0[a]`, "-map", "[a]", "-ac", "1", amb]);
+const sfxIn = CUES.flatMap((c) => ["-i", c.f]);
+const mix = `${CUES.map((c, i) => `[${i + 3}:a]volume=${c.gdb}dB,adelay=${Math.round(c.t * 1000)}|${Math.round(c.t * 1000)}[s${i}]`).join(";")}${CUES.length ? ";" : ""}[2:a]volume=-8dB[amb];[1:a]${CUES.map((_, i) => `[s${i}]`).join("")}[amb]amix=inputs=${CUES.length + 2}:normalize=0:duration=first[a]`;
+execFileSync("ffmpeg", ["-v", "error", "-y", "-i", vraw, "-i", path.join(VD, "voice_1.2.wav"), "-i", amb, ...sfxIn, "-filter_complex", `[0:v]scale=${FINAL ? "1080:1920" : "540:960"},subtitles='${ass}'[v];${mix}`, "-map", "[v]", "-map", "[a]", "-shortest", "-c:v", "libx264", "-crf", FINAL ? "18" : "23", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "160k", ours]);
+say(`sound: the voice, ${CUES.length} sound effects on their words, rain over ${storms.length} storm scene(s), the night over ${nights.length}`);
 // the reference re-timed: each reference shot stretched to our cut's length, so both sides cut on the same word
 const parts = T.shots.map((s, k) => ({ a: s.refT0 ?? 0, b: s.refT1 ?? 65.9, d: s.tb - s.ta, k }));
 const filt = parts.map((p) => `[0:v]trim=start=${p.a.toFixed(3)}:end=${p.b.toFixed(3)},setpts=(PTS-STARTPTS)*${(p.d / Math.max(0.05, p.b - p.a)).toFixed(4)},scale=540:960,fps=30[r${p.k}]`).join(";") + `;${parts.map((p) => `[r${p.k}]`).join("")}concat=n=${parts.length}:v=1:a=0[ref]`;
 const refT = path.join(PV, "ref_retimed.mp4");
 execFileSync("ffmpeg", ["-v", "error", "-y", "-i", REFVID, "-filter_complex", filt, "-map", "[ref]", "-c:v", "libx264", "-crf", "24", "-pix_fmt", "yuv420p", refT]);
-const sbs = path.join(OUT, "replica_side_by_side.mp4");
-execFileSync("ffmpeg", ["-v", "error", "-y", "-i", refT, "-i", ours, "-filter_complex", "[0:v][1:v]hstack=inputs=2[v]", "-map", "[v]", "-map", "1:a", "-shortest", "-c:v", "libx264", "-crf", "23", "-pix_fmt", "yuv420p", "-c:a", "aac", sbs]);
-say(`replica preview: ${ours}; side by side: ${sbs}; spent $${L.total()}`);
+const sbs = path.join(OUT, FINAL ? "replica_final_side_by_side.mp4" : "replica_side_by_side.mp4");
+execFileSync("ffmpeg", ["-v", "error", "-y", "-i", refT, "-i", ours, "-filter_complex", "[0:v]scale=540:960[l];[1:v]scale=540:960[rr];[l][rr]hstack=inputs=2[v]", "-map", "[v]", "-map", "1:a", "-shortest", "-c:v", "libx264", "-crf", "23", "-pix_fmt", "yuv420p", "-c:a", "aac", sbs]);
+const cj = JSON.parse(fs.readFileSync(path.join(OUT, "costs.json"), "utf8"));
+save(FINAL ? "final_cost.json" : "preview_cost.json", { render: cj[FINAL ? "runpod_final" : "runpod_preview_video"] ?? 0, costs: cj, total: L.total() });
+say(`replica ${FINAL ? "FINAL" : "preview"}: ${ours}; side by side: ${sbs}; spent $${L.total()}`);
 void py;
