@@ -108,7 +108,7 @@ export function worldText(world, { indoor = false } = {}) {
     parts.push({ driving: "cars driving", parked: "cars PARKED ONLY (cars standing still at the kerb with their lights off are FINE; none may be driving)", leaving: "cars driving AWAY", none: "NO cars" }[world.cars] ?? "");
     if (world.threat === "react") parts.push("the background people RUN away / hide");
   }
-  if (world.time !== "day") parts.push(`windows ${String(world.windows).toUpperCase()}`);
+  if (world.time !== "day") parts.push(`house windows ${String(world.windows).toUpperCase()}${world.windows === "some" ? " (some lit, some dark)" : ""}; the street lamps are ON at night (that is fine)`);
   if (world.curtains === "closed") parts.push("curtains CLOSED");
   return `WORLD STATE (the story's rules for this moment): ${parts.filter(Boolean).join("; ")}. FAIL the picture if it shows anything that contradicts this (a walking stranger on an empty street, a driving car when cars are parked, a lit window when windows are dark).`;
 }

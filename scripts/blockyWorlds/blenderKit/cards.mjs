@@ -106,9 +106,14 @@ const MOVE_ACTIONS = new Set(["walk", "run_away", "follow", "hide", "hug"]);
  * appear / grow / shrink / get grabbed / thrown / fall from the sky on their words; the camera goes from the start
  * framing to the end framing (zw_scene_cam).
  */
-export function compileScene(card, { plan, scene, speaker = null, world = null, indoor = false, establish = null, cut = false } = {}) {
+export function compileScene(card, { plan, scene, speaker = null, world = null, indoor = false, establish = null, cut = false, rule = null } = {}) {
   const L = [];
-  const S = card.start, E = card.end, place = S.place;
+  const S = card.start, E = card.end;
+  // round 7: "I see it from my window" = the WINDOW LOOK-OUT recipe: a room on the street (the real street outside), not
+  // the indoor set; the kid at the window, then over the shoulder to the street
+  const lookout = indoor && /\bwindows?\b/i.test(scene.words ?? "") && (S.people ?? []).some((p) => !/^monster$/i.test(p.who));
+  const place = lookout ? "suburb_street" : S.place;
+  if (lookout) indoor = false;
   const sdur = Math.max(0.4, scene.end - scene.start);
   const u = (i) => Math.max(0, Math.min(0.95, ((scene.wordList[i]?.start ?? scene.start) - scene.start) / sdur)).toFixed(3);
   // round 3: the line's WORLD STATE is the dress (worldState.js dressOf: busy / walkers / extras / cars / windows / curtains / threat)
@@ -252,6 +257,9 @@ export function compileScene(card, { plan, scene, speaker = null, world = null, 
       case "cheer": L.push(`zm_cheer(${id}, ${ta})`); break;
       case "wave": L.push(`zm_wave(${id}, ${ta}, t1)`); break;
       // (round 6: the hole is where the monster was made: a spot already cleared of every person)
+      // round 7: THE TOWN'S RULE happens (the plan's rule effect, with impact) / one chosen lamp, window or porch light switches
+      case "rule_effect": L.push(`zw_rule_effect(${id}, ${ta})`); break;
+      case "switch_on": case "switch_off": L.push(`zw_switch(${py(/window/i.test(m.target ?? "") ? "window" : /porch/i.test(m.target ?? "") ? "porch_light" : "lamp")}, ${id}, ${ta}, ${m.action === "switch_on" ? "True" : "False"})`); break;
       case "climb_out": if (id === "mon") { moved.add(id); L.push(`zw_climb_out(mon, ${ta} - 0.9 * dur, min(t1, ${ta} + 0.35 * dur), hole=(mon.root.location.x, mon.root.location.y))`); } break;
       case "roar": L.push(`${id}.act(${ta}, "fists")`); break;
       case "scream": L.push(`${id}.act(${ta}, "hands_head")`); break;
@@ -267,6 +275,13 @@ export function compileScene(card, { plan, scene, speaker = null, world = null, 
       if (id === "mon" && a?.pose === "climb") L.push(`zw_climb_out(mon, t0, t0 + 0.85 * dur, hole=(mon.root.location.x, mon.root.location.y))`);
       else { moved.add(id); L.push(`zm_walk(${id}, t0, t1 - 0.05, zw_mark(${py(place)}, ${py(b.mark)}), run=${(a?.pose ?? b.pose) === "run" ? "True" : "False"})`); }
     }
+  }
+  // round 7: the plan says the town's rule fires in this line (who, on which word): the rule effect plays there even if the
+  // card did not ask for it
+  if (rule?.fires && !(card.motion ?? []).some((m) => m.action === "rule_effect")) {
+    const wi = (scene.wordList ?? []).findIndex((w) => String(w.word).toLowerCase().replace(/[^a-z']/g, "") === String(rule.word ?? "").toLowerCase().replace(/[^a-z']/g, ""));
+    const rid = v[String(rule.who ?? "").toLowerCase()];
+    if (wi >= 0 && rid) L.push(`zw_rule_effect(${rid}, (t0 + ${u(wi)} * dur))`);
   }
   // NO RUNNING ON THE SPOT (round 6): a person posed walking / running who no step moves goes forward
   for (const who of names) {
@@ -314,7 +329,12 @@ export function compileScene(card, { plan, scene, speaker = null, world = null, 
   };
   const any = vis(S).p.length + vis(S).t.length + vis(E).p.length + vis(E).t.length;
   const walker = (card.motion ?? []).find((m) => ["walk", "run_away", "carry"].includes(m.action) && v[String(m.who).toLowerCase()] && v[String(m.who).toLowerCase()] !== "mon");
-  if (establish) L.push(`zw_establish(cam, t0, t1, ${py(place)}, ${py(establish)}, follow=${establish === "follow" && walker ? v[String(walker.who).toLowerCase()] : "None"}${any ? `, end=${camSpec(E)}` : ""})`);
+  // round 7 recipes: the window look-out (a kid at a window, then over the shoulder to the street) and the porch
+  const kidAtWin = lookout ? v[String((S.people ?? []).find((p) => !/^monster$/i.test(p.who))?.who ?? "").toLowerCase()] : null;
+  const lookAt = lookout ? (v.monster ?? Object.values(v).find((x) => x !== kidAtWin) ?? null) : null;
+  if (lookout && kidAtWin) L.push(`zw_lookout(cam, t0, t1, ${kidAtWin}, target=${lookAt ?? "None"}, cut=True)`);
+  else if (place === "suburb_porch" && !establish && any && ![...vis(S).p, ...vis(E).p].includes("mon")) { const x = vis(E).p.length ? vis(E) : vis(S); L.push(`zw_porch_cam(cam, t0, t1, [${x.p.filter((p) => p !== "mon").join(", ")}], [${x.t.join(", ")}])`); }
+  else if (establish) L.push(`zw_establish(cam, t0, t1, ${py(place)}, ${py(establish)}, follow=${establish === "follow" && walker ? v[String(walker.who).toLowerCase()] : "None"}${any ? `, end=${camSpec(E)}` : ""})`);
   else L.push(any ? `zw_scene_cam(cam, t0, t1, ${camSpec(S)}, ${camSpec(E)}${cut ? ", cut=True" : ""})` : `zw_spot(cam, ${py(place)}, "wide", t0, t1)`);
   return L.join("\n");
 }

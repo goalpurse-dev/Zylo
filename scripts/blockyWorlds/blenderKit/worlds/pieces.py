@@ -185,7 +185,7 @@ def zp_streetpool(loc, power=4500.0):
     return zw_novol(light(zp_id("pool"), "SPOT", (loc[0], loc[1], 7.6), power, col, 0.6, spot=95, blend=0.6), 0.2)
 
 
-def zp_room(loc, rot=0.0, w=12.0, d=10.0, h=9.0, win_w=5.0, win_h=4.0, wall="#6f80b8", floor="#5a4436"):
+def zp_room(loc, rot=0.0, w=12.0, d=10.0, h=9.0, win_w=5.0, win_h=4.0, wall="#6f80b8", floor="#5a4436", sill=2.8):
     """a bedroom shell: its FRONT wall (toward -y of the root... the street side) has a real window opening (win_w x win_h,
     the sill at 2.8), a door in the back wall, a floor, a ceiling, a soft moon light through the window and a dim lamp"""
     r = zp_root(loc, rot)
@@ -200,7 +200,7 @@ def zp_room(loc, rot=0.0, w=12.0, d=10.0, h=9.0, win_w=5.0, win_h=4.0, wall="#6f
     rw = w / 2 - dx - dw / 2
     box(zp_id("rbk2"), (rw, 0.3, h), (w / 2 - rw / 2, d, h / 2), Mw, 0, parent=r)
     box(zp_id("rbk3"), (dw, 0.3, h - dh), (dx, d, dh + (h - dh) / 2), Mw, 0, parent=r)
-    sill, top = 2.8, 2.8 + win_h
+    top = sill + win_h   # round 7: the sill height is a parameter (a room at the people's size)
     side = (w - win_w) / 2
     box(zp_id("rfa"), (side, 0.3, h), (-(win_w / 2 + side / 2), 0, h / 2), Mw, 0, parent=r)
     box(zp_id("rfb"), (side, 0.3, h), ((win_w / 2 + side / 2), 0, h / 2), Mw, 0, parent=r)

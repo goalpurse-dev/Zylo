@@ -1013,14 +1013,14 @@ def zw_house(i, x, side, col):
         box("zw_hchim%d" % i, (1.4, 1.4, 4.4), (x + (4.5 if i % 4 == 0 else -4.5), y + 2, H + 3.4), zw_brick("chim"), 0.08)
     # porch (deck, posts, roof) or a small stoop with a canopy
     if i % 4 != 3:
-        box("zw_hdeck%d" % i, (10, 3.6, 0.6), (x, fy - side * 1.8, 0.3), zw_m("porch", "#e9dcc6", 0.7), 0.05)
+        box("zw_hdeck%d" % i, (10, 3.6, 0.6), (x, fy - side * 1.8, 0.3), zw_m("porch", "#b8916a", 0.7), 0.05)
         for px in (-4.6, 4.6):
             cyl("zw_hpost%d_%d" % (i, int(px)), 0.22, 6.0, (x + px, fy - side * 3.3, 3.4), Mtrim, 10)
         box("zw_hproof%d" % i, (10.8, 4.2, 0.35), (x, fy - side * 1.9, 6.5), Mtrim, 0.05)
         box("zw_hrail%d" % i, (3.2, 0.15, 0.15), (x - 3.0, fy - side * 3.3, 1.6), Mtrim, 0.0)
         box("zw_hrail2%d" % i, (3.2, 0.15, 0.15), (x + 3.0, fy - side * 3.3, 1.6), Mtrim, 0.0)
     else:
-        box("zw_hdeck%d" % i, (4, 2.4, 0.5), (x, fy - side * 1.2, 0.25), zw_m("porch", "#e9dcc6", 0.7), 0.05)
+        box("zw_hdeck%d" % i, (4, 2.4, 0.5), (x, fy - side * 1.2, 0.25), zw_m("porch", "#b8916a", 0.7), 0.05)
         box("zw_hcan%d" % i, (4.4, 2.2, 0.3), (x, fy - side * 1.1, 5.4), Mr, 0.05)
     box("zw_hdoor%d" % i, (2.2, 0.25, 4.0), (x, fy - side * 0.08, 2.6), zw_m("hdoor%d" % (i % 3), ["#c0392b", "#2e6f95", "#3e7b4f"][i % 3], 0.5), 0.05)
     lit = zw_time() in ("night", "sunset") and not zw_copy() and zw_win_lit(i)

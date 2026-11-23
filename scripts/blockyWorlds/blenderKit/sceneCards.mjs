@@ -123,6 +123,8 @@ HOW A CARD WORKS:
 - The START FRAME matches the words as they begin (rule 4), the END FRAME how they end. The monster's first look is monster_reveal (its whole body); when it acts, monster_full / wide / low; it stands back or far, behind the people.
 - MOTION: the steps from the start frame to the end frame, each on a word (on_word = the 0-based index in THIS scene's words), only the engine's actions; who = a cast name or "monster". A thing that appears = hidden in the start frame, normal in the end frame.
 - The first scene of a place: the engine opens it with a moving establishing shot (rule 8); your frames are where that shot ends.
+- THE TOWN'S RULE (the plan's rule_effect): when the rule happens in your words, add a motion step rule_effect on that word, who = the person it happens to (the engine makes the plan's thing appear with a pop). One chosen lamp / window / porch light going on or off: switch_on / switch_off (target lamp / window / porch_light, who = the person it is near).
+- RECIPES: a person at a window looking out ("I see it from my window") = keep the place indoors and the words with "window": the engine films the window look-out (the kid at the window, the street outside); a porch: the engine films it from the front yard.
 - SFX: a short sound name on the word where it happens (pop, boom, click, bump, whoosh, roar, gasp) or none. looks_at: a cast name, "monster", a thing kind, "camera" or "".
 - The WORLD STATE of the line (the plan's) is built by the engine (the background people, cars, windows). Your people are the story's characters only, outdoors only when the world state lists them as outside (rule 9); faces and poses follow the threat arc (near = staring, react = scared / running / hiding, after = relief).
 ${storyRulesHint}

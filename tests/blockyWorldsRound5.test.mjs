@@ -45,7 +45,8 @@ test("the compiler: a thing the words name comes into the frame (held when grabb
   const py = compileScene(JSON.parse(JSON.stringify(card)), { plan: { cast: [{ name: "Me" }] }, scene });
   assert.match(py, /ball_100 = zw_thing\("ball"/); assert.match(py, /zw_grab\(me_0, t0 - 0\.05, ball_100\)/);
   const gone = compileScene(JSON.parse(JSON.stringify(card)), { plan: { cast: [{ name: "Me" }] }, scene: { ...scene, words: "I run inside!" } });
-  assert.match(gone, /zw_scene_cam\(cam, t0, t1, \("medium", \[me_0\], \[\], "front"\), \("medium", \[me_0\]/, "an end frame everyone left keeps the start's people in shot");
+  // (round 7: a porch scene uses the porch recipe; an end frame everyone left still frames the start's people)
+  assert.match(gone, /zw_porch_cam\(cam, t0, t1, \[me_0\]/, "an end frame everyone left keeps the start's people in shot");
   const mcard = { start: { ...fr([{ who: "monster", mark: "back", pose: "stand", face: "happy", looks_at: "camera" }]) }, end: fr([{ who: "monster", mark: "back", pose: "stand", face: "happy", looks_at: "camera" }]), motion: [] };
   const mpy = compileScene(mcard, { plan: { cast: [], monster: { present: true, size: 3.5, style: "slime" } }, scene: { ...scene, words: "Now it plays with my shoe all night." } });
   assert.match(mpy, /zw_thing\("shoe".*\* 3\.2\)/, "a shoe next to the monster is drawn at the monster's scale");
