@@ -1,0 +1,139 @@
+{
+ "name": "oven",
+ "kind": "prop",
+ "asked": "a blocky brick pizza oven with a glowing arched opening and a small chimney pipe",
+ "spec": {
+  "name": "oven",
+  "real_size_cm": 150,
+  "hold": "on_ground",
+  "grip": [
+   0,
+   0,
+   0
+  ],
+  "shapes": [
+   {
+    "type": "box",
+    "size": [
+     120,
+     100,
+     90
+    ],
+    "pos": [
+     0,
+     0,
+     45
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#b5542d",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     130,
+     110,
+     12
+    ],
+    "pos": [
+     0,
+     0,
+     96
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#6b6b6b",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     120,
+     100,
+     70
+    ],
+    "pos": [
+     0,
+     0,
+     90
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#b5542d",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     60,
+     6,
+     50
+    ],
+    "pos": [
+     0,
+     -51,
+     38
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#2b1a12",
+    "glow": true
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     18,
+     18,
+     40
+    ],
+    "pos": [
+     30,
+     20,
+     118
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#4a4a4a",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     70,
+     8,
+     8
+    ],
+    "pos": [
+     0,
+     -52,
+     58
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#8c3b1e",
+    "glow": false
+   }
+  ]
+ },
+ "still": "C:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test1\\preview\\shot_65.png",
+ "cost_usd": 0.00276
+}

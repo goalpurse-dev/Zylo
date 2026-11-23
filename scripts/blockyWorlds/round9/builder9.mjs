@@ -58,7 +58,8 @@ const library = () => { const out = {}; for (const k of ["prop", "character", "m
 
 // ---- 1. THE PLANNER (one call per still): library first, a build only for what the library lacks
 const FEELS = ["happy", "scared", "terrified", "confident", "calm", "determined", "sad", "shocked", "curious", "angry", "loving", "relieved", "serious"];
-const PLAN_SCHEMA = { type: "object", additionalProperties: false, required: ["place_library", "place_build", "time", "characters", "props", "camera_subjects", "camera_things"], properties: {
+const PLAN_SCHEMA = { type: "object", additionalProperties: false, required: ["place_library", "place_build", "time", "characters", "props", "camera_subjects", "camera_things", "signs"], properties: {
+  signs: { type: "array", items: { type: "string" }, description: "the words on the place's signs (a library shop: [\"PIZZA\", \"PIZZA\", \"OVEN\"]); empty if none" },
   place_library: { type: "string", description: "a library place id, or empty to build one" },
   place_build: { type: "string", description: "if building: what the place is (one sentence: the room / spot, its furniture and set pieces)" },
   time: { type: "string", enum: ["day", "sunset", "night"] },
@@ -79,7 +80,11 @@ describe the place; it is built about 7 x 6 m). A LIBRARY place: its stage centr
 y -1..4. Everyone in reach of what they act on (a hand at the oven, a foot on the ladder), nobody inside anything, people
 a body width apart. Every prop that must be visible (the story's things) is listed; a held thing names its holder.
 In the sky / high up: z in metres. One move per character at most (new moves only for actions the poses cannot show).
-Every character acts with a FEEL. The camera subjects = the people and things the still is about.`;
+Every character acts with a FEEL. The camera subjects = the people and things the still is about.
+CREATURES AND VEHICLES (a giant chicken, a shark, a cat, a robot, a boat, a fire truck) are PROPS you build (real size;
+a giant one simply bigger): someone riding one = its hold "ridden" and holder = the rider; someone sitting in a boat or a
+seat = hold "sat_in" and holder = who sits in it. A library place with signs: give its sign words (a pizza shop: PIZZA).
+NEVER a library place that does not fit the still (no living room for a bunker): build the place instead.`;
 async function planScene(k, ask) {
   const got = load(`plan_${k}.json`); if (got) return got;
   const r = await callJson({ apiKey: KEY, model: "claude-sonnet-5-5", system: [PLAN_SYSTEM(library())], user: `THE STILL: ${ask}`, schema: PLAN_SCHEMA, effort: "low", maxTokens: 6000, meter, cache: false });
@@ -95,7 +100,7 @@ async function specFor(kind, name, asked, feedback = "", model = "claude-haiku-5
   const fn = { prop: B.buildProp, character: B.buildCharacter, move: B.buildMove, place: B.buildPlace }[kind];
   const orig = B.SPEC_MODEL;
   const cj = (o) => callJson({ ...o, model });
-  const r = await fn({ callJson: cj, apiKey: KEY, name, description: asked, sizeHint: hint.size ?? null, hold: hint.hold ?? null, feedback, meter });
+  const r = await fn({ callJson: cj, apiKey: KEY, name, description: asked, sizeHint: hint.size ?? null, hold: hint.hold ?? null, keep: hint.keep ?? null, feedback, meter });
   void orig;
   return r;
 }
@@ -149,7 +154,8 @@ const accOf = (pc) => (pc.extra?.accessories ?? []).map((k) => pieces[k]).filter
 const testBody = (key) => {
   const pc = pieces[key];
   const extra = pc.kind === "character" ? `[${accOf(pc).map((a) => `(${B.pyData(a.spec)}, ${JSON.stringify(a.spec.hold || "worn_head")})`).join(", ")}]`
-    : pc.kind === "place" ? `{${(pc.extra?.furniture ?? []).map((k) => pieces[k]).filter((x) => x?.spec && x.status !== "missed").map((x) => `${JSON.stringify(x.extra.fname)}: ${B.pyData(x.spec)}`).join(", ")}}` : "None";
+    : pc.kind === "place" ? `{${(pc.extra?.furniture ?? []).map((k) => pieces[k]).filter((x) => x?.spec).map((x) => `${JSON.stringify(x.extra.fname)}: ${B.pyData(x.spec)}`).join(", ")}}`
+    : pc.kind === "move" ? `{"props": [${(pc.extra?.props ?? []).map((k) => pieces[k]).filter((x) => x?.spec).map((x) => B.pyData(x.spec)).join(", ")}], "support": ${pieces[pc.extra?.support]?.spec ? B.pyData(pieces[pc.extra.support].spec) : "None"}}` : "None";
   return { key, label: `test ${key}`, code: `zb_test_piece(${JSON.stringify(pc.kind)}, ${B.pyData(pc.spec)}, t0, t1, ${extra})` };
 };
 async function testRound(tag, keys) {
@@ -160,9 +166,10 @@ async function testRound(tag, keys) {
     const pc = pieces[key], png = r.pngs[key];
     if (!png) { pc.tries.at(-1).verdict = { ok: false, reason: "the test still crashed" }; continue; }
     const size = pc.kind === "prop" ? pc.spec.real_size_cm : pc.kind === "character" ? pc.spec.height_cm : null;
-    const thing = pc.kind === "move" ? `kid whose BODY POSE clearly shows: ${pc.asked} (judge the pose only: the props are not in this test)` : pc.kind === "place" ? `${pc.asked} (the room / spot itself)` : `${pc.name.replace(/_/g, " ")} (${pc.asked})`;
-    const v = await B.visionCheck({ callJson, apiKey: KEY, imageB64: small(png), thing, sizeCm: size ?? B.KID_CM, meter });
-    if (size == null) v.ok = Boolean(v.is_it);
+    const short = (pc.short ?? pc.name).replace(/^place_\d+_/, "").replace(/_/g, " ");
+    const listed = pc.kind === "place" ? (pc.spec.furniture ?? []).map((f) => f.name).join(", ") : "";
+    const thing = pc.kind === "move" ? `a kid ${pc.asked}` : pc.kind === "place" ? `${pc.asked.split(/[,.:;]/)[0]} (listed: ${listed})` : pc.kind === "character" ? `a ${short}` : `a ${short}`;
+    const v = await B.visionCheck({ callJson, apiKey: KEY, imageB64: small(png), thing, kind: pc.kind, sizeCm: size, meter });
     pc.tries.at(-1).verdict = v; pc.tries.at(-1).still = png; pc.tries.at(-1).visionCost = v.costUsd;
     say(`  ${key}: ${v.ok ? "PASS" : "FAIL"} ($${v.costUsd}) ${v.reason}`);
   }
@@ -170,6 +177,30 @@ async function testRound(tag, keys) {
 }
 
 // ---- THE RUN
+if (has("things")) {
+  const want = JSON.parse(fs.readFileSync(arg("things"), "utf8"));
+  const keys = want.map((w) => { const k = need("prop", w.name, w.description, { size: w.size_cm, hold: w.hold }); pieces[k].short = w.name; return k; });
+  await specs(keys.filter((k) => pieces[k].status === "new"), "claude-haiku-5-5");
+  const t1 = keys.filter((k) => pieces[k].status === "built");
+  await testRound("things1", t1);
+  for (const k of t1) if (!pieces[k].tries.at(-1)?.verdict?.ok) pieces[k].status = "retry";
+  await specs(keys.filter((k) => pieces[k].status === "retry"), "claude-sonnet-5-5");
+  const t2 = keys.filter((k) => pieces[k].status === "built" && pieces[k].tries.length > 1 && !pieces[k].tries.at(-1)?.verdict);
+  await testRound("things2", t2);
+  const out = [];
+  for (const k of keys) {
+    const pc = pieces[k]; if (pc.status === "library") { out.push({ name: pc.name, ok: true, from: "library", spec: pc.spec }); continue; }
+    const ok = Boolean(pc.tries.at(-1)?.verdict?.ok);
+    pc.tries.forEach((t, i) => logBuild({ kind: "prop", name: pc.name, asked: pc.asked, story: arg("story", "a story"), spec: i === pc.tries.length - 1 ? pc.spec : null, still: t.still ?? null, verdict: t.verdict ?? null, retry: i, costUsd: (t.cost ?? 0) + (t.visionCost ?? 0), outcome: i < pc.tries.length - 1 ? "retried" : ok ? "saved" : "missed", library: ok ? k : null }));
+    if (ok) { fs.mkdirSync(path.join(LIBDIR, "prop"), { recursive: true }); fs.writeFileSync(path.join(LIBDIR, "prop", `${pc.name}.json`), JSON.stringify({ name: pc.name, kind: "prop", asked: pc.asked, spec: pc.spec, still: pc.tries.at(-1).still, cost_usd: pc.tries.reduce((a, t) => a + (t.cost ?? 0) + (t.visionCost ?? 0), 0) }, null, 1)); pc.status = "saved"; } else pc.status = "missed";
+    pc.logged = true;
+    out.push({ name: pc.name, ok, spec: pc.spec, cost: pc.tries.reduce((a, t) => a + (t.cost ?? 0) + (t.visionCost ?? 0), 0), reason: pc.tries.at(-1)?.verdict?.reason ?? "", still: pc.tries.at(-1)?.still ?? null });
+  }
+  save("pieces.json", pieces); save("things_result.json", out);
+  say(`THINGS: ${out.filter((x) => x.ok).length}/${out.length} built; spent $${L.total()}`);
+  process.exit(0);
+}
+if (has("reset-missed")) { for (const pc of Object.values(pieces)) { if (pc.status !== "missed" || !pc.spec) continue; pc.status = "built"; pc.tries = [{ model: "kept", cost: 0, problems: [] }]; delete pc.logged; } for (const d of ["job_test1", "job_test2", "job_finals", "clips"]) fs.rmSync(path.join(OUT, d), { recursive: true, force: true }); save("pieces.json", pieces); say("reset-missed: last round's misses re-tested with the new check (no new spec first)"); }
 if (has("reset")) { for (const pc of Object.values(pieces)) { if (pc.status === "library" || !pc.spec) continue; pc.status = "built"; pc.tries = [{ model: "kept", cost: 0, problems: [] }]; delete pc.logged; } for (const d of ["job_test1", "job_test2", "job_finals"]) fs.rmSync(path.join(OUT, d), { recursive: true, force: true }); save("pieces.json", pieces); say("reset: the existing specs re-tested (no new spec calls)"); }
 if (has("retest")) { const keys = arg("retest").split(","); const r = await gpuStills(arg("tag", "dbg"), keys.map(testBody)); for (const g of (r?.gate ?? []).filter((g) => /builder|skipped/.test(g))) console.log(g); process.exit(0); }
 const only = arg("only") ? arg("only").split(",").map(Number) : ASKS.map((_, k) => k + 1);
@@ -193,12 +224,18 @@ async function specs(keys, model) {
     const pc = pieces[key];
     if (pc.spec && pc.status !== "retry") continue;
     const fb = pc.status === "retry" ? (pc.tries.at(-1)?.verdict?.reason ?? "") : "";
-    const r = await specFor(pc.kind, pc.name, pc.asked, fb, model, pc.hint ?? {});
+    const r = await specFor(pc.kind, pc.name, pc.asked, fb, model, { ...(pc.hint ?? {}), keep: pc.kind === "place" && pc.spec ? (pc.spec.furniture ?? []).map((f) => f.name) : null });
     pc.tries.push({ model, cost: r.costUsd, problems: r.problems });
     if (!r.ok) { pc.status = "missed"; say(`  ${key}: the spec failed its check (${r.problems.join("; ")})`); continue; }
     pc.spec = r.spec; pc.status = "built";
     if (pc.kind === "character") for (const a of r.spec.accessories ?? []) { const ak = need("prop", `${pc.name}_${a.name}`, a.description, { size: a.real_size_cm, hold: a.worn }); pc.extra.accessories = [...new Set([...(pc.extra.accessories ?? []), ak])]; }
-    if (pc.kind === "place") for (const f of r.spec.furniture ?? []) { if (f.library && GEN_THINGS.includes(f.library)) continue; const fk = need("prop", `${pc.name}_${f.name}`, f.description, { size: f.real_size_cm, hold: "on_ground" }); pieces[fk].extra = { fname: f.name }; pc.extra.furniture = [...new Set([...(pc.extra.furniture ?? []), fk])]; }
+    if (pc.kind === "move") {
+      pc.extra = { ...(pc.extra ?? {}), props: [] };
+      for (const q of r.spec.props ?? []) { const k = need("prop", `${pc.name}_${q.name}`, q.description, { size: q.real_size_cm, hold: q.hold }); pieces[k].short = q.name; pc.extra.props.push(k); }
+      const SUP = { chair: ["a simple wooden chair to sit on", 90, "sat_in"], stool: ["a round wooden stool to sit on", 50, "sat_in"], boat: ["a small wooden rowing boat with a seat in the middle", 300, "sat_in"], ladder: ["a tall wooden ladder", 300, "on_ground"] }[r.spec.support];
+      if (SUP) { const k = need("prop", `support_${r.spec.support}`, SUP[0], { size: SUP[1], hold: SUP[2] }); pieces[k].short = r.spec.support; pc.extra.support = k; }
+    }
+    if (pc.kind === "place") for (const f of r.spec.furniture ?? []) { if (f.library && GEN_THINGS.includes(f.library)) continue; const fk = need("prop", `${pc.name}_${f.name}`, f.description, { size: f.real_size_cm, hold: "on_ground" }); pieces[fk].extra = { fname: f.name }; pieces[fk].short = f.name; pc.extra.furniture = [...new Set([...(pc.extra.furniture ?? []), fk])]; }
     say(`  ${key}: spec by ${model} ($${r.costUsd})${r.problems.length ? " " + r.problems.join("; ") : ""}`);
   }
   save("pieces.json", pieces);
@@ -227,11 +264,13 @@ save("pieces.json", pieces);
 const P = (kind, name) => { const pc = pieces[`${kind}:${slug(name)}`]; return pc && ["saved", "library"].includes(pc.status) ? pc : null; };
 const sceneData = (k, p) => {
   const rewritten = [];
-  const place = p.place_library ? null : P("place", `place_${k}`);
-  if (!p.place_library && !place) rewritten.push("the place (built place missed: a library living_room instead)");
+  const pk = pieces[`place:place_${k}`];
+  const place = p.place_library ? null : (P("place", `place_${k}`) ?? (pk?.spec ? pk : null));
+  if (!p.place_library && !P("place", `place_${k}`)) rewritten.push(pk?.spec ? "the place failed its check: its own shell + furniture used (logged)" : "no place spec: a plain shell");
+  const shell = { name: `shell_${k}`, kind: /lake|sea|river|water/i.test(p.place_build) ? "water" : /roof|moon|market|street|garden|outside|park/i.test(p.place_build) ? "outdoor" : /bunker|underground|cave/i.test(p.place_build) ? "underground" : "room", size_m: [8, 7, 4], floor: "#7d7468", walls: "#b9ad9a", light: p.time === "night" ? "night" : "daylight", furniture: [], zones: [] };
   const props_built = {};
-  if (place) for (const fk of place.extra?.furniture ?? []) { const f = pieces[fk]; if (f && f.status === "saved") props_built[f.extra.fname] = f.spec; }
-  const S = { time: p.time, ...(place ? { place_built: place.spec, props_built } : { place_library: p.place_library || "living_room" }), characters: [], props: [], camera: { subjects: p.camera_subjects, things: p.camera_things } };
+  if (place) for (const fk of place.extra?.furniture ?? []) { const f = pieces[fk]; if (f?.spec && f.status !== "missed") props_built[f.extra.fname] = f.spec; }
+  const S = { time: p.time, tag: `SC${k}`, signs: p.signs ?? [], ...(p.place_library ? { place_library: p.place_library } : { place_built: place ? place.spec : shell, props_built }), characters: [], props: [], camera: { subjects: p.camera_subjects, things: p.camera_things } };
   for (const c of p.characters) {
     const ch = { name: c.name, pos: c.pos, rot: c.rot, feel: c.feel, pose: c.pose };
     if (c.library_look) ch.look = { ...LOOKS[c.library_look], name: c.name };
@@ -251,6 +290,18 @@ const finals = only.map((k) => ({ k, ...sceneData(k, plans[k]) }));
 save("finals.json", finals);
 const fin = await gpuStills("finals", finals.map((f) => ({ key: `still_${f.k}`, label: `still ${f.k}`, code: `zb_scene(${B.pyData(f.S)}, t0, t1)` })), { full: true });
 if (fin) for (const f of finals) if (fin.pngs[`still_${f.k}`]) fs.copyFileSync(fin.pngs[`still_${f.k}`], path.join(OUT, `still_${String(f.k).padStart(2, "0")}.png`));
+const SCENE = load("scene_checks.json") ?? {};
+if (fin && !has("check-only")) for (const f of finals) {
+  const png = fin.pngs[`still_${f.k}`]; if (!png || SCENE[f.k]) continue;
+  const m = (fin.gate ?? []).find((g) => String(g).startsWith(`ZW_GATE|SC${f.k}|measure|`));
+  const h = m ? Number(String(m).match(/h=([\d.]+)/)?.[1] ?? 0) : 0;
+  const flat = Number(pyRun("import sys\nfrom PIL import Image, ImageStat\nprint(sum(ImageStat.Stat(Image.open(sys.argv[1]).convert('RGB').resize((54,96))).stddev)/3)", png).trim());
+  if (h < 0.2 || flat < 6) { SCENE[f.k] = { pre: "FAIL", h, flat, reason: h < 0.2 ? `the subjects cover ${Math.round(h * 100)}% of the frame height (under 20%)` : "one flat colour" }; say(`  still ${f.k}: pre-check FAIL (${SCENE[f.k].reason}): no paid check`); continue; }
+  const v = await B.sceneCheck({ callJson, apiKey: KEY, imageB64: small(png), sentence: ASKS[f.k - 1], meter });
+  SCENE[f.k] = { pre: "ok", h, flat, ...v };
+  say(`  still ${f.k}: ${v.shows_it ? "SHOWS IT" : "does not show it"} ($${v.costUsd}) ${v.reason}${v.missing?.length ? " | missing: " + v.missing.join(", ") : ""}`);
+}
+save("scene_checks.json", SCENE);
 
 // ---- 5. THE 3 MOVE CLIPS (2.5 s each, low quality): a kid doing each built move
 const clipKeys = CLIPS.map((c) => `move:${slug(c.name)}`).filter((k) => ["saved", "library"].includes(pieces[k]?.status) || (has("clips-anyway") && pieces[k]?.spec));

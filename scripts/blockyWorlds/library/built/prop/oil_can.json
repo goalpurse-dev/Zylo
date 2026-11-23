@@ -1,0 +1,199 @@
+{
+ "name": "oil_can",
+ "kind": "prop",
+ "asked": "a small red metal oil can with a long thin spout and a curved handle",
+ "spec": {
+  "name": "oil_can",
+  "real_size_cm": 25,
+  "hold": "one_hand",
+  "grip": [
+   0,
+   0,
+   6
+  ],
+  "shapes": [
+   {
+    "type": "cylinder",
+    "size": [
+     10,
+     10,
+     14
+    ],
+    "pos": [
+     0,
+     0,
+     7
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#cc1a1a",
+    "glow": false
+   },
+   {
+    "type": "disc",
+    "size": [
+     11,
+     11,
+     1.5
+    ],
+    "pos": [
+     0,
+     0,
+     14.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#8a0f0f",
+    "glow": false
+   },
+   {
+    "type": "disc",
+    "size": [
+     11,
+     11,
+     1.5
+    ],
+    "pos": [
+     0,
+     0,
+     0.8
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#8a0f0f",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     3,
+     3,
+     12
+    ],
+    "pos": [
+     0,
+     -10,
+     12
+    ],
+    "rot": [
+     60,
+     0,
+     0
+    ],
+    "color": "#b0b0b0",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     3,
+     3,
+     2
+    ],
+    "pos": [
+     0,
+     -6,
+     11
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#b0b0b0",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     2.5,
+     2.5,
+     16
+    ],
+    "pos": [
+     0,
+     14,
+     4
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#9a9a9a",
+    "glow": false
+   },
+   {
+    "type": "cone",
+    "size": [
+     3,
+     3,
+     4
+    ],
+    "pos": [
+     0,
+     21,
+     6
+    ],
+    "rot": [
+     -60,
+     0,
+     0
+    ],
+    "color": "#9a9a9a",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     4,
+     4,
+     3
+    ],
+    "pos": [
+     0,
+     -3,
+     15.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#9a9a9a",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     5,
+     3,
+     2
+    ],
+    "pos": [
+     0,
+     6,
+     9
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#8a0f0f",
+    "glow": false
+   }
+  ]
+ },
+ "still": "c:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round10\\story\\builder\\job_things1\\preview\\shot_03.png",
+ "cost_usd": 0.0031899999999999997
+}

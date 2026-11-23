@@ -1,0 +1,45 @@
+{
+ "name": "astronaut_kid",
+ "kind": "character",
+ "asked": "a kid in a bulky white spacesuit with a round glass helmet visor, small backpack life support, gloves and boots",
+ "spec": {
+  "name": "astronaut_kid",
+  "age": "kid",
+  "height_cm": 120,
+  "skin": "#f2c29b",
+  "shirt": "#f4f6fa",
+  "pants": "#e8ebf2",
+  "clothes": "spacesuit",
+  "hair": "short",
+  "hair_color": "#5a3a22",
+  "face": "kid",
+  "accessories": [
+   {
+    "name": "round glass helmet",
+    "worn": "worn_head",
+    "description": "big round clear glass bubble helmet with a bold orange rim ring at the neck and a gold reflective visor shine, face clearly visible inside",
+    "real_size_cm": 38
+   },
+   {
+    "name": "life support backpack",
+    "worn": "worn_back",
+    "description": "chunky grey-white boxy backpack with an orange stripe, two small blue dials and a tube running to the suit",
+    "real_size_cm": 40
+   },
+   {
+    "name": "orange chest control panel",
+    "worn": "worn_body",
+    "description": "bright orange rectangular chest panel with red and blue buttons and a small flag patch",
+    "real_size_cm": 14
+   },
+   {
+    "name": "space gloves and boots",
+    "worn": "one_hand",
+    "description": "thick oversized orange-cuffed white gloves, held out; chunky grey moon boots with orange soles",
+    "real_size_cm": 20
+   }
+  ]
+ },
+ "still": "C:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test2\\preview\\shot_56.png",
+ "cost_usd": 0.012220000000000002
+}

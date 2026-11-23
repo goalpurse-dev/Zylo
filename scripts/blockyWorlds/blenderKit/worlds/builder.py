@@ -86,6 +86,8 @@ def zb_prop(spec, loc=(0.0, 0.0, 0.0), name=None):
     for ch in r.children:
         ch.location.z -= lo[2] if spec.get("hold") not in ("in_sky", "hanging", "on_wall") else 0.0
     r["zb_spec"] = nm
+    r["zb_lo"] = lo[2] if spec.get("hold") not in ("in_sky", "hanging", "on_wall") else 0.0
+    r["zb_grip"] = [float(v) for v in (spec.get("grip") or [0, 0, hi[2]])]
     r["zb_h"] = (hi[2] - lo[2]) * s
     ZB["built"][nm] = r
     return r
@@ -123,11 +125,25 @@ def zb_hold(ch, thing, spec, t=0.0):
         thing.location = (tc.x + f.x * k * zm_s(ch), tc.y + f.y * k * zm_s(ch), tc.z - 0.4 * zm_s(ch))
         thing.rotation_euler = (0.0, 0.0, math.radians(zm_yaw_at(ch, t)))
         zs_stick(thing, ch.torso, t)
-    elif hold == "ridden":
-        zs_upd(t)
-        top = thing.matrix_world.translation.z + float(thing.get("zb_h", 2.0)) * 0.78
-        ch.pose(t, loc=(thing.matrix_world.translation.x, thing.matrix_world.translation.y, top), hipz=-0.6, legL=(80, 22), legR=(80, 22))
+    elif hold in ("ridden", "sat_in"):
+        zb_sit_on(ch, thing, t)
     return thing
+
+
+def zb_seat(thing):
+    """the seat point of a prop (its grip) in the world"""
+    bpy.context.view_layer.update()
+    g = list(thing.get("zb_grip", [0.0, 0.0, 1.0]))
+    return thing.matrix_world @ Vector((g[0], g[1], g[2] - float(thing.get("zb_lo", 0.0))))
+
+
+def zb_sit_on(ch, thing, t):
+    """the character SITS on / in the thing (a chair, a boat, a giant chicken): the hips at its seat point"""
+    seat = zb_seat(thing)
+    s = zm_s(ch)
+    ch.pose(t - 0.6, loc=(seat.x, seat.y, max(0.0, seat.z - 1.1 * s)), hipz=-0.9, legL=(82, 8), legR=(82, 8))
+    ch.pose(t + 30.0, loc=(seat.x, seat.y, max(0.0, seat.z - 1.1 * s)), hipz=-0.9, legL=(82, 8), legR=(82, 8))
+    return ch
 
 
 # ---------------------------------------------------------------- CHARACTERS
@@ -257,6 +273,7 @@ def zb_place(spec, props=None):
         p = f.get("pos", [0, 0])
         loc = (float(p[0]) * u, float(p[1]) * u, 0.0)
         built = (props or {}).get(f.get("name"))
+        print("ZW_LOOK|builder|furn-ask %s in %s" % (f.get("name"), str(list((props or {}).keys()))[:200]))
         try:
             if built is not None:
                 th = zb_prop(built, loc, f.get("name"))
@@ -265,6 +282,8 @@ def zb_place(spec, props=None):
             else:
                 continue
             th.rotation_euler[2] = math.radians(float(f.get("rot", 0.0)))
+            Q = zb_mesh_pts([th])
+            print("ZW_LOOK|builder|furn %s built %s kids %d pts %d z %.1f..%.1f x %.1f y %.1f" % (f.get("name"), built is not None, len(th.children), len(Q), min([q.z for q in Q] + [0]), max([q.z for q in Q] + [0]), th.location.x, th.location.y))
         except Exception as e:
             print("ZW_LOOK|builder|furniture %s skipped: %s" % (f.get("name"), str(e)[:100]))
     ZB["zones"] = {z["name"]: [float(v) * u for v in z["rect"]] for z in spec.get("zones", []) or []}
@@ -307,6 +326,52 @@ def zb_frame(objs, t0, t1, lens=30.0, margin=1.3, front=None, high=0.45):
     cam.key(t1, tuple(loc), tuple(c), lens=lens)
     return cam
 
+def zb_frame_scene(main, named, t0, t1, front, lens=28.0, tag="SC"):
+    """the main subject group fills 35-60 % of the frame height (aim 0.5); everything the still names is inside when it
+    fits within that; the measure (the group's height share, how many named things are inside) goes to the log"""
+    zs_upd((t0 + t1) / 2.0)
+    Pm = zb_mesh_pts(main) or zb_mesh_pts(named)
+    Pa = Pm + zb_mesh_pts(named)
+    if not Pa:
+        return None
+    tv = 12.0 / lens
+    th = tv * 9.0 / 16.0
+    side = Vector((-front.y, front.x, 0.0))
+
+    def box(P):
+        lo = Vector((min(q.x for q in P), min(q.y for q in P), min(q.z for q in P)))
+        hi = Vector((max(q.x for q in P), max(q.y for q in P), max(q.z for q in P)))
+        return lo, hi
+    mlo, mhi = box(Pm)
+    alo, ahi = box(Pa)
+    c = (alo + ahi) / 2.0
+    Hm = max(0.5, mhi.z - mlo.z)
+    depth = max(abs((q - c).dot(front)) for q in Pa)
+    W = max(abs((q - c).dot(side)) for q in Pa) * 2.0
+    Ha = ahi.z - alo.z
+    d_all = max(Ha * 1.15 / 2.0 / tv, W * 1.15 / 2.0 / th) + depth
+    d_lo = Hm / (2.0 * tv * 0.6) + depth   # (closer than this: the group over 60 %)
+    d_hi = Hm / (2.0 * tv * 0.35) + depth  # (further: under 35 %)
+    D = max(d_lo, min(d_all, d_hi))
+    aimz = (mlo.z + mhi.z) / 2.0 if D < d_all else c.z
+    target = Vector((c.x, c.y, aimz))
+    loc = target + front * D + Vector((0.0, 0.0, Hm * 0.15))
+    cam = Cam()
+    cam.key(t0, tuple(loc + front * D * 0.03), tuple(target), lens=lens)
+    cam.key(t1, tuple(loc), tuple(target), lens=lens)
+    zs_upd((t0 + t1) / 2.0)
+    sp = zw_span(cam.ob, Pm)
+    h = (min(1.0, sp[3]) - max(0.0, sp[2])) if sp else 0.0
+    inside = 0
+    for ob in named:
+        q = zb_mesh_pts([ob])
+        s2 = zw_span(cam.ob, q) if q else None
+        if s2 and s2[0] > -0.02 and s2[1] < 1.02 and s2[2] > -0.02 and s2[3] < 1.02:
+            inside += 1
+    print("ZW_GATE|%s|measure|h=%.2f|named_in=%d/%d" % (tag, h, inside, len(named)))
+    return cam
+
+
 # ---------------------------------------------------------------- A PART C STILL
 def zb_where(S, p):
     """a place position [x, y] in metres -> world: a built place's own frame, or a library place's stage frame"""
@@ -327,7 +392,7 @@ def zb_scene(S, t0, t1):
         info = zb_place(S["place_built"], S.get("props_built"))
         front = Vector((0.0, -1.0, 0.0))
     else:
-        zw_build(S["place_library"], t0 - 0.3, t1 + 0.3, {"time": S.get("time", "day"), "faces": "dot", "busy": "empty", "walkers": "none", "cars": "parked", "extras": []})
+        zw_build(S["place_library"], t0 - 0.3, t1 + 0.3, {"time": S.get("time", "day"), "faces": "dot", "busy": "empty", "walkers": "none", "cars": "parked", "extras": [], "signs": S.get("signs") or ["SHOP"]})
         st_c, st_d, st_r, st_rot = zw_stage(S["place_library"])
         front = -st_d
     cast = {}
@@ -375,8 +440,11 @@ def zb_scene(S, t0, t1):
                     ch.act(t0 - 0.3, c["pose"])
             except Exception as e:
                 print("ZW_LOOK|builder|pose skipped: %s" % str(e)[:80])
-    subj = [cast[n] for n in (S.get("camera", {}).get("subjects") or list(cast.keys())) if n in cast]
-    sth = [things[n] for n in (S.get("camera", {}).get("things") or []) if n in things]
+    # (round 10: the planner's subject names matched loosely; nobody matched = the whole cast: people were framed out)
+    lc = {k.lower(): v for k, v in cast.items()}
+    lt = {k.lower(): v for k, v in things.items()}
+    subj = [lc[n.lower()] for n in (S.get("camera", {}).get("subjects") or []) if n.lower() in lc] or list(cast.values())
+    sth = [lt[n.lower()] for n in (S.get("camera", {}).get("things") or []) if n.lower() in lt]
 
     def pts_at(t):
         out = []
@@ -385,7 +453,7 @@ def zb_scene(S, t0, t1):
         for th in sth:
             out += zw_pts([th]) or []
         return out
-    return zb_frame(subj + sth, t0, t1, lens=28.0, margin=1.25, front=front)
+    return zb_frame_scene(subj or sth, sth, t0, t1, front, tag=S.get("tag", "SC"))
 def zb_test_piece(kind, spec, t0, t1, extra=None):
     """one cheap test still: the new piece alone next to a 120 cm kid on a plain floor in daylight"""
     ZB["kid_h"] = None
@@ -423,6 +491,15 @@ def zb_test_piece(kind, spec, t0, t1, extra=None):
         ch = zb_character(spec, (0.8 * u, 3.0 * u, 0.0), 0.0, t0, extra or [])
         subj.append(ch)
     elif kind == "move":
+        ex = extra or {}
+        if ex.get("support"):
+            seat = zb_prop(ex["support"], (-0.9 * u, 3.0 * u, 0.0))
+            things.append(seat)
+            zb_sit_on(kid, seat, t0)
+        for ps in ex.get("props") or []:
+            th = zb_prop(ps, (-0.6 * u, 2.6 * u, 0.0))
+            zb_hold(kid, th, ps, t0 - 0.3)
+            things.append(th)
         zb_move(kid, spec, t0 - 0.2, t1 + 0.2)
         zs_upd((t0 + t1) / 2.0)
         print("ZW_LOOK|builder|dbgmove keys %d t0 %.2f t1 %.2f armR %s hip %.2f" % (len(spec.get("keys", [])), t0, t1, str([round(math.degrees(v)) for v in kid.piv("armR").rotation_euler]), kid.hip.location.z))
@@ -436,7 +513,7 @@ def zb_test_piece(kind, spec, t0, t1, extra=None):
         return out
     if kind == "move":
         # a three-quarter view: an arm reaching forward or a bent knee does not point at the lens
-        return zb_frame(subj, t0, t1, lens=30.0, margin=1.35, front=zs_rot(Vector((0.0, -1.0, 0.0)), 55))
+        return zb_frame(subj + things, t0, t1, lens=30.0, margin=1.35, front=zs_rot(Vector((0.0, -1.0, 0.0)), 55))
     if small and things:
         # a small thing: the kid's upper body and the thing fill the frame
         return zb_frame([kid.head, kid.torso] + things, t0, t1, lens=35.0, margin=1.6)
@@ -444,3 +521,38 @@ def zb_test_piece(kind, spec, t0, t1, extra=None):
 
 
 # ===== END OF THE BUILDER ============================================================================================
+
+
+# ---------------------------------------------------------------- BUILT THINGS INSIDE A STORY (round 10)
+ZB_SPECS = {}
+ZT_BUILD_ZB = zt_build
+
+
+def zb_register(kind, spec):
+    """a saved builder prop becomes an engine thing: zw_thing(kind) builds it from its shapes at its real size"""
+    ZB_SPECS[kind] = spec
+    ZW_THING_SIZE[kind] = (float(spec.get("real_size_cm", 50.0)) / ZB_KID_CM) * 5.25
+
+
+def zt_build(kind, r, c, col):
+    spec = ZB_SPECS.get(kind)
+    if spec is None:
+        return ZT_BUILD_ZB(kind, r, c, col)
+    ZB["n"] += 1
+    n = ZB["n"]
+    inner = empty("zb_in%d" % n, (0.0, 0.0, 0.0), r, c)
+    lo, hi = [1e9, 1e9, 1e9], [-1e9, -1e9, -1e9]
+    for k, sh in enumerate(spec.get("shapes", [])[:40]):
+        try:
+            zb_shape(n, k, sh, inner)
+        except Exception as e:
+            print("ZW_LOOK|builder|shape %d of %s skipped: %s" % (k, kind, str(e)[:80]))
+            continue
+        for a in range(3):
+            lo[a] = min(lo[a], sh["pos"][a] - sh["size"][a] / 2.0)
+            hi[a] = max(hi[a], sh["pos"][a] + sh["size"][a] / 2.0)
+    big = max(1e-3, max(hi[a] - lo[a] for a in range(3)))
+    inner.scale = (1.0 / big, 1.0 / big, 1.0 / big)
+    for ch in inner.children:
+        ch.location.z -= lo[2]
+    return r

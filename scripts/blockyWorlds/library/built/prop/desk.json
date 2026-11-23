@@ -1,0 +1,319 @@
+{
+ "name": "desk",
+ "kind": "prop",
+ "asked": "a blocky wooden school desk with a chair",
+ "spec": {
+  "name": "school_desk_with_chair",
+  "real_size_cm": 80,
+  "hold": "on_ground",
+  "grip": [
+   0,
+   0,
+   40
+  ],
+  "shapes": [
+   {
+    "type": "box",
+    "size": [
+     64,
+     48,
+     6
+    ],
+    "pos": [
+     0,
+     -10,
+     72
+    ],
+    "rot": [
+     -6,
+     0,
+     0
+    ],
+    "color": "#c98a4b",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     66,
+     4,
+     4
+    ],
+    "pos": [
+     0,
+     -33,
+     70
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#7a4a22",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     10,
+     10,
+     70
+    ],
+    "pos": [
+     -27,
+     -24,
+     35
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#8a5528",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     10,
+     10,
+     70
+    ],
+    "pos": [
+     27,
+     -24,
+     35
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#8a5528",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     10,
+     10,
+     70
+    ],
+    "pos": [
+     -27,
+     6,
+     35
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#8a5528",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     10,
+     10,
+     70
+    ],
+    "pos": [
+     27,
+     6,
+     35
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#8a5528",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     54,
+     8,
+     14
+    ],
+    "pos": [
+     0,
+     6,
+     40
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#a86a30",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     54,
+     36,
+     5
+    ],
+    "pos": [
+     0,
+     -12,
+     26
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#a86a30",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     40,
+     40,
+     6
+    ],
+    "pos": [
+     0,
+     50,
+     44
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#2f6fd6",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     8,
+     8,
+     44
+    ],
+    "pos": [
+     -17,
+     34,
+     22
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#5a5a66",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     8,
+     8,
+     44
+    ],
+    "pos": [
+     17,
+     34,
+     22
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#5a5a66",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     8,
+     8,
+     44
+    ],
+    "pos": [
+     -17,
+     66,
+     22
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#5a5a66",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     8,
+     8,
+     44
+    ],
+    "pos": [
+     17,
+     66,
+     22
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#5a5a66",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     40,
+     6,
+     34
+    ],
+    "pos": [
+     0,
+     68,
+     66
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#2f6fd6",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     14,
+     10,
+     3
+    ],
+    "pos": [
+     18,
+     -14,
+     76
+    ],
+    "rot": [
+     -6,
+     0,
+     0
+    ],
+    "color": "#e04a3a",
+    "glow": false
+   }
+  ]
+ },
+ "still": "C:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test1\\preview\\shot_35.png",
+ "cost_usd": 0.00234
+}

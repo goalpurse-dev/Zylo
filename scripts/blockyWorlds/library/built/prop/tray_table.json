@@ -1,0 +1,159 @@
+{
+ "name": "tray_table",
+ "kind": "prop",
+ "asked": "Tray table",
+ "spec": {
+  "name": "tray_table",
+  "real_size_cm": 80,
+  "hold": "on_ground",
+  "grip": [
+   0,
+   0,
+   0
+  ],
+  "shapes": [
+   {
+    "type": "disc",
+    "size": [
+     50,
+     50,
+     3
+    ],
+    "pos": [
+     0,
+     0,
+     1.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#2d3436",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     4,
+     4,
+     72
+    ],
+    "pos": [
+     0,
+     0,
+     36
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#636e72",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     80,
+     40,
+     3
+    ],
+    "pos": [
+     0,
+     0,
+     74
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffcc00",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     80,
+     2,
+     4
+    ],
+    "pos": [
+     0,
+     -19,
+     77
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#d63031",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     80,
+     2,
+     4
+    ],
+    "pos": [
+     0,
+     19,
+     77
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#d63031",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     2,
+     40,
+     4
+    ],
+    "pos": [
+     -39,
+     0,
+     77
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#d63031",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     2,
+     40,
+     4
+    ],
+    "pos": [
+     39,
+     0,
+     77
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#d63031",
+    "glow": false
+   }
+  ]
+ },
+ "still": "C:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test1\\preview\\shot_68.png",
+ "cost_usd": 0.00315
+}

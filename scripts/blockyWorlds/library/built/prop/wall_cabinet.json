@@ -1,0 +1,139 @@
+{
+ "name": "wall_cabinet",
+ "kind": "prop",
+ "asked": "Wall cabinet",
+ "spec": {
+  "name": "wall_cabinet",
+  "real_size_cm": 90,
+  "hold": "on_wall",
+  "grip": [
+   0,
+   0,
+   45
+  ],
+  "shapes": [
+   {
+    "type": "box",
+    "size": [
+     90,
+     35,
+     90
+    ],
+    "pos": [
+     0,
+     0,
+     45
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e8e0d0",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     42,
+     2,
+     82
+    ],
+    "pos": [
+     -22,
+     -18.5,
+     45
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#9c6b3c",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     42,
+     2,
+     82
+    ],
+    "pos": [
+     22,
+     -18.5,
+     45
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#9c6b3c",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     3,
+     3,
+     3
+    ],
+    "pos": [
+     -2,
+     -20,
+     45
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#d4a017",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     3,
+     3,
+     3
+    ],
+    "pos": [
+     2,
+     -20,
+     45
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#d4a017",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     84,
+     4,
+     4
+    ],
+    "pos": [
+     0,
+     -18,
+     2
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#5c3a1e",
+    "glow": false
+   }
+  ]
+ },
+ "still": "C:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test1\\preview\\shot_69.png",
+ "cost_usd": 0.00277
+}

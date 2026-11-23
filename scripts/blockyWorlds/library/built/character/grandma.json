@@ -3,43 +3,43 @@
  "kind": "character",
  "asked": "An elderly woman with gray hair in a bun, round glasses, a lavender cardigan and long skirt, blocky Roblox style.",
  "spec": {
-  "name": "grandma",
+  "name": "Grandma",
   "age": "old",
   "height_cm": 158,
   "skin": "#f1c9a5",
-  "shirt": "#a77bdc",
-  "pants": "#6b3fa0",
-  "clothes": "dress",
+  "shirt": "#b57edc",
+  "pants": "#5b3a8c",
+  "clothes": "coat",
   "hair": "bun",
-  "hair_color": "#c9c9d1",
-  "face": "girl",
+  "hair_color": "#c8c8d0",
+  "face": "plain",
   "accessories": [
    {
-    "name": "round glasses",
+    "name": "Round glasses",
     "worn": "worn_face",
-    "description": "large round thin gold-rimmed glasses with clear lenses, bold and readable on the face",
-    "real_size_cm": 13
+    "description": "Oversized round black-rimmed glasses with clear lenses, bold and chunky so they read at phone size",
+    "real_size_cm": 14
    },
    {
-    "name": "lavender cardigan",
+    "name": "Cardigan buttons",
     "worn": "worn_body",
-    "description": "open knitted lavender cardigan with two big buttons and chunky sleeves over the dress",
-    "real_size_cm": 55
+    "description": "A vertical row of three large white buttons down the front of the lavender cardigan, with a bright white collar edge",
+    "real_size_cm": 15
    },
    {
-    "name": "knitting basket",
+    "name": "Walking cane",
     "worn": "one_hand",
-    "description": "small woven basket with a ball of pink yarn and two knitting needles sticking out",
-    "real_size_cm": 30
+    "description": "Wooden walking cane with a curved handle, warm brown color",
+    "real_size_cm": 85
    },
    {
-    "name": "pearl necklace",
-    "worn": "worn_body",
-    "description": "chunky white pearl necklace resting on the chest",
-    "real_size_cm": 40
+    "name": "Knitting bag",
+    "worn": "one_hand",
+    "description": "Small cream handbag with yarn ball and two knitting needles sticking out",
+    "real_size_cm": 30
    }
   ]
  },
  "still": "C:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test1\\preview\\shot_03.png",
- "cost_usd": 0.00251
+ "cost_usd": 0.00248
 }

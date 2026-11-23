@@ -1,0 +1,199 @@
+{
+ "name": "dentist_surgical_mask",
+ "kind": "prop",
+ "asked": "blue surgical mask pulled down below the chin",
+ "spec": {
+  "name": "dentist_surgical_mask",
+  "real_size_cm": 17,
+  "hold": "worn_face",
+  "grip": [
+   0,
+   0,
+   -6
+  ],
+  "shapes": [
+   {
+    "type": "box",
+    "size": [
+     17,
+     2,
+     9
+    ],
+    "pos": [
+     0,
+     0,
+     -6
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#4aa8e0",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     17,
+     2.4,
+     1.6
+    ],
+    "pos": [
+     0,
+     -0.2,
+     -3
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#2f86c4",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     16,
+     2.4,
+     1.4
+    ],
+    "pos": [
+     0,
+     -0.2,
+     -5.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#2f86c4",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     15,
+     2.4,
+     1.4
+    ],
+    "pos": [
+     0,
+     -0.2,
+     -8
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#2f86c4",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     17.5,
+     2.2,
+     1
+    ],
+    "pos": [
+     0,
+     0,
+     -1.2
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     1.2,
+     2,
+     6
+    ],
+    "pos": [
+     -9,
+     1.5,
+     -3.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e8f4fb",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     1.2,
+     2,
+     6
+    ],
+    "pos": [
+     9,
+     1.5,
+     -3.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e8f4fb",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     1.2,
+     6,
+     1.2
+    ],
+    "pos": [
+     -9,
+     4,
+     -1
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e8f4fb",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     1.2,
+     6,
+     1.2
+    ],
+    "pos": [
+     9,
+     4,
+     -1
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e8f4fb",
+    "glow": false
+   }
+  ]
+ },
+ "still": "C:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test2\\preview\\shot_33.png",
+ "cost_usd": 0.014839999999999999
+}

@@ -1,0 +1,319 @@
+{
+ "name": "dentist_chair",
+ "kind": "prop",
+ "asked": "A blocky reclining dentist chair with blue padded seat, tilted back backrest, and a headrest",
+ "spec": {
+  "name": "dentist_chair",
+  "real_size_cm": 120,
+  "hold": "on_ground",
+  "grip": [
+   0,
+   0,
+   40
+  ],
+  "shapes": [
+   {
+    "type": "cylinder",
+    "size": [
+     50,
+     50,
+     6
+    ],
+    "pos": [
+     0,
+     0,
+     3
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#444b55",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     12,
+     12,
+     30
+    ],
+    "pos": [
+     0,
+     0,
+     21
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#c9d1d9",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     34,
+     50,
+     8
+    ],
+    "pos": [
+     0,
+     0,
+     38
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#c9d1d9",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     44,
+     56,
+     12
+    ],
+    "pos": [
+     0,
+     -2,
+     46
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#1e66e0",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     44,
+     76,
+     12
+    ],
+    "pos": [
+     0,
+     36,
+     62
+    ],
+    "rot": [
+     -55,
+     0,
+     0
+    ],
+    "color": "#1e66e0",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     20,
+     10,
+     8
+    ],
+    "pos": [
+     0,
+     62,
+     92
+    ],
+    "rot": [
+     -55,
+     0,
+     0
+    ],
+    "color": "#2f86ff",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     26,
+     14,
+     12
+    ],
+    "pos": [
+     0,
+     57,
+     86
+    ],
+    "rot": [
+     -55,
+     0,
+     0
+    ],
+    "color": "#1e66e0",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     44,
+     40,
+     8
+    ],
+    "pos": [
+     0,
+     -48,
+     34
+    ],
+    "rot": [
+     25,
+     0,
+     0
+    ],
+    "color": "#1e66e0",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     10,
+     50,
+     6
+    ],
+    "pos": [
+     -28,
+     0,
+     62
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#f2f2f2",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     10,
+     50,
+     6
+    ],
+    "pos": [
+     28,
+     0,
+     62
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#f2f2f2",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     8,
+     8,
+     18
+    ],
+    "pos": [
+     -28,
+     -10,
+     54
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#f2f2f2",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     8,
+     8,
+     18
+    ],
+    "pos": [
+     28,
+     -10,
+     54
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#f2f2f2",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     6,
+     6,
+     60
+    ],
+    "pos": [
+     42,
+     -30,
+     30
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#9aa4ad",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     8,
+     36,
+     6
+    ],
+    "pos": [
+     42,
+     -14,
+     84
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#9aa4ad",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     24,
+     24,
+     5
+    ],
+    "pos": [
+     42,
+     -4,
+     94
+    ],
+    "rot": [
+     90,
+     0,
+     0
+    ],
+    "color": "#ffe14d",
+    "glow": true
+   }
+  ]
+ },
+ "still": "C:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test1\\preview\\shot_16.png",
+ "cost_usd": 0.00257
+}

@@ -1,0 +1,299 @@
+{
+ "name": "lantern",
+ "kind": "prop",
+ "asked": "Old camping lantern with a warm glowing light and metal handle",
+ "spec": {
+  "name": "lantern",
+  "real_size_cm": 30,
+  "hold": "on_table",
+  "grip": [
+   0,
+   0,
+   10
+  ],
+  "shapes": [
+   {
+    "type": "cylinder",
+    "size": [
+     12,
+     12,
+     2
+    ],
+    "pos": [
+     0,
+     0,
+     1
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#2f3a44",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     13,
+     13,
+     2
+    ],
+    "pos": [
+     0,
+     0,
+     3
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#b02a1e",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     10,
+     10,
+     14
+    ],
+    "pos": [
+     0,
+     0,
+     11
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffd45a",
+    "glow": true
+   },
+   {
+    "type": "ball",
+    "size": [
+     8,
+     8,
+     10
+    ],
+    "pos": [
+     0,
+     0,
+     11
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#fff3b0",
+    "glow": true
+   },
+   {
+    "type": "box",
+    "size": [
+     1.4,
+     1.4,
+     15
+    ],
+    "pos": [
+     5.5,
+     0,
+     11
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#3b4650",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     1.4,
+     1.4,
+     15
+    ],
+    "pos": [
+     -5.5,
+     0,
+     11
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#3b4650",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     1.4,
+     1.4,
+     15
+    ],
+    "pos": [
+     0,
+     5.5,
+     11
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#3b4650",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     1.4,
+     1.4,
+     15
+    ],
+    "pos": [
+     0,
+     -5.5,
+     11
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#3b4650",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     13,
+     13,
+     2
+    ],
+    "pos": [
+     0,
+     0,
+     19
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#b02a1e",
+    "glow": false
+   },
+   {
+    "type": "cone",
+    "size": [
+     13,
+     13,
+     5
+    ],
+    "pos": [
+     0,
+     0,
+     22.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#b02a1e",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     4,
+     4,
+     2
+    ],
+    "pos": [
+     0,
+     0,
+     26
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#2f3a44",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     1.6,
+     1.6,
+     7
+    ],
+    "pos": [
+     8,
+     0,
+     28
+    ],
+    "rot": [
+     0,
+     25,
+     0
+    ],
+    "color": "#c9d1d8",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     1.6,
+     1.6,
+     7
+    ],
+    "pos": [
+     -8,
+     0,
+     28
+    ],
+    "rot": [
+     0,
+     -25,
+     0
+    ],
+    "color": "#c9d1d8",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     18,
+     1.6,
+     1.6
+    ],
+    "pos": [
+     0,
+     0,
+     31
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#c9d1d8",
+    "glow": false
+   }
+  ]
+ },
+ "still": "C:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test1\\preview\\shot_04.png",
+ "cost_usd": 0.00239
+}

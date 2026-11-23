@@ -8,7 +8,7 @@
 
 export const KID_CM = 120;
 export const SHAPES = Object.freeze(["box", "ball", "cylinder", "cone", "disc", "wedge"]);
-export const HOLDS = Object.freeze(["one_hand", "two_hands", "worn_head", "worn_face", "worn_body", "worn_back", "on_ground", "on_table", "on_wall", "in_sky", "ridden", "hanging"]);
+export const HOLDS = Object.freeze(["one_hand", "two_hands", "worn_head", "worn_face", "worn_body", "worn_back", "on_ground", "on_table", "on_wall", "in_sky", "ridden", "sat_in", "hanging"]);
 export const MAX_SHAPES = 40;
 export const SPEC_MODEL = "claude-sonnet-5-5";
 export const VISION_MODEL = "claude-sonnet-5-5";
@@ -30,7 +30,7 @@ export const PROP_SCHEMA = {
       type: "array", 
       items: {
         type: "object", additionalProperties: false, required: ["type", "size", "pos", "rot", "color"],
-        properties: { type: { type: "string", enum: SHAPES }, size: v3, pos: v3, rot: v3, color: hex, glow: { type: "boolean" } },
+        properties: { type: { type: "string", enum: SHAPES }, size: v3, pos: v3, rot: v3, color: hex, glow: { type: "boolean" }, part: { type: "string", description: "body / head / legs / wheels / seat / handle (a creature or vehicle names its parts)" } },
       },
     },
   },
@@ -45,7 +45,10 @@ red print, a cat's ears and tail, a lantern's glass), chunky, no tiny details. g
 flame, a screen, a lamp bulb).
 real_size_cm = its largest dimension in real life. hold = how it is used (one_hand: held in one fist; two_hands; worn_head
 / worn_face / worn_body / worn_back; on_ground; on_table; on_wall; in_sky (far away, big: a planet); ridden (someone sits
-on it); hanging). grip = the point a hand holds (or the anchor point for worn / placed things).`;
+on it); hanging). grip = the point a hand holds (or the anchor point for worn / placed things; for a ridden creature or a vehicle someone
+sits in: the SEAT point). CREATURES AND VEHICLES (a chicken, a shark, a cat, a robot, a boat, a fire truck) are built the
+same way from shapes with named parts (part: body, head, legs, wheels, seat): a real animal's real size; a GIANT one is
+the same build with a bigger real_size_cm. Everything in ONE piece: the parts touch / overlap, nothing floats.`;
 
 // ---------------------------------------------------------------- CHARACTERS
 export const AGES = Object.freeze(["kid", "teen", "adult", "old"]);
@@ -65,7 +68,9 @@ export const CHAR_SCHEMA = {
 export const CHAR_SYSTEM = `You design a CHARACTER for a blocky Roblox-style video as CHOICES (no shapes): age, real height in cm (a kid is about
 120, an adult 175, a grandma 160), skin, shirt and trousers colours, the clothes type, hair, hair colour, face, and at most
 4 accessories that make the role readable at phone size (a firefighter's helmet, a dentist's mask, a chef's hat, glasses,
-a moustache, an apron, a badge). Each accessory is built later as a prop: give it a short description and its real size.
+a moustache, an apron, a badge). The ROLE must be clear from 2-3 STRONG signs (grandma: a grey bun + glasses + a cardigan;
+a dentist: a white coat + a mask; a firefighter: a helmet + a yellow jacket): the clothes colours carry most of it, the
+accessories are big and bold. Each accessory is built later as a prop: give it a short description and its real size.
 Bold, readable colours; one strong colour per character.`;
 
 // ---------------------------------------------------------------- MOVES (key poses for our joints)
@@ -82,6 +87,8 @@ export const MOVE_SCHEMA = {
     keys: { type: "array", items: { type: "object", additionalProperties: false, required: ["t", "pose"], properties: { t: { type: "number" }, pose: POSE } } },
     travel_m: { type: "number", description: "how far the body moves forward over the move, metres (0 = on the spot)" },
     hands: { type: "string", enum: ["none", "right", "left", "both"] },
+    support: { type: "string", enum: ["none", "chair", "stool", "boat", "ladder", "ground"], description: "what the body rests on (knitting: a chair; fishing: a boat)" },
+    props: { type: "array", items: { type: "object", additionalProperties: false, required: ["name", "description", "real_size_cm", "hold"], properties: { name: { type: "string" }, description: { type: "string" }, real_size_cm: { type: "number" }, hold: { type: "string", enum: HOLDS } } } },
   },
 };
 export const MOVE_SYSTEM = `You design a MOVE for a blocky Roblox-style character as KEY POSES over time (t from 0 to 1), for these joints
@@ -90,7 +97,9 @@ legL / legR = [forward swing (positive = forward), out]; head = [yaw (turn), pit
 roll]; hipz = crouch (0 = standing, -0.4 = knees bent, -0.9 = sitting low). Limits: arms forward -80..180, out -40..130;
 legs forward -70..100, out -15..50; head yaw +-80, pitch -40..45; torso lean -25..70. Make the move READ: clear strong poses,
 2-6 keys per action beat, repeated beats for a repeated action (knitting needles, a hard pull). travel_m = how far the body
-moves forward. hands = which hands hold the prop.`;
+moves forward. hands = which hands hold the prop. support = what the body rests on (a seated move needs a chair / a
+boat: never sitting on thin air). props = the things the move needs in the hands (knitting: needles + a ball of wool;
+fishing: a rod), each built later as a prop.`;
 
 // ---------------------------------------------------------------- PLACES (a shell + furniture + zones)
 export const PLACE_SCHEMA = {
@@ -143,7 +152,7 @@ export function checkMove(m) {
     if (k.pose?.hipz != null) pose.hipz = clamp(k.pose.hipz, -1.0, 0.15);
     return { t: clamp(k.t, 0, 1), pose };
   }).sort((a, b) => a.t - b.t);
-  return { ok: true, problems: [], spec: { name: String(m.name || "move").toLowerCase().replace(/[^a-z0-9_]+/g, "_"), duration_s: clamp(m.duration_s, 0.4, 8), loop: Boolean(m.loop), keys, travel_m: clamp(m.travel_m, 0, 6), hands: m.hands ?? "none" } };
+  return { ok: true, problems: [], spec: { name: String(m.name || "move").toLowerCase().replace(/[^a-z0-9_]+/g, "_"), duration_s: clamp(m.duration_s, 0.4, 8), loop: Boolean(m.loop), keys, travel_m: clamp(m.travel_m, 0, 6), hands: m.hands ?? "none", support: m.support ?? "none", props: (m.props ?? []).slice(0, 3) } };
 }
 export function checkPlace(p) {
   if (!p || !Array.isArray(p.size_m)) return { ok: false, problems: ["no size"], spec: p };
@@ -164,18 +173,33 @@ export async function buildMove({ callJson, apiKey, name, description, feedback 
   const r = await specCall({ callJson, apiKey, system: MOVE_SYSTEM, schema: MOVE_SCHEMA, user: `The move: "${name}": ${description}.${feedback ? `\nTHE LAST VERSION FAILED: ${feedback}` : ""}`, meter });
   return { ...checkMove(r.data), costUsd: r.costUsd };
 }
-export async function buildPlace({ callJson, apiKey, name, description, feedback = "", meter = null }) {
-  const r = await specCall({ callJson, apiKey, system: PLACE_SYSTEM, schema: PLACE_SCHEMA, user: `The place: "${name}": ${description}.${feedback ? `\nTHE LAST VERSION FAILED: ${feedback}` : ""}`, meter });
+export async function buildPlace({ callJson, apiKey, name, description, feedback = "", keep = null, meter = null }) {
+  const r = await specCall({ callJson, apiKey, system: PLACE_SYSTEM, schema: PLACE_SCHEMA, user: `The place: "${name}": ${description}.${feedback ? `\nTHE LAST VERSION FAILED: ${feedback}` : ""}${keep ? `\nKEEP EXACTLY THESE FURNITURE NAMES (move / resize them if needed): ${keep.join(", ")}` : ""}`, meter });
   return { ...checkPlace(r.data), costUsd: r.costUsd };
 }
 
 // ---------------------------------------------------------------- THE TEST: a vision check of the piece's still
 export const VISION_SCHEMA = { type: "object", additionalProperties: false, required: ["is_it", "right_size", "reason"], properties: { is_it: { type: "boolean" }, right_size: { type: "boolean" }, reason: { type: "string" } } };
-export async function visionCheck({ callJson, apiKey, imageB64, mediaType = "image/jpeg", thing, sizeCm, meter = null }) {
+export async function visionCheck({ callJson, apiKey, imageB64, mediaType = "image/jpeg", thing, kind = "prop", sizeCm, meter = null }) {
+  // (owner round 10: THREE things only: can you tell what it is, is the size right next to the kid, is it in one piece;
+  // small accessory details never fail a piece; a character passes when the role is clear from 2-3 strong signs)
+  const q = kind === "character" ? `Can you tell this character is ${thing} from 2-3 strong signs (clothes, colours, a hat, a coat)? Small details never matter.`
+    : kind === "move" ? `Does the figure's pose (with its props / seat) clearly show: ${thing}?`
+    : kind === "place" ? `Is this clearly ${thing}, with its listed set pieces visible?`
+    : `Can you tell this is ${thing}? Small details never matter.`;
   const user = [{ type: "image", source: { type: "base64", media_type: mediaType, data: imageB64 } },
-    { type: "text", text: `This is a still from a blocky Roblox-style video. A kid about ${KID_CM} cm tall stands next to the test piece. Is the piece clearly a ${thing} (would a viewer name it at phone size)? Is it about ${sizeCm} cm next to the kid (within half / double)? Answer strictly; reason in one sentence (what is wrong if not).` }];
-  const r = await callJson({ apiKey, model: VISION_MODEL, system: ["You check test renders for a video engine. Strict, short."], user, schema: VISION_SCHEMA, effort: "low", maxTokens: 800, meter, cache: false });
-  return { ...r.data, ok: Boolean(r.data?.is_it && r.data?.right_size), costUsd: Number(r.costUsd ?? 0) };
+    { type: "text", text: `A still from a blocky Roblox-style video; a kid about ${KID_CM} cm tall is there for scale. Judge THREE things only. 1) ${q} 2) ${sizeCm ? `Is it about ${sizeCm} cm next to the kid (between half and double)?` : "Size: answer true."} 3) Is it in ONE piece (no parts floating apart)? Lenient on style, strict only on these three. One sentence: what is wrong, if anything.` }];
+  const r = await callJson({ apiKey, model: VISION_MODEL, system: ["You check test renders for a blocky video engine. Lenient on style, strict on identity, size and one piece."], user, schema: VISION3_SCHEMA, effort: "low", maxTokens: 800, meter, cache: false });
+  const d = r.data ?? {};
+  return { ...d, ok: Boolean(d.is_it && d.right_size && d.one_piece), costUsd: Number(r.costUsd ?? 0) };
+}
+export const VISION3_SCHEMA = { type: "object", additionalProperties: false, required: ["is_it", "right_size", "one_piece", "reason"], properties: { is_it: { type: "boolean" }, right_size: { type: "boolean" }, one_piece: { type: "boolean" }, reason: { type: "string" } } };
+export const SCENE_CHECK_SCHEMA = { type: "object", additionalProperties: false, required: ["shows_it", "missing", "reason"], properties: { shows_it: { type: "boolean" }, missing: { type: "array", items: { type: "string" } }, reason: { type: "string" } } };
+/** the composed-scene check: does this picture show the sentence? */
+export async function sceneCheck({ callJson, apiKey, imageB64, sentence, meter = null }) {
+  const user = [{ type: "image", source: { type: "base64", media_type: "image/jpeg", data: imageB64 } }, { type: "text", text: `A still from a blocky Roblox-style video. Does this picture show: "${sentence}"? Lenient on style; list the named things you cannot see.` }];
+  const r = await callJson({ apiKey, model: VISION_MODEL, system: ["You check composed stills for a blocky video engine."], user, schema: SCENE_CHECK_SCHEMA, effort: "low", maxTokens: 800, meter, cache: false });
+  return { ...(r.data ?? {}), costUsd: Number(r.costUsd ?? 0) };
 }
 
 /** a spec as a Python literal (data only: dicts, lists, numbers, strings, booleans) */

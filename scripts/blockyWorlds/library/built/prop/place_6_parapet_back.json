@@ -1,0 +1,399 @@
+{
+ "name": "place_6_parapet_back",
+ "kind": "prop",
+ "asked": "low brick parapet wall along the back edge of the rooftop, waist high, blocky red brick with a flat cap",
+ "spec": {
+  "name": "rooftop_back_parapet_wall",
+  "real_size_cm": 300,
+  "hold": "on_ground",
+  "grip": [
+   0,
+   0,
+   0
+  ],
+  "shapes": [
+   {
+    "type": "box",
+    "size": [
+     320,
+     40,
+     6
+    ],
+    "pos": [
+     0,
+     0,
+     3
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#4a4a52",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     300,
+     30,
+     90
+    ],
+    "pos": [
+     0,
+     0,
+     51
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#b5412f",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     316,
+     38,
+     10
+    ],
+    "pos": [
+     0,
+     0,
+     101
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#d0d0d4",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     300,
+     2,
+     6
+    ],
+    "pos": [
+     0,
+     -15.5,
+     25
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#7a2a1e",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     300,
+     2,
+     6
+    ],
+    "pos": [
+     0,
+     -15.5,
+     50
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#7a2a1e",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     300,
+     2,
+     6
+    ],
+    "pos": [
+     0,
+     -15.5,
+     75
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#7a2a1e",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     4,
+     2,
+     19
+    ],
+    "pos": [
+     -100,
+     -15.5,
+     37
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#7a2a1e",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     4,
+     2,
+     19
+    ],
+    "pos": [
+     0,
+     -15.5,
+     37
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#7a2a1e",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     4,
+     2,
+     19
+    ],
+    "pos": [
+     100,
+     -15.5,
+     37
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#7a2a1e",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     4,
+     2,
+     19
+    ],
+    "pos": [
+     -50,
+     -15.5,
+     62
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#7a2a1e",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     4,
+     2,
+     19
+    ],
+    "pos": [
+     50,
+     -15.5,
+     62
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#7a2a1e",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     4,
+     2,
+     19
+    ],
+    "pos": [
+     -100,
+     -15.5,
+     87
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#7a2a1e",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     4,
+     2,
+     19
+    ],
+    "pos": [
+     0,
+     -15.5,
+     87
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#7a2a1e",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     4,
+     2,
+     19
+    ],
+    "pos": [
+     100,
+     -15.5,
+     87
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#7a2a1e",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     40,
+     50,
+     10
+    ],
+    "pos": [
+     -160,
+     -5,
+     5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#3d3d44",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     34,
+     34,
+     100
+    ],
+    "pos": [
+     -155,
+     0,
+     50
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#9c3626",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     40,
+     40,
+     10
+    ],
+    "pos": [
+     -155,
+     0,
+     105
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#d0d0d4",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     34,
+     34,
+     100
+    ],
+    "pos": [
+     155,
+     0,
+     50
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#9c3626",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     40,
+     40,
+     10
+    ],
+    "pos": [
+     155,
+     0,
+     105
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#d0d0d4",
+    "glow": false
+   }
+  ]
+ },
+ "still": "C:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test1\\preview\\shot_49.png",
+ "cost_usd": 0.00261
+}

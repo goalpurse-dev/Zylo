@@ -1,0 +1,20 @@
+{
+ "name": "kid_two",
+ "kind": "character",
+ "asked": "a kid in a blue t-shirt and jeans with short brown hair, blocky Roblox style",
+ "spec": {
+  "name": "kid_two",
+  "age": "kid",
+  "height_cm": 120,
+  "skin": "#f1c27d",
+  "shirt": "#1e6fd9",
+  "pants": "#3b5b8c",
+  "clothes": "tshirt",
+  "hair": "short",
+  "hair_color": "#5a3825",
+  "face": "kid",
+  "accessories": []
+ },
+ "still": "C:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test1\\preview\\shot_76.png",
+ "cost_usd": 0.0026
+}

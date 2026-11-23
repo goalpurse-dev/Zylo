@@ -1,0 +1,279 @@
+{
+ "name": "place_1_lantern",
+ "kind": "prop",
+ "asked": "round glowing battery lantern with a warm yellow light on its top",
+ "spec": {
+  "name": "place_1_lantern",
+  "real_size_cm": 25,
+  "hold": "on_ground",
+  "grip": [
+   0,
+   0,
+   12
+  ],
+  "shapes": [
+   {
+    "type": "cylinder",
+    "size": [
+     16,
+     16,
+     2
+    ],
+    "pos": [
+     0,
+     0,
+     1
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#2b2b2b",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     18,
+     18,
+     4
+    ],
+    "pos": [
+     0,
+     0,
+     4
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#d93a2b",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     17,
+     17,
+     12
+    ],
+    "pos": [
+     0,
+     0,
+     12
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffd84a",
+    "glow": true
+   },
+   {
+    "type": "ball",
+    "size": [
+     16,
+     16,
+     14
+    ],
+    "pos": [
+     0,
+     0,
+     13
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#fff0a0",
+    "glow": true
+   },
+   {
+    "type": "box",
+    "size": [
+     1.5,
+     1.5,
+     13
+    ],
+    "pos": [
+     8.5,
+     0,
+     12
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#2b2b2b",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     1.5,
+     1.5,
+     13
+    ],
+    "pos": [
+     -8.5,
+     0,
+     12
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#2b2b2b",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     1.5,
+     1.5,
+     13
+    ],
+    "pos": [
+     0,
+     8.5,
+     12
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#2b2b2b",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     1.5,
+     1.5,
+     13
+    ],
+    "pos": [
+     0,
+     -8.5,
+     12
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#2b2b2b",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     19,
+     19,
+     3
+    ],
+    "pos": [
+     0,
+     0,
+     19.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#d93a2b",
+    "glow": false
+   },
+   {
+    "type": "cone",
+    "size": [
+     12,
+     12,
+     3
+    ],
+    "pos": [
+     0,
+     0,
+     22.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffb020",
+    "glow": true
+   },
+   {
+    "type": "box",
+    "size": [
+     2,
+     14,
+     2
+    ],
+    "pos": [
+     0,
+     0,
+     24
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#2b2b2b",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     2,
+     2,
+     4
+    ],
+    "pos": [
+     0,
+     6,
+     22
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#2b2b2b",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     2,
+     2,
+     4
+    ],
+    "pos": [
+     0,
+     -6,
+     22
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#2b2b2b",
+    "glow": false
+   }
+  ]
+ },
+ "still": "C:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test2\\preview\\shot_06.png",
+ "cost_usd": 0.01688
+}

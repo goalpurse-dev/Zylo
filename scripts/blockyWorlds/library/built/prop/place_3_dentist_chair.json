@@ -1,0 +1,319 @@
+{
+ "name": "place_3_dentist_chair",
+ "kind": "prop",
+ "asked": "white reclining dentist chair with a padded headrest and a pale blue vinyl seat, mounted on a chrome pedestal base",
+ "spec": {
+  "name": "place_3_dentist_chair",
+  "real_size_cm": 160,
+  "hold": "on_ground",
+  "grip": [
+   0,
+   0,
+   50
+  ],
+  "shapes": [
+   {
+    "type": "disc",
+    "size": [
+     60,
+     60,
+     6
+    ],
+    "pos": [
+     0,
+     0,
+     3
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#c0c4c8",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     18,
+     18,
+     30
+    ],
+    "pos": [
+     0,
+     0,
+     21
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#d8dce0",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     26,
+     26,
+     8
+    ],
+    "pos": [
+     0,
+     0,
+     40
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#c0c4c8",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     50,
+     70,
+     14
+    ],
+    "pos": [
+     0,
+     0,
+     48
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     46,
+     64,
+     12
+    ],
+    "pos": [
+     0,
+     -1,
+     55
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#a9d4ee",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     46,
+     60,
+     14
+    ],
+    "pos": [
+     0,
+     36,
+     66
+    ],
+    "rot": [
+     -50,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     42,
+     56,
+     10
+    ],
+    "pos": [
+     0,
+     33,
+     69
+    ],
+    "rot": [
+     -50,
+     0,
+     0
+    ],
+    "color": "#a9d4ee",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     46,
+     34,
+     12
+    ],
+    "pos": [
+     0,
+     -44,
+     50
+    ],
+    "rot": [
+     20,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     42,
+     30,
+     9
+    ],
+    "pos": [
+     0,
+     -44,
+     55
+    ],
+    "rot": [
+     20,
+     0,
+     0
+    ],
+    "color": "#a9d4ee",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     10,
+     10,
+     22
+    ],
+    "pos": [
+     -28,
+     5,
+     66
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     10,
+     10,
+     22
+    ],
+    "pos": [
+     28,
+     5,
+     66
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     10,
+     40,
+     6
+    ],
+    "pos": [
+     -28,
+     5,
+     78
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#a9d4ee",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     10,
+     40,
+     6
+    ],
+    "pos": [
+     28,
+     5,
+     78
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#a9d4ee",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     14,
+     10,
+     24
+    ],
+    "pos": [
+     0,
+     66,
+     100
+    ],
+    "rot": [
+     -50,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     32,
+     16,
+     22
+    ],
+    "pos": [
+     0,
+     76,
+     112
+    ],
+    "rot": [
+     -50,
+     0,
+     0
+    ],
+    "color": "#a9d4ee",
+    "glow": false
+   }
+  ]
+ },
+ "still": "C:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test2\\preview\\shot_32.png",
+ "cost_usd": 0.01777
+}

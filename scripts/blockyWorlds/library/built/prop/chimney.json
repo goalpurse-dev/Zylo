@@ -1,0 +1,99 @@
+{
+ "name": "chimney",
+ "kind": "prop",
+ "asked": "chimney",
+ "spec": {
+  "name": "chimney",
+  "real_size_cm": 200,
+  "hold": "on_ground",
+  "grip": [
+   0,
+   0,
+   0
+  ],
+  "shapes": [
+   {
+    "type": "box",
+    "size": [
+     60,
+     40,
+     200
+    ],
+    "pos": [
+     0,
+     0,
+     100
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#8b3a2a",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     72,
+     52,
+     14
+    ],
+    "pos": [
+     0,
+     0,
+     203
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#4a4a4a",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     44,
+     28,
+     30
+    ],
+    "pos": [
+     0,
+     0,
+     220
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#6b2a1f",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     64,
+     44,
+     10
+    ],
+    "pos": [
+     0,
+     0,
+     8
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#9a9a9a",
+    "glow": false
+   }
+  ]
+ },
+ "still": "C:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test1\\preview\\shot_73.png",
+ "cost_usd": 0.00285
+}

@@ -9,7 +9,7 @@
   "grip": [
    0,
    0,
-   100
+   0
   ],
   "shapes": [
    {
@@ -29,7 +29,7 @@
      0,
      0
     ],
-    "color": "#8a9099",
+    "color": "#8a929b",
     "glow": false
    },
    {
@@ -49,15 +49,15 @@
      0,
      0
     ],
-    "color": "#8a9099",
+    "color": "#8a929b",
     "glow": false
    },
    {
-    "type": "box",
+    "type": "cylinder",
     "size": [
-     44,
      4,
-     4
+     4,
+     38
     ],
     "pos": [
      0,
@@ -66,18 +66,18 @@
     ],
     "rot": [
      0,
-     0,
+     90,
      0
     ],
-    "color": "#5f6670",
+    "color": "#c9ced4",
     "glow": false
    },
    {
-    "type": "box",
+    "type": "cylinder",
     "size": [
-     44,
      4,
-     4
+     4,
+     38
     ],
     "pos": [
      0,
@@ -86,18 +86,18 @@
     ],
     "rot": [
      0,
-     0,
+     90,
      0
     ],
-    "color": "#5f6670",
+    "color": "#c9ced4",
     "glow": false
    },
    {
-    "type": "box",
+    "type": "cylinder",
     "size": [
-     44,
      4,
-     4
+     4,
+     38
     ],
     "pos": [
      0,
@@ -106,18 +106,18 @@
     ],
     "rot": [
      0,
-     0,
+     90,
      0
     ],
-    "color": "#5f6670",
+    "color": "#c9ced4",
     "glow": false
    },
    {
-    "type": "box",
+    "type": "cylinder",
     "size": [
-     44,
      4,
-     4
+     4,
+     38
     ],
     "pos": [
      0,
@@ -126,18 +126,18 @@
     ],
     "rot": [
      0,
-     0,
+     90,
      0
     ],
-    "color": "#5f6670",
+    "color": "#c9ced4",
     "glow": false
    },
    {
-    "type": "box",
+    "type": "cylinder",
     "size": [
-     44,
      4,
-     4
+     4,
+     38
     ],
     "pos": [
      0,
@@ -146,18 +146,18 @@
     ],
     "rot": [
      0,
-     0,
+     90,
      0
     ],
-    "color": "#5f6670",
+    "color": "#c9ced4",
     "glow": false
    },
    {
-    "type": "box",
+    "type": "cylinder",
     "size": [
-     44,
      4,
-     4
+     4,
+     38
     ],
     "pos": [
      0,
@@ -166,18 +166,18 @@
     ],
     "rot": [
      0,
-     0,
+     90,
      0
     ],
-    "color": "#5f6670",
+    "color": "#c9ced4",
     "glow": false
    },
    {
-    "type": "box",
+    "type": "cylinder",
     "size": [
-     44,
      4,
-     4
+     4,
+     38
     ],
     "pos": [
      0,
@@ -186,18 +186,18 @@
     ],
     "rot": [
      0,
-     0,
+     90,
      0
     ],
-    "color": "#5f6670",
+    "color": "#c9ced4",
     "glow": false
    },
    {
-    "type": "box",
+    "type": "cylinder",
     "size": [
-     44,
      4,
-     4
+     4,
+     38
     ],
     "pos": [
      0,
@@ -206,18 +206,18 @@
     ],
     "rot": [
      0,
-     0,
+     90,
      0
     ],
-    "color": "#5f6670",
+    "color": "#c9ced4",
     "glow": false
    },
    {
-    "type": "box",
+    "type": "cylinder",
     "size": [
-     44,
      4,
-     4
+     4,
+     38
     ],
     "pos": [
      0,
@@ -226,22 +226,22 @@
     ],
     "rot": [
      0,
-     0,
+     90,
      0
     ],
-    "color": "#5f6670",
+    "color": "#c9ced4",
     "glow": false
    },
    {
     "type": "box",
     "size": [
-     8,
      10,
+     12,
      8
     ],
     "pos": [
      -22,
-     7,
+     6,
      60
     ],
     "rot": [
@@ -249,19 +249,19 @@
      0,
      0
     ],
-    "color": "#3b3f45",
+    "color": "#3d4248",
     "glow": false
    },
    {
     "type": "box",
     "size": [
-     8,
      10,
+     12,
      8
     ],
     "pos": [
      22,
-     7,
+     6,
      60
     ],
     "rot": [
@@ -269,19 +269,19 @@
      0,
      0
     ],
-    "color": "#3b3f45",
+    "color": "#3d4248",
     "glow": false
    },
    {
     "type": "box",
     "size": [
-     8,
      10,
+     12,
      8
     ],
     "pos": [
      -22,
-     7,
+     6,
      160
     ],
     "rot": [
@@ -289,19 +289,19 @@
      0,
      0
     ],
-    "color": "#3b3f45",
+    "color": "#3d4248",
     "glow": false
    },
    {
     "type": "box",
     "size": [
-     8,
      10,
+     12,
      8
     ],
     "pos": [
      22,
-     7,
+     6,
      160
     ],
     "rot": [
@@ -309,151 +309,131 @@
      0,
      0
     ],
-    "color": "#3b3f45",
+    "color": "#3d4248",
     "glow": false
    },
    {
     "type": "box",
     "size": [
-     8,
      10,
+     12,
      8
     ],
     "pos": [
      -22,
-     7,
-     255
+     6,
+     250
     ],
     "rot": [
      0,
      0,
      0
     ],
-    "color": "#3b3f45",
+    "color": "#3d4248",
     "glow": false
    },
    {
     "type": "box",
     "size": [
-     8,
      10,
+     12,
      8
     ],
     "pos": [
      22,
-     7,
-     255
+     6,
+     250
     ],
     "rot": [
      0,
      0,
      0
     ],
-    "color": "#3b3f45",
-    "glow": false
-   },
-   {
-    "type": "box",
-    "size": [
-     10,
-     160,
-     330
-    ],
-    "pos": [
-     -45,
-     -80,
-     165
-    ],
-    "rot": [
-     0,
-     0,
-     0
-    ],
-    "color": "#c9c2b4",
-    "glow": false
-   },
-   {
-    "type": "box",
-    "size": [
-     200,
-     160,
-     12
-    ],
-    "pos": [
-     55,
-     -80,
-     306
-    ],
-    "rot": [
-     0,
-     0,
-     0
-    ],
-    "color": "#d9d4c8",
+    "color": "#3d4248",
     "glow": false
    },
    {
     "type": "disc",
     "size": [
-     56,
-     56,
+     80,
+     80,
      6
     ],
     "pos": [
      0,
-     -6,
-     298
+     0,
+     297
     ],
     "rot": [
      0,
      0,
      0
     ],
-    "color": "#f07a1a",
+    "color": "#5b6168",
     "glow": false
    },
    {
     "type": "disc",
     "size": [
-     40,
-     40,
-     3
+     30,
+     30,
+     8
     ],
     "pos": [
      0,
-     -6,
-     294
+     0,
+     299
     ],
     "rot": [
      0,
      0,
      0
     ],
-    "color": "#c85a0a",
+    "color": "#c9a227",
     "glow": false
    },
    {
     "type": "box",
     "size": [
-     10,
      6,
-     4
+     4,
+     25
     ],
     "pos": [
+     -22,
      0,
-     -34,
-     294
+     292
     ],
     "rot": [
      0,
      0,
      0
     ],
-    "color": "#3b3f45",
+    "color": "#8a929b",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     6,
+     4,
+     25
+    ],
+    "pos": [
+     22,
+     0,
+     292
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#8a929b",
     "glow": false
    }
   ]
  },
- "still": "C:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test2\\preview\\shot_08.png",
- "cost_usd": 0.019700000000000002
+ "still": "C:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test2\\preview\\shot_07.png",
+ "cost_usd": 0.02126
 }

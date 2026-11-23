@@ -1,0 +1,139 @@
+{
+ "name": "firefighter_reflective_stripe_band",
+ "kind": "prop",
+ "asked": "Horizontal silver-white reflective stripes wrapped across the red coat chest and sleeves.",
+ "spec": {
+  "name": "firefighter_reflective_stripe_band",
+  "real_size_cm": 60,
+  "hold": "worn_body",
+  "grip": [
+   0,
+   0,
+   5
+  ],
+  "shapes": [
+   {
+    "type": "cylinder",
+    "size": [
+     34,
+     22,
+     10
+    ],
+    "pos": [
+     0,
+     0,
+     5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#c8202a",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     35,
+     23,
+     2.6
+    ],
+    "pos": [
+     0,
+     0,
+     2.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e8edf0",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     35,
+     23,
+     2.6
+    ],
+    "pos": [
+     0,
+     0,
+     7.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e8edf0",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     28,
+     16,
+     10.4
+    ],
+    "pos": [
+     0,
+     0,
+     5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#7a1218",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     7,
+     2,
+     10.5
+    ],
+    "pos": [
+     0,
+     -11.5,
+     5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#f2c230",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     3.5,
+     2.4,
+     6
+    ],
+    "pos": [
+     0,
+     -11.7,
+     5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#9aa3ab",
+    "glow": false
+   }
+  ]
+ },
+ "still": "C:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test2\\preview\\shot_48.png",
+ "cost_usd": 0.01295
+}

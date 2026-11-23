@@ -1,0 +1,519 @@
+{
+ "name": "fruit_stall_left_far",
+ "kind": "prop",
+ "asked": "Fruit Stall Left Far",
+ "spec": {
+  "name": "fruit_stall_left_far",
+  "real_size_cm": 220,
+  "hold": "on_ground",
+  "grip": [
+   0,
+   0,
+   0
+  ],
+  "shapes": [
+   {
+    "type": "box",
+    "size": [
+     200,
+     80,
+     70
+    ],
+    "pos": [
+     0,
+     0,
+     35
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#8b5a2b",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     190,
+     70,
+     6
+    ],
+    "pos": [
+     0,
+     0,
+     73
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#a8743a",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     8,
+     8,
+     190
+    ],
+    "pos": [
+     -96,
+     36,
+     95
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#6b4220",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     8,
+     8,
+     190
+    ],
+    "pos": [
+     96,
+     36,
+     95
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#6b4220",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     8,
+     8,
+     150
+    ],
+    "pos": [
+     -96,
+     -36,
+     75
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#6b4220",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     8,
+     8,
+     150
+    ],
+    "pos": [
+     96,
+     -36,
+     75
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#6b4220",
+    "glow": false
+   },
+   {
+    "type": "wedge",
+    "size": [
+     210,
+     70,
+     25
+    ],
+    "pos": [
+     0,
+     -5,
+     165
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#d62828",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     210,
+     70,
+     14
+    ],
+    "pos": [
+     0,
+     -5,
+     150
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#d62828",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     70,
+     6,
+     24
+    ],
+    "pos": [
+     -70,
+     -42,
+     145
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     70,
+     6,
+     24
+    ],
+    "pos": [
+     0,
+     -42,
+     145
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     70,
+     6,
+     24
+    ],
+    "pos": [
+     70,
+     -42,
+     145
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     120,
+     8,
+     30
+    ],
+    "pos": [
+     0,
+     -42,
+     100
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     110,
+     4,
+     20
+    ],
+    "pos": [
+     0,
+     -47,
+     100
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#2a9d8f",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     22,
+     22,
+     22
+    ],
+    "pos": [
+     -70,
+     -15,
+     87
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e63946",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     22,
+     22,
+     22
+    ],
+    "pos": [
+     -45,
+     -15,
+     87
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e63946",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     22,
+     22,
+     22
+    ],
+    "pos": [
+     -20,
+     -15,
+     87
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#f77f00",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     22,
+     22,
+     22
+    ],
+    "pos": [
+     5,
+     -15,
+     87
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#f77f00",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     22,
+     22,
+     22
+    ],
+    "pos": [
+     30,
+     -15,
+     87
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffd60a",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     22,
+     22,
+     22
+    ],
+    "pos": [
+     55,
+     -15,
+     87
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffd60a",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     22,
+     22,
+     22
+    ],
+    "pos": [
+     78,
+     -15,
+     87
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#70c13a",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     22,
+     22,
+     22
+    ],
+    "pos": [
+     -58,
+     15,
+     87
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#70c13a",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     22,
+     22,
+     22
+    ],
+    "pos": [
+     -30,
+     15,
+     87
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#9b2fae",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     22,
+     22,
+     22
+    ],
+    "pos": [
+     0,
+     15,
+     87
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e63946",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     22,
+     22,
+     22
+    ],
+    "pos": [
+     30,
+     15,
+     87
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#f77f00",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     22,
+     22,
+     22
+    ],
+    "pos": [
+     62,
+     15,
+     87
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffd60a",
+    "glow": false
+   }
+  ]
+ },
+ "still": "C:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test2\\preview\\shot_55.png",
+ "cost_usd": 0.024210000000000002
+}

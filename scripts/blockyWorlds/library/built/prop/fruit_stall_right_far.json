@@ -1,0 +1,359 @@
+{
+ "name": "fruit_stall_right_far",
+ "kind": "prop",
+ "asked": "Fruit Stall Right Far",
+ "spec": {
+  "name": "fruit_stall_right_far",
+  "real_size_cm": 220,
+  "hold": "on_ground",
+  "grip": [
+   0,
+   0,
+   0
+  ],
+  "shapes": [
+   {
+    "type": "box",
+    "size": [
+     200,
+     80,
+     8
+    ],
+    "pos": [
+     0,
+     0,
+     100
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#8b5a2b",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     10,
+     10,
+     100
+    ],
+    "pos": [
+     -95,
+     -35,
+     50
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#6b4423",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     10,
+     10,
+     100
+    ],
+    "pos": [
+     95,
+     -35,
+     50
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#6b4423",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     10,
+     10,
+     100
+    ],
+    "pos": [
+     -95,
+     35,
+     50
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#6b4423",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     10,
+     10,
+     100
+    ],
+    "pos": [
+     95,
+     35,
+     50
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#6b4423",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     220,
+     100,
+     8
+    ],
+    "pos": [
+     0,
+     0,
+     104
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e63946",
+    "glow": false
+   },
+   {
+    "type": "wedge",
+    "size": [
+     220,
+     30,
+     20
+    ],
+    "pos": [
+     0,
+     -65,
+     94
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#f1faee",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     190,
+     60,
+     10
+    ],
+    "pos": [
+     0,
+     -5,
+     60
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#c08552",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     22,
+     22,
+     22
+    ],
+    "pos": [
+     -60,
+     -5,
+     77
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ff7b00",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     22,
+     22,
+     22
+    ],
+    "pos": [
+     -30,
+     -5,
+     77
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ff9f1c",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     22,
+     22,
+     22
+    ],
+    "pos": [
+     0,
+     -5,
+     77
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e63946",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     22,
+     22,
+     22
+    ],
+    "pos": [
+     30,
+     -5,
+     77
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#43aa8b",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     22,
+     22,
+     22
+    ],
+    "pos": [
+     60,
+     -5,
+     77
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffd60a",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     20,
+     20,
+     20
+    ],
+    "pos": [
+     -45,
+     -20,
+     73
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#90be6d",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     20,
+     20,
+     20
+    ],
+    "pos": [
+     45,
+     -20,
+     73
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#f94144",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     25,
+     25,
+     5
+    ],
+    "pos": [
+     -40,
+     -70,
+     50
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffd60a",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     12,
+     12,
+     40
+    ],
+    "pos": [
+     -10,
+     0,
+     20
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#d4a373",
+    "glow": false
+   }
+  ]
+ },
+ "still": "C:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test1\\preview\\shot_71.png",
+ "cost_usd": 0.00334
+}

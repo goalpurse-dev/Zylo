@@ -1,0 +1,45 @@
+{
+ "name": "fisherman",
+ "kind": "character",
+ "asked": "A middle-aged fisherman in a yellow raincoat, green waders and a floppy tan bucket hat, with a gray beard.",
+ "spec": {
+  "name": "fisherman",
+  "age": "adult",
+  "height_cm": 178,
+  "skin": "#e0a982",
+  "shirt": "#ffd400",
+  "pants": "#2e7d32",
+  "clothes": "coat",
+  "hair": "none",
+  "hair_color": "#9e9e9e",
+  "face": "mustache",
+  "accessories": [
+   {
+    "name": "bucket hat",
+    "worn": "worn_head",
+    "description": "Big floppy tan bucket hat with a wide drooping brim, a darker brown band, oversized so it is clearly visible from far away",
+    "real_size_cm": 36
+   },
+   {
+    "name": "gray beard",
+    "worn": "worn_face",
+    "description": "Thick bushy gray beard covering chin and cheeks, chunky blocky shape, light gray with white streaks, extends well below the chin",
+    "real_size_cm": 22
+   },
+   {
+    "name": "fishing rod",
+    "worn": "one_hand",
+    "description": "Long fishing rod with a thick dark brown handle, bright red reel, thin line with a red and white bobber and a curved tip, held upward",
+    "real_size_cm": 200
+   },
+   {
+    "name": "fish bucket",
+    "worn": "worn_body",
+    "description": "Bright blue bucket hanging at the hip with a silver fish tail sticking out of the top",
+    "real_size_cm": 30
+   }
+  ]
+ },
+ "still": "C:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test1\\preview\\shot_26.png",
+ "cost_usd": 0.00262
+}

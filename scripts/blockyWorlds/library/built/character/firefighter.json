@@ -1,0 +1,45 @@
+{
+ "name": "firefighter",
+ "kind": "character",
+ "asked": "a firefighter in a red coat and yellow helmet with reflective stripes, black boots",
+ "spec": {
+  "name": "Firefighter",
+  "age": "adult",
+  "height_cm": 180,
+  "skin": "#e0ac82",
+  "shirt": "#d81e1e",
+  "pants": "#2b2b33",
+  "clothes": "coat",
+  "hair": "short",
+  "hair_color": "#4a3020",
+  "face": "hero",
+  "accessories": [
+   {
+    "name": "Firefighter helmet",
+    "worn": "worn_head",
+    "description": "Big bright yellow firefighter helmet with a wide rounded dome, a long back brim that flares out, a raised front ridge and a red shield badge on the front",
+    "real_size_cm": 34
+   },
+   {
+    "name": "Reflective stripes",
+    "worn": "worn_body",
+    "description": "Two wide silver-white reflective bands wrapped around the red coat at chest and waist, with a yellow strip down the front",
+    "real_size_cm": 60
+   },
+   {
+    "name": "Fire axe",
+    "worn": "one_hand",
+    "description": "Red-handled fire axe with a grey steel blade on a long straight handle",
+    "real_size_cm": 90
+   },
+   {
+    "name": "Air tank",
+    "worn": "worn_back",
+    "description": "Grey and yellow breathing air tank cylinder strapped to the back",
+    "real_size_cm": 60
+   }
+  ]
+ },
+ "still": "C:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test1\\preview\\shot_36.png",
+ "cost_usd": 0.00265
+}

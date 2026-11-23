@@ -6,7 +6,7 @@
 //   compileTakes(...)               every scene -> ONE take function (the place, the cast, the props, the light built once,
 //                                   every line's actions on one timeline) + the camera cuts (shots) that look at it
 // A card no longer builds anything: it adds actions to the running scene and says which camera looks at it, when.
-import { THINGS } from "../../../supabase/functions/_shared/blockyWorlds/engineKit.js";
+import { THINGS, BUILT_THINGS } from "../../../supabase/functions/_shared/blockyWorlds/engineKit.js";
 
 const py = (v) => JSON.stringify(v ?? null).replace(/\bnull\b/g, "None").replace(/\btrue\b/g, "True").replace(/\bfalse\b/g, "False");
 const low = (s) => String(s ?? "").trim().toLowerCase();
@@ -414,7 +414,7 @@ export function compileTakes({ plan, cards, states, lines, looks }) {
         continue;
       }
       // the rule object READABLE in every shot (round 8 first test: a bell in a hand at 1.5x was "not visible" in 30 stills)
-      const sz = `zw_tsize(${py(kd)}, ${size})${isRule ? " * 1.8" : kd === "drain_grate" ? " * 2.2" : named && kd !== "chalk" ? (monUsed ? " * 2.4" : " * 1.5") : ""}`;
+      const sz = `zw_tsize(${py(kd)}, ${size})${isRule ? " * 1.8" : kd === "drain_grate" ? " * 2.2" : named && kd !== "chalk" && !BUILT_THINGS.has(kd) ? (monUsed ? " * 2.4" : " * 1.5") : ""}`;
       const mk = t?.mark ?? (isRule ? (plan.stage?.[place]?.marks?.[k] ?? "front") : "center");
       I(`_p = ${markAt(mk)}`);
       // the drain in the open, ON its mark (item 18); the rule object beside / at the feet of its person; other things

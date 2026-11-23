@@ -1,0 +1,176 @@
+{
+ "name": "lean_over",
+ "kind": "move",
+ "asked": "leans forward at the waist, one arm extended toward the kid's mouth, head tilted to look closely",
+ "spec": {
+  "name": "lean_over",
+  "duration_s": 2.4,
+  "loop": false,
+  "keys": [
+   {
+    "t": 0,
+    "pose": {
+     "armL": [
+      5,
+      10
+     ],
+     "armR": [
+      5,
+      10
+     ],
+     "legL": [
+      0,
+      3
+     ],
+     "legR": [
+      0,
+      3
+     ],
+     "head": [
+      0,
+      0,
+      0
+     ],
+     "torso": [
+      0,
+      0,
+      0
+     ],
+     "hipz": 0
+    }
+   },
+   {
+    "t": 0.3,
+    "pose": {
+     "armL": [
+      10,
+      15
+     ],
+     "armR": [
+      70,
+      8
+     ],
+     "legL": [
+      -10,
+      4
+     ],
+     "legR": [
+      12,
+      4
+     ],
+     "head": [
+      10,
+      15,
+      0
+     ],
+     "torso": [
+      0,
+      25,
+      0
+     ],
+     "hipz": -0.1
+    }
+   },
+   {
+    "t": 0.6,
+    "pose": {
+     "armL": [
+      15,
+      20
+     ],
+     "armR": [
+      95,
+      5
+     ],
+     "legL": [
+      -18,
+      5
+     ],
+     "legR": [
+      20,
+      5
+     ],
+     "head": [
+      18,
+      32,
+      14
+     ],
+     "torso": [
+      5,
+      48,
+      3
+     ],
+     "hipz": -0.2
+    }
+   },
+   {
+    "t": 0.85,
+    "pose": {
+     "armL": [
+      15,
+      20
+     ],
+     "armR": [
+      100,
+      5
+     ],
+     "legL": [
+      -20,
+      5
+     ],
+     "legR": [
+      22,
+      5
+     ],
+     "head": [
+      20,
+      36,
+      16
+     ],
+     "torso": [
+      5,
+      52,
+      3
+     ],
+     "hipz": -0.22
+    }
+   },
+   {
+    "t": 1,
+    "pose": {
+     "armL": [
+      15,
+      20
+     ],
+     "armR": [
+      100,
+      5
+     ],
+     "legL": [
+      -20,
+      5
+     ],
+     "legR": [
+      22,
+      5
+     ],
+     "head": [
+      20,
+      36,
+      16
+     ],
+     "torso": [
+      5,
+      52,
+      3
+     ],
+     "hipz": -0.22
+    }
+   }
+  ],
+  "travel_m": 0.2,
+  "hands": "right"
+ },
+ "still": "C:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test1\\preview\\shot_15.png",
+ "cost_usd": 0.00242
+}

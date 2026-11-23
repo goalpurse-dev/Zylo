@@ -32,7 +32,10 @@ const ACTION_TEXT = Object.freeze({
 /** what people (and monsters) can DO: only the verbs the card compiler really turns into engine code (generated) */
 export const ACTIONS = Object.freeze(Object.fromEntries(GEN_ACTIONS.map((k) => [k, ACTION_TEXT[k] ?? k.replace(/_/g, " ")])));
 /** the things the engine can build and animate (worlds/acts.py zw_thing kinds) */
-export const THINGS = GEN_THINGS;   // (generated from the prop builders)
+export const THINGS = [...GEN_THINGS];   // (generated from the prop builders; + the builder's saved props: addThings)
+/** round 10: things the builder made (tested, saved): from now on the writer, the cards and the engine know them */
+export const BUILT_THINGS = new Set();
+export function addThings(names = []) { for (const n of names) { const k = String(n).toLowerCase(); if (!THINGS.includes(k)) THINGS.push(k); BUILT_THINGS.add(k); } return THINGS; }
 /** what can happen to things */
 export const EFFECTS = Object.freeze({ pop: "a thing pops into the scene", grow: "a thing grows bigger", shrink: "a thing shrinks",
   rain: "many things fall from the sky", glow: "lamps / windows / signs glow at night",

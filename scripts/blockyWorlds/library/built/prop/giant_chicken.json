@@ -1,0 +1,499 @@
+{
+ "name": "giant_chicken",
+ "kind": "prop",
+ "asked": "A huge blocky white chicken with a red comb, orange beak, yellow legs and a feathered body, big enough to ride, running forward.",
+ "spec": {
+  "name": "giant_chicken",
+  "real_size_cm": 320,
+  "hold": "ridden",
+  "grip": [
+   0,
+   -40,
+   170
+  ],
+  "shapes": [
+   {
+    "type": "ball",
+    "size": [
+     130,
+     200,
+     120
+    ],
+    "pos": [
+     0,
+     10,
+     130
+    ],
+    "rot": [
+     -12,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     110,
+     110,
+     100
+    ],
+    "pos": [
+     0,
+     -70,
+     120
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#f4f4f4",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     90,
+     60,
+     20
+    ],
+    "pos": [
+     0,
+     -5,
+     193
+    ],
+    "rot": [
+     -12,
+     0,
+     0
+    ],
+    "color": "#b8421e",
+    "glow": false
+   },
+   {
+    "type": "wedge",
+    "size": [
+     110,
+     90,
+     70
+    ],
+    "pos": [
+     0,
+     105,
+     185
+    ],
+    "rot": [
+     20,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "wedge",
+    "size": [
+     90,
+     70,
+     60
+    ],
+    "pos": [
+     0,
+     125,
+     215
+    ],
+    "rot": [
+     25,
+     0,
+     0
+    ],
+    "color": "#e8e8f0",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     40,
+     60,
+     20
+    ],
+    "pos": [
+     0,
+     -120,
+     200
+    ],
+    "rot": [
+     -20,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     70,
+     80,
+     80
+    ],
+    "pos": [
+     0,
+     -125,
+     215
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     16,
+     40,
+     30
+    ],
+    "pos": [
+     0,
+     -125,
+     252
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e01e1e",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     16,
+     30,
+     24
+    ],
+    "pos": [
+     0,
+     -125,
+     242
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e01e1e",
+    "glow": false
+   },
+   {
+    "type": "cone",
+    "size": [
+     40,
+     40,
+     50
+    ],
+    "pos": [
+     0,
+     -168,
+     212
+    ],
+    "rot": [
+     90,
+     0,
+     0
+    ],
+    "color": "#ff8c00",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     12,
+     12,
+     30
+    ],
+    "pos": [
+     0,
+     -148,
+     185
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e01e1e",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     14,
+     14,
+     14
+    ],
+    "pos": [
+     -22,
+     -152,
+     225
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#111111",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     14,
+     14,
+     14
+    ],
+    "pos": [
+     22,
+     -152,
+     225
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#111111",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     22,
+     150,
+     90
+    ],
+    "pos": [
+     -70,
+     25,
+     135
+    ],
+    "rot": [
+     -10,
+     0,
+     -8
+    ],
+    "color": "#dfe6f2",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     22,
+     150,
+     90
+    ],
+    "pos": [
+     70,
+     25,
+     135
+    ],
+    "rot": [
+     -10,
+     0,
+     8
+    ],
+    "color": "#dfe6f2",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     40,
+     80,
+     20
+    ],
+    "pos": [
+     0,
+     30,
+     185
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#7a4a2a",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     24,
+     24,
+     90
+    ],
+    "pos": [
+     -35,
+     -40,
+     70
+    ],
+    "rot": [
+     35,
+     0,
+     0
+    ],
+    "color": "#ffcc00",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     24,
+     24,
+     90
+    ],
+    "pos": [
+     35,
+     60,
+     65
+    ],
+    "rot": [
+     -40,
+     0,
+     0
+    ],
+    "color": "#ffcc00",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     18,
+     18,
+     70
+    ],
+    "pos": [
+     -35,
+     -80,
+     30
+    ],
+    "rot": [
+     -55,
+     0,
+     0
+    ],
+    "color": "#ffcc00",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     18,
+     18,
+     70
+    ],
+    "pos": [
+     35,
+     90,
+     35
+    ],
+    "rot": [
+     55,
+     0,
+     0
+    ],
+    "color": "#ffcc00",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     40,
+     70,
+     14
+    ],
+    "pos": [
+     -35,
+     -110,
+     7
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffb000",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     40,
+     70,
+     14
+    ],
+    "pos": [
+     35,
+     125,
+     35
+    ],
+    "rot": [
+     -20,
+     0,
+     0
+    ],
+    "color": "#ffb000",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     12,
+     40,
+     12
+    ],
+    "pos": [
+     -35,
+     -140,
+     10
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffb000",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     12,
+     40,
+     12
+    ],
+    "pos": [
+     35,
+     150,
+     40
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffb000",
+    "glow": false
+   }
+  ]
+ },
+ "still": "C:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test1\\preview\\shot_20.png",
+ "cost_usd": 0.00262
+}

@@ -1,0 +1,359 @@
+{
+ "name": "wheelbarrow",
+ "kind": "prop",
+ "asked": "a wooden wheelbarrow with one big front wheel, a deep tray and two long handles",
+ "spec": {
+  "name": "wheelbarrow",
+  "real_size_cm": 150,
+  "hold": "on_ground",
+  "grip": [
+   0,
+   70,
+   38
+  ],
+  "shapes": [
+   {
+    "type": "disc",
+    "size": [
+     42,
+     42,
+     10
+    ],
+    "pos": [
+     0,
+     -60,
+     21
+    ],
+    "rot": [
+     0,
+     90,
+     0
+    ],
+    "color": "#1f1f1f",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     14,
+     14,
+     12
+    ],
+    "pos": [
+     0,
+     -60,
+     21
+    ],
+    "rot": [
+     0,
+     90,
+     0
+    ],
+    "color": "#c0c0c0",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     4,
+     5,
+     22
+    ],
+    "pos": [
+     -8,
+     -60,
+     32
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#8a5a2b",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     4,
+     5,
+     22
+    ],
+    "pos": [
+     8,
+     -60,
+     32
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#8a5a2b",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     64,
+     75,
+     6
+    ],
+    "pos": [
+     0,
+     -12,
+     42
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e8741c",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     6,
+     85,
+     28
+    ],
+    "pos": [
+     -32,
+     -12,
+     54
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e8741c",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     6,
+     85,
+     28
+    ],
+    "pos": [
+     32,
+     -12,
+     54
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e8741c",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     64,
+     6,
+     30
+    ],
+    "pos": [
+     0,
+     -52,
+     55
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#d4620f",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     64,
+     6,
+     24
+    ],
+    "pos": [
+     0,
+     28,
+     52
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#d4620f",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     6,
+     115,
+     6
+    ],
+    "pos": [
+     -24,
+     18,
+     37
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#a0703a",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     6,
+     115,
+     6
+    ],
+    "pos": [
+     24,
+     18,
+     37
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#a0703a",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     8,
+     10,
+     8
+    ],
+    "pos": [
+     -24,
+     72,
+     37
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#6b4220",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     8,
+     10,
+     8
+    ],
+    "pos": [
+     24,
+     72,
+     37
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#6b4220",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     6,
+     6,
+     36
+    ],
+    "pos": [
+     -24,
+     50,
+     18
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#a0703a",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     6,
+     6,
+     36
+    ],
+    "pos": [
+     24,
+     50,
+     18
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#a0703a",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     6,
+     40,
+     5
+    ],
+    "pos": [
+     -14,
+     -45,
+     39
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#a0703a",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     6,
+     40,
+     5
+    ],
+    "pos": [
+     14,
+     -45,
+     39
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#a0703a",
+    "glow": false
+   }
+  ]
+ },
+ "still": "c:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round10\\story\\builder\\job_things2\\preview\\shot_02.png",
+ "cost_usd": 0.02697
+}

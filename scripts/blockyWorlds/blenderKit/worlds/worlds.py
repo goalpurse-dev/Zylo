@@ -1666,7 +1666,9 @@ def zw_shop_in(t0, t1, dress):
     zw_inst("products2", (-2.0, 4.0, 3.42), -90, (0.5, 0.5, 0.5))
     box("zw_shpsign", (8, 0.3, 1.6), (0, 8.84, 7.6), zw_m("signboard", "#fffdf5", 0.5), 0.05)
     text("zw_shpsign_t", ((dress.get("signs") or ["SHOP"])[0]).upper()[:12], (0, 8.6, 7.6), 1.1, zw_m("signtxt0", "#e2405b", 0.4), extrude=0.05)
-    for s, word, c in ((-1, "SNACKS", "#ff8c2a"), (1, "TOYS", "#7b5cf6")):
+    _sg = [str(x).upper()[:10] for x in (dress.get("signs") or [])]
+    _ai = _sg[1:3] if len(_sg) >= 3 else ([_sg[0], _sg[0]] if _sg and _sg[0] != "SHOP" else ["SNACKS", "TOYS"])
+    for s, word, c in ((-1, _ai[0], "#ff8c2a"), (1, _ai[1], "#7b5cf6")):
         box("zw_asign%d" % s, (3.6, 0.2, 1.0), (s * 3.8, -3.1, 7.2), zw_m("asign" + c[1:], c, 0.5), 0.05)
         text("zw_asignt%d" % s, word, (s * 3.8, -3.24, 7.2), 0.7, zw_m("bbtffffff", "#ffffff", 0.4), rot=(90, 0, 0), extrude=0.03)
         cyl("zw_asignw%d" % s, 0.03, 1.4, (s * 3.8, -3.1, 8.3), zw_m("handle", "#e8e8ea", 0.3, 0.7), 4)

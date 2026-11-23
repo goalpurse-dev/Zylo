@@ -1,0 +1,199 @@
+{
+ "name": "dentist_round_glasses",
+ "kind": "prop",
+ "asked": "thin round wire-rimmed eyeglasses",
+ "spec": {
+  "name": "dentist_round_glasses",
+  "real_size_cm": 14,
+  "hold": "worn_face",
+  "grip": [
+   0,
+   0,
+   0
+  ],
+  "shapes": [
+   {
+    "type": "disc",
+    "size": [
+     5,
+     5,
+     0.5
+    ],
+    "pos": [
+     -3.3,
+     0,
+     0
+    ],
+    "rot": [
+     90,
+     0,
+     0
+    ],
+    "color": "#111111",
+    "glow": false
+   },
+   {
+    "type": "disc",
+    "size": [
+     3.8,
+     3.8,
+     0.7
+    ],
+    "pos": [
+     -3.3,
+     -0.1,
+     0
+    ],
+    "rot": [
+     90,
+     0,
+     0
+    ],
+    "color": "#bfefff",
+    "glow": true
+   },
+   {
+    "type": "disc",
+    "size": [
+     5,
+     5,
+     0.5
+    ],
+    "pos": [
+     3.3,
+     0,
+     0
+    ],
+    "rot": [
+     90,
+     0,
+     0
+    ],
+    "color": "#111111",
+    "glow": false
+   },
+   {
+    "type": "disc",
+    "size": [
+     3.8,
+     3.8,
+     0.7
+    ],
+    "pos": [
+     3.3,
+     -0.1,
+     0
+    ],
+    "rot": [
+     90,
+     0,
+     0
+    ],
+    "color": "#bfefff",
+    "glow": true
+   },
+   {
+    "type": "box",
+    "size": [
+     1.6,
+     0.5,
+     0.5
+    ],
+    "pos": [
+     0,
+     0,
+     0.8
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#111111",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     0.5,
+     5,
+     0.5
+    ],
+    "pos": [
+     -6,
+     2.5,
+     0.3
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#111111",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     0.5,
+     5,
+     0.5
+    ],
+    "pos": [
+     6,
+     2.5,
+     0.3
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#111111",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     0.8,
+     0.6,
+     0.8
+    ],
+    "pos": [
+     -5.7,
+     0,
+     0.3
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#d4a017",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     0.8,
+     0.6,
+     0.8
+    ],
+    "pos": [
+     5.7,
+     0,
+     0.3
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#d4a017",
+    "glow": false
+   }
+  ]
+ },
+ "still": "C:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test1\\preview\\shot_44.png",
+ "cost_usd": 0.00251
+}

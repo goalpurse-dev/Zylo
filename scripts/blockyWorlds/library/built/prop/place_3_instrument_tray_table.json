@@ -1,0 +1,399 @@
+{
+ "name": "place_3_instrument_tray_table",
+ "kind": "prop",
+ "asked": "small chrome rolling tray table with a flat white top holding dental instruments",
+ "spec": {
+  "name": "dental_instrument_tray_table",
+  "real_size_cm": 60,
+  "hold": "on_ground",
+  "grip": [
+   0,
+   0,
+   70
+  ],
+  "shapes": [
+   {
+    "type": "disc",
+    "size": [
+     50,
+     50,
+     3
+    ],
+    "pos": [
+     0,
+     0,
+     2
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#9aa3ad",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     6,
+     6,
+     66
+    ],
+    "pos": [
+     0,
+     0,
+     35
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#c8d0d8",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     56,
+     40,
+     3
+    ],
+    "pos": [
+     0,
+     0,
+     70
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#c8d0d8",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     52,
+     36,
+     2
+    ],
+    "pos": [
+     0,
+     0,
+     72
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     40,
+     26,
+     1.5
+    ],
+    "pos": [
+     0,
+     0,
+     73.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#2f8fe0",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     3,
+     26,
+     3
+    ],
+    "pos": [
+     -20,
+     0,
+     75
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#c8d0d8",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     3,
+     22,
+     3
+    ],
+    "pos": [
+     -12,
+     0,
+     75.5
+    ],
+    "rot": [
+     0,
+     0,
+     10
+    ],
+    "color": "#e53935",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     3,
+     22,
+     3
+    ],
+    "pos": [
+     -5,
+     0,
+     75.5
+    ],
+    "rot": [
+     0,
+     0,
+     -8
+    ],
+    "color": "#ffd600",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     3,
+     22,
+     3
+    ],
+    "pos": [
+     2,
+     0,
+     75.5
+    ],
+    "rot": [
+     0,
+     0,
+     8
+    ],
+    "color": "#43a047",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     3,
+     22,
+     3
+    ],
+    "pos": [
+     9,
+     0,
+     75.5
+    ],
+    "rot": [
+     0,
+     0,
+     -10
+    ],
+    "color": "#9c27b0",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     7,
+     3,
+     3
+    ],
+    "pos": [
+     -12,
+     -12,
+     76
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e53935",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     7,
+     3,
+     3
+    ],
+    "pos": [
+     2,
+     -12,
+     76
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#43a047",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     9,
+     9,
+     5
+    ],
+    "pos": [
+     17,
+     -6,
+     76
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ff7043",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     6,
+     6,
+     6
+    ],
+    "pos": [
+     17,
+     7,
+     77
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     2,
+     2,
+     12
+    ],
+    "pos": [
+     22,
+     8,
+     82
+    ],
+    "rot": [
+     0,
+     0,
+     20
+    ],
+    "color": "#e53935",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     5,
+     5,
+     5
+    ],
+    "pos": [
+     -22,
+     -14,
+     3
+    ],
+    "rot": [
+     90,
+     0,
+     0
+    ],
+    "color": "#222222",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     5,
+     5,
+     5
+    ],
+    "pos": [
+     22,
+     14,
+     3
+    ],
+    "rot": [
+     90,
+     0,
+     0
+    ],
+    "color": "#222222",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     5,
+     5,
+     5
+    ],
+    "pos": [
+     -22,
+     14,
+     3
+    ],
+    "rot": [
+     90,
+     0,
+     0
+    ],
+    "color": "#222222",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     5,
+     5,
+     5
+    ],
+    "pos": [
+     22,
+     -14,
+     3
+    ],
+    "rot": [
+     90,
+     0,
+     0
+    ],
+    "color": "#222222",
+    "glow": false
+   }
+  ]
+ },
+ "still": "C:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test1\\preview\\shot_42.png",
+ "cost_usd": 0.00265
+}

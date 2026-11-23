@@ -1,0 +1,299 @@
+{
+ "name": "porch_lantern",
+ "kind": "prop",
+ "asked": "a brass porch lantern with four glass panes and a warm glowing flame inside, a ring handle on top",
+ "spec": {
+  "name": "porch_lantern",
+  "real_size_cm": 35,
+  "hold": "one_hand",
+  "grip": [
+   0,
+   0,
+   20
+  ],
+  "shapes": [
+   {
+    "type": "box",
+    "size": [
+     14,
+     14,
+     3
+    ],
+    "pos": [
+     0,
+     0,
+     1.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#b8860b",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     14,
+     14,
+     3
+    ],
+    "pos": [
+     0,
+     0,
+     31.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#b8860b",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     2,
+     2,
+     24
+    ],
+    "pos": [
+     6,
+     6,
+     16.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#b8860b",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     2,
+     2,
+     24
+    ],
+    "pos": [
+     -6,
+     6,
+     16.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#b8860b",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     2,
+     2,
+     24
+    ],
+    "pos": [
+     6,
+     -6,
+     16.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#b8860b",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     2,
+     2,
+     24
+    ],
+    "pos": [
+     -6,
+     -6,
+     16.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#b8860b",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     0.6,
+     11,
+     22
+    ],
+    "pos": [
+     6,
+     0,
+     16.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffd27a",
+    "glow": true
+   },
+   {
+    "type": "box",
+    "size": [
+     0.6,
+     11,
+     22
+    ],
+    "pos": [
+     -6,
+     0,
+     16.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffd27a",
+    "glow": true
+   },
+   {
+    "type": "box",
+    "size": [
+     11,
+     0.6,
+     22
+    ],
+    "pos": [
+     0,
+     6,
+     16.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffd27a",
+    "glow": true
+   },
+   {
+    "type": "box",
+    "size": [
+     11,
+     0.6,
+     22
+    ],
+    "pos": [
+     0,
+     -6,
+     16.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffd27a",
+    "glow": true
+   },
+   {
+    "type": "ball",
+    "size": [
+     6,
+     6,
+     6
+    ],
+    "pos": [
+     0,
+     0,
+     16.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffb347",
+    "glow": true
+   },
+   {
+    "type": "cone",
+    "size": [
+     18,
+     18,
+     5
+    ],
+    "pos": [
+     0,
+     0,
+     34
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#b8860b",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     3,
+     3,
+     4
+    ],
+    "pos": [
+     0,
+     0,
+     38
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#b8860b",
+    "glow": false
+   },
+   {
+    "type": "disc",
+    "size": [
+     6,
+     6,
+     1
+    ],
+    "pos": [
+     0,
+     0,
+     0.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#8b6508",
+    "glow": false
+   }
+  ]
+ },
+ "still": "c:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round10\\story\\builder\\job_things1\\preview\\shot_02.png",
+ "cost_usd": 0.00315
+}
