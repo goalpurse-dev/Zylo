@@ -11,11 +11,21 @@ import { THINGS } from "../../../supabase/functions/_shared/blockyWorlds/engineK
 const py = (v) => JSON.stringify(v ?? null).replace(/\bnull\b/g, "None").replace(/\btrue\b/g, "True").replace(/\bfalse\b/g, "False");
 const low = (s) => String(s ?? "").trim().toLowerCase();
 export const ident = (s) => (low(s).replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "") || "x");
+// ROUND 9: MANY COPIES OF ONE KIND, per owner / per place: a thing's id is "kind#owner" ("bell#max", "chalk_line#house")
+export const kindOf = (id) => low(id).split("#")[0];
+export const ownerOf = (id) => low(id).split("#")[1] ?? null;
+const isThing = (k) => THINGS.includes(kindOf(k));
+// things that lie on the ground: an insert / top shot of one shows it ALONE (round 9 camera default)
+export const GROUND_THINGS = Object.freeze(["drain_grate", "chalk_line", "splat", "rock", "leaf", "coin", "key", "shoe", "ball"]);
+// the actions that move someone through space (round 9: a movement verb that does not move = fail, measured)
+export const MOVE_ACTIONS = Object.freeze(["enter", "exit", "walk_to", "run_to", "follow", "run_door_to_door", "draw_around", "draw_line"]);
 
 export const MARKS8 = Object.freeze(["left", "center", "right", "back_left", "back", "back_right", "front_left", "front", "front_right"]);
 export const SIDE_DEG = Object.freeze({ front: 0, front_left: 28, front_right: -28 });
 export const TIMES8 = Object.freeze(["day", "sunset", "night", "storm", "morning"]);
-export const SHOTS8 = Object.freeze(["wide", "medium", "two", "close", "insert", "low", "top"]);
+export const SHOTS8 = Object.freeze(["wide", "medium", "two", "close", "insert", "low", "top", "place", "street", "aerial", "high", "legs"]);
+/** a stage mark, or an exact ground point "@x,y" (round 9: the car at the kerb, the monster on the road) */
+export const isMark = (m) => MARKS8.includes(m) || /^@-?[\d.]+,-?[\d.]+$/.test(String(m ?? ""));
 export const MOVES8 = Object.freeze(["push_in", "tilt_up", "track", "top_down", "static"]);
 export const FACES8 = Object.freeze(["neutral", "happy", "laughing", "sad", "crying", "scared", "terrified", "shocked", "surprised", "angry", "confused", "smirk", "determined", "panic"]);
 // the line-card actions (each maps to ONE engine call in compileTakes; the generator lists them for the writer)
@@ -35,11 +45,15 @@ export const ACTIONS8 = Object.freeze({
   windows_open: "the houses' windows open (shutters swing out)",
   rule_effect: "THE TOWN'S RULE happens on this person (the story's rule effect, with a pop)",
   star_eyes: "star eyes (amazed / in love)", x_eyes: "X eyes (knocked out)", sweat: "a sweat drop (nervous)", splat: "a paint / goo splat on someone's face", sign: "holds up a sign with BIG text (text = up to 18 letters)",
+  draw_around: "runs around someone / something drawing a chalk circle on the ground (target = who / what it goes around)", draw_line: "draws / redraws a chalk line (target = the line, e.g. chalk_line#house)", wash_away: "a chalk line washes away in the rain (target = the line)",
+  crowd: "EVERYONE: 8-10 neighbours at their porches and on the street, each with their own thing (target = the thing kind, text = cheer / wave / ring / point)",
+  run_door_to_door: "runs from house door to house door, knocking",
+  hit_wall: "the MONSTER's hand slams into the invisible wall of a chalk circle (a see-through wall flashes up, a ripple where it hits)",
 });
-const PEOPLE_ACTIONS = new Set(["enter", "exit", "walk_to", "run_to", "turn_to", "follow", "point", "wave", "cheer", "laugh", "scream", "cry", "shiver", "shrug", "facepalm", "think", "nod", "shake_head", "jump", "stomp", "talk", "hug", "fall", "sit", "stand_up", "lie_down", "look_around", "pick_up", "give", "drop", "throw", "kick", "read", "phone", "rule_effect", "star_eyes", "x_eyes", "sweat", "splat", "sign", "roar"]);
-const THING_ACTIONS = new Set(["appear", "disappear", "move", "turn_on", "turn_off", "open", "close"]);
-const WORLD_ACTIONS = new Set(["switch_on", "switch_off", "switch_all_on", "switch_all_off", "windows_open"]);
-const MONSTER_ONLY = new Set(["climb_out", "dive_in", "roar"]);
+const PEOPLE_ACTIONS = new Set(["enter", "exit", "walk_to", "run_to", "turn_to", "follow", "point", "wave", "cheer", "laugh", "scream", "cry", "shiver", "shrug", "facepalm", "think", "nod", "shake_head", "jump", "stomp", "talk", "hug", "fall", "sit", "stand_up", "lie_down", "look_around", "pick_up", "give", "drop", "throw", "kick", "read", "phone", "rule_effect", "star_eyes", "x_eyes", "sweat", "splat", "sign", "roar", "draw_around", "draw_line", "run_door_to_door"]);
+const THING_ACTIONS = new Set(["appear", "disappear", "move", "turn_on", "turn_off", "open", "close", "wash_away"]);
+const WORLD_ACTIONS = new Set(["switch_on", "switch_off", "switch_all_on", "switch_all_off", "windows_open", "crowd"]);
+const MONSTER_ONLY = new Set(["climb_out", "dive_in", "roar", "hit_wall"]);
 // (round 8 first test: "Grandma turns on the bell" made a white glare blob)
 export const GLOW_THINGS = Object.freeze(["light_bulb", "lamp_bulb", "flashlight", "nightlight", "star", "phone"]);
 export const SWITCH_TARGETS =Object.freeze(["lamp", "window", "porch_light", "lamps", "windows"]);
@@ -55,9 +69,11 @@ export function lockLooks(cast = []) {
   const out = {};
   const sorted = [...cast].sort((a, b) => (/^me$/i.test(a.name) ? -1 : 0) - (/^me$/i.test(b.name) ? -1 : 0));
   sorted.forEach((c, k) => {
-    const [shirt, pants] = PALETTE[k % PALETTE.length];
+    const [shirt0, pants0] = PALETTE[k % PALETTE.length];
+    // (round 9: a look given in code, e.g. the replica's cast, is kept; otherwise one bold colour from the palette)
+    const shirt = /^#[0-9a-f]{6}$/i.test(c.shirt ?? "") ? c.shirt : shirt0, pants = /^#[0-9a-f]{6}$/i.test(c.pants ?? "") ? c.pants : pants0;
     out[low(c.name)] = { name: c.name, kid: c.kid !== false, skin: /^#[0-9a-f]{6}$/i.test(c.skin ?? "") ? c.skin : SKINS[k % SKINS.length], shirt, pants,
-      hair: HAIRS.includes(c.hair) ? c.hair : HAIRS[k % HAIRS.length], hair_color: /^#[0-9a-f]{6}$/i.test(c.hair_color ?? "") ? c.hair_color : ["#3B2314", "#5A3A1E", "#E8C26A", "#1A1A1A"][k % 4], face: /^me$/i.test(c.name) ? "hero" : "kid" };
+      hair: HAIRS.includes(c.hair) ? c.hair : HAIRS[k % HAIRS.length], hair_color: /^#[0-9a-f]{6}$/i.test(c.hair_color ?? "") ? c.hair_color : ["#3B2314", "#5A3A1E", "#E8C26A", "#1A1A1A"][k % 4], face: /^me$/i.test(c.name) ? "hero" : "kid", ...(c.style ? { style: c.style } : {}) };
   });
   return out;
 }
@@ -75,8 +91,16 @@ export function initialState(plan) {
       const k = low(who);
       if (k === "monster") { P.monster = { here: Boolean(st.monster_starts_here), mark }; continue; }
       if ((plan.cast ?? []).some((c) => low(c.name) === k)) P.people[k] = { here: true, mark, pose: "stand", holding: null, face: "neutral" };
-      else if (THINGS.includes(k)) P.things[k] = { here: true, mark, held_by: null, state: null };
+      else if (isThing(k)) {
+        const ow = ownerOf(k);
+        // a thing owned by a cast member who starts on this stage is IN their hand (a bell for each person)
+        const inHand = ow && P.people[ow] && kindOf(k) !== "chalk_line" && !P.people[ow].holding;
+        P.things[k] = { here: true, mark: inHand ? null : mark, held_by: inHand ? ow : null, state: null };
+        if (inHand) P.people[ow].holding = k;
+      }
     }
+    // the chalk line around every house (round 9): the stage's own house's line is a thing ("chalk_line#house")
+    if (plan.house_rings) P.things["chalk_line#house"] ??= { here: true, mark: "back", held_by: null, state: null };
     // the rule object (item 10): in the hand of its person / beside them / on the ground at its mark, from the start
     const ro = plan.rule?.object;
     const rw = low(ro?.who);
@@ -102,8 +126,11 @@ export function namedIn(text, plan) {
   if (/\b(I|me|my)\b/.test(t) && (plan.cast ?? []).some((c) => /^me$/i.test(c.name))) out.push("me");
   if (plan.monster?.present && /\b(monster|it|shadow|thing|creature)\b/i.test(t) && /\b(monster|shadow|creature)\b/i.test(t)) out.push("monster");
   for (const k of THINGS) if (nounRe(k).test(t)) out.push(k);
+  if (/\bchalk\s+(line|circle|box|boxes|circles)\b|\bline\b/i.test(t) && !out.includes("chalk_line") && THINGS.includes("chalk_line")) out.push("chalk_line");
   return [...new Set(out)];
 }
+/** a named KIND is shown when any cut shows a thing of that kind ("bell" by "bell#max") */
+const shownKinds = (cuts) => new Set(cuts.flatMap((c) => (c.show ?? []).map(low)).flatMap((k) => [k, kindOf(k)]));
 
 /**
  * one line card -> { state, problems, applied }. The card: { actions: [{ who, do, target, to, on_word, text }],
@@ -126,20 +153,22 @@ export function applyCard(state, card, { place, line, plan, time = null } = {}) 
     const bad = (why) => problems.push(`"${a0.who} ${a0.do}${a0.target ? " " + a0.target : ""}" (word ${a0.on_word}): ${why}`);
     if (!(a.do in ACTIONS8)) { bad("not an action the engine has"); continue; }
     if (!(Number(a.on_word) >= 0 && Number(a.on_word) < nW)) { bad(`on_word must be 0-${nW - 1}`); continue; }
-    if (MONSTER_ONLY.has(a.do) && a.do !== "roar" && a.who !== "monster") { bad("only the monster does that"); continue; }
+    if (MONSTER_ONLY.has(a.do) && !["roar"].includes(a.do) && a.who !== "monster") { bad("only the monster does that"); continue; }
     if (PEOPLE_ACTIONS.has(a.do) || MONSTER_ONLY.has(a.do)) {
       if (a.who === "monster") {
         if (!plan.monster?.present) { bad("this story has no monster"); continue; }
-        if (a.do === "climb_out") { if (P.monster.here) { bad("the monster is already here"); continue; } P.monster = { here: true, mark: P.things.drain_grate?.here ? P.things.drain_grate.mark : MARKS8.includes(a.to) ? a.to : "back", via: "drain" }; applied.push(a); continue; }
+        if (a.do === "climb_out") { if (P.monster.here) { bad("the monster is already here"); continue; } P.monster = { here: true, mark: P.things.drain_grate?.here ? P.things.drain_grate.mark : isMark(a.to) ? a.to : "back", via: "drain" }; applied.push(a); continue; }
+        // (round 9: a monster can also step out of the dark: it ENTERS)
+        if (a.do === "enter") { if (P.monster.here) { bad("the monster is already here"); continue; } P.monster = { here: true, mark: isMark(a.to) ? a.to : "back", via: "walk" }; applied.push(a); continue; }
         if (!P.monster.here) { bad("the monster is not in the scene (it must climb_out first)"); continue; }
         if (a.do === "dive_in") { P.monster = { here: false, mark: null }; applied.push(a); continue; }
-        if (["walk_to", "run_to"].includes(a.do)) { P.monster.mark = MARKS8.includes(a.to) ? a.to : (P.people[a.to]?.mark ?? P.monster.mark); applied.push(a); continue; }
-        if (!["roar", "point", "stomp", "jump", "turn_to", "follow", "look_around"].includes(a.do)) { bad("the monster can walk_to / run_to / roar / stomp / jump / turn_to / follow / point / climb_out / dive_in"); continue; }
+        if (["walk_to", "run_to"].includes(a.do)) { P.monster.mark = isMark(a.to) ? a.to : (P.people[a.to]?.mark ?? P.monster.mark); applied.push(a); continue; }
+        if (!["roar", "point", "stomp", "jump", "turn_to", "follow", "look_around", "hit_wall"].includes(a.do)) { bad("the monster can walk_to / run_to / roar / stomp / jump / turn_to / follow / point / climb_out / dive_in"); continue; }
         applied.push(a); continue;
       }
       if (!isPerson(a.who)) { bad(`"${a0.who}" is not in the cast (${[...castNames].join(", ")})`); continue; }
       const me = (P.people[a.who] ??= { here: false, mark: null, pose: "stand", holding: null, face: "neutral" });
-      if (a.do === "enter") { if (me.here) { bad(`${a0.who} is already in the scene (at ${me.mark})`); continue; } me.here = true; me.mark = MARKS8.includes(a.to) ? a.to : freeMark(P); me.pose = "stand"; applied.push(a); continue; }
+      if (a.do === "enter") { if (me.here) { bad(`${a0.who} is already in the scene (at ${me.mark})`); continue; } me.here = true; me.mark = isMark(a.to) ? a.to : freeMark(P); me.pose = "stand"; applied.push(a); continue; }
       if (!me.here) { bad(`${a0.who} is not in this scene (${place}): enter first`); continue; }
       const T = a.target;
       if (["hug", "follow", "give"].includes(a.do) && !(isPerson(T) && here(T))) { bad(`the target "${a0.target}" must be a person in the scene`); continue; }
@@ -147,7 +176,7 @@ export function applyCard(state, card, { place, line, plan, time = null } = {}) 
       switch (a.do) {
         case "exit": me.here = false; me.mark = null; if (me.holding) { P.things[me.holding] = { ...(P.things[me.holding] ?? {}), here: false, held_by: a.who }; } break;
         case "walk_to": case "run_to": {
-          if (MARKS8.includes(a.to)) me.mark = a.to;
+          if (isMark(a.to)) me.mark = a.to;
           else if (here(a.to)) me.mark = isPerson(a.to) ? P.people[a.to].mark : a.to === "monster" ? P.monster.mark : P.things[a.to].mark;
           else { bad(`walk_to needs a mark (${MARKS8.join(", ")}) or someone / something in the scene, got "${a0.to}"`); continue; }
           me.pose = "stand"; break;
@@ -171,36 +200,49 @@ export function applyCard(state, card, { place, line, plan, time = null } = {}) 
         }
         case "drop": case "throw": {
           if (!me.holding) { bad(`${a0.who} holds nothing to ${a.do}`); continue; }
-          a.thing = me.holding; P.things[me.holding].held_by = null; P.things[me.holding].mark = a.do === "throw" && MARKS8.includes(a.to) ? a.to : me.mark; me.holding = null; break;
+          a.thing = me.holding; P.things[me.holding].held_by = null; P.things[me.holding].mark = a.do === "throw" && isMark(a.to) ? a.to : me.mark; me.holding = null; break;
         }
-        case "kick": if (!(P.things[T]?.here) || P.things[T].held_by) { bad(`"${a0.target}" must be a thing on the ground in the scene`); continue; } P.things[T].mark = MARKS8.includes(a.to) ? a.to : P.things[T].mark; break;
+        case "kick": if (!(P.things[T]?.here) || P.things[T].held_by) { bad(`"${a0.target}" must be a thing on the ground in the scene`); continue; } P.things[T].mark = isMark(a.to) ? a.to : P.things[T].mark; break;
         case "sign": if (!String(a0.text ?? "").trim() || String(a0.text).length > 18) { bad("a sign needs text of 1-18 letters"); continue; } break;
         case "splat": if (T && !(isPerson(T) && here(T))) { bad(`a splat lands on a person in the scene, not "${a0.target}"`); continue; } break;
+        // round 9: chalk on the ground
+        case "draw_around": {
+          if (!here(T)) { bad(`draw_around needs someone / something in the scene to go around, got "${a0.target}"`); continue; }
+          const id = `chalk_line#${ident(T)}`;
+          P.things[id] = { here: true, mark: isPerson(T) ? P.people[T].mark : T === "monster" ? P.monster.mark : P.things[T]?.mark ?? "center", held_by: null, state: null, around: T };
+          a.line_id = id; break;
+        }
+        case "draw_line": {
+          if (kindOf(T) !== "chalk_line") { bad(`draw_line: target a chalk line (e.g. chalk_line#house), got "${a0.target}"`); continue; }
+          const th = (P.things[T] ??= { here: false, mark: "back", held_by: null, state: null });
+          a.redraw = !th.here; th.here = true; break;
+        }
         default: break;
       }
       applied.push(a); continue;
     }
     if (THING_ACTIONS.has(a.do)) {
       const T = a.target || a.who;
-      if (!THINGS.includes(T)) { bad(`"${T}" is not a thing the engine has`); continue; }
+      if (!isThing(T)) { bad(`"${T}" is not a thing the engine has`); continue; }
       const th = (P.things[T] ??= { here: false, mark: null, held_by: null, state: null });
       if (a.do === "appear") {
         if (th.here) { bad(`"${T}" is already in the scene`); continue; }
         th.here = true; th.held_by = null;
-        th.mark = MARKS8.includes(a.to) ? a.to : (isPerson(a.to) && here(a.to) ? P.people[a.to].mark : "center");
+        th.mark = isMark(a.to) ? a.to : (isPerson(a.to) && here(a.to) ? P.people[a.to].mark : "center");
         th.near = isPerson(a.to) && here(a.to) ? a.to : null;
         applied.push({ ...a, target: T }); continue;
       }
       if (!th.here) { bad(`"${T}" is not in the scene (appear it first)`); continue; }
-      if (a.do === "disappear") { if (th.held_by && P.people[th.held_by]) P.people[th.held_by].holding = null; th.here = false; th.held_by = null; }
+      if (a.do === "disappear" || a.do === "wash_away") { if (a.do === "wash_away" && kindOf(T) !== "chalk_line") { bad("only a chalk line washes away"); continue; } if (th.held_by && P.people[th.held_by]) P.people[th.held_by].holding = null; th.here = false; th.held_by = null; }
       else if (["turn_on", "turn_off"].includes(a.do) && !GLOW_THINGS.includes(T)) { bad(`only a light switches on / off (${GLOW_THINGS.join(", ")}), not "${T}"`); continue; }
-      else if (a.do === "move") { if (th.held_by) { bad(`"${T}" is held: give / drop it instead`); continue; } th.mark = MARKS8.includes(a.to) ? a.to : (isPerson(a.to) && here(a.to) ? P.people[a.to].mark : th.mark); }
+      else if (a.do === "move") { if (th.held_by) { bad(`"${T}" is held: give / drop it instead`); continue; } th.mark = isMark(a.to) ? a.to : (isPerson(a.to) && here(a.to) ? P.people[a.to].mark : th.mark); }
       else th.state = { turn_on: "on", turn_off: "off", open: "open", close: "closed" }[a.do];
       applied.push({ ...a, target: T }); continue;
     }
     if (WORLD_ACTIONS.has(a.do)) {
       const T = a.target;
       if (a.do === "windows_open") { P.windows = "open"; applied.push(a); continue; }
+      if (a.do === "crowd") { if (T && !isThing(T)) { bad(`crowd: the thing each neighbour holds must be on the list, got "${a0.target}"`); continue; } P.crowd = true; applied.push(a); continue; }
       if (a.do.startsWith("switch_all")) { if (!["lamps", "windows"].includes(T)) { bad('switch_all_on / off: target "lamps" or "windows"'); continue; } P[T] = a.do.endsWith("_on") ? (T === "windows" ? "lit" : "on") : (T === "windows" ? "dark" : "off"); applied.push(a); continue; }
       if (!["lamp", "window", "porch_light"].includes(T)) { bad('switch_on / off: target "lamp", "window" or "porch_light" (the one nearest who)'); continue; }
       if (a.who && a.who !== "monster" && !(isPerson(a.who) && here(a.who))) { bad(`the switch happens near ${a0.who}, who is not in the scene`); continue; }
@@ -237,9 +279,10 @@ export function cutProblems(card, { line, plan, stateBefore, stateAfter, place, 
     if (!show.length) out.push("every cut shows something (show: who / what)");
     for (const k of show) if (!inScene(k) && !["lamps", "windows", "lamp", "window", "porch_light"].includes(k)) out.push(`a cut shows "${k}", which is not in the scene during this line`);
   }
-  // rule 4 wins: everything the line names is in a cut's show
-  const shown = new Set(cuts.flatMap((c) => (c.show ?? []).map(low)));
-  for (const k of namedIn(line.text, plan)) if (inScene(k) && !shown.has(k)) out.push(`the line names "${k}" but no cut shows it (rule 4: every noun gets its own clear shot)`);
+  // rule 4 wins: everything the line names is in a cut's show (a named kind by any thing of that kind: "bell" by "bell#max")
+  const shown = shownKinds(cuts);
+  const kindHere = (k) => inScene(k) || [...Object.keys(B.things ?? {}), ...Object.keys(A.things ?? {})].some((id) => kindOf(id) === k && inScene(id));
+  for (const k of namedIn(line.text, plan)) if (kindHere(k) && !shown.has(k)) out.push(`the line names "${k}" but no cut shows it (rule 4: every noun gets its own clear shot)`);
   // rule 12: every shot shows something new
   const sig = (c) => `${c.shot}|${(c.show ?? []).map(low).sort().join(",")}`;
   const all = [prevCut, ...cuts].filter(Boolean);
@@ -251,7 +294,9 @@ export function cutProblems(card, { line, plan, stateBefore, stateAfter, place, 
  * wide frames at most 2 subjects, the ones the line names first */
 export function trimShow(cut, text, plan) {
   const show = [...new Set((cut.show ?? []).map(low))];
-  if (cut.shot === "wide" || show.length <= 2) return show;
+  // round 9 default: an insert / top of a thing on the ground (a drain, a line, a dropped thing) shows it ALONE
+  if (["insert", "top"].includes(cut.shot)) { const g = show.find((k) => GROUND_THINGS.includes(kindOf(k))); if (g) return [g]; }
+  if (["wide", "place", "street"].includes(cut.shot) || show.length <= 2) return show;
   const named = new Set(namedIn(text, plan));
   return [...show.filter((k) => named.has(k)), ...show.filter((k) => !named.has(k))].slice(0, 2);
 }
@@ -280,6 +325,8 @@ export function compileTakes({ plan, cards, states, lines, looks }) {
     for (const c of myCards) for (const a of c.actions ?? []) if (a.do === "enter") people.add(low(a.who));
     const things = new Set(Object.entries(S0.things).filter(([, t]) => t.here || t.held_by).map(([k]) => k));
     for (const c of myCards) for (const a of c.actions ?? []) if (["appear"].includes(a.do) && a.target) things.add(low(a.target));
+    // (chalk lines drawn in this scene are made by their action; the house rings by zs_house_rings)
+    for (const k of [...things]) if (kindOf(k) === "chalk_line" && (ownerOf(k) === "house" || !S0.things[k]?.here)) things.delete(k);
     if (rule && THINGS.includes(rule.thing) && rule.where !== "over_head_pop") things.add(rule.thing);
     const monUsed = plan.monster?.present && (S0.monster?.here || myCards.some((c) => (c.actions ?? []).some((a) => low(a.who) === "monster")));
     const L = [];
@@ -290,13 +337,21 @@ export function compileTakes({ plan, cards, states, lines, looks }) {
     I(`T0, T1 = o + ${T0.toFixed(3)}, o + ${T1.toFixed(3)}`);
     I(`ZS["place"] = ${py(place)}`);
     I(`ZS["side"] = ${SIDE_DEG[plan.stage?.[place]?.camera_side] ?? 0}`);
+    I(`ZS["low_houses"] = ${plan.low_houses ? "True" : "False"}`);
     I(`ZW_INFO = zw_build(${py(place)}, T0 - 0.3, T1 + 0.3, zs_quiet(${py(dress)}))`);
     I(`zs_light(${py(time)}, T0, T1)`);
     I(`zs_clear_stage(${py(place)})`);
     I(`st_c, st_d, st_r, st_rot = zw_stage(${py(place)})`);
     I("H = {}");
+    // round 9: a chalk line around every house; the stage's own house's line is "chalk_line#house" (washed / redrawn
+    // as the story says: a line washed in an earlier scene stays washed until a line redraws it)
+    if (plan.house_rings) {
+      I(`_R = zs_house_rings(${py(place)}, near=(st_c.x, st_c.y, 0.0))`);
+      I(`H["chalk_line#house"] = _R[list(_R.keys())[0]] if _R else None`);
+      if (S0.things["chalk_line#house"] && !S0.things["chalk_line#house"].here) I(`zs_wash(H["chalk_line#house"], T0 - 2.0, T0 - 1.0) if H["chalk_line#house"] is not None else None`);
+    }
     const used = {};
-    const markAt = (m) => { const k = used[m] = (used[m] ?? -1) + 1; return `zw_mark(${py(place)}, ${py(MARKS8.includes(m) ? m : "center")}, ${k})`; };
+    const markAt = (m) => { if (/^@/.test(String(m))) { const [x, y] = String(m).slice(1).split(",").map(Number); return `(${x}, ${y}, 0.0)`; } const k = used[m] = (used[m] ?? -1) + 1; return `zw_mark(${py(place)}, ${py(MARKS8.includes(m) ? m : "center")}, ${k})`; };
     // the cast, at their marks as the state has them, the locked looks
     for (const k of people) {
       const p = S0.people[k];
@@ -308,22 +363,36 @@ export function compileTakes({ plan, cards, states, lines, looks }) {
     }
     // the things: here at the start where the state has them, the ones that appear later hidden until they do
     const ruleWho = rule?.who && people.has(low(rule.who)) ? low(rule.who) : null;
+    const later = [];   // (the chalk circles round the monster / a person: after everyone is made)
     for (const k of things) {
       const t = S0.things[k];
-      const isRule = rule?.thing === k && rule.where !== "over_head_pop";
-      const size = (plan.props ?? []).find((x) => x.kind === k)?.size ?? 1.2;
-      const named = myLines.some((Ln) => nounRe(k).test(Ln.text));
+      const kd = kindOf(k);
+      const isRule = (rule?.thing === k || rule?.thing === kd) && rule.where !== "over_head_pop";
+      const size = (plan.props ?? []).find((x) => x.kind === k || x.kind === kd)?.size ?? 1.2;
+      const named = myLines.some((Ln) => nounRe(kd).test(Ln.text));
+      // a chalk circle that was drawn before this scene: around what it was drawn round (the monster stays inside it)
+      if (kd === "chalk_line") {
+        const ar = S0.things[k]?.around;
+        later.push(`H[${py(k)}] = zs_chalk_path(${py(`zs_circ_${ident(k)}`)}, zs_circle_pts(tuple(za_here(H[${py(ar === "monster" ? "monster" : ar)}], T0))[:2] if H.get(${py(ar === "monster" ? "monster" : ar)}) is not None else (st_c.x, st_c.y), ${ar === "monster" ? "4.2 * zw_ps() / 0.55" : "1.6 * zw_ps() / 0.55"}, 18), closed=True)`);
+        continue;
+      }
       // the rule object READABLE in every shot (round 8 first test: a bell in a hand at 1.5x was "not visible" in 30 stills)
-      const sz = `zw_tsize(${py(k)}, ${size})${isRule ? " * 1.8" :k === "drain_grate" ? " * 2.2" : named ? (monUsed ? " * 2.4" : " * 1.5") : ""}`;
+      const sz = `zw_tsize(${py(kd)}, ${size})${isRule ? " * 1.8" : kd === "drain_grate" ? " * 2.2" : named ? (monUsed ? " * 2.4" : " * 1.5") : ""}`;
       const mk = t?.mark ?? (isRule ? (plan.stage?.[place]?.marks?.[k] ?? "front") : "center");
       I(`_p = ${markAt(mk)}`);
       // the drain in the open, ON its mark (item 18); the rule object beside / at the feet of its person; other things
       // a step in front of their mark (nobody stands on them)
-      const at = k === "drain_grate" ? "_p" : isRule && ruleWho && ["next_to", "at_feet"].includes(rule.where) && !t?.mark
+      const at = kd === "drain_grate" ? "_p" : isRule && ruleWho && ["next_to", "at_feet"].includes(rule.where) && !t?.mark
         ? `zs_beside(H[${py(ruleWho)}], T0, -1)` : "(_p[0] - st_d.x * 1.0 + st_r.x * 1.0, _p[1] - st_d.y * 1.0 + st_r.y * 1.0, 0.0)";
-      I(`H[${py(k)}] = zw_thing(${py(k)}, ${at}, size=${sz})`);
+      I(`H[${py(k)}] = zw_thing(${py(kd)}, ${at}, size=${sz})`);
+      // a parked car lies PARALLEL to the kerb (the street runs along x)
+      if (kd === "car") I(`H[${py(k)}].rotation_euler[2] = math.radians(90.0)`);
+      // the town's roof stays OVER the monster in the later scenes (sized to it)
+      if (kd === "roof" && monUsed && (t?.here || t?.held_by)) later.push(`zs_roof_over(H[${py(k)}], H.get("monster"), T0 - 0.6)`);
       // the drain is BIG and in the open: the dark hole + grate on its mark (a small flat thing was invisible from the street)
-      if (k === "drain_grate") I("zs_hole(_p)");
+      if (kd === "drain_grate") I("zs_hole(_p)");
+      // a pre-drawn chalk circle round a thing that has one (the dog's circle, the car's box): "<kind>#..." with ring
+      if ((plan.rings_around ?? []).includes(k)) I(`H[${py(`chalk_line#${ident(k)}`)}] = zs_chalk_path(${py(`zs_ring_${ident(k)}`)}, ${kd === "car" ? `zs_rect_pts(H[${py(k)}].location.x - 3.6, H[${py(k)}].location.y - 2.0, H[${py(k)}].location.x + 3.6, H[${py(k)}].location.y + 2.0, 1.2)` : `zs_circle_pts((H[${py(k)}].location.x, H[${py(k)}].location.y), 2.6, 18)`}, closed=True)`);
       if (!(t?.here || t?.held_by) && !isRule) I(`zs_hide(H[${py(k)}])`);
       if (t?.held_by && people.has(t.held_by)) I(`zw_grab(H[${py(t.held_by)}], T0 - 0.3, H[${py(k)}])`);
       else if (isRule && rule.where === "in_hand" && ruleWho && !t?.mark) I(`zw_grab(H[${py(ruleWho)}], T0 - 0.3, H[${py(k)}])`);
@@ -333,6 +402,7 @@ export function compileTakes({ plan, cards, states, lines, looks }) {
       I(`H["monster"] = zw_monster("Monster", ${markAt(S0.monster?.mark ?? "back")}, rot=st_rot, size=${size}, style=${py(plan.monster.style || "shadow")})`);
       if (!S0.monster?.here) I(`H["monster"].set_visible(-10.0, False)`);
     }
+    for (const x of later) I(x);
     if (S0.lamps === "off") I(`zs_switch_all("lamps", T0 - 1.0, False, stagger=0.0)`);
     if (S0.windows === "open") I(`zs_windows_open(T0 - 1.0, stagger=0.0)`);
     // the timeline: every line's actions at their word times, the faces per line
@@ -350,12 +420,12 @@ export function compileTakes({ plan, cards, states, lines, looks }) {
         const ta = `o + ${tOf(Ln, a.on_word).toFixed(3)}`;
         const tb = `o + ${Math.max(tOf(Ln, a.on_word) + 0.8, la1 - 0.05).toFixed(3)}`;
         const W = `H.get(${py(who)})`, TT = `H.get(${py(T)})`;
-        const toPt = MARKS8.includes(to) ? markAt(to) : to && (people.has(to) || things.has(to) || to === "monster") ? `zs_beside(H.get(${py(to)}), ${ta}, 1)` : null;
+        const toPt = isMark(to) ? markAt(to) : to && (people.has(to) || things.has(to) || to === "monster") ? `zs_beside(H.get(${py(to)}), ${ta}, 1)` : null;
         switch (a.do) {
           case "enter": I(`zs_enter(${W}, ${ta}, ${tb}, ${toPt ?? markAt("center")})`); break;
           case "exit": I(`zs_exit(${W}, ${ta}, ${tb})`); break;
           // the monster comes up BEHIND a person (round 8 first test: beside Max, its legs filled every other shot)
-          case "walk_to": case "run_to": if (who === "monster" || toPt) I(`zm_walk(${W}, ${ta}, ${tb}, ${who === "monster" && people.has(to) ? `zs_behind(H.get(${py(to)}), ${ta})` : toPt ?? markAt("center")}, run=${a.do === "run_to" ? "True" : "False"})`); break;
+          case "walk_to": case "run_to": if (who !== "monster" && toPt && ["panic", "sprint", "chalk_run", "crouch"].includes(low(a.text))) { I(`zs_gait(${W}, ${ta}, ${tb}, [tuple(za_here(${W}, ${ta}))[:2], tuple(${toPt})[:2]], ${py(low(a.text))})`); break; } if (who === "monster" || toPt) I(`zm_walk(${W}, ${ta}, ${tb}, ${who === "monster" && people.has(to) ? `zs_behind(H.get(${py(to)}), ${ta})` : toPt ?? markAt("center")}, run=${a.do === "run_to" ? "True" : "False"})`); break;
           case "turn_to": if (TT !== "H.get(\"\")") I(`zm_turn(${W}, ${ta}, za_yaw(za_here(${W}, ${ta}), za_pos(${TT})))`); break;
           case "follow": I(`zw_follow(${W}, ${TT}, ${ta}, ${tb})`); break;
           case "point": I(`zw_point(${W}, ${ta}, ${T ? TT : "None"})`); break;
@@ -384,15 +454,15 @@ export function compileTakes({ plan, cards, states, lines, looks }) {
           case "kick": I(`zm_kick(${W}, ${ta}, ${TT}, ${toPt ?? markAt("front")})`); break;
           case "read": I(`zm_read(${W}, ${ta}, ${tb}, H.get("book"))`); break;
           case "phone": I(`zm_phone(${W}, ${ta}, ${tb}, H.get("phone"))`); break;
-          case "appear": I(`zo_appear(H.get(${py(T)}), ${ta}${toPt ? `, at=${people.has(to) ? `zs_beside(H.get(${py(to)}), ${ta}, -1)` : toPt}` : ""})`); break;
-          case "disappear": I(`zo_disappear(H.get(${py(T)}), ${ta})`); break;
+          case "appear": if (kindOf(T) === "roof" && to === "monster") { I(`zs_roof_over(H.get(${py(T)}), H.get("monster"), ${ta})`); break; } I(`zo_appear(H.get(${py(T)}), ${ta}${to === "monster" ? `, at=tuple(za_here(H["monster"], ${ta}))` : toPt ? `, at=${people.has(to) ? `zs_beside(H.get(${py(to)}), ${ta}, -1)` : toPt}` : ""})`); break;
+          case "disappear": I(kindOf(T) === "chalk" ? `zs_melt(H.get(${py(T)}), ${ta})` : `zo_disappear(H.get(${py(T)}), ${ta})`); break;
           case "move": I(`zo_move(H.get(${py(T)}), ${ta}, ${tb}, ${toPt ?? markAt("center")}, h=1.5)`); break;
           case "turn_on": case "turn_off": I(`zo_state(H.get(${py(T)}), ${ta}, ${py(a.do === "turn_on" ? "on" : "off")})`); break;
           case "open": case "close": I(`zo_state(H.get(${py(T)}), ${ta}, ${py(a.do === "open" ? "open" : "closed")})`); break;
           case "climb_out": { const hole = things.has("drain_grate") ? `(H["drain_grate"].location.x, H["drain_grate"].location.y)` : `zs_hole(${toPt ?? markAt("front")})`; I(`H["monster"].set_visible(${ta} - 0.9, True)`); I(`zw_climb_out(H["monster"], ${ta} - 0.9, ${ta} + 0.4, hole=${hole})`); break; }
           case "dive_in": { const hole = things.has("drain_grate") ? `(H["drain_grate"].location.x, H["drain_grate"].location.y)` : `zs_hole(${markAt("front")})`; I(`zs_dive(H["monster"], ${ta}, ${tb}, ${hole})`); break; }
           case "switch_on": case "switch_off": I(`zw_switch(${py(T)}, ${who && who !== "monster" ? W : `za_here(H["monster"], ${ta}) if H.get("monster") else (st_c.x, st_c.y)`}, ${ta}, ${a.do === "switch_on" ? "True" : "False"})`); break;
-          case "switch_all_on": case "switch_all_off": I(`zs_switch_all(${py(T === "windows" ? "windows" : "lamps")}, ${ta}, ${a.do === "switch_all_on" ? "True" : "False"})`); break;
+          case "switch_all_on": case "switch_all_off": I(`zs_switch_all(${py(T === "windows" ? "windows" : "lamps")}, ${ta}, ${a.do === "switch_all_on" ? "True" : "False"}${/slow|one by one/i.test(a.text ?? "") ? ", stagger=0.35" : ""})`); break;
           case "windows_open": I(`zs_windows_open(${ta})`); break;
           case "rule_effect": I(`zw_rule_effect(${W}, ${ta})`); break;
           case "star_eyes": I(`zf_star_eyes(${W}, ${ta}, ${tb})`); break;
@@ -400,6 +470,13 @@ export function compileTakes({ plan, cards, states, lines, looks }) {
           case "sweat": I(`zf_sweat(${W}, ${ta})`); break;
           case "splat": I(`zf_splat(${T ? TT : W}, ${ta})`); break;
           case "sign": I(`zf_sign(${W}, ${ta}, ${tb}, ${py(String(a.text ?? "").slice(0, 18))})`); break;
+          // round 9: chalk, crowds, door to door
+          case "draw_around": I(`H[${py(a.line_id)}] = zs_draw_around(${W}, ${TT}, ${ta}, ${tb}, ${py(`zs_circ_${ident(a.line_id)}`)})`); break;
+          case "draw_line": I(a.redraw ? `zs_reveal(H[${py(T)}], ${ta}, ${tb}) if H.get(${py(T)}) is not None else None` : "pass"); I(`zs_draw_path(${W}, zs_ring_front(H.get(${py(T)}), za_here(${W}, ${ta})), ${ta}, ${tb}, ${py(`zs_fresh_${ident(T)}_${c.line}`)}, style="crouch")`); break;
+          case "wash_away": I(`zs_wash(H[${py(T)}], ${ta}, ${tb}) if H.get(${py(T)}) is not None else None`); break;
+          case "crowd": I(`_c = zs_crowd(${ta}, ${tb}, n=10, thing=${T ? py(kindOf(T)) : "None"}, do=${py(String(a.text || "cheer").toLowerCase())})`); I(`H["crowd0"], H["crowd1"] = (_c + [None, None])[0], (_c + [None, None])[1]`); break;
+          case "run_door_to_door": I(`zs_door_to_door(${W}, ${ta}, ${tb}, n=3)`); break;
+          case "hit_wall": I(`zs_monster_hits_wall(H["monster"], ${ta}, zs_ring_center(H.get("chalk_line#monster")), 4.2 * zw_ps() / 0.55)`); break;
           default: break;
         }
       }
@@ -420,5 +497,7 @@ export function compileTakes({ plan, cards, states, lines, looks }) {
   for (let k = 1; k < shots.length; k++) if (shots[k].w0 <= shots[k - 1].w0) shots[k].w0 = shots[k - 1].w0 + 1;
   if (shots.length) shots[0].w0 = 0;
   shots.forEach((s, k) => { s.id = k + 1; s.w1 = k + 1 < shots.length ? shots[k + 1].w0 : null; });
-  return { takes, shots, cutCall: (s, t0 = "t0", t1 = "t1") => `zc_cut(${t0}, ${t1}, ${py(s.shot)}, [${s.show.filter((k) => !THINGS.includes(k) && !SWITCH_TARGETS.includes(k)).map((k) => `H.get(${py(k)})`).join(", ")}], [${s.show.filter((k) => THINGS.includes(k)).map((k) => `H.get(${py(k)})`).join(", ")}], ${py(s.move)})` };
+  // who moves in each line (the free movement check measures them)
+  const movers = Object.fromEntries(cards.map((c) => [c.line, [...new Set((c.actions ?? []).filter((a) => MOVE_ACTIONS.includes(a.do)).map((a) => low(a.who)))]]));
+  return { takes, shots, movers, cutCall: (s, t0 = "t0", t1 = "t1", tag = "") => `zc_cut(${t0}, ${t1}, ${py(s.shot)}, [${s.show.filter((k) => !isThing(k) && !SWITCH_TARGETS.includes(k)).map((k) => `H.get(${py(k)})`).join(", ")}], [${s.show.filter((k) => isThing(k)).map((k) => `H.get(${py(k)})`).join(", ")}], ${py(s.move)}${tag ? `, tag=${py(tag)}` : ""}${s.frac ? `, frac=${Number(s.frac).toFixed(2)}` : ""}${s.v != null ? `, v=${Number(s.v).toFixed(2)}` : ""}${s.side != null ? `, side=${Number(s.side).toFixed(1)}` : ""})` };
 }

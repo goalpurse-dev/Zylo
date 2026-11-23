@@ -432,7 +432,7 @@ def zc_cut(t0, t1, kind, people=(), things=(), move="push_in", side=None, hero=N
     lens = ZC_LENS.get(kind, 28)
     hmax = max(p.z for p in pts) - min(p.z for p in pts)
     # a LOW camera for the wides and the people shots (round 8 first test: the road filled half of every wide)
-    dz = {"low": -0.42 * hmax, "close": 0.0, "insert": 0.2 * hmax, "top": 0.0, "wide": -0.22 * hmax, "medium": -0.08 * hmax, "two": -0.1 * hmax}.get(kind, 0.0)
+    dz = {"low": -0.42 * hmax, "close": 0.0, "insert": 0.2 * hmax, "top": 0.0, "wide": 0.35 * hmax, "medium": -0.08 * hmax, "two": -0.1 * hmax}.get(kind, 0.0)
     # a FLAT thing on the ground (the drain) is seen from above, not from its own height (round 8: "no drain visible")
     if kind == "insert" and not people and hmax < 0.8 * zw_ps() / 0.55:
         dz = 3.2 * zw_ps() / 0.55
