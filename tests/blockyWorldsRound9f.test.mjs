@@ -46,3 +46,14 @@ test("a scene after a time skip starts with people at new marks; the new marks, 
   for (const a of ["back_away", "hide", "try_draw", "put_in_pocket", "take_out"]) assert.ok(a in ACTIONS8);
   for (const k of ["hand", "behind", "lamps"]) assert.ok(SHOTS8.includes(k));
 });
+
+test("round 9g: an exception starts ON its word (at: word) or its line (at: line); watching sends nobody out", async () => {
+  const { ruleExceptions } = await import("../scripts/blockyWorlds/blenderKit/takes.mjs");
+  const lines = [{ text: "So I ran outside, I pulled the chalk out" }, { text: "Now kids play outside after dark" }];
+  const plan = { rule_check: { exceptions: [{ who: "me", from_line: 1, to_line: 2, because: "I ran outside", at: "word" }, { who: "kid", from_line: 2, to_line: 2, because: "kids play outside after dark", at: "line" }, { who: "dad", from_line: 1, to_line: 1, because: "I watched our line wash away" }] } };
+  const X = ruleExceptions(plan, lines);
+  assert.equal(X.fromWord[1].me, 1);
+  assert.equal(X.fromWord[2].kid, 0);
+  assert.equal(X.invalid.length, 1);
+  assert.deepEqual(X.outside[2], ["me", "kid"]);
+});

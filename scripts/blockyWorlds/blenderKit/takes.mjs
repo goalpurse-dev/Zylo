@@ -25,7 +25,7 @@ export const SIDE_DEG = Object.freeze({ front: 0, front_left: 28, front_right: -
 export const TIMES8 = Object.freeze(["day", "sunset", "night", "storm", "morning"]);
 export const SHOTS8 = Object.freeze(["wide", "medium", "two", "close", "insert", "low", "top", "place", "street", "aerial", "high", "legs", "house", "hand", "behind", "lamps"]);
 /** a stage mark, or an exact ground point "@x,y" (round 9: the car at the kerb, the monster on the road) */
-export const PLACE_MARKS = Object.freeze(["door", "door_side", "line_front"]);
+export const PLACE_MARKS = Object.freeze(["door", "door_side", "line_front", "window"]);
 export const isMark = (m) => MARKS8.includes(m) || PLACE_MARKS.includes(m) || /^@-?[\d.]+,-?[\d.]+$/.test(String(m ?? ""));
 export const MOVES8 = Object.freeze(["push_in", "tilt_up", "track", "top_down", "static"]);
 export const FACES8 = Object.freeze(["neutral", "happy", "laughing", "sad", "crying", "scared", "terrified", "shocked", "surprised", "angry", "confused", "smirk", "determined", "panic"]);
@@ -307,13 +307,18 @@ export function cutProblems(card, { line, plan, stateBefore, stateAfter, place, 
  */
 export function ruleExceptions(plan, lines) {
   const norm = (t) => String(t ?? "").toLowerCase().replace(/[^a-z0-9' ]/g, " ").replace(/\s+/g, " ").trim();
-  const outside = {}, invalid = [];
+  const outside = {}, invalid = [], fromWord = {};
   for (const e of plan.rule_check?.exceptions ?? []) {
     const L = lines[(Number(e.from_line) || 0) - 1];
     if (!L || !e.because || !norm(L.text).includes(norm(e.because))) { invalid.push({ ...e, why: L ? `"${e.because}" is not in line ${e.from_line} ("${L.text}")` : `line ${e.from_line} does not exist` }); continue; }
     for (let n = Number(e.from_line); n <= Number(e.to_line ?? e.from_line); n++) (outside[n] ??= []).push(low(e.who));
+    // the word it starts on (round 9g: "I ran outside" covered its line from the first word)
+    const W = norm(L.text).split(" "), Q = norm(e.because).split(" ");
+    let wi = 0;
+    for (let k = 0; k + Q.length <= W.length; k++) if (Q.every((q, j) => W[k + j] === q)) { wi = k; break; }
+    (fromWord[Number(e.from_line)] ??= {})[low(e.who)] = e.at === "word" ? wi : 0;
   }
-  return { outside, invalid };
+  return { outside, invalid, fromWord };
 }
 
 /** ONE THING PER CUT (rule 14; round 8 first test: cuts of 3-4 people made everyone tiny in 9:16): a cut other than the
@@ -380,7 +385,7 @@ export function compileTakes({ plan, cards, states, lines, looks }) {
       if (S0.things["chalk_line#house"] && !S0.things["chalk_line#house"].here) I(`zs_wash(H["chalk_line#house"], T0 - 2.0, T0 - 1.0) if H["chalk_line#house"] is not None else None`);
     }
     const used = {};
-    const markAt = (m) => { if (m === "door" || m === "door_side") return `zs_door_pt(H.get("chalk_line#house"), ${py(m)})`; if (m === "line_front") return `zs_line_front_pt(H.get("chalk_line#house"))`; if (/^@/.test(String(m))) { const [x, y] = String(m).slice(1).split(",").map(Number); return `(${x}, ${y}, 0.0)`; } const k = used[m] = (used[m] ?? -1) + 1; return `zw_mark(${py(place)}, ${py(MARKS8.includes(m) ? m : "center")}, ${k})`; };
+    const markAt = (m) => { if (m === "door" || m === "door_side") return `zs_door_pt(H.get("chalk_line#house"), ${py(m)})`; if (m === "line_front") return `zs_line_front_pt(H.get("chalk_line#house"))`; if (m === "window") return `zs_window_pt(H.get("chalk_line#house"))`; if (/^@/.test(String(m))) { const [x, y] = String(m).slice(1).split(",").map(Number); return `(${x}, ${y}, 0.0)`; } const k = used[m] = (used[m] ?? -1) + 1; return `zw_mark(${py(place)}, ${py(MARKS8.includes(m) ? m : "center")}, ${k})`; };
     // the cast, at their marks as the state has them, the locked looks
     for (const k of people) {
       const p = S0.people[k];
@@ -433,7 +438,7 @@ export function compileTakes({ plan, cards, states, lines, looks }) {
     }
     for (const x of later) I(x);
     // the engine PLACES the safe ones inside a closed chalk line (everyone the story does not let outside on this scene's first line)
-    if (ruled) { const out = new Set((plan.rule_check.outside?.[la] ?? []).map(low)); const safe = [...people].filter((k) => !out.has(k)); if (safe.length) I(`zs_rule_place(H, ${py(safe)}, T0)`); }
+    if (ruled) { const out = new Set((plan.rule_check.outside?.[la] ?? []).map(low)); const safe = [...people].filter((k) => !out.has(k) && k !== "monster"); if (safe.length) I(`zs_rule_place(H, ${py(safe)}, T0)`); }
     if (S0.lamps === "off") I(`zs_switch_all("lamps", T0 - 1.0, False, stagger=0.0)`);
     if (S0.windows === "open") I(`zs_windows_open(T0 - 1.0, stagger=0.0)`);
     // the timeline: every line's actions at their word times, the faces per line
@@ -459,7 +464,7 @@ export function compileTakes({ plan, cards, states, lines, looks }) {
         const who = low(a.who), T = low(a.target), to = low(a.to);
         const ta = `o + ${tOf(Ln, a.on_word).toFixed(3)}`;
         // (a hand-only action: taking a thing out, talking, pointing: happens DURING the walk / run, it does not end it)
-        const nxt = (c.actions ?? []).filter((b) => low(b.who) === who && Number(b.on_word) > Number(a.on_word) && !["talk", "point", "wave", "nod", "shake_head"].includes(b.do)).map((b) => tOf(Ln, b.on_word));
+        const nxt = (c.actions ?? []).filter((b) => low(b.who) === who && Number(b.on_word) > Number(a.on_word) && !["take_out", "talk", "point", "wave", "nod", "shake_head"].includes(b.do)).map((b) => tOf(Ln, b.on_word));
         const tEnd = nxt.length ? Math.min(la1 - 0.05, Math.min(...nxt) - 0.05) : la1 - 0.05;
         const tb = `o + ${Math.max(tOf(Ln, a.on_word) + 0.8, tEnd).toFixed(3)}`;
         const W = `H.get(${py(who)})`, TT = `H.get(${py(T)})`;

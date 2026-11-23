@@ -127,11 +127,10 @@ const plan = {
   title: script.title, house_rings: true, low_houses: true, rings_around: ["dog#lawn", "car#kerb", "car#kerb2", "car#kerb3"],
   rule_check: { times: ["night", "storm"], what: "at night every person, pet and car that is safe is INSIDE a closed chalk line",
     exceptions: [
-      { who: "ball#lawn", from_line: 2, to_line: 2, because: "anything outside a line belongs to the collector" },
-      { who: "me", from_line: 8, to_line: 18, because: "I watched our line wash away" }, { who: "dad", from_line: 8, to_line: 18, because: "I watched our line wash away" },
-      { who: "dad", from_line: 9, to_line: 18, because: "Dad ran outside" }, { who: "me", from_line: 14, to_line: 18, because: "I ran outside" },
-      { who: "monster", from_line: 12, to_line: 16, because: "Something stepped out of the dark" },
-      { who: "me", from_line: 20, to_line: 22, because: "kids in our town play outside after dark" } ] },
+      { who: "ball#lawn", from_line: 2, to_line: 2, because: "anything outside a line belongs to the collector", at: "line" },
+      { who: "dad", from_line: 9, to_line: 18, because: "Dad ran outside", at: "word" }, { who: "me", from_line: 14, to_line: 18, because: "I ran outside", at: "word" },
+      { who: "monster", from_line: 12, to_line: 16, because: "Something stepped out of the dark", at: "word" },
+      { who: "me", from_line: 20, to_line: 22, because: "kids in our town play outside after dark", at: "line" } ] },
   cast: [{ name: "Me", kid: true, hair: "spiky", hair_color: "#d4381c", shirt: "#d62a1e", pants: "#c42a1c" }, { name: "Dad", kid: false, skin: "#efc29a", hair: "short", hair_color: "#5a3a1e", shirt: "#f4f4f4", pants: "#7fa8e0", style: "dad" }, { name: "Guy", kid: false, hair: "short", hair_color: "#1a1a1a", shirt: "#c0392b", pants: "#a93226" }],
   monster: { present: true, style: "shadow", size: 4 },
   rule: { sentence: "a chalk line makes a house", object: { thing: "chalk_line", where: "on_ground" } },
@@ -148,11 +147,14 @@ const ACTS0 = {
   6: [A_("dad", "draw_line", { target: "chalk_line#house", to: "@1.8,17.4", on_word: 3 }), A_("dad", "put_in_pocket", { target: "me", on_word: 8 })],
   7: [A_("dad", "turn_to", { target: "me", on_word: 0 }), A_("me", "turn_to", { target: "dad", on_word: 0 }), A_("dad", "talk", { on_word: 0 }), A_("chalk_line#house", "wash_away", { target: "chalk_line#house", on_word: 17 })],
   8: [A_("chalk#dad2", "appear", { target: "chalk#dad2", to: "dad", on_word: 0 }), A_("dad", "pick_up", { target: "chalk#dad2", on_word: 0 }), A_("dad", "run_to", { to: "line_front", text: "panic", on_word: 1 }), A_("dad", "try_draw", { target: "chalk_line#house", on_word: 5 }), A_("chalk#dad2", "disappear", { target: "chalk#dad2", on_word: 9 })],
-  9: [A_("monster", "switch_all_off", { target: "lamps", text: "one by one", on_word: 8 })],
-  11: [A_("monster", "enter", { to: "@-6,1.5", on_word: 0 })],
-  12: [A_("monster", "walk_to", { to: "@1,3.2", on_word: 6 }), A_("dad", "walk_to", { to: "@2,9.5", on_word: 8 }), A_("dad", "turn_to", { target: "monster", on_word: 10 })],
-  12: [A_("dad", "back_away", { target: "monster", on_word: 5 })],
-  13: [A_("me", "run_to", { to: "@-2.5,12.5", text: "sprint", on_word: 1 }), A_("me", "take_out", { on_word: 5 }), A_("me", "run_to", { to: "@-2,6.5", text: "sprint", on_word: 12 })],
+  // the rain stops: the kid steps out of the doorway into the front yard, by the window (still inside the line)
+  9: [A_("me", "walk_to", { to: "window", on_word: 3 }), A_("monster", "switch_all_off", { target: "lamps", text: "one by one", on_word: 8 })],
+  // "Something stepped out of the dark": the monster, alone in the street
+  11: [A_("monster", "enter", { to: "@-6,1.5", on_word: 1 })],
+  // it walks straight at dad (dad backs away, inside his yard); the kid comes to the edge of the yard (inside the line)
+  12: [A_("me", "walk_to", { to: "@-4,17.2", on_word: 0 }), A_("dad", "back_away", { target: "monster", on_word: 5 }), A_("monster", "walk_to", { to: "@1.5,8.5", on_word: 6 })],
+  // "So I ran outside": from the edge of the yard, across the line, toward the road; the chalk out as he reaches the kerb
+  13: [A_("me", "run_to", { to: "@-3,6.4", text: "sprint", on_word: 2 }), A_("me", "take_out", { on_word: 5 })],
   14: [A_("me", "draw_around", { target: "monster", on_word: 1 })],
   15: [A_("monster", "turn_to", { target: "me", on_word: 1 }), A_("monster", "point", { target: "me", on_word: 3 })],
   16: [A_("monster", "hit_wall", { on_word: 2 })],
@@ -179,7 +181,7 @@ plan.acting = { danger_over: { me: 17, dad: 17 }, lines: {
   8: { me: AC("worried", "chalk_line#house", "keep the line"), dad: AC("serious", "me", "make sure the kid always has chalk") },
   9: { me: AC("scared", "dad", "dad to come back in"), dad: AC("panic", "chalk_line#house", "redraw the line before it is gone") },
   10: { me: AC("scared", "street", "the lights to stay on"), dad: AC("worried", "street", "see what is coming") },
-  11: { me: AC("scared", "monster", "hide"), dad: AC("scared", "monster", "keep it away from the house"), monster: AC("hungry", "dad", "find someone outside a line") },
+  11: { me: AC("terrified", "monster", "hide"), dad: AC("scared", "monster", "keep it away from the house"), monster: AC("hungry", "dad", "find someone outside a line") },
   12: { me: AC("scared", "monster", "hide"), dad: AC("terrified", "monster", "get away from it"), monster: AC("hungry", "dad", "catch the dad") },
   13: { me: AC("terrified", "monster", "save dad"), dad: AC("terrified", "monster", "get away from it"), monster: AC("hungry", "dad", "catch the dad") },
   14: { me: AC("scared", "monster", "trap it"), dad: AC("terrified", "monster", "get away from it"), monster: AC("hungry", "dad", "catch the dad") },
@@ -220,7 +222,7 @@ save("cards.json", { cards, refCuts, problems });
 // ---- 4. THE TAKES + THE SHOTS (a line without a cut continues the cut before: the shots tile on the cut words only)
 const T = compileTakes({ plan, cards: cards.map((c, i) => (c.cuts.length || i === 0 ? c : { ...c, cuts: [] })), states, lines, looks });
 T.shots.forEach((s, k) => { s.ta = k === 0 ? 0 : tw[s.w0].start; s.tb = s.w1 == null ? tw.at(-1).end + 0.25 : tw[s.w1].start; s.ref = refCuts[k]?.n; s.refh = refCuts[k]?.spec?.[3]; s.refT0 = refCuts[k]?.refT0; s.refT1 = refCuts[k]?.refT1; s.frac = TARGET[s.ref] ?? (s.refh ? Math.min(0.95, s.refh) : null); s.v = REFV[s.ref] ?? null; if (s.ref === 30) s.side = 160; });
-const LIB = ["worlds/worlds.py", "actions/actions.py", "worlds/acts.py", "worlds/pieces.py", "worlds/motion.py", "worlds/crowds.py", "worlds/town.py", "worlds/effects.py", "worlds/stage.py", "worlds/stage9.py", "worlds/stage9b.py", "worlds/stage9c.py", "worlds/stage9d.py", "worlds/stage9e.py", "worlds/stage9f.py"].map((f) => fs.readFileSync(path.join(KIT, f), "utf8")).join("\n\n");
+const LIB = ["worlds/worlds.py", "actions/actions.py", "worlds/acts.py", "worlds/pieces.py", "worlds/motion.py", "worlds/crowds.py", "worlds/town.py", "worlds/effects.py", "worlds/stage.py", "worlds/stage9.py", "worlds/stage9b.py", "worlds/stage9c.py", "worlds/stage9d.py", "worlds/stage9e.py", "worlds/stage9f.py", "worlds/stage9g.py"].map((f) => fs.readFileSync(path.join(KIT, f), "utf8")).join("\n\n");
 const HEAD = (title) => [`"""${title}"""`, "from shotkit import *", "from rbx import story", "from rbx.story import *", "import math, random", "from mathutils import Vector", "", "V = Video(__file__)", "story.bind(V)", "", LIB, ""];
 const ind = (s) => s.split("\n").map((l) => `    ${l}`).join("\n");
 const pyRun = (code, ...a) => { const r = spawnSync("python", ["-P", "-c", code, ...a], { encoding: "utf8" }); if (r.status) throw new Error(r.stderr.slice(-400)); return r.stdout; };
@@ -235,7 +237,10 @@ async function stills(tag) {
   const N = T.shots.length;
   const ruleOn = (s) => (plan.rule_check?.times ?? []).includes(plan.scenes.find((x) => x.id === s.scene)?.time);
   const allowed = (line) => (plan.rule_check?.outside?.[line] ?? []).map((x) => String(x).toLowerCase());
-  const body = (s, k) => [`o = (t0 + t1) / 2.0 - ${((s.ta + s.tb) / 2).toFixed(3)}`, `H = take_${s.scene}(o)`, T.cutCall(s, `o + ${s.ta.toFixed(3)}`, `o + ${s.tb.toFixed(3)}`, `S${k + 2}`), ...(ruleOn(s) ? [`zs_rule_check(H, ${JSON.stringify(allowed(s.line))}, (t0 + t1) / 2.0, "R${k + 2}")`] : [])].join("\n");
+  // {name: the time its exception starts} (the word on its first line; earlier lines: from the start)
+  const allowedFrom = (line) => { const out = {}; for (const who of allowed(line)) { const w = RX.fromWord?.[line]?.[who]; out[who] = w == null ? -1e9 : tw[lines[line - 1].w0 + w].start; } return out; };
+  const pyFrom = (line) => `{${Object.entries(allowedFrom(line)).map(([k, v]) => `${JSON.stringify(k)}: ${v < -1e8 ? "-1e9" : `o + ${v.toFixed(3)}`}`).join(", ")}}`;
+  const body = (s, k) => [`o = (t0 + t1) / 2.0 - ${((s.ta + s.tb) / 2).toFixed(3)}`, `H = take_${s.scene}(o)`, T.cutCall(s, `o + ${s.ta.toFixed(3)}`, `o + ${s.tb.toFixed(3)}`, `S${k + 2}`), ...(ruleOn(s) ? [`zs_rule_check2(H, ${pyFrom(s.line)}, [o + ${(s.ta + 0.06).toFixed(3)}, (t0 + t1) / 2.0, o + ${(s.tb - 0.06).toFixed(3)}], "R${k + 2}")`] : [])].join("\n");
   const src = [...HEAD(`Replica stills ${tag}`), "ZW_PREVIEW.update(pct=30, samples=6)", "", ...Object.values(T.takes), "",
     `@S(1, 0, 1, "unused")\ndef s001(t0, t1):\n    zw_build("suburb_street", t0, t1, {"time": "day"})\n    Cam().key(t0, (0, -20, 5), (0, 0, 2), lens=30)\n`,
     ...T.shots.map((s, k) => `@S(${k + 2}, ${2 * k + 1}, ${k + 1 < N ? 2 * k + 3 : "None"}, ${JSON.stringify(`ref shot ${s.ref}`)})\ndef s${String(k + 2).padStart(3, "0")}(t0, t1):\n${ind(body(s, k))}\n`)].join("\n");
@@ -352,12 +357,20 @@ if (FINAL) {
 }
 
 // ---- 7. THE LOW-QUALITY PREVIEW + THE SIDE-BY-SIDE (the reference re-timed shot by shot to our voice)
+const finalRule = (s) => {
+  const sc = plan.scenes.find((x) => x.id === s.scene);
+  if (!(plan.rule_check?.times ?? []).includes(sc?.time)) return "";
+  const from = {};
+  for (const who of (plan.rule_check?.outside?.[s.line] ?? []).map((x) => String(x).toLowerCase())) { const w = RX.fromWord?.[s.line]?.[who]; from[who] = w == null ? "-1e9" : tw[lines[s.line - 1].w0 + w].start.toFixed(3); }
+  return `\nzs_rule_check2(H, {${Object.entries(from).map(([k, v]) => `${JSON.stringify(k)}: ${v}`).join(", ")}}, [${(s.ta + 0.06).toFixed(3)}, ${((s.ta + s.tb) / 2).toFixed(3)}, ${(s.tb - 0.06).toFixed(3)}], "R${s.id}")`;
+};
 const PV = path.join(OUT, FINAL ? "final" : "preview"); fs.mkdirSync(path.join(PV, "video", "audio"), { recursive: true });
 const segs = path.join(PV, "segments"); fs.mkdirSync(segs, { recursive: true });
 const vsrc = [...HEAD(FINAL ? "Replica final" : "Replica preview"), FINAL ? "" : "ZW_PREVIEW.update(pct=30, samples=6)", "", ...Object.values(T.takes), "",
-  ...T.shots.map((s) => `@S(${s.id}, ${s.w0}, ${s.w1 ?? "None"}, ${JSON.stringify(`ref ${s.ref}: ${s.shot} ${s.show.join("+")}`)})\ndef s${String(s.id).padStart(3, "0")}(t0, t1):\n${ind(`H = take_${s.scene}(0.0)\n${T.cutCall(s)}`)}\n`)].join("\n");
+  ...T.shots.map((s) => `@S(${s.id}, ${s.w0}, ${s.w1 ?? "None"}, ${JSON.stringify(`ref ${s.ref}: ${s.shot} ${s.show.join("+")}`)})\ndef s${String(s.id).padStart(3, "0")}(t0, t1):\n${ind(`o = 0.0\nH = take_${s.scene}(0.0)\n${T.cutCall(s)}${finalRule(s)}`)}\n`)].join("\n");
 const vsc = staticCheck(vsrc, path.join(PV, "video", "shots.py"));
 if (!vsc.ok) throw new Error(`video static check: ${JSON.stringify(vsc.problems.slice(0, 5))}`);
+if (has("final-check-only")) { say(`final: static check ok (${T.shots.length} shots), not sent`); process.exit(0); }
 fs.writeFileSync(path.join(PV, "video", "shots.py"), vsrc);
 const twv = tw.map((w) => ({ word: w.word, start: w.start, end: w.end }));
 fs.writeFileSync(path.join(PV, "video", "audio", "words.json"), JSON.stringify(twv));
@@ -373,16 +386,23 @@ const VR = runpod({ L, prefix: `blocky-worlds-test/blender-kit/round9-replica-${
 pyRun("import sys,tarfile,os\nout,root=sys.argv[1],sys.argv[2]\nwith tarfile.open(out,'w:gz') as t:\n for f in sys.argv[3:]:\n  t.add(os.path.join(root,f),arcname=f)", path.join(PV, "v.tgz"), path.join(PV, "video"), "shots.py", "script.txt", "audio/words.json", "audio/voice.wav");
 await VR.putFile("v.tgz", path.join(PV, "v.tgz"), "application/gzip");
 const vurl = await VR.signGet("v.tgz");
+const GATES = [];
 const vres = await Promise.all(groups.map(async (g, i) => {
   const name = `seg${i}.mp4`;
   if (fs.existsSync(path.join(segs, name))) return { ok: true };
   const rr = await VR.job(`replica ${FINAL ? "final" : "preview"} chunk ${i} (${g.n})`, { role: "render", slug: FINAL ? "final" : "preview", videoUrl: vurl, shots: g.ids.join(","), f0: g.f0, f1: g.f1, ...(FINAL ? {} : { samples: 6 }), upload: await VR.signPuts(name, FINAL ? 6 : 4) }, { maxRunSec: vlimit(g), ledgerKey: FINAL ? "runpod_final" : "runpod_preview_video" });
   if (rr.ok) say(`chunk ${i}: ${rr.output?.sPerFrame ?? "?"} s a frame`);
+  if (rr.ok && Array.isArray(rr.output?.gate)) GATES.push(...rr.output.gate);
   if (!rr.ok) return { ok: false, error: String(rr.error).slice(0, 500) };
   await VR.fetchParts(name, rr.output.upload.parts, path.join(segs, name));
   return { ok: true };
 }));
 await VR.cleanup().catch(() => {});
+{
+  const br = GATES.filter((g) => String(g).includes("|rule_break|"));
+  save(FINAL ? "final_gate.json" : "preview_gate.json", { breaks: br, positions: GATES.filter((g) => String(g).includes("|pos|")), all: GATES.length });
+  say(`THE RULE ON THE FINAL'S FRAMES: ${GATES.length ? `${br.length} break(s)${br.length ? ": " + br.join(" | ") : ""}` : "no check lines came back from the render"}`);
+}
 if (vres.some((x) => !x.ok)) throw new Error(`preview chunks failed: ${vres.filter((x) => !x.ok).map((x) => x.error).join(" | ")}`);
 fs.writeFileSync(path.join(segs, "list.txt"), groups.map((_, i) => `file 'seg${i}.mp4'`).join("\n"));
 const vraw = path.join(PV, "raw.mp4");
