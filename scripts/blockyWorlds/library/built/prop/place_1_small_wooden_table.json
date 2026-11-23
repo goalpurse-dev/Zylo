@@ -1,0 +1,419 @@
+{
+ "name": "place_1_small_wooden_table",
+ "kind": "prop",
+ "asked": "small square wooden side table with a lit glowing lantern on top",
+ "spec": {
+  "name": "small_wooden_side_table_with_lit_lantern",
+  "real_size_cm": 60,
+  "hold": "on_ground",
+  "grip": [
+   0,
+   0,
+   0
+  ],
+  "shapes": [
+   {
+    "type": "box",
+    "size": [
+     44,
+     44,
+     5
+    ],
+    "pos": [
+     0,
+     0,
+     40
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#a9672f",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     48,
+     48,
+     2
+    ],
+    "pos": [
+     0,
+     0,
+     43.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#c98a4b",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     6,
+     6,
+     38
+    ],
+    "pos": [
+     -17,
+     -17,
+     19
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#7a4520",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     6,
+     6,
+     38
+    ],
+    "pos": [
+     17,
+     -17,
+     19
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#7a4520",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     6,
+     6,
+     38
+    ],
+    "pos": [
+     -17,
+     17,
+     19
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#7a4520",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     6,
+     6,
+     38
+    ],
+    "pos": [
+     17,
+     17,
+     19
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#7a4520",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     34,
+     3,
+     4
+    ],
+    "pos": [
+     0,
+     -17,
+     12
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#8f5428",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     34,
+     3,
+     4
+    ],
+    "pos": [
+     0,
+     17,
+     12
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#8f5428",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     3,
+     34,
+     4
+    ],
+    "pos": [
+     -17,
+     0,
+     12
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#8f5428",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     3,
+     34,
+     4
+    ],
+    "pos": [
+     17,
+     0,
+     12
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#8f5428",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     16,
+     16,
+     3
+    ],
+    "pos": [
+     0,
+     0,
+     46
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#222222",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     11,
+     11,
+     12
+    ],
+    "pos": [
+     0,
+     0,
+     53.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffd24a",
+    "glow": true
+   },
+   {
+    "type": "ball",
+    "size": [
+     8,
+     8,
+     8
+    ],
+    "pos": [
+     0,
+     0,
+     53.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#fff1a0",
+    "glow": true
+   },
+   {
+    "type": "box",
+    "size": [
+     2,
+     2,
+     12
+    ],
+    "pos": [
+     -6,
+     -6,
+     53.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#222222",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     2,
+     2,
+     12
+    ],
+    "pos": [
+     6,
+     -6,
+     53.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#222222",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     2,
+     2,
+     12
+    ],
+    "pos": [
+     -6,
+     6,
+     53.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#222222",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     2,
+     2,
+     12
+    ],
+    "pos": [
+     6,
+     6,
+     53.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#222222",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     15,
+     15,
+     3
+    ],
+    "pos": [
+     0,
+     0,
+     61
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#222222",
+    "glow": false
+   },
+   {
+    "type": "cone",
+    "size": [
+     10,
+     10,
+     5
+    ],
+    "pos": [
+     0,
+     0,
+     64
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#333333",
+    "glow": false
+   },
+   {
+    "type": "disc",
+    "size": [
+     7,
+     7,
+     1.5
+    ],
+    "pos": [
+     0,
+     0,
+     67
+    ],
+    "rot": [
+     90,
+     0,
+     0
+    ],
+    "color": "#333333",
+    "glow": false
+   }
+  ]
+ },
+ "still": "c:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test1\\preview\\shot_11.png",
+ "cost_usd": 0.0023
+}

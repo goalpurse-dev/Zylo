@@ -26,7 +26,9 @@ export const TIMES8 = Object.freeze(["day", "sunset", "night", "storm", "morning
 export const SHOTS8 = Object.freeze(["wide", "medium", "two", "close", "insert", "low", "top", "place", "street", "aerial", "high", "legs", "house", "hand", "behind", "lamps"]);
 /** a stage mark, or an exact ground point "@x,y" (round 9: the car at the kerb, the monster on the road) */
 export const PLACE_MARKS = Object.freeze(["door", "door_side", "line_front", "window"]);
-export const isMark = (m) => MARKS8.includes(m) || PLACE_MARKS.includes(m) || /^@-?[\d.]+,-?[\d.]+$/.test(String(m ?? ""));
+export const ZONES8 = Object.freeze(["home_inside", "home_doorway", "home_window", "home_line_edge", "home_yard", "neighbor_yard", "front_lawn", "pavement", "kerb", "road"]);
+export const isZone = (m) => /^zone:[a-z_]+$/.test(String(m ?? "")) && ZONES8.includes(String(m).slice(5));
+export const isMark = (m) => isZone(m) || MARKS8.includes(m) || PLACE_MARKS.includes(m) || /^@-?[\d.]+,-?[\d.]+$/.test(String(m ?? ""));
 export const MOVES8 = Object.freeze(["push_in", "tilt_up", "track", "top_down", "static"]);
 export const FACES8 = Object.freeze(["neutral", "happy", "laughing", "sad", "crying", "scared", "terrified", "shocked", "surprised", "angry", "confused", "smirk", "determined", "panic"]);
 // the line-card actions (each maps to ONE engine call in compileTakes; the generator lists them for the writer)
@@ -353,7 +355,8 @@ export function compileTakes({ plan, cards, states, lines, looks }) {
     const myCards = cards.filter((c) => c.line >= la && c.line <= lb);
     // everyone who is in this place at any point of the scene (here at the start, or entering)
     const people = new Set(Object.entries(S0.people).filter(([, p]) => p.here).map(([k]) => k));
-    for (const c of myCards) for (const a of c.actions ?? []) if (a.do === "enter") people.add(low(a.who));
+    // (round 9i: the MONSTER entering is not a person: its enter made a stray default kid called "monster" in the street)
+    for (const c of myCards) for (const a of c.actions ?? []) if (a.do === "enter" && low(a.who) !== "monster") people.add(low(a.who));
     const things = new Set(Object.entries(S0.things).filter(([, t]) => t.here || t.held_by).map(([k]) => k));
     for (const c of myCards) for (const a of c.actions ?? []) if (["appear"].includes(a.do) && a.target) things.add(low(a.target));
     // (chalk lines drawn in this scene are made by their action; the house rings by zs_house_rings)
@@ -385,12 +388,12 @@ export function compileTakes({ plan, cards, states, lines, looks }) {
       if (S0.things["chalk_line#house"] && !S0.things["chalk_line#house"].here) I(`zs_wash(H["chalk_line#house"], T0 - 2.0, T0 - 1.0) if H["chalk_line#house"] is not None else None`);
     }
     const used = {};
-    const markAt = (m) => { if (m === "door" || m === "door_side") return `zs_door_pt(H.get("chalk_line#house"), ${py(m)})`; if (m === "line_front") return `zs_line_front_pt(H.get("chalk_line#house"))`; if (m === "window") return `zs_window_pt(H.get("chalk_line#house"))`; if (/^@/.test(String(m))) { const [x, y] = String(m).slice(1).split(",").map(Number); return `(${x}, ${y}, 0.0)`; } const k = used[m] = (used[m] ?? -1) + 1; return `zw_mark(${py(place)}, ${py(MARKS8.includes(m) ? m : "center")}, ${k})`; };
+    const markAt = (m, who = null, tx = "T0") => { if (isZone(m)) return `zs_zone_spot(H, ${py(String(m).slice(5))}, ${py(who)}, ${tx})`; if (m === "door" || m === "door_side") return `zs_door_pt(H.get("chalk_line#house"), ${py(m)})`; if (m === "line_front") return `zs_line_front_pt(H.get("chalk_line#house"))`; if (m === "window") return `zs_window_pt(H.get("chalk_line#house"))`; if (/^@/.test(String(m))) { const [x, y] = String(m).slice(1).split(",").map(Number); return `(${x}, ${y}, 0.0)`; } const k = used[m] = (used[m] ?? -1) + 1; return `zw_mark(${py(place)}, ${py(MARKS8.includes(m) ? m : "center")}, ${k})`; };
     // the cast, at their marks as the state has them, the locked looks
     for (const k of people) {
       const p = S0.people[k];
       const look = looks[k] ?? { name: k };
-      I(`H[${py(k)}] = zw_person(${py(look.name ?? k)}, ${py(look)}, ${markAt(p?.here ? p.mark : "center")}, st_rot, T0 - 0.5)`);
+      I(`H[${py(k)}] = zw_person(${py(look.name ?? k)}, ${py(look)}, ${markAt(p?.here ? p.mark : "center", k, "T0 - 0.5")}, st_rot, T0 - 0.5)`);
       if (!p?.here) I(`H[${py(k)}].set_visible(-10.0, False)`);
       else if (p.pose === "sit") I(`zw_posed(H[${py(k)}], T0 - 0.4, "sit")`);
       else if (p.pose === "lie") I(`zm_lie(H[${py(k)}], T0 - 0.9)`);
@@ -470,7 +473,7 @@ export function compileTakes({ plan, cards, states, lines, looks }) {
         const tEnd = nxt.length ? Math.min(la1 - 0.05, Math.min(...nxt) - 0.05) : la1 - 0.05;
         const tb = `o + ${Math.max(tOf(Ln, a.on_word) + 0.8, tEnd).toFixed(3)}`;
         const W = `H.get(${py(who)})`, TT = `H.get(${py(T)})`;
-        const toPt = isMark(to) ? markAt(to) : to && (people.has(to) || things.has(to) || to === "monster") ? `zs_beside(H.get(${py(to)}), ${ta}, 1)` : null;
+        const toPt = isMark(to) ? markAt(to, who, tb) : to && (people.has(to) || things.has(to) || to === "monster") ? `zs_beside(H.get(${py(to)}), ${ta}, 1)` : null;
         switch (a.do) {
           case "enter": I(`zs_enter(${W}, ${ta}, ${tb}, ${toPt ?? markAt("center")})`); break;
           case "exit": I(`zs_exit(${W}, ${ta}, ${tb})`); break;
@@ -600,6 +603,42 @@ export function timeProblems(plan, lines) {
 export function sceneStartMarks(S, scene) {
   if (!scene?.marks) return S;
   const out = JSON.parse(JSON.stringify(S)); const P = out[scene.place]; if (!P) return S;
-  for (const [k, m] of Object.entries(scene.marks)) if (P.people[low(k)]) P.people[low(k)].mark = m;
+  for (const [k, m] of Object.entries(scene.marks)) if (k !== "lamps" && P.people[low(k)]) P.people[low(k)].mark = m;
+  if (scene.marks.lamps === "on") P.lamps = null;
   return out;
+}
+
+// ---------------------------------------------------------------- ROUND 9i (owner 2026-11-23): THE STORY SAYS THE ZONE
+/** the zone a move sends someone to ("zone:x" marks only; null otherwise) */
+const zoneOfMark = (m) => (isZone(m) ? String(m).slice(5) : null);
+/** THE RULE AS ZONES: a move into a zone the time of day forbids (and no exception has started by its word) is REFUSED:
+ * taken off the card before anything moves, logged; it is never rendered. -> { card, refused: [text] } */
+export function zoneRefusals(plan, card, n, lines, RX) {
+  const sc = (plan.scenes ?? []).find((x) => n >= x.lines[0] && n <= x.lines[1]);
+  const ok = plan.rule_zones?.[sc?.time];
+  if (!ok) return { card, refused: [] };
+  const refused = [];
+  const actions = (card.actions ?? []).filter((a) => {
+    const z = zoneOfMark(low(a.to));
+    if (!z || !["walk_to", "run_to", "enter"].includes(a.do) || ok.includes(z)) return true;
+    const who = low(a.who), ex = (RX?.outside?.[n] ?? []).includes(who), w = RX?.fromWord?.[n]?.[who] ?? 0;
+    if (ex && (Number(a.on_word) || 0) >= w) return true;
+    refused.push(`line ${n}: ${a.who} ${a.do} ${z} REFUSED (${sc.time}: allowed ${ok.join(", ")}${ex ? `; the exception starts at word ${w}` : ""})`);
+    return false;
+  });
+  return { card: { ...card, actions }, refused };
+}
+/** the plan's zone for each character on each line: a move there when they are not already in it (zone marks only) */
+export function zoneMoves(plan, card, n, P) {
+  const want = plan.zones?.[n] ?? {};
+  const add = [];
+  for (const [k0, z] of Object.entries(want)) {
+    const k = low(k0), me = P?.people?.[k];
+    if (!me?.here || !ZONES8.includes(z)) continue;
+    const cur = zoneOfMark(me.mark);
+    if (!cur || cur === z) continue;
+    if ((card.actions ?? []).some((a) => low(a.who) === k && ["walk_to", "run_to", "enter", "exit", "draw_around", "draw_line", "back_away"].includes(a.do))) continue;
+    add.push({ who: k, do: "walk_to", target: "", to: `zone:${z}`, text: "", on_word: 0 });
+  }
+  return add.length ? { ...card, actions: [...add, ...(card.actions ?? [])] } : card;
 }

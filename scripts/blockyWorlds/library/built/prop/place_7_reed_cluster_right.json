@@ -1,0 +1,219 @@
+{
+ "name": "place_7_reed_cluster_right",
+ "kind": "prop",
+ "asked": "a clump of tall green reeds with brown tops growing out of the water",
+ "spec": {
+  "name": "place_7_reed_cluster_right",
+  "real_size_cm": 150,
+  "hold": "on_ground",
+  "grip": [
+   0,
+   0,
+   0
+  ],
+  "shapes": [
+   {
+    "type": "box",
+    "size": [
+     40,
+     40,
+     4
+    ],
+    "pos": [
+     0,
+     0,
+     2
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#2e6e8e",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     4,
+     4,
+     110
+    ],
+    "pos": [
+     -12,
+     -6,
+     55
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#5a8f3a",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     4,
+     4,
+     130
+    ],
+    "pos": [
+     0,
+     0,
+     65
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#4f8234",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     4,
+     4,
+     95
+    ],
+    "pos": [
+     12,
+     5,
+     47
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#5a8f3a",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     4,
+     4,
+     120
+    ],
+    "pos": [
+     -5,
+     10,
+     60
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#4f8234",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     4,
+     4,
+     100
+    ],
+    "pos": [
+     8,
+     -10,
+     50
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#6aa144",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     3,
+     3,
+     20
+    ],
+    "pos": [
+     -12,
+     -6,
+     105
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#6b3e1e",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     3,
+     3,
+     24
+    ],
+    "pos": [
+     0,
+     0,
+     127
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#6b3e1e",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     3,
+     3,
+     18
+    ],
+    "pos": [
+     12,
+     5,
+     90
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#6b3e1e",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     3,
+     3,
+     22
+    ],
+    "pos": [
+     -5,
+     10,
+     115
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#6b3e1e",
+    "glow": false
+   }
+  ]
+ },
+ "still": "c:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test1\\preview\\shot_72.png",
+ "cost_usd": 0.00279
+}

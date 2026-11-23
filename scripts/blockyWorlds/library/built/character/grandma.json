@@ -1,0 +1,45 @@
+{
+ "name": "grandma",
+ "kind": "character",
+ "asked": "An elderly woman with gray hair in a bun, round glasses, a lavender cardigan and long skirt, blocky Roblox style.",
+ "spec": {
+  "name": "grandma",
+  "age": "old",
+  "height_cm": 158,
+  "skin": "#f1c9a5",
+  "shirt": "#a77bdc",
+  "pants": "#6b3fa0",
+  "clothes": "dress",
+  "hair": "bun",
+  "hair_color": "#c9c9d1",
+  "face": "girl",
+  "accessories": [
+   {
+    "name": "round glasses",
+    "worn": "worn_face",
+    "description": "large round thin gold-rimmed glasses with clear lenses, bold and readable on the face",
+    "real_size_cm": 13
+   },
+   {
+    "name": "lavender cardigan",
+    "worn": "worn_body",
+    "description": "open knitted lavender cardigan with two big buttons and chunky sleeves over the dress",
+    "real_size_cm": 55
+   },
+   {
+    "name": "knitting basket",
+    "worn": "one_hand",
+    "description": "small woven basket with a ball of pink yarn and two knitting needles sticking out",
+    "real_size_cm": 30
+   },
+   {
+    "name": "pearl necklace",
+    "worn": "worn_body",
+    "description": "chunky white pearl necklace resting on the chest",
+    "real_size_cm": 40
+   }
+  ]
+ },
+ "still": "C:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test1\\preview\\shot_03.png",
+ "cost_usd": 0.00251
+}

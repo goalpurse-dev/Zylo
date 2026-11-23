@@ -1,0 +1,239 @@
+{
+ "name": "earth",
+ "kind": "prop",
+ "asked": "a round blue and green planet Earth with white swirls of cloud",
+ "spec": {
+  "name": "earth",
+  "real_size_cm": 300,
+  "hold": "in_sky",
+  "grip": [
+   0,
+   0,
+   0
+  ],
+  "shapes": [
+   {
+    "type": "ball",
+    "size": [
+     300,
+     300,
+     300
+    ],
+    "pos": [
+     0,
+     0,
+     0
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#1e66d0",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     90,
+     30,
+     80
+    ],
+    "pos": [
+     -45,
+     -136,
+     40
+    ],
+    "rot": [
+     0,
+     0,
+     20
+    ],
+    "color": "#3fae3f",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     60,
+     30,
+     100
+    ],
+    "pos": [
+     -30,
+     -140,
+     -40
+    ],
+    "rot": [
+     0,
+     0,
+     -15
+    ],
+    "color": "#3fae3f",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     80,
+     30,
+     60
+    ],
+    "pos": [
+     60,
+     -132,
+     -10
+    ],
+    "rot": [
+     0,
+     0,
+     30
+    ],
+    "color": "#4cb84a",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     50,
+     30,
+     40
+    ],
+    "pos": [
+     75,
+     -118,
+     70
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#3fae3f",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     100,
+     40,
+     28
+    ],
+    "pos": [
+     10,
+     -135,
+     95
+    ],
+    "rot": [
+     0,
+     0,
+     -10
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     90,
+     40,
+     24
+    ],
+    "pos": [
+     -60,
+     -128,
+     -85
+    ],
+    "rot": [
+     0,
+     0,
+     15
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     80,
+     40,
+     24
+    ],
+    "pos": [
+     70,
+     -120,
+     -60
+    ],
+    "rot": [
+     0,
+     0,
+     -20
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     70,
+     40,
+     22
+    ],
+    "pos": [
+     -80,
+     -115,
+     10
+    ],
+    "rot": [
+     0,
+     0,
+     25
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     100,
+     60,
+     40
+    ],
+    "pos": [
+     0,
+     0,
+     138
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     100,
+     60,
+     40
+    ],
+    "pos": [
+     0,
+     0,
+     -138
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   }
+  ]
+ },
+ "still": "c:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test2\\preview\\shot_24.png",
+ "cost_usd": 0.01482
+}

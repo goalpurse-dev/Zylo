@@ -1,0 +1,639 @@
+{
+ "name": "fruit_stall_left",
+ "kind": "prop",
+ "asked": "A wooden market stall with a red striped awning and tables full of apples and oranges.",
+ "spec": {
+  "name": "fruit_stall_left",
+  "real_size_cm": 250,
+  "hold": "on_ground",
+  "grip": [
+   0,
+   0,
+   0
+  ],
+  "shapes": [
+   {
+    "type": "box",
+    "size": [
+     200,
+     80,
+     20
+    ],
+    "pos": [
+     0,
+     0,
+     90
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#8b5a2b",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     12,
+     12,
+     180
+    ],
+    "pos": [
+     -90,
+     -30,
+     90
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#6b3e1e",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     12,
+     12,
+     180
+    ],
+    "pos": [
+     90,
+     -30,
+     90
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#6b3e1e",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     12,
+     12,
+     180
+    ],
+    "pos": [
+     -90,
+     30,
+     90
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#6b3e1e",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     12,
+     12,
+     180
+    ],
+    "pos": [
+     90,
+     30,
+     90
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#6b3e1e",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     190,
+     70,
+     8
+    ],
+    "pos": [
+     0,
+     -5,
+     40
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#a0692e",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     190,
+     70,
+     8
+    ],
+    "pos": [
+     0,
+     -5,
+     95
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#a0692e",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     200,
+     10,
+     8
+    ],
+    "pos": [
+     0,
+     -45,
+     20
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#a0692e",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     200,
+     10,
+     8
+    ],
+    "pos": [
+     0,
+     -45,
+     20
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#a0692e",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     210,
+     60,
+     6
+    ],
+    "pos": [
+     0,
+     -45,
+     186
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "wedge",
+    "size": [
+     210,
+     40,
+     30
+    ],
+    "pos": [
+     0,
+     -55,
+     170
+    ],
+    "rot": [
+     -20,
+     0,
+     0
+    ],
+    "color": "#e02020",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     30,
+     40,
+     6
+    ],
+    "pos": [
+     -70,
+     -55,
+     170
+    ],
+    "rot": [
+     -20,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     30,
+     40,
+     6
+    ],
+    "pos": [
+     -10,
+     -55,
+     170
+    ],
+    "rot": [
+     -20,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     30,
+     40,
+     6
+    ],
+    "pos": [
+     50,
+     -55,
+     170
+    ],
+    "rot": [
+     -20,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     30,
+     40,
+     6
+    ],
+    "pos": [
+     -40,
+     -55,
+     170
+    ],
+    "rot": [
+     -20,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     30,
+     40,
+     6
+    ],
+    "pos": [
+     20,
+     -55,
+     170
+    ],
+    "rot": [
+     -20,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     30,
+     40,
+     6
+    ],
+    "pos": [
+     80,
+     -55,
+     170
+    ],
+    "rot": [
+     -20,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     16,
+     16,
+     16
+    ],
+    "pos": [
+     -60,
+     -75,
+     112
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e8201a",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     16,
+     16,
+     16
+    ],
+    "pos": [
+     -40,
+     -75,
+     112
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#f07a10",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     16,
+     16,
+     16
+    ],
+    "pos": [
+     -20,
+     -75,
+     112
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e8201a",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     16,
+     16,
+     16
+    ],
+    "pos": [
+     0,
+     -75,
+     112
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#f07a10",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     16,
+     16,
+     16
+    ],
+    "pos": [
+     20,
+     -75,
+     112
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e8201a",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     16,
+     16,
+     16
+    ],
+    "pos": [
+     40,
+     -75,
+     112
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#f07a10",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     16,
+     16,
+     16
+    ],
+    "pos": [
+     60,
+     -75,
+     112
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e8201a",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     16,
+     16,
+     16
+    ],
+    "pos": [
+     -50,
+     -75,
+     58
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#f07a10",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     16,
+     16,
+     16
+    ],
+    "pos": [
+     -25,
+     -75,
+     58
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e8201a",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     16,
+     16,
+     16
+    ],
+    "pos": [
+     0,
+     -75,
+     58
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#f07a10",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     16,
+     16,
+     16
+    ],
+    "pos": [
+     25,
+     -75,
+     58
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e8201a",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     16,
+     16,
+     16
+    ],
+    "pos": [
+     50,
+     -75,
+     58
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#f07a10",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     16,
+     16,
+     16
+    ],
+    "pos": [
+     -50,
+     -75,
+     0
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e8201a",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     180,
+     30,
+     8
+    ],
+    "pos": [
+     0,
+     -75,
+     40
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#c8843a",
+    "glow": false
+   }
+  ]
+ },
+ "still": "c:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test1\\preview\\shot_25.png",
+ "cost_usd": 0.00331
+}

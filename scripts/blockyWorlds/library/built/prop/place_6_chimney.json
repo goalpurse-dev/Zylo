@@ -1,0 +1,159 @@
+{
+ "name": "place_6_chimney",
+ "kind": "prop",
+ "asked": "tall square brick chimney stack with a dark metal cap on top, sticking up from the roof",
+ "spec": {
+  "name": "place_6_chimney",
+  "real_size_cm": 300,
+  "hold": "on_ground",
+  "grip": [
+   0,
+   0,
+   0
+  ],
+  "shapes": [
+   {
+    "type": "box",
+    "size": [
+     90,
+     90,
+     240
+    ],
+    "pos": [
+     0,
+     0,
+     120
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#8b3a2a",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     100,
+     100,
+     12
+    ],
+    "pos": [
+     0,
+     0,
+     6
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#5a2a1e",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     110,
+     110,
+     14
+    ],
+    "pos": [
+     0,
+     0,
+     242
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#3a3a3a",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     70,
+     70,
+     8
+    ],
+    "pos": [
+     0,
+     0,
+     253
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#1e1e1e",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     96,
+     20,
+     10
+    ],
+    "pos": [
+     0,
+     0,
+     190
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#d9cfc0",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     96,
+     20,
+     10
+    ],
+    "pos": [
+     0,
+     0,
+     120
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#d9cfc0",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     96,
+     20,
+     10
+    ],
+    "pos": [
+     0,
+     0,
+     50
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#d9cfc0",
+    "glow": false
+   }
+  ]
+ },
+ "still": "c:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test1\\preview\\shot_66.png",
+ "cost_usd": 0.00266
+}

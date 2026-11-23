@@ -1,0 +1,579 @@
+{
+ "name": "shelves_of_cans",
+ "kind": "prop",
+ "asked": "Metal shelving unit filled with rows of tin cans",
+ "spec": {
+  "name": "shelves_of_cans",
+  "real_size_cm": 200,
+  "hold": "on_wall",
+  "grip": [
+   0,
+   0,
+   100
+  ],
+  "shapes": [
+   {
+    "type": "box",
+    "size": [
+     6,
+     40,
+     200
+    ],
+    "pos": [
+     -47,
+     0,
+     100
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#3d6fa8",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     6,
+     40,
+     200
+    ],
+    "pos": [
+     47,
+     0,
+     100
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#3d6fa8",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     100,
+     2,
+     196
+    ],
+    "pos": [
+     0,
+     19,
+     100
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#4a4a52",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     88,
+     40,
+     4
+    ],
+    "pos": [
+     0,
+     0,
+     4
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#9aa3ad",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     88,
+     40,
+     4
+    ],
+    "pos": [
+     0,
+     0,
+     54
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#9aa3ad",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     88,
+     40,
+     4
+    ],
+    "pos": [
+     0,
+     0,
+     104
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#9aa3ad",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     88,
+     40,
+     4
+    ],
+    "pos": [
+     0,
+     0,
+     154
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#9aa3ad",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     88,
+     40,
+     4
+    ],
+    "pos": [
+     0,
+     0,
+     198
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#9aa3ad",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     18,
+     18,
+     28
+    ],
+    "pos": [
+     -32,
+     -8,
+     20
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#d62e2e",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     18,
+     18,
+     28
+    ],
+    "pos": [
+     -10,
+     -8,
+     20
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e8c42a",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     18,
+     18,
+     28
+    ],
+    "pos": [
+     12,
+     -8,
+     20
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#2e9e4a",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     18,
+     18,
+     28
+    ],
+    "pos": [
+     34,
+     -8,
+     20
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#d62e2e",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     18,
+     18,
+     28
+    ],
+    "pos": [
+     -32,
+     -8,
+     70
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e8c42a",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     18,
+     18,
+     28
+    ],
+    "pos": [
+     -10,
+     -8,
+     70
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e8782a",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     18,
+     18,
+     28
+    ],
+    "pos": [
+     12,
+     -8,
+     70
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#d62e2e",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     18,
+     18,
+     28
+    ],
+    "pos": [
+     34,
+     -8,
+     70
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#2e9e4a",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     18,
+     18,
+     28
+    ],
+    "pos": [
+     -32,
+     -8,
+     120
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#2e9e4a",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     18,
+     18,
+     28
+    ],
+    "pos": [
+     -10,
+     -8,
+     120
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#d62e2e",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     18,
+     18,
+     28
+    ],
+    "pos": [
+     12,
+     -8,
+     120
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e8c42a",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     18,
+     18,
+     28
+    ],
+    "pos": [
+     34,
+     -8,
+     120
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e8782a",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     18,
+     18,
+     28
+    ],
+    "pos": [
+     -32,
+     -8,
+     170
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e8782a",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     18,
+     18,
+     28
+    ],
+    "pos": [
+     -10,
+     -8,
+     170
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#2e9e4a",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     18,
+     18,
+     28
+    ],
+    "pos": [
+     12,
+     -8,
+     170
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e8c42a",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     18,
+     18,
+     28
+    ],
+    "pos": [
+     34,
+     -8,
+     170
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#d62e2e",
+    "glow": false
+   },
+   {
+    "type": "disc",
+    "size": [
+     16,
+     16,
+     2
+    ],
+    "pos": [
+     -32,
+     -8,
+     35
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#dfe3e8",
+    "glow": false
+   },
+   {
+    "type": "disc",
+    "size": [
+     16,
+     16,
+     2
+    ],
+    "pos": [
+     -10,
+     -8,
+     85
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#dfe3e8",
+    "glow": false
+   },
+   {
+    "type": "disc",
+    "size": [
+     16,
+     16,
+     2
+    ],
+    "pos": [
+     12,
+     -8,
+     135
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#dfe3e8",
+    "glow": false
+   },
+   {
+    "type": "disc",
+    "size": [
+     16,
+     16,
+     2
+    ],
+    "pos": [
+     34,
+     -8,
+     185
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#dfe3e8",
+    "glow": false
+   }
+  ]
+ },
+ "still": "c:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test1\\preview\\shot_04.png",
+ "cost_usd": 0.00244
+}

@@ -1,0 +1,199 @@
+{
+ "name": "place_3_swivel_stool",
+ "kind": "prop",
+ "asked": "white swivel stool with a chrome base and round padded seat",
+ "spec": {
+  "name": "place_3_swivel_stool",
+  "real_size_cm": 55,
+  "hold": "on_ground",
+  "grip": [
+   0,
+   0,
+   55
+  ],
+  "shapes": [
+   {
+    "type": "disc",
+    "size": [
+     44,
+     44,
+     3
+    ],
+    "pos": [
+     0,
+     0,
+     1.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#c0c4cc",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     40,
+     40,
+     2
+    ],
+    "pos": [
+     0,
+     0,
+     4
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e8ecf2",
+    "glow": false
+   },
+   {
+    "type": "cone",
+    "size": [
+     34,
+     34,
+     10
+    ],
+    "pos": [
+     0,
+     0,
+     10
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#d5d9e0",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     8,
+     8,
+     24
+    ],
+    "pos": [
+     0,
+     0,
+     25
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#dfe3ea",
+    "glow": false
+   },
+   {
+    "type": "disc",
+    "size": [
+     14,
+     14,
+     3
+    ],
+    "pos": [
+     0,
+     0,
+     38
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#8a8f98",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     40,
+     40,
+     6
+    ],
+    "pos": [
+     0,
+     0,
+     42
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     44,
+     44,
+     8
+    ],
+    "pos": [
+     0,
+     0,
+     48
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     40,
+     40,
+     10
+    ],
+    "pos": [
+     0,
+     0,
+     51
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "disc",
+    "size": [
+     45,
+     45,
+     1.5
+    ],
+    "pos": [
+     0,
+     0,
+     44.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#9aa0aa",
+    "glow": false
+   }
+  ]
+ },
+ "still": "c:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test2\\preview\\shot_47.png",
+ "cost_usd": 0.01413
+}

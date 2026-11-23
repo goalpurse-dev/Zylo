@@ -1,0 +1,759 @@
+{
+ "name": "place_1_metal_shelving_unit",
+ "kind": "prop",
+ "asked": "tall grey steel shelving rack with four shelves stacked full of tin cans",
+ "spec": {
+  "name": "metal_shelving_unit_with_tin_cans",
+  "real_size_cm": 200,
+  "hold": "on_ground",
+  "grip": [
+   0,
+   0,
+   100
+  ],
+  "shapes": [
+   {
+    "type": "box",
+    "size": [
+     6,
+     6,
+     200
+    ],
+    "pos": [
+     -47,
+     -17,
+     100
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#7d8791",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     6,
+     6,
+     200
+    ],
+    "pos": [
+     47,
+     -17,
+     100
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#7d8791",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     6,
+     6,
+     200
+    ],
+    "pos": [
+     -47,
+     17,
+     100
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#7d8791",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     6,
+     6,
+     200
+    ],
+    "pos": [
+     47,
+     17,
+     100
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#7d8791",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     96,
+     2,
+     190
+    ],
+    "pos": [
+     0,
+     19,
+     100
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#3f464d",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     100,
+     40,
+     4
+    ],
+    "pos": [
+     0,
+     0,
+     15
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#b9c2cb",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     100,
+     40,
+     4
+    ],
+    "pos": [
+     0,
+     0,
+     65
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#b9c2cb",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     100,
+     40,
+     4
+    ],
+    "pos": [
+     0,
+     0,
+     115
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#b9c2cb",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     100,
+     40,
+     4
+    ],
+    "pos": [
+     0,
+     0,
+     165
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#b9c2cb",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     12,
+     12,
+     16
+    ],
+    "pos": [
+     -37.5,
+     -8,
+     25
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e53935",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     12,
+     12,
+     16
+    ],
+    "pos": [
+     -25,
+     -8,
+     25
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#fdd835",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     12,
+     12,
+     16
+    ],
+    "pos": [
+     -12.5,
+     -8,
+     25
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#43a047",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     12,
+     12,
+     16
+    ],
+    "pos": [
+     0,
+     -8,
+     25
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#1e88e5",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     12,
+     12,
+     16
+    ],
+    "pos": [
+     12.5,
+     -8,
+     25
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#fb8c00",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     12,
+     12,
+     16
+    ],
+    "pos": [
+     25,
+     -8,
+     25
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e53935",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     12,
+     12,
+     16
+    ],
+    "pos": [
+     37.5,
+     -8,
+     25
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#fdd835",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     12,
+     12,
+     16
+    ],
+    "pos": [
+     -37.5,
+     -8,
+     75
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#1e88e5",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     12,
+     12,
+     16
+    ],
+    "pos": [
+     -25,
+     -8,
+     75
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#fb8c00",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     12,
+     12,
+     16
+    ],
+    "pos": [
+     -12.5,
+     -8,
+     75
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e53935",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     12,
+     12,
+     16
+    ],
+    "pos": [
+     0,
+     -8,
+     75
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#fdd835",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     12,
+     12,
+     16
+    ],
+    "pos": [
+     12.5,
+     -8,
+     75
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#43a047",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     12,
+     12,
+     16
+    ],
+    "pos": [
+     25,
+     -8,
+     75
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#1e88e5",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     12,
+     12,
+     16
+    ],
+    "pos": [
+     37.5,
+     -8,
+     75
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#fb8c00",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     12,
+     12,
+     16
+    ],
+    "pos": [
+     -37.5,
+     -8,
+     125
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#43a047",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     12,
+     12,
+     16
+    ],
+    "pos": [
+     -25,
+     -8,
+     125
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e53935",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     12,
+     12,
+     16
+    ],
+    "pos": [
+     -12.5,
+     -8,
+     125
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#1e88e5",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     12,
+     12,
+     16
+    ],
+    "pos": [
+     0,
+     -8,
+     125
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#fb8c00",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     12,
+     12,
+     16
+    ],
+    "pos": [
+     12.5,
+     -8,
+     125
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#fdd835",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     12,
+     12,
+     16
+    ],
+    "pos": [
+     25,
+     -8,
+     125
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#43a047",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     12,
+     12,
+     16
+    ],
+    "pos": [
+     37.5,
+     -8,
+     125
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e53935",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     12,
+     12,
+     16
+    ],
+    "pos": [
+     -37.5,
+     -8,
+     175
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#fdd835",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     12,
+     12,
+     16
+    ],
+    "pos": [
+     -25,
+     -8,
+     175
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#fb8c00",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     12,
+     12,
+     16
+    ],
+    "pos": [
+     -12.5,
+     -8,
+     175
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#43a047",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     12,
+     12,
+     16
+    ],
+    "pos": [
+     0,
+     -8,
+     175
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e53935",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     12,
+     12,
+     16
+    ],
+    "pos": [
+     12.5,
+     -8,
+     175
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#1e88e5",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     12,
+     12,
+     16
+    ],
+    "pos": [
+     25,
+     -8,
+     175
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#fdd835",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     12,
+     12,
+     16
+    ],
+    "pos": [
+     37.5,
+     -8,
+     175
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#fb8c00",
+    "glow": false
+   }
+  ]
+ },
+ "still": "c:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test1\\preview\\shot_10.png",
+ "cost_usd": 0.00237
+}

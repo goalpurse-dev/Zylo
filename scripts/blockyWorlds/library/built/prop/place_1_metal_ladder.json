@@ -1,0 +1,459 @@
+{
+ "name": "place_1_metal_ladder",
+ "kind": "prop",
+ "asked": "vertical grey steel ladder bolted to the right wall, rungs leading up to a round hatch in the ceiling",
+ "spec": {
+  "name": "place_1_metal_ladder",
+  "real_size_cm": 300,
+  "hold": "on_ground",
+  "grip": [
+   0,
+   0,
+   100
+  ],
+  "shapes": [
+   {
+    "type": "box",
+    "size": [
+     6,
+     4,
+     280
+    ],
+    "pos": [
+     -22,
+     0,
+     140
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#8a9099",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     6,
+     4,
+     280
+    ],
+    "pos": [
+     22,
+     0,
+     140
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#8a9099",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     44,
+     4,
+     4
+    ],
+    "pos": [
+     0,
+     0,
+     25
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#5f6670",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     44,
+     4,
+     4
+    ],
+    "pos": [
+     0,
+     0,
+     55
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#5f6670",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     44,
+     4,
+     4
+    ],
+    "pos": [
+     0,
+     0,
+     85
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#5f6670",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     44,
+     4,
+     4
+    ],
+    "pos": [
+     0,
+     0,
+     115
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#5f6670",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     44,
+     4,
+     4
+    ],
+    "pos": [
+     0,
+     0,
+     145
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#5f6670",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     44,
+     4,
+     4
+    ],
+    "pos": [
+     0,
+     0,
+     175
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#5f6670",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     44,
+     4,
+     4
+    ],
+    "pos": [
+     0,
+     0,
+     205
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#5f6670",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     44,
+     4,
+     4
+    ],
+    "pos": [
+     0,
+     0,
+     235
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#5f6670",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     44,
+     4,
+     4
+    ],
+    "pos": [
+     0,
+     0,
+     265
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#5f6670",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     8,
+     10,
+     8
+    ],
+    "pos": [
+     -22,
+     7,
+     60
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#3b3f45",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     8,
+     10,
+     8
+    ],
+    "pos": [
+     22,
+     7,
+     60
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#3b3f45",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     8,
+     10,
+     8
+    ],
+    "pos": [
+     -22,
+     7,
+     160
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#3b3f45",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     8,
+     10,
+     8
+    ],
+    "pos": [
+     22,
+     7,
+     160
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#3b3f45",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     8,
+     10,
+     8
+    ],
+    "pos": [
+     -22,
+     7,
+     255
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#3b3f45",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     8,
+     10,
+     8
+    ],
+    "pos": [
+     22,
+     7,
+     255
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#3b3f45",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     10,
+     160,
+     330
+    ],
+    "pos": [
+     -45,
+     -80,
+     165
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#c9c2b4",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     200,
+     160,
+     12
+    ],
+    "pos": [
+     55,
+     -80,
+     306
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#d9d4c8",
+    "glow": false
+   },
+   {
+    "type": "disc",
+    "size": [
+     56,
+     56,
+     6
+    ],
+    "pos": [
+     0,
+     -6,
+     298
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#f07a1a",
+    "glow": false
+   },
+   {
+    "type": "disc",
+    "size": [
+     40,
+     40,
+     3
+    ],
+    "pos": [
+     0,
+     -6,
+     294
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#c85a0a",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     10,
+     6,
+     4
+    ],
+    "pos": [
+     0,
+     -34,
+     294
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#3b3f45",
+    "glow": false
+   }
+  ]
+ },
+ "still": "C:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test2\\preview\\shot_08.png",
+ "cost_usd": 0.019700000000000002
+}

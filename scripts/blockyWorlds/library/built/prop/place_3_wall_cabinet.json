@@ -1,0 +1,459 @@
+{
+ "name": "place_3_wall_cabinet",
+ "kind": "prop",
+ "asked": "white wooden cabinet with glass-front upper doors and drawers below, against the back wall",
+ "spec": {
+  "name": "place_3_wall_cabinet",
+  "real_size_cm": 180,
+  "hold": "on_ground",
+  "grip": [
+   0,
+   0,
+   0
+  ],
+  "shapes": [
+   {
+    "type": "box",
+    "size": [
+     100,
+     40,
+     180
+    ],
+    "pos": [
+     0,
+     0,
+     90
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#f4f1ea",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     104,
+     44,
+     6
+    ],
+    "pos": [
+     0,
+     0,
+     183
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     44,
+     2,
+     70
+    ],
+    "pos": [
+     -24,
+     -21,
+     128
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#9fdcf2",
+    "glow": true
+   },
+   {
+    "type": "box",
+    "size": [
+     44,
+     2,
+     70
+    ],
+    "pos": [
+     24,
+     -21,
+     128
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#9fdcf2",
+    "glow": true
+   },
+   {
+    "type": "box",
+    "size": [
+     48,
+     3,
+     4
+    ],
+    "pos": [
+     -24,
+     -21.5,
+     164
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     48,
+     3,
+     4
+    ],
+    "pos": [
+     -24,
+     -21.5,
+     92
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     48,
+     3,
+     4
+    ],
+    "pos": [
+     24,
+     -21.5,
+     164
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     48,
+     3,
+     4
+    ],
+    "pos": [
+     24,
+     -21.5,
+     92
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     4,
+     3,
+     76
+    ],
+    "pos": [
+     0,
+     -21.5,
+     128
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     4,
+     3,
+     76
+    ],
+    "pos": [
+     -48,
+     -21.5,
+     128
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     4,
+     3,
+     76
+    ],
+    "pos": [
+     48,
+     -21.5,
+     128
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     6,
+     4,
+     16
+    ],
+    "pos": [
+     -5,
+     -23,
+     128
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#6b4a2a",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     6,
+     4,
+     16
+    ],
+    "pos": [
+     5,
+     -23,
+     128
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#6b4a2a",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     92,
+     3,
+     4
+    ],
+    "pos": [
+     0,
+     -21.5,
+     86
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#b9b4a8",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     92,
+     3,
+     24
+    ],
+    "pos": [
+     0,
+     -21,
+     72
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e9e4d6",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     92,
+     3,
+     24
+    ],
+    "pos": [
+     0,
+     -21,
+     44
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e9e4d6",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     92,
+     3,
+     24
+    ],
+    "pos": [
+     0,
+     -21,
+     16
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e9e4d6",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     28,
+     5,
+     6
+    ],
+    "pos": [
+     0,
+     -24,
+     72
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#3a3a3a",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     28,
+     5,
+     6
+    ],
+    "pos": [
+     0,
+     -24,
+     44
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#3a3a3a",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     28,
+     5,
+     6
+    ],
+    "pos": [
+     0,
+     -24,
+     16
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#3a3a3a",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     94,
+     3,
+     3
+    ],
+    "pos": [
+     0,
+     -22,
+     58
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#8a857a",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     94,
+     3,
+     3
+    ],
+    "pos": [
+     0,
+     -22,
+     30
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#8a857a",
+    "glow": false
+   }
+  ]
+ },
+ "still": "c:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test2\\preview\\shot_48.png",
+ "cost_usd": 0.02052
+}

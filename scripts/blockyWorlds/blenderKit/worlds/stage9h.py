@@ -33,6 +33,7 @@ def zs_house_of(ring):
 
 def zs_door_obj(ring):
     """the house's OWN front door (on the front wall of the house whose line this is)"""
+    bpy.context.view_layer.update()   # (round 9i maps: a fresh house still read at the origin before an update)
     h = zs_house_of(ring)
     if h is not None:
         i = h.name[4:]

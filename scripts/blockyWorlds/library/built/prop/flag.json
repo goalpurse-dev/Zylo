@@ -1,0 +1,159 @@
+{
+ "name": "flag",
+ "kind": "prop",
+ "asked": "a tall thin pole with a bright red rectangular flag on top, planted in the moon dust",
+ "spec": {
+  "name": "flag",
+  "real_size_cm": 150,
+  "hold": "one_hand",
+  "grip": [
+   0,
+   0,
+   60
+  ],
+  "shapes": [
+   {
+    "type": "cylinder",
+    "size": [
+     3,
+     3,
+     150
+    ],
+    "pos": [
+     0,
+     0,
+     75
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#d9d9d9",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     6,
+     6,
+     6
+    ],
+    "pos": [
+     0,
+     0,
+     153
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#f2c744",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     60,
+     2,
+     38
+    ],
+    "pos": [
+     31,
+     0,
+     128
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e01b1b",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     22,
+     2.5,
+     38
+    ],
+    "pos": [
+     11,
+     -0.3,
+     128
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#1f3fbf",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     56,
+     2.4,
+     6
+    ],
+    "pos": [
+     33,
+     -0.3,
+     134
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     56,
+     2.4,
+     6
+    ],
+    "pos": [
+     33,
+     -0.3,
+     122
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "disc",
+    "size": [
+     22,
+     22,
+     3
+    ],
+    "pos": [
+     0,
+     0,
+     1.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#8a8a8a",
+    "glow": false
+   }
+  ]
+ },
+ "still": "c:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test2\\preview\\shot_22.png",
+ "cost_usd": 0.012369999999999999
+}

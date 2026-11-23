@@ -14,7 +14,7 @@ import { shotFrames, splitShots } from "../blenderKit/plan.mjs";
 import { captionColors } from "../blenderKit/speakers.mjs";
 import { ledger } from "../studio/ledger.mjs";
 import { timedWords } from "../blenderKit/sceneCards.mjs";
-import { compileTakes, lockLooks, applyCard, initialState, ruleExceptions, autoActing, actingProblems, timeProblems, sceneStartMarks } from "../blenderKit/takes.mjs";
+import { compileTakes, lockLooks, applyCard, initialState, ruleExceptions, autoActing, actingProblems, timeProblems, sceneStartMarks, zoneRefusals, zoneMoves } from "../blenderKit/takes.mjs";
 import { runpod, RATE, BOOT_S } from "../blenderKit/rp.mjs";
 import { staticCheck } from "../blenderKit/director.mjs";
 
@@ -85,7 +85,7 @@ const SPEC = {
   45: ["wide", ["monster", "roof#monster"], "push_in", 0.6], 46: ["low", ["monster", "roof#monster"], "push_in", 0.8], 47: ["low", ["roof#monster"], "tilt_up", 0.9],
   48: ["two", ["crowd0", "crowd1"], "push_in", 0.5], 49: ["wide", ["monster", "chalk_line#monster"], "push_in", 0.4], 50: ["close", ["monster"], "static", 1.0],
 };
-const TARGET = { 3: 0.6, 4: 0.6, 5: 0.45 };
+const TARGET = { 3: 0.6, 4: 0.6, 5: 0.45, 49: 0.6 };
 const REFV = { 3: 0.45, 4: 0.55, 5: 0.45, 6: 0.55, 7: 0.55, 8: 0.55, 9: 0.5, 10: 0.5, 13: 0.35, 14: 0.5, 15: 0.45, 16: 0.55, 17: 0.5, 20: 0.45, 22: 0.5, 23: 0.4, 25: 0.45, 26: 0.5, 28: 0.5, 29: 0.45, 30: 0.55, 31: 0.6, 32: 0.45, 33: 0.5, 34: 0.5, 35: 0.6, 36: 0.5, 37: 0.5, 39: 0.5, 40: 0.6, 41: 0.55, 42: 0.5, 43: 0.5, 44: 0.5, 45: 0.45, 46: 0.45, 47: 0.45, 48: 0.6, 49: 0.5, 50: 0.5 };
 // each reference shot starts on the first word that begins at (or just before) its first frame
 const wordAt = (t) => { const i = refWords.findIndex((w) => w.s >= t - 0.12); return i < 0 ? refWords.length - 1 : i; };
@@ -135,7 +135,7 @@ const plan = {
   monster: { present: true, style: "shadow", size: 4 },
   rule: { sentence: "a chalk line makes a house", object: { thing: "chalk_line", where: "on_ground" } },
   stage: { suburb_street: { camera_side: "front", marks: { Me: "@-1,17.3", Dad: "@4,18.4", Guy: "@4,10.5", "pizza_box#guy": "@4,10.5", "car#kerb2": "@-22,4.2", "car#kerb3": "@26,-4.2", "ball#lawn": "@-2.5,14.2", "dog#lawn": "@-14,13.5", "car#kerb": "@12,4.2", "chalk#dad": "@0,15" } } },
-  scenes: [[1, 1, "sunset"], [2, 3, "night"], [4, 6, "sunset"], [7, 7, "night"], [8, 9, "storm", { dad: "door", me: "door_side" }], [10, 18, "night"], [19, 19, "morning"], [20, 22, "night"]].map(([a, b, t, m], i) => ({ id: i + 1, lines: [a, b], place: "suburb_street", time: t, busy: "empty", ...(m ? { marks: m } : {}) })),
+  scenes: [[1, 1, "sunset"], [2, 3, "night"], [4, 6, "sunset"], [7, 7, "night"], [8, 9, "storm", { dad: "zone:home_doorway", me: "zone:home_doorway" }], [10, 18, "night"], [19, 19, "morning"], [20, 22, "night", { lamps: "on" }]].map(([a, b, t, m], i) => ({ id: i + 1, lines: [a, b], place: "suburb_street", time: t, busy: "empty", ...(m ? { marks: m } : {}) })),
   props: [{ kind: "chalk", size: 1.0 }, { kind: "chalk#dad2", size: 1.6 }, { kind: "ball", size: 2.4 }, { kind: "dog", size: 1.9 }, { kind: "car", size: 1.0 }, { kind: "roof", size: 1.6 }],
 };
 const A_ = (who, d, o = {}) => ({ who, do: d, target: "", to: "", text: "", on_word: 0, ...o });
@@ -146,19 +146,19 @@ const ACTS0 = {
   5: [A_("me", "look_around", { on_word: 0 })],
   6: [A_("dad", "draw_line", { target: "chalk_line#house", to: "@1.8,17.4", on_word: 3 }), A_("dad", "put_in_pocket", { target: "me", on_word: 8 })],
   7: [A_("dad", "turn_to", { target: "me", on_word: 0 }), A_("me", "turn_to", { target: "dad", on_word: 0 }), A_("dad", "talk", { on_word: 0 }), A_("chalk_line#house", "wash_away", { target: "chalk_line#house", on_word: 17 })],
-  8: [A_("chalk#dad2", "appear", { target: "chalk#dad2", to: "dad", on_word: 0 }), A_("dad", "pick_up", { target: "chalk#dad2", on_word: 0 }), A_("dad", "run_to", { to: "line_front", text: "panic", on_word: 1 }), A_("dad", "try_draw", { target: "chalk_line#house", on_word: 5 }), A_("chalk#dad2", "disappear", { target: "chalk#dad2", on_word: 9 })],
+  8: [A_("chalk#dad2", "appear", { target: "chalk#dad2", to: "dad", on_word: 0 }), A_("dad", "pick_up", { target: "chalk#dad2", on_word: 0 }), A_("dad", "run_to", { to: "zone:home_line_edge", text: "panic", on_word: 1 }), A_("dad", "try_draw", { target: "chalk_line#house", on_word: 5 }), A_("chalk#dad2", "disappear", { target: "chalk#dad2", on_word: 9 })],
   // the rain stops: the kid steps out of the doorway into the front yard, by the window (still inside the line)
-  9: [A_("me", "walk_to", { to: "window", on_word: 3 }), A_("monster", "switch_all_off", { target: "lamps", text: "one by one", on_word: 8 })],
+  9: [A_("me", "walk_to", { to: "zone:home_window", on_word: 3 }), A_("monster", "switch_all_off", { target: "lamps", text: "one by one", on_word: 8 })],
   // "Something stepped out of the dark": the monster, alone in the street
   11: [A_("monster", "enter", { to: "@-6,1.5", on_word: 1 })],
   // it walks straight at dad (dad backs away, inside his yard); the kid comes to the edge of the yard (inside the line)
-  12: [A_("me", "walk_to", { to: "@-4,17.2", on_word: 0 }), A_("dad", "back_away", { target: "monster", on_word: 5 }), A_("monster", "walk_to", { to: "@1.5,8.5", on_word: 6 })],
+  12: [A_("me", "walk_to", { to: "zone:home_line_edge", on_word: 0 }), A_("dad", "back_away", { target: "monster", on_word: 5 }), A_("monster", "walk_to", { to: "@1.5,8.5", on_word: 6 })],
   // "So I ran outside": from the edge of the yard, across the line, toward the road; the chalk out as he reaches the kerb
-  13: [A_("me", "run_to", { to: "@-3,6.4", text: "sprint", on_word: 2 }), A_("me", "take_out", { on_word: 5 })],
+  13: [A_("me", "run_to", { to: "zone:kerb", text: "sprint", on_word: 2 }), A_("me", "take_out", { on_word: 5 })],
   14: [A_("me", "draw_around", { target: "monster", on_word: 1 })],
   15: [A_("monster", "turn_to", { target: "me", on_word: 1 }), A_("monster", "point", { target: "me", on_word: 3 })],
   16: [A_("monster", "hit_wall", { on_word: 2 })],
-  18: [A_("roof#monster", "appear", { target: "roof#monster", to: "monster", on_word: 5 })],
+  18: [A_("roof#monster", "appear", { target: "roof#monster", to: "monster", on_word: 0 })],
   19: [A_("me", "cheer", { on_word: 3 }), A_("monster", "crowd", { text: "play", on_word: 2 })],
 };
 const FACES0 = {};
@@ -194,16 +194,32 @@ plan.acting = { danger_over: { me: 17, dad: 17 }, lines: {
   21: { me: AC("calm", "monster", "check it is still trapped"), dad: AC("calm", "monster", "keep an eye on it") },
   22: { me: AC("confident", "monster", "it can never leave"), dad: AC("calm", "me", "keep the kid safe") },
 } };
+const HOME = ["home_inside", "home_doorway", "home_window", "home_line_edge", "home_yard", "neighbor_yard"];
+plan.rule_zones = { night: HOME, storm: HOME };
+const ZL = (me, dad, extra = {}) => ({ me, dad, ...extra });
+plan.zones = {
+  1: ZL("home_line_edge", "home_line_edge"), 2: ZL("home_line_edge", "home_line_edge"), 3: ZL("home_line_edge", "home_line_edge"),
+  4: ZL("home_line_edge", "home_line_edge", { guy: "front_lawn" }), 5: ZL("home_line_edge", "home_line_edge"), 6: ZL("home_line_edge", "home_line_edge"),
+  7: ZL("home_line_edge", "home_line_edge"), 8: ZL("home_doorway", "home_doorway"), 9: ZL("home_doorway", "home_line_edge"),
+  10: ZL("home_window", "home_line_edge"), 11: ZL("home_window", "home_line_edge"), 12: ZL("home_window", "home_line_edge", { monster: "road" }),
+  13: ZL("home_line_edge", "home_yard", { monster: "pavement" }), 14: ZL("kerb", "home_yard", { monster: "pavement" }), 15: ZL("kerb", "home_yard", { monster: "pavement" }),
+  16: ZL("kerb", "home_yard", { monster: "pavement" }), 17: ZL("kerb", "home_yard", { monster: "pavement" }), 18: ZL("kerb", "home_yard", { monster: "pavement" }),
+  19: ZL("kerb", "home_yard", { monster: "pavement" }), 20: ZL("road", "home_yard", { monster: "pavement" }), 21: ZL("road", "home_yard", { monster: "pavement" }), 22: ZL("road", "home_yard", { monster: "pavement" }),
+};
 const looks = lockLooks(plan.cast);
 const sceneOf = (n) => plan.scenes.find((x) => n >= x.lines[0] && n <= x.lines[1]);
 let S = initialState(plan);
 // the chalk the dad gives me / the second chalk: owned things in their hands from the stage map
-const cards = [], states = [], problems = [];
+const cards = [], states = [], problems = [], REFUSED = [];
 for (let n = 1; n <= lines.length; n++) {
   const cuts = refCuts.filter((c) => c.wi >= lines[n - 1].w0 && c.wi < lines[n - 1].w0 + lines[n - 1].words.length)
     .map((c) => ({ from_word: c.wi - lines[n - 1].w0, shot: c.spec[0], show: c.spec[1], move: c.spec[2], ref: c.n }));
   // a line with no reference cut of its own continues the cut before (no new cut)
-  const card = { line: n, actions: ACTS[n] ?? [], faces: FACES[n] ?? {}, cuts };
+  let card = { line: n, actions: ACTS[n] ?? [], faces: FACES[n] ?? {}, cuts };
+  card = zoneMoves(plan, card, n, S[sceneOf(n).place]);
+  const ZR = zoneRefusals(plan, card, n, lines, RX);
+  card = ZR.card;
+  if (ZR.refused.length) { REFUSED.push(...ZR.refused); say(`ZONES: ${ZR.refused.join(" | ")}`); }
   const scn = plan.scenes.find((x) => x.lines[0] === n);
   if (scn?.marks) S = sceneStartMarks(S, scn);
   states[n] = S;
@@ -213,6 +229,7 @@ for (let n = 1; n <= lines.length; n++) {
   S = r.state;
 }
 states[lines.length + 1] = S;
+if (has("dbg-monster")) { for (let n = 1; n <= lines.length + 1; n++) { const P = states[n]?.suburb_street; if (P?.people?.monster) { console.log("people.monster first at line", n, JSON.stringify(P.people.monster), "card", JSON.stringify(cards[n - 2]?.actions)); break; } } process.exit(0); }
 autoActing(plan, lines, states);
 const ACTP = actingProblems(plan, lines, states), TIMEP = timeProblems(plan, lines);
 say(`THE ACTING CHECK: ${ACTP.length} problem(s)${ACTP.length ? ": " + ACTP.join(" | ") : ""}; TIME AS STATE: ${TIMEP.length} problem(s)${TIMEP.length ? ": " + TIMEP.join(" | ") : ""}`);
@@ -222,7 +239,7 @@ save("cards.json", { cards, refCuts, problems });
 // ---- 4. THE TAKES + THE SHOTS (a line without a cut continues the cut before: the shots tile on the cut words only)
 const T = compileTakes({ plan, cards: cards.map((c, i) => (c.cuts.length || i === 0 ? c : { ...c, cuts: [] })), states, lines, looks });
 T.shots.forEach((s, k) => { s.ta = k === 0 ? 0 : tw[s.w0].start; s.tb = s.w1 == null ? tw.at(-1).end + 0.25 : tw[s.w1].start; s.ref = refCuts[k]?.n; s.refh = refCuts[k]?.spec?.[3]; s.refT0 = refCuts[k]?.refT0; s.refT1 = refCuts[k]?.refT1; s.frac = TARGET[s.ref] ?? (s.refh ? Math.min(0.95, s.refh) : null); s.v = REFV[s.ref] ?? null; if (s.ref === 30) s.side = 160; });
-const LIB = ["worlds/worlds.py", "actions/actions.py", "worlds/acts.py", "worlds/pieces.py", "worlds/motion.py", "worlds/crowds.py", "worlds/town.py", "worlds/effects.py", "worlds/stage.py", "worlds/stage9.py", "worlds/stage9b.py", "worlds/stage9c.py", "worlds/stage9d.py", "worlds/stage9e.py", "worlds/stage9f.py", "worlds/stage9g.py", "worlds/stage9h.py"].map((f) => fs.readFileSync(path.join(KIT, f), "utf8")).join("\n\n");
+const LIB = ["worlds/worlds.py", "actions/actions.py", "worlds/acts.py", "worlds/pieces.py", "worlds/motion.py", "worlds/crowds.py", "worlds/town.py", "worlds/effects.py", "worlds/stage.py", "worlds/stage9.py", "worlds/stage9b.py", "worlds/stage9c.py", "worlds/stage9d.py", "worlds/stage9e.py", "worlds/stage9f.py", "worlds/stage9g.py", "worlds/stage9h.py", "worlds/stage9i.py"].map((f) => fs.readFileSync(path.join(KIT, f), "utf8")).join("\n\n");
 const HEAD = (title) => [`"""${title}"""`, "from shotkit import *", "from rbx import story", "from rbx.story import *", "import math, random", "from mathutils import Vector", "", "V = Video(__file__)", "story.bind(V)", "", LIB, ""];
 const ind = (s) => s.split("\n").map((l) => `    ${l}`).join("\n");
 const pyRun = (code, ...a) => { const r = spawnSync("python", ["-P", "-c", code, ...a], { encoding: "utf8" }); if (r.status) throw new Error(r.stderr.slice(-400)); return r.stdout; };
@@ -240,7 +257,7 @@ async function stills(tag) {
   // {name: the time its exception starts} (the word on its first line; earlier lines: from the start)
   const allowedFrom = (line) => { const out = {}; for (const who of allowed(line)) { const w = RX.fromWord?.[line]?.[who]; out[who] = w == null ? -1e9 : tw[lines[line - 1].w0 + w].start; } return out; };
   const pyFrom = (line) => `{${Object.entries(allowedFrom(line)).map(([k, v]) => `${JSON.stringify(k)}: ${v < -1e8 ? "-1e9" : `o + ${v.toFixed(3)}`}`).join(", ")}}`;
-  const body = (s, k) => [`o = (t0 + t1) / 2.0 - ${((s.ta + s.tb) / 2).toFixed(3)}`, `H = take_${s.scene}(o)`, T.cutCall(s, `o + ${s.ta.toFixed(3)}`, `o + ${s.tb.toFixed(3)}`, `S${k + 2}`), ...(ruleOn(s) ? [`zs_rule_check2(H, ${pyFrom(s.line)}, [o + ${(s.ta + 0.06).toFixed(3)}, (t0 + t1) / 2.0, o + ${(s.tb - 0.06).toFixed(3)}], "R${k + 2}")`] : [])].join("\n");
+  const body = (s, k) => [`o = (t0 + t1) / 2.0 - ${((s.ta + s.tb) / 2).toFixed(3)}`, `H = take_${s.scene}(o)`, T.cutCall(s, `o + ${s.ta.toFixed(3)}`, `o + ${s.tb.toFixed(3)}`, `S${k + 2}`), ...(ruleOn(s) ? [`zs_rule_check3(H, ${pyFrom(s.line)}, ${JSON.stringify(plan.rule_zones?.[plan.scenes.find((x) => x.id === s.scene)?.time] ?? [])}, [o + ${(s.ta + 0.06).toFixed(3)}, (t0 + t1) / 2.0, o + ${(s.tb - 0.06).toFixed(3)}], "R${k + 2}")`] : [])].join("\n");
   const src = [...HEAD(`Replica stills ${tag}`), "ZW_PREVIEW.update(pct=30, samples=6)", "", ...Object.values(T.takes), "",
     `@S(1, 0, 1, "unused")\ndef s001(t0, t1):\n    zw_build("suburb_street", t0, t1, {"time": "day"})\n    Cam().key(t0, (0, -20, 5), (0, 0, 2), lens=30)\n`,
     ...T.shots.map((s, k) => `@S(${k + 2}, ${2 * k + 1}, ${k + 1 < N ? 2 * k + 3 : "None"}, ${JSON.stringify(`ref shot ${s.ref}`)})\ndef s${String(k + 2).padStart(3, "0")}(t0, t1):\n${ind(body(s, k))}\n`)].join("\n");
@@ -341,6 +358,49 @@ function compare(tag, r) {
   return { within, measured };
 }
 
+// ---- 6b. THE SCENE MAPS (owner round 9i): one top-down still per scene, the zones + who is where at each line's start
+// and end, from the same take the render uses (drawn with the labels on the laptop: map9.py)
+async function maps(mtag) {
+  const dir = path.join(OUT, `maps_${mtag}`);
+  if (fs.existsSync(path.join(dir, "done.json"))) return JSON.parse(fs.readFileSync(path.join(dir, "done.json"), "utf8"));
+  fs.mkdirSync(path.join(dir, "video", "audio"), { recursive: true });
+  const SC = plan.scenes;
+  const fn = SC.map((sc, k) => {
+    const L = []; for (let n = sc.lines[0]; n <= sc.lines[1]; n++) L.push([n, lines[n - 1].start, lines[n - 1].next ?? lines[n - 1].end + 0.25]);
+    const mid = (L[0][1] + L.at(-1)[2]) / 2;
+    return `@S(${k + 2}, ${2 * k + 1}, ${k + 1 < SC.length ? 2 * k + 3 : "None"}, ${JSON.stringify(`map scene ${sc.id}`)})\ndef s${String(k + 2).padStart(3, "0")}(t0, t1):\n${ind([`o = (t0 + t1) / 2.0 - ${mid.toFixed(3)}`, `H = take_${sc.id}(o)`, `zs_map(H, [${L.map(([n, a, b]) => `(${n}, o + ${a.toFixed(3)}, o + ${b.toFixed(3)})`).join(", ")}], "M${sc.id}")`].join("\n"))}\n`;
+  });
+  const src = [...HEAD(`Replica maps ${mtag}`), "ZW_PREVIEW.update(pct=30, samples=6)", "", ...Object.values(T.takes), "",
+    `@S(1, 0, 1, "unused")\ndef s001(t0, t1):\n    zw_build("suburb_street", t0, t1, {"time": "day"})\n    Cam().key(t0, (0, -20, 5), (0, 0, 2), lens=30)\n`, ...fn].join("\n");
+  const sc0 = staticCheck(src, path.join(dir, "video", "shots.py"));
+  if (!sc0.ok) throw new Error(`maps static check: ${JSON.stringify(sc0.problems.slice(0, 5))}`);
+  fs.writeFileSync(path.join(dir, "video", "shots.py"), src);
+  const N = SC.length;
+  fs.writeFileSync(path.join(dir, "video", "audio", "words.json"), JSON.stringify(Array.from({ length: 2 * N + 2 }, (_, i) => ({ word: `w${i}`, start: i === 0 ? 0 : B + (i - 1), end: (i === 0 ? 0 : B + (i - 1)) + 0.6 }))));
+  fs.writeFileSync(path.join(dir, "video", "script.txt"), "replica maps\n");
+  spawnSync("ffmpeg", ["-v", "error", "-y", "-f", "lavfi", "-i", "anullsrc=r=44100:cl=mono", "-t", String(B + 2 * N + 2), path.join(dir, "video", "audio", "voice.wav")]);
+  if (has("check-only")) { say(`maps ${mtag}: static check ok (${N}), not sent`); process.exit(0); }
+  const limit = N * 40 + 300;
+  L.check(`maps ${mtag}`, (limit + BOOT_S) * RATE);
+  const R = runpod({ L, prefix: `blocky-worlds-test/blender-kit/round9-maps-${mtag}-${Date.now().toString(36)}`, log: say });
+  pyRun("import sys,tarfile,os\nout,root=sys.argv[1],sys.argv[2]\nwith tarfile.open(out,'w:gz') as t:\n for f in sys.argv[3:]:\n  t.add(os.path.join(root,f),arcname=f)", path.join(dir, "v.tgz"), path.join(dir, "video"), "shots.py", "script.txt", "audio/words.json", "audio/voice.wav");
+  await R.putFile("v.tgz", path.join(dir, "v.tgz"), "application/gzip");
+  const rr = await R.job(`maps ${mtag} (${N})`, { role: "preview", slug: "scenes", videoUrl: await R.signGet("v.tgz"), shots: SC.map((_, k) => k + 2).join(","), perSheet: 90, cols: 10, samples: 6, upload: await R.signPuts("p.tgz", 2) }, { maxRunSec: limit, ledgerKey: "runpod_maps" });
+  if (!rr.ok) { await R.cleanup().catch(() => {}); throw new Error(`maps failed: ${String(rr.error).slice(0, 300)}`); }
+  await R.fetchParts("p.tgz", rr.output.upload.parts, path.join(dir, "p.tgz"));
+  await R.cleanup().catch(() => {});
+  pyRun("import sys,tarfile\nwith tarfile.open(sys.argv[1]) as t:\n t.extractall(sys.argv[2], filter='data')", path.join(dir, "p.tgz"), dir);
+  const out = { pngs: {}, gate: rr.output.gate ?? [], failed: rr.output.failed ?? {} };
+  for (const f of fs.readdirSync(path.join(dir, "preview"))) { const m = f.match(/^shot_(\d+)\.png$/); if (m && Number(m[1]) >= 2) out.pngs[SC[Number(m[1]) - 2].id] = path.join(dir, "preview", f); }
+  fs.writeFileSync(path.join(dir, "done.json"), JSON.stringify(out, null, 1));
+  // the drawn maps (zones, labels, the plan's zone vs the measured zone)
+  fs.writeFileSync(path.join(dir, "plan_zones.json"), JSON.stringify({ zones: plan.zones, scenes: SC.map((x) => ({ id: x.id, lines: x.lines, time: x.time })), rule_zones: plan.rule_zones }));
+  pyRun(fs.readFileSync(path.join(HERE, "map9.py"), "utf8"), path.join(dir, "done.json"), path.join(dir, "plan_zones.json"), dir);
+  say(`maps ${mtag}: ${Object.keys(out.pngs).length}/${N} scenes, ${out.gate.length} log lines; spent $${L.total()}`);
+  return out;
+}
+if (has("maps")) { await maps(arg("maps-tag", arg("stills", "m0"))); if (!has("stills")) process.exit(0); }
+
 const tag = arg("stills", "r0");
 const r = await stills(tag);
 const cmp = compare(tag, r);
@@ -362,7 +422,7 @@ const finalRule = (s) => {
   if (!(plan.rule_check?.times ?? []).includes(sc?.time)) return "";
   const from = {};
   for (const who of (plan.rule_check?.outside?.[s.line] ?? []).map((x) => String(x).toLowerCase())) { const w = RX.fromWord?.[s.line]?.[who]; from[who] = w == null ? "-1e9" : tw[lines[s.line - 1].w0 + w].start.toFixed(3); }
-  return `\nzs_rule_check2(H, {${Object.entries(from).map(([k, v]) => `${JSON.stringify(k)}: ${v}`).join(", ")}}, [${(s.ta + 0.06).toFixed(3)}, ${((s.ta + s.tb) / 2).toFixed(3)}, ${(s.tb - 0.06).toFixed(3)}], "R${s.id}")`;
+  return `\nzs_rule_check3(H, {${Object.entries(from).map(([k, v]) => `${JSON.stringify(k)}: ${v}`).join(", ")}}, ${JSON.stringify(plan.rule_zones?.[sc?.time] ?? [])}, [${(s.ta + 0.06).toFixed(3)}, ${((s.ta + s.tb) / 2).toFixed(3)}, ${(s.tb - 0.06).toFixed(3)}], "R${s.id}")`;
 };
 const PV = path.join(OUT, FINAL ? "final" : "preview"); fs.mkdirSync(path.join(PV, "video", "audio"), { recursive: true });
 const segs = path.join(PV, "segments"); fs.mkdirSync(segs, { recursive: true });

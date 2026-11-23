@@ -1,0 +1,179 @@
+{
+ "name": "place_6_wooden_chair",
+ "kind": "prop",
+ "asked": "simple blocky wooden chair with four legs, a seat and a tall backrest, warm brown wood",
+ "spec": {
+  "name": "place_6_wooden_chair",
+  "real_size_cm": 100,
+  "hold": "on_ground",
+  "grip": [
+   0,
+   0,
+   0
+  ],
+  "shapes": [
+   {
+    "type": "box",
+    "size": [
+     8,
+     8,
+     45
+    ],
+    "pos": [
+     -18,
+     -18,
+     22.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#8b5a2b",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     8,
+     8,
+     45
+    ],
+    "pos": [
+     18,
+     -18,
+     22.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#8b5a2b",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     8,
+     8,
+     45
+    ],
+    "pos": [
+     -18,
+     18,
+     22.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#8b5a2b",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     8,
+     8,
+     45
+    ],
+    "pos": [
+     18,
+     18,
+     22.5
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#8b5a2b",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     46,
+     46,
+     6
+    ],
+    "pos": [
+     0,
+     0,
+     45
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#a0692e",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     44,
+     6,
+     50
+    ],
+    "pos": [
+     0,
+     21,
+     70
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#6b3f1d",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     44,
+     6,
+     10
+    ],
+    "pos": [
+     0,
+     -18,
+     62
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#8b5a2b",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     40,
+     4,
+     8
+    ],
+    "pos": [
+     0,
+     -18,
+     30
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#8b5a2b",
+    "glow": false
+   }
+  ]
+ },
+ "still": "c:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test1\\preview\\shot_67.png",
+ "cost_usd": 0.00278
+}

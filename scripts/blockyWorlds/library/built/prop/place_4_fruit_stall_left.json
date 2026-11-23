@@ -1,0 +1,679 @@
+{
+ "name": "place_4_fruit_stall_left",
+ "kind": "prop",
+ "asked": "wooden fruit stall with a counter piled with red apples and orange oranges, striped awning above",
+ "spec": {
+  "name": "place_4_fruit_stall_left",
+  "real_size_cm": 220,
+  "hold": "on_ground",
+  "grip": [
+   0,
+   0,
+   0
+  ],
+  "shapes": [
+   {
+    "type": "box",
+    "size": [
+     200,
+     70,
+     6
+    ],
+    "pos": [
+     0,
+     0,
+     80
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#8b5a2b",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     200,
+     6,
+     70
+    ],
+    "pos": [
+     0,
+     -32,
+     45
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#a0693a",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     8,
+     8,
+     80
+    ],
+    "pos": [
+     -96,
+     -30,
+     40
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#6b4220",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     8,
+     8,
+     80
+    ],
+    "pos": [
+     96,
+     -30,
+     40
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#6b4220",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     8,
+     8,
+     80
+    ],
+    "pos": [
+     -96,
+     30,
+     40
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#6b4220",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     8,
+     8,
+     80
+    ],
+    "pos": [
+     96,
+     30,
+     40
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#6b4220",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     8,
+     8,
+     140
+    ],
+    "pos": [
+     -96,
+     32,
+     150
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#6b4220",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     8,
+     8,
+     140
+    ],
+    "pos": [
+     96,
+     32,
+     150
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#6b4220",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     200,
+     50,
+     4
+    ],
+    "pos": [
+     0,
+     0,
+     150
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#6b4220",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     200,
+     22,
+     14
+    ],
+    "pos": [
+     0,
+     -8,
+     86
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#5a3a1c",
+    "glow": false
+   },
+   {
+    "type": "wedge",
+    "size": [
+     220,
+     40,
+     30
+    ],
+    "pos": [
+     0,
+     -38,
+     205
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     28,
+     40,
+     6
+    ],
+    "pos": [
+     -96,
+     -38,
+     222
+    ],
+    "rot": [
+     -20,
+     0,
+     0
+    ],
+    "color": "#e02020",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     28,
+     40,
+     6
+    ],
+    "pos": [
+     -40,
+     -38,
+     222
+    ],
+    "rot": [
+     -20,
+     0,
+     0
+    ],
+    "color": "#e02020",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     28,
+     40,
+     6
+    ],
+    "pos": [
+     16,
+     -38,
+     222
+    ],
+    "rot": [
+     -20,
+     0,
+     0
+    ],
+    "color": "#e02020",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     28,
+     40,
+     6
+    ],
+    "pos": [
+     72,
+     -38,
+     222
+    ],
+    "rot": [
+     -20,
+     0,
+     0
+    ],
+    "color": "#e02020",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     28,
+     6,
+     22
+    ],
+    "pos": [
+     -96,
+     -58,
+     198
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e02020",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     28,
+     6,
+     22
+    ],
+    "pos": [
+     -40,
+     -58,
+     198
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e02020",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     28,
+     6,
+     22
+    ],
+    "pos": [
+     16,
+     -58,
+     198
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e02020",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     28,
+     6,
+     22
+    ],
+    "pos": [
+     72,
+     -58,
+     198
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e02020",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     22,
+     22,
+     22
+    ],
+    "pos": [
+     -80,
+     -15,
+     95
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e01818",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     22,
+     22,
+     22
+    ],
+    "pos": [
+     -58,
+     -15,
+     95
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e01818",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     22,
+     22,
+     22
+    ],
+    "pos": [
+     -36,
+     -15,
+     95
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e01818",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     22,
+     22,
+     22
+    ],
+    "pos": [
+     -69,
+     -15,
+     115
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e01818",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     22,
+     22,
+     22
+    ],
+    "pos": [
+     -47,
+     -15,
+     115
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e01818",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     22,
+     22,
+     22
+    ],
+    "pos": [
+     -58,
+     -15,
+     134
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e01818",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     22,
+     22,
+     22
+    ],
+    "pos": [
+     36,
+     -15,
+     95
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ff8c00",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     22,
+     22,
+     22
+    ],
+    "pos": [
+     58,
+     -15,
+     95
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ff8c00",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     22,
+     22,
+     22
+    ],
+    "pos": [
+     80,
+     -15,
+     95
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ff8c00",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     22,
+     22,
+     22
+    ],
+    "pos": [
+     47,
+     -15,
+     115
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ff8c00",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     22,
+     22,
+     22
+    ],
+    "pos": [
+     69,
+     -15,
+     115
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ff8c00",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     22,
+     22,
+     22
+    ],
+    "pos": [
+     58,
+     -15,
+     134
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ff8c00",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     20,
+     20,
+     20
+    ],
+    "pos": [
+     0,
+     -15,
+     95
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#e01818",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     20,
+     20,
+     20
+    ],
+    "pos": [
+     0,
+     10,
+     95
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ff8c00",
+    "glow": false
+   }
+  ]
+ },
+ "still": "c:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test2\\preview\\shot_51.png",
+ "cost_usd": 0.02618
+}

@@ -1,0 +1,779 @@
+{
+ "name": "fruit_stall_right",
+ "kind": "prop",
+ "asked": "A wooden market stall with a green striped awning and tables piled with watermelons and bananas.",
+ "spec": {
+  "name": "fruit_stall_right",
+  "real_size_cm": 250,
+  "hold": "on_ground",
+  "grip": [
+   0,
+   0,
+   0
+  ],
+  "shapes": [
+   {
+    "type": "box",
+    "size": [
+     10,
+     10,
+     230
+    ],
+    "pos": [
+     -115,
+     40,
+     115
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#8b5a2b",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     10,
+     10,
+     230
+    ],
+    "pos": [
+     115,
+     40,
+     115
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#8b5a2b",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     10,
+     10,
+     170
+    ],
+    "pos": [
+     -115,
+     -50,
+     85
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#8b5a2b",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     10,
+     10,
+     170
+    ],
+    "pos": [
+     115,
+     -50,
+     85
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#8b5a2b",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     240,
+     8,
+     200
+    ],
+    "pos": [
+     0,
+     45,
+     100
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#a0693a",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     240,
+     100,
+     10
+    ],
+    "pos": [
+     0,
+     -5,
+     80
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#c58a4a",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     240,
+     100,
+     10
+    ],
+    "pos": [
+     0,
+     -5,
+     40
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#c58a4a",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     240,
+     100,
+     40
+    ],
+    "pos": [
+     0,
+     -50,
+     20
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#7a4a22",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     50,
+     95,
+     10
+    ],
+    "pos": [
+     -95,
+     -5,
+     220
+    ],
+    "rot": [
+     -18,
+     0,
+     0
+    ],
+    "color": "#1f9d3a",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     50,
+     95,
+     10
+    ],
+    "pos": [
+     -45,
+     -5,
+     220
+    ],
+    "rot": [
+     -18,
+     0,
+     0
+    ],
+    "color": "#f5f5e8",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     50,
+     95,
+     10
+    ],
+    "pos": [
+     5,
+     -5,
+     220
+    ],
+    "rot": [
+     -18,
+     0,
+     0
+    ],
+    "color": "#1f9d3a",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     50,
+     95,
+     10
+    ],
+    "pos": [
+     55,
+     -5,
+     220
+    ],
+    "rot": [
+     -18,
+     0,
+     0
+    ],
+    "color": "#f5f5e8",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     50,
+     95,
+     10
+    ],
+    "pos": [
+     105,
+     -5,
+     220
+    ],
+    "rot": [
+     -18,
+     0,
+     0
+    ],
+    "color": "#1f9d3a",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     50,
+     18,
+     25
+    ],
+    "pos": [
+     -95,
+     -58,
+     200
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#1f9d3a",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     50,
+     18,
+     25
+    ],
+    "pos": [
+     -45,
+     -58,
+     200
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#f5f5e8",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     50,
+     18,
+     25
+    ],
+    "pos": [
+     5,
+     -58,
+     200
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#1f9d3a",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     50,
+     18,
+     25
+    ],
+    "pos": [
+     55,
+     -58,
+     200
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#f5f5e8",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     50,
+     18,
+     25
+    ],
+    "pos": [
+     105,
+     -58,
+     200
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#1f9d3a",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     38,
+     38,
+     30
+    ],
+    "pos": [
+     -95,
+     -30,
+     100
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#2e8b3a",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     38,
+     38,
+     30
+    ],
+    "pos": [
+     -55,
+     -30,
+     100
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#1f6f2e",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     38,
+     38,
+     30
+    ],
+    "pos": [
+     -75,
+     10,
+     100
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#1f6f2e",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     38,
+     38,
+     30
+    ],
+    "pos": [
+     -30,
+     10,
+     100
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#2e8b3a",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     36,
+     36,
+     30
+    ],
+    "pos": [
+     -75,
+     -10,
+     128
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#2e8b3a",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     38,
+     38,
+     30
+    ],
+    "pos": [
+     -95,
+     -30,
+     60
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#1f6f2e",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     38,
+     38,
+     30
+    ],
+    "pos": [
+     -55,
+     -30,
+     60
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#2e8b3a",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     38,
+     38,
+     30
+    ],
+    "pos": [
+     -75,
+     10,
+     60
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#2e8b3a",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     38,
+     38,
+     30
+    ],
+    "pos": [
+     -30,
+     10,
+     60
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#1f6f2e",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     70,
+     45,
+     20
+    ],
+    "pos": [
+     50,
+     -25,
+     95
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#d9a441",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     70,
+     14,
+     12
+    ],
+    "pos": [
+     50,
+     -10,
+     115
+    ],
+    "rot": [
+     0,
+     0,
+     25
+    ],
+    "color": "#ffd92e",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     70,
+     14,
+     12
+    ],
+    "pos": [
+     50,
+     -30,
+     118
+    ],
+    "rot": [
+     0,
+     0,
+     -20
+    ],
+    "color": "#ffd92e",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     70,
+     14,
+     12
+    ],
+    "pos": [
+     50,
+     5,
+     118
+    ],
+    "rot": [
+     0,
+     0,
+     15
+    ],
+    "color": "#f7c614",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     70,
+     45,
+     20
+    ],
+    "pos": [
+     50,
+     -25,
+     55
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#d9a441",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     70,
+     14,
+     12
+    ],
+    "pos": [
+     50,
+     -10,
+     75
+    ],
+    "rot": [
+     0,
+     0,
+     -20
+    ],
+    "color": "#ffd92e",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     70,
+     14,
+     12
+    ],
+    "pos": [
+     50,
+     -30,
+     78
+    ],
+    "rot": [
+     0,
+     0,
+     20
+    ],
+    "color": "#f7c614",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     40,
+     40,
+     30
+    ],
+    "pos": [
+     -100,
+     -90,
+     15
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#d9a441",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     34,
+     34,
+     28
+    ],
+    "pos": [
+     -100,
+     -90,
+     42
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#2e8b3a",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     40,
+     40,
+     30
+    ],
+    "pos": [
+     100,
+     -90,
+     15
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#d9a441",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     34,
+     34,
+     28
+    ],
+    "pos": [
+     100,
+     -90,
+     42
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#1f6f2e",
+    "glow": false
+   }
+  ]
+ },
+ "still": "c:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test2\\preview\\shot_21.png",
+ "cost_usd": 0.029150000000000002
+}

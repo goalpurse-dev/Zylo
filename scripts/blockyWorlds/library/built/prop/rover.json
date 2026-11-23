@@ -1,0 +1,599 @@
+{
+ "name": "rover",
+ "kind": "prop",
+ "asked": "a blocky six-wheeled moon rover with a white body, a small antenna dish and a solar panel",
+ "spec": {
+  "name": "rover",
+  "real_size_cm": 200,
+  "hold": "on_ground",
+  "grip": [
+   0,
+   0,
+   30
+  ],
+  "shapes": [
+   {
+    "type": "box",
+    "size": [
+     90,
+     160,
+     35
+    ],
+    "pos": [
+     0,
+     0,
+     55
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#f4f4f4",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     92,
+     60,
+     20
+    ],
+    "pos": [
+     0,
+     -50,
+     78
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#d0d6dc",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     94,
+     164,
+     8
+    ],
+    "pos": [
+     0,
+     0,
+     40
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ff9a1a",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     40,
+     30,
+     25
+    ],
+    "pos": [
+     0,
+     -82,
+     60
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#222a33",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     14,
+     14,
+     14
+    ],
+    "pos": [
+     -10,
+     -97,
+     62
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#66ccff",
+    "glow": true
+   },
+   {
+    "type": "ball",
+    "size": [
+     14,
+     14,
+     14
+    ],
+    "pos": [
+     10,
+     -97,
+     62
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#66ccff",
+    "glow": true
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     18,
+     18,
+     12
+    ],
+    "pos": [
+     -70,
+     -60,
+     28
+    ],
+    "rot": [
+     0,
+     0,
+     90
+    ],
+    "color": "#2b2b2b",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     56,
+     56,
+     22
+    ],
+    "pos": [
+     -62,
+     -60,
+     28
+    ],
+    "rot": [
+     0,
+     0,
+     90
+    ],
+    "color": "#2b2b2b",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     56,
+     56,
+     22
+    ],
+    "pos": [
+     62,
+     -60,
+     28
+    ],
+    "rot": [
+     0,
+     0,
+     90
+    ],
+    "color": "#2b2b2b",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     56,
+     56,
+     22
+    ],
+    "pos": [
+     -62,
+     0,
+     28
+    ],
+    "rot": [
+     0,
+     0,
+     90
+    ],
+    "color": "#2b2b2b",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     56,
+     56,
+     22
+    ],
+    "pos": [
+     62,
+     0,
+     28
+    ],
+    "rot": [
+     0,
+     0,
+     90
+    ],
+    "color": "#2b2b2b",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     56,
+     56,
+     22
+    ],
+    "pos": [
+     -62,
+     60,
+     28
+    ],
+    "rot": [
+     0,
+     0,
+     90
+    ],
+    "color": "#2b2b2b",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     56,
+     56,
+     22
+    ],
+    "pos": [
+     62,
+     60,
+     28
+    ],
+    "rot": [
+     0,
+     0,
+     90
+    ],
+    "color": "#2b2b2b",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     24,
+     24,
+     24
+    ],
+    "pos": [
+     -62,
+     -60,
+     28
+    ],
+    "rot": [
+     0,
+     0,
+     90
+    ],
+    "color": "#ffcc33",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     24,
+     24,
+     24
+    ],
+    "pos": [
+     62,
+     -60,
+     28
+    ],
+    "rot": [
+     0,
+     0,
+     90
+    ],
+    "color": "#ffcc33",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     24,
+     24,
+     24
+    ],
+    "pos": [
+     -62,
+     0,
+     28
+    ],
+    "rot": [
+     0,
+     0,
+     90
+    ],
+    "color": "#ffcc33",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     24,
+     24,
+     24
+    ],
+    "pos": [
+     62,
+     0,
+     28
+    ],
+    "rot": [
+     0,
+     0,
+     90
+    ],
+    "color": "#ffcc33",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     24,
+     24,
+     24
+    ],
+    "pos": [
+     -62,
+     60,
+     28
+    ],
+    "rot": [
+     0,
+     0,
+     90
+    ],
+    "color": "#ffcc33",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     24,
+     24,
+     24
+    ],
+    "pos": [
+     62,
+     60,
+     28
+    ],
+    "rot": [
+     0,
+     0,
+     90
+    ],
+    "color": "#ffcc33",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     8,
+     8,
+     60
+    ],
+    "pos": [
+     25,
+     50,
+     102
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#888888",
+    "glow": false
+   },
+   {
+    "type": "cone",
+    "size": [
+     60,
+     60,
+     28
+    ],
+    "pos": [
+     25,
+     50,
+     145
+    ],
+    "rot": [
+     -30,
+     0,
+     0
+    ],
+    "color": "#ffffff",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     6,
+     6,
+     24
+    ],
+    "pos": [
+     25,
+     42,
+     152
+    ],
+    "rot": [
+     -30,
+     0,
+     0
+    ],
+    "color": "#ff3333",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     10,
+     10,
+     10
+    ],
+    "pos": [
+     25,
+     38,
+     162
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ff3333",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     8,
+     8,
+     70
+    ],
+    "pos": [
+     -30,
+     60,
+     112
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#555555",
+    "glow": false
+   },
+   {
+    "type": "ball",
+    "size": [
+     12,
+     12,
+     12
+    ],
+    "pos": [
+     -30,
+     60,
+     150
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#ff3333",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     8,
+     8,
+     28
+    ],
+    "pos": [
+     -30,
+     10,
+     87
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#555555",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     85,
+     55,
+     6
+    ],
+    "pos": [
+     -30,
+     10,
+     102
+    ],
+    "rot": [
+     -15,
+     0,
+     0
+    ],
+    "color": "#1f4fd8",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     85,
+     3,
+     3
+    ],
+    "pos": [
+     -30,
+     10,
+     106
+    ],
+    "rot": [
+     -15,
+     0,
+     0
+    ],
+    "color": "#9ec5ff",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     3,
+     55,
+     3
+    ],
+    "pos": [
+     -30,
+     10,
+     106
+    ],
+    "rot": [
+     -15,
+     0,
+     0
+    ],
+    "color": "#9ec5ff",
+    "glow": false
+   }
+  ]
+ },
+ "still": "c:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test2\\preview\\shot_23.png",
+ "cost_usd": 0.024739999999999998
+}

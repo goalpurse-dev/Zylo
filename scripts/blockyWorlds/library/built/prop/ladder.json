@@ -1,0 +1,299 @@
+{
+ "name": "ladder",
+ "kind": "prop",
+ "asked": "Metal ladder leading up to a ceiling hatch",
+ "spec": {
+  "name": "ladder_to_ceiling_hatch",
+  "real_size_cm": 300,
+  "hold": "on_wall",
+  "grip": [
+   0,
+   0,
+   150
+  ],
+  "shapes": [
+   {
+    "type": "box",
+    "size": [
+     8,
+     6,
+     300
+    ],
+    "pos": [
+     -25,
+     0,
+     150
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#c0c8d0",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     8,
+     6,
+     300
+    ],
+    "pos": [
+     25,
+     0,
+     150
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#c0c8d0",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     5,
+     5,
+     42
+    ],
+    "pos": [
+     0,
+     0,
+     25
+    ],
+    "rot": [
+     0,
+     90,
+     0
+    ],
+    "color": "#e03030",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     5,
+     5,
+     42
+    ],
+    "pos": [
+     0,
+     0,
+     65
+    ],
+    "rot": [
+     0,
+     90,
+     0
+    ],
+    "color": "#e03030",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     5,
+     5,
+     42
+    ],
+    "pos": [
+     0,
+     0,
+     105
+    ],
+    "rot": [
+     0,
+     90,
+     0
+    ],
+    "color": "#e03030",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     5,
+     5,
+     42
+    ],
+    "pos": [
+     0,
+     0,
+     145
+    ],
+    "rot": [
+     0,
+     90,
+     0
+    ],
+    "color": "#e03030",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     5,
+     5,
+     42
+    ],
+    "pos": [
+     0,
+     0,
+     185
+    ],
+    "rot": [
+     0,
+     90,
+     0
+    ],
+    "color": "#e03030",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     5,
+     5,
+     42
+    ],
+    "pos": [
+     0,
+     0,
+     225
+    ],
+    "rot": [
+     0,
+     90,
+     0
+    ],
+    "color": "#e03030",
+    "glow": false
+   },
+   {
+    "type": "cylinder",
+    "size": [
+     5,
+     5,
+     42
+    ],
+    "pos": [
+     0,
+     0,
+     265
+    ],
+    "rot": [
+     0,
+     90,
+     0
+    ],
+    "color": "#e03030",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     110,
+     12,
+     14
+    ],
+    "pos": [
+     0,
+     -2,
+     306
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#222222",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     100,
+     60,
+     8
+    ],
+    "pos": [
+     0,
+     -25,
+     312
+    ],
+    "rot": [
+     -70,
+     0,
+     0
+    ],
+    "color": "#ffb020",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     30,
+     4,
+     10
+    ],
+    "pos": [
+     0,
+     -33,
+     330
+    ],
+    "rot": [
+     -70,
+     0,
+     0
+    ],
+    "color": "#222222",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     16,
+     10,
+     14
+    ],
+    "pos": [
+     -25,
+     -6,
+     3
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#444444",
+    "glow": false
+   },
+   {
+    "type": "box",
+    "size": [
+     16,
+     10,
+     14
+    ],
+    "pos": [
+     25,
+     -6,
+     3
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "color": "#444444",
+    "glow": false
+   }
+  ]
+ },
+ "still": "c:\\Users\\Public\\Zylo\\reference\\blocky-worlds\\round9\\builder\\job_test1\\preview\\shot_06.png",
+ "cost_usd": 0.00242
+}
