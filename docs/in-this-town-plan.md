@@ -1,6 +1,6 @@
-# In This Town: the plan (2026-11-24, waiting for the owner's approval)
+# In This Town: the plan (2026-11-24, approved by the owner with 9 changes)
 
-**Goal.** A customer's custom video comes out right almost every time, at a cost of about $1.00-1.30 (hard ceiling $1.50).
+**Goal.** A customer's custom video comes out right almost every time, at a cost of about $1.10-1.40 (hard ceiling $1.50). Approved by the owner 2026-11-24 with 9 changes.
 
 **Background.** This plan is based on three studies in `docs/in-this-town-takeover/`:
 - 01: the viral videos
@@ -33,6 +33,38 @@ The topic does not change the set, the spots or the camera.
 - A light table: one entry per time of day.
 - A creature spot: behind the people, with a clear gap, plus a "silhouette in the dark" spot and an "eyes only" spot.
 - A list of tested actions. Everything on it has been rendered and looked at; nothing else can be written.
+
+**Stage A's tested actions (the minimum it ships with):**
+- People:
+  - stand (idle life on)
+  - walk from spot to spot
+  - run from spot to spot
+  - crouch
+  - point at a person or thing
+  - hold up a prop
+  - look at a person, thing or the sky
+  - turn to face someone
+  - wave
+  - cheer
+  - shiver
+  - hands on head
+  - sit on the porch step
+  - knock at the door (pose at the door, no door motion)
+- The creature:
+  - enter from the dark (the far end of the street, or rising from the drain)
+  - walk from spot to spot behind the people
+  - stand and loom
+  - leave into the dark
+- Props: a prop changes state (light on/off, mark drawn/washed); it pops in or vanishes with an effect.
+- Hand-overs stay as cuts (the holder, a cut, then the receiver holding it). Doors are never animated; the cut finds the person inside or outside.
+
+**Stage B** ships with the same people actions plus sit on the sofa, lie in bed, sit up in bed, and look out of the window.
+
+**A topic that needs a place we don't have.**
+- The writer moves the story into the town and keeps the topic's rule, object and characters. For example, "a haunted school" becomes "our street, where the school bus stops"; "on the moon" becomes "the night our street looked like the moon".
+- The writer says so in one plain line above the script: "We set this in your town because…".
+- The customer always sees the script before anything is rendered, and can change it or rewrite it.
+- When stage C (school hallway) or D (town square) exists, the writer picks it instead.
 
 **Freedom later.** The builder adds props and creatures to a stage. New stages are added one at a time, each tested before customers can use it.
 
@@ -80,7 +112,16 @@ topic
 **Continuity** is one small record per story, checked in code before any render:
 - each person's look, which never changes
 - what each person holds
-- each prop's state over the lines (light on/off, chalk drawn/washed)
+- each prop's state over the lines (light on/off, mark drawn/washed)
+- **each person's spot and screen side**
+  - Within one scene, a person keeps their spot between shots unless that line's words move them (a walk/run action on a moving word).
+  - Two people never swap screen sides between shots of the same scene: the camera stays on one side of the line between them.
+
+**Our checks run before the customer sees anything.**
+- Any shot that fails a free check is fixed or re-planned automatically: first the camera (another tested position), then the spots, then a re-plan of that line.
+- At most 2 tries. Then the line is simplified to one safe shot (one person, a close or medium shot, a tested position).
+- The customer never sees a shot our own checks failed.
+- **"Skip review, just make it":** customers who don't want to check stills press one button. The same automatic fixes run and the final render follows.
 
 **Hand-overs, contact and doors are done the way the references do them:** the holder, a cut, then the receiver holding it. The engine's hand-over animation stays out of customer videos.
 
@@ -114,14 +155,26 @@ rule: { object: "porch_light", kind: "light|line|mark|sign|over_head|creature",
 - creatures, built from our creature parts (silhouette, eyes, size, glow)
 - simple held poses
 
-**Never trusted with:**
+**Inside a customer run: props only.** When the story needs a rule object or prop the library doesn't have (a light-up nose, a doorbell, a flower on a head):
+1. The builder makes it from data, at real size in cm.
+2. It is tested alone on one still, with a person for scale, and checked automatically: the right size against the person, all parts connected, nothing floating, readable in a close-up.
+3. It is attached only at tested attach points:
+   - in a hand
+   - on a head
+   - over a head
+   - on a ground spot
+   - on the house's fixed points (porch lamp, door, window, mailbox, roof)
+4. If it fails twice, the writer swaps it for the nearest library prop and logs the swap. The customer sees the swap in the script.
+
+**Never inside a customer run:**
 - places or stages
 - where anyone stands
 - camera
 - lighting
-- anything inside a customer run
+- characters' bodies
+- creatures
 
-A customer's story uses only the library as it was when the run started. The builder runs as our own tool between customer runs, never during one. This is why the round 9 builder test failed: 9 of 10 stills had pieces missing or out of frame, which is placement and camera, not prop shape.
+A creature the library lacks is swapped by the writer for the nearest library creature (the shadow, horns, slime, ember, frost, the eyes-in-the-dark). We build new creatures between runs, test them, and approve them before they reach the library. This is why the round 9 builder test failed: 9 of 10 stills had pieces missing or out of frame, which is placement and camera, not prop shape.
 
 **Fix the bug first:** the writer's menu is read from the live library at call time, so a newly built prop is actually offered to the writer.
 
@@ -131,18 +184,23 @@ A customer's story uses only the library as it was when the run started. The bui
 
 | # | Topic (our own) | Tests |
 |---|---|---|
-| 1 | Every house must keep its porch light on at night | the round 10 story; light rule object, creature |
-| 2 | Every kid must be inside before the streetlights blink twice | spot rule at night, window shots |
-| 3 | Everyone wears a hat that changes colour with their mood | over-head/on-body rule object, faces, day only |
-| 4 | Every house has a chalk circle; the thing can't cross it | ground rule object, creature |
-| 5 | Every time you lie, your nose lights up | effect on a person, 2 people, comedy |
-| 6 | Every family leaves a cookie on the windowsill for the night visitor | prop on house, creature as eyes |
-| 7 | When it rains, everyone has to stand on one foot | storm light, pose rule, "everyone" = 6 people |
+| 1 | Every house must keep its porch light on at night, or the shadow comes to the door | the round 10 story; light on a house point, creature |
+| 2 | Every mailbox eats one letter a night, and nobody knows where they go | prop on a house point, night, mystery |
+| 3 | Every time you say sorry, a flower grows on your head | prop on a head, built in the run, faces, day |
+| 4 | Every family paints a yellow footprint path from its door; the fog only takes people who step off it | our own ground-mark rule, spot rule, creature |
+| 5 | Every time you lie, your nose lights up | effect on a person, prop built in the run, 2 people, comedy |
+| 6 | At midnight every house must ring its own doorbell three times, or something else rings it | house point (door), creature as eyes |
+| 7 | Every time someone yawns, a pillow falls from the sky | **things falling from the sky**, "everyone" = 6 people, day |
 | 8 | Your shadow does what you really want to do | creature-like second figure, indoor stage B |
-| 9 | Grandma's knitting decides tomorrow's weather | prop in hand, indoor, morning light |
-| 10 | Every pet can talk for one minute a year | animal from library, day |
-| 11 | The town clock eats one minute from whoever is late | sign/clock text prop, creature, two stages |
+| 9 | Grandma's knitting decides tomorrow's weather | prop in hand, indoor, morning light, storm |
+| 10 | Once a year the giant crab from the drain comes to collect lost socks | **a creature the library doesn't have**: the writer must swap it and log it |
+| 11 | The town clock eats one minute from whoever is late | clock text prop, creature, two stages |
 | 12 | A customer-style messy topic: "my brother keeps stealing my snacks" | the writer must fit an odd topic onto a stage |
+
+**Checked against the references.**
+- Changed: the old #2 (streetlights, the same premise as a reference), #3 (mood shown on the body, too close to the "weather follows your mood" reference), #4 (the chalk circle, a reference) and #6 (food left for a night beast, a reference). The old #7 and #10 were replaced to cover the two new needs.
+- How: checked against the first lines of all 39 references and the plots of the 33 whose stories are known (19 in ANALYSIS.md plus the 14 studied shot by shot).
+- The remaining 6 references are known only by their opening line. None of those lines matches a topic above.
 
 **The score:** the number of the 12 that **you would post**, judged by you on the stills sheet, and on the final video for milestone rounds. **Rules for the score:**
 - The automatic checks also report per shot (named thing shown, nobody hidden, rule obeyed), but they never replace your score.
@@ -155,17 +213,19 @@ A customer's story uses only the library as it was when the run started. The bui
 |---|---|---|
 | Writer | Sonnet, 1 call + 1 repair if the free checks fail (no Opus) | $0.05-0.10 |
 | Shot planner | Sonnet, 1 call for the whole story | $0.05-0.08 |
+| Props built in the run | 0-2 props: Haiku spec + one test still + Sonnet look, 1 retry each (round 10: 3 props $0.04) | $0-0.05 |
+| Automatic fixes before review | at most 2 tries on failed shots: re-plan call + re-rendered stills | about $0.05 |
 | Voice | ElevenLabs, your voice, about 75 s | about $0.12 |
 | Stills | about 50 stills on RunPod (round 10: 52 stills cost $0.07) | about $0.08 |
 | Cheap AI pre-look (optional) | one Haiku look at a low-res sheet, to sort the worst shots first | about $0.01 |
 | Customer fixes | 10 included (see 7) | about $0.10-0.15 if all are used |
 | Final render | 1080x1920, about 75 s (replica finals cost $0.52-0.61) | about $0.55 |
 | Failure allowance | a crashed chunk re-rendered once | about $0.10 |
-| **Total** | | **about $1.00-1.30** |
+| **Total** | | **about $1.10-1.40** |
 
 **Where the 313 credits go**, at your rule price = 2x cost (1 credit = $0.01 of cost):
 - 313 credits allows $1.56 of cost.
-- The steps above use $1.00-1.30.
+- The steps above use $1.10-1.40.
 - The rest is a safety margin for retries.
 - The price stays at 313. If the measured cost over 12 golden runs stays under $1.10, the price could drop to about 250.
 
@@ -200,8 +260,11 @@ A customer's story uses only the library as it was when the run started. The bui
 1. The checker runs, for free. An edit that breaks the rule or hides a named thing is explained back in plain words, for example: "the rule says nobody is outside at night; shall I put her at the window?"
 2. Only that shot's still is re-rendered (about $0.005), and the shot is shown again.
 
-**Money:**
-- **10 shot fixes + 2 line rewrites are included.** One fix costs us about $0.01; a line rewrite about $0.02 because of the voice.
+**Money (to be set from a measured fix):**
+- **Step 2 measures one real fix end to end**, from a cold GPU start (no worker running) to the still shown, with its cost and its wait in seconds.
+  - Known so far, from round 10's maps job (6 stills, warm-ish worker): 45 s and $0.007.
+  - A cold start adds the image boot, which is not yet measured.
+- **The included fixes are set from that number.** The working figure is 10 shot fixes + 2 line rewrites, if a fix stays under about $0.015.
 - After that, each extra fix is 3 credits and each line rewrite is 5 credits, always shown before they confirm.
 - "Start over from the script" is free once.
 - A video whose final render fails our checks is refunded automatically, as today.
@@ -223,6 +286,7 @@ A customer's story uses only the library as it was when the run started. The bui
 | 3 | Camera from the subject + lens-to-face ray + refuse-if-blocked, plus geometric checks that fail (not log) | The checks catch every blocked frame on step 2's sheet | about $0.03 |
 | 4 | One writer (replaces writer2/3/4): stage menu read live, rule card, one ID per character | 12 golden scripts written and frozen; the free checks pass. You read 3 of them | about $1.00 |
 | 5 | Shot planner (one call per story) | Golden set round 1: stills for all 12, you score them | about $2.00 |
+| 5b | **Motion early:** a low-quality preview video of 2 golden topics (movement, cuts on words, idle life) | you watch both | about $0.20 |
 | 6 | Fix rounds on the engine until the golden score is 10+/12 on stills | the score per round, never going down | about $1 per round, each asked first |
 | 7 | Stage B (indoor) built and tested like step 1 | its test sheet | about $0.05 |
 | 8 | The fix machine, as a local tool on the golden set | you fix 10 real shots by typing; I report how many came out right | about $0.20 |
@@ -230,13 +294,19 @@ A customer's story uses only the library as it was when the run started. The bui
 | 10 | The review screen on the site, behind your owner switch only | you run 3 videos as a customer | about $4 |
 | 11 | Clean-up: delete the dead code listed in 03 (after the go-live only) | the tests pass | $0 |
 
-**Total paid cost to reach the go-live checklist: about $15-20**, asked before each step.
+**Spending (the owner's rule of 2026-11-24):**
+- A step under $1 runs without asking. Anything over $1 is asked first.
+- The total cap is $20.
+- After each step I report 3 plain lines (what I did, the golden score before and after, the cost) and the folder with the sheet to score.
 
-**What I need from you:**
-- Yes or no on the scope (tested stages).
-- Your OK or changes to the 12 golden topics.
-- About 10 minutes per golden round to score the stills sheet.
-- The go for each paid step.
+## 10. Keeping the live engine safe until go-live
+
+- **No deploys.** I don't deploy the worker, the functions or the site, and I don't push. Nothing live changes.
+- **`worlds.py` is not edited.** The local `worlds.py` is 643 lines ahead of main. The live worker image was built from main, so live keeps running what main has.
+  - The v2 code lives in new files (`scripts/blockyWorlds/v2/`, `stage_v2.py`).
+  - It reads `worlds.py` as it is and never edits it, so v2 adds nothing to the live drift.
+- **Any future worker deploy is built from main, never from laptop-transfer**, until go-live. Before any deploy, the deployed `worlds.py` is diffed against what is about to go out.
+- **Go-live is one switch**, with the old engine kept as the rollback.
 
 ## 9. Checklist to switch purchases back on
 
