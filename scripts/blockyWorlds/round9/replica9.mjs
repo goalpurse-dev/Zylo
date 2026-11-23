@@ -14,7 +14,7 @@ import { shotFrames, splitShots } from "../blenderKit/plan.mjs";
 import { captionColors } from "../blenderKit/speakers.mjs";
 import { ledger } from "../studio/ledger.mjs";
 import { timedWords } from "../blenderKit/sceneCards.mjs";
-import { compileTakes, lockLooks, applyCard, initialState, ruleExceptions } from "../blenderKit/takes.mjs";
+import { compileTakes, lockLooks, applyCard, initialState, ruleExceptions, autoActing, actingProblems, timeProblems, sceneStartMarks } from "../blenderKit/takes.mjs";
 import { runpod, RATE, BOOT_S } from "../blenderKit/rp.mjs";
 import { staticCheck } from "../blenderKit/director.mjs";
 
@@ -77,7 +77,7 @@ const SPEC = {
   11: ["house", ["chalk_line#house"], "push_in", null], 12: ["high", ["chalk_line#house"], "push_in", null], 13: ["legs", ["me", "chalk_line#house"], "push_in", 1.0], 14: ["medium", ["me"], "push_in", 0.7],
   15: ["medium", ["dad"], "track", 0.45], 16: ["two", ["dad", "me"], "push_in", 0.6], 17: ["two", ["dad", "me"], "push_in", null], 18: ["street", [], "track", null],
   20: ["medium", ["me"], "push_in", 0.7], 21: ["high", ["chalk_line#house"], "push_in", null], 22: ["medium", ["dad"], "push_in", 0.55], 23: ["medium", ["dad"], "tilt_up", 0.4],
-  25: ["hand", ["dad", "chalk#dad2"], "push_in", null], 26: ["medium", ["dad"], "push_in", 0.35], 27: ["street", [], "push_in", null], 28: ["close", ["me"], "push_in", 0.75],
+  25: ["hand", ["dad", "chalk#dad2"], "push_in", null], 26: ["medium", ["dad"], "push_in", 0.35], 27: ["lamps", [], "push_in", null], 28: ["close", ["me"], "push_in", 0.75],
   29: ["low", ["monster"], "track", 0.9], 30: ["wide", ["dad"], "push_in", 0.2], 31: ["behind", ["dad", "monster"], "push_in", null], 32: ["medium", ["me"], "push_in", 0.45],
   33: ["hand", ["me", "chalk#dad"], "push_in", null], 34: ["medium", ["me"], "push_in", 0.6], 35: ["low", ["me", "monster"], "track", 0.6], 36: ["low", ["monster", "me"], "push_in", 0.9],
   37: ["low", ["me", "monster"], "track", 0.55], 38: ["top", ["chalk_line#monster"], "top_down", null], 39: ["low", ["monster", "me"], "tilt_up", 1.0], 40: ["low", ["me", "monster"], "tilt_up", 0.6],
@@ -85,6 +85,7 @@ const SPEC = {
   45: ["wide", ["monster", "roof#monster"], "push_in", 0.6], 46: ["low", ["monster", "roof#monster"], "push_in", 0.8], 47: ["low", ["roof#monster"], "tilt_up", 0.9],
   48: ["two", ["crowd0", "crowd1"], "push_in", 0.5], 49: ["wide", ["monster", "chalk_line#monster"], "push_in", 0.4], 50: ["close", ["monster"], "static", 1.0],
 };
+const TARGET = { 3: 0.6, 4: 0.6, 5: 0.45 };
 const REFV = { 3: 0.45, 4: 0.55, 5: 0.45, 6: 0.55, 7: 0.55, 8: 0.55, 9: 0.5, 10: 0.5, 13: 0.35, 14: 0.5, 15: 0.45, 16: 0.55, 17: 0.5, 20: 0.45, 22: 0.5, 23: 0.4, 25: 0.45, 26: 0.5, 28: 0.5, 29: 0.45, 30: 0.55, 31: 0.6, 32: 0.45, 33: 0.5, 34: 0.5, 35: 0.6, 36: 0.5, 37: 0.5, 39: 0.5, 40: 0.6, 41: 0.55, 42: 0.5, 43: 0.5, 44: 0.5, 45: 0.45, 46: 0.45, 47: 0.45, 48: 0.6, 49: 0.5, 50: 0.5 };
 // each reference shot starts on the first word that begins at (or just before) its first frame
 const wordAt = (t) => { const i = refWords.findIndex((w) => w.s >= t - 0.12); return i < 0 ? refWords.length - 1 : i; };
@@ -134,31 +135,31 @@ const plan = {
   cast: [{ name: "Me", kid: true, hair: "spiky", hair_color: "#d4381c", shirt: "#d62a1e", pants: "#c42a1c" }, { name: "Dad", kid: false, skin: "#efc29a", hair: "short", hair_color: "#5a3a1e", shirt: "#f4f4f4", pants: "#7fa8e0", style: "dad" }, { name: "Guy", kid: false, hair: "short", hair_color: "#1a1a1a", shirt: "#c0392b", pants: "#a93226" }],
   monster: { present: true, style: "shadow", size: 4 },
   rule: { sentence: "a chalk line makes a house", object: { thing: "chalk_line", where: "on_ground" } },
-  stage: { suburb_street: { camera_side: "front", marks: { Me: "@-6,17.3", Dad: "@2.5,18.6", Guy: "@4,10.5", "pizza_box#guy": "@4,10.5", "car#kerb2": "@-22,4.2", "car#kerb3": "@26,-4.2", "ball#lawn": "@-2.5,14.2", "dog#lawn": "@-14,13.5", "car#kerb": "@12,4.2", "chalk#dad": "@0,15" } } },
-  scenes: [[1, 1, "sunset"], [2, 3, "night"], [4, 4, "sunset"], [5, 7, "night"], [8, 9, "storm"], [10, 18, "night"], [19, 19, "morning"], [20, 22, "night"]].map(([a, b, t], i) => ({ id: i + 1, lines: [a, b], place: "suburb_street", time: t, busy: "empty" })),
+  stage: { suburb_street: { camera_side: "front", marks: { Me: "@-1,17.3", Dad: "@4,18.4", Guy: "@4,10.5", "pizza_box#guy": "@4,10.5", "car#kerb2": "@-22,4.2", "car#kerb3": "@26,-4.2", "ball#lawn": "@-2.5,14.2", "dog#lawn": "@-14,13.5", "car#kerb": "@12,4.2", "chalk#dad": "@0,15" } } },
+  scenes: [[1, 1, "sunset"], [2, 3, "night"], [4, 6, "sunset"], [7, 7, "night"], [8, 9, "storm", { dad: "door", me: "door_side" }], [10, 18, "night"], [19, 19, "morning"], [20, 22, "night"]].map(([a, b, t, m], i) => ({ id: i + 1, lines: [a, b], place: "suburb_street", time: t, busy: "empty", ...(m ? { marks: m } : {}) })),
   props: [{ kind: "chalk", size: 1.0 }, { kind: "chalk#dad2", size: 1.6 }, { kind: "ball", size: 2.4 }, { kind: "dog", size: 1.9 }, { kind: "car", size: 1.0 }, { kind: "roof", size: 1.6 }],
 };
 const A_ = (who, d, o = {}) => ({ who, do: d, target: "", to: "", text: "", on_word: 0, ...o });
 const ACTS0 = {
-  1: [A_("dad", "draw_line", { target: "chalk_line#house", on_word: 3 })],
+  1: [A_("dad", "draw_line", { target: "chalk_line#house", to: "@0.6,17.4", on_word: 3 })],
   2: [A_("me", "turn_to", { target: "ball#lawn", on_word: 7 })],
   4: [A_("guy", "shake_head", { on_word: 2 }), A_("guy", "exit", { on_word: 6 })],
   5: [A_("me", "look_around", { on_word: 0 })],
-  6: [A_("dad", "draw_line", { target: "chalk_line#house", to: "@-4.5,17.4", on_word: 3 }), A_("dad", "put_in_pocket", { target: "me", on_word: 8 })],
+  6: [A_("dad", "draw_line", { target: "chalk_line#house", to: "@1.8,17.4", on_word: 3 }), A_("dad", "put_in_pocket", { target: "me", on_word: 8 })],
   7: [A_("dad", "turn_to", { target: "me", on_word: 0 }), A_("me", "turn_to", { target: "dad", on_word: 0 }), A_("dad", "talk", { on_word: 0 }), A_("chalk_line#house", "wash_away", { target: "chalk_line#house", on_word: 17 })],
-  8: [A_("dad", "run_to", { to: "@3,11", text: "panic", on_word: 1 }), A_("chalk#dad2", "appear", { target: "chalk#dad2", to: "dad", on_word: 0 }), A_("dad", "pick_up", { target: "chalk#dad2", on_word: 0 }), A_("chalk#dad2", "disappear", { target: "chalk#dad2", on_word: 9 })],
-  9: [A_("monster", "switch_all_off", { target: "lamps", text: "one by one", on_word: 6 })],
-  10: [A_("me", "shiver", { on_word: 5 })],
+  8: [A_("chalk#dad2", "appear", { target: "chalk#dad2", to: "dad", on_word: 0 }), A_("dad", "pick_up", { target: "chalk#dad2", on_word: 0 }), A_("dad", "run_to", { to: "line_front", text: "panic", on_word: 1 }), A_("dad", "try_draw", { target: "chalk_line#house", on_word: 5 }), A_("chalk#dad2", "disappear", { target: "chalk#dad2", on_word: 9 })],
+  9: [A_("monster", "switch_all_off", { target: "lamps", text: "one by one", on_word: 8 })],
   11: [A_("monster", "enter", { to: "@-6,1.5", on_word: 0 })],
   12: [A_("monster", "walk_to", { to: "@1,3.2", on_word: 6 }), A_("dad", "walk_to", { to: "@2,9.5", on_word: 8 }), A_("dad", "turn_to", { target: "monster", on_word: 10 })],
-  13: [A_("me", "run_to", { to: "@-2,6.5", text: "sprint", on_word: 1 }), A_("me", "take_out", { on_word: 7 }), A_("me", "turn_to", { target: "dad", on_word: 12 })],
+  12: [A_("dad", "back_away", { target: "monster", on_word: 5 })],
+  13: [A_("me", "run_to", { to: "@-2.5,12.5", text: "sprint", on_word: 1 }), A_("me", "take_out", { on_word: 5 }), A_("me", "run_to", { to: "@-2,6.5", text: "sprint", on_word: 12 })],
   14: [A_("me", "draw_around", { target: "monster", on_word: 1 })],
   15: [A_("monster", "turn_to", { target: "me", on_word: 1 }), A_("monster", "point", { target: "me", on_word: 3 })],
   16: [A_("monster", "hit_wall", { on_word: 2 })],
   18: [A_("roof#monster", "appear", { target: "roof#monster", to: "monster", on_word: 5 })],
   19: [A_("me", "cheer", { on_word: 3 }), A_("monster", "crowd", { text: "play", on_word: 2 })],
 };
-const FACES0 = { 4: { guy: "happy" }, 2: { me: "scared" }, 5: { me: "scared" }, 7: { me: "sad" }, 8: { dad: "shocked" }, 10: { me: "terrified" }, 12: { dad: "scared" }, 13: { me: "determined" }, 14: { me: "determined" }, 15: { me: "terrified" }, 16: { me: "smirk" }, 19: { me: "happy" } };
+const FACES0 = {};
 const ACTS = {}, FACES = {};
 for (const [n, xs] of Object.entries(ACTS0)) for (const a of xs) { const m = Number(n); const nn = m === 4 && a.on_word >= 7 ? 5 : NL(m); (ACTS[nn] ??= []).push(m === 4 && a.on_word >= 7 ? { ...a, on_word: a.on_word - 7 } : a); }
 for (const [n, f] of Object.entries(FACES0)) FACES[NL(Number(n))] = f;
@@ -166,6 +167,31 @@ for (const [n, f] of Object.entries(FACES0)) FACES[NL(Number(n))] = f;
 const RX = ruleExceptions(plan, script.lines.map((l) => ({ text: l.text })));
 plan.rule_check.outside = RX.outside;
 if (RX.invalid.length) say(`RULE: ${RX.invalid.length} exception(s) with no line in the story, NOT applied: ${RX.invalid.map((x) => x.why).join(" | ")}`);
+const AC = (feel, look_at, want) => ({ feel, look_at, want });
+plan.acting = { danger_over: { me: 17, dad: 17 }, lines: {
+  1: { me: AC("calm", "dad", "watch dad do the line"), dad: AC("determined", "chalk_line#house", "redraw the line before dark") },
+  2: { me: AC("worried", "ball#lawn", "get the ball, but it is outside the line"), dad: AC("serious", "me", "keep the kid inside") },
+  3: { me: AC("calm", "dog#lawn", "check the dog is in its circle"), dad: AC("calm", "me", "keep the kid inside") },
+  4: { me: AC("calm", "guy", "watch the pizza guy go"), dad: AC("calm", "guy", "get inside"), guy: AC("happy", "me", "deliver and leave before dark") },
+  5: { me: AC("serious", "chalk_line#house", "stay inside the line"), dad: AC("calm", "me", "keep the kid inside") },
+  6: { me: AC("determined", "street", "never cross the line"), dad: AC("calm", "me", "keep the kid inside") },
+  7: { me: AC("happy", "chalk#dad", "keep the chalk safe"), dad: AC("loving", "me", "give the kid a chalk") },
+  8: { me: AC("worried", "chalk_line#house", "keep the line"), dad: AC("serious", "me", "make sure the kid always has chalk") },
+  9: { me: AC("scared", "dad", "dad to come back in"), dad: AC("panic", "chalk_line#house", "redraw the line before it is gone") },
+  10: { me: AC("scared", "street", "the lights to stay on"), dad: AC("worried", "street", "see what is coming") },
+  11: { me: AC("scared", "monster", "hide"), dad: AC("scared", "monster", "keep it away from the house"), monster: AC("hungry", "dad", "find someone outside a line") },
+  12: { me: AC("scared", "monster", "hide"), dad: AC("terrified", "monster", "get away from it"), monster: AC("hungry", "dad", "catch the dad") },
+  13: { me: AC("terrified", "monster", "save dad"), dad: AC("terrified", "monster", "get away from it"), monster: AC("hungry", "dad", "catch the dad") },
+  14: { me: AC("scared", "monster", "trap it"), dad: AC("terrified", "monster", "get away from it"), monster: AC("hungry", "dad", "catch the dad") },
+  15: { me: AC("scared", "monster", "close the circle round it"), dad: AC("terrified", "monster", "get away from it"), monster: AC("hungry", "me", "catch the kid") },
+  16: { me: AC("terrified", "monster", "close the circle in time"), dad: AC("terrified", "monster", "get the kid away"), monster: AC("angry", "me", "grab the kid") },
+  17: { me: AC("confident", "monster", "show it it is trapped"), dad: AC("relieved", "me", "hug the kid"), monster: AC("angry", "me", "get out") },
+  18: { me: AC("confident", "monster", "keep it trapped"), dad: AC("relieved", "me", "hug the kid"), monster: AC("angry", "me", "get out") },
+  19: { me: AC("happy", "roof#monster", "keep the rain off its line"), dad: AC("happy", "roof#monster", "keep the town safe") },
+  20: { me: AC("happy", "street", "play outside after dark"), dad: AC("calm", "monster", "keep an eye on it") },
+  21: { me: AC("calm", "monster", "check it is still trapped"), dad: AC("calm", "monster", "keep an eye on it") },
+  22: { me: AC("confident", "monster", "it can never leave"), dad: AC("calm", "me", "keep the kid safe") },
+} };
 const looks = lockLooks(plan.cast);
 const sceneOf = (n) => plan.scenes.find((x) => n >= x.lines[0] && n <= x.lines[1]);
 let S = initialState(plan);
@@ -176,6 +202,8 @@ for (let n = 1; n <= lines.length; n++) {
     .map((c) => ({ from_word: c.wi - lines[n - 1].w0, shot: c.spec[0], show: c.spec[1], move: c.spec[2], ref: c.n }));
   // a line with no reference cut of its own continues the cut before (no new cut)
   const card = { line: n, actions: ACTS[n] ?? [], faces: FACES[n] ?? {}, cuts };
+  const scn = plan.scenes.find((x) => x.lines[0] === n);
+  if (scn?.marks) S = sceneStartMarks(S, scn);
   states[n] = S;
   const r = applyCard(S, card, { place: sceneOf(n).place, line: lines[n - 1], plan });
   if (r.problems.length) problems.push(...r.problems.map((p) => `line ${n}: ${p}`));
@@ -183,13 +211,16 @@ for (let n = 1; n <= lines.length; n++) {
   S = r.state;
 }
 states[lines.length + 1] = S;
+autoActing(plan, lines, states);
+const ACTP = actingProblems(plan, lines, states), TIMEP = timeProblems(plan, lines);
+say(`THE ACTING CHECK: ${ACTP.length} problem(s)${ACTP.length ? ": " + ACTP.join(" | ") : ""}; TIME AS STATE: ${TIMEP.length} problem(s)${TIMEP.length ? ": " + TIMEP.join(" | ") : ""}`);
 say(`cards: ${refCuts.length} cuts on the reference's words (${SH.length} reference shots; ${SH.length - refCuts.length} merged: under a word apart); THE STATE CHECK: ${problems.length} problem(s)${problems.length ? `: ${problems.join(" | ")}` : ""}`);
 save("cards.json", { cards, refCuts, problems });
 
 // ---- 4. THE TAKES + THE SHOTS (a line without a cut continues the cut before: the shots tile on the cut words only)
 const T = compileTakes({ plan, cards: cards.map((c, i) => (c.cuts.length || i === 0 ? c : { ...c, cuts: [] })), states, lines, looks });
-T.shots.forEach((s, k) => { s.ta = k === 0 ? 0 : tw[s.w0].start; s.tb = s.w1 == null ? tw.at(-1).end + 0.25 : tw[s.w1].start; s.ref = refCuts[k]?.n; s.refh = refCuts[k]?.spec?.[3]; s.refT0 = refCuts[k]?.refT0; s.refT1 = refCuts[k]?.refT1; s.frac = s.refh ? Math.min(0.95, s.refh) : null; s.v = REFV[s.ref] ?? null; if (s.ref === 30) s.side = 160; });
-const LIB = ["worlds/worlds.py", "actions/actions.py", "worlds/acts.py", "worlds/pieces.py", "worlds/motion.py", "worlds/crowds.py", "worlds/town.py", "worlds/effects.py", "worlds/stage.py", "worlds/stage9.py", "worlds/stage9b.py", "worlds/stage9c.py", "worlds/stage9d.py", "worlds/stage9e.py"].map((f) => fs.readFileSync(path.join(KIT, f), "utf8")).join("\n\n");
+T.shots.forEach((s, k) => { s.ta = k === 0 ? 0 : tw[s.w0].start; s.tb = s.w1 == null ? tw.at(-1).end + 0.25 : tw[s.w1].start; s.ref = refCuts[k]?.n; s.refh = refCuts[k]?.spec?.[3]; s.refT0 = refCuts[k]?.refT0; s.refT1 = refCuts[k]?.refT1; s.frac = TARGET[s.ref] ?? (s.refh ? Math.min(0.95, s.refh) : null); s.v = REFV[s.ref] ?? null; if (s.ref === 30) s.side = 160; });
+const LIB = ["worlds/worlds.py", "actions/actions.py", "worlds/acts.py", "worlds/pieces.py", "worlds/motion.py", "worlds/crowds.py", "worlds/town.py", "worlds/effects.py", "worlds/stage.py", "worlds/stage9.py", "worlds/stage9b.py", "worlds/stage9c.py", "worlds/stage9d.py", "worlds/stage9e.py", "worlds/stage9f.py"].map((f) => fs.readFileSync(path.join(KIT, f), "utf8")).join("\n\n");
 const HEAD = (title) => [`"""${title}"""`, "from shotkit import *", "from rbx import story", "from rbx.story import *", "import math, random", "from mathutils import Vector", "", "V = Video(__file__)", "story.bind(V)", "", LIB, ""];
 const ind = (s) => s.split("\n").map((l) => `    ${l}`).join("\n");
 const pyRun = (code, ...a) => { const r = spawnSync("python", ["-P", "-c", code, ...a], { encoding: "utf8" }); if (r.status) throw new Error(r.stderr.slice(-400)); return r.stdout; };
@@ -277,9 +308,13 @@ function compare(tag, r) {
     if (!x.ours) why.push("no still");
     else {
       if ((luma[x.ours] ?? 1) < Math.max(0.035, 0.45 * (lumaRef[x.refPng] ?? 0.1))) why.push(`black frame (${(luma[x.ours] ?? 0).toFixed(2)} vs the reference ${(lumaRef[x.refPng] ?? 0).toFixed(2)})`);
-      if ((flat[x.ours] ?? 0) > 0.45) why.push("a flat surface fills the frame");
+      if ((flat[x.ours] ?? 0) > 0.6) why.push("a flat surface fills the frame");
+      const big = (r.gate ?? []).filter((g) => String(g).startsWith(`ZW_GATE|S${x.k + 1}|`) && String(g).includes("|bigpart|")).map((g) => String(g).split("|"));
+      if (big.length) why.push(`a body part / prop fills ${Math.round(100 * Number(big[0][4]))}% of the frame (${big[0][2]})`);
+      const day = (r.gate ?? []).filter((g) => String(g).startsWith(`ZW_GATE|S${x.k + 1}|`) && String(g).includes("|daylight|")).map((g) => String(g).split("|")[2]);
+      if (day.length) why.push(`the light does not match the scene's time (lit like day: ${day.join(", ")})`);
       const both = /monster/.test(x.spec) && /\b(me|dad)\b/.test(x.spec) && /^(low|wide) /.test(x.spec);
-      if (x.refh != null && !both) {
+      if (x.refh != null && !both && TARGET[x.ref] == null) {
         if (x.h == null || x.h < 0.05) why.push("the subject is not in the frame");
         else if (Math.abs(x.h - Math.min(1, x.refh)) > 0.1) why.push(`size ${x.h.toFixed(2)} vs ${Math.min(1, x.refh).toFixed(2)}`);
         if (x.refv != null && x.v != null && Math.abs(x.v - x.refv) > 0.1) why.push(`position ${x.v.toFixed(2)} vs ${x.refv.toFixed(2)}`);
@@ -362,7 +397,7 @@ const ours = path.join(OUT, FINAL ? "replica_final_1080x1920.mp4" : "replica_pre
 // SOUND EFFECTS ON THEIR WORDS (our sfx library) + THE RAIN (the storm) + THE NIGHT (a soft wind, crickets): (line, word)
 const SFXD = path.join(ROOT, "scripts", "blockyWorlds", "engine", "audio", "sfx");
 const at = (n, w) => lines[n - 1].words[Math.min(lines[n - 1].words.length - 1, w)].start;
-const CUES = [[1, 10, "scratch", -6], [7, 4, "scratch", -6], [8, 11, "thunder", -2], [9, 1, "footsteps_run", -6], [10, 9, "click", -4], [11, 0, "click", -4], [11, 2, "click", -4], [11, 4, "click", -4], [11, 10, "scratch", -2],
+const CUES = [[1, 10, "scratch", -6], [7, 4, "scratch", -6], [8, 11, "thunder", -2], [9, 1, "footsteps_run", -6], [10, 8, "click", -5], [10, 9, "click", -5], [10, 10, "click", -5], [11, 0, "click", -5], [11, 1, "click", -5], [11, 2, "click", -5], [11, 3, "click", -5], [11, 4, "click", -5], [11, 10, "scratch", -2],
   [12, 1, "giant_steps", -3], [13, 8, "giant_steps", -3], [14, 2, "footsteps_run", -6], [15, 9, "scratch", -5], [16, 9, "whoosh_1", -6], [17, 2, "impact", -3], [19, 5, "knock", -6], [20, 5, "crowd_cheer", -14]]
   .filter(([n, w, f]) => lines[n - 1] && fs.existsSync(path.join(SFXD, f + ".wav"))).map(([n, w, f, gdb]) => ({ t: at(n, w), f: path.join(SFXD, f + ".wav"), gdb }));
 const scT = (a, b) => [lines[a - 1].start - (a === 1 ? 0 : 0.05), b < lines.length ? lines[b].start : tw.at(-1).end + 0.3];

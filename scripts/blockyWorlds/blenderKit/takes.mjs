@@ -23,9 +23,10 @@ export const MOVE_ACTIONS = Object.freeze(["enter", "exit", "walk_to", "run_to",
 export const MARKS8 = Object.freeze(["left", "center", "right", "back_left", "back", "back_right", "front_left", "front", "front_right"]);
 export const SIDE_DEG = Object.freeze({ front: 0, front_left: 28, front_right: -28 });
 export const TIMES8 = Object.freeze(["day", "sunset", "night", "storm", "morning"]);
-export const SHOTS8 = Object.freeze(["wide", "medium", "two", "close", "insert", "low", "top", "place", "street", "aerial", "high", "legs", "house", "hand", "behind"]);
+export const SHOTS8 = Object.freeze(["wide", "medium", "two", "close", "insert", "low", "top", "place", "street", "aerial", "high", "legs", "house", "hand", "behind", "lamps"]);
 /** a stage mark, or an exact ground point "@x,y" (round 9: the car at the kerb, the monster on the road) */
-export const isMark = (m) => MARKS8.includes(m) || /^@-?[\d.]+,-?[\d.]+$/.test(String(m ?? ""));
+export const PLACE_MARKS = Object.freeze(["door", "door_side", "line_front"]);
+export const isMark = (m) => MARKS8.includes(m) || PLACE_MARKS.includes(m) || /^@-?[\d.]+,-?[\d.]+$/.test(String(m ?? ""));
 export const MOVES8 = Object.freeze(["push_in", "tilt_up", "track", "top_down", "static"]);
 export const FACES8 = Object.freeze(["neutral", "happy", "laughing", "sad", "crying", "scared", "terrified", "shocked", "surprised", "angry", "confused", "smirk", "determined", "panic"]);
 // the line-card actions (each maps to ONE engine call in compileTakes; the generator lists them for the writer)
@@ -50,8 +51,10 @@ export const ACTIONS8 = Object.freeze({
   crowd: "EVERYONE: 8-10 neighbours at their porches and on the street, each with their own thing (target = the thing kind, text = cheer / wave / ring / point)",
   run_door_to_door: "runs from house door to house door, knocking",
   hit_wall: "the MONSTER's hand slams into the invisible wall of a chalk circle (a see-through wall flashes up, a ripple where it hits)",
+  back_away: "backs away from someone / something (target), facing it, small steps back", hide: "hides: crouches down, arms over the head",
+  try_draw: "crouches at a line and tries to redraw it (scrubbing with the chalk)",
 });
-const PEOPLE_ACTIONS = new Set(["enter", "exit", "walk_to", "run_to", "turn_to", "follow", "point", "wave", "cheer", "laugh", "scream", "cry", "shiver", "shrug", "facepalm", "think", "nod", "shake_head", "jump", "stomp", "talk", "hug", "fall", "sit", "stand_up", "lie_down", "look_around", "pick_up", "give", "put_in_pocket", "take_out", "drop", "throw", "kick", "read", "phone", "rule_effect", "star_eyes", "x_eyes", "sweat", "splat", "sign", "roar", "draw_around", "draw_line", "run_door_to_door"]);
+const PEOPLE_ACTIONS = new Set(["enter", "exit", "walk_to", "run_to", "turn_to", "follow", "point", "wave", "cheer", "laugh", "scream", "cry", "shiver", "shrug", "facepalm", "think", "nod", "shake_head", "jump", "stomp", "talk", "hug", "fall", "sit", "stand_up", "lie_down", "look_around", "pick_up", "give", "put_in_pocket", "take_out", "drop", "throw", "kick", "read", "phone", "rule_effect", "star_eyes", "x_eyes", "sweat", "splat", "sign", "roar", "draw_around", "draw_line", "run_door_to_door", "back_away", "hide", "try_draw"]);
 const THING_ACTIONS = new Set(["appear", "disappear", "move", "turn_on", "turn_off", "open", "close", "wash_away"]);
 const WORLD_ACTIONS = new Set(["switch_on", "switch_off", "switch_all_on", "switch_all_off", "windows_open", "crowd"]);
 const MONSTER_ONLY = new Set(["climb_out", "dive_in", "roar", "hit_wall"]);
@@ -377,7 +380,7 @@ export function compileTakes({ plan, cards, states, lines, looks }) {
       if (S0.things["chalk_line#house"] && !S0.things["chalk_line#house"].here) I(`zs_wash(H["chalk_line#house"], T0 - 2.0, T0 - 1.0) if H["chalk_line#house"] is not None else None`);
     }
     const used = {};
-    const markAt = (m) => { if (/^@/.test(String(m))) { const [x, y] = String(m).slice(1).split(",").map(Number); return `(${x}, ${y}, 0.0)`; } const k = used[m] = (used[m] ?? -1) + 1; return `zw_mark(${py(place)}, ${py(MARKS8.includes(m) ? m : "center")}, ${k})`; };
+    const markAt = (m) => { if (m === "door" || m === "door_side") return `zs_door_pt(H.get("chalk_line#house"), ${py(m)})`; if (m === "line_front") return `zs_line_front_pt(H.get("chalk_line#house"))`; if (/^@/.test(String(m))) { const [x, y] = String(m).slice(1).split(",").map(Number); return `(${x}, ${y}, 0.0)`; } const k = used[m] = (used[m] ?? -1) + 1; return `zw_mark(${py(place)}, ${py(MARKS8.includes(m) ? m : "center")}, ${k})`; };
     // the cast, at their marks as the state has them, the locked looks
     for (const k of people) {
       const p = S0.people[k];
@@ -440,6 +443,14 @@ export function compileTakes({ plan, cards, states, lines, looks }) {
       I(`# line ${c.line}: ${JSON.stringify(Ln.text).slice(1, -1).slice(0, 90)}`);
       const sp = Ln.speaker && !/^(narrator|me|)$/i.test(Ln.speaker) ? low(Ln.speaker) : null;
       for (const k of people) {
+        const act = k === "monster" ? null : plan.acting?.lines?.[c.line]?.[k];
+        if (act) {
+          const busy = (c.actions ?? []).some((a) => low(a.who) === k && a.do !== "talk");
+          const lk = low(act.look_at ?? "");
+          const look = lk === "monster" ? `H.get("monster")` : people.has(lk) || things.has(lk) ? `H.get(${py(lk)})` : lk === "street" ? "(st_c.x + st_r.x * 30.0, st_c.y + st_r.y * 30.0, 3.0)" : "None";
+          I(`zs_act(H.get(${py(k)}), o + ${la0.toFixed(3)}, o + ${la1.toFixed(3)}, ${py(low(act.feel))}, look=${look}, body=${busy ? "False" : "True"}, talk=${k === sp ? "True" : "False"})`);
+          continue;
+        }
         const face = Object.entries(c.faces ?? {}).find(([w]) => low(w) === k)?.[1];
         if (face || k === sp) I(`if H[${py(k)}] is not None: zw_emote(H[${py(k)}], o + ${la0.toFixed(3)}, o + ${la1.toFixed(3)}, ${py(FACES8.includes(face) ? face : "neutral")}${k === sp ? ", talk=True" : ""})`);
       }
@@ -448,7 +459,7 @@ export function compileTakes({ plan, cards, states, lines, looks }) {
         const who = low(a.who), T = low(a.target), to = low(a.to);
         const ta = `o + ${tOf(Ln, a.on_word).toFixed(3)}`;
         // (a hand-only action: taking a thing out, talking, pointing: happens DURING the walk / run, it does not end it)
-        const nxt = (c.actions ?? []).filter((b) => low(b.who) === who && Number(b.on_word) > Number(a.on_word) && !["take_out", "talk", "point", "wave", "nod", "shake_head"].includes(b.do)).map((b) => tOf(Ln, b.on_word));
+        const nxt = (c.actions ?? []).filter((b) => low(b.who) === who && Number(b.on_word) > Number(a.on_word) && !["talk", "point", "wave", "nod", "shake_head"].includes(b.do)).map((b) => tOf(Ln, b.on_word));
         const tEnd = nxt.length ? Math.min(la1 - 0.05, Math.min(...nxt) - 0.05) : la1 - 0.05;
         const tb = `o + ${Math.max(tOf(Ln, a.on_word) + 0.8, tEnd).toFixed(3)}`;
         const W = `H.get(${py(who)})`, TT = `H.get(${py(T)})`;
@@ -482,6 +493,9 @@ export function compileTakes({ plan, cards, states, lines, looks }) {
           case "pick_up": I(`zm_pick_up(${W}, ${ta}, ${TT})`); break;
           case "give": case "put_in_pocket": I(`zs_hand_over(${W}, ${TT}, H.get(${py(a.thing)}), ${ta}, ${tb}, pocket=${a.do === "put_in_pocket" ? "True" : "False"})`); break;
           case "take_out": I(`zs_take_out(${W}, H.get(${py(a.thing)}), ${ta})`); break;
+          case "back_away": I(`zs_back_away(${W}, ${ta}, ${tb}, ${T === "monster" ? `H.get("monster")` : TT})`); break;
+          case "hide": I(`zs_hide_pose(${W}, ${ta}, ${tb})`); break;
+          case "try_draw": I(`zs_try_draw(${W}, ${ta}, ${tb})`); break;
           case "drop": I(`zo_drop(${W}, H.get(${py(a.thing)}), ${ta})`); break;
           case "throw": I(`zw_throw(${W}, ${ta}, ${tb}, H.get(${py(a.thing)}), ${toPt ?? markAt("front")})`); break;
           case "kick": I(`zm_kick(${W}, ${ta}, ${TT}, ${toPt ?? markAt("front")})`); break;
@@ -495,7 +509,7 @@ export function compileTakes({ plan, cards, states, lines, looks }) {
           case "climb_out": { const hole = things.has("drain_grate") ? `(H["drain_grate"].location.x, H["drain_grate"].location.y)` : `zs_hole(${toPt ?? markAt("front")})`; I(`H["monster"].set_visible(${ta} - 0.9, True)`); I(`zw_climb_out(H["monster"], ${ta} - 0.9, ${ta} + 0.4, hole=${hole})`); break; }
           case "dive_in": { const hole = things.has("drain_grate") ? `(H["drain_grate"].location.x, H["drain_grate"].location.y)` : `zs_hole(${markAt("front")})`; I(`zs_dive(H["monster"], ${ta}, ${tb}, ${hole})`); break; }
           case "switch_on": case "switch_off": I(`zw_switch(${py(T)}, ${who && who !== "monster" ? W : `za_here(H["monster"], ${ta}) if H.get("monster") else (st_c.x, st_c.y)`}, ${ta}, ${a.do === "switch_on" ? "True" : "False"})`); break;
-          case "switch_all_on": case "switch_all_off": I(`zs_switch_all(${py(T === "windows" ? "windows" : "lamps")}, ${ta}, ${a.do === "switch_all_on" ? "True" : "False"}${/slow|one by one/i.test(a.text ?? "") ? ", stagger=0.35" : ""})`); break;
+          case "switch_all_on": case "switch_all_off": if (T !== "windows" && /one by one/i.test(a.text ?? "")) { const beats = [...Ln.words.slice(Number(a.on_word) || 0), ...(lines[c.line]?.words ?? []).slice(0, 6)].map((w) => `o + ${w.start.toFixed(3)}`).slice(0, 8); I(`zs_lamps_out([${beats.join(", ")}], ${a.do === "switch_all_on" ? "True" : "False"})`); break; } I(`zs_switch_all(${py(T === "windows" ? "windows" : "lamps")}, ${ta}, ${a.do === "switch_all_on" ? "True" : "False"}${/slow|one by one/i.test(a.text ?? "") ? ", stagger=0.35" : ""})`); break;
           case "windows_open": I(`zs_windows_open(${ta})`); break;
           case "rule_effect": I(`zw_rule_effect(${W}, ${ta})`); break;
           case "star_eyes": I(`zf_star_eyes(${W}, ${ta}, ${tb})`); break;
@@ -533,4 +547,52 @@ export function compileTakes({ plan, cards, states, lines, looks }) {
   // who moves in each line (the free movement check measures them)
   const movers = Object.fromEntries(cards.map((c) => [c.line, [...new Set((c.actions ?? []).filter((a) => MOVE_ACTIONS.includes(a.do)).map((a) => low(a.who)))]]));
   return { takes, shots, movers, cutCall: (s, t0 = "t0", t1 = "t1", tag = "") => `zc_cut(${t0}, ${t1}, ${py(s.shot)}, [${s.show.filter((k) => !isThing(k) && !SWITCH_TARGETS.includes(k)).map((k) => `H.get(${py(k)})`).join(", ")}], [${s.show.filter((k) => isThing(k)).map((k) => `H.get(${py(k)})`).join(", ")}], ${py(s.move)}${tag ? `, tag=${py(tag)}` : ""}${s.frac ? `, frac=${Number(s.frac).toFixed(2)}` : ""}${s.v != null ? `, v=${Number(s.v).toFixed(2)}` : ""}${s.side != null ? `, side=${Number(s.side).toFixed(1)}` : ""})` };
+}
+
+// ---------------------------------------------------------------- ROUND 9f (owner 2026-11-23): ACTING + TIME AS STATE
+export const FEELS8 = Object.freeze(["scared", "terrified", "panic", "worried", "confident", "relieved", "happy", "loving", "sad", "determined", "serious", "calm", "shocked", "curious", "angry", "hungry"]);
+export const SCARED_FEELS = Object.freeze(["scared", "terrified", "panic"]);
+/** who is on stage at a line's start (the scene's place) */
+const onStage = (plan, states, n) => { const sc = (plan.scenes ?? []).find((x) => n >= x.lines[0] && n <= x.lines[1]); const P = sc ? states[n]?.[sc.place] : null; return { P, here: P ? Object.entries(P.people).filter(([, p]) => p.here).map(([k]) => k) : [] }; };
+/** the plan's acting filled where it says nothing: next to the monster (before the danger is over) = scared, looking at it */
+export function autoActing(plan, lines, states) {
+  const A = (plan.acting ??= { lines: {}, danger_over: {} }); A.lines ??= {};
+  for (let n = 1; n <= lines.length; n++) {
+    const { P, here } = onStage(plan, states, n); if (!P) continue;
+    const row = (A.lines[n] ??= {});
+    for (const k of here) if (!row[k]) row[k] = P.monster?.here && n < (A.danger_over?.[k] ?? Infinity) ? { feel: "scared", look_at: "monster", want: "get away from it" } : { feel: "calm", look_at: "street", want: "carry on" };
+    if (P.monster?.here && !row.monster) row.monster = { feel: "hungry", look_at: here[0] ?? "street", want: "catch someone outside a line" };
+  }
+  return A;
+}
+/** THE ACTING CHECK: every character on stage has a feel, a look and a want; anyone who can see the monster looks AT it
+ * with a scared face until the danger is over for them (a neutral face next to a threat fails) */
+export function actingProblems(plan, lines, states) {
+  const out = [], A = plan.acting ?? {};
+  for (let n = 1; n <= lines.length; n++) {
+    const { P, here } = onStage(plan, states, n); if (!P) continue;
+    const row = A.lines?.[n] ?? {};
+    for (const k of here) {
+      const e = row[k];
+      if (!e?.feel || !e?.look_at || !e?.want) { out.push(`line ${n}: ${k} has no acting (feel, look_at, want)`); continue; }
+      if (!FEELS8.includes(low(e.feel))) out.push(`line ${n}: ${k}: "${e.feel}" is not a feel the engine plays (${FEELS8.join(", ")})`);
+      if (P.monster?.here && n < (A.danger_over?.[k] ?? Infinity) && (!SCARED_FEELS.includes(low(e.feel)) || low(e.look_at) !== "monster")) out.push(`line ${n}: ${k} can see the monster: looks AT it, scared (not ${e.feel}, looking at ${e.look_at})`);
+    }
+    if (P.monster?.here && !row.monster) out.push(`line ${n}: the monster has no acting`);
+  }
+  return out;
+}
+/** TIME IS STATE: the time of day changes only on a line that says so */
+export const TIME_WORDS = /\b(night|nights|dark|darkness|evening|dusk|sunset|sundown|sun|morning|dawn|sunrise|day|noon|midnight|storm|rain|o'clock|\d{1,2}(:\d\d)?)\b/i;
+export function timeProblems(plan, lines) {
+  const out = [], sc = plan.scenes ?? [];
+  for (let k = 1; k < sc.length; k++) if (sc[k].time !== sc[k - 1].time && !TIME_WORDS.test(lines[sc[k].lines[0] - 1]?.text ?? "")) out.push(`line ${sc[k].lines[0]}: the time changes (${sc[k - 1].time} -> ${sc[k].time}) on a line that does not say so`);
+  return out;
+}
+/** a scene that starts after a time skip may put people at new marks (the storm: dad and the kid at the door) */
+export function sceneStartMarks(S, scene) {
+  if (!scene?.marks) return S;
+  const out = JSON.parse(JSON.stringify(S)); const P = out[scene.place]; if (!P) return S;
+  for (const [k, m] of Object.entries(scene.marks)) if (P.people[low(k)]) P.people[low(k)].mark = m;
+  return out;
 }

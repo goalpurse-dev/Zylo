@@ -902,7 +902,7 @@ def zs_cam_top(t0, t1, P, Tt, frac):
     long_, short = max(ex, ey), min(ex, ey)
     want = frac or 0.7
     h = long_ / (2.0 * tv * want)
-    h = max(h, short / (2.0 * tv * 9.0 / 16.0 * 0.92), top + 2.0)
+    h = max(h, short / (2.0 * tv * 9.0 / 16.0 * 0.92), top + 2.0, top * 1.8 if top > 4.0 else 0.0)   # (round 9f: well above a tall monster: its head filled the frame)
     cam = Cam()
 
     def keys(hh):
