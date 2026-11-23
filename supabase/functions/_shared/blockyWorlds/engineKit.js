@@ -3,7 +3,7 @@
 // worlds.py (places, monsters, faces) and worlds/acts.py (actions, things, effects).
 import { LOCATIONS } from "./locations.js";
 // round 7 (owner): the lists come FROM THE CODE (scripts/blockyWorlds/blenderKit/genEngineKit.mjs writes this file)
-import { GEN_THINGS, GEN_ACTIONS, GEN_PLACES, GEN_RECIPES } from "./engineKitGenerated.js";
+import { GEN_THINGS, GEN_ACTIONS, GEN_PLACES, GEN_RECIPES, GEN_ACTIONS8, GEN_SHOTS8, GEN_MOVES8 } from "./engineKitGenerated.js";
 
 export const PLACES = LOCATIONS.filter((l) => GEN_PLACES.includes(l.id)).map((l) => ({ id: l.id, label: l.label, about: l.about }));
 /** places a story may use outdoors / indoors (the kit's plane, moon and school sets only when the story is there) */
@@ -57,5 +57,26 @@ export function engineKitText() {
     `- SHOT RECIPES: ${RECIPES.join(", ")} (window_lookout: a kid at a window looking out at the street; porch: people on a porch seen from the front yard).`,
     "- NOT POSSIBLE: written text that must be read, tiny details, liquids, fire spreading, flying people, transformations into other shapes, fast fights.",
     "- ONLY THESE. A thing, action or effect that is not on these lists is never written: swap it for the closest thing on the list (a trumpet -> a kazoo), or name it as a NEW PROP (it gets built before the video).",
+  ].join("\n");
+}
+
+// ---------------------------------------------------------------- ROUND 8 (owner 2026-11-23): one stage, one take per scene
+export const ACTIONS8 = GEN_ACTIONS8;
+export const SHOTS8 = GEN_SHOTS8;
+export const MOVES8 = GEN_MOVES8;
+export const TIMES8 = Object.freeze(["day", "sunset", "night", "storm", "morning"]);
+export const MONSTERS8 = Object.freeze({ shadow: "a tall black silhouette with two glowing eyes and long thin limbs (scary stories)", ...MONSTERS });
+/** the round 8 list (generated from the take compiler + the prop builders): the writer and the plan only use these */
+export function engineKitText8() {
+  return [
+    "WHAT OUR ENGINE CAN SHOW (every line must be something these can show; nothing else):",
+    `- PLACES (one main place + at most one side place): ${PLACES.map((p) => p.id).join(", ")}.`,
+    `- TIME: ${TIMES8.join(", ")} (storm = night with rain and lightning; morning = a warm low sun).`,
+    `- PEOPLE: blocky Roblox-style kids and adults, ONE bold colour each; faces: ${FACES.join(", ")}.`,
+    `- ACTIONS: ${Object.entries(ACTIONS8).map(([k, v]) => `${k} (${v})`).join("; ")}.`,
+    `- THINGS: ${THINGS.join(", ")}.`,
+    `- MONSTERS: ${Object.entries(MONSTERS8).map(([k, v]) => `${k}: ${v}`).join("; ")}.`,
+    "- NOT POSSIBLE: written text except one short sign, tiny details, liquids, fire spreading, flying people, transformations, fast fights.",
+    "- ONLY THESE. Anything not on these lists is never written: swap it for the closest thing on the list.",
   ].join("\n");
 }

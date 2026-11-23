@@ -1,91 +1,54 @@
-# In This Town: the rules (round 4, 2026-11-22)
+# In This Town: the rules (round 8, 2026-11-23)
 
-Before round 4 there were about 60 rules spread over five places: the writer (`writer2.js`), the plan (`director2.mjs`
-PLAN_SYSTEM), the scene cards (`sceneCards.mjs` SCENE_SYSTEM + `sceneProblems`), the picture check (`storyboard3.mjs`
-vision prompt) and the engine (`worlds.py`). Some were craft basics, some were fixes for a single test, and a few
-contradicted each other. Now there are **12 global rules** (`supabase/functions/_shared/blockyWorlds/rules.js`, the same text
-in every step) plus **story rules** that the plan writes fresh for every story.
+Round 8 rule of the rules: **a rule no step checks is removed.** Every rule below names the step that checks or enforces
+it. "Code" means it is measured or enforced in code (the card is rejected or fixed, or the engine always does it). "AI
+check" means the paid picture check judges it on the rendered stills. Round 4's 12 global rules are kept in
+`rules.js` for the old (round 7) pipeline. Round 8 runs on `writer3.js`, `director3.mjs`, `takes.mjs` and
+`worlds/stage.py`.
 
-## The 12 global rules
+## The rules and who checks them
 
-1. **Simple + kid-safe:** words a 9-year-old learning English knows, short lines; scary is fine, nobody gets hurt.
-2. **One town rule:** said in the first line, every line follows from the one before, the ending uses that same rule.
-3. **Showable:** every line is something the engine can show (the engine kit).
-4. **Named = seen:** what a line names (a person, a thing, an action, the monster) is in the frame, big enough to read, and the one the line is about does it.
-5. **Faces:** never cut by the frame, never under the captions; close-ups only for a reaction or a speaker, at most 1 shot in 4.
-6. **Camera:** never inside a wall or a body, never under the ground, never just one flat surface or a glare blob.
-7. **Alive:** nobody is frozen (everyone breathes, blinks and moves), every action blends into the next, walking feet move with the ground.
-8. **Show the place:** the first shot of every place moves through it (a street glide, a low drone or a follow walk), never just one house.
-9. **The story's world:** nothing on screen contradicts the story rules (who is outside, what moves, what is lit).
-10. **Same cast:** a character keeps one look and one voice all story; only the one speaking moves their mouth.
-11. **One scene, one place:** a scene stays in one of the story's own places.
-12. **Every line a new picture:** each line changes what we see (a new shot or a new action), never the same shot twice in a row.
-
-Which step reads which: writer 1, 2, 3, 12 · plan 2, 8, 9, 10, 11 · scene cards 4–9, 11, 12 · picture check 4, 5, 6, 9.
-The engine enforces 5, 6, 7 and 8 in code, whatever a card asks for.
-
-## Story rules (the plan writes them fresh for each story)
-
-`plan.story_rules` + `plan.town` + every line's `world`:
-
-- **mood** and **colours**
-- **camera_style**: glide / drone / follow / handheld / still
-- **cut_every_s**: the pace
-- **places_why**: which places, and why
-- **outside**: who is outdoors when
-- **the town's habits** and **effects**: what the rule means per time of day
-- **a world state per line**: busy / walkers / extras / cars / windows / curtains / threat
-
-## Every rule before round 4, and what happened to it
-
-| Where | Rule | Now |
+| # | Rule | Checked by |
 |---|---|---|
-| writer | Two openings (rule first / result first), pick one | kept as writer craft (it serves rule 2) |
-| writer | Four story types | kept as writer craft |
-| writer | Simple English, no rare words (list), no idioms | global 1 (the hard-word list stays as its code check) |
-| writer | Short common names, at most 3 named characters | writer craft (serves 1) |
-| writer | One rule, said again in other words within 4 lines, no new rules, the ending uses it | global 2 (the "again within 4 lines" stays as craft) |
-| writer | Every line showable by the engine kit | global 3 |
-| writer | Shape: hook, examples, problem, worse, fix, funny end | writer craft |
-| writer | 32–38 lines / about 90 s | REMOVED as a rule: the length comes from the request (a word budget: about 3 words a second) |
-| writer | Speaking line: speaker + double quotes | writer craft (format) |
-| writer | Self-test (3 sentences, would a 10-year-old get it) | writer craft (serves 1, 2) |
-| writer | "WHEN: the whole story happens in the day / at night" | REMOVED as a fixed rule: the plan's per-line time (story rules) |
-| plan | Exact looks per cast member, clearly different colours | global 10 |
-| plan | At most 3 places, every line a place + time | global 11 + story rules (places) |
-| plan | "Never an unrelated set (a classroom, a bedroom, a shop)" | REMOVED (a one-test fix; global 11 covers it) |
-| plan | Props with sizes | plan craft |
-| plan | One monster look, size 3–4 | global 10 (same look) + engine |
-| plan | One voice type per speaking character | global 10 |
-| plan | World state per line, lively defaults, the town's habits override | STORY RULES (the defaults are the plan's starting point, not rules) |
-| plan | The threat arc (calm, near, react, after) | story rules (the plan writes it); the engine plays it |
-| scene | Start frame shows what the words name | global 4 |
-| scene | Another character's action = that character does it | global 4 |
-| scene | Close only for a reaction or speech | global 5 |
-| scene | **A new place starts with a WIDE camera** | REPLACED by global 8 (a moving establishing shot); it contradicted "the monster's first look is a reveal" when a place began with the monster |
-| scene | Stay in the story's places | global 11 |
-| scene | Monster in frame when the words are about it, first look = reveal, never just its legs | global 4 (the reveal camera is card craft) |
-| scene | Motion steps on words, only engine actions | card craft (format) |
-| scene | Things keep their kind, people from the plan only | global 10 |
-| scene | SFX on a word | card craft |
-| scene | People outdoors only if the world state lists them | global 9 |
-| scene | Close-ups max 25% (code cap) | global 5 |
-| check | Shows its words, not blurry, dark, a flat wall, a glare blob, a cut-off subject | global 4, 6 |
-| check | Fits the world state | global 9 |
-| engine | Faces inside the safe area, above the captions (the framing gate) | global 5 |
-| engine | The camera never inside a body (cam guard), never under the ground, clears trees in front | global 6 |
-| engine | Medium = "as big as fits" | REMOVED (made giant heads); framing is measured to a size |
-| engine | A lamp bulb prop on a street is dropped (glare blob) | REMOVED as a rule: a one-test fix, kept in code |
-| engine | Copy mode (replica only) | kept, replica only |
-| engine | Dot faces by default, the old face as an option | global 10 (the style is the default look) |
-| engine | Idle life, blending, no sliding feet (new) | global 7 |
-| engine | The first shot of a place moves (new) | global 8 |
+| 1 | **Simple + kid-safe:** words a 9-year-old knows, lines of at most 13 words, no rare words; scary is fine, nobody gets hurt | code: writer (`writer2Problems`: hard-word list, line length) |
+| 2 | **A kid telling a friend:** contractions, short lively lines, at least one sound word | code: writer (`writer3Problems`) |
+| 3 | **One line = one subject doing one thing we can see;** no line with nothing to see | code: writer (every line has a subject, a "does" and something it shows) |
+| 4 | **Only what the engine can show:** every noun and action is on the generated engine list (`genEngineKit.mjs`, read from the code) | code: writer (`shows` against the list), cards (the action list is the schema; `applyCard` rejects the rest) |
+| 5 | **The story tests:** the danger is to someone the narrator loves; the rule's key sentence word for word early (line 1-3) AND at the climax; the hero wins by using the rule in an unexpected way; the last line is a twist or a joke | code: writer (key sentence found twice, the loved one, the danger / trick / twist lines in order) |
+| 6 | **Speech is rare:** at most one quoted line, introduced by the narrator on the line before | code: writer (`writer2Problems`) |
+| 7 | **One stage, few people:** one main place + at most one side place; 2-3 named characters with the narrator; extras / crowds / traffic only when a line is about them | code: plan (`plan3Problems`), writer (cast count); the engine's living world defaults to quiet (`zs_quiet`) |
+| 8 | **The rule is one physical thing** on or next to people (in a hand / next to someone / on the ground), in line 1's opening WIDE with someone doing it, and in most shots | code: story checks (`storyChecks`: line 1's first cut, the share of cuts that show it) |
+| 9 | **One continuous take per scene:** the scene is built once; every line adds actions to one timeline; nobody is re-placed between cards; anything that came in stays until a line removes it; a new place or time is a new scene that starts from that place's last state | code: the take compiler (`compileTakes`: one take function per scene, every shot only puts a camera on it) |
+| 10 | **The state is the truth:** who is where, facing what, holding what, what is on / off / open, where the monster is, saved after every line and given to the next card; a card that contradicts it is rejected before rendering | code: `applyCard` (rejected, written again once, then only the valid actions are kept) |
+| 11 | **Same cast:** a character keeps one look (locked in code, one bold colour each) and one voice all story | code: `lockLooks` (no card can set a look); AI check: the continuity check (same clothes) |
+| 12 | **Continuity between cards:** each line's first frame matches the line before's last frame (the same people, clothes, sides, props) unless the scene changed | AI check: the continuity pairs (counted as continuity breaks; a break fails the card) |
+| 13 | **Named = seen (wins over every other rule):** every person, thing and the monster a line names gets its own clear shot | code: `cutProblems` + `fixCuts` (a named thing nobody shows is added); AI check: "it must show ..." per still |
+| 14 | **The cuts:** about one every 1.4 s, on the start of a word; each shows ONE thing; actions read cause -> effect -> reaction | code: `cutProblems` (the count per line, word starts, a subject per cut) |
+| 15 | **Every shot shows something new:** never the same shot of the same thing twice in a row (also across lines) | code: `cutProblems` |
+| 16 | **The camera moves:** a slow push-in by default (about half the shots); tilt up for big things, a short track for walking, top-down for things on the ground; no glide or drone tours | code: the moves are the schema (no tour exists), `storyChecks` measures the push-in share |
+| 17 | **The camera stays on one side** of the stage (the stage map's camera side), never inside a wall or a body, never under the ground | code: engine (`zc_cut` only looks from the stage side; `zw_cam_guard`) |
+| 18 | **The monster:** a shadow (a tall black silhouette, two glowing eyes, long thin limbs) for scary stories, shot from low with a person tiny beside it; its drain is big and in the open | code: engine (style "shadow", the `low` shot, `zs_hole`); `storyChecks` (the drain's mark is center / front) |
+| 19 | **The light follows the story:** day setup, night or storm danger, morning ending | AI check: `world_ok` (the time of day per scene, from the plan) |
+| 20 | **Readable pictures:** no flat surface filling the frame (a wall, the pavement, the sky), no glare blob, the subject never too small, covered or cut off | code: the free checks (flat surface over 45 %, a cast member too small / covered, a crash), then the AI check |
+| 21 | **The action is seen at its moment:** the checker also looks at the frame where the action happens (a pop / an appearing thing at its pop moment) | code: the stills (FIRST / ACTION / LAST per line); AI check |
+| 22 | **Alive:** nobody is frozen (breathing, blinking), the speaker's lips move | code: engine (`zm_alive_all`, `zw_emote` talk), always on |
 
-## Example: the story rules the plan wrote for "Nobody Goes Out After Dark"
+## Removed in round 8 (no step checks them, or round 8 replaced them)
 
-- **mood:** cozy then spooky, with a funny ending
-- **colours:** warm yellow day, orange sunset, deep blue night with lamp glow, green slime
-- **camera_style:** glide · **cut_every_s:** 1.4
-- **places_why:** a suburb street shows the town by day and empty at night, the living room is where the kids hide indoors, the porch is where Me goes out and comes back
-- **outside:** by day kids, dogs and neighbours are out; at sunset everyone hurries home; at night nobody is outside except Me, and then the monster
-- **town:** "Nobody goes outside after dark, because a monster comes for anyone out at night."; habits: in the day the street is happy and busy · at sunset everyone hurries home · at night doors are shut, curtains closed, the street is empty · people only peek from windows; effects at night: no people outside, no moving cars, curtains closed (some windows lit behind them); at sunset: everyone hurries home
+| Rule | Why |
+|---|---|
+| "The first shot of every place moves through it" (round 4 global 8) | The owner dropped it: one opening wide that already shows the rule is enough |
+| The story rules camera_style (glide / drone / follow) and cut_every_s | No tours any more. The pace is rule 14, checked in code |
+| "Close-ups at most 1 shot in 4" (round 4 global 5) | No round 8 step checks it. The cuts' subject rule (rule 14) and the picture check cover reactions |
+| A world state per line (busy / walkers / cars / curtains per line) | One stage + quiet by default (rule 7). The scene state (rule 10) is what carries over now |
+| "Every line a new picture" as a line rule | Became rule 15, per shot, checked in code |
+
+## The engine's new pieces (round 8)
+
+- **Object blocks:** appear, disappear, move A to B, on / off, open / closed, held / given / dropped. These work on any prop.
+- **Switches:** all street lamps or all windows at once, or the houses' windows opening.
+- **Face and impact effects:** star eyes, X eyes, a sweat drop, a splat, a held sign with big text.
+- **The shadow monster.**
+- **Light:** storm (night rain + lightning) and morning (a warm low sun).
+- **Cameras:** wide / medium / two / close / insert / low / top, with the moves push_in / tilt_up / track / top_down /
+  static.
