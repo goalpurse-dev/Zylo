@@ -42,9 +42,9 @@ export const ROBLOX_STORY = Object.freeze({
   voiceId: "NUklOYr6pNs1RxzJVQB5",
   voiceName: "roblox-story",
   model: "eleven_multilingual_v2",
-  // owner 2026-11-22 (replica round 2): more expressive (stability 0.35, style 0.3) and faster. The pick was 1.25x;
-  // ElevenLabs allows speed 0.7-1.2, so the API call asks for its top 1.2 (not deployed yet)
-  settings: Object.freeze({ stability: 0.35, similarity_boost: 0.8, style: 0.3, use_speaker_boost: true, speed: 1.2 }),
+  // owner 2026-11-24 (the curtains story, sample B): STABLE: one even voice, no accent drift: stability 0.75,
+  // similarity max, style 0, speaker boost on, multilingual v2, 1.2 (was 0.35 / 0.8 / style 0.3: it varied too much)
+  settings: Object.freeze({ stability: 0.75, similarity_boost: 1.0, style: 0, use_speaker_boost: true, speed: 1.2 }),
   outputFormat: "mp3_44100_128",
   // round 3 (owner): made at 1.2, then sped up afterwards, pitch kept (voice/eleven.mjs: atempo pace / speed);
   // round 5 (owner 2026-11-22): 1.3x was the default; round 9d (owner 2026-11-23): 1.2x (slower, the reference's length)

@@ -194,6 +194,11 @@
   ],
   "tell_person": null
  },
+ "spec_overrides": {
+  "mom": {
+   "missing_button": 1
+  }
+ },
  "rows": [
   {
    "line": 1,
@@ -213,7 +218,28 @@
      "pose": "sit",
      "facing": "camera"
     }
-   ]
+   ],
+   "w0": 0,
+   "w1": 8,
+   "t0": 0,
+   "t1": 1.625
+  },
+  {
+   "line": 1,
+   "scene": 1,
+   "stage": "B",
+   "time": "dinner",
+   "cam": {
+    "type": "insert",
+    "subject": [
+     "curtains"
+    ]
+   },
+   "people": [],
+   "w0": 8,
+   "w1": 9,
+   "t0": 1.625,
+   "t1": 2.356
   },
   {
    "line": 2,
@@ -224,7 +250,11 @@
     "type": "street",
     "subject": []
    },
-   "people": []
+   "people": [],
+   "w0": 9,
+   "w1": 15,
+   "t0": 2.356,
+   "t1": 4.85
   },
   {
    "line": 3,
@@ -240,7 +270,11 @@
    "people": [],
    "props": {
     "curtains": "closing"
-   }
+   },
+   "w0": 15,
+   "w1": 26,
+   "t0": 4.85,
+   "t1": 7.368
   },
   {
    "line": 4,
@@ -263,7 +297,11 @@
    ],
    "props": {
     "curtains": "closing"
-   }
+   },
+   "w0": 26,
+   "w1": 39,
+   "t0": 7.368,
+   "t1": 10.49
   },
   {
    "line": 5,
@@ -294,11 +332,15 @@
       "to": "me"
      }
     }
-   ]
+   ],
+   "w0": 39,
+   "w1": 48,
+   "t0": 10.49,
+   "t1": 13.53
   },
   {
    "line": 6,
-   "scene": 14,
+   "scene": 106,
    "stage": "B",
    "time": "dinner",
    "cam": {
@@ -310,10 +352,42 @@
    "people": [
     {
      "id": "mom",
-     "spot": "stand_kitchen",
-     "pose": "stand"
+     "spot": "seat_back",
+     "facing": {
+      "to": "seat_left"
+     }
     }
-   ]
+   ],
+   "w0": 48,
+   "w1": 53,
+   "t0": 13.53,
+   "t1": 14.796
+  },
+  {
+   "line": 6,
+   "scene": 106,
+   "stage": "B",
+   "time": "dinner",
+   "cam": {
+    "type": "detail",
+    "subject": [
+     "mom"
+    ],
+    "part": "buttons"
+   },
+   "people": [
+    {
+     "id": "mom",
+     "spot": "seat_back",
+     "facing": {
+      "to": "seat_left"
+     }
+    }
+   ],
+   "w0": 53,
+   "w1": 58,
+   "t0": 14.796,
+   "t1": 15.828
   },
   {
    "line": 7,
@@ -344,7 +418,11 @@
       "to": "stand_kitchen"
      }
     }
-   ]
+   ],
+   "w0": 58,
+   "w1": 66,
+   "t0": 15.828,
+   "t1": 18.253
   },
   {
    "line": 8,
@@ -352,27 +430,25 @@
    "stage": "B",
    "time": "dinner",
    "cam": {
-    "type": "two",
+    "type": "medium",
     "subject": [
-     "sister",
-     "me"
+     "sister"
     ]
    },
    "people": [
     {
      "id": "sister",
      "spot": "seat_right",
-     "pose": "sit"
-    },
-    {
-     "id": "me",
-     "spot": "seat_left",
-     "pose": "sit",
+     "tap": 3,
      "facing": {
-      "to": "sister"
+      "to": "seat_left"
      }
     }
-   ]
+   ],
+   "w0": 66,
+   "w1": 76,
+   "t0": 18.253,
+   "t1": 20.841
   },
   {
    "line": 9,
@@ -397,7 +473,11 @@
    ],
    "absent": [
     "me"
-   ]
+   ],
+   "w0": 76,
+   "w1": 85,
+   "t0": 20.841,
+   "t1": 22.918
   },
   {
    "line": 10,
@@ -420,7 +500,11 @@
      },
      "pose": "walk"
     }
-   ]
+   ],
+   "w0": 85,
+   "w1": 93,
+   "t0": 22.918,
+   "t1": 24.879
   },
   {
    "line": 11,
@@ -444,7 +528,11 @@
    ],
    "props": {
     "peek": true
-   }
+   },
+   "w0": 93,
+   "w1": 103,
+   "t0": 24.879,
+   "t1": 27.594
   },
   {
    "line": 12,
@@ -464,7 +552,11 @@
     "facing": {
      "to": "win_ours"
     }
-   }
+   },
+   "w0": 103,
+   "w1": 113,
+   "t0": 27.594,
+   "t1": 29.846
   },
   {
    "line": 13,
@@ -483,7 +575,11 @@
     "facing": {
      "to": "win_ours"
     }
-   }
+   },
+   "w0": 113,
+   "w1": 121,
+   "t0": 29.846,
+   "t1": 32.19
   },
   {
    "line": 14,
@@ -507,7 +603,11 @@
    ],
    "props": {
     "curtains": "closing"
-   }
+   },
+   "w0": 121,
+   "w1": 130,
+   "t0": 32.19,
+   "t1": 34.626
   },
   {
    "line": 15,
@@ -518,7 +618,8 @@
     "type": "medium",
     "subject": [
      "me"
-    ]
+    ],
+    "pull": 1.35
    },
    "people": [
     {
@@ -526,7 +627,11 @@
      "spot": "stand_kitchen",
      "pose": "stand"
     }
-   ]
+   ],
+   "w0": 130,
+   "w1": 139,
+   "t0": 34.626,
+   "t1": 36.889
   },
   {
    "line": 16,
@@ -558,7 +663,11 @@
       "to": "me"
      }
     }
-   ]
+   ],
+   "w0": 139,
+   "w1": 147,
+   "t0": 36.889,
+   "t1": 38.351
   },
   {
    "line": 17,
@@ -570,7 +679,8 @@
     "subject": [
      "mimic",
      "me"
-    ]
+    ],
+    "pull": 1.35
    },
    "people": [
     {
@@ -590,7 +700,11 @@
       "to": "mimic"
      }
     }
-   ]
+   ],
+   "w0": 147,
+   "w1": 156,
+   "t0": 38.351,
+   "t1": 40.428
   },
   {
    "line": 18,
@@ -603,7 +717,11 @@
      "plate_front"
     ]
    },
-   "people": []
+   "people": [],
+   "w0": 156,
+   "w1": 165,
+   "t0": 40.428,
+   "t1": 42.424
   },
   {
    "line": 19,
@@ -615,7 +733,8 @@
     "subject": [
      "sister",
      "mimic"
-    ]
+    ],
+    "pull": 1.35
    },
    "people": [
     {
@@ -632,7 +751,11 @@
      "face": "mimic_stare",
      "pose": "tilt"
     }
-   ]
+   ],
+   "w0": 165,
+   "w1": 176,
+   "t0": 42.424,
+   "t1": 44.628
   },
   {
    "line": 20,
@@ -653,7 +776,11 @@
      "pose": "tilt",
      "facing": "camera"
     }
-   ]
+   ],
+   "w0": 176,
+   "w1": 183,
+   "t0": 44.628,
+   "t1": 46.333
   },
   {
    "line": 21,
@@ -688,7 +815,11 @@
       "to": "me"
      }
     }
-   ]
+   ],
+   "w0": 183,
+   "w1": 192,
+   "t0": 46.333,
+   "t1": 48.48
   },
   {
    "line": 22,
@@ -698,26 +829,50 @@
    "cam": {
     "type": "medium",
     "subject": [
-     "sister",
-     "mimic"
-    ]
+     "sister"
+    ],
+    "pull": 1.35
    },
    "people": [
     {
      "id": "sister",
      "spot": "seat_right",
-     "pose": "hold_stick",
+     "tap": 3,
      "facing": {
-      "to": "mimic"
+      "to": "seat_back"
      }
-    },
+    }
+   ],
+   "w0": 192,
+   "w1": 197,
+   "t0": 48.48,
+   "t1": 49.443
+  },
+  {
+   "line": 22,
+   "scene": 17,
+   "stage": "B",
+   "time": "dinner_cold",
+   "cam": {
+    "type": "detail",
+    "subject": [
+     "mimic"
+    ],
+    "part": "hand"
+   },
+   "people": [
     {
      "id": "mimic",
      "spot": "seat_back",
-     "face": "mimic_copy",
-     "pose": "tilt"
+     "tap": 30,
+     "face": "mimic_stare",
+     "facing": "camera"
     }
-   ]
+   ],
+   "w0": 197,
+   "w1": 202,
+   "t0": 49.443,
+   "t1": 50.999
   },
   {
    "line": 23,
@@ -738,7 +893,11 @@
      "face": "mimic_grin",
      "facing": "camera"
     }
-   ]
+   ],
+   "w0": 202,
+   "w1": 211,
+   "t0": 50.999,
+   "t1": 53.715
   },
   {
    "line": 24,
@@ -746,29 +905,25 @@
    "stage": "B",
    "time": "dinner_cold",
    "cam": {
-    "type": "medium",
+    "type": "detail",
     "subject": [
-     "mimic",
-     "me"
-    ]
+     "mimic"
+    ],
+    "part": "buttons"
    },
    "people": [
     {
      "id": "mimic",
      "spot": "seat_back",
-     "face": "mimic_grin",
-     "pose": "tilt"
-    },
-    {
-     "id": "me",
-     "spot": "seat_left",
-     "face": "scared",
-     "pose": "sit",
      "facing": {
-      "to": "mimic"
+      "to": "seat_left"
      }
     }
-   ]
+   ],
+   "w0": 211,
+   "w1": 220,
+   "t0": 53.715,
+   "t1": 55.561
   },
   {
    "line": 25,
@@ -788,7 +943,11 @@
     "facing": {
      "to": "win_ours"
     }
-   }
+   },
+   "w0": 220,
+   "w1": 225,
+   "t0": 55.561,
+   "t1": 56.466
   },
   {
    "line": 25,
@@ -813,7 +972,11 @@
    ],
    "props": {
     "peek": true
-   }
+   },
+   "w0": 225,
+   "w1": 230,
+   "t0": 56.466,
+   "t1": 57.232
   },
   {
    "line": 26,
@@ -826,19 +989,23 @@
      "curtains"
     ]
    },
-   "people": []
+   "people": [],
+   "w0": 230,
+   "w1": 242,
+   "t0": 57.232,
+   "t1": 59.496
   },
   {
    "line": 27,
+   "scene": 19,
    "stage": "B",
    "time": "dinner_cold",
-   "scene": 19,
    "cam": {
-    "type": "close",
+    "type": "face",
     "subject": [
      "mimic"
     ],
-    "push": 0.25
+    "push": 0.15
    },
    "people": [
     {
@@ -847,7 +1014,11 @@
      "face": "mimic_wide",
      "facing": "camera"
     }
-   ]
+   ],
+   "w0": 242,
+   "w1": null,
+   "t0": 59.496,
+   "t1": 62.293039
   }
  ]
 }

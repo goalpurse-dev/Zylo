@@ -32,6 +32,7 @@ const say = (m) => { const l = `[${new Date().toISOString().slice(11, 19)}] ${m}
 const py = (v) => JSON.stringify(v ?? null).replace(/\bnull\b/g, "None").replace(/\btrue\b/g, "True").replace(/\bfalse\b/g, "False");
 const pyRun = (code, ...a) => { const r = spawnSync("python", ["-P", "-c", code, ...a], { encoding: "utf8" }); if (r.status) throw new Error(r.stderr.slice(-400)); return r.stdout; };
 const story = JSON.parse(fs.readFileSync(path.join(HERE, "stories", `${NAME}.json`), "utf8"));
+const STORY_SPECS = story.spec_overrides ?? null;
 const V = JSON.parse(fs.readFileSync(path.join(OUT, "voice.json"), "utf8"));
 const TW = JSON.parse(fs.readFileSync(path.join(OUT, "timed_words.json"), "utf8"));
 const S = { ...STAGE_A, cameras: {} };
@@ -41,7 +42,7 @@ const HEX = fs.readFileSync(path.join(HERE, "assets", "zyvo_badge96.hex"), "utf8
 const ind = (s) => s.split("\n").map((l) => `    ${l}`).join("\n");
 const rows = story.rows;
 const src = [`"""In This Town v2: ${story.title} (${FINAL ? "final" : "preview"} video)"""`, "from shotkit import *", "from rbx import story", "from rbx.story import *", "import math, random", "from mathutils import Vector, Euler", "",
-  "V = Video(__file__)", "story.bind(V)", "", LIB, "", V2, "", `ZV_STAGES["A"] = ${py(STAGE_A)}`, `ZV_STAGES["B"] = ${py(STAGE_B)}`, `ZC_SPECS.update(${py({ ...CHARACTERS, ...NEIGHBOURS, mimic_mom: mimicOf(CHARACTERS.mom), mimic_dad: mimicOf(CHARACTERS.dad) })})`, `ZV_BADGE_HEX = ${JSON.stringify(HEX)}`,
+  "V = Video(__file__)", "story.bind(V)", "", LIB, "", V2, "", `ZV_STAGES["A"] = ${py(STAGE_A)}`, `ZV_STAGES["B"] = ${py(STAGE_B)}`, `ZC_SPECS.update(${py({ ...CHARACTERS, ...NEIGHBOURS, mimic_mom: mimicOf(CHARACTERS.mom), mimic_dad: mimicOf(CHARACTERS.dad), ...Object.fromEntries(Object.entries(STORY_SPECS ?? {}).map(([k, v]) => [k, { ...CHARACTERS[k], ...v }])) })})`, `ZV_BADGE_HEX = ${JSON.stringify(HEX)}`,
   FINAL ? "" : "ZW_PREVIEW.update(pct=30, samples=6)", "",
   ...rows.map((r, k) => `@S(${k + 1}, ${k === 0 ? 0 : r.w0}, ${r.w1 ?? "None"}, ${JSON.stringify(`row ${k + 1} line ${r.line}`)})\ndef s${String(k + 1).padStart(3, "0")}(t0, t1):\n${ind(rowPython(S, story, r))}\n`)].join("\n");
 const PV = path.join(OUT, FINAL ? "final" : TEST ? `test_${TEST.join("_")}` : "preview");
@@ -60,6 +61,12 @@ const groups = TEST ? frames.filter((f) => TEST.includes(f.id)).map((f) => ({ id
 const vlimit = (g) => (FINAL ? Math.ceil(g.n * 1.6) + 420 : Math.ceil(g.n * 0.5) + 40 * g.ids.length + 300);
 const worst = groups.reduce((a, g) => a + (vlimit(g) + BOOT_S) * RATE, 0);
 say(`${FINAL ? "FINAL" : TEST ? "test" : "preview"}: ${groups.reduce((a, g) => a + g.ids.length, 0)} shots, ${groups.reduce((a, g) => a + g.n, 0)} frames in ${groups.length} chunks; worst case $${worst.toFixed(3)}; spent $${L.total()}`);
+// the final takes no flagged shot (owner 2026-11-24): every still of THIS plan must pass the Blender checks
+if (FINAL) {
+  const st = fs.existsSync(path.join(OUT, "rows.json")) ? JSON.parse(fs.readFileSync(path.join(OUT, "rows.json"), "utf8")) : null;
+  const flagged = st ? rows.map((_, i) => i + 1).filter((n) => !st[n] || (st[n].fails ?? []).length) : rows.map((_, i) => i + 1);
+  if (flagged.length) { say(`FINAL REFUSED: shots ${flagged.join(", ")} have no passing still (render the stills and fix them first)`); process.exit(1); }
+}
 if (!has("yes")) process.exit(0);
 L.check(FINAL ? "final video" : "preview video", worst);
 const R = runpod({ L, prefix: `blocky-worlds-test/blender-kit/v2-${NAME}-${FINAL ? "final" : "preview"}-${Date.now().toString(36)}`, log: say });

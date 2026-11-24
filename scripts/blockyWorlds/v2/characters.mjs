@@ -85,7 +85,8 @@ export function mimicOf(spec) {
     if (!/^#[0-9a-f]{6}$/i.test(c[k])) continue;
     c[k] = /^skin/.test(k) ? mix(c[k], "#B4C2B0", 0.32) : /^eyes$/.test(k) ? "#0A0A0A" : mix(c[k], "#8C8C96", 0.22);
   }
-  return { ...spec, id: `mimic_${spec.id}`, role: `the Mimic copying ${spec.id}`, mode: "mimic", badge_ok: false, colors: c };
+  const { missing_button, ...base } = spec; void missing_button;   // the copy has every button (the tell)
+  return { ...base, id: `mimic_${spec.id}`, role: `the Mimic copying ${spec.id}`, mode: "mimic", badge_ok: false, colors: c };
 }
 /** a story's own look for a cast member (customers' families): skin / hair / outfit colours swapped, the build kept */
 export function recolor(spec, colors = {}) {

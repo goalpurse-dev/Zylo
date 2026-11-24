@@ -337,8 +337,15 @@ class ZChar:
                 box("%s_cedge%d" % (n, sx), (0.12, 0.08, tl * 0.92), (sx * tw * 0.17, -td / 2 - 0.03, tl * 0.5), M["top2"], 0.03, parent=T, coll=C)
                 box("%s_cpk%d" % (n, sx), (tw * 0.24, 0.06, tl * 0.2), (sx * tw * 0.3, -td / 2 - 0.02, tl * 0.25), M["top2"], 0.03, parent=T, coll=C)
                 box("%s_bcol%d" % (n, sx), (0.3, 0.08, 0.2), (sx * 0.16, -td / 2 - 0.04, tl - 0.04), bl, 0.03, rot=(0, sx * 30, 0), parent=T, coll=C)
+            miss = self.spec.get("missing_button")
             for k in range(4):
-                cyl("%s_cbtn%d" % (n, k), 0.06, 0.05, (tw * 0.17, -td / 2 - 0.08, tl * 0.82 - k * tl * 0.2), M["trim"], 12, rot=(90, 0, 0), parent=T, coll=C)
+                bz = tl * 0.82 - k * tl * 0.2
+                if miss is not None and k == miss:   # the missing button: the gap and two loose threads
+                    th = zc_mat(n, "thread", "#F2E6C8", rough=0.6)
+                    for j, (dx, rz) in enumerate(((-0.03, 25), (0.03, -30))):
+                        cyl("%s_cthread%d" % (n, j), 0.012, 0.09, (tw * 0.17 + dx, -td / 2 - 0.09, bz - 0.02), th, 6, rot=(90, rz, 0), parent=T, coll=C)
+                    continue
+                cyl("%s_cbtn%d" % (n, k), 0.075, 0.05, (tw * 0.17, -td / 2 - 0.08, bz), M["trim"], 12, rot=(90, 0, 0), parent=T, coll=C)
             cyl(n + "_collar", 0.52, 0.16, (0, 0, tl + 0.1), M["top2"], 28, bev=0.05, parent=T, coll=C)
         elif kind == "suit":       # a jacket with lapels, a shirt + tie, buttons, a sash with a gold medal
             sh = zc_mat(n, "shirtw", c.get("under", "#F4F4F0"), rough=0.6)
@@ -849,6 +856,12 @@ def zc_prop(kind, name, on=True):
         box(name + "_scr", (0.36, 0.02, 0.68), (0, -0.05, 0), mat(name + "_ps", zc_rgb("#9FD8FF"), 0.2, emit=zc_rgb("#9FD8FF"), estr=2.5), 0.0, parent=e)
         e.rotation_euler = (math.radians(-60), 0, 0)
         return e
+    if kind == "spoon":    # held in the fist: the handle down to the table, the bowl up (the silhouette reads)
+        e = empty(name, (0, 0, 0))
+        m = mat(name + "_m", zc_rgb("#E3E8EF"), 0.15, metal=0.9)
+        cyl(name + "_h", 0.075, 1.5, (0, 0, -0.35), m, 10, parent=e)
+        sphere(name + "_b", 0.3, (0, -0.06, -1.3), m, scale=(1.0, 0.45, 1.4), parent=e, seg=14)
+        return e
     if kind == "stick":
         e = empty(name, (0, 0, 0))
         cyl(name + "_s", 0.09, 3.2, (0, 0, 0.6), mat(name + "_sw", zc_rgb("#9A6B3F"), 0.8), 10, parent=e)
@@ -1024,7 +1037,7 @@ def zv_window_cam(t0, t1, wc, dist=6.2, lens=40, side=0.3, push=0.06, ch=None):
     hz = zc_head_c(ch).z if ch is not None else wc.z + 0.45
     if ch is not None:   # the face light INSIDE the window (the curtains block the outside key): the same skin as in the kitchen
         hc = zc_head_c(ch)
-        light(ch.name + "_wfill", "AREA", (hc.x + 0.15, wc.y + 0.15, hc.z + 0.3), ZV_WINDOW_FILL_W, (1.0, 0.9, 0.8), 0.6, target=tuple(hc))
+        light(ch.name + "_wfill", "AREA", (hc.x + 0.15, wc.y + 0.15, hc.z + 0.3), ZV_WINDOW_FILL_W * (1.0 if ZV_TIME.get("t") == "night" else 0.3), (1.0, 0.9, 0.8), 0.6, target=tuple(hc))   # by day / dusk the room is lit already
     loc = Vector((wc.x + side, wc.y - dist, hz - 0.3))
     tgt = Vector((wc.x, wc.y + 0.9, hz - 0.62))    # the head high in the frame (a hat fits), both curtains at the sides
     f = (tgt - loc).length
@@ -1033,3 +1046,114 @@ def zv_window_cam(t0, t1, wc, dist=6.2, lens=40, side=0.3, push=0.06, ch=None):
     e = loc + (tgt - loc) * push
     cam.key(t1, tuple(e), tuple(tgt), lens=lens, focus=f * (1.0 - push), fstop=2.4)
     return cam
+
+
+def zc_tap(ch, t0, t1, n=3, side="R", thing=None, every=0.24, table_z=None):
+    """tapping a spoon on the table (owner 2026-11-24): the arm over the table, the forearm down and up n times; the
+    spoon is fixed in the hand, so it moves with it"""
+    sh, el = ch.shoulder[side], ch.elbow[side]
+    sh.rotation_euler = (math.radians(-50), math.radians(6 if side == "R" else -6), 0.0)
+    key(sh, "rotation_euler", F(t0), interp="CONSTANT")
+    up, dn = math.radians(-62), math.radians(-30)
+    el.rotation_euler = (up, 0.0, 0.0)
+    key(el, "rotation_euler", F(t0))
+    if thing is not None:
+        bpy.context.view_layer.update()
+        h = ch.hand[side]
+        mw = h.matrix_world.copy()
+        thing.scale = (ch.k, ch.k, ch.k)
+        thing.location = mw.translation
+        thing.rotation_euler = (0.0, 0.0, ch.root.rotation_euler[2])
+        thing.parent = h
+        thing.matrix_parent_inverse = mw.inverted()
+    if thing is not None and table_z is not None:
+        # the arm lifted until the spoon's bowl just meets the table at the bottom of a tap (a small kid on a booster
+        # sits lower: their spoon would go through the table)
+        low = [o for o in thing.children if o.name.endswith("_b")]
+        for deg in range(-50, -125, -5):
+            sh.rotation_euler = (math.radians(deg), sh.rotation_euler[1], 0.0)
+            el.rotation_euler = (dn, 0.0, 0.0)
+            bpy.context.view_layer.update()
+            bz = min((o.matrix_world @ Vector(c)).z for o in low for c in o.bound_box) if low else table_z
+            if bz >= table_z - 0.02:
+                break
+        key(sh, "rotation_euler", F(t0), interp="CONSTANT")
+        el.rotation_euler = (up, 0.0, 0.0)
+    t, k = t0 + 0.3, 0
+    while k < n and t < t1 - 0.12:
+        el.rotation_euler = (up, 0.0, 0.0)
+        key(el, "rotation_euler", F(t))
+        el.rotation_euler = (dn, 0.0, 0.0)
+        key(el, "rotation_euler", F(t + every * 0.45))
+        el.rotation_euler = (up, 0.0, 0.0)
+        key(el, "rotation_euler", F(t + every))
+        t += every
+        k += 1
+
+
+def zc_detail_cam(t0, t1, ch, part="buttons", push=0.06):
+    """a detail from the character's own parts (owner 2026-11-24): "buttons" = the cardigan's button line (the same
+    framing for everyone, so two shots of it connect), "hand" = the right hand and what it holds"""
+    bpy.context.view_layer.update()
+    a = ch.root.rotation_euler[2]
+    fwd = Vector((math.sin(a), -math.cos(a), 0.0))
+    side = Vector((-fwd.y, fwd.x, 0.0))
+    k = ch.k
+    if part == "buttons":
+        pts = [o.matrix_world.translation.copy() for o in D.objects if o.name.startswith(ch.name + "_cbtn") or o.name.startswith(ch.name + "_cthread")]
+        if not pts:
+            pts = [zc_head_c(ch) - Vector((0, 0, 1.6 * k))]
+        c = Vector((sum(p.x for p in pts) / len(pts), sum(p.y for p in pts) / len(pts), sum(p.z for p in pts) / len(pts)))
+        top = max(p.z for p in pts)
+        tgt = Vector((c.x, c.y, (top + c.z) / 2.0 - 0.3 * k))   # the upper buttons high in the frame (captions below)
+        loc = tgt + fwd * (4.2 * k) + side * (0.5 * k) + Vector((0, 0, 0.25 * k))
+        lens = 50
+    else:
+        h = ch.hand["R"].matrix_world.translation.copy()
+        tgt = Vector((h.x, h.y, h.z - 0.8 * k))   # the fist AND the spoon bowl under it (what taps the table)
+        loc = tgt + fwd * (4.6 * k) + side * (1.4 * k) + Vector((0, 0, 1.2 * k))
+        lens = 45
+    zc_clear_lens(loc, tgt)
+    f = (tgt - loc).length
+    cam = Cam()
+    cam.key(t0, tuple(loc), tuple(tgt), lens=lens, focus=f, fstop=2.8)
+    e = loc + (tgt - loc) * push
+    cam.key(t1, tuple(e), tuple(tgt), lens=lens, focus=f * (1.0 - push), fstop=2.8)
+    return cam
+
+
+def zc_face_push(t0, t1, ch, push=0.15, lens=50, span=0.42, centre=0.32):
+    """the big face close with a slow push-in (owner 2026-11-24, the last shot): measured from the real head, the eyes
+    and the whole mouth high in the frame (above the captions) at every frame of the push"""
+    bpy.context.view_layer.update()
+    hp = [ch.head.matrix_world @ Vector(c) for c in ch.head.bound_box]
+    hh = max(p.z for p in hp) - min(p.z for p in hp)
+    hw = max(max(p.x for p in hp) - min(p.x for p in hp), max(p.y for p in hp) - min(p.y for p in hp)) * 1.2   # + the hair
+    c = zc_head_c(ch)
+    a = ch.root.rotation_euler[2]
+    fwd = Vector((math.sin(a), -math.cos(a), 0.0))
+    d_end = max((hh / span) * lens / 24.0, (hw / 0.8) * lens / 13.5)
+    d0 = d_end / (1.0 - push)
+    def at(d):
+        off = (0.5 - centre) * 24.0 * d / lens
+        return c + fwd * d + Vector((0, 0, 0.0)), Vector((c.x, c.y, c.z - off))
+    l0, g0 = at(d0)
+    l1, g1 = at(d_end)
+    cam = Cam()
+    cam.key(t0, tuple(l0), tuple(g0), lens=lens, focus=d0, fstop=2.2)
+    cam.key(t1, tuple(l1), tuple(g1), lens=lens, focus=d_end, fstop=2.2)
+    return cam
+
+
+def zc_clear_lens(loc, tgt, pad=0.25):
+    """a small thing (a glass, a jug, a plate, food) the lens would sit inside or look through is left out of the shot"""
+    bpy.context.view_layer.update()
+    pts = [loc + (tgt - loc) * (i / 8.0) for i in range(6)]
+    for ob in D.objects:
+        if ob.type != "MESH" or ob.hide_render or ob.dimensions.length > 2.5:
+            continue
+        bb = [ob.matrix_world @ Vector(c) for c in ob.bound_box]
+        lo = Vector((min(p.x for p in bb) - pad, min(p.y for p in bb) - pad, min(p.z for p in bb) - pad))
+        hi = Vector((max(p.x for p in bb) + pad, max(p.y for p in bb) + pad, max(p.z for p in bb) + pad))
+        if any(lo.x <= p.x <= hi.x and lo.y <= p.y <= hi.y and lo.z <= p.z <= hi.z for p in pts):
+            ob.hide_render = True

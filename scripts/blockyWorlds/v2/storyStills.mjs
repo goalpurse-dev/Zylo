@@ -23,6 +23,7 @@ import { stickerFilter } from "./stickers.mjs";
 import { mimicOf } from "./characters.mjs";
 import { NEIGHBOURS } from "./characters.mjs";
 const STORY = fs.existsSync(path.join(HERE, "stories", `${NAME}.json`)) ? JSON.parse(fs.readFileSync(path.join(HERE, "stories", `${NAME}.json`), "utf8")) : (await import(`./stories/${NAME}.mjs`)).STORY;
+const STORY_SPECS = STORY.spec_overrides ?? null;   // a story's own tweak of a cast member (the curtains story: Mom misses a button)
 const OUT = path.resolve(arg("out", path.join(HERE, "..", "..", "..", "reference", "blocky-worlds", "v2", `story_${NAME}`)));
 fs.mkdirSync(OUT, { recursive: true });
 const CAP = Number(arg("cap", 0.3));
@@ -49,7 +50,7 @@ const HEX = fs.readFileSync(path.join(HERE, "assets", "zyvo_badge96.hex"), "utf8
 const ind = (s) => s.split("\n").map((l) => `    ${l}`).join("\n");
 const B = 60;
 const src = [`"""In This Town v2: ${STORY.title} (stills)"""`, "from shotkit import *", "from rbx import story", "from rbx.story import *", "import math, random", "from mathutils import Vector, Euler", "",
-  "V = Video(__file__)", "story.bind(V)", "", LIB, "", V2, "", `ZV_STAGES["A"] = ${py(STAGE_A)}`, `ZV_STAGES["B"] = ${py(STAGE_B)}`, `ZC_SPECS.update(${py({ ...CHARACTERS, ...NEIGHBOURS, mimic_mom: mimicOf(CHARACTERS.mom), mimic_dad: mimicOf(CHARACTERS.dad) })})`, `ZV_BADGE_HEX = ${JSON.stringify(HEX)}`, "",
+  "V = Video(__file__)", "story.bind(V)", "", LIB, "", V2, "", `ZV_STAGES["A"] = ${py(STAGE_A)}`, `ZV_STAGES["B"] = ${py(STAGE_B)}`, `ZC_SPECS.update(${py({ ...CHARACTERS, ...NEIGHBOURS, mimic_mom: mimicOf(CHARACTERS.mom), mimic_dad: mimicOf(CHARACTERS.dad), ...Object.fromEntries(Object.entries(STORY_SPECS ?? {}).map(([k, v]) => [k, { ...CHARACTERS[k], ...v }])) })})`, `ZV_BADGE_HEX = ${JSON.stringify(HEX)}`, "",
   `@S(1, 0, 1, "unused")\ndef s001(t0, t1):\n    zw_build("suburb_street", t0, t1, {"time": "day"})\n    Cam().key(t0, (0, -20, 5), (0, 0, 2), lens=30)\n`,
   ...rows.map(({ r, k }, j) => `@S(${j + 2}, ${2 * j + 1}, ${j + 1 < N ? 2 * j + 3 : "None"}, ${JSON.stringify(`row ${k + 1} line ${r.line}`)})\ndef s${String(j + 2).padStart(3, "0")}(t0, t1):\n${ind(rowPython(S, STORY, r))}\n`)].join("\n");
 const tag = FIX ? `fix_row${FIX}_${Date.now().toString(36)}` : ONLY ? `rows_${Date.now().toString(36)}` : "all";

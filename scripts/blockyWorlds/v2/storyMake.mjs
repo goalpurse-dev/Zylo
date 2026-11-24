@@ -54,6 +54,7 @@ const BRIEFS = {
     cast: (sis) => ({ me: { name: "Me", spec: "me" }, mom: { name: "Mom", spec: "mom" }, mimic: { name: "Mom", spec: "mimic_mom" }, mayor: { name: "Mayor", spec: "mayor" }, sister: { name: sis ?? "Sis", spec: "sister" }, creature: { name: "Shadow", spec: "shadow" } }),
     aliases: (sis) => ({ me: ["I", "me"], mom: ["mom", "mother"], sister: ["sister", ...(sis ? [sis.toLowerCase()] : [])], mayor: ["mayor"], creature: ["thing", "shadow"], curtains: ["curtain", "curtains"] }),
     alias_any: { mom: ["mom", "mimic"] },
+    spec_overrides: { mom: { missing_button: 1 } },   // line 6 / 24: the real Mom misses a button, the copy has them all
     rule: { object: "curtains", start: "open", change_words: ["close", "closed", "closes", "closing", "shut", "pull", "pulled", "pulls", "open", "opened", "peek", "peeked", "drawn", "draw", "drew"], tell_person: null },
     notes: [
       "- Row 1 (the hook): stage B, me on seat_back (sitting, the closed curtains right behind me), camera close, facing the camera, time dinner.",
@@ -86,7 +87,7 @@ if (!upTo("plan")) process.exit(0);
 const sisterName = (SC.lines.map((l) => l.text).join(" ").match(/\bsister,? (\w+)/i) ?? [])[1];
 const story = BRIEF ? {
   title: SC.title, rule_text: SC.rule, tell: SC.tell, lines: SC.lines, both_stages: true, notes: BRIEF.notes,
-  cast: BRIEF.cast(sisterName), aliases: BRIEF.aliases(sisterName), alias_any: BRIEF.alias_any, props: {}, rule: BRIEF.rule,
+  cast: BRIEF.cast(sisterName), aliases: BRIEF.aliases(sisterName), alias_any: BRIEF.alias_any, props: {}, rule: BRIEF.rule, spec_overrides: BRIEF.spec_overrides ?? null,
 } : {
   title: SC.title, rule_text: SC.rule, tell: SC.tell, lines: SC.lines,
   cast: { me: { name: "Me", spec: "me" }, mom: { name: "Mom", spec: "mom" }, mimic: { name: "Mom", spec: "mimic_mom" }, sister: { name: sisterName ?? "Sis", spec: "sister" } },

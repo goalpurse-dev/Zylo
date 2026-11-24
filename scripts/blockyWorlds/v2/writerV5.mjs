@@ -8,7 +8,7 @@ const S_ = { type: "string" }, I_ = { type: "integer" };
 export const FACES = ["neutral", "happy", "big_smile", "worried", "scared", "terrified", "sad", "crying", "angry", "sleepy", "smug", "thinking"];
 export const MIMIC_FACES = ["mimic_smile", "mimic_stare", "mimic_grin", "mimic_copy", "mimic_wide"];
 export const POSES = ["stand", "walk", "run", "sit", "crouch2", "point", "hold_up2", "look_back", "talk", "hug", "shield", "hold_box", "hold_phone", "hold_stick", "tilt", "reach"];
-export const CAMS = ["close", "medium", "two", "wide", "side", "back", "ots", "insert", "eyes", "window", "pov", "street"];
+export const CAMS = ["close", "medium", "two", "wide", "side", "back", "ots", "insert", "eyes", "window", "pov", "street", "detail", "face"];
 export const STICKERS = ["!", "?!", "???", "ZZZ", "sweat", "1 HOUR LATER", "LATER THAT NIGHT"];
 // the visible ways to tell a copy from the real person (each one our engine can SHOW in a still)
 export const TELLS = {
@@ -31,7 +31,7 @@ export function menuText(S = STAGE_A, { both = false } = {}) {
 - things for inserts: ${Object.keys(STAGE_B.props_at).join(", ")}`,
     `- faces: ${FACES.join(", ")}; the Mimic also: ${MIMIC_FACES.join(", ")}`,
     `- poses: ${POSES.join(", ")} (reach = a hand out, e.g. pulling a curtain)`,
-    `- camera types: ${CAMS.join(", ")}. insert = a thing alone (subject: the thing); eyes = the creature's eyes only; window = the person on a win_* spot seen from OUTSIDE through the window (the only camera for win_* spots); pov = from our window across the street to the creature (its whole figure, small and far; subject ["creature"]); street = the row of house fronts (no people needed). cam.push (0.06-0.2) = how far the camera creeps in during the shot (slow push-in = 0.15-0.2).`,
+    `- camera types: ${CAMS.join(", ")}. insert = a thing alone (subject: the thing); eyes = the creature's eyes only; window = the person on a win_* spot seen from OUTSIDE through the window (the only camera for win_* spots); pov = from our window across the street to the creature (its whole figure, small and far; subject ["creature"]); street = the row of house fronts (no people needed); detail = a part of one person (cam.part "buttons" = the cardigan buttons, "hand" = the right hand and what it holds), the same framing every time; face = the big face close with a slow push (eyes and mouth high in the frame). A person with "tap": N taps a spoon on the table N times. cam.push (0.06-0.2) = how far the camera creeps in during the shot (slow push-in = 0.15-0.2).`,
     `- comic stickers (2D, on a word, never over a face): ${STICKERS.join(", ")}`,
     "- at most 2 people in a shot (+ the creature far away)",
   ].join("\n");
@@ -118,10 +118,10 @@ THE RULES (they are checked in code; a row that breaks one comes back to you):
 - STAGES: when two stages are on the menu every row says its "stage" ("A" street, "B" dining room). People on win_* spots are filmed only with camera "window".
 Return the JSON only.`;
 export function rowsSchema() {
-  const person = { type: "object", additionalProperties: false, required: ["id", "spot"], properties: { id: S_, spot: S_, face: S_, pose: S_, facing: { anyOf: [S_, { type: "object", additionalProperties: false, required: ["to"], properties: { to: S_ } }] }, holds: S_, hands: S_ } };
+  const person = { type: "object", additionalProperties: false, required: ["id", "spot"], properties: { id: S_, spot: S_, face: S_, pose: S_, facing: { anyOf: [S_, { type: "object", additionalProperties: false, required: ["to"], properties: { to: S_ } }] }, holds: S_, hands: S_, tap: I_ } };
   const row = { type: "object", additionalProperties: false, required: ["line", "scene", "time", "cam", "people"], properties: {
     line: I_, scene: I_, stage: { type: "string", enum: ["A", "B"] }, time: { type: "string", enum: ["day", "sunset", "night", "morning", "dinner", "dinner_cold"] }, touch: { type: "boolean" }, sticker: S_, from_word: I_,
-    cam: { type: "object", additionalProperties: false, required: ["type", "subject"], properties: { type: { type: "string", enum: CAMS }, subject: { type: "array", items: S_ }, side: { type: "string", enum: ["left", "right"] }, with: { type: "array", items: S_ }, push: { type: "number" } } },
+    cam: { type: "object", additionalProperties: false, required: ["type", "subject"], properties: { type: { type: "string", enum: CAMS }, subject: { type: "array", items: S_ }, side: { type: "string", enum: ["left", "right"] }, with: { type: "array", items: S_ }, push: { type: "number" }, part: { type: "string", enum: ["buttons", "hand"] } } },
     people: { type: "array", items: person },
     creature: { type: "object", additionalProperties: false, required: ["spot"], properties: { spot: S_, face: S_, pose: S_, facing: { anyOf: [S_, { type: "object", additionalProperties: false, required: ["to"], properties: { to: S_ } }] }, holds: S_ } },
     props: { type: "object", additionalProperties: false, properties: { porch_light: { type: "string", enum: ["on", "off"] }, curtains: { type: "string", enum: ["open", "closing", "closed"] }, peek: { type: "boolean" }, street_lamps: { type: "boolean" }, drain: { type: "boolean" } } },

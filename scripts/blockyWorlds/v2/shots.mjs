@@ -69,6 +69,13 @@ export function solveCam(S0, row) {
     const w = S.spots[c.from ?? "win_ours"]?.at ?? [-4.2, 18.8, 0], a = pl.creature.at;
     return { ok: true, type, loc: [w[0], 17.45, 4.8], tgt: [a[0], a[1], a[2] + pl.creature.h * 0.5], lens: 34 };
   }
+  if (type === "detail" || type === "face") {   // a part of one person (buttons / hand) or the big face push: built in Blender from the real body
+    const who = (row.people ?? []).find((p) => p.id === c.subject?.[0]);
+    if (!who || !S.spots[who.spot]) return { ok: false, why: `a ${type} shot needs its person (cam.subject[0]) on a spot`, type };
+    const a = S.spots[who.spot].at, fl = Math.hypot(a[0], a[1]) || 1;
+    const fwd = S.spots[who.spot].seat ? [-a[0] / fl, -a[1] / fl] : [0, -1];
+    return { ok: true, type, loc: [+(a[0] + fwd[0] * 2.4).toFixed(2), +(a[1] + fwd[1] * 2.4).toFixed(2), 2.0], tgt: [a[0], a[1], 1.6], lens: 50 };
+  }
   if (type === "street") {   // the row of houses (no subject): the stage's own establishing camera
     if (!S.street_cam) return { ok: false, why: "this stage has no street shot", type };
     return { ok: true, type, ...S.street_cam };
@@ -356,7 +363,8 @@ export function rowPython(S0, story, r, { stageId = "A" } = {}) {
     if (S.spots[p.spot]?.inside) L.push(`zv_at_window(${v}, _wc)`);
     L.push(`zc_blinks(${v}, t0, t1)`, `zc_idle(${v}, t0, t1)`);
     if (["walk", "run"].includes(p.pose)) L.push(`zc_walk(${v}, t0, t1, run=${p.pose === "run" ? "True" : "False"})`);
-    if (p.holds) L.push(`${v}.hold(t0, zc_prop(${py(story.props[p.holds]?.kind ?? p.holds)}, ${py(`zv_${p.holds}${k}`)}, on=${story.props[p.holds]?.on === false || r.props?.[p.holds] === "off" ? "False" : "True"}), ${py(p.hands ?? (story.props[p.holds]?.hands ?? "R"))})`);
+    if (p.tap) L.push(`_tp${k} = zc_prop("spoon", "zv_spoon${k}")`, `zc_tap(${v}, t0, t1, ${Math.max(1, Math.round(p.tap))}, "R", _tp${k}${S.table ? `, table_z=${S.table.top + 0.06}` : ""})`);
+    else if (p.holds) L.push(`${v}.hold(t0, zc_prop(${py(story.props[p.holds]?.kind ?? p.holds)}, ${py(`zv_${p.holds}${k}`)}, on=${story.props[p.holds]?.on === false || r.props?.[p.holds] === "off" ? "False" : "True"}), ${py(p.hands ?? (story.props[p.holds]?.hands ?? "R"))})`);
   });
   if (r.creature) {
     const c = r.creature, at = pl.creature.at;
@@ -366,6 +374,8 @@ export function rowPython(S0, story, r, { stageId = "A" } = {}) {
     if (c.holds) L.push(`_h = cr.hold(t0, zc_prop(${py(story.props[c.holds]?.kind ?? c.holds)}, "zv_crhold", on=True), "L")`);
   }
   if (cam.ok && cam.type === "insert" && r.cam?.subject?.[0] === "porch_light") L.push(`cam = Cam()`, `cam.key(t0, (_pl.x - 0.5, _pl.y - 4.4, _pl.z - 1.0), (_pl.x - 0.15, _pl.y, _pl.z - 0.45), lens=30, focus=4.4, fstop=2.2)`);
+  else if (cam.ok && cam.type === "detail") L.push(`cam = zc_detail_cam(t0, t1, p${(r.people ?? []).findIndex((p) => p.id === r.cam.subject[0])}, ${py(r.cam.part ?? "buttons")}, push=${+(r.cam?.push ?? 0.06)})`);
+  else if (cam.ok && cam.type === "face") L.push(`cam = zc_face_push(t0, t1, p${(r.people ?? []).findIndex((p) => p.id === r.cam.subject[0])}, push=${+(r.cam?.push ?? 0.15)})`);
   else if (cam.ok && cam.type === "window") L.push(`cam = zv_window_cam(t0, t1, _wc, push=${+(r.cam?.push ?? 0.06)}, ch=p${(r.people ?? []).findIndex((p) => S.spots[p.spot]?.inside)})`);
   else if (cam.ok) { const end = cam.loc.map((x, i) => x + (cam.tgt[i] - x) * (r.cam?.push ?? 0.06)); L.push(`cam = Cam()`, `cam.key(t0, ${P(cam.loc)}, ${P(cam.tgt)}, lens=${cam.lens}${cam.focus ? `, focus=${cam.focus}, fstop=2.4` : ""})`, `cam.key(t1, ${P(end)}, ${P(cam.tgt)}, lens=${cam.lens}${cam.focus ? `, focus=${+(cam.focus * 0.94).toFixed(2)}, fstop=2.4` : ""})`); }
   else L.push(`cam = Cam()`, `cam.key(t0, (0, -20, 5), (0, 0, 2), lens=30)`);
@@ -384,6 +394,6 @@ export function rowPython(S0, story, r, { stageId = "A" } = {}) {
     L.push(`bg${k}.face_to(${P(b.loop === "walk" ? [b.at[0] + 20, b.at[1], 2] : [cam.loc[0], cam.loc[1], 2])})`);
   });
   for (const [v] of vars) L.push(`zc_char_light(${v}, ${P(cam.loc ?? [0, -20, 5])}, ${py(r.time)})`);
-  L.push(`ZV_SHOT.clear(); ZV_SHOT.update({"cam": ${py(cam.type)}, "subjects": [${vars.filter(([, id]) => (cam.type === "ots" ? [r.cam?.subject?.[0]] : (r.cam?.subject ?? [])).includes(id)).map(([v, id]) => `(${py(id)}, ${v})`).join(", ")}], "creature": ${r.creature && (r.cam?.subject ?? []).includes("creature") ? "cr" : "None"}})`);
+  L.push(`ZV_SHOT.clear(); ZV_SHOT.update({"cam": ${py(cam.type)}, "subjects": [${vars.filter(([, id]) => cam.type !== "detail" && (cam.type === "ots" ? [r.cam?.subject?.[0]] : (r.cam?.subject ?? [])).includes(id)).map(([v, id]) => `(${py(id)}, ${v})`).join(", ")}], "creature": ${r.creature && (r.cam?.subject ?? []).includes("creature") ? "cr" : "None"}})`);
   return L.join("\n");
 }
