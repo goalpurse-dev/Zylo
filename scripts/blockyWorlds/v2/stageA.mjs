@@ -47,6 +47,10 @@ export const STAGE_A = {
     pave_close:      { loc: [0.4, 4.6, 2.5], tgt: [0, 8, 2.6], lens: 40, shot: "close", people: ["pave_mid"] },
     street_dark:     { loc: [5.5, 9, 2.4], tgt: [-16, 1, 4], lens: 19, fixed: true, shot: "medium", people: ["pave_mid"], creature: "cr_road_far" },
     step_med:        { loc: [2.5, 11.6, 2.6], tgt: [0, 13.2, 2.4], lens: 28, shot: "medium", people: ["step"] },
+    // tested on the character sheet (v2/character): side profile, from behind toward the house, over a shoulder
+    side_profile:    { loc: [-4.0, 8.1, 2.4], tgt: [0, 8, 2.3], lens: 40, fixed: true, shot: "medium", facing: "side", people: ["pave_mid"] },
+    back_to_house:   { loc: [0.7, 3.3, 2.7], tgt: [0, 16, 2.4], lens: 26, fixed: true, shot: "medium", facing: "away", people: ["pave_mid"] },
+    ots_left:        { loc: [-5.0, 5.8, 3.4], tgt: [0, 8, 2.2], lens: 35, fixed: true, shot: "over_shoulder", shoulder: "pave_left", people: ["pave_mid"] },
     house_side_cr:   { loc: [-3, 12.0, 2.2], tgt: [4, 14, 3.5], lens: 20, shot: "medium", people: ["step"], creature: "cr_house_side" },
   },
   // ---- what stands in the way (from zw_house(8, 0, +1) and zw_suburb); z1 = top. "deck" is a floor, not a wall.

@@ -158,6 +158,63 @@
    "step"
   ]
  },
+ "side_profile": {
+  "loc": [
+   -4,
+   8.1,
+   2.4
+  ],
+  "tgt": [
+   0,
+   8,
+   2.3
+  ],
+  "lens": 40,
+  "fixed": true,
+  "shot": "medium",
+  "facing": "side",
+  "people": [
+   "pave_mid"
+  ]
+ },
+ "back_to_house": {
+  "loc": [
+   0.7,
+   3.3,
+   2.7
+  ],
+  "tgt": [
+   0,
+   16,
+   2.4
+  ],
+  "lens": 26,
+  "fixed": true,
+  "shot": "medium",
+  "facing": "away",
+  "people": [
+   "pave_mid"
+  ]
+ },
+ "ots_left": {
+  "loc": [
+   -5,
+   5.8,
+   3.4
+  ],
+  "tgt": [
+   0,
+   8,
+   2.2
+  ],
+  "lens": 35,
+  "fixed": true,
+  "shot": "over_shoulder",
+  "shoulder": "pave_left",
+  "people": [
+   "pave_mid"
+  ]
+ },
  "house_side_cr": {
   "loc": [
    -3.48,
