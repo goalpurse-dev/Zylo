@@ -19,7 +19,12 @@ def zc_rgb(h):
     return tuple(((int(h[i:i + 2], 16) / 255.0) ** 2.2) for i in (0, 2, 4))
 
 
+ZC_BLACK = {"on": False}
+
+
 def zc_mat(n, key, hexcol, rough=0.6, emit=None, estr=0.0, coat=0.0, spec=0.4):
+    if ZC_BLACK["on"] and not emit:   # the Shadow: pure black in every light (no colour, no shine)
+        return mat("%s_%s" % (n, key), (0.0, 0.0, 0.0), rough=1.0, spec=0.0)
     return mat("%s_%s" % (n, key), zc_rgb(hexcol), rough=rough, emit=zc_rgb(emit) if emit else None, estr=estr, coat=coat, spec=spec)
 
 
@@ -144,6 +149,8 @@ class ZChar:
         self.name, self.spec = name, spec
         n, S = name, spec
         self.coll = collection(n)
+        self.mode = S.get("mode", "normal")      # normal / shadow / mimic
+        ZC_BLACK["on"] = self.mode == "shadow"
         c = S["colors"]
         P = S["body"]
         self.root = empty(n + "_root", loc, None, self.coll, (0, 0, rot))
@@ -186,23 +193,7 @@ class ZChar:
         box(n + "_body", (tw, td, tl), (0, 0, tl / 2 + 0.05), top, 0.2, parent=self.torso, coll=self.coll)
         box(n + "_hemband", (tw + 0.06, td + 0.06, 0.24), (0, 0, 0.14), top2, 0.08, parent=self.torso, coll=self.coll)
         box(n + "_backseam", (0.03, 0.02, tl - 0.3), (0, td / 2 + 0.005, tl / 2 + 0.1), top2, 0.0, parent=self.torso, coll=self.coll)
-        if S["outfit"] == "hoodie":
-            box(n + "_pocket", (tw * 0.64, 0.07, 0.58), (0, -td / 2 - 0.02, 0.62), top2, 0.05, parent=self.torso, coll=self.coll)
-            box(n + "_pocketline", (tw * 0.6, 0.02, 0.03), (0, -td / 2 - 0.06, 0.9), trim, 0.0, parent=self.torso, coll=self.coll)
-            box(n + "_hood", (tw * 0.78, 0.5, 0.6), (0, td / 2 + 0.12, tl - 0.05), top, 0.24, parent=self.torso, coll=self.coll)
-            box(n + "_hoodrim", (tw * 0.82, 0.22, 0.2), (0, td / 2 - 0.02, tl + 0.18), top2, 0.08, parent=self.torso, coll=self.coll)
-            cyl(n + "_collar", 0.56, 0.2, (0, 0, tl + 0.12), top2, 28, bev=0.06, parent=self.torso, coll=self.coll)
-            for s in (-1, 1):
-                cyl("%s_string%d" % (n, s), 0.035, 0.62, (s * 0.22, -td / 2 - 0.05, tl - 0.3), trim, 8, parent=self.torso, coll=self.coll)
-                cyl("%s_aglet%d" % (n, s), 0.052, 0.12, (s * 0.22, -td / 2 - 0.05, tl - 0.66), zc_mat(n, "aglet", "#C9CED6", rough=0.3, spec=0.8), 8, parent=self.torso, coll=self.coll)
-        else:   # shirt: collar points, a button line, a chest pocket
-            for s in (-1, 1):
-                box("%s_collar%d" % (n, s), (0.42, 0.08, 0.3), (s * 0.24, -td / 2 - 0.02, tl - 0.08), top2, 0.04, rot=(0, s * 28, 0), parent=self.torso, coll=self.coll)
-            box(n + "_placket", (0.16, 0.04, tl - 0.4), (0, -td / 2 - 0.01, tl / 2 - 0.05), top2, 0.01, parent=self.torso, coll=self.coll)
-            for k in range(4):
-                cyl("%s_button%d" % (n, k), 0.05, 0.04, (0, -td / 2 - 0.04, tl - 0.45 - k * 0.42), trim, 12, rot=(90, 0, 0), parent=self.torso, coll=self.coll)
-            box(n + "_chestpk", (0.5, 0.05, 0.46), (-tw * 0.26, -td / 2 - 0.02, tl - 0.75), top2, 0.03, parent=self.torso, coll=self.coll)
-            cyl(n + "_collar", 0.5, 0.16, (0, 0, tl + 0.1), top2, 28, bev=0.04, parent=self.torso, coll=self.coll)
+        self._outfit(S["outfit"], tw, td, tl)
         # ---- the ZYVO BADGE (a separate switchable layer): a small round patch with the icon, on his left chest
         self.badge = empty(n + "_badge", (tw * 0.26, -td / 2 - 0.035, tl - 0.62), self.torso, self.coll)
         if S.get("badge_ok", True):
@@ -239,8 +230,12 @@ class ZChar:
             sp = empty("%s_shoulder%s" % (n, side), (s * (tw / 2 + 0.41), 0, tl - 0.22), self.torso, self.coll)
             box("%s_upper%s" % (n, side), (0.8, 0.86, ua + 0.2), (0, 0, -ua / 2 + 0.1), top, 0.2, parent=sp, coll=self.coll)
             ep = empty("%s_elbow%s" % (n, side), (0, 0, -ua), sp, self.coll)
-            box("%s_fore%s" % (n, side), (0.78, 0.84, fa), (0, 0, -fa / 2 + 0.04), top, 0.14, parent=ep, coll=self.coll)
-            box("%s_cuff%s" % (n, side), (0.84, 0.9, 0.24), (0, 0, -fa + 0.1), top2, 0.06, parent=ep, coll=self.coll)
+            slv = S.get("sleeves", "long")
+            box("%s_fore%s" % (n, side), (0.78, 0.84, fa), (0, 0, -fa / 2 + 0.04), top if slv == "long" else skin, 0.14, parent=ep, coll=self.coll)
+            if slv == "long":
+                box("%s_cuff%s" % (n, side), (0.84, 0.9, 0.24), (0, 0, -fa + 0.1), top2, 0.06, parent=ep, coll=self.coll)
+            elif slv == "rolled":   # rolled up above the elbow: a fat folded band
+                box("%s_roll%s" % (n, side), (0.88, 0.94, 0.3), (0, 0, 0.06), top2, 0.1, parent=ep, coll=self.coll)
             box("%s_hand%s" % (n, side), (0.62, 0.66, 0.52), (0, 0, -fa - 0.22), skin, 0.2, parent=ep, coll=self.coll)
             box("%s_thumb%s" % (n, side), (0.2, 0.26, 0.3), (-s * 0.31, -0.12, -fa - 0.16), skin, 0.08, parent=ep, coll=self.coll)
             self.hand[side] = empty("%s_hold%s" % (n, side), (0, -0.05, -fa - 0.3), ep, self.coll)
@@ -248,12 +243,15 @@ class ZChar:
         # ---- neck + head (a soft rounded block) + ears + nose
         self.neck = empty(n + "_neck", (0, 0, tl + 0.12), self.torso, self.coll)
         cyl(n + "_neckm", 0.3, 0.3, (0, 0, 0.1), skin, 20, parent=self.neck, coll=self.coll)
-        hw, hd, hh = 1.9 * hs, 1.8 * hs, 1.75 * hs
+        hsh = S.get("head_shape", (1.0, 1.0, 1.0))
+        hw, hd, hh = 1.9 * hs * hsh[0], 1.8 * hs * hsh[1], 1.75 * hs * hsh[2]
         self.hdim = (hw, hd, hh)
         self.head = box(n + "_head", (hw, hd, hh), (0, 0, 0.1 + hh / 2), skin, 0.34 * hs, parent=self.neck, coll=self.coll, seg=6)
-        for s in (-1, 1):
-            sphere("%s_ear%d" % (n, s), 0.2 * hs, (s * hw / 2, 0.08, -0.02), skin, (0.45, 0.9, 1.15), parent=self.head, coll=self.coll, seg=16)
-        sphere(n + "_nose", 0.085 * hs, (0, -hd / 2 - 0.01, -0.12 * hs), skin2, (1.2, 0.7, 0.9), parent=self.head, coll=self.coll, seg=16)
+        if self.mode != "shadow":
+            for s in (-1, 1):   # the ear: in front of the hair wrap, standing out (it reads in a side view)
+                sphere("%s_ear%d" % (n, s), 0.22 * hs, (s * (hw / 2 + 0.05 * hs), -0.12 * hs, -0.04 * hs), skin, (0.5, 0.85, 1.15), parent=self.head, coll=self.coll, seg=18)
+                sphere("%s_earin%d" % (n, s), 0.12 * hs, (s * (hw / 2 + 0.1 * hs), -0.12 * hs, -0.04 * hs), skin2, (0.3, 0.6, 0.8), parent=self.head, coll=self.coll, seg=12)
+            sphere(n + "_nose", 0.11 * hs, (0, -hd / 2 - 0.03, -0.12 * hs), skin2, (1.1, 1.25, 0.95), parent=self.head, coll=self.coll, seg=16)
         self._face(hs, hw, hd, hh)
         self._hair(hs, hw, hd, hh)
         # ---- the whole body to the spec's height (world units)
@@ -263,15 +261,79 @@ class ZChar:
         self.k = k
         self.expr = "neutral"
         self.pose(0, "stand")
-        self.express(0, "neutral")
+        self.express(0, {"shadow": "shadow_stare", "mimic": "mimic_smile"}.get(self.mode, "neutral"))
+        ZC_BLACK["on"] = False
         CHARS_V2[name] = self
+
+    # ------------------------------------------------------------------ THE OUTFITS
+    def _outfit(self, kind, tw, td, tl):
+        n, C, M, T = self.name, self.coll, self.M, self.torso
+        c = self.spec["colors"]
+        acc = zc_mat(n, "accent", c.get("accent", c["top_dark"]), rough=0.5, spec=0.5)
+        gold = zc_mat(n, "gold", "#E8B83A", rough=0.25, spec=0.9, coat=0.4)
+        if kind == "hoodie":
+            box(n + "_pocket", (tw * 0.64, 0.07, 0.58), (0, -td / 2 - 0.02, 0.62), M["top2"], 0.05, parent=T, coll=C)
+            box(n + "_pocketline", (tw * 0.6, 0.02, 0.03), (0, -td / 2 - 0.06, 0.9), M["trim"], 0.0, parent=T, coll=C)
+            box(n + "_hood", (tw * 0.78, 0.5, 0.6), (0, td / 2 + 0.12, tl - 0.05), M["top"], 0.24, parent=T, coll=C)
+            box(n + "_hoodrim", (tw * 0.82, 0.22, 0.2), (0, td / 2 - 0.02, tl + 0.18), M["top2"], 0.08, parent=T, coll=C)
+            cyl(n + "_collar", 0.56, 0.2, (0, 0, tl + 0.12), M["top2"], 28, bev=0.06, parent=T, coll=C)
+            for sx in (-1, 1):
+                cyl("%s_string%d" % (n, sx), 0.035, 0.62, (sx * 0.22, -td / 2 - 0.05, tl - 0.3), M["trim"], 8, parent=T, coll=C)
+                cyl("%s_aglet%d" % (n, sx), 0.052, 0.12, (sx * 0.22, -td / 2 - 0.05, tl - 0.66), zc_mat(n, "aglet", "#C9CED6", rough=0.3, spec=0.8), 8, parent=T, coll=C)
+        elif kind == "shirt":   # collar points, a button line, a chest pocket
+            for sx in (-1, 1):
+                box("%s_collar%d" % (n, sx), (0.44, 0.1, 0.32), (sx * 0.25, -td / 2 - 0.03, tl - 0.08), M["top2"], 0.04, rot=(0, sx * 28, 0), parent=T, coll=C)
+            box(n + "_placket", (0.18, 0.05, tl - 0.4), (0, -td / 2 - 0.01, tl / 2 - 0.05), M["top2"], 0.01, parent=T, coll=C)
+            for k in range(4):
+                cyl("%s_button%d" % (n, k), 0.06, 0.05, (0, -td / 2 - 0.045, tl - 0.45 - k * 0.42), M["trim"], 12, rot=(90, 0, 0), parent=T, coll=C)
+            box(n + "_chestpk", (0.5, 0.05, 0.46), (-tw * 0.26, -td / 2 - 0.02, tl - 0.75), M["top2"], 0.03, parent=T, coll=C)
+            box(n + "_belt", (tw + 0.08, td + 0.08, 0.2), (0, 0, 0.16), zc_mat(n, "belt", "#3A2A20", rough=0.5), 0.05, parent=T, coll=C)
+            box(n + "_buckle", (0.3, 0.06, 0.18), (0, -td / 2 - 0.06, 0.16), gold, 0.03, parent=T, coll=C)
+            cyl(n + "_collar", 0.5, 0.16, (0, 0, tl + 0.1), M["top2"], 28, bev=0.04, parent=T, coll=C)
+        elif kind == "dungarees":  # a tee under a bib and straps (the dungaree colour is the legs' colour)
+            dm = M["legs"]
+            box(n + "_lower", (tw + 0.04, td + 0.04, tl * 0.42), (0, 0, tl * 0.21 + 0.05), dm, 0.16, parent=T, coll=C)
+            box(n + "_bib", (tw * 0.62, 0.1, tl * 0.5), (0, -td / 2 - 0.02, tl * 0.55), dm, 0.06, parent=T, coll=C)
+            box(n + "_bibpk", (tw * 0.34, 0.05, tl * 0.2), (0, -td / 2 - 0.08, tl * 0.56), M["legs2"], 0.03, parent=T, coll=C)
+            box(n + "_backbib", (tw * 0.5, 0.08, tl * 0.4), (0, td / 2 + 0.02, tl * 0.5), dm, 0.05, parent=T, coll=C)
+            for sx in (-1, 1):
+                box("%s_strap%d" % (n, sx), (0.2, td + 0.14, 0.12), (sx * tw * 0.26, 0, tl - 0.02), dm, 0.03, parent=T, coll=C)
+                box("%s_strapf%d" % (n, sx), (0.2, 0.08, tl * 0.32), (sx * tw * 0.26, -td / 2 - 0.03, tl * 0.84), dm, 0.03, parent=T, coll=C)
+                cyl("%s_bbtn%d" % (n, sx), 0.08, 0.05, (sx * tw * 0.26, -td / 2 - 0.08, tl * 0.76), gold, 14, rot=(90, 0, 0), parent=T, coll=C)
+            cyl(n + "_collar", 0.5, 0.14, (0, 0, tl + 0.1), M["top2"], 28, bev=0.04, parent=T, coll=C)
+        elif kind == "cardigan":   # a cardigan open over a blouse: edges, buttons, two pockets, a blouse collar
+            bl = zc_mat(n, "blouse", c.get("under", "#FFFFFF"), rough=0.7)
+            box(n + "_blouse", (tw * 0.3, 0.06, tl * 0.82), (0, -td / 2 - 0.0, tl * 0.56), bl, 0.03, parent=T, coll=C)
+            for sx in (-1, 1):
+                box("%s_cedge%d" % (n, sx), (0.12, 0.08, tl * 0.92), (sx * tw * 0.17, -td / 2 - 0.03, tl * 0.5), M["top2"], 0.03, parent=T, coll=C)
+                box("%s_cpk%d" % (n, sx), (tw * 0.24, 0.06, tl * 0.2), (sx * tw * 0.3, -td / 2 - 0.02, tl * 0.25), M["top2"], 0.03, parent=T, coll=C)
+                box("%s_bcol%d" % (n, sx), (0.3, 0.08, 0.2), (sx * 0.16, -td / 2 - 0.04, tl - 0.04), bl, 0.03, rot=(0, sx * 30, 0), parent=T, coll=C)
+            for k in range(4):
+                cyl("%s_cbtn%d" % (n, k), 0.06, 0.05, (tw * 0.17, -td / 2 - 0.08, tl * 0.82 - k * tl * 0.2), M["trim"], 12, rot=(90, 0, 0), parent=T, coll=C)
+            cyl(n + "_collar", 0.52, 0.16, (0, 0, tl + 0.1), M["top2"], 28, bev=0.05, parent=T, coll=C)
+        elif kind == "suit":       # a jacket with lapels, a shirt + tie, buttons, a sash with a gold medal
+            sh = zc_mat(n, "shirtw", c.get("under", "#F4F4F0"), rough=0.6)
+            box(n + "_shirtv", (tw * 0.3, 0.06, tl * 0.5), (0, -td / 2 - 0.0, tl * 0.74), sh, 0.02, parent=T, coll=C)
+            box(n + "_tie", (0.16, 0.06, tl * 0.42), (0, -td / 2 - 0.04, tl * 0.72), acc, 0.03, parent=T, coll=C)
+            for sx in (-1, 1):
+                box("%s_lapel%d" % (n, sx), (0.26, 0.08, tl * 0.5), (sx * tw * 0.17, -td / 2 - 0.04, tl * 0.72), M["top2"], 0.03, rot=(0, -sx * 14, 0), parent=T, coll=C)
+            for k in range(2):
+                cyl("%s_jbtn%d" % (n, k), 0.07, 0.05, (tw * 0.04, -td / 2 - 0.06, tl * 0.38 - k * tl * 0.18), M["trim"], 12, rot=(90, 0, 0), parent=T, coll=C)
+            # the sash: from the right shoulder across to the left hip, front and back
+            sash = zc_mat(n, "sash", c.get("sash", "#C8283C"), rough=0.45, spec=0.5)
+            for sy, nm in ((-1, "f"), (1, "b")):
+                box("%s_sash%s" % (n, nm), (0.36, 0.08, tl * 1.12), (0, sy * (td / 2 + 0.06), tl * 0.5), sash, 0.03, rot=(0, -sy * 36, 0), parent=T, coll=C)
+            cyl(n + "_medal", 0.18, 0.06, (-tw * 0.16, -td / 2 - 0.12, tl * 0.38), gold, 24, rot=(90, 0, 0), parent=T, coll=C)
+            cyl(n + "_collar", 0.52, 0.16, (0, 0, tl + 0.1), sh, 28, bev=0.04, parent=T, coll=C)
+        elif kind == "plain":
+            cyl(n + "_collar", 0.45, 0.12, (0, 0, tl + 0.08), M["top"], 24, parent=T, coll=C)
 
     # ------------------------------------------------------------------ THE FACE
     def _face(self, hs, hw, hd, hh):
         n, H, C = self.name, self.head, self.coll
         c = self.spec["colors"]
         fy = -hd / 2
-        eye_m = zc_mat(n, "eye", c.get("eyes", "#1B1410"), rough=0.12, spec=0.9, coat=0.6)
+        eye_m = zc_mat(n, "eye", c.get("eyes", "#1B1410"), rough=0.12, spec=0.9, coat=0.6) if self.mode != "shadow" else zc_mat(n, "eyeglow", "#FFF4B8", rough=0.3, emit="#FFF0A0", estr=14.0)
         glint = zc_mat(n, "glint", "#FFFFFF", rough=0.2, emit="#FFFFFF", estr=4.0)
         brow_m = zc_mat(n, "brow", c.get("brows", c["hair"]), rough=0.6)
         lid_m = zc_mat(n, "lid", c.get("skin_dark", c["skin"]), rough=0.6)
@@ -285,20 +347,21 @@ class ZChar:
         self.F = {"eyes": {}, "lid": {}, "low": {}, "brow": {}, "mouth": {}, "eye0": {}}
         for s, side in ((1, "L"), (-1, "R")):
             ep = empty("%s_eyep%s" % (n, side), (s * ex, fy, ez), H, C)
-            sphere("%s_eye%s" % (n, side), er, (0, 0.02, 0), eye_m, (1.0, 0.38, 1.28), parent=ep, coll=C, seg=24)
-            sphere("%s_glint%s" % (n, side), 0.055 * hs, (-0.06 * hs, -0.07, 0.1 * hs), glint, parent=ep, coll=C, seg=12)
-            sphere("%s_glint2%s" % (n, side), 0.025 * hs, (0.05 * hs, -0.07, -0.06 * hs), glint, parent=ep, coll=C, seg=8)
+            sphere("%s_eye%s" % (n, side), er, (0, 0.0, 0), eye_m, (1.0, 0.95, 1.28), parent=ep, coll=C, seg=24)
+            if self.mode != "shadow":
+                sphere("%s_glint%s" % (n, side), 0.055 * hs, (-0.06 * hs, -0.17 * hs, 0.1 * hs), glint, parent=ep, coll=C, seg=12)
+                sphere("%s_glint2%s" % (n, side), 0.025 * hs, (0.05 * hs, -0.17 * hs, -0.06 * hs), glint, parent=ep, coll=C, seg=8)
             self.F["eyes"][side], self.F["eye0"][side] = ep, (s * ex, fy, ez)
             # upper lid: pivot at the eye's top edge, a lid that grows down over the eye (scale z = how closed)
-            lp = empty("%s_lidp%s" % (n, side), (s * ex, fy - 0.045, ez + er * 1.28), H, C)
-            sphere("%s_lid%s" % (n, side), er * 1.1, (0, 0.03, -er * 1.28), zc_mat(n, "lidskin", c["skin"], rough=0.55), (1.08, 0.48, 1.32), parent=lp, coll=C, seg=24)
+            lp = empty("%s_lidp%s" % (n, side), (s * ex, fy - 0.07 * hs, ez + er * 1.28), H, C)
+            sphere("%s_lid%s" % (n, side), er * 1.12, (0, 0.0, -er * 1.28), zc_mat(n, "lidskin", c["skin"], rough=0.55), (1.08, 1.02, 1.32), parent=lp, coll=C, seg=24)
             self.F["lid"][side] = lp
             # lower lid: a curved cheek that rises (the smiling eye)
             lo = empty("%s_lowp%s" % (n, side), (s * ex, fy - 0.04, ez - er * 1.28), H, C)
             sphere("%s_low%s" % (n, side), er * 1.1, (0, 0, -er * 1.05), zc_mat(n, "cheek", c["skin"], rough=0.55), (1.1, 0.22, 0.8), parent=lo, coll=C, seg=20)
             self.F["low"][side] = lo
-            bp = empty("%s_browp%s" % (n, side), (s * ex, fy - 0.03, ez + 0.4 * hs), H, C)
-            box("%s_brow%s" % (n, side), (0.4 * hs, 0.07, 0.09 * hs), (0, 0, 0), brow_m, 0.035, parent=bp, coll=C)
+            bp = empty("%s_browp%s" % (n, side), (s * ex, fy - 0.07 * hs, ez + 0.4 * hs), H, C)
+            box("%s_brow%s" % (n, side), (0.4 * hs, 0.26 * hs, 0.11 * hs), (0, -0.03 * hs, 0), brow_m, 0.04, parent=bp, coll=C)
             self.F["brow"][side] = bp
             sphere("%s_blush%d" % (n, s), 0.13 * hs, (s * 0.62 * hs, fy - 0.005, -0.2 * hs), blush_m, (1.3, 0.2, 0.75), parent=H, coll=C, seg=16)
         self.F["blush"] = [D.objects["%s_blush%d" % (n, s)] for s in (-1, 1)]
@@ -313,10 +376,12 @@ class ZChar:
         M = self.F["mouth"]
 
         def mo(key):
-            e = empty("%s_mouth_%s" % (n, key), (0, fy - 0.02, mz), H, C)
+            e = empty("%s_mouth_%s" % (n, key), (0, fy - 0.05 * hs, mz), H, C)
             M[key] = e
             return e
-        r = 0.035 * hs
+        r = 0.05 * hs
+        # the Mimic's smile: too wide, ear to ear
+        zc_arc(n + "_m_wide", [(-0.62 * hs, 0.16 * hs), (-0.4 * hs, -0.08 * hs), (0.0, -0.13 * hs), (0.4 * hs, -0.08 * hs), (0.62 * hs, 0.16 * hs)], r, line_m, mo("wide"), C)
         zc_arc(n + "_m_line", [(-0.16 * hs, 0), (0, -0.01 * hs), (0.16 * hs, 0)], r, line_m, mo("line"), C)
         zc_arc(n + "_m_small", [(-0.08 * hs, 0), (0.08 * hs, 0)], r, line_m, mo("small_line"), C)
         zc_arc(n + "_m_smile", [(-0.27 * hs, 0.07 * hs), (-0.1 * hs, -0.06 * hs), (0.1 * hs, -0.06 * hs), (0.27 * hs, 0.07 * hs)], r, line_m, mo("smile"), C)
@@ -347,41 +412,59 @@ class ZChar:
     def _hair(self, hs, hw, hd, hh):
         n, c = self.name, self.spec["colors"]
         st = self.spec["hair"]
+        if st == "none":
+            return
         top = hh / 2
         m = zc_hair_mat(n, c["hair"], c["hair_light"], top * 0.3, top + 0.5 * hs, ref=self.head)
         H, C = self.head, self.coll
-        # the cover: never a bald side or back (a cap over the crown, a wrap round the back and the sides)
-        box(n + "_hcap", (hw + 0.14 * hs, hd + 0.14 * hs, 0.62 * hs), (0, 0.02 * hs, top - 0.18 * hs), m, 0.3 * hs, parent=H, coll=C, seg=5)
-        drop = {"swoop": 0.55, "short": 0.75, "bun": 0.35}.get(st, 0.6)
-        box(n + "_hwrap", (hw + 0.12 * hs, hd * 0.62, top * (1.0 + drop) - 0.1 * hs), (0, hd * 0.22 + 0.06 * hs, top * (1.0 - drop) / 2 + 0.05 * hs), m, 0.28 * hs, parent=H, coll=C, seg=5)
+        # the cover: never bald (a cap over the crown, a wrap behind the ears round the back)
+        box(n + "_hcap", (hw + 0.04 * hs, hd + 0.04 * hs, 0.5 * hs), (0, 0.02 * hs, top - 0.14 * hs), m, 0.3 * hs, parent=H, coll=C, seg=5)
+        drop = {"swoop": 0.6, "short": 0.75, "bun": 0.5, "bob": 1.5, "pigtails": 0.55, "grey_neat": 0.8}.get(st, 0.6)
+        y0, y1 = 0.02 * hs, hd / 2 + 0.02 * hs
+        box(n + "_hwrap", (hw + 0.04 * hs, y1 - y0, top * (1.0 + drop)), (0, (y0 + y1) / 2, top * (1.0 - drop) / 2), m, 0.26 * hs, parent=H, coll=C, seg=5)
+        if st in ("bob", "pigtails", "short", "grey_neat", "bun"):   # the fringe: part of the cap, never a floating bar
+            box(n + "_fringe", (hw * (0.92 if st in ("bob", "pigtails") else 0.7), 0.22 * hs, 0.3 * hs), (0.0 if st in ("bob", "pigtails") else 0.12 * hs, -hd / 2 - 0.02 * hs, top - 0.24 * hs), m, 0.1 * hs, parent=H, coll=C, seg=4)
         E = []
-        if st == "swoop":   # Me: a full mop with a side-swept fringe, a crown tuft and a back that covers the head
-            E += [((-0.3 * hs, -hd * 0.5, top - 0.12 * hs), (0.62 * hs, 0.3 * hs, 0.32 * hs), (0, -18, 14)),   # the swept fringe
+
+        def lock(x, y, z, length, width, rz=0.0, rx=0.0, ry=0.0):
+            E.append(((x, y, z), (width, width * 0.75, length), (rx, ry, rz)))
+        # the back: two rows of locks flowing down, fanning out
+        rows = {"swoop": 2, "short": 1, "bun": 1, "bob": 3, "pigtails": 2, "grey_neat": 1}.get(st, 2)
+        for row in range(rows):
+            zc = top * (0.62 - row * 0.62)
+            for i in range(7):
+                a = math.radians(-72 + i * 24)
+                lock(math.sin(a) * (hw * 0.5 + 0.08 * hs), math.cos(a) * (hd * 0.5 + 0.08 * hs), zc, 0.6 * hs, 0.26 * hs, ry=-math.degrees(a) * 0.35, rx=12)
+        # the top: locks from the crown, sweeping forward and back
+        cx, cy = 0.12 * hs, 0.2 * hs
+        for i in range(8):
+            b = math.radians(-160 + i * 45)
+            lock(cx + math.sin(b) * 0.5 * hs, cy - math.cos(b) * 0.5 * hs, top + 0.14 * hs, 0.5 * hs, 0.24 * hs, rz=-math.degrees(b), rx=80)
+        if st == "swoop":    # Me: a side-swept fringe and a crown tuft
+            E += [((-0.3 * hs, -hd * 0.5, top - 0.12 * hs), (0.62 * hs, 0.3 * hs, 0.32 * hs), (0, -18, 14)),
                   ((0.32 * hs, -hd * 0.48, top - 0.02 * hs), (0.46 * hs, 0.28 * hs, 0.28 * hs), (0, 22, -16)),
                   ((0.72 * hs, -hd * 0.36, top - 0.2 * hs), (0.28 * hs, 0.24 * hs, 0.3 * hs), (0, 30, -10)),
-                  ((0.05 * hs, -0.1 * hs, top + 0.22 * hs), (0.42 * hs, 0.48 * hs, 0.3 * hs), (16, 0, 0)),     # the crown swirl
-                  ((-0.32 * hs, 0.36 * hs, top + 0.14 * hs), (0.34 * hs, 0.38 * hs, 0.3 * hs), (-20, 12, 0)),
-                  ((0.38 * hs, 0.3 * hs, top + 0.12 * hs), (0.3 * hs, 0.36 * hs, 0.28 * hs), (-14, -18, 0)),
-                  ((-0.42 * hs, hd * 0.56, top * 0.62), (0.4 * hs, 0.2 * hs, 0.36 * hs), (0, 0, 10)),     # the back, in locks
-                  ((0.38 * hs, hd * 0.56, top * 0.55), (0.42 * hs, 0.2 * hs, 0.36 * hs), (0, 0, -12)),
-                  ((-0.2 * hs, hd * 0.58, top * 0.05), (0.42 * hs, 0.2 * hs, 0.34 * hs), (0, 0, 8)),
-                  ((0.3 * hs, hd * 0.58, top * -0.05), (0.38 * hs, 0.2 * hs, 0.32 * hs), (0, 0, -6)),
-                  ((0.0, hd * 0.56, top * -0.42), (0.5 * hs, 0.18 * hs, 0.2 * hs), None),               # the nape
-                  ((hw * 0.56, hd * 0.12, top * 0.5), (0.16 * hs, 0.4 * hs, 0.34 * hs), (0, 0, 0)),     # the sides, over the ears
-                  ((-hw * 0.56, hd * 0.12, top * 0.5), (0.16 * hs, 0.4 * hs, 0.34 * hs), (0, 0, 0)),
-                  ((hw * 0.55, hd * 0.36, top * 0.05), (0.15 * hs, 0.3 * hs, 0.3 * hs), None),
-                  ((-hw * 0.55, hd * 0.36, top * 0.05), (0.15 * hs, 0.3 * hs, 0.3 * hs), None)]
-        elif st == "short":  # an adult: short, neat, a side part
-            E += [((0, 0.08 * hs, top - 0.02 * hs), (hw * 0.6, hd * 0.6, 0.36 * hs), None),
-                  ((0, hd * 0.38, top * 0.3), (hw * 0.58, hd * 0.3, top * 0.95), None),
-                  ((hw * 0.5, hd * 0.12, top * 0.55), (0.18 * hs, hd * 0.44, top * 0.5), None),
-                  ((-hw * 0.5, hd * 0.12, top * 0.55), (0.18 * hs, hd * 0.44, top * 0.5), None),
-                  ((0.28 * hs, -hd * 0.46, top - 0.06 * hs), (hw * 0.36, 0.26 * hs, 0.2 * hs), (0, 10, 0))]
-        elif st == "bun":    # a grandma: grey, a bun on top
-            E += [((0, 0.06 * hs, top - 0.02 * hs), (hw * 0.6, hd * 0.6, 0.4 * hs), None),
-                  ((0, hd * 0.38, top * 0.3), (hw * 0.58, hd * 0.3, top * 1.0), None),
-                  ((0, 0.1 * hs, top + 0.5 * hs), (0.4 * hs, 0.4 * hs, 0.36 * hs), None)]
+                  ((0.15 * hs, 0.12 * hs, top + 0.38 * hs), (0.12 * hs, 0.1 * hs, 0.3 * hs), (-30, 0, 20))]
+        elif st in ("short", "grey_neat"):   # neat with a side part and a lifted front (a quiff)
+            E += [((0.2 * hs, -hd * 0.4, top + 0.1 * hs), (hw * 0.4, 0.34 * hs, 0.3 * hs), (20, 10, 0))]
+        elif st == "bun":
+            E += [((0, 0.1 * hs, top + 0.5 * hs), (0.42 * hs, 0.42 * hs, 0.38 * hs), None)]
+        elif st == "bob":    # Mom: a rounded bob to the jaw (the fringe is the cut's own box)
+            for sx in (-1, 1):
+                E += [((sx * hw * 0.56, -0.1 * hs, top * -0.2), (0.22 * hs, hd * 0.42, top * 0.9), (0, sx * 6, 0)),
+                      ((sx * hw * 0.5, -hd * 0.32, top * -0.55), (0.2 * hs, 0.26 * hs, 0.26 * hs), (0, -sx * 20, 0))]
+        elif st == "pigtails":   # the sister: two bunches tied at the sides
+            tie = zc_mat(n, "tie", c.get("accent", "#FFD23F"), rough=0.4, spec=0.6)
+            for sx in (-1, 1):
+                E += [((sx * (hw * 0.7), 0.15 * hs, top * 0.15), (0.38 * hs, 0.38 * hs, 0.55 * hs), (0, sx * 28, 0)),
+                      ((sx * (hw * 0.84), 0.2 * hs, top * -0.45), (0.3 * hs, 0.3 * hs, 0.48 * hs), (0, sx * 18, 0))]
+                sphere("%s_tie%d" % (n, sx), 0.14 * hs, (sx * (hw * 0.56), 0.15 * hs, top * 0.45), tie, (1.0, 1.0, 0.7), parent=H, coll=C, seg=14)
         zc_meta(n + "_hair", self.head, E, m, self.coll)
+        if self.spec.get("hat") == "top":   # the Mayor's top hat
+            hm = zc_mat(n, "hat", "#1C1C22", rough=0.35, spec=0.6)
+            cyl(n + "_brim", 0.95 * hs * max(1.0, hw / 1.9), 0.08 * hs, (0, 0.02 * hs, top + 0.28 * hs), hm, 32, bev=0.02, parent=H, coll=C)
+            cyl(n + "_crown", 0.62 * hs, 1.05 * hs, (0, 0.02 * hs, top + 0.82 * hs), hm, 32, bev=0.04, parent=H, coll=C)
+            cyl(n + "_band", 0.635 * hs, 0.18 * hs, (0, 0.02 * hs, top + 0.42 * hs), zc_mat(n, "hatband", c.get("sash", "#C8283C"), rough=0.4), 32, parent=H, coll=C)
 
     # ------------------------------------------------------------------ BADGE, EXPRESSIONS, BLINKS, POSES, HOLDING
     def set_badge(self, t, on):
@@ -420,11 +503,11 @@ class ZChar:
             key(ep, "location", f, interp="CONSTANT")
             key(ep, "scale", f, interp="CONSTANT")
         for k, e in self.F["mouth"].items():
-            v = 1.0 if k == X["mouth"] else 0.0001
+            v = 1.0 if (k == X["mouth"] and self.mode != "shadow") else 0.0001
             e.scale = (v, v, v)
             key(e, "scale", f, interp="CONSTANT")
         for ob in self.F["blush"]:
-            v = 1.0 if X.get("blush") else 0.0001
+            v = 1.0 if (X.get("blush") and self.mode == "normal") else 0.0001
             ob.scale = (1.3 * v, 0.2 * v, 0.75 * v)
             key(ob, "scale", f, interp="CONSTANT")
         v = 1.0 if X.get("tears") else 0.0001
@@ -432,7 +515,9 @@ class ZChar:
         key(self.F["tears"], "scale", f, interp="CONSTANT")
 
     def blink(self, t):
-        """the lids close for 3 frames and open again (on top of the expression's lid)"""
+        """the lids close for 3 frames and open again (on top of the expression's lid); the Mimic never blinks"""
+        if self.mode == "mimic":
+            return
         f = F(t)
         lv = ZC_EXPR.get(self.expr, ZC_EXPR["neutral"])["lid"]
         for side in ("L", "R"):
@@ -463,7 +548,7 @@ class ZChar:
         r = self.root.location
         self.root.rotation_euler[2] = math.atan2(p[0] - r.x, -(p[1] - r.y))
 
-    def hold(self, t, thing, hands="R"):
+    def hold(self, t, thing, hands="R", upright=False):
         """a prop in one hand (L / R) or between both hands ("both"), placed where the posed hands really are, at the
         character's scale, turned with the body (the still's hands do not move)"""
         bpy.context.view_layer.update()
@@ -472,16 +557,127 @@ class ZChar:
         thing.scale = (self.k, self.k, self.k)
         p = (hp["L"] + hp["R"]) / 2.0 if hands == "both" else hp[hands]
         thing.location = (p.x, p.y, p.z + (0.05 * self.k if hands == "both" else 0.0))
-        thing.rotation_euler = (thing.rotation_euler[0], 0.0, yaw)
+        thing.rotation_euler = (0.0 if upright else thing.rotation_euler[0], 0.0, yaw)
         return thing
 
 
 CHARS_V2 = {}
 
 
+class ZCritter:
+    """the little creature: knee-high, round and fuzzy, big eyes; cute or grumpy (the same face params as the cast)"""
+    def __init__(self, name, spec, loc=(0, 0, 0), rot=0.0):
+        self.name, self.spec, n = name, spec, name
+        self.mode = "critter"
+        self.coll = collection(n)
+        c = spec["colors"]
+        self.root = empty(n + "_root", loc, None, self.coll, (0, 0, rot))
+        fur = zc_fabric(zc_mat(n, "fur", c["fur"], rough=0.95, spec=0.1), scale=40.0, strength=0.6)
+        fur2 = zc_mat(n, "fur2", c["fur_dark"], rough=0.9, spec=0.1)
+        belly = zc_fabric(zc_mat(n, "belly", c["belly"], rough=0.95, spec=0.1), scale=40.0, strength=0.4)
+        R = 1.0
+        self.body = sphere(n + "_body", R, (0, 0, R * 0.95), fur, (1.0, 0.92, 0.95), parent=self.root, coll=self.coll, seg=48)
+        md2 = self.body.modifiers.new("sub", "SUBSURF")
+        md2.levels = 2
+        md2.render_levels = 3
+        tx = D.textures.new(n + "_furtex", "CLOUDS")
+        tx.noise_scale = 0.06
+        md = self.body.modifiers.new("fuzz", "DISPLACE")
+        md.texture = tx
+        md.strength = 0.07
+        sphere(n + "_belly", R * 0.62, (0, -R * 0.5, R * 0.75), belly, (1.0, 0.5, 0.9), parent=self.root, coll=self.coll, seg=32)
+        for s in (-1, 1):
+            sphere("%s_foot%d" % (n, s), R * 0.26, (s * R * 0.42, -R * 0.22, R * 0.1), fur2, (1.0, 1.35, 0.6), parent=self.root, coll=self.coll, seg=16)
+            sphere("%s_arm%d" % (n, s), R * 0.2, (s * R * 0.95, -R * 0.12, R * 0.82), fur, (0.7, 0.8, 1.25), parent=self.root, coll=self.coll, seg=16, rot=(0, s * 20, 0))
+            cyl("%s_ear%d" % (n, s), R * 0.16, R * 0.5, (s * R * 0.5, 0.0, R * 1.78), fur, 12, rot=(0, s * 22, 0), parent=self.root, coll=self.coll, r2=0.02)
+        self.head = self.body
+        # the face: re-use the cast's face parts on a small virtual "head" frame
+        self.F = {"eyes": {}, "lid": {}, "low": {}, "brow": {}, "mouth": {}, "eye0": {}}
+        hs = 0.95
+        fy = -R * 0.9
+        eye_m = zc_mat(n, "eye", "#120E0C", rough=0.1, spec=0.9, coat=0.7)
+        glint = zc_mat(n, "glint", "#FFFFFF", rough=0.2, emit="#FFFFFF", estr=4.0)
+        line_m = zc_mat(n, "mline", "#2A1612", rough=0.5)
+        mouth_m = zc_mat(n, "mouth", "#5A1E24", rough=0.5)
+        ex, ez, er = 0.34, 1.12, 0.24
+        for s, side in ((1, "L"), (-1, "R")):
+            ep = empty("%s_eyep%s" % (n, side), (s * ex, fy + 0.05, ez), self.root, self.coll)
+            sphere("%s_eye%s" % (n, side), er, (0, 0, 0), eye_m, (1.0, 0.75, 1.2), parent=ep, coll=self.coll, seg=24)
+            sphere("%s_glint%s" % (n, side), 0.07, (-0.07, -0.17, 0.1), glint, parent=ep, coll=self.coll, seg=12)
+            self.F["eyes"][side], self.F["eye0"][side] = ep, (s * ex, fy + 0.05, ez)
+            lp = empty("%s_lidp%s" % (n, side), (s * ex, fy - 0.03, ez + er * 1.2), self.root, self.coll)
+            sphere("%s_lid%s" % (n, side), er * 1.14, (0, 0.03, -er * 1.2), fur, (1.08, 0.85, 1.3), parent=lp, coll=self.coll, seg=20)
+            self.F["lid"][side] = lp
+            lo = empty("%s_lowp%s" % (n, side), (s * ex, fy + 0.02, ez - er * 1.2), self.root, self.coll)
+            sphere("%s_low%s" % (n, side), er * 1.0, (0, 0, -er * 1.0), fur, (1.1, 0.3, 0.8), parent=lo, coll=self.coll, seg=16)
+            self.F["low"][side] = lo
+            bp = empty("%s_browp%s" % (n, side), (s * ex, fy - 0.05, ez + 0.36), self.root, self.coll)
+            box("%s_brow%s" % (n, side), (0.3, 0.12, 0.08), (0, 0, 0), fur2, 0.03, parent=bp, coll=self.coll)
+            self.F["brow"][side] = bp
+        M = self.F["mouth"]
+        mz = 0.72
+
+        def mo(key):
+            e = empty("%s_mouth_%s" % (n, key), (0, fy - 0.06, mz), self.root, self.coll)
+            M[key] = e
+            return e
+        r = 0.04
+        zc_arc(n + "_m_line", [(-0.12, 0), (0.12, 0)], r, line_m, mo("line"), self.coll)
+        zc_arc(n + "_m_smile", [(-0.2, 0.06), (-0.07, -0.05), (0.07, -0.05), (0.2, 0.06)], r, line_m, mo("smile"), self.coll)
+        zc_arc(n + "_m_frown", [(-0.18, -0.06), (-0.06, 0.04), (0.06, 0.04), (0.18, -0.06)], r, line_m, mo("frown"), self.coll)
+        zc_arc(n + "_m_wavy", [(-0.18, -0.02), (-0.09, 0.03), (0.0, -0.02), (0.09, 0.03), (0.18, -0.02)], r, line_m, mo("wavy"), self.coll)
+        g = mo("grin")
+        zc_ellipse(n + "_m_grin", 0.22, 0.16, 0.02, mouth_m, g, self.coll, top_flat=True, y=0.0)
+        o = mo("small_o")
+        zc_ellipse(n + "_m_so", 0.08, 0.1, 0.0, mouth_m, o, self.coll, y=0.0)
+        for k in ("big_o", "frown_open", "grit", "small_line", "smirk", "side_line", "wide"):
+            M[k] = M["small_o"] if k in ("big_o", "frown_open") else (M["frown"] if k == "grit" else M["line"])
+        self.F["blush"] = []
+        self.F["tears"] = empty(n + "_tears", (0, 0, 0), self.root, self.coll)
+        self.spec = dict(spec, body={"head": hs})
+        self.local_h = R * 2.1
+        k = spec["height"] / self.local_h
+        self.root.scale = (k, k, k)
+        self.k = k
+        self.expr = "happy"
+        self.express(0, "happy")
+        CHARS_V2[name] = self
+
+    def express(self, t, name):
+        ZChar.express(self, t, name)
+
+    def face_to(self, p):
+        ZChar.face_to(self, p)
+
+
+def zv_open_window(i=8, wx=-4, light_on=True):
+    """the hero house's window as a real opening (a hole in the wall, the pane removed, a warm lamp inside): someone
+    can stand at it, inside. Returns the opening's centre (world)."""
+    pane = D.objects.get("zw_hwin%d_%d" % (i, wx))
+    house = D.objects.get("zw_h%d" % i)
+    if pane is None or house is None:
+        print("zv_open_window: no window %d_%d" % (i, wx))
+        return None
+    bpy.context.view_layer.update()
+    c = pane.matrix_world.translation.copy()
+    dm = pane.dimensions
+    cut = box("zv_wcut%d" % i, (dm.x * 0.98, 3.0, dm.z * 0.98), (c.x, c.y + 1.2, c.z), None, 0.0)
+    cut.hide_render = True
+    cut.display_type = "WIRE"
+    md = house.modifiers.new("zv_window", "BOOLEAN")
+    md.object = cut
+    md.operation = "DIFFERENCE"
+    D.objects.remove(pane, do_unlink=True)
+    box("zv_room%d" % i, (8, 0.2, 9), (c.x, c.y + 4.5, 4.5), mat("zv_roomwall", zc_rgb("#E9D9B8"), 0.9), 0.0)
+    if light_on:
+        light("zv_roomlamp%d" % i, "POINT", (c.x + 0.6, c.y + 2.5, c.z + 1.6), 220, (1.0, 0.82, 0.58), 0.8)
+    return c
+
+
 def zc_head_c(ch):
     bpy.context.view_layer.update()
-    pts = zw_pts([ch.head])
+    h = ch.head
+    pts = [h.matrix_world @ Vector(c) for c in h.bound_box]
     return Vector((sum(p.x for p in pts) / 8.0, sum(p.y for p in pts) / 8.0, sum(p.z for p in pts) / 8.0)) if pts else ch.root.location
 
 
@@ -547,6 +743,18 @@ ZC_EXPR = {
     "sleepy":    {"brow_z": -0.04, "brow_tilt": 0, "lid": 0.66, "lid_tilt": 0, "low": 0.1, "mouth": "small_line"},
     "smug":      {"brow_z": 0.0, "brow_tilt": -6, "lid": 0.42, "lid_tilt": 4, "low": 0.15, "mouth": "smirk", "look": (0.05, 0.0),
                   "asym": {"L": {"brow_z": 0.12, "brow_tilt": 10}}},
+    # the Shadow (eyes only): stare / narrow / wide / half-shut / one eye / look aside
+    "shadow_stare":  {"brow_z": 0.0, "brow_tilt": 0, "lid": 0.0001, "lid_tilt": 0, "low": 0.0, "mouth": "line", "eye_scale": 1.0},
+    "shadow_narrow": {"brow_z": 0.0, "brow_tilt": 0, "lid": 0.55, "lid_tilt": 24, "low": 0.25, "mouth": "line"},
+    "shadow_wide":   {"brow_z": 0.0, "brow_tilt": 0, "lid": 0.0001, "lid_tilt": 0, "low": 0.0, "mouth": "line", "eye_scale": 1.3},
+    "shadow_sleepy": {"brow_z": 0.0, "brow_tilt": 0, "lid": 0.7, "lid_tilt": 0, "low": 0.0, "mouth": "line"},
+    "shadow_wink":   {"brow_z": 0.0, "brow_tilt": 0, "lid": 0.0001, "lid_tilt": 0, "low": 0.0, "mouth": "line", "asym": {"L": {"lid": 1.0}}},
+    "shadow_aside":  {"brow_z": 0.0, "brow_tilt": 0, "lid": 0.2, "lid_tilt": 0, "low": 0.0, "mouth": "line", "look": (0.07, 0.0)},
+    # the Mimic: almost right (eyes that never blink, a smile too wide, brows too still)
+    "mimic_smile":   {"brow_z": 0.08, "brow_tilt": 0, "lid": 0.0001, "lid_tilt": 0, "low": 0.0, "mouth": "wide", "eye_scale": 0.86},
+    "mimic_stare":   {"brow_z": 0.12, "brow_tilt": 0, "lid": 0.0001, "lid_tilt": 0, "low": 0.0, "mouth": "line", "eye_scale": 0.8},
+    "mimic_grin":    {"brow_z": 0.04, "brow_tilt": -8, "lid": 0.2, "lid_tilt": 10, "low": 0.0, "mouth": "wide", "eye_scale": 0.86, "look": (0.0, 0.03)},
+    "mimic_copy":    {"brow_z": 0.04, "brow_tilt": 4, "lid": 0.0001, "lid_tilt": 0, "low": 0.1, "mouth": "smile", "eye_scale": 0.84},
     "thinking":  {"brow_z": 0.0, "brow_tilt": 0, "lid": 0.15, "lid_tilt": 0, "low": 0.0, "mouth": "side_line", "look": (0.06, 0.07),
                   "asym": {"L": {"brow_z": 0.14, "brow_tilt": 12}, "R": {"brow_z": -0.03}}},
 }
@@ -562,6 +770,14 @@ ZC_POSES = {
                "elbowL": (-38, 0, 0), "elbowR": (-38, 0, 0), "hip_dz": -0.43, "hip_dy": 0.15},
     "crouch": {"thighL": (-82, -6, 0), "kneeL": (118, 0, 0), "thighR": (-82, 6, 0), "kneeR": (118, 0, 0), "torso": (-24, 0, 0), "neck": (-18, 0, 0),
                "shoulderL": (-48, -10, 0), "shoulderR": (-48, 10, 0), "elbowL": (-30, 0, 0), "elbowR": (-30, 0, 0), "hip_dz": -0.6, "hip_dy": 0.35},
+    "crouch2": {"thighL": (-58, -8, 0), "kneeL": (86, 0, 0), "thighR": (-50, 8, 0), "kneeR": (80, 0, 0), "torso": (-12, 0, 0), "neck": (-6, 0, 0),
+                "shoulderL": (-36, -6, 0), "shoulderR": (-30, 6, 0), "elbowL": (-24, 0, 0), "elbowR": (-20, 0, 0), "hip_dz": -0.3, "hip_dy": 0.18},
+    "hold_up2": {"shoulderR": (-172, -30, 0), "elbowR": (-4, 0, 0), "shoulderL": (0, -10, 0), "neck": (-16, 0, -12), "torso": (0, 0, -6)},
+    "talk":   {"shoulderR": (-34, 22, 0), "elbowR": (-62, 0, 0), "shoulderL": (8, -8, 0), "neck": (0, 0, 8)},
+    "lean":   {"torso": (-38, 0, 0), "neck": (-12, 0, 0), "shoulderL": (-30, -4, 0), "shoulderR": (-30, 4, 0), "elbowL": (-10, 0, 0), "elbowR": (-10, 0, 0)},
+    "reach":  {"torso": (-16, 0, 0), "shoulderR": (-96, 6, 0), "elbowR": (-6, 0, 0), "shoulderL": (-20, -10, 0), "neck": (-4, 0, 0)},
+    "peek":   {"torso": (0, -28, 0), "neck": (0, -18, 0), "shoulderR": (-40, 30, 0), "elbowR": (-60, 0, 0)},
+    "tilt":   {"neck": (0, 34, 0), "shoulderL": (0, -3, 0), "shoulderR": (0, 3, 0)},
     "point":  {"shoulderR": (-92, 4, 0), "elbowR": (0, 0, 0), "torso": (0, 0, 8), "neck": (0, 0, -6), "shoulderL": (0, -8, 0)},
     "hold_up": {"shoulderR": (-168, 6, 0), "elbowR": (-8, 0, 0), "shoulderL": (0, -10, 0), "neck": (-10, 0, 0)},
     "look_back": {"torso": (0, 0, 24), "neck": (0, 0, 68), "shoulderL": (8, -8, 0), "shoulderR": (-6, 8, 0)},

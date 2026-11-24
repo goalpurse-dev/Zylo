@@ -1,34 +1,85 @@
-// IN THIS TOWN v2: THE CHARACTER LIBRARY (data). Every person is a spec on ONE base (char_v2.py ZChar): the same body
-// build, face system (12 expressions, blinks), finish and checks; a spec picks proportions, hair, outfit, colours.
-// "me" is the FIXED main character: the narrator of every story (ours and customers'). Our own design.
+// IN THIS TOWN v2: THE CHARACTER LIBRARY (data) = THE FIXED CAST. Every person is a spec on ONE base (char_v2.py ZChar):
+// the same body build, face system (12 expressions, blinks), finish and checks. A spec picks proportions, hair, outfit
+// and colours; the COLOURS (skin, hair, outfit) are switchable per story (recolor) so customers' families can look
+// different. Our own designs; no logos except the main character's Zyvo badge.
 //   body: thigh / shin / upper_arm / fore_arm / torso_w / torso_d / torso_h in local units; head = the head's scale
-//   height: world units on the town stage (a kid 3.04, an adult 3.5: the measured stage scale)
+//   height: world units on the town stage (a kid 3.04 = the measured stage scale)
 
+const KID_H = 3.04;
 export const CHARACTERS = {
   me: {
     id: "me", role: "the narrator (main character, every story)", fixed: true,
-    height: 3.04, outfit: "hoodie", hair: "swoop", hair_top: 0.7, badge_ok: true,
+    height: KID_H, outfit: "hoodie", hair: "swoop", hair_top: 0.7, badge_ok: true, sleeves: "long",
     body: { thigh: 0.95, shin: 0.8, upper_arm: 0.85, fore_arm: 0.75, torso_w: 1.9, torso_d: 1.0, torso_h: 1.8, head: 1.14 },
-    colors: {
-      skin: "#F3C9A1", skin_dark: "#E2AC84", eyes: "#1B1410", brows: "#3A2216",
-      hair: "#4A2C1C", hair_light: "#9A6440",
-      top: "#FF7A1A", top_dark: "#DE5E0A", trim: "#FFF3D6",    // the signature colour: a bold tangerine hoodie
-      legs: "#2D4A7A", legs_dark: "#21385E",
-      shoe: "#F4F2EC", sole: "#CFC8BC",
-    },
+    colors: { skin: "#F3C9A1", skin_dark: "#E2AC84", eyes: "#1B1410", brows: "#3A2216", hair: "#4A2C1C", hair_light: "#9A6440",
+      top: "#FF7A1A", top_dark: "#DE5E0A", trim: "#FFF3D6", legs: "#2D4A7A", legs_dark: "#21385E", shoe: "#F4F2EC", sole: "#CFC8BC" },
+  },
+  sister: {
+    id: "sister", role: "the little sister (cheeky)", fixed: true,
+    height: KID_H * 0.75, outfit: "dungarees", hair: "pigtails", hair_top: 0.55, badge_ok: false, sleeves: "short",
+    body: { thigh: 0.72, shin: 0.6, upper_arm: 0.66, fore_arm: 0.58, torso_w: 1.7, torso_d: 0.95, torso_h: 1.45, head: 1.2 },
+    colors: { skin: "#F6D2B0", skin_dark: "#E8B38E", eyes: "#1B1410", brows: "#7A3418", hair: "#B5562A", hair_light: "#E8935A", accent: "#3FC1FF",
+      top: "#FFE14D", top_dark: "#E8C52E", trim: "#FFFFFF", legs: "#E0368A", legs_dark: "#B32068", shoe: "#3FC1FF", sole: "#FFFFFF" },
+  },
+  mom: {
+    id: "mom", role: "Mom (warm)", fixed: true,
+    height: 3.35, outfit: "cardigan", hair: "bob", hair_top: 0.4, badge_ok: false, sleeves: "long",
+    body: { thigh: 1.2, shin: 1.05, upper_arm: 1.0, fore_arm: 0.92, torso_w: 2.0, torso_d: 1.05, torso_h: 2.25, head: 1.02 },
+    colors: { skin: "#E9B48C", skin_dark: "#D4966C", eyes: "#1B1410", brows: "#5A2A18", hair: "#7A3B22", hair_light: "#C27A50", under: "#FFF4E2",
+      top: "#E8505B", top_dark: "#C73945", trim: "#FFF4E2", legs: "#3A4466", legs_dark: "#2C3450", shoe: "#8A4A2A", sole: "#3A2A20" },
   },
   dad: {
-    id: "dad", role: "an adult (dad / neighbour / teacher): proves the base", fixed: false,
-    height: 3.5, outfit: "shirt", hair: "short", hair_top: 0.3, mustache: true, badge_ok: false,
-    body: { thigh: 1.3, shin: 1.12, upper_arm: 1.1, fore_arm: 1.0, torso_w: 2.1, torso_d: 1.1, torso_h: 2.4, head: 0.92 },
-    colors: {
-      skin: "#C68642", skin_dark: "#A86C32", eyes: "#1B1410", brows: "#1E1A18",
-      hair: "#1E1A18", hair_light: "#4E443C",
-      top: "#2FA37A", top_dark: "#23805F", trim: "#F2F2EE",
-      legs: "#B59B72", legs_dark: "#8F7A58",
-      shoe: "#5A3A24", sole: "#2A2A2A",
-    },
+    id: "dad", role: "Dad (rebuilt at the kid's quality)", fixed: true,
+    height: 3.5, outfit: "shirt", hair: "short", hair_top: 0.38, mustache: true, badge_ok: false, sleeves: "rolled",
+    body: { thigh: 1.3, shin: 1.12, upper_arm: 1.1, fore_arm: 1.0, torso_w: 2.15, torso_d: 1.12, torso_h: 2.4, head: 1.02 },
+    colors: { skin: "#C68642", skin_dark: "#A86C32", eyes: "#1B1410", brows: "#1E1A18", hair: "#1E1A18", hair_light: "#5A4E44",
+      top: "#2FA37A", top_dark: "#23805F", trim: "#F2F2EE", legs: "#B59B72", legs_dark: "#8F7A58", shoe: "#5A3A24", sole: "#2A2A2A" },
+  },
+  mayor: {
+    id: "mayor", role: "the Mayor (older, pompous: any 'town rule' scene)", fixed: true,
+    height: 3.6, outfit: "suit", hair: "grey_neat", hair_top: 1.4, hat: "top", mustache: true, badge_ok: false, sleeves: "long",
+    body: { thigh: 1.22, shin: 1.08, upper_arm: 1.08, fore_arm: 1.0, torso_w: 2.35, torso_d: 1.4, torso_h: 2.45, head: 1.0 },
+    colors: { skin: "#F0C2A0", skin_dark: "#D9A27E", eyes: "#1B1410", brows: "#D6D6D6", hair: "#B4B4B4", hair_light: "#EDEDED", under: "#F6F4EE",
+      accent: "#C8283C", sash: "#C8283C", top: "#2B3550", top_dark: "#1E2538", trim: "#D9B24A", legs: "#2B3550", legs_dark: "#1E2538", shoe: "#18181C", sole: "#0E0E10" },
+  },
+  // ---- the entities (kid-safe: spooky, never gory)
+  shadow: {
+    id: "shadow", role: "the Shadow: tall, thin, pure black in every light, two glowing eyes, long arms", fixed: true, entity: true,
+    height: 8.5, mode: "shadow", outfit: "plain", hair: "none", hair_top: 0.0, badge_ok: false, sleeves: "long", head_shape: [0.78, 0.8, 1.3],
+    body: { thigh: 2.3, shin: 2.2, upper_arm: 2.4, fore_arm: 2.4, torso_w: 1.15, torso_d: 0.62, torso_h: 2.9, head: 0.9 },
+    colors: { skin: "#000000", skin_dark: "#000000", eyes: "#FFF0A0", brows: "#000000", hair: "#000000", hair_light: "#000000",
+      top: "#000000", top_dark: "#000000", trim: "#000000", legs: "#000000", legs_dark: "#000000", shoe: "#000000", sole: "#000000" },
+  },
+  critter: {
+    id: "critter", role: "the little creature: knee-high, round, fuzzy, big eyes; cute or grumpy", fixed: true, entity: true, kind: "critter",
+    height: 0.95,
+    colors: { fur: "#3CC6B8", fur_dark: "#2A9A8F", belly: "#C8F4EC" },
   },
 };
+export const CRITTER_COLOURS = {
+  teal: { fur: "#3CC6B8", fur_dark: "#2A9A8F", belly: "#C8F4EC" },
+  pink: { fur: "#F07FB8", fur_dark: "#C9568F", belly: "#FFE0EF" },
+  mustard: { fur: "#E3B23C", fur_dark: "#B98A22", belly: "#FFF0C4" },
+};
+
+// ---- THE MIMIC: a wrong copy of ANY cast member: the same body and outfit, the colours slightly off (skin greyed and
+// cooled, clothes a little dull), a smile too wide, eyes that never blink, the head tilted too far (pose "tilt")
+const mix = (a, b, t) => "#" + [0, 2, 4].map((i) => Math.round(parseInt(a.slice(1 + i, 3 + i), 16) * (1 - t) + parseInt(b.slice(1 + i, 3 + i), 16) * t).toString(16).padStart(2, "0")).join("");
+export function mimicOf(spec) {
+  const c = { ...spec.colors };
+  for (const k of Object.keys(c)) {
+    if (!/^#[0-9a-f]{6}$/i.test(c[k])) continue;
+    c[k] = /^skin/.test(k) ? mix(c[k], "#B4C2B0", 0.32) : /^eyes$/.test(k) ? "#0A0A0A" : mix(c[k], "#8C8C96", 0.22);
+  }
+  return { ...spec, id: `mimic_${spec.id}`, role: `the Mimic copying ${spec.id}`, mode: "mimic", badge_ok: false, colors: c };
+}
+/** a story's own look for a cast member (customers' families): skin / hair / outfit colours swapped, the build kept */
+export function recolor(spec, colors = {}) {
+  return { ...spec, colors: { ...spec.colors, ...colors } };
+}
+
 export const EXPRESSIONS = ["neutral", "happy", "big_smile", "worried", "scared", "terrified", "sad", "crying", "angry", "sleepy", "smug", "thinking"];
-export const POSES = ["stand", "walk", "run", "sit", "crouch", "point", "hold_up", "look_back"];
+export const POSES = ["stand", "walk", "run", "sit", "point", "hold"];
+export const SHADOW_STATES = ["stand", "lean", "reach", "peek", "eyes_only", "narrow"];
+export const MIMIC_STATES = ["mimic_smile", "mimic_stare", "tilt", "mimic_copy", "too_still", "next_to_the_real_one"];
+export const CRITTER_FACES = ["happy", "angry", "scared", "sleepy", "big_smile", "sad"];
