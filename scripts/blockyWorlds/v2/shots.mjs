@@ -11,12 +11,15 @@ import { stageOf } from "./stages.mjs";
 
 const d2 = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
 export const PROP_POINTS = { porch_light: [1.9, 17.62, 5.2], drain: [-3.0, -1.5, 0.05], house: [0, 22, 3], street: [0, -4, 2] };
-const heightOf = (id) => CHARACTERS[id]?.height ?? H.kid;
+const heightOf = (id) => (CHARACTERS[id] ?? (String(id).startsWith("mimic") ? CHARACTERS.mom : null))?.height ?? H.kid;
+// a seated person's head-top height (measured on the Stage B test: 0.78 of their height; + the booster under a small kid)
+export const seatedHead = (id) => +(heightOf(id) * 0.785 + (heightOf(id) < 2.9 ? 0.45 : 0)).toFixed(2);
+const specOfRow = (story, id) => story?.cast?.[id]?.spec ?? id;
 
 /** where everyone in a row stands (world), the creature too */
 export function placements(S, row) {
   const out = {};
-  for (const p of row.people ?? []) out[p.id] = { at: S.spots[p.spot]?.at, h: S.spots[p.spot]?.head ?? heightOf(p.id), r: S.spots[p.spot]?.seat ? 0.7 : BODY_R };
+  for (const p of row.people ?? []) out[p.id] = { at: S.spots[p.spot]?.at, h: S.spots[p.spot]?.seat ? seatedHead(p.spec ?? p.id) : heightOf(p.spec ?? p.id), r: S.spots[p.spot]?.seat ? 0.7 : BODY_R };
   if (row.creature) out.creature = { at: S.creature_spots[row.creature.spot]?.at, h: heightOf(row.creature.id ?? "shadow"), r: CREATURE_R };
   return out;
 }
@@ -39,7 +42,10 @@ export function facingPoint(S, row, f, selfId, camLoc = null) {
 // and the aim height that keep every head in frame above the captions with nothing in the way (the stage's free check)
 const LENS = { close: 45, medium: 32, two: 28, wide: 20, low: 20, side: 38, back: 28, ots: 30, insert: 40, top: 30 };
 const PREF_D = { close: 0, medium: 0, two: 0, wide: 1, low: 0, side: 0, back: 0, ots: 0 };
-export function solveCam(S, row) {
+export function solveCam(S0, row) {
+  // the seats' head heights for THIS row's sitters (an adult sits taller than a kid)
+  const S = { ...S0, spots: { ...S0.spots } };
+  for (const p of row.people ?? []) if (S.spots[p.spot]?.seat) S.spots[p.spot] = { ...S.spots[p.spot], head: seatedHead(p.spec ?? p.id) };
   const pl = placements(S, row);
   const c = row.cam ?? {};
   const type = c.type ?? "medium";
@@ -78,10 +84,13 @@ export function solveCam(S, row) {
   // over the shoulder: from behind the OTHER person, looking at the main subject
   let anchor = null;
   if (type === "ots" && subj[1] && pl[subj[1]]) { const o = pl[subj[1]].at; const v = [o[0] - m.at[0], o[1] - m.at[1]]; const l = Math.hypot(...v) || 1; dir = rot(v[0] / l, v[1] / l, 14); anchor = o; }
-  const heads = [...subj.map((k) => [pl[k].at[0], pl[k].at[1], pl[k].at[2] + pl[k].h * (k === "creature" ? 0.85 : 0.82)]), ...(c.with ?? []).map((k) => PROP_POINTS[k]).filter(Boolean)];
+  const walkers = (row.people ?? []).filter((p) => subj.includes(p.id) && ["walk", "run"].includes(p.pose));
+  const heads0 = walkers.map((p) => { const a = pl[p.id].at, f = facingPoint(S, row, p.facing ?? "street", p.id); const v = [f[0] - a[0], f[1] - a[1]], l = Math.hypot(...v) || 1, b = p.pose === "run" ? 2.6 : 1.6; return [a[0] - (v[0] / l) * b, a[1] - (v[1] / l) * b, a[2] + pl[p.id].h * 0.82]; });
+  const heads = [...heads0, ...subj.map((k) => [pl[k].at[0], pl[k].at[1], pl[k].at[2] + pl[k].h * (k === "creature" ? 0.85 : 0.82)]), ...(c.with ?? []).map((k) => PROP_POINTS[k]).filter(Boolean)];
   const C = [0, 1, 2].map((i) => heads.reduce((a, h) => a + h[i], 0) / heads.length);
-  const lens = c.lens ?? LENS[type] ?? 30;
-  const zc = type === "low" ? 0.55 : type === "wide" ? Math.max(3.5, C[2] + 1.5) : C[2] + 0.25;
+  const seated = subj.every((k) => k === "creature" ? false : (row.people ?? []).some((p) => p.id === k && S.spots[p.spot]?.seat));
+  const lens = c.lens ?? ((LENS[type] ?? 30) + (seated && type !== "wide" ? 8 : 0));
+  const zc = type === "low" ? 0.55 : type === "wide" ? (seated ? C[2] + 1.2 : Math.max(3.5, C[2] + 1.5)) : C[2] + (seated ? 0.05 : 0.25);
   const peopleSpots = (row.people ?? []).filter((p) => subj.includes(p.id)).map((p) => p.spot);
   let best = null, minD = null;
   const yaws = c.side ? [0, 10, -10, 20, -20] : [0, 15, -15, 30, -30, 45, -45, 60, -60, 90, -90];
@@ -101,10 +110,10 @@ export function solveCam(S, row) {
       if (subj.includes("creature")) { const cs = span(cam, pl.creature.at, 1.2, 0, pl.creature.h); if (!cs || cs[2] < 0.02 || cs[3] > 0.98) continue; }
       const vs = peopleSpots.map((k) => span(cam, S.spots[k].at, 0.6, H.kid - 0.95, H.kid)).filter(Boolean).map((s) => (s[2] + s[3]) / 2);
       const vm = vs.length ? vs.reduce((a, b) => a + b, 0) / vs.length : 0.3;
-      const score = Math.abs(vm - (type === "low" ? 0.25 : 0.32)) * 10 + (PREF_D[type] ? 0 : d * 0.12);
+      const score = Math.abs(vm - (type === "low" ? 0.25 : seated ? 0.4 : 0.32)) * 10 + (PREF_D[type] && !seated ? 0 : d * 0.12);
       if (!best || score < best.score) best = { score, loc, tgt: [C[0], C[1], tz] };
     }
-    if (best && !PREF_D[type]) break;
+    if (best && (!PREF_D[type] || seated)) break;
   }
   if (best) break;
   }
@@ -167,6 +176,7 @@ export function checkRows(S, story) {
     for (const p of ps) {
       const was = lastSpot[sc][p.id];
       if (was && was !== p.spot && !/\b(walk|walks|walked|ran|run|runs|step|stepped|steps|got to|came|went|moved|hurried)\b/i.test(lineText(r.line))) out.push(`${tag}: ${p.id} jumps from ${was} to ${p.spot} with no movement in the words`);
+      if (was && was !== p.spot) for (const key of Object.keys(lastSide[sc])) if (key.split("|").includes(p.id)) delete lastSide[sc][key];   // someone moved: a new set-up
       lastSpot[sc][p.id] = p.spot;
     }
     // the camera: from the subjects, framed, nothing in the way
@@ -310,6 +320,6 @@ export function rowPython(S0, story, r, { stageId = "A" } = {}) {
     L.push(`bg${k}.face_to(${P(b.loop === "walk" ? [b.at[0] + 20, b.at[1], 2] : [cam.loc[0], cam.loc[1], 2])})`);
   });
   for (const [v] of vars) L.push(`zc_char_light(${v}, ${P(cam.loc ?? [0, -20, 5])}, ${py(r.time)})`);
-  L.push(`ZV_SHOT.clear(); ZV_SHOT.update({"cam": ${py(cam.type)}, "subjects": [${vars.filter(([, id]) => (r.cam?.subject ?? []).includes(id)).map(([v, id]) => `(${py(id)}, ${v})`).join(", ")}], "creature": ${r.creature && (r.cam?.subject ?? []).includes("creature") ? "cr" : "None"}})`);
+  L.push(`ZV_SHOT.clear(); ZV_SHOT.update({"cam": ${py(cam.type)}, "subjects": [${vars.filter(([, id]) => (cam.type === "ots" ? [r.cam?.subject?.[0]] : (r.cam?.subject ?? [])).includes(id)).map(([v, id]) => `(${py(id)}, ${v})`).join(", ")}], "creature": ${r.creature && (r.cam?.subject ?? []).includes("creature") ? "cr" : "None"}})`);
   return L.join("\n");
 }

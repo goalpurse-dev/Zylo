@@ -293,8 +293,8 @@ def zw_gate(S):
 
 # ===== STAGE B, PIECE 1: THE DINING CORNER (built by us, no town around it) ==========================================
 ZV_DINING_LIGHT = {
-    "dinner":      {"lamp": (1.0, 0.8, 0.55), "lamp_w": 520, "fill": (1.0, 0.86, 0.7), "fill_w": 160, "world": (0.05, 0.04, 0.035), "exposure": 0.0},
-    "dinner_cold": {"lamp": (0.72, 0.82, 1.0), "lamp_w": 300, "fill": (0.6, 0.7, 0.95), "fill_w": 90, "world": (0.015, 0.02, 0.035), "exposure": -0.35},
+    "dinner":      {"lamp": (1.0, 0.8, 0.55), "lamp_w": 900, "fill": (1.0, 0.88, 0.74), "fill_w": 650, "world": (0.22, 0.18, 0.15), "exposure": 0.25},
+    "dinner_cold": {"lamp": (0.74, 0.84, 1.0), "lamp_w": 620, "fill": (0.62, 0.72, 0.96), "fill_w": 420, "world": (0.1, 0.12, 0.17), "exposure": 0.0},
 }
 
 
@@ -317,12 +317,19 @@ def zv_build_dining(S, time, t0, t1):
         box("zv_sidewall%d" % sx, (0.4, 9.1, 7.5), (sx * 5.4, -0.95, 3.75), wall, 0.0)
     box("zv_skirting", (10.4, 0.36, 0.4), (0, 3.4, 0.2), trim, 0.0)
     # the window behind the table, the night outside, the curtains CLOSED (the rule)
-    box("zv_winframe", (3.4, 0.36, 3.0), (0, 3.38, 3.7), trim, 0.03)
-    box("zv_winglass", (3.0, 0.38, 2.6), (0, 3.36, 3.7), mat("zv_night_glass", zc_rgb("#0E1A33"), 0.1, emit=zc_rgb("#16264A"), estr=0.6), 0.0)
-    cm = mat("zv_dcurtain", zc_rgb("#B84A4A"), 0.85)
+    for nm, size, loc in (("top", (3.8, 0.4, 0.26), (0, 3.36, 5.3)), ("bot", (3.8, 0.5, 0.22), (0, 3.3, 2.1)), ("l", (0.24, 0.4, 3.3), (-1.78, 3.36, 3.7)), ("r", (0.24, 0.4, 3.3), (1.78, 3.36, 3.7))):
+        box("zv_winframe_" + nm, size, loc, trim, 0.03)
+    box("zv_winglass", (3.4, 0.2, 3.0), (0, 3.42, 3.7), mat("zv_night_glass", zc_rgb("#0E1A33"), 0.1, emit=zc_rgb("#16264A"), estr=0.6), 0.0)
+    cm = zc_fabric(mat("zv_dcurtain", zc_rgb("#B84A4A"), 0.85), scale=60.0, strength=0.25)
+    cm2 = mat("zv_dcurtain2", zc_rgb("#8E3434"), 0.9)
     for sx in (-1, 1):
-        box("zv_dcur%d" % sx, (1.72, 0.08, 3.1), (sx * 0.84, 3.12, 3.62), cm, 0.02)
-    cyl("zv_rod", 0.05, 4.0, (0, 3.12, 5.25), trim, 8, rot=(0, 90, 0))
+        for k in range(6):   # the folds: rounded pleats, alternating in and out, meeting in the middle (closed)
+            x = sx * (0.16 + k * 0.33)
+            cyl("zv_fold%d_%d" % (sx, k), 0.2, 3.55, (x, 3.04 + (0.06 if k % 2 else 0.0), 3.55), cm if k % 2 == 0 else cm2, 12)
+    box("zv_pelmet", (4.3, 0.3, 0.45), (0, 2.95, 5.55), cm2, 0.06)
+    cyl("zv_rod", 0.05, 4.4, (0, 3.0, 5.35), trim, 8, rot=(0, 90, 0))
+    for sx in (-1, 1):
+        sphere("zv_finial%d" % sx, 0.1, (sx * 2.25, 3.0, 5.35), trim, seg=10)
     # the table: legs, top, a cloth; plates + food at the four seats; a jug in the middle
     tw = mat("zv_tablewood", zc_rgb("#6E4428"), 0.55)
     for x in (-1.45, 1.45):
@@ -342,6 +349,7 @@ def zv_build_dining(S, time, t0, t1):
     cyl("zv_cord", 0.02, 2.2, (0, 0, 6.6), trim, 6)
     light("zv_lamp", "AREA", (0, 0, 4.9), L["lamp_w"], L["lamp"], 1.4, rot=(0, 0, 0))
     light("zv_fill", "AREA", (1.5, -7.0, 4.0), L["fill_w"], L["fill"], 6.0, target=(0, 0, 1.6))
+    light("zv_bounce", "AREA", (0, -2.0, 6.8), L["fill_w"] * 0.6, L["lamp"], 8.0, rot=(0, 0, 0))   # the ceiling bounce: walls + floor read
     bpy.context.scene.view_settings.exposure = L["exposure"]
     ZV_TIME["t"] = None
     return {}
@@ -375,7 +383,12 @@ def zv_sit(ch, t, at, table=(0.0, 0.0)):
     a = ch.root.rotation_euler[2]
     fwd = Vector((math.sin(a), -math.cos(a), 0.0))
     ch.root.location = (at[0] + fwd.x * 0.1, at[1] + fwd.y * 0.1, 0.0)
-    zv_chair(ch.name + "_chair", (at[0] - fwd.x * 0.05, at[1] - fwd.y * 0.05), table, zv_seat_top(ch))
+    st = zv_seat_top(ch)
+    boost = 0.45 if ch.spec["height"] < 2.9 else 0.0
+    if boost > 0.0:   # a booster cushion: a small sitter's chin clears the table
+        ch.root.location.z = boost
+        box(ch.name + "_booster", (1.0, 0.9, boost), (at[0] - fwd.x * 0.05, at[1] - fwd.y * 0.05 + 0.0, st + boost / 2.0), mat("zv_cushion", zc_rgb("#4C8FD6"), 0.85), 0.12)
+    zv_chair(ch.name + "_chair", (at[0] - fwd.x * 0.05, at[1] - fwd.y * 0.05), table, st)
 
 
 def zv_empty_chairs(S, occupied, table=(0.0, 0.0)):

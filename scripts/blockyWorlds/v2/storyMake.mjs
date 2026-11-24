@@ -131,9 +131,22 @@ for (let k = 0; k < 2; k++) {
   const res = JSON.parse(fs.readFileSync(path.join(OUT, "rows.json"), "utf8"));
   const bad = Object.entries(res).filter(([, v]) => v.fails.length).map(([n]) => Number(n));
   if (!bad.length) break;
-  say(`fix try ${k + 1}: ${bad.length} shot(s) failed the Blender checks (${bad.join(", ")}): the camera pulled back`);
   const st = JSON.parse(fs.readFileSync(path.join(HERE, "stories", `${NAME}.json`), "utf8"));
-  for (const n of bad) st.rows[n - 1].cam = { ...st.rows[n - 1].cam, pull: (st.rows[n - 1].cam.pull ?? 1) * 1.35 };
+  if (k === 0) {
+    say(`fix try 1: ${bad.length} shot(s) failed the Blender checks (${bad.join(", ")}): the camera pulled back`);
+    for (const n of bad) st.rows[n - 1].cam = { ...st.rows[n - 1].cam, pull: (st.rows[n - 1].cam.pull ?? 1) * 1.35 };
+  } else {
+    // re-planned, never shown: the planner gets the failing shots and why; its new rows must pass the free checks
+    const lines = [...new Set(bad.map((n) => st.rows[n - 1].line))];
+    const why = bad.map((n) => `row of line ${st.rows[n - 1].line}: ${res[n].fails.join("; ")}`);
+    say(`fix try 2: re-planning lines ${lines.join(", ")} (${why.join(" | ")})`);
+    const rp = await planRows({ callJson, apiKey: KEY, story: { ...story, rows: st.rows }, meter, previous: st.rows.filter((x) => lines.includes(x.line)), problems: why.map((w) => `${w} (the rendered still failed: re-plan this shot: another camera type / angle / spot)`), onlyLines: lines });
+    const keep = st.rows.filter((x) => !lines.includes(x.line));
+    const neu = rp.rows.filter((x) => lines.includes(x.line)).map((x) => ({ ...x, stage: x.stage ?? st.rows.find((y) => y.line === x.line)?.stage }));
+    const cand = [...keep, ...neu].sort((a, b) => a.line - b.line);
+    if (!checkRows(S, { ...story, rows: cand }).length) { st.rows = cand; for (const [i, r] of st.rows.entries()) { const old = rows.find((x) => x.line === r.line); r.t0 = r.t0 ?? old?.t0; r.t1 = r.t1 ?? old?.t1; r.w0 = r.w0 ?? old?.w0; r.w1 = r.w1 ?? old?.w1; } }
+    else say("the re-plan did not pass the free checks: the pulled-back shots stay (and are reported)");
+  }
   fs.writeFileSync(path.join(HERE, "stories", `${NAME}.json`), JSON.stringify(st, null, 1));
   run(["--force", "--rows", bad.join(",")]);
 }

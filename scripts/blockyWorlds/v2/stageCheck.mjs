@@ -49,7 +49,7 @@ export function framing(S, ck, c) {
   const out = [];
   for (const k of c.people) {
     const at = S.spots[k].at, hz = S.spots[k].head ?? H.kid;
-    const hd = span(c, at, 0.62, hz - 1.3, H.adult - 0.1), bd = span(c, at, BODY_R, 0, hz);   // (measured: the head sits 0.25 below the hair top)
+    const hd = span(c, at, 0.62, hz - 1.3, S.spots[k].head ? hz + 0.25 : H.adult - 0.1), bd = span(c, at, BODY_R, 0, hz);   // (measured: the head sits 0.25 below the hair top)
     if (!hd) { out.push(`camera ${ck}: ${k} is behind the lens`); continue; }
     if (hd[0] < 0.1 || hd[1] > 0.9 || hd[2] < 0.05 || hd[3] > 0.6) out.push(`camera ${ck}: ${k}'s head is cut or under the captions (u ${f2(hd.slice(0, 2))}, v ${f2(hd.slice(2))})`);
     else if (bd && bd[3] - bd[2] < 0.12 && c.shot !== "wide") out.push(`camera ${ck}: ${k} is small (${(bd[3] - bd[2]).toFixed(2)} of the frame)`);
@@ -70,7 +70,7 @@ export function checkStage(S) {
   const inDeck = (p, m = 0) => p[0] > S.deck.x0 + m && p[0] < S.deck.x1 - m && p[1] > S.deck.y0 + m && p[1] < S.deck.y1 - m;
   // spots: clear of walls by a body; deck spots fully on the deck, ground spots fully off it
   for (const [k, s] of Object.entries(S.spots)) {
-    for (const o of walls) if ((o.box?.[4] ?? 0) < s.at[2] + H.adult) { const d = footDist(s.at, o); if (d < (s.seat ? 0.7 : BODY_R)) out.push(`spot ${k}: ${d.toFixed(2)} from ${o.n} (a body needs ${BODY_R})`); }
+    for (const o of walls) if ((o.box?.[4] ?? 0) < s.at[2] + H.adult && !(s.seat && o.furniture)) { const d = footDist(s.at, o); if (d < (s.seat ? 0.7 : BODY_R)) out.push(`spot ${k}: ${d.toFixed(2)} from ${o.n} (a body needs ${BODY_R})`); }
     if (s.on === "deck" && !inDeck(s.at, BODY_R)) out.push(`spot ${k}: not fully on the porch deck`);
     if (s.on !== "deck" && footDist(s.at, { box: [S.deck.x0, S.deck.x1, S.deck.y0, S.deck.y1] }) < BODY_R) out.push(`spot ${k}: its body overlaps the porch deck edge`);
   }

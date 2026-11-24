@@ -168,3 +168,35 @@ to Fixed after captures, the `studio_id` choice, keep Studio visible, a framer c
 Defaults that differ from the MIT measurements (not bugs, but worth a decision): our shot mix asks for **at least 25 %
 close-ups** and **at least 4 locations per ~90 s**. The MIT kit measured **7-15 % close-ups** in comedy and everyday hits,
 and **few places revisited** (49-83 % of cuts stay in the same place).
+
+## (c) What it would take to replace every part that comes from the kit (report only; nothing started)
+
+Added 2026-11-24 at the owner's request. The owner is asking the kit's creator for permission; meanwhile the Blender
+engine stays owner-only and nothing goes live.
+
+**The short answer:** about 6-9 working days of my time and about $3-5 of test renders, done in 6 steps, each one checked
+against the golden set so nothing gets worse. The risk is medium: the look can shift a little (lighting, materials, bloom)
+when the renderer setup is rebuilt, and the RunPod image must be rebuilt and deployed (on your go).
+
+**What comes from the kit today, and what replaces it:**
+
+| # | Part (from the kit) | Used by | Our replacement | Time | Paid tests |
+|---|---|---|---|---|---|
+| 1 | The building blocks (`rbx/core.py`: box, cylinder, sphere, materials, lights, keyframes, frame timing, the camera class) | everything in v2 and the street set (`worlds.py`, `town.py`) | `zcore.py`: our own small module with the same names, so v2 and the street code switch with one import line | 1 day | ~$0.10 (the stage + cast sheets as before/after) |
+| 2 | The shot framework (`shotkit`: `Video`, `@S(...)`, word times -> frames, stills / sheets, the per-shot reset) | every shot file | our own shot runner: reads the shot file, builds each shot in a fresh scene, renders the frames / stills | 2-3 days | ~$0.50 |
+| 3 | The renderer setup + the finish step the worker calls (`handler.py` runs the kit's render + `finish.py`) | the RunPod worker | our render settings (Eevee, colour, bloom, motion blur) + our finish step (we already own `finishx.py` for captions / loudness); a rebuilt RunPod image without `COPY kit` | 1-2 days | ~$0.50 + one image build (a deploy: your go) |
+| 4 | The kit character (`rbx/chars.py`) + its face pictures | only the OLD engine and `zw_person` in the street code; v2's cast (`char_v2.py`) already has its own body, faces and hair | remove the old person code paths from the street set; v2 never calls them | 0.5 day | $0 |
+| 5 | The kit's sound effects | only the OLD engine's finish | our own sound set (made by us, or CC0 / paid no-attribution only, per our asset rule), with lead times so hits land on the word | 1 day | ~$0.20 (ElevenLabs sound effects) or $0 for CC0 |
+| 6 | The kit's SKILL.md / PLAYBOOK.md / examples sent to the AI | only the OLD director (live) | nothing to replace: v2's writer + planner use our own prompts; the old director retires when v2 replaces it | 0 | $0 |
+
+**The order:** 1 -> 2 -> 3 -> 4 -> 5. After each step: the stage A + B test sheets, the cast sheet and the golden set re-render
+and must look the same (the free checks and the Blender checks pass; you compare two sheets side by side). Step 3 needs a
+deploy of the RunPod image (only on your go; the live engine keeps the old image until go-live).
+
+**What stays ours either way:** all of v2 (stages, cast, faces, checks, camera solver, writer, planner, stills, preview),
+the street set code (`worlds.py`, `town.py`, `crowds.py`, ...: our code on the kit's blocks), `finishx.py`.
+
+**The risks:** (1) the look shifts slightly when our renderer settings replace the kit's (caught by the side-by-side
+sheets); (2) some old helper we call quietly depends on a kit detail (caught by the free static check + one full render
+of every stage); (3) the image rebuild touches the live worker (it must stay owner-only and be rolled back in one
+switch if anything breaks).
