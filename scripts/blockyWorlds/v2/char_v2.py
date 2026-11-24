@@ -548,6 +548,21 @@ class ZChar:
         r = self.root.location
         self.root.rotation_euler[2] = math.atan2(p[0] - r.x, -(p[1] - r.y))
 
+    def turn(self, t, look, cam, max_body=45.0, max_head=35.0):
+        """FACING (owner 2026-11-24): the body turns at most 45 degrees away from the camera toward what they look at
+        (three-quarter, never a pure profile); the head takes the rest, at most 35 degrees; the eyes do the last bit"""
+        r = self.root.location
+        yc = math.atan2(cam[0] - r.x, -(cam[1] - r.y))
+        yl = math.atan2(look[0] - r.x, -(look[1] - r.y))
+        d = (yl - yc + math.pi) % (2 * math.pi) - math.pi
+        b = max(-math.radians(max_body), min(math.radians(max_body), d))
+        self.root.rotation_euler[2] = yc + b
+        h = max(-math.radians(max_head), min(math.radians(max_head), d - b))
+        f = F(t)
+        self.neck.rotation_euler[2] = self.neck.rotation_euler[2] + h
+        key(self.neck, "rotation_euler", f, interp="CONSTANT")
+        return math.degrees(b), math.degrees(h)
+
     def hold(self, t, thing, hands="R", upright=False):
         """a prop in one hand (L / R) or between both hands ("both"), placed where the posed hands really are, at the
         character's scale, turned with the body (the still's hands do not move)"""
@@ -777,6 +792,8 @@ ZC_POSES = {
     "lean":   {"torso": (-38, 0, 0), "neck": (-12, 0, 0), "shoulderL": (-30, -4, 0), "shoulderR": (-30, 4, 0), "elbowL": (-10, 0, 0), "elbowR": (-10, 0, 0)},
     "reach":  {"torso": (-16, 0, 0), "shoulderR": (-96, 6, 0), "elbowR": (-6, 0, 0), "shoulderL": (-20, -10, 0), "neck": (-4, 0, 0)},
     "peek":   {"torso": (0, -28, 0), "neck": (0, -18, 0), "shoulderR": (-40, 30, 0), "elbowR": (-60, 0, 0)},
+    "hug":    {"shoulderL": (-78, 24, 0), "shoulderR": (-78, -24, 0), "elbowL": (-48, 0, 0), "elbowR": (-48, 0, 0), "neck": (6, 0, 0)},
+    "shield": {"shoulderL": (-12, -40, 0), "shoulderR": (-12, 40, 0), "elbowL": (-20, 0, 0), "elbowR": (-20, 0, 0), "torso": (6, 0, 0)},
     "tilt":   {"neck": (0, 34, 0), "shoulderL": (0, -3, 0), "shoulderR": (0, 3, 0)},
     "point":  {"shoulderR": (-92, 4, 0), "elbowR": (0, 0, 0), "torso": (0, 0, 8), "neck": (0, 0, -6), "shoulderL": (0, -8, 0)},
     "hold_up": {"shoulderR": (-168, 6, 0), "elbowR": (-8, 0, 0), "shoulderL": (0, -10, 0), "neck": (-10, 0, 0)},
@@ -808,7 +825,7 @@ def zc_prop(kind, name, on=True):
         cyl(name + "_h", 0.03, 0.9, (0, 0, 0.0), mat(name + "_hm", zc_rgb("#5A5F66"), 0.4, metal=0.5), 8, rot=(0, 90, 0), parent=e)
         if on:
             for k, (x, y) in enumerate(((-0.15, -0.1), (0.15, 0.05), (0.0, 0.18), (0.12, -0.18))):
-                sphere("%s_bulb%d" % (name, k), 0.14, (x, y, -0.12), mat(name + "_bulbm", zc_rgb("#FFF6D0"), 0.2, emit=zc_rgb("#FFE9A0"), estr=1.5), parent=e, seg=12)
+                sphere("%s_bulb%d" % (name, k), 0.17, (x, y, 0.0), mat(name + "_bulbm", zc_rgb("#FFF6D0"), 0.2, emit=zc_rgb("#FFE9A0"), estr=1.5), parent=e, seg=12)
         return e
     if kind == "flashlight":   # a torch: the lens glows when it is on (and lights what it points at)
         e = empty(name, (0, 0, 0))
@@ -867,3 +884,83 @@ def zc_soft_look(bloom=0.5, threshold=0.8):
     except Exception:
         pass
 # ===== END OF v2 CHARACTER =============================================================================================
+
+
+# ---------------------------------------------------------------- MOTION (the preview / the final video)
+def zc_blinks(ch, t0, t1, every=2.6):
+    """blinks every ~2.6 s (3 frames each); the Mimic never blinks"""
+    t = t0 + 0.5 + (hash(ch.name) % 7) * 0.13
+    while t < t1 - 0.2:
+        ch.blink(t)
+        t += every + ((int(t * 10) % 5) - 2) * 0.15
+
+
+def zc_idle(ch, t0, t1, amp=1.0):
+    """a living hold: breathing (a slow torso lift) and a small sway of the head; nobody stands frozen"""
+    if not isinstance(ch, ZChar):
+        return
+    base_t = tuple(ch.torso.rotation_euler)
+    base_n = tuple(ch.neck.rotation_euler)
+    t, k = t0, 0
+    while t <= t1 + 0.01:
+        s = math.sin(k * 1.7 + len(ch.name))
+        ch.torso.rotation_euler = (base_t[0] + math.radians(1.6 * amp * s), base_t[1], base_t[2] + math.radians(1.2 * amp * s))
+        ch.neck.rotation_euler = (base_n[0] + math.radians(-2.0 * amp * s), base_n[1] + math.radians(1.5 * amp * math.cos(k * 1.3)), base_n[2])
+        key(ch.torso, "rotation_euler", F(t))
+        key(ch.neck, "rotation_euler", F(t))
+        t += 1.1
+        k += 1
+
+
+def zc_react(ch, t0, face, default="neutral", delay=0.27):
+    """a reaction lands 6-8 frames after the cut, head first: the default face at the cut, the reaction a beat later"""
+    if face == default:
+        ch.express(t0, face)
+        return
+    ch.express(t0, default)
+    ch.express(t0 + delay, face)
+    n = ch.neck
+    r0 = tuple(n.rotation_euler)
+    n.rotation_euler = (r0[0] - math.radians(6), r0[1], r0[2])
+    key(n, "rotation_euler", F(t0 + delay * 0.6))
+    n.rotation_euler = r0
+    key(n, "rotation_euler", F(t0 + delay + 0.25))
+
+
+def zc_walk(ch, t0, t1, run=False, back=1.6):
+    """walking: the legs and arms swing, the body moves forward onto its spot; it starts BEFORE the cut"""
+    step = 0.17 if run else 0.26
+    sw = 42 if run else 26
+    end = ch.root.location.copy()
+    a = ch.root.rotation_euler[2]
+    fwd = Vector((math.sin(a), -math.cos(a), 0.0))
+    start = end - fwd * back * (1.6 if run else 1.0)
+    tA = t0 - 0.35
+    ch.root.location = start
+    key(ch.root, "location", F(tA))
+    ch.root.location = end
+    key(ch.root, "location", F(t1))
+    t, k = tA, 0
+    while t <= t1:
+        s = 1 if k % 2 == 0 else -1
+        ch.thigh["L"].rotation_euler = (math.radians(-sw * s), 0, 0)
+        ch.thigh["R"].rotation_euler = (math.radians(sw * s), 0, 0)
+        ch.knee["L"].rotation_euler = (math.radians(10 + (30 if s < 0 else 0)), 0, 0)
+        ch.knee["R"].rotation_euler = (math.radians(10 + (30 if s > 0 else 0)), 0, 0)
+        ch.shoulder["L"].rotation_euler = (math.radians(sw * 0.8 * s), math.radians(-6), 0)
+        ch.shoulder["R"].rotation_euler = (math.radians(-sw * 0.8 * s), math.radians(6), 0)
+        for ob in (ch.thigh["L"], ch.thigh["R"], ch.knee["L"], ch.knee["R"], ch.shoulder["L"], ch.shoulder["R"]):
+            key(ob, "rotation_euler", F(t))
+        t += step
+        k += 1
+
+
+def zc_look(ch, t, pt, max_head=35.0):
+    """a seated person: the body stays at the table, the head turns (at most 35 degrees) toward what they look at"""
+    r = ch.root.location
+    yb = ch.root.rotation_euler[2]
+    yl = math.atan2(pt[0] - r.x, -(pt[1] - r.y))
+    d = (yl - yb + math.pi) % (2 * math.pi) - math.pi
+    h = max(-math.radians(max_head), min(math.radians(max_head), d))
+    ch.neck.rotation_euler = (ch.neck.rotation_euler[0], ch.neck.rotation_euler[1], ch.neck.rotation_euler[2] + h)
+    key(ch.neck, "rotation_euler", F(t), interp="CONSTANT")

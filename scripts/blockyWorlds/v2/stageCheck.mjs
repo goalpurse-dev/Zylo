@@ -48,7 +48,7 @@ const f2 = (a) => a.map((x) => x.toFixed(2)).join(" ");
 export function framing(S, ck, c) {
   const out = [];
   for (const k of c.people) {
-    const at = S.spots[k].at, hz = H.kid;
+    const at = S.spots[k].at, hz = S.spots[k].head ?? H.kid;
     const hd = span(c, at, 0.62, hz - 1.3, H.adult - 0.1), bd = span(c, at, BODY_R, 0, hz);   // (measured: the head sits 0.25 below the hair top)
     if (!hd) { out.push(`camera ${ck}: ${k} is behind the lens`); continue; }
     if (hd[0] < 0.1 || hd[1] > 0.9 || hd[2] < 0.05 || hd[3] > 0.6) out.push(`camera ${ck}: ${k}'s head is cut or under the captions (u ${f2(hd.slice(0, 2))}, v ${f2(hd.slice(2))})`);
@@ -70,7 +70,7 @@ export function checkStage(S) {
   const inDeck = (p, m = 0) => p[0] > S.deck.x0 + m && p[0] < S.deck.x1 - m && p[1] > S.deck.y0 + m && p[1] < S.deck.y1 - m;
   // spots: clear of walls by a body; deck spots fully on the deck, ground spots fully off it
   for (const [k, s] of Object.entries(S.spots)) {
-    for (const o of walls) if ((o.box?.[4] ?? 0) < s.at[2] + H.adult) { const d = footDist(s.at, o); if (d < BODY_R) out.push(`spot ${k}: ${d.toFixed(2)} from ${o.n} (a body needs ${BODY_R})`); }
+    for (const o of walls) if ((o.box?.[4] ?? 0) < s.at[2] + H.adult) { const d = footDist(s.at, o); if (d < (s.seat ? 0.7 : BODY_R)) out.push(`spot ${k}: ${d.toFixed(2)} from ${o.n} (a body needs ${BODY_R})`); }
     if (s.on === "deck" && !inDeck(s.at, BODY_R)) out.push(`spot ${k}: not fully on the porch deck`);
     if (s.on !== "deck" && footDist(s.at, { box: [S.deck.x0, S.deck.x1, S.deck.y0, S.deck.y1] }) < BODY_R) out.push(`spot ${k}: its body overlaps the porch deck edge`);
   }
@@ -79,13 +79,13 @@ export function checkStage(S) {
   for (const [ck, c] of Object.entries(S.cameras)) {
     const ps = c.people.map((k) => S.spots[k]);
     if (ps.some((p) => !p)) { out.push(`camera ${ck}: unknown spot in ${c.people.join(", ")}`); continue; }
-    for (let i = 0; i < ps.length; i++) for (let j = i + 1; j < ps.length; j++) if (d2(ps[i].at, ps[j].at) < MIN_GAP) out.push(`camera ${ck}: ${c.people[i]} and ${c.people[j]} are ${d2(ps[i].at, ps[j].at).toFixed(2)} apart (< ${MIN_GAP})`);
+    for (let i = 0; i < ps.length; i++) for (let j = i + 1; j < ps.length; j++) if (d2(ps[i].at, ps[j].at) < (c.touch ? 1.2 : MIN_GAP)) out.push(`camera ${ck}: ${c.people[i]} and ${c.people[j]} are ${d2(ps[i].at, ps[j].at).toFixed(2)} apart (< ${MIN_GAP})`);
     if (c.creature && !S.creature_spots[c.creature]) out.push(`camera ${ck}: unknown creature spot ${c.creature}`);
     // the camera stands in the open (not in a wall, not in a person it films)
     for (const o of walls) if (inside(c.loc, o, 0.3)) out.push(`camera ${ck}: inside ${o.n}`);
     for (const k of c.people) if (d2(c.loc, S.spots[k].at) < BODY_R + 0.4 && c.loc[2] < S.spots[k].at[2] + H.adult + 0.5) out.push(`camera ${ck}: inside ${k}'s body`);
     // the sightline to every subject's head: walls, props, the other people, the creature
-    const bodies = c.people.map((k) => ({ k, at: S.spots[k].at, h: H.kid }));
+    const bodies = c.people.map((k) => ({ k, at: S.spots[k].at, h: S.spots[k].head ?? H.kid }));
     const cr = c.creature ? { k: c.creature, at: S.creature_spots[c.creature].at, h: H.creature } : null;
     if (c.loc[0] > S.deck.x0 - 0.6 && c.loc[0] < S.deck.x1 + 0.6 && c.loc[1] > S.deck.y0 - 0.6 && c.loc[1] < S.deck.y1 && c.loc[2] < 0.6 + 1.2) out.push(`camera ${ck}: too close over the porch deck (the engine's camera guard would move it)`);
     const waist = c.shot === "wide" || c.shot === "top" ? [] : bodies.map((b) => ({ ...b, k: b.k, head: [b.at[0], b.at[1], b.at[2] + 1.1] }));
@@ -94,9 +94,9 @@ export function checkStage(S) {
       const hits = new Set();
       for (let t = 0.03; t < 0.97; t += 0.01) {
         const p = [0, 1, 2].map((i) => c.loc[i] + (s.head[i] - c.loc[i]) * t);
-        if (d2(p, s.at) < (s.h === H.creature ? CREATURE_R : BODY_R) + 0.05) break;   // reached the subject's own body
+        if (d2(p, s.at) < (s.h === H.creature ? CREATURE_R : (S.spots[s.k]?.seat ? 0.7 : BODY_R)) + 0.05) break;   // reached the subject's own body
         for (const o of walls) if (inside(p, o)) hits.add(o.n);
-        for (const b of [...bodies, ...(cr ? [cr] : [])]) if (b.k !== s.k && d2(p, b.at) < (b.h === H.creature ? CREATURE_R : BODY_R) && p[2] < b.at[2] + b.h) hits.add(b.k);
+        for (const b of [...bodies, ...(cr ? [cr] : [])]) if (b.k !== s.k && d2(p, b.at) < (b.h === H.creature ? CREATURE_R : (S.spots[b.k]?.seat ? 0.7 : BODY_R)) && p[2] < b.at[2] + b.h) hits.add(b.k);
       }
       if (hits.size) out.push(`camera ${ck}: the view of ${s.k}'s head is blocked by ${[...hits].join(", ")}`);
     }

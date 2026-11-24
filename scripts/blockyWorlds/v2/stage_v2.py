@@ -9,6 +9,8 @@ ZV_SHOT = {}            # this shot: {"cam": name, "subjects": [(who, Char)], "c
 def zv_build(stage_id, time, t0, t1):
     """the stage at its time of day, quiet (nobody else, no cars), the stage's own removals done"""
     S = ZV_STAGES[stage_id]
+    if S.get("build") == "dining":
+        return zv_build_dining(S, time, t0, t1)
     dress = {"time": "night" if time == "storm" else ("day" if time == "morning" else time), "busy": "empty", "walkers": "none",
              "cars": "none", "extras": [], "props": ["nocars"], "windows": "lit", "curtains": "open", "threat": "none"}
     if time == "storm":
@@ -22,23 +24,88 @@ def zv_build(stage_id, time, t0, t1):
     return info
 
 
+ZV_LAMP_AT = (1.9, 17.62, 5.2)
+
+
 def zv_porch_light(on, i=8):
     """THE HERO HOUSE'S OWN PORCH LIGHT as a rule object: its own material (never the shared one: switching ours never
     switches the neighbours'), a warm glow on the porch when on, dark glass when off. Returns its world position."""
     ob = D.objects.get("zw_hplamp%d" % i)
-    if ob is None:
-        return None
-    m = mat("zv_hero_plamp_%s" % ("on" if on else "off"), (1.0, 0.95, 0.75) if on else (0.18, 0.17, 0.15), 0.3,
-            emit=(1.0, 0.82, 0.45) if on else None, estr=9.0 if on else 0.0)
-    ob.data.materials.clear()
-    ob.data.materials.append(m)
-    s = 1.6
-    ob.scale = (ob.scale[0] * s, ob.scale[1] * s, ob.scale[2] * s)
-    bpy.context.view_layer.update()
-    p = ob.matrix_world.translation.copy()
+    if ob is not None:     # the house's own lamp ball is hidden: ours is built where we want it, fully under our control
+        ob.hide_render = True
+        ob.hide_viewport = True
+    m = mat("zv_hero_plamp_%s" % ("on" if on else "off"), (1.0, 0.93, 0.7) if on else (0.16, 0.16, 0.17), 0.25,
+            emit=(1.0, 0.8, 0.42) if on else None, estr=14.0 if on else 0.0, spec=0.8)
+    p = Vector(ZV_LAMP_AT)         # beside the door at a person's reach
+    sphere("zv_lampglass", 0.3, tuple(p), m, (1.0, 1.0, 1.35), seg=16)
+    # a real fitting: a dark metal cap, a bracket to the wall, a small frame (it reads as a lamp, on or off)
+    fm = mat("zv_lampmetal", (0.06, 0.06, 0.07), 0.35, metal=0.7)
+    cyl("zv_lampcap", 0.42, 0.22, (p.x, p.y, p.z + 0.46), fm, 20, r2=0.18)
+    cyl("zv_lampbase", 0.3, 0.12, (p.x, p.y, p.z - 0.42), fm, 20)
+    box("zv_lampbracket", (0.12, 0.62, 0.12), (p.x, p.y + 0.3, p.z + 0.5), fm, 0.02)
+    for k in range(4):
+        a = k * math.pi / 2 + math.pi / 4
+        box("zv_lampbar%d" % k, (0.05, 0.05, 0.84), (p.x + 0.33 * math.cos(a), p.y + 0.33 * math.sin(a), p.z), fm, 0.0)
+    print("ZW_GATE|lamp|%.2f|%.2f|%.2f|dims %.2f %.2f %.2f|hide %s|mats %d|parent %s" % (p.x, p.y, p.z, 0.6, 0.6, 0.81, False, 1, "-"))
     if on:
-        light("zv_plamp_glow", "POINT", (p.x, p.y - 0.6, p.z - 0.2), 180, (1.0, 0.78, 0.45), 0.6)
+        light("zv_plamp_glow", "POINT", (p.x, p.y - 1.4, p.z - 0.6), 120, (1.0, 0.78, 0.45), 0.8)
     return p
+
+
+ZV_CURTAIN_COLS = ["#C94A4A", "#E0B04A", "#5C8FD6", "#7FB86A", "#B06AC8", "#E08A5A"]
+
+
+def zv_curtains(state="closed", t=None, x_range=(-60, 60), gap=None, lit=True):
+    """THE CURTAINS (a rule object: "after dark every curtain is closed"): two fabric panels in front of every street
+    window in x_range, a little glow through them at night. state: "open" (gathered at the sides), "closed", or
+    "closing" (keyed from open at t to closed at t + 0.9 s, house by house). gap = {"pane name": width} leaves a slit
+    between the panels (someone peeking). Returns the number of windows dressed."""
+    bpy.context.view_layer.update()
+    n = 0
+    for ob in list(D.objects):
+        nm = ob.name
+        if not (nm.startswith("zw_hwin") and not nm.startswith("zw_hwinf") and not nm.startswith("zw_hwins")) or ob.type != "MESH":
+            continue
+        c = ob.matrix_world.translation
+        if not (x_range[0] <= c.x <= x_range[1]):
+            continue
+        dm = ob.dimensions
+        side = 1.0 if c.y > 0 else -1.0                  # north houses face -Y, south houses face +Y
+        col = ZV_CURTAIN_COLS[(int(abs(c.x)) // 7 + (1 if c.y > 0 else 3)) % len(ZV_CURTAIN_COLS)]
+        m = mat("zv_curtain_%s%s" % (col[1:], "_lit" if lit and zw_night() else ""), zc_rgb(col), 0.85,
+                emit=zc_rgb(col) if (lit and zw_night()) else None, estr=0.35 if (lit and zw_night()) else 0.0)
+        hw, hh = dm.x / 2.0, dm.z
+        g = (gap or {}).get(nm, 0.0)
+        y = c.y - side * 0.16
+        for s in (-1, 1):
+            closed_w = hw - g / 2.0
+            open_w = hw * 0.22
+            p = box("%s_cur%d" % (nm, s), (1.0, 0.06, hh * 1.02), (c.x + s * (hw - closed_w / 2.0), y, c.z), m, 0.01)
+            if state == "closed":
+                p.scale.x = closed_w
+            elif state == "open":
+                p.scale.x = open_w
+                p.location.x = c.x + s * (hw - open_w / 2.0)
+            else:
+                ta = (t if t is not None else 0.0) + ((int(abs(c.x)) * 7) % 11) * 0.08
+                p.scale.x = open_w
+                p.location.x = c.x + s * (hw - open_w / 2.0)
+                key(p, "scale", F(ta))
+                key(p, "location", F(ta))
+                p.scale.x = closed_w
+                p.location.x = c.x + s * (hw - closed_w / 2.0)
+                key(p, "scale", F(ta + 0.9))
+                key(p, "location", F(ta + 0.9))
+        n += 1
+    return n
+
+
+def zv_street_lamps(on=True, xs=(-30, -10, 10, 30)):
+    """the street lamps near the stage glowing (each bulb lights the pavement under it)"""
+    if not on:
+        return
+    for x in xs:
+        light("zv_slamp%d" % int(x), "POINT", (x, 9.6, 6.4), 260, (1.0, 0.82, 0.5), 0.6)
 
 
 ZV_POINTS = {}
@@ -47,10 +114,7 @@ ZV_POINTS = {}
 def zv_point(name):
     """named points a shot can face / frame: the porch light, the house, the street, the drain..."""
     if name == "porch_light":
-        ob = D.objects.get("zw_hplamp8")
-        if ob is not None:
-            bpy.context.view_layer.update()
-            return tuple(ob.matrix_world.translation)
+        return ZV_LAMP_AT
     return ZV_POINTS.get(name, {"house": (0.0, 22.0, 3.0), "street": (0.0, -4.0, 2.0), "sky": (0.0, 0.0, 30.0)}.get(name, (0.0, -4.0, 2.0)))
 
 
@@ -186,7 +250,7 @@ def zv_gate(S):
             if pts and (zw_span(cam, [p for p in pts if p.z > min(q.z for q in pts) + 0.78 * (max(q.z for q in pts) - min(q.z for q in pts))]) or (0, 1, -1, 2))[2] < 0.0:
                 lines.append("ZW_GATE|%s|zv|creature|head_cut|its eyes are above the frame" % sid)
             cov = max(0.0, min(1.0, u1) - max(0.0, u0)) * max(0.0, min(1.0, v1) - max(0.0, v0))
-            if cov > 0.5:
+            if cov > 0.7:
                 lines.append("ZW_GATE|%s|zv|creature|lens_wall|covers %d pct of the frame" % (sid, int(100 * cov)))
         elif (v1 - v0) < 0.12:
             lines.append("ZW_GATE|%s|zv|%s|small|body %.2f of the frame height" % (sid, who, v1 - v0))
@@ -225,3 +289,96 @@ def zw_gate(S):
         print("ZW_GATE|%s|zv|check|crash|%s" % (S.get("id", "?"), str(e)[:120]))
     return out
 # ===== END OF v2 STAGE ================================================================================================
+
+
+# ===== STAGE B, PIECE 1: THE DINING CORNER (built by us, no town around it) ==========================================
+ZV_DINING_LIGHT = {
+    "dinner":      {"lamp": (1.0, 0.8, 0.55), "lamp_w": 520, "fill": (1.0, 0.86, 0.7), "fill_w": 160, "world": (0.05, 0.04, 0.035), "exposure": 0.0},
+    "dinner_cold": {"lamp": (0.72, 0.82, 1.0), "lamp_w": 300, "fill": (0.6, 0.7, 0.95), "fill_w": 90, "world": (0.015, 0.02, 0.035), "exposure": -0.35},
+}
+
+
+def zv_build_dining(S, time, t0, t1):
+    """the dining corner: a wooden floor, two walls and a back wall with a curtained window, a table with a cloth, plates
+    and food, a warm pendant lamp; the open side toward -Y. Chairs are added per sitter (zv_chairs)."""
+    L = ZV_DINING_LIGHT.get(time, ZV_DINING_LIGHT["dinner"])
+    W = bpy.context.scene.world or D.worlds.new("W")
+    bpy.context.scene.world = W
+    W.use_nodes = True
+    bg = next(x for x in W.node_tree.nodes if x.type == "BACKGROUND")
+    bg.inputs["Color"].default_value = (*L["world"], 1)
+    bg.inputs["Strength"].default_value = 1.0
+    wood = mat("zv_floor", zc_rgb("#8A5A3A"), 0.6)
+    wall = mat("zv_wallpaper", zc_rgb("#E9D3A8" if time == "dinner" else "#B9C3CC"), 0.9)
+    trim = mat("zv_trim", zc_rgb("#F4EEE2"), 0.6)
+    box("zv_floor", (14, 12, 0.2), (0, -1.5, -0.1), wood, 0.0)
+    box("zv_backwall", (10.4, 0.3, 7.5), (0, 3.45, 3.75), wall, 0.0)
+    for sx in (-1, 1):
+        box("zv_sidewall%d" % sx, (0.4, 9.1, 7.5), (sx * 5.4, -0.95, 3.75), wall, 0.0)
+    box("zv_skirting", (10.4, 0.36, 0.4), (0, 3.4, 0.2), trim, 0.0)
+    # the window behind the table, the night outside, the curtains CLOSED (the rule)
+    box("zv_winframe", (3.4, 0.36, 3.0), (0, 3.38, 3.7), trim, 0.03)
+    box("zv_winglass", (3.0, 0.38, 2.6), (0, 3.36, 3.7), mat("zv_night_glass", zc_rgb("#0E1A33"), 0.1, emit=zc_rgb("#16264A"), estr=0.6), 0.0)
+    cm = mat("zv_dcurtain", zc_rgb("#B84A4A"), 0.85)
+    for sx in (-1, 1):
+        box("zv_dcur%d" % sx, (1.72, 0.08, 3.1), (sx * 0.84, 3.12, 3.62), cm, 0.02)
+    cyl("zv_rod", 0.05, 4.0, (0, 3.12, 5.25), trim, 8, rot=(0, 90, 0))
+    # the table: legs, top, a cloth; plates + food at the four seats; a jug in the middle
+    tw = mat("zv_tablewood", zc_rgb("#6E4428"), 0.55)
+    for x in (-1.45, 1.45):
+        for y in (-0.8, 0.8):
+            box("zv_tleg%d_%d" % (int(x * 10), int(y * 10)), (0.16, 0.16, 1.0), (x, y, 0.5), tw, 0.02)
+    box("zv_ttop", (3.3, 2.0, 0.12), (0, 0, 1.04), tw, 0.03)
+    box("zv_tcloth", (2.6, 1.5, 0.02), (0, 0, 1.11), mat("zv_cloth", zc_rgb("#F2EBDD"), 0.8), 0.0)
+    plate = mat("zv_plate", zc_rgb("#FFFFFF"), 0.3)
+    for nm, (x, y) in (("front", (0, -0.62)), ("back", (0, 0.62)), ("left", (-1.15, 0)), ("right", (1.15, 0))):
+        cyl("zv_plate_" + nm, 0.32, 0.04, (x, y, 1.14), plate, 24)
+        sphere("zv_food_" + nm, 0.14, (x, y, 1.2), mat("zv_food", zc_rgb("#E0A040"), 0.6), (1.2, 1.0, 0.5), seg=12)
+        sphere("zv_peas_" + nm, 0.08, (x + 0.12, y + 0.06, 1.18), mat("zv_peas", zc_rgb("#6FB04A"), 0.6), (1.1, 1.1, 0.6), seg=10)
+    cyl("zv_jug", 0.14, 0.42, (0.35, 0.05, 1.32), mat("zv_jugm", zc_rgb("#7FB3D9"), 0.2), 16)
+    # the warm lamp over the table (a shade + a bulb) and a soft fill from the open side
+    cyl("zv_shade", 0.55, 0.4, (0, 0, 5.3), mat("zv_shadem", zc_rgb("#2A2A2E"), 0.4), 24, r2=0.25)
+    sphere("zv_bulb", 0.16, (0, 0, 5.05), mat("zv_bulbm", zc_rgb("#FFF2D0"), 0.2, emit=zc_rgb("#FFE4A8"), estr=12.0), seg=12)
+    cyl("zv_cord", 0.02, 2.2, (0, 0, 6.6), trim, 6)
+    light("zv_lamp", "AREA", (0, 0, 4.9), L["lamp_w"], L["lamp"], 1.4, rot=(0, 0, 0))
+    light("zv_fill", "AREA", (1.5, -7.0, 4.0), L["fill_w"], L["fill"], 6.0, target=(0, 0, 1.6))
+    bpy.context.scene.view_settings.exposure = L["exposure"]
+    ZV_TIME["t"] = None
+    return {}
+
+
+def zv_chair(nm, at, face_to, seat_top, back=True):
+    """a chair at a seat spot, turned to the table, its seat at the sitter's own height"""
+    w = mat("zv_chairwood", zc_rgb("#7A4E30"), 0.6)
+    e = empty(nm, (at[0], at[1], 0.0))
+    e.rotation_euler[2] = math.atan2(face_to[0] - at[0], -(face_to[1] - at[1]))
+    box(nm + "_seat", (1.2, 1.1, 0.14), (0, 0.12, seat_top - 0.07), w, 0.03, parent=e)
+    for x in (-0.5, 0.5):
+        for y in (-0.38, 0.6):
+            box("%s_leg%d%d" % (nm, int(x * 10), int(y * 10)), (0.12, 0.12, seat_top - 0.14), (x, y, (seat_top - 0.14) / 2.0), w, 0.01, parent=e)
+    if back:
+        box(nm + "_back", (1.2, 0.12, 1.4), (0, 0.68, seat_top + 0.7), w, 0.03, parent=e)
+    return e
+
+
+def zv_seat_top(ch):
+    """the height a sitter's thighs rest at (their own chair height): from the sit pose and their proportions"""
+    P = ch.spec["body"]
+    hip = P["thigh"] + P["shin"] + 0.52 - 0.43 * (P["thigh"] + P["shin"])
+    return max(0.35, (hip - 0.45) * ch.k)
+
+
+def zv_sit(ch, t, at, table=(0.0, 0.0)):
+    """a person sitting at the table: the sit pose, their own chair under them, the body turned to the table"""
+    ch.pose(t, "sit")
+    ch.face_to((table[0], table[1], 1.0))
+    a = ch.root.rotation_euler[2]
+    fwd = Vector((math.sin(a), -math.cos(a), 0.0))
+    ch.root.location = (at[0] + fwd.x * 0.1, at[1] + fwd.y * 0.1, 0.0)
+    zv_chair(ch.name + "_chair", (at[0] - fwd.x * 0.05, at[1] - fwd.y * 0.05), table, zv_seat_top(ch))
+
+
+def zv_empty_chairs(S, occupied, table=(0.0, 0.0)):
+    for k, v in S["spots"].items():
+        if v.get("seat") and k not in occupied:
+            zv_chair("zv_chair_" + k, v["at"], table, 0.62)

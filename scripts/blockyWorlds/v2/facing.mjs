@@ -27,7 +27,7 @@ export function facingProblems(row, { lineText = "", named = [] } = {}) {
     const f = p.facing ?? defaultFacing(row, p.id, { lineText, named });
     if (f === "camera" && looksElsewhere) out.push(`${p.id} faces the camera, but the words say they look at ${named.filter((n) => n !== p.id).join(" / ") || "something else"}`);
     if (f && typeof f === "object" && f.to === p.id) out.push(`${p.id} faces themselves`);
-    if (f && typeof f === "object" && f.to && !["street", "house", "sky", "creature", "door", "window", "porch_light"].includes(f.to) && !/^(porch_|pave_|road_|step|gate|cr_)/.test(f.to) && !(row.people ?? []).some((q) => q.id === f.to) && !(row.props ?? {})[f.to] && !named.includes(f.to)) out.push(`${p.id} faces "${f.to}", which is not in this shot`);
+    if (f && typeof f === "object" && f.to && !["street", "house", "sky", "creature", "door", "window", "porch_light"].includes(f.to) && !/^(porch_|pave_|road_|step|gate|cr_|seat_|stand_|window)/.test(f.to) && !(row.people ?? []).some((q) => q.id === f.to) && !(row.props ?? {})[f.to] && !named.includes(f.to)) out.push(`${p.id} faces "${f.to}", which is not in this shot`);
   }
   return out;
 }

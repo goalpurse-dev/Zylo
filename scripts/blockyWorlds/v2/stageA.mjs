@@ -30,12 +30,28 @@ export const STAGE_A = {
     road_left:   { at: [-5, 2.5, 0.06], tag: "road" },
     road_mid:    { at: [0, 2.5, 0.06], tag: "road" },
     road_right:  { at: [5, 2.5, 0.06], tag: "road" },
+    porch_front: { at: [1.3, 15.6, 0.6], tag: "porch", on: "deck" },   // in front of someone at porch_left (a shield)
+    porch_hug:   { at: [0.0, 16.2, 0.6], tag: "porch", on: "deck" },   // beside porch_left, close enough to hug
   },
   // ---- where the creature may stand (always behind the people as the camera sees them, with a clear gap)
   creature_spots: {
     cr_road_far:   { at: [-18, 0, 0] },
     cr_road_south: { at: [0, -3.5, 0] },
     cr_house_side: { at: [10.5, 15.5, 0] },
+    // far spots (owner 2026-11-24: the Shadow is never close to the lens; its whole thin figure against a lit background)
+    cr_across:     { at: [9, -8.2, 0.25], far: true },    // across the street, in front of the neighbours' lit windows
+    cr_fence:      { at: [8, -13.6, 0], far: true },      // behind the neighbours' fence
+    cr_path_end:   { at: [0, 6.6, 0.06], far: true },     // at the end of our path (the kerb)
+  },
+  // ---- BACKGROUND people (owner 2026-11-24: places have their people): calm townsfolk doing a loop, behind the subject,
+  // never in front; by day / sunset / morning 1-2 of them, at night only one in a lit yard
+  background: {
+    bg_pave_sw:  { at: [-14, -8.0, 0.25], times: ["day", "sunset", "morning"], loop: "talk" },
+    bg_pave_se:  { at: [16, -8.0, 0.25], times: ["day", "sunset", "morning"], loop: "phone" },
+    bg_pave_nw:  { at: [-20, 8.0, 0.25], times: ["day", "sunset", "morning"], loop: "walk" },
+    bg_pave_ne:  { at: [22, 8.0, 0.25], times: ["day", "sunset", "morning"], loop: "stand" },
+    bg_yard_ne:  { at: [26, 12.6, 0.0], times: ["day", "sunset", "morning", "night"], loop: "stand" },
+    bg_yard_s:   { at: [13.5, -13.6, 0.0], times: ["day", "sunset", "morning"], loop: "talk" },
   },
   // ---- named camera positions: loc, target, lens; `people` = the spots it is made for, `creature` = its creature spot
   cameras: {
@@ -73,6 +89,12 @@ export const STAGE_A = {
     { n: "lamp_l", cyl: [-10, 10.2, 0.3, 9.0] },
     { n: "lamp_r", cyl: [10, 10.2, 0.3, 9.0] },
     { n: "house_s", box: [5, 19, -30, -18, 0, 19.5] },
+    { n: "house_n_l", box: [-37, -23, 18, 30, 0, 19.5] },
+    { n: "house_n_r", box: [23, 37, 18, 30, 0, 19.5] },
+    { n: "house_s_l", box: [-25, -11, -30, -18, 0, 19.5] },
+    { n: "house_s_r", box: [35, 49, -30, -18, 0, 19.5] },
+    { n: "fence_s_l", box: [5.85, 10.15, -11.2, -10.8, 0, 2.2] },
+    { n: "fence_s_r", box: [13.85, 18.15, -11.2, -10.8, 0, 2.2] },
   ],
   // ---- the tested actions this stage ships with (plan section 1); the Blender test proves each one
   actions: {

@@ -8,42 +8,42 @@
 const KID_H = 3.04;
 export const CHARACTERS = {
   me: {
-    id: "me", role: "the narrator (main character, every story)", fixed: true,
+    id: "me", default_face: "neutral", role: "the narrator (main character, every story)", fixed: true,
     height: KID_H, outfit: "hoodie", hair: "swoop", hair_top: 0.7, badge_ok: true, sleeves: "long",
     body: { thigh: 0.95, shin: 0.8, upper_arm: 0.85, fore_arm: 0.75, torso_w: 1.9, torso_d: 1.0, torso_h: 1.8, head: 1.14 },
     colors: { skin: "#F3C9A1", skin_dark: "#E2AC84", eyes: "#1B1410", brows: "#3A2216", hair: "#4A2C1C", hair_light: "#9A6440",
       top: "#FF7A1A", top_dark: "#DE5E0A", trim: "#FFF3D6", legs: "#2D4A7A", legs_dark: "#21385E", shoe: "#F4F2EC", sole: "#CFC8BC" },
   },
   sister: {
-    id: "sister", role: "the little sister (cheeky)", fixed: true,
+    id: "sister", default_face: "smug", role: "the little sister (cheeky)", fixed: true,
     height: KID_H * 0.75, outfit: "dungarees", hair: "pigtails", hair_top: 0.55, badge_ok: false, sleeves: "short",
     body: { thigh: 0.72, shin: 0.6, upper_arm: 0.66, fore_arm: 0.58, torso_w: 1.7, torso_d: 0.95, torso_h: 1.45, head: 1.2 },
     colors: { skin: "#F6D2B0", skin_dark: "#E8B38E", eyes: "#1B1410", brows: "#7A3418", hair: "#B5562A", hair_light: "#E8935A", accent: "#3FC1FF",
       top: "#FFE14D", top_dark: "#E8C52E", trim: "#FFFFFF", legs: "#E0368A", legs_dark: "#B32068", shoe: "#3FC1FF", sole: "#FFFFFF" },
   },
   mom: {
-    id: "mom", role: "Mom (warm)", fixed: true,
+    id: "mom", default_face: "happy", role: "Mom (warm)", fixed: true,
     height: 3.35, outfit: "cardigan", hair: "bob", hair_top: 0.4, badge_ok: false, sleeves: "long",
     body: { thigh: 1.2, shin: 1.05, upper_arm: 1.0, fore_arm: 0.92, torso_w: 2.0, torso_d: 1.05, torso_h: 2.25, head: 1.02 },
     colors: { skin: "#E9B48C", skin_dark: "#D4966C", eyes: "#1B1410", brows: "#5A2A18", hair: "#7A3B22", hair_light: "#C27A50", under: "#FFF4E2",
       top: "#E8505B", top_dark: "#C73945", trim: "#FFF4E2", legs: "#3A4466", legs_dark: "#2C3450", shoe: "#8A4A2A", sole: "#3A2A20" },
   },
   dad: {
-    id: "dad", role: "Dad (rebuilt at the kid's quality)", fixed: true,
+    id: "dad", default_face: "happy", role: "Dad (rebuilt at the kid's quality)", fixed: true,
     height: 3.5, outfit: "shirt", hair: "short", hair_top: 0.38, mustache: true, badge_ok: false, sleeves: "rolled",
     body: { thigh: 1.3, shin: 1.12, upper_arm: 1.1, fore_arm: 1.0, torso_w: 2.15, torso_d: 1.12, torso_h: 2.4, head: 1.02 },
     colors: { skin: "#C68642", skin_dark: "#A86C32", eyes: "#1B1410", brows: "#1E1A18", hair: "#1E1A18", hair_light: "#5A4E44",
       top: "#2FA37A", top_dark: "#23805F", trim: "#F2F2EE", legs: "#B59B72", legs_dark: "#8F7A58", shoe: "#5A3A24", sole: "#2A2A2A" },
   },
   mayor: {
-    id: "mayor", role: "the Mayor (older, pompous: any 'town rule' scene)", fixed: true,
+    id: "mayor", default_face: "smug", role: "the Mayor (older, pompous: any 'town rule' scene)", fixed: true,
     height: 3.6, outfit: "suit", hair: "grey_neat", hair_top: 1.4, hat: "top", mustache: true, badge_ok: false, sleeves: "long",
     body: { thigh: 1.22, shin: 1.08, upper_arm: 1.08, fore_arm: 1.0, torso_w: 2.35, torso_d: 1.4, torso_h: 2.45, head: 1.0 },
     colors: { skin: "#F0C2A0", skin_dark: "#D9A27E", eyes: "#1B1410", brows: "#D6D6D6", hair: "#B4B4B4", hair_light: "#EDEDED", under: "#F6F4EE",
       accent: "#C8283C", sash: "#C8283C", top: "#2B3550", top_dark: "#1E2538", trim: "#D9B24A", legs: "#2B3550", legs_dark: "#1E2538", shoe: "#18181C", sole: "#0E0E10" },
   },
   grandpa: {
-    id: "grandpa", role: "Grandpa (kind, a little slow)", fixed: true,
+    id: "grandpa", default_face: "happy", role: "Grandpa (kind, a little slow)", fixed: true,
     height: 3.4, outfit: "cardigan", hair: "short", hair_top: 0.34, mustache: true, badge_ok: false, sleeves: "long",
     body: { thigh: 1.2, shin: 1.05, upper_arm: 1.05, fore_arm: 0.98, torso_w: 2.2, torso_d: 1.25, torso_h: 2.3, head: 1.02 },
     colors: { skin: "#E7B48E", skin_dark: "#CC9670", eyes: "#1B1410", brows: "#E2E2E2", hair: "#C9C9C9", hair_light: "#F2F2F2", under: "#EDE6D6",
@@ -51,7 +51,7 @@ export const CHARACTERS = {
   },
   // ---- the entities (kid-safe: spooky, never gory)
   shadow: {
-    id: "shadow", role: "the Shadow: tall, thin, pure black in every light, two glowing eyes, long arms", fixed: true, entity: true,
+    id: "shadow", default_face: "shadow_stare", role: "the Shadow: tall, thin, pure black in every light, two glowing eyes, long arms", fixed: true, entity: true,
     height: 8.5, mode: "shadow", outfit: "plain", hair: "none", hair_top: 0.0, badge_ok: false, sleeves: "long", head_shape: [0.78, 0.8, 1.3],
     body: { thigh: 2.3, shin: 2.2, upper_arm: 2.4, fore_arm: 2.4, torso_w: 1.15, torso_d: 0.62, torso_h: 2.9, head: 0.9 },
     colors: { skin: "#000000", skin_dark: "#000000", eyes: "#FFF0A0", brows: "#000000", hair: "#000000", hair_light: "#000000",
@@ -62,6 +62,13 @@ export const CHARACTERS = {
     height: 0.95,
     colors: { fur: "#3CC6B8", fur_dark: "#2A9A8F", belly: "#C8F4EC" },
   },
+};
+// the townsfolk (background people): the base with other colours and hair
+export const NEIGHBOURS = {
+  nb1: { ...CHARACTERS.mom, id: "nb1", role: "a neighbour", fixed: true, hair: "bun", default_face: "happy", colors: { ...CHARACTERS.mom.colors, top: "#4C9BE8", top_dark: "#3478BF", hair: "#2A2A2A", hair_light: "#5A5A5A", legs: "#5A5A66", skin: "#8D5524", skin_dark: "#74441C" } },
+  nb2: { ...CHARACTERS.dad, id: "nb2", role: "a neighbour", fixed: true, mustache: false, default_face: "neutral", colors: { ...CHARACTERS.dad.colors, top: "#E8B23C", top_dark: "#C4921E", hair: "#7A4A26", legs: "#3A3F5C", skin: "#F0C8A0", skin_dark: "#D8AA82" } },
+  nb3: { ...CHARACTERS.grandpa, id: "nb3", role: "an old neighbour", fixed: true, default_face: "happy", colors: { ...CHARACTERS.grandpa.colors, top: "#6E8C4A", top_dark: "#56703A", skin: "#C68642", skin_dark: "#A86C32" } },
+  nb4: { ...CHARACTERS.sister, id: "nb4", role: "a neighbour kid", fixed: true, height: 2.7, default_face: "happy", colors: { ...CHARACTERS.sister.colors, top: "#8BD3A0", legs: "#3C6FD8", legs_dark: "#2C55A8", hair: "#1E1A18", hair_light: "#4A4038", skin: "#E0AC69", skin_dark: "#C89054" } },
 };
 export const CRITTER_COLOURS = {
   teal: { fur: "#3CC6B8", fur_dark: "#2A9A8F", belly: "#C8F4EC" },
