@@ -16,6 +16,7 @@ export const TELLS = {
   head_tilt: "a copy tilts its head too far to one side (pose 'tilt')",
   wide_smile: "a copy's smile is too wide, ear to ear (face 'mimic_smile')",
   grey: "a copy's colours are a little grey and cold next to the real person",
+  none: "no special tell: the rule is shown by what the shots can show (people, places, the porch light, the curtains, props in hand)",
   curtains: "after dark every curtain in town is closed (the curtains are the rule object: closed in every night shot unless a line opens them)",
 };
 
@@ -102,7 +103,7 @@ export async function writeStory({ callJson, apiKey, topic, cast, meter, model =
 // ---------------------------------------------------------------- THE SHOT PLANNER
 export const PLANNER5 = `You plan the shots of an "In This Town" video on ONE tested stage. Each line gets 1-3 shot rows (data, never code).
 THE RULES (they are checked in code; a row that breaks one comes back to you):
-- THE HOOK: row 1 = the narrator (or the line's character) big, from the front (camera close/medium/two), daylight or dusk, WITH the rule's thing next to them (cam.with: ["porch_light"] when the rule is the porch light; for a tell, the copy in the shot showing it).
+- THE OPENING (replaces the old hook): row 1 = line 1, camera "street" (the town from above / the row of houses, no people needed) over "In this town" for about 1-1.5 s; row 2 = line 1 again (from_word 3): the narrator (or the line's character) big, from the front (camera close/medium/two), daylight or dusk, WITH the rule's thing next to them (cam.with: ["porch_light"] when the rule is the porch light; for a tell, the copy in the shot showing it), by about 2.5 s.
 - SHOT SIZE BY SENTENCE: a new place or "everyone" = wide; a body action = medium (full body); normal narration = medium; the key reaction = close (never two closes in a row; closes about 10-15% of shots); a named thing = insert (porch_light).
 - SHOW IT, THEN TOP IT: first show exactly what the line says; the next shot may push the same thing bigger. One idea per moment. Never add story.
 - FACING: a person looks at someone / something (facing: {"to": id or spot or "porch_light"}); the engine turns them three-quarter to the camera. "camera" only when the words speak to the viewer. Side / back cameras at most 15% of shots. Two people: never two profiles.
@@ -118,12 +119,12 @@ THE RULES (they are checked in code; a row that breaks one comes back to you):
 - STAGES: when two stages are on the menu every row says its "stage" ("A" street, "B" dining room). People on win_* spots are filmed only with camera "window".
 Return the JSON only.`;
 export function rowsSchema() {
-  const person = { type: "object", additionalProperties: false, required: ["id", "spot"], properties: { id: S_, spot: S_, face: S_, pose: S_, facing: { anyOf: [S_, { type: "object", additionalProperties: false, required: ["to"], properties: { to: S_ } }] }, holds: S_, hands: S_, tap: I_ } };
+  const person = { type: "object", additionalProperties: false, required: ["id", "spot"], properties: { id: S_, spot: S_, face: S_, pose: S_, facing: { anyOf: [S_, { type: "object", additionalProperties: false, required: ["to"], properties: { to: S_ } }] }, holds: S_, tap: I_ } };
   const row = { type: "object", additionalProperties: false, required: ["line", "scene", "time", "cam", "people"], properties: {
     line: I_, scene: I_, stage: { type: "string", enum: ["A", "B"] }, time: { type: "string", enum: ["day", "sunset", "night", "morning", "dinner", "dinner_cold"] }, touch: { type: "boolean" }, sticker: S_, from_word: I_,
     cam: { type: "object", additionalProperties: false, required: ["type", "subject"], properties: { type: { type: "string", enum: CAMS }, subject: { type: "array", items: S_ }, side: { type: "string", enum: ["left", "right"] }, with: { type: "array", items: S_ }, push: { type: "number" }, part: { type: "string", enum: ["buttons", "hand"] } } },
     people: { type: "array", items: person },
-    creature: { type: "object", additionalProperties: false, required: ["spot"], properties: { spot: S_, face: S_, pose: S_, facing: { anyOf: [S_, { type: "object", additionalProperties: false, required: ["to"], properties: { to: S_ } }] }, holds: S_ } },
+    creature: { type: "object", additionalProperties: false, required: ["spot"], properties: { spot: S_, face: S_, pose: S_, facing: { anyOf: [S_, { type: "object", additionalProperties: false, required: ["to"], properties: { to: S_ } }] } } },
     props: { type: "object", additionalProperties: false, properties: { porch_light: { type: "string", enum: ["on", "off"] }, curtains: { type: "string", enum: ["open", "closing", "closed"] }, peek: { type: "boolean" }, street_lamps: { type: "boolean" }, drain: { type: "boolean" } } },
   } };
   return { type: "object", additionalProperties: false, required: ["rows"], properties: { rows: { type: "array", items: row } } };

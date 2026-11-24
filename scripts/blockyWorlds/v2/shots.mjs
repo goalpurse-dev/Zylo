@@ -182,7 +182,13 @@ export function checkRows(S, story) {
   const lastSide = {};   // scene -> "a|b" -> order
   // THE HOOK (owner 2026-11-24): by 1.5 s a character big, sharp, from the front / three-quarter, the rule on or next
   // to them, nothing in front; never a back, an empty place, dark, an object alone or tiny people
-  const h0 = story.rows[0];
+  // THE OPENING RULE (owner 2026-11-25, replaces the old hook rule): row 1 = a moving aerial of the town over "In this
+  // town" (about 1-1.5 s; on Stage A the "street" camera, the place catalogue's towns have real aerials), then row 2 =
+  // the character with the rule visible by about 2.5 s: the old hook checks apply to row 2
+  const r0 = story.rows[0];
+  if (r0 && !(["street", "aerial"].includes(r0.cam?.type) && r0.line === 1)) out.push(`row 1 (the opening): a ${r0.cam?.type ?? "?"} shot: the video opens on the town from above (camera street / aerial) over line 1`);
+  const h0 = r0 && ["street", "aerial"].includes(r0.cam?.type) ? story.rows[1] : r0;
+  if (h0 && h0.line !== 1) out.push("row 2 (the opening): the character with the rule comes on line 1, by about 2.5 s");
   if (h0) {
     if (!["close", "medium", "two"].includes(h0.cam?.type) || !(h0.people ?? []).length) out.push(`row 1 (the hook): a ${h0.cam?.type ?? "?"} shot${(h0.people ?? []).length ? "" : " with nobody"}: the first shot is a character, big, from the front`);
     if (h0.time === "night") out.push("row 1 (the hook): night: the first picture must be bright and sharp");
