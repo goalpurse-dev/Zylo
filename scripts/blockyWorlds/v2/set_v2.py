@@ -184,7 +184,7 @@ def zw_look_apply():
 
 
 # ---------------------------------------------------------------- WEATHER (fills the camera's view)
-def zv_view_pts(cam, n, d0=2.5, d1=45.0, z0=0.0, z1=16.0, seed=7, spread=0.62):
+def zv_view_pts(cam, n, d0=6.0, d1=45.0, z0=0.0, z1=16.0, seed=7, spread=0.62):
     """n random points in the camera's view volume (for rain, snow, leaves): a frustum from d0 to d1"""
     rnd = random.Random(seed)
     if cam is None:
@@ -202,17 +202,21 @@ def zv_view_pts(cam, n, d0=2.5, d1=45.0, z0=0.0, z1=16.0, seed=7, spread=0.62):
     return out
 
 
+ZV_STORM_PARTS = {"bolt": True, "clouds": True}
+
+
 def zv_weather(w, t0, t1, cam):
     if w in ("rain", "storm"):
-        m = mat("zs_rainm", (0.75, 0.85, 1.0), 0.2, emit=(0.7, 0.8, 1.0), estr=0.6 if w == "storm" else 0.45)
-        for k, p in enumerate(zv_view_pts(cam, 650 if w == "storm" else 420, z1=18)):
-            ob = box("zs_rain%d" % k, (0.035, 0.035, 1.3), tuple(p), m, 0.0, rot=(0, 6 if w == "storm" else 3, 0))
+        m = mat("zs_rainm", (0.75, 0.85, 1.0), 0.2, emit=(0.75, 0.85, 1.0), estr=1.6 if w == "storm" else 1.2)
+        for k, p in enumerate(zv_view_pts(cam, 900 if w == "storm" else 650, z1=18)):
+            ob = box("zs_rain%d" % k, (0.11, 0.11, 2.6), tuple(p), m, 0.0, rot=(0, 6 if w == "storm" else 3, 0))
             key(ob, "location", F(t0))
             ob.location.z -= 30 * (t1 - t0)
             key(ob, "location", F(t1))
         box("zs_puddles", (400, 400, 0.02), (0, 0, 0.215), mat("zs_wet", (0.25, 0.28, 0.33), 0.05, alpha=0.25), 0.0)
-    if w == "storm":
+    if w == "storm" and ZV_STORM_PARTS["bolt"]:
         zv_lightning(cam)
+    if w == "storm" and ZV_STORM_PARTS["clouds"]:
         for k, (dx, dz) in enumerate(((-40, 55), (0, 62), (45, 58), (-15, 70))):
             lo = Vector(cam[0]) if cam else Vector((0, -30, 6))
             sphere("zs_scloud%d" % k, 22, (lo.x + dx, lo.y + 120, dz), mat("zs_dcloud", (0.18, 0.19, 0.22), 0.9), (2.0, 1.0, 0.45), seg=16)
@@ -225,18 +229,16 @@ def zv_weather(w, t0, t1, cam):
             ob.location.x += 0.6 * (t1 - t0)
             key(ob, "location", F(t1))
         box("zs_snowcover", (500, 500, 0.06), (0, 0, 0.23), mat("zs_snowg", (0.93, 0.95, 1.0), 0.9), 0.0)
-    if w == "fog":
-        W = bpy.context.scene.world
-        nt = W.node_tree
-        vol = nt.nodes.new("ShaderNodeVolumePrincipled")
-        vol.inputs["Density"].default_value = 0.022
-        vol.inputs["Color"].default_value = (0.82, 0.85, 0.9, 1)
-        out = next(x for x in nt.nodes if x.type == "OUTPUT_WORLD")
-        nt.links.new(vol.outputs[0], out.inputs["Volume"])
-        try:
-            bpy.context.scene.eevee.volumetric_end = 120.0
-        except Exception:
-            pass
+    if w == "fog":     # layered haze cards across the view (EEVEE's world volume rendered black here)
+        lo = Vector(cam[0]) if cam else Vector((0, -30, 6))
+        tg = Vector(cam[1]) if cam else Vector((0, 10, 3))
+        f = (tg - lo)
+        f.z = 0
+        f = f.normalized()
+        rz = math.degrees(math.atan2(f.x, -f.y))
+        for k, d in enumerate((9, 15, 22, 30, 40, 55, 75)):
+            c = lo + f * d
+            box("zp_fog%d" % k, (d * 1.6, 0.05, 40), (c.x, c.y, 20), mat("zs_fogm", (0.86, 0.88, 0.9), 0.9, emit=(0.86, 0.88, 0.9), estr=0.35, alpha=0.2), 0.0, rot=(0, 0, rz))
     if w == "wind":
         cols = ["#E07A2E", "#D9A426", "#B5432A", "#8FA33A"]
         for k, p in enumerate(zv_view_pts(cam, 260, z1=9, seed=5)):
@@ -281,7 +283,9 @@ def zv_lightning(cam):
         ang = math.degrees(math.atan2(nx - x, z - nz))
         box("zs_bolt%d" % k, (0.5, 0.5, math.hypot(nx - x, z - nz)), mid, m, 0.0, rot=(0, ang, 0))
         x, z = nx, nz
-    light("zs_flash", "POINT", (base.x, base.y - 10, 30), 60000, (0.8, 0.85, 1.0), 6.0)
+    for o in D.objects:     # the flash: the sun brightens for the bolt (a point light rendered as a ball)
+        if o.type == "LIGHT" and o.data.type == "SUN":
+            o.data.energy *= 2.5
 
 
 def zv_weather_indoor(w, t0, t1):
@@ -366,7 +370,7 @@ def zv_rain_things(spec, t0, t1, cam):
     rnd = random.Random(21)
     bpy.context.view_layer.update()
     if spec.get("falling", True):
-        for k, p in enumerate(zv_view_pts(cam, int(90 * amt) + 6, d0=3.0, d1=30.0, z0=1.5, z1=15.0, seed=31)):
+        for k, p in enumerate(zv_view_pts(cam, int(90 * amt) + 6, d0=7.0, d1=30.0, z0=1.5, z1=15.0, seed=31)):
             ob = zv_copy_thing(proto, "zs_fall%d" % k, tuple(p), (rnd.random() * 6.3, rnd.random() * 6.3, rnd.random() * 6.3), 1.0)
             key(ob, "location", F(t0))
             ob.location.z -= 9 * (t1 - t0)
@@ -374,7 +378,7 @@ def zv_rain_things(spec, t0, t1, cam):
     pile = float(spec.get("pile", 0.5))
     n = int(520 * amt * pile)
     heaps = [Vector((q.x, q.y, 0)) for q in zv_view_pts(cam, 3, d0=6.0, d1=20.0, seed=41, spread=0.4)]
-    for k, p in enumerate(zv_view_pts(cam, n, d0=1.5, d1=34.0, seed=51, spread=0.75)):
+    for k, p in enumerate(zv_view_pts(cam, n, d0=4.5, d1=34.0, seed=51, spread=0.75)):
         if k % 3 == 0 and heaps:
             h = heaps[k % len(heaps)]
             p = Vector((h.x + (rnd.random() - 0.5) * 3.2, h.y + (rnd.random() - 0.5) * 3.2, 0))
@@ -412,6 +416,7 @@ def zv_place_test(pid, cam_name, time, weather, t0, t1, opt=None):
     ZV_TEXTS.clear()
     ZV_TEXTS.update(opt.get("texts") or {})
     loc, tgt = Vector(c["loc"]), Vector(c["tgt"])
+    ZV_STORM_PARTS.update(opt.get("storm_parts") or {"bolt": True, "clouds": True})
     info = zv_build_set(pid, time, weather, t0, t1, cam=(tuple(loc), tuple(tgt)))
     if opt.get("rain_things"):
         zv_rain_things(opt["rain_things"], t0, t1, (tuple(loc), tuple(tgt)))

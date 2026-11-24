@@ -1,0 +1,1 @@
+[{"label":"baby","what":{"people":["baby"]},"opt":{"cam":[[0,-7,2.2],[0,0,1],30]}},{"label":"stretch arms","what":{"people":["stretch_arms"]}},{"label":"phone in hand","what":{"hold":"phone"},"opt":{"text":"IT FITS"}},{"label":"key in hand","what":{"hold":"key"},"opt":{"text":"47"}}]

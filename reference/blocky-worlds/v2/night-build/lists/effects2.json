@@ -1,0 +1,1 @@
+[{"place":"old_town","cam":"sq_wide","time":"night","opt":{"label":"lights half out","effect":{"kind":"lights_out","phase":0.5}}},{"place":"old_town","cam":"aerial_main","time":"night","opt":{"label":"lights out","effect":{"kind":"lights_out","phase":1}}}]

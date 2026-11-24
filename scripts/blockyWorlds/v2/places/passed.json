@@ -34,5 +34,109 @@
   "hole",
   "huge_clock",
   "gift_box"
- ]
+ ],
+ "times": [
+  "day",
+  "golden",
+  "dusk",
+  "night",
+  "storm",
+  "morning"
+ ],
+ "weathers": [
+  "clear",
+  "rain",
+  "storm",
+  "snow",
+  "fog",
+  "wind",
+  "danger",
+  "eclipse"
+ ],
+ "rain_things": [
+  "key",
+  "frog",
+  "pillow"
+ ],
+ "people": [
+  "me",
+  "mom",
+  "dad",
+  "sister",
+  "grandpa",
+  "mayor",
+  "nb1",
+  "nb2",
+  "nb3",
+  "nb4",
+  "nb5",
+  "nb6",
+  "teacher",
+  "shopkeeper",
+  "police",
+  "doctor",
+  "bus_driver",
+  "chef",
+  "cm1",
+  "cm2",
+  "cm3",
+  "cm4",
+  "baby",
+  "villain_mayor",
+  "stretch_legs",
+  "stretch_neck"
+ ],
+ "animals": [
+  "dog",
+  "cat",
+  "bird"
+ ],
+ "entities": [
+  "long_one",
+  "crawler",
+  "watcher",
+  "hollow",
+  "many_arms",
+  "rain_thing",
+  "ghost",
+  "robot",
+  "slime",
+  "giant_critter"
+ ],
+ "props": [
+  "phone",
+  "key",
+  "clock",
+  "money",
+  "food",
+  "book",
+  "pencil",
+  "backpack",
+  "ball",
+  "sign",
+  "umbrella",
+  "bike",
+  "coin",
+  "frog",
+  "letter",
+  "car",
+  "bus",
+  "seccam",
+  "screen"
+ ],
+ "effects": [
+  "lava",
+  "water",
+  "grow",
+  "glow",
+  "smoke",
+  "sparks",
+  "confetti",
+  "lights_out"
+ ],
+ "skipped": {
+  "stretch_arms": "3 tries: scaling the arm (each axis) made it wider, not longer; needs the arm bone length in char_v2",
+  "billboard": "built but not placed in a town or tested",
+  "rain_coin_letter": "coin and letter rain use the same code as keys but were not rendered as rain"
+ }
 }

@@ -1594,13 +1594,487 @@
    "close_camera": "gift_box_close"
   }
  ],
- "times": [],
- "weathers": [],
- "rain_things": [],
- "people": [],
- "animals": [],
- "entities": [],
- "props": [],
- "effects": [],
- "skipped": {}
+ "times": [
+  {
+   "id": "day",
+   "look": "bright midday"
+  },
+  {
+   "id": "golden",
+   "look": "golden hour, long warm light"
+  },
+  {
+   "id": "dusk",
+   "look": "dusk, purple sky, lights coming on"
+  },
+  {
+   "id": "night",
+   "look": "night, lit windows and lamps"
+  },
+  {
+   "id": "storm",
+   "look": "storm light, dark and cold"
+  },
+  {
+   "id": "morning",
+   "look": "soft early morning"
+  }
+ ],
+ "weathers": [
+  {
+   "id": "clear",
+   "look": "clear"
+  },
+  {
+   "id": "rain",
+   "look": "rain falling"
+  },
+  {
+   "id": "storm",
+   "look": "heavy storm with lightning"
+  },
+  {
+   "id": "snow",
+   "look": "snow falling and lying"
+  },
+  {
+   "id": "fog",
+   "look": "thick fog"
+  },
+  {
+   "id": "wind",
+   "look": "wind with blowing leaves"
+  },
+  {
+   "id": "danger",
+   "look": "red danger sky, pulsing red light"
+  },
+  {
+   "id": "eclipse",
+   "look": "an eclipse: a black sun with a glowing ring"
+  }
+ ],
+ "rain_things": [
+  {
+   "id": "key",
+   "look": "golden keys"
+  },
+  {
+   "id": "frog",
+   "look": "frogs"
+  },
+  {
+   "id": "pillow",
+   "look": "pillows"
+  }
+ ],
+ "people": [
+  {
+   "id": "me",
+   "role": "the narrator (main character, every story)"
+  },
+  {
+   "id": "mom",
+   "role": "Mom (warm)"
+  },
+  {
+   "id": "dad",
+   "role": "Dad (rebuilt at the kid's quality)"
+  },
+  {
+   "id": "sister",
+   "role": "the little sister (cheeky)"
+  },
+  {
+   "id": "grandpa",
+   "role": "Grandpa (kind, a little slow)"
+  },
+  {
+   "id": "mayor",
+   "role": "the Mayor (older, pompous: any 'town rule' scene)"
+  },
+  {
+   "id": "nb1",
+   "role": "a neighbour"
+  },
+  {
+   "id": "nb2",
+   "role": "a neighbour"
+  },
+  {
+   "id": "nb3",
+   "role": "an old neighbour"
+  },
+  {
+   "id": "nb4",
+   "role": "a neighbour kid"
+  },
+  {
+   "id": "nb5",
+   "role": "a neighbour"
+  },
+  {
+   "id": "nb6",
+   "role": "an old neighbour"
+  },
+  {
+   "id": "teacher",
+   "role": "the teacher (glasses, cardigan)"
+  },
+  {
+   "id": "shopkeeper",
+   "role": "the shopkeeper (green apron)"
+  },
+  {
+   "id": "police",
+   "role": "the police officer (navy cap with a badge)"
+  },
+  {
+   "id": "doctor",
+   "role": "the doctor (white coat, stethoscope)"
+  },
+  {
+   "id": "bus_driver",
+   "role": "the bus driver (blue cap)"
+  },
+  {
+   "id": "chef",
+   "role": "the chef (tall white hat)"
+  },
+  {
+   "id": "cm1",
+   "role": "a classmate (green hoodie)"
+  },
+  {
+   "id": "cm2",
+   "role": "a classmate (blue dungarees, pigtails)"
+  },
+  {
+   "id": "cm3",
+   "role": "a classmate (purple hoodie)"
+  },
+  {
+   "id": "cm4",
+   "role": "a classmate (yellow hoodie, bun)"
+  },
+  {
+   "id": "baby",
+   "role": "a baby (pink bonnet)"
+  },
+  {
+   "id": "villain_mayor",
+   "role": "the Mayor as the villain (dark coat, sharp grin, the same top hat)"
+  },
+  {
+   "id": "stretch_legs",
+   "role": "the stretch effect: very long legs"
+  },
+  {
+   "id": "stretch_neck",
+   "role": "the stretch effect: a very long neck"
+  }
+ ],
+ "animals": [
+  {
+   "id": "dog",
+   "look": "a dog (tan, floppy ears)"
+  },
+  {
+   "id": "cat",
+   "look": "a cat (grey, yellow eyes)"
+  },
+  {
+   "id": "bird",
+   "look": "a bird (blue, orange beak)"
+  }
+ ],
+ "entities": [
+  {
+   "id": "long_one",
+   "look": "the Long One: a person stretched far too tall (14), too many joints, a pale blank face",
+   "states": [
+    "stand",
+    "walk",
+    "reach",
+    "peek",
+    "loom",
+    "eyes"
+   ],
+   "show": [
+    "full",
+    "silhouette",
+    "eyes"
+   ]
+  },
+  {
+   "id": "crawler",
+   "look": "the Crawler: low on all fours, spider-bent limbs, its head turned upside down",
+   "states": [
+    "stand",
+    "walk",
+    "reach",
+    "peek",
+    "loom",
+    "eyes"
+   ],
+   "show": [
+    "full",
+    "silhouette",
+    "eyes"
+   ]
+  },
+  {
+   "id": "watcher",
+   "look": "the Watcher: a heavy body covered in eyes that all open at once",
+   "states": [
+    "stand",
+    "walk",
+    "reach",
+    "peek",
+    "loom",
+    "eyes"
+   ],
+   "show": [
+    "full",
+    "silhouette",
+    "eyes"
+   ]
+  },
+  {
+   "id": "hollow",
+   "look": "the Hollow: a townsperson with an empty dark face",
+   "states": [
+    "stand",
+    "walk",
+    "reach",
+    "peek",
+    "loom",
+    "eyes"
+   ],
+   "show": [
+    "full",
+    "silhouette",
+    "eyes"
+   ]
+  },
+  {
+   "id": "many_arms",
+   "look": "the Many-Arms: a shape in a doorway, eight arms reaching round the frame",
+   "states": [
+    "stand",
+    "walk",
+    "reach",
+    "peek",
+    "loom",
+    "eyes"
+   ],
+   "show": [
+    "full",
+    "silhouette",
+    "eyes"
+   ]
+  },
+  {
+   "id": "rain_thing",
+   "look": "the Rain Thing: a figure of dripping black water with a puddle",
+   "states": [
+    "stand",
+    "walk",
+    "reach",
+    "peek",
+    "loom",
+    "eyes"
+   ],
+   "show": [
+    "full",
+    "silhouette",
+    "eyes"
+   ]
+  },
+  {
+   "id": "ghost",
+   "look": "a ghost: a floating white sheet with dark eyes",
+   "states": [
+    "stand",
+    "walk",
+    "reach",
+    "peek",
+    "loom",
+    "eyes"
+   ],
+   "show": [
+    "full",
+    "silhouette",
+    "eyes"
+   ]
+  },
+  {
+   "id": "robot",
+   "look": "a robot: boxy metal, a red visor",
+   "states": [
+    "stand",
+    "walk",
+    "reach",
+    "peek",
+    "loom",
+    "eyes"
+   ],
+   "show": [
+    "full",
+    "silhouette",
+    "eyes"
+   ]
+  },
+  {
+   "id": "slime",
+   "look": "a slime: a big green glossy blob with eyes",
+   "states": [
+    "stand",
+    "walk",
+    "reach",
+    "peek",
+    "loom",
+    "eyes"
+   ],
+   "show": [
+    "full",
+    "silhouette",
+    "eyes"
+   ]
+  },
+  {
+   "id": "giant_critter",
+   "look": "the little creature, giant (7x)",
+   "states": [
+    "stand",
+    "walk",
+    "reach",
+    "peek",
+    "loom",
+    "eyes"
+   ],
+   "show": [
+    "full",
+    "silhouette",
+    "eyes"
+   ]
+  }
+ ],
+ "props": [
+  {
+   "id": "phone",
+   "look": "a phone with a readable screen (text)"
+  },
+  {
+   "id": "key",
+   "look": "a key (small in a hand, readable in close-up, a number tag)"
+  },
+  {
+   "id": "clock",
+   "look": "a clock"
+  },
+  {
+   "id": "money",
+   "look": "money notes"
+  },
+  {
+   "id": "food",
+   "look": "a burger"
+  },
+  {
+   "id": "book",
+   "look": "a book"
+  },
+  {
+   "id": "pencil",
+   "look": "a pencil"
+  },
+  {
+   "id": "backpack",
+   "look": "a backpack"
+  },
+  {
+   "id": "ball",
+   "look": "a ball"
+  },
+  {
+   "id": "sign",
+   "look": "a hand sign with text"
+  },
+  {
+   "id": "umbrella",
+   "look": "an umbrella"
+  },
+  {
+   "id": "bike",
+   "look": "a bike"
+  },
+  {
+   "id": "coin",
+   "look": "a gold coin"
+  },
+  {
+   "id": "frog",
+   "look": "a frog"
+  },
+  {
+   "id": "letter",
+   "look": "a letter"
+  },
+  {
+   "id": "car",
+   "look": "a car (parked or driving)"
+  },
+  {
+   "id": "bus",
+   "look": "a bus (text on its side)"
+  },
+  {
+   "id": "seccam",
+   "look": "a security camera on a pole"
+  },
+  {
+   "id": "screen",
+   "look": "a big screen with text"
+  }
+ ],
+ "effects": [
+  {
+   "id": "lava",
+   "look": "lava covering the street"
+  },
+  {
+   "id": "water",
+   "look": "water covering the street"
+  },
+  {
+   "id": "grow",
+   "look": "a thing growing giant"
+  },
+  {
+   "id": "glow",
+   "look": "a glow"
+  },
+  {
+   "id": "smoke",
+   "look": "smoke"
+  },
+  {
+   "id": "sparks",
+   "look": "sparks"
+  },
+  {
+   "id": "confetti",
+   "look": "confetti"
+  },
+  {
+   "id": "lights_out",
+   "look": "the lights going out one by one"
+  }
+ ],
+ "skipped": {
+  "stretch_arms": "3 tries: scaling the arm (each axis) made it wider, not longer; needs the arm bone length in char_v2",
+  "billboard": "built but not placed in a town or tested",
+  "rain_coin_letter": "coin and letter rain use the same code as keys but were not rendered as rain"
+ }
 }

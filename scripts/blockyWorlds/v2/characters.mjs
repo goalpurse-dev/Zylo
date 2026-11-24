@@ -98,3 +98,40 @@ export const POSES = ["stand", "walk", "run", "sit", "point", "hold"];
 export const SHADOW_STATES = ["stand", "lean", "reach", "peek", "eyes_only", "narrow"];
 export const MIMIC_STATES = ["mimic_smile", "mimic_stare", "tilt", "mimic_copy", "too_still", "next_to_the_real_one"];
 export const CRITTER_FACES = ["happy", "angry", "scared", "sleepy", "big_smile", "sad"];
+
+// ---- NIGHT BUILD 2026-11-25: ROLES, CLASSMATES, MORE NEIGHBOURS, A BABY, THE VILLAIN MAYOR (one readable piece each,
+// worn by things_v2.py zv_wear), plus stretch variants for the stretch effect. Same base, our own colours.
+const C = CHARACTERS, rc = (b, id, role, colors, more = {}) => ({ ...b, id, role, fixed: true, badge_ok: false, ...more, colors: { ...b.colors, ...colors } });
+export const EXTRA_SPECS = {
+  teacher: rc(C.mom, "teacher", "the teacher (glasses, cardigan)", { top: "#6A994E", top_dark: "#55803D", hair: "#5A3A28" }, { hair: "bun", wear: ["glasses"], default_face: "neutral" }),
+  shopkeeper: rc(C.dad, "shopkeeper", "the shopkeeper (green apron)", { top: "#F2F2EE", top_dark: "#D8D8D2", skin: "#E0AC69", skin_dark: "#C89054" }, { wear: ["apron"], mustache: false }),
+  police: rc(C.dad, "police", "the police officer (navy cap with a badge)", { top: "#2B3F73", top_dark: "#1E2E58", legs: "#1E2A4A", legs_dark: "#151E36", skin: "#8D5524", skin_dark: "#74441C" }, { wear: ["police_cap"], mustache: false, default_face: "neutral" }),
+  doctor: rc(C.mom, "doctor", "the doctor (white coat, stethoscope)", { top: "#F4F6FA", top_dark: "#D9DEE6", under: "#8FC3E3", hair: "#1E1A18", hair_light: "#4A4038" }, { hair: "bob", wear: ["stethoscope"], default_face: "neutral" }),
+  bus_driver: rc(C.dad, "bus_driver", "the bus driver (blue cap)", { top: "#7FB3D9", top_dark: "#5E94BE", legs: "#2B3550" }, { wear: ["driver_cap"] }),
+  chef: rc(C.dad, "chef", "the chef (tall white hat)", { top: "#FFFFFF", top_dark: "#E4E4E0", skin: "#F0C8A0", skin_dark: "#D8AA82" }, { wear: ["chef_hat"], mustache: true }),
+  cm1: rc(C.me, "cm1", "a classmate (green hoodie)", { top: "#3FA34D", top_dark: "#2E8040", hair: "#1E1A18", hair_light: "#4A4038", skin: "#C68642", skin_dark: "#A86C32" }, { hair: "short", default_face: "happy" }),
+  cm2: rc(C.sister, "cm2", "a classmate (blue dungarees, pigtails)", { top: "#FFFFFF", legs: "#3C6FD8", legs_dark: "#2C55A8", hair: "#E8C25A", hair_light: "#F4DC8A" }, { height: 2.95, default_face: "happy" }),
+  cm3: rc(C.me, "cm3", "a classmate (purple hoodie)", { top: "#8E5CD9", top_dark: "#7244B8", hair: "#B5562A", hair_light: "#E8935A", skin: "#F6D2B0" }, { hair: "bob", default_face: "neutral" }),
+  cm4: rc(C.me, "cm4", "a classmate (yellow hoodie, bun)", { top: "#F2C14E", top_dark: "#D9A52E", hair: "#2A2A2A", hair_light: "#5A5A5A", skin: "#8D5524", skin_dark: "#74441C" }, { hair: "bun", height: 2.9, default_face: "smug" }),
+  nb5: rc(C.mom, "nb5", "a neighbour", { top: "#C58AF9", top_dark: "#A56AD9", hair: "#E8E2D8", hair_light: "#FFFFFF" }, { hair: "short", default_face: "happy" }),
+  nb6: rc(C.grandpa, "nb6", "an old neighbour", { top: "#4C8FD6", top_dark: "#3474B8", skin: "#8D5524", skin_dark: "#74441C" }, { default_face: "neutral" }),
+  baby: rc(C.sister, "baby", "a baby (pink bonnet)", { top: "#F6C7D8", top_dark: "#E8A8C0", legs: "#F6C7D8", legs_dark: "#E8A8C0", hair: "#C27A50" }, { height: 1.75, hair: "short", wear: ["bonnet"], default_face: "happy",
+    body: { ...C.sister.body, thigh: 0.55, shin: 0.45, torso_h: 1.25, head: 1.38 } }),
+  villain_mayor: rc(C.mayor, "villain_mayor", "the Mayor as the villain (dark coat, sharp grin, the same top hat)", { top: "#16161E", top_dark: "#0C0C12", legs: "#16161E", legs_dark: "#0C0C12", sash: "#7A0F1E", accent: "#7A0F1E", trim: "#8C1E2A" }, { default_face: "smug", wear: ["bow_tie"] }),
+  stretch_legs: { ...C.me, id: "stretch_legs", role: "the stretch effect: very long legs", stretch: { legs: 2.4 } },
+  stretch_neck: { ...C.me, id: "stretch_neck", role: "the stretch effect: a very long neck", stretch: { neck: 2.8 } },
+  stretch_arms: { ...C.me, id: "stretch_arms", role: "the stretch effect: very long arms", stretch: { arms: 2.2 } },
+};
+export const ANIMALS = { dog: "a dog (tan, floppy ears)", cat: "a cat (grey, yellow eyes)", bird: "a bird (blue, orange beak)" };
+export const ENTITIES = {
+  long_one: "the Long One: a person stretched far too tall (14), too many joints, a pale blank face",
+  crawler: "the Crawler: low on all fours, spider-bent limbs, its head turned upside down",
+  watcher: "the Watcher: a heavy body covered in eyes that all open at once",
+  hollow: "the Hollow: a townsperson with an empty dark face",
+  many_arms: "the Many-Arms: a shape in a doorway, eight arms reaching round the frame",
+  rain_thing: "the Rain Thing: a figure of dripping black water with a puddle",
+  ghost: "a ghost: a floating white sheet with dark eyes",
+  robot: "a robot: boxy metal, a red visor",
+  slime: "a slime: a big green glossy blob with eyes",
+  giant_critter: "the little creature, giant (7x)",
+};
