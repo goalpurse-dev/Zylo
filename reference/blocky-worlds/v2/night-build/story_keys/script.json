@@ -1,0 +1,108 @@
+{
+ "title": "The Door in the Middle of Town",
+ "rule": "In this town, every day it rains something different.",
+ "ending": "I pressed the red button. The lights went out and the screens turned to eyes. Outside, monsters rained over the plaza and the Mayor hid under his top hat. It flips line 1: now the town rains whatever I press.",
+ "planted": [
+  {
+   "detail": "Giant door with a gold keyhole in the middle of the town",
+   "line": 4,
+   "payoff_line": 9
+  },
+  {
+   "detail": "Wall of cameras watching every street",
+   "line": 10,
+   "payoff_line": 17
+  },
+  {
+   "detail": "Red button under a cover with the sign DON'T PRESS THAT, KID",
+   "line": 15,
+   "payoff_line": 16
+  }
+ ],
+ "lines": [
+  {
+   "text": "In this town, every day it rains something different.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "On Mondays it rains frogs. On Wednesdays, pillows.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "On Thursdays, it rains keys.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "A giant door stands in the middle of our town.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "Everyone grabs keys and runs to the golden keyhole.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "Key after key just clinks and falls.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "Then one key lands right in my hand.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "I got the one. It slid in and turned.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "The giant door swung open into bright light.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "Inside, a wall of cameras showed every street in town.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "The Mayor sat at the levers, controlling every weather.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "He turned and said,",
+   "speaker": "narrator"
+  },
+  {
+   "text": "Do not touch anything.",
+   "speaker": "mayor"
+  },
+  {
+   "text": "His big buttons read FRIDAY DROP, and MONSTERS.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "Under a little cover sat a red one: DON'T PRESS THAT, KID.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "I pressed it.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "The lights went out, and every screen turned to eyes.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "Outside, the sky opened over the plaza.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "It rained monsters: slimes, ghosts, and one very tall Long One.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "The Mayor hid under his top hat, shaking.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "In this town, it rains whatever I press. What next?",
+   "speaker": "narrator"
+  }
+ ]
+}

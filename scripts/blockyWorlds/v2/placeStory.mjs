@@ -14,7 +14,7 @@ import { callJson } from "../../../supabase/functions/_shared/blockyWorlds/llm.j
 import { buildCatalogue, catalogueLines } from "./catalogue.mjs";
 import { writerProblems } from "./writerV5.mjs";
 import { BIG_THINGS, withBig } from "./places/bigthings.mjs";
-import { allPlaces, loadPlace } from "./placeKit.mjs";
+import { allPlaces, loadPlace, checkPlace } from "./placeKit.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const argv = process.argv.slice(2), has = (k) => argv.includes(`--${k}`), arg = (k, d = null) => (has(k) ? argv[argv.indexOf(`--${k}`) + 1] : d);
@@ -28,6 +28,7 @@ const say = (m) => { const l = `[${new Date().toISOString().slice(11, 19)}] ${m}
 const KEY = process.env.ANTHROPIC_API_KEY;
 const MODEL = arg("model", "claude-sonnet-5-5");
 const S_ = { type: "string" }, I_ = { type: "integer" }, A_ = (it) => ({ type: "array", items: it });
+const WANT = arg("want", "");
 const OUTLINE = has("outline-file") ? fs.readFileSync(arg("outline-file"), "utf8").trim() : arg("outline", "");
 const save = (f, v) => fs.writeFileSync(path.join(OUT, f), JSON.stringify(v, null, 1));
 const load = (f) => (fs.existsSync(path.join(OUT, f)) ? JSON.parse(fs.readFileSync(path.join(OUT, f), "utf8")) : null);
@@ -77,7 +78,7 @@ if (!plan) {
     texts: A_({ type: "object", additionalProperties: false, required: ["key", "text"], properties: { key: S_, text: S_ } }),
     scenes: A_({ type: "object", additionalProperties: false, required: ["scene", "lines", "place", "time", "weather"], properties: { scene: I_, lines: A_(I_), place: S_, time: { type: "string", enum: C.times.map((t) => t.id) }, weather: { type: "string", enum: C.weathers.map((t) => t.id) },
       big_state: S_, rain_things: { type: "object", additionalProperties: false, required: ["kind", "amount", "pile", "falling"], properties: { kind: { type: "string", enum: C.rain_things.map((t) => t.id) }, amount: { type: "number" }, pile: { type: "number" }, falling: { type: "boolean" } } } } }) } };
-  const user = [`THE SCRIPT:\n${script.lines.map((l, i) => `${i + 1}. ${l.speaker !== "narrator" ? `[${l.speaker}] ` : ""}${l.text}`).join("\n")}`, `THE CATALOGUE:\n${MENU}`,
+  const user = [WANT ? `THE OWNER'S CHOICES (follow them):\n${WANT}` : "", `THE SCRIPT:\n${script.lines.map((l, i) => `${i + 1}. ${l.speaker !== "narrator" ? `[${l.speaker}] ` : ""}${l.text}`).join("\n")}`, `THE CATALOGUE:\n${MENU}`,
     `BIG THING STATES: ${C.big_things.map((b) => `${b.id}: ${b.states.join(", ")}`).join("; ")}`, `TEXT KEYS: ${[...C.towns, ...C.side_sets].map((p) => `${p.id}: ${p.texts.join(", ") || "-"}`).join("; ")}`].join("\n\n");
   const r = await callJson({ apiKey: KEY, model: MODEL, system: PLAN, user, schema, effort: "medium", maxTokens: 5000, meter });
   plan = r.data;
@@ -88,8 +89,12 @@ if (!plan) {
 // ---------------------------------------------------------------- 3. THE SHOT ROWS (only the plan's places)
 const usedPlaces = [plan.town, ...plan.side_sets.slice(0, 2)];
 const castOf = Object.fromEntries(plan.cast.map((c) => [c.id, c]));
+// cameras that fail the free checks once the big thing stands on the middle spot are never offered
+const blocked = new Set();
+if (plan.big_thing) for (const st of Object.keys(BIG_THINGS[plan.big_thing].states)) for (const p of checkPlace(loadPlace(withBig(places[plan.town], plan.big_thing, st)))) { const m = p.match(/^camera (\w+):/); if (m) blocked.add(m[1]); }
 const placeMenu = (id) => {
-  const S = loadPlace(places[id]);
+  const S0 = loadPlace(places[id]);
+  const S = id === plan.town ? { ...S0, cameras: Object.fromEntries(Object.entries(S0.cameras).filter(([k]) => !blocked.has(k))) } : S0;
   const extra = id === plan.town && plan.big_thing ? { [`${plan.big_thing}_close`]: { shot: "insert", people: [] } } : {};
   return `PLACE ${id} (${S.name}):\n${Object.entries({ ...S.cameras, ...extra }).map(([k, c]) => `- camera ${k}: ${c.shot === "top" ? "AERIAL" : c.shot}; people spots: ${c.people.length ? c.people.map((p) => `${p} (${S.spots[p]?.tag ?? ""})`).join(", ") : "none"}${c.creature ? `; entity spot ${c.creature} (far)` : ""}`).join("\n")}`;
 };
@@ -117,7 +122,7 @@ function rowProblems(R) {
   if (!(R[1]?.line === 1 && R[1].people.some((p) => p.id === "me"))) out.push('row 2 must be line 1 again with "me" in it (the rule visible by 2.5 s)');
   R.forEach((r, i) => {
     const tag = `row ${i + 1} (line ${r.line})`, c = camOf(r);
-    if (!c) { out.push(`${tag}: ${r.place} has no camera ${r.cam}`); return; }
+    if (!c || (r.place === plan.town && blocked.has(r.cam))) { out.push(`${tag}: ${r.place} has no camera ${r.cam}${c ? " (blocked by the big thing)" : ""}`); return; }
     if (sceneOf(r.line).place !== r.place) out.push(`${tag}: line ${r.line}'s scene is in ${sceneOf(r.line).place}, not ${r.place}`);
     if (r.people.length > 2) out.push(`${tag}: ${r.people.length} people (at most 2)`);
     for (const p of r.people) { if (!c.people.includes(p.spot)) out.push(`${tag}: camera ${r.cam} is tested with spots ${c.people.join(", ") || "none"}, not ${p.spot}`); if (!castOf[p.id] && p.id !== "me") out.push(`${tag}: ${p.id} is not in the cast`); }

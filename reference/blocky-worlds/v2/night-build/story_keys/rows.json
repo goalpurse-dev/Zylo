@@ -1,0 +1,334 @@
+[
+ {
+  "line": 1,
+  "place": "old_town",
+  "cam": "aerial_main",
+  "people": []
+ },
+ {
+  "line": 1,
+  "from_word": 3,
+  "place": "old_town",
+  "cam": "hero_med",
+  "people": [
+   {
+    "id": "me",
+    "spot": "sq_front",
+    "pose": "hold_up",
+    "face": "happy"
+   }
+  ]
+ },
+ {
+  "line": 2,
+  "place": "old_town",
+  "cam": "sq_wide",
+  "people": [
+   {
+    "id": "me",
+    "spot": "sq_front",
+    "pose": "point",
+    "face": "happy"
+   }
+  ]
+ },
+ {
+  "line": 3,
+  "place": "old_town",
+  "cam": "hero_close",
+  "people": [
+   {
+    "id": "me",
+    "spot": "sq_front",
+    "pose": "hold_up",
+    "face": "happy",
+    "holds": "key",
+    "label": "key"
+   }
+  ]
+ },
+ {
+  "line": 4,
+  "place": "old_town",
+  "cam": "big_low",
+  "people": []
+ },
+ {
+  "line": 4,
+  "place": "old_town",
+  "cam": "big_med",
+  "people": [
+   {
+    "id": "nb1",
+    "spot": "big_front",
+    "pose": "point",
+    "face": "worried"
+   }
+  ]
+ },
+ {
+  "line": 5,
+  "place": "old_town",
+  "cam": "two_shot",
+  "people": [
+   {
+    "id": "nb1",
+    "spot": "two_a",
+    "pose": "run",
+    "face": "happy",
+    "holds": "key",
+    "label": "key"
+   },
+   {
+    "id": "nb3",
+    "spot": "two_b",
+    "pose": "run",
+    "face": "worried",
+    "holds": "key",
+    "label": "key"
+   }
+  ]
+ },
+ {
+  "line": 5,
+  "place": "old_town",
+  "cam": "giant_door_close",
+  "people": []
+ },
+ {
+  "line": 6,
+  "place": "old_town",
+  "cam": "street_two",
+  "people": [
+   {
+    "id": "nb1",
+    "spot": "street_a",
+    "pose": "hands_head",
+    "face": "sad"
+   },
+   {
+    "id": "nb3",
+    "spot": "street_b",
+    "pose": "look_back",
+    "face": "worried"
+   }
+  ]
+ },
+ {
+  "line": 7,
+  "place": "old_town",
+  "cam": "hero_med",
+  "people": [
+   {
+    "id": "me",
+    "spot": "sq_front",
+    "pose": "hold_up",
+    "face": "big_smile",
+    "holds": "key",
+    "label": "key"
+   }
+  ]
+ },
+ {
+  "line": 8,
+  "place": "old_town",
+  "cam": "giant_door_close",
+  "people": []
+ },
+ {
+  "line": 8,
+  "place": "old_town",
+  "cam": "hero_close",
+  "people": [
+   {
+    "id": "me",
+    "spot": "sq_front",
+    "pose": "hold_up",
+    "face": "happy"
+   }
+  ]
+ },
+ {
+  "line": 9,
+  "place": "old_town",
+  "cam": "big_low",
+  "people": []
+ },
+ {
+  "line": 9,
+  "place": "old_town",
+  "cam": "sq_wide",
+  "people": [
+   {
+    "id": "me",
+    "spot": "sq_front",
+    "pose": "cover_head",
+    "face": "happy"
+   }
+  ]
+ },
+ {
+  "line": 10,
+  "place": "control_room",
+  "cam": "screens",
+  "people": []
+ },
+ {
+  "line": 10,
+  "place": "control_room",
+  "cam": "wide",
+  "people": [
+   {
+    "id": "me",
+    "spot": "hero",
+    "pose": "stand",
+    "face": "worried"
+   }
+  ]
+ },
+ {
+  "line": 11,
+  "place": "control_room",
+  "cam": "mayor_med",
+  "people": [
+   {
+    "id": "villain_mayor",
+    "spot": "mayor",
+    "pose": "talk",
+    "face": "smug"
+   }
+  ]
+ },
+ {
+  "line": 12,
+  "place": "control_room",
+  "cam": "two",
+  "people": [
+   {
+    "id": "me",
+    "spot": "two_a",
+    "pose": "stand",
+    "face": "worried"
+   },
+   {
+    "id": "villain_mayor",
+    "spot": "two_b",
+    "pose": "talk",
+    "face": "angry"
+   }
+  ]
+ },
+ {
+  "line": 13,
+  "place": "control_room",
+  "cam": "close",
+  "people": [
+   {
+    "id": "villain_mayor",
+    "spot": "hero",
+    "pose": "point",
+    "face": "angry"
+   }
+  ]
+ },
+ {
+  "line": 14,
+  "place": "control_room",
+  "cam": "buttons",
+  "people": []
+ },
+ {
+  "line": 15,
+  "place": "control_room",
+  "cam": "red",
+  "people": []
+ },
+ {
+  "line": 16,
+  "place": "control_room",
+  "cam": "medium",
+  "people": [
+   {
+    "id": "me",
+    "spot": "hero",
+    "pose": "reach",
+    "face": "thinking"
+   }
+  ]
+ },
+ {
+  "line": 17,
+  "place": "control_room",
+  "cam": "screens",
+  "people": [],
+  "effect": {
+   "kind": "lights_out"
+  }
+ },
+ {
+  "line": 18,
+  "place": "old_town",
+  "cam": "town_wide",
+  "people": [],
+  "effect": {
+   "kind": "glow"
+  }
+ },
+ {
+  "line": 19,
+  "place": "old_town",
+  "cam": "creature_cam",
+  "people": [
+   {
+    "id": "me",
+    "spot": "sq_front",
+    "pose": "hands_head",
+    "face": "terrified"
+   }
+  ],
+  "entity": {
+   "id": "long_one",
+   "state": "loom",
+   "show": "full"
+  }
+ },
+ {
+  "line": 19,
+  "place": "old_town",
+  "cam": "sq_wide",
+  "people": [
+   {
+    "id": "nb1",
+    "spot": "sq_front",
+    "pose": "run",
+    "face": "scared"
+   }
+  ]
+ },
+ {
+  "line": 20,
+  "place": "control_room",
+  "cam": "mayor_med",
+  "people": [
+   {
+    "id": "villain_mayor",
+    "spot": "mayor",
+    "pose": "cover_head",
+    "face": "terrified"
+   }
+  ]
+ },
+ {
+  "line": 21,
+  "place": "control_room",
+  "cam": "close",
+  "people": [
+   {
+    "id": "me",
+    "spot": "hero",
+    "pose": "talk",
+    "face": "smug"
+   }
+  ]
+ }
+]
