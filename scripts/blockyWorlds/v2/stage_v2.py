@@ -22,6 +22,38 @@ def zv_build(stage_id, time, t0, t1):
     return info
 
 
+def zv_porch_light(on, i=8):
+    """THE HERO HOUSE'S OWN PORCH LIGHT as a rule object: its own material (never the shared one: switching ours never
+    switches the neighbours'), a warm glow on the porch when on, dark glass when off. Returns its world position."""
+    ob = D.objects.get("zw_hplamp%d" % i)
+    if ob is None:
+        return None
+    m = mat("zv_hero_plamp_%s" % ("on" if on else "off"), (1.0, 0.95, 0.75) if on else (0.18, 0.17, 0.15), 0.3,
+            emit=(1.0, 0.82, 0.45) if on else None, estr=9.0 if on else 0.0)
+    ob.data.materials.clear()
+    ob.data.materials.append(m)
+    s = 1.6
+    ob.scale = (ob.scale[0] * s, ob.scale[1] * s, ob.scale[2] * s)
+    bpy.context.view_layer.update()
+    p = ob.matrix_world.translation.copy()
+    if on:
+        light("zv_plamp_glow", "POINT", (p.x, p.y - 0.6, p.z - 0.2), 180, (1.0, 0.78, 0.45), 0.6)
+    return p
+
+
+ZV_POINTS = {}
+
+
+def zv_point(name):
+    """named points a shot can face / frame: the porch light, the house, the street, the drain..."""
+    if name == "porch_light":
+        ob = D.objects.get("zw_hplamp8")
+        if ob is not None:
+            bpy.context.view_layer.update()
+            return tuple(ob.matrix_world.translation)
+    return ZV_POINTS.get(name, {"house": (0.0, 22.0, 3.0), "street": (0.0, -4.0, 2.0), "sky": (0.0, 0.0, 30.0)}.get(name, (0.0, -4.0, 2.0)))
+
+
 def zv_yaw_to(p, q):
     """the rot (degrees) for a kit character at p to face point q (a kit character at rot a faces (sin a, -cos a))"""
     return math.degrees(math.atan2(q[0] - p[0], -(q[1] - p[1])))
@@ -58,7 +90,7 @@ ZV_LIGHT = {
     "day":     {"sun": (1.0, 0.97, 0.92), "sun_k": 1.0, "sky_k": 1.0, "sky_tint": (1.0, 1.0, 1.0), "exposure": 0.0},
     "morning": {"sun": (1.0, 0.82, 0.62), "sun_k": 0.85, "sky_k": 0.9, "sky_tint": (1.05, 0.92, 0.8), "exposure": -0.1},
     "sunset":  {"sun": (1.0, 0.62, 0.42), "sun_k": 0.7, "sky_k": 0.7, "sky_tint": (1.1, 0.75, 0.65), "exposure": -0.3},
-    "night":   {"sun": (0.55, 0.65, 1.0), "sun_k": 0.10, "sky_k": 0.22, "sky_tint": (0.55, 0.65, 1.0), "exposure": -0.6},
+    "night":   {"sun": (0.55, 0.65, 1.0), "sun_k": 0.10, "sky_k": 0.42, "sky_tint": (0.55, 0.65, 1.0), "exposure": -0.6},
     "storm":   {"sun": (0.5, 0.6, 0.9), "sun_k": 0.08, "sky_k": 0.18, "sky_tint": (0.5, 0.6, 0.85), "exposure": -0.7},
 }
 ZV_TIME = {"t": None}
@@ -151,7 +183,7 @@ def zv_gate(S):
             lines.append("ZW_GATE|%s|zv|%s|out_of_frame|u %.2f-%.2f v %.2f-%.2f" % (sid, who, u0, u1, v0, v1))
             continue
         if who == "creature":
-            if hp and (zw_span(cam, [p for p in hp if p.z > min(q.z for q in hp) + 0.78 * (max(q.z for q in hp) - min(q.z for q in hp))]) or (0, 1, -1, 2))[2] < 0.0:
+            if pts and (zw_span(cam, [p for p in pts if p.z > min(q.z for q in pts) + 0.78 * (max(q.z for q in pts) - min(q.z for q in pts))]) or (0, 1, -1, 2))[2] < 0.0:
                 lines.append("ZW_GATE|%s|zv|creature|head_cut|its eyes are above the frame" % sid)
             cov = max(0.0, min(1.0, u1) - max(0.0, u0)) * max(0.0, min(1.0, v1) - max(0.0, v0))
             if cov > 0.5:

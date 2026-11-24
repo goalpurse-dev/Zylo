@@ -260,11 +260,12 @@ A creature the library lacks is swapped by the writer for the nearest library cr
 1. The checker runs, for free. An edit that breaks the rule or hides a named thing is explained back in plain words, for example: "the rule says nobody is outside at night; shall I put her at the window?"
 2. Only that shot's still is re-rendered (about $0.005), and the shot is shown again.
 
-**Money (to be set from a measured fix):**
-- **Step 2 measures one real fix end to end**, from a cold GPU start (no worker running) to the still shown, with its cost and its wait in seconds.
-  - Known so far, from round 10's maps job (6 stills, warm-ish worker): 45 s and $0.007.
-  - A cold start adds the image boot, which is not yet measured.
-- **The included fixes are set from that number.** The working figure is 10 shot fixes + 2 line rewrites, if a fix stays under about $0.015.
+**Money (measured 2026-11-24, step 2):**
+- **One real fix, measured end to end:** a changed camera on round 10's row 25, re-rendered alone as its own job.
+  - It cost **$0.009** and took **about 56 s** from sending to the still on screen: 7 s queue, 12 s worker start, 43 s Blender (mostly loading the engine).
+  - The free checks before it add 15-35 s (they re-check the whole story; checking only the changed row will cut this).
+  - The worker came up in 12-16 s even after hours idle (its first job of the day in step 1), so a cold start is not a real cost on this endpoint.
+- **10 shot fixes + 2 line rewrites are included.** 10 fixes cost us about $0.09.
 - After that, each extra fix is 3 credits and each line rewrite is 5 credits, always shown before they confirm.
 - "Start over from the script" is free once.
 - A video whose final render fails our checks is refunded automatically, as today.

@@ -42,6 +42,13 @@ export const CHARACTERS = {
     colors: { skin: "#F0C2A0", skin_dark: "#D9A27E", eyes: "#1B1410", brows: "#D6D6D6", hair: "#B4B4B4", hair_light: "#EDEDED", under: "#F6F4EE",
       accent: "#C8283C", sash: "#C8283C", top: "#2B3550", top_dark: "#1E2538", trim: "#D9B24A", legs: "#2B3550", legs_dark: "#1E2538", shoe: "#18181C", sole: "#0E0E10" },
   },
+  grandpa: {
+    id: "grandpa", role: "Grandpa (kind, a little slow)", fixed: true,
+    height: 3.4, outfit: "cardigan", hair: "short", hair_top: 0.34, mustache: true, badge_ok: false, sleeves: "long",
+    body: { thigh: 1.2, shin: 1.05, upper_arm: 1.05, fore_arm: 0.98, torso_w: 2.2, torso_d: 1.25, torso_h: 2.3, head: 1.02 },
+    colors: { skin: "#E7B48E", skin_dark: "#CC9670", eyes: "#1B1410", brows: "#E2E2E2", hair: "#C9C9C9", hair_light: "#F2F2F2", under: "#EDE6D6",
+      top: "#8A5A3C", top_dark: "#6E4530", trim: "#E8D9B0", legs: "#4E5A6A", legs_dark: "#3C4654", shoe: "#3A2A20", sole: "#1E1A18" },
+  },
   // ---- the entities (kid-safe: spooky, never gory)
   shadow: {
     id: "shadow", role: "the Shadow: tall, thin, pure black in every light, two glowing eyes, long arms", fixed: true, entity: true,

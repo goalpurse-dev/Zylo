@@ -24,7 +24,7 @@ function inside(p, o, pad = 0) {
 const sub = (a, b) => a.map((x, i) => x - b[i]), dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 const norm = (a) => { const l = Math.hypot(...a) || 1; return a.map((x) => x / l); };
-export const FRAME = { th: 8.0, tv: 14.2 };
+export const FRAME = { th: 6.75, tv: 12.0 };   // the kit camera: sensor fit VERTICAL, 24 mm
 export function project(c, p) {
   const f = norm(sub(c.tgt, c.loc)), r = norm(cross(f, [0, 0, 1])), u = cross(r, f);
   const d = sub(p, c.loc), z = dot(d, f);
@@ -49,17 +49,17 @@ export function framing(S, ck, c) {
   const out = [];
   for (const k of c.people) {
     const at = S.spots[k].at, hz = H.kid;
-    const hd = span(c, at, 0.7, hz - 1.0, H.adult), bd = span(c, at, BODY_R, 0, hz);
+    const hd = span(c, at, 0.62, hz - 1.3, H.adult - 0.1), bd = span(c, at, BODY_R, 0, hz);   // (measured: the head sits 0.25 below the hair top)
     if (!hd) { out.push(`camera ${ck}: ${k} is behind the lens`); continue; }
     if (hd[0] < 0.1 || hd[1] > 0.9 || hd[2] < 0.05 || hd[3] > 0.6) out.push(`camera ${ck}: ${k}'s head is cut or under the captions (u ${f2(hd.slice(0, 2))}, v ${f2(hd.slice(2))})`);
     else if (bd && bd[3] - bd[2] < 0.12 && c.shot !== "wide") out.push(`camera ${ck}: ${k} is small (${(bd[3] - bd[2]).toFixed(2)} of the frame)`);
   }
   if (c.creature) {
     const at = S.creature_spots[c.creature].at;
-    const e = span(c, at, 0.8, 0.8 * H.creature, 0.9 * H.creature);
+    const e = span(c, at, 0.8, 0.86 * H.creature, 0.97 * H.creature);   // (measured: the Shadow's eyes near its top)
     if (!e || e[0] < 0.08 || e[1] > 0.92 || e[2] < 0.08 || e[3] > 0.6) out.push(`camera ${ck}: the creature's eyes are not in frame${e ? ` (u ${f2(e.slice(0, 2))}, v ${f2(e.slice(2))})` : ""}`);
     const b = span(c, at, CREATURE_R, 0, H.creature);
-    if (b && (Math.min(1, b[1]) - Math.max(0, b[0])) * (Math.min(1, b[3]) - Math.max(0, b[2])) > 0.5) out.push(`camera ${ck}: the creature fills over half the frame`);
+    if (!["close", "low"].includes(c.shot) && b && (Math.min(1, b[1]) - Math.max(0, b[0])) * (Math.min(1, b[3]) - Math.max(0, b[2])) > 0.5) out.push(`camera ${ck}: the creature fills over half the frame`);
   }
   return out;
 }

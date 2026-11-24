@@ -787,7 +787,7 @@ ZC_POSES = {
 }
 
 
-def zc_prop(kind, name):
+def zc_prop(kind, name, on=True):
     """the three tested hand props at real size (local character units: a kid is ~6.6 tall before scaling)"""
     C = None
     if kind == "phone":
@@ -799,6 +799,31 @@ def zc_prop(kind, name):
     if kind == "stick":
         e = empty(name, (0, 0, 0))
         cyl(name + "_s", 0.09, 3.2, (0, 0, 0.6), mat(name + "_sw", zc_rgb("#9A6B3F"), 0.8), 10, parent=e)
+        return e
+    if kind == "bucket":   # a metal bucket of light bulbs (full) or empty
+        e = empty(name, (0, 0, 0))
+        mm = mat(name + "_m", zc_rgb("#9AA4B0"), 0.35, metal=0.6)
+        cyl(name + "_b", 0.42, 0.75, (0, 0, -0.55), mm, 24, parent=e, r2=0.34)
+        cyl(name + "_rim", 0.44, 0.06, (0, 0, -0.18), mm, 24, parent=e)
+        cyl(name + "_h", 0.03, 0.9, (0, 0, 0.0), mat(name + "_hm", zc_rgb("#5A5F66"), 0.4, metal=0.5), 8, rot=(0, 90, 0), parent=e)
+        if on:
+            for k, (x, y) in enumerate(((-0.15, -0.1), (0.15, 0.05), (0.0, 0.18), (0.12, -0.18))):
+                sphere("%s_bulb%d" % (name, k), 0.14, (x, y, -0.12), mat(name + "_bulbm", zc_rgb("#FFF6D0"), 0.2, emit=zc_rgb("#FFE9A0"), estr=1.5), parent=e, seg=12)
+        return e
+    if kind == "flashlight":   # a torch: the lens glows when it is on (and lights what it points at)
+        e = empty(name, (0, 0, 0))
+        cyl(name + "_b", 0.1, 0.7, (0, -0.2, 0), mat(name + "_m", zc_rgb("#2E6FD8"), 0.4), 16, rot=(90, 0, 0), parent=e)
+        cyl(name + "_hd", 0.15, 0.2, (0, -0.6, 0), mat(name + "_hm", zc_rgb("#C9CED6"), 0.3, metal=0.6), 16, rot=(90, 0, 0), parent=e)
+        cyl(name + "_lens", 0.12, 0.03, (0, -0.71, 0), mat(name + "_lm", zc_rgb("#FFFBE0"), 0.1, emit=zc_rgb("#FFF4C0") if on else None, estr=12.0 if on else 0.0), 16, rot=(90, 0, 0), parent=e)
+        if on:
+            sp = light(name + "_beam", "SPOT", (0, -0.75, 0), 260, (1.0, 0.95, 0.8), 0.05, rot=(90, 0, 0), spot=40)
+            sp.parent = e
+        return e
+    if kind == "drain":    # a storm drain in the road: a dark hole with a grate
+        e = empty(name, (0, 0, 0))
+        box(name + "_hole", (1.6, 1.0, 0.02), (0, 0, 0.02), mat(name + "_hm", zc_rgb("#0B0B0E"), 0.9), 0.0, parent=e)
+        for k in range(6):
+            box("%s_bar%d" % (name, k), (0.1, 1.0, 0.05), (-0.65 + k * 0.26, 0, 0.05), mat(name + "_gm", zc_rgb("#4A4E56"), 0.5, metal=0.6), 0.01, parent=e)
         return e
     if kind == "box":
         e = empty(name, (0, 0, 0))

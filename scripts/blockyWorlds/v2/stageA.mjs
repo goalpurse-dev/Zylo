@@ -11,6 +11,7 @@ export const CREATURE_R = 2.2;
 
 export const STAGE_A = {
   id: "A",
+  open_side: [0, -1],                  // the side the cameras look from (the street); two-shots are taken from here
   name: "Our street",
   place: "suburb_street",              // the zw_build place
   remove: ["zw_hrail8", "zw_hrail28"], // the hero porch's rails (round 10: rails across every body on the porch)
