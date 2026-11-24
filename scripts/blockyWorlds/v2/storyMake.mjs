@@ -11,8 +11,10 @@ import { callJson } from "../../../supabase/functions/_shared/blockyWorlds/llm.j
 import { castVoice } from "../engine/voice/castVoice.mjs";
 import { timedWords } from "../blenderKit/sceneCards.mjs";
 import { STAGE_A } from "./stageA.mjs";
-import { checkRows, composition } from "./shots.mjs";
+import { checkRows, composition, PROP_POINTS } from "./shots.mjs";
+import { stageOf } from "./stages.mjs";
 import { writeStory, planRows, TELLS } from "./writerV5.mjs";
+import { NARRATOR_SAMPLES, COPY_SWEET } from "./voices.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const argv = process.argv.slice(2), has = (k) => argv.includes(`--${k}`), arg = (k, d = null) => (has(k) ? argv[argv.indexOf(`--${k}`) + 1] : d);
@@ -23,7 +25,8 @@ const CAP = Number(arg("cap", 2));
 const L = ledger(OUT, { capUsd: CAP, agentCapUsd: CAP });
 const meter = { check: (usd, what) => L.check(`llm ${what}`, usd), add: (usd, what) => L.add("llm", usd) };
 const say = (m) => { const l = `[${new Date().toISOString().slice(11, 19)}] ${m}`; console.log(l); fs.appendFileSync(path.join(OUT, "run.log"), l + "\n"); };
-const save = (f, v) => fs.writeFileSync(path.join(OUT, f), JSON.stringify(v, null, 1));
+const noCam = (k, v) => (k === "_cam" ? undefined : v);   // a solved camera is never saved (it goes stale after an edit)
+const save = (f, v) => fs.writeFileSync(path.join(OUT, f), JSON.stringify(v, noCam, 1));
 const load = (f) => (fs.existsSync(path.join(OUT, f)) ? JSON.parse(fs.readFileSync(path.join(OUT, f), "utf8")) : null);
 const TO = arg("to", "preview");
 const STEPS = ["script", "plan", "voice", "stills", "preview"];
@@ -92,6 +95,24 @@ const story = BRIEF ? {
   props: { flashlight: { kind: "flashlight", hands: "R" }, phone: { kind: "phone", hands: "both" } },
   rule: { object: SC.tell === "porch_light" ? "porch_light" : null, start: "on", change_words: ["out", "off", "on", "lit", "flick", "flicked", "click"], tell_person: "mimic" },
 };
+// THE AUTOMATIC FIXES the free checks can make by themselves (no hand work): two shots alike in a row -> another angle
+// or size; someone the words say is not there -> left out of the shot
+function autoFix(rs) {
+  for (let pass = 0; pass < 4; pass++) {
+    const probs = checkRows(S, { ...story, rows: rs });
+    const alike = [...new Set(probs.filter((p) => /same subject as the shot before|the same shot as the row before/.test(p)).map((p) => Number(p.match(/^row (\d+)/)?.[1])).filter(Boolean))];
+    const gone = probs.filter((p) => /is not there .* but the shot shows them/.test(p)).map((p) => ({ i: Number(p.match(/^row (\d+)/)[1]), id: p.match(/the words say (\w+) is not there/)[1] }));
+    if (!alike.length && !gone.length) break;
+    for (const g of gone) { const r = rs[g.i - 1]; rs = rs.map((x, j) => (j === g.i - 1 ? { ...x, people: (r.people ?? []).filter((q) => q.id !== g.id), cam: { ...r.cam, subject: (r.cam?.subject ?? []).filter((q) => q !== g.id) }, absent: [...(r.absent ?? []), g.id] } : x)); }
+    for (const i of alike) {
+      const r = rs[i - 1];
+      const tries = [{ ...r.cam, side: "left" }, { ...r.cam, side: "right" }, { ...r.cam, type: r.cam.type === "close" ? "medium" : "close" }, { ...r.cam, type: "wide" }];
+      const before = checkRows(S, { ...story, rows: rs }).length;
+      for (const c of tries) { const cand = rs.map((x, j) => (j === i - 1 ? { ...x, cam: c } : x)); if (checkRows(S, { ...story, rows: cand }).length < before) { rs = cand; break; } }
+    }
+  }
+  return rs;
+}
 let rows = load("plan_rows.json") ?? (Array.isArray(load("rows.json")) ? load("rows.json") : null);
 if (!rows) {
   let r = await planRows({ callJson, apiKey: KEY, story, meter });
@@ -105,6 +126,7 @@ if (!rows) {
     const rp = await planRows({ callJson, apiKey: KEY, story, meter, previous: rows.filter((x) => lines.includes(x.line)), problems: probs, onlyLines: lines });
     rows = [...rows.filter((x) => !lines.includes(x.line)), ...rp.rows.filter((x) => lines.includes(x.line))].sort((a, b) => a.line - b.line);
   }
+  rows = autoFix(rows);
   save("plan_rows.json", rows);
 }
 story.rows = rows;
@@ -115,15 +137,17 @@ say(`composition: ${JSON.stringify(composition(S, story))}`);
 if (!upTo("voice")) process.exit(0);
 
 // ---- 3 the voice (the owner's voice, 1.2x creepy) + the two pace samples (15 s each)
-const VD = path.join(OUT, "voice");
-let V = load("voice.json");
+const VOICE = arg("voice");
+const VD = path.join(OUT, VOICE ? `voice_${VOICE}` : "voice");
+let V = VOICE ? load(`voice_${VOICE}.json`) : load("voice.json");
 if (!V) {
   L.check("voice", 0.3);
-  const r = await castVoice({ script: { lines: SC.lines.map((l) => ({ text: l.text, speaker: l.speaker === "mimic" ? "Mimic" : "narrator" })) }, voices: { Mimic: { type: "mom" } }, pace: BRIEF ? 1.2 : null, outDir: VD, apiKey: process.env.ELEVENLABS_KEY ?? process.env.ELEVENLABS_API_KEY, log: say });
+  const r = await castVoice({ script: { lines: SC.lines.map((l) => ({ text: l.text, speaker: l.speaker === "mimic" ? "Mimic" : "narrator" })) }, voices: VOICE ? { narrator: { narrator: NARRATOR_SAMPLES[VOICE] }, Mimic: { narrator: COPY_SWEET } } : { Mimic: { type: "mom" } }, pace: BRIEF ? 1.2 : null, outDir: VD, apiKey: process.env.ELEVENLABS_KEY ?? process.env.ELEVENLABS_API_KEY, log: say });
   L.add("voice", r.costUsd);
-  V = { wav: r.wav, words: r.words, duration: r.duration }; save("voice.json", V);
+  V = { wav: r.wav, words: r.words, duration: r.duration, voice: VOICE ?? null }; save(VOICE ? `voice_${VOICE}.json` : "voice.json", V);
   say(`voice: ${r.duration.toFixed(1)} s, $${r.costUsd}`);
 }
+save("voice.json", V);
 // the pace samples: creepy = the take as it is; funny = 0.1 s inside sentences, 0.2 s between, sped to ~250 words / minute
 {
   const ws = V.words, end15 = ws.findIndex((w) => w.end > 15);
@@ -151,11 +175,24 @@ for (const [ln, rs] of Object.entries(byLine)) {
   const ws = lineW[Number(ln) - 1];
   rs.forEach((r, k) => { const wi = Math.min(ws.length - 1, r.from_word ?? Math.floor((k * ws.length) / rs.length)); r.w0 = ws[wi].j; });
 }
+if (rows[0]) {
+  const ws1 = lineW[rows[0].line - 1];
+  const at2 = ws1.filter((w) => w.start <= 2.0 && w.j > ws1[0].j).at(-1);
+  const lineEnd = ws1.at(-1).end;
+  if (at2 && lineEnd > 2.0) {
+    if (!(rows[1] && rows[1].line === rows[0].line)) {
+      const ro = story.rule?.object, st = stageOf(rows[0]);
+      rows.splice(1, 0, { ...rows[0], cam: ro && (st.props_at?.[ro] || PROP_POINTS[ro]) ? { type: "insert", subject: [ro] } : { ...rows[0].cam, type: "medium" }, people: ro && (st.props_at?.[ro] || PROP_POINTS[ro]) ? [] : rows[0].people });
+      say(`the hook: line 1 runs ${lineEnd.toFixed(1)} s: a second shot added at ${at2.start.toFixed(2)} s`);
+    }
+    rows[1].w0 = at2.j;
+  }
+}
 rows.forEach((r, i) => { r.w1 = i + 1 < rows.length ? rows[i + 1].w0 : null; r.t0 = i === 0 ? 0 : tw[r.w0].start; r.t1 = r.w1 == null ? V.duration : tw[r.w1].start; });
 const longest = Math.max(...rows.map((r) => r.t1 - r.t0));
 const closeLong = rows.filter((r) => ["close", "eyes"].includes(r.cam?.type) && r.t1 - r.t0 > 1.5).map((r, i) => `line ${r.line} close ${(r.t1 - r.t0).toFixed(1)} s`);
 say(`timing: ${V.duration.toFixed(1)} s, ${rows.length} shots, the longest ${longest.toFixed(1)} s${closeLong.length ? `; closes over 1.5 s: ${closeLong.join(", ")}` : ""}`);
-fs.writeFileSync(path.join(HERE, "stories", `${NAME}.json`), JSON.stringify({ ...story, rows }, null, 1));
+fs.writeFileSync(path.join(HERE, "stories", `${NAME}.json`), JSON.stringify({ ...story, rows }, noCam, 1));
 save("timed_rows.json", rows);
 save("timed_words.json", tw.map((w) => ({ word: w.word, start: w.start, end: w.end, line: w.line })));
 if (!upTo("stills")) process.exit(0);
@@ -183,7 +220,7 @@ for (let k = 0; k < 2; k++) {
     if (!checkRows(S, { ...story, rows: cand }).length) { st.rows = cand; for (const [i, r] of st.rows.entries()) { const old = rows.find((x) => x.line === r.line); r.t0 = r.t0 ?? old?.t0; r.t1 = r.t1 ?? old?.t1; r.w0 = r.w0 ?? old?.w0; r.w1 = r.w1 ?? old?.w1; } }
     else say("the re-plan did not pass the free checks: the pulled-back shots stay (and are reported)");
   }
-  fs.writeFileSync(path.join(HERE, "stories", `${NAME}.json`), JSON.stringify(st, null, 1));
+  fs.writeFileSync(path.join(HERE, "stories", `${NAME}.json`), JSON.stringify(st, noCam, 1));
   run(["--force", "--rows", bad.join(",")]);
 }
 // the final storyboard: the latest still of every row

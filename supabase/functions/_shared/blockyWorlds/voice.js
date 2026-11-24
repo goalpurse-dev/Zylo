@@ -32,6 +32,7 @@ export function ttsBody(text, n = NARRATOR) {
     text,
     model_id: n.model,
     voice_settings: { stability: s.stability, similarity_boost: s.similarity_boost, style: s.style, use_speaker_boost: s.use_speaker_boost, speed: s.speed },
+    ...(n.language ? { language_code: n.language } : {}),   // a narrator may pin the language (English: no accent drift)
   };
 }
 

@@ -17,8 +17,9 @@ const dur = (f) => Number(execFileSync("ffprobe", ["-v", "error", "-show_entries
 
 /** the narrator config of a part */
 export function voiceOf(who, voices = {}) {
-  if (who === "narrator") return VOICE_TYPES.narrator;
+  if (who === "narrator") return voices.narrator?.narrator ?? VOICE_TYPES.narrator;
   const v = voices[who] ?? voices[Object.keys(voices).find((k) => k.toLowerCase() === String(who).toLowerCase())];
+  if (v?.narrator) return v.narrator;   // a full voice (its own model, settings and pace)
   const base = VOICE_TYPES[v?.type] ?? VOICE_TYPES.kid_boy;
   return v?.voiceId && v.voiceId !== base.voiceId ? { ...base, voiceId: v.voiceId } : base;
 }
@@ -28,12 +29,12 @@ export async function partTake({ text, narrator, dir, apiKey, pace = null }) {
   fs.mkdirSync(dir, { recursive: true });
   const mp3 = path.join(dir, "take.mp3"), tj = path.join(dir, "take.json");
   let take = fs.existsSync(tj) && fs.existsSync(mp3) ? JSON.parse(fs.readFileSync(tj, "utf8")) : null;
-  if (take && (take.text !== text || take.voiceId !== narrator.voiceId)) take = null;
+  if (take && (take.text !== text || take.voiceId !== narrator.voiceId || JSON.stringify(take.settings) !== JSON.stringify(narrator.settings) || (take.model ?? null) !== (narrator.model ?? null))) take = null;
   let costUsd = 0;
   if (!take) {
     const r = await synthesize({ apiKey, text, narrator });
     fs.writeFileSync(mp3, Buffer.from(r.audioBase64, "base64"));
-    take = { text, spoken: r.spoken, costUsd: r.costUsd ?? text.length * 0.000088, voiceId: narrator.voiceId, voice: narrator.voiceName, settings: narrator.settings };
+    take = { text, spoken: r.spoken, costUsd: r.costUsd ?? text.length * 0.000088, voiceId: narrator.voiceId, voice: narrator.voiceName, settings: narrator.settings, model: narrator.model ?? null };
     fs.writeFileSync(tj, JSON.stringify(take, null, 1));
     costUsd = take.costUsd;
   }
@@ -54,7 +55,7 @@ export async function castVoice({ script, voices = {}, outDir, apiKey, pace = nu
   const words = [], wavs = [];
   for (const [i, p] of parts.entries()) {
     const narrator = voiceOf(p.who, voices);
-    const r = await partTake({ text: spokenText(p.text), narrator, dir: path.join(outDir, "parts", String(i).padStart(2, "0")), apiKey, pace });
+    const r = await partTake({ text: spokenText(p.text), narrator, dir: path.join(outDir, "parts", String(i).padStart(2, "0")), apiKey, pace: narrator.ownPace ? null : pace });
     costUsd += r.costUsd;
     for (const w of r.words) words.push({ word: w.word, start: +(t + w.start).toFixed(3), end: +(t + w.end).toFixed(3), who: p.who });
     wavs.push(r.wav);

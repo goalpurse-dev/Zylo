@@ -100,28 +100,16 @@
    "speaker": "narrator"
   },
   {
-   "text": "Then it said,",
+   "text": "That was never Mom. The curtains never kept it out.",
    "speaker": "narrator"
   },
   {
-   "text": "Eat your dinner, sweetie.",
+   "text": "They just kept us from seeing it. Then it smiled and said,",
+   "speaker": "narrator"
+  },
+  {
+   "text": "Eat your dinner, sweetie... and don't look outside.",
    "speaker": "mimic"
-  },
-  {
-   "text": "That was never Mom. The Shadow had looked back.",
-   "speaker": "narrator"
-  },
-  {
-   "text": "The curtains were never there to keep it out.",
-   "speaker": "narrator"
-  },
-  {
-   "text": "They were there to keep us from seeing it.",
-   "speaker": "narrator"
-  },
-  {
-   "text": "Would you have peeked?",
-   "speaker": "narrator"
   }
  ],
  "both_stages": true,
@@ -225,63 +213,22 @@
      "pose": "sit",
      "facing": "camera"
     }
-   ],
-   "_cam": {
-    "ok": true,
-    "loc": [
-     1.53,
-     -5.29,
-     2.01
-    ],
-    "tgt": [
-     0,
-     1.9,
-     1.25
-    ],
-    "lens": 53,
-    "type": "close",
-    "focus": 7.35
-   },
-   "w0": 0,
-   "w1": 9,
-   "t0": 0,
-   "t1": 3.181
+   ]
   },
   {
    "line": 2,
-   "scene": 1,
-   "stage": "B",
-   "time": "dinner",
+   "scene": 2,
+   "stage": "A",
+   "time": "night",
    "cam": {
-    "type": "insert",
-    "subject": [
-     "curtains"
-    ]
+    "type": "street",
+    "subject": []
    },
-   "people": [],
-   "_cam": {
-    "loc": [
-     0.6,
-     0.2999999999999998,
-     5.800000000000001
-    ],
-    "tgt": [
-     0,
-     3.3,
-     3.6
-    ],
-    "lens": 40,
-    "ok": true,
-    "type": "insert"
-   },
-   "w0": 9,
-   "w1": 15,
-   "t0": 3.181,
-   "t1": 5.7
+   "people": []
   },
   {
    "line": 3,
-   "scene": 2,
+   "scene": 12,
    "stage": "A",
    "time": "sunset",
    "cam": {
@@ -293,30 +240,11 @@
    "people": [],
    "props": {
     "curtains": "closing"
-   },
-   "_cam": {
-    "ok": true,
-    "type": "street",
-    "loc": [
-     -27,
-     -2,
-     4.5
-    ],
-    "tgt": [
-     2,
-     18,
-     5.2
-    ],
-    "lens": 20
-   },
-   "w0": 15,
-   "w1": 26,
-   "t0": 5.7,
-   "t1": 8.278
+   }
   },
   {
    "line": 4,
-   "scene": 2,
+   "scene": 12,
    "stage": "A",
    "time": "sunset",
    "cam": {
@@ -335,34 +263,11 @@
    ],
    "props": {
     "curtains": "closing"
-   },
-   "_cam": {
-    "ok": true,
-    "type": "window",
-    "loc": [
-     26.6,
-     13.3,
-     4.6
-    ],
-    "tgt": [
-     25.8,
-     18.8,
-     4.45
-    ],
-    "lens": 46,
-    "win": [
-     10,
-     -4
-    ]
-   },
-   "w0": 26,
-   "w1": 39,
-   "t0": 8.278,
-   "t1": 11.633
+   }
   },
   {
    "line": 5,
-   "scene": 3,
+   "scene": 13,
    "stage": "A",
    "time": "sunset",
    "cam": {
@@ -389,31 +294,11 @@
       "to": "me"
      }
     }
-   ],
-   "_cam": {
-    "ok": true,
-    "loc": [
-     0,
-     4.15,
-     4.72
-    ],
-    "tgt": [
-     0,
-     16,
-     0.47
-    ],
-    "lens": 20,
-    "type": "wide",
-    "focus": null
-   },
-   "w0": 39,
-   "w1": 48,
-   "t0": 11.633,
-   "t1": 14.826
+   ]
   },
   {
    "line": 6,
-   "scene": 4,
+   "scene": 14,
    "stage": "B",
    "time": "dinner",
    "cam": {
@@ -428,31 +313,11 @@
      "spot": "stand_kitchen",
      "pose": "stand"
     }
-   ],
-   "_cam": {
-    "ok": true,
-    "loc": [
-     0.15,
-     -2,
-     3
-    ],
-    "tgt": [
-     -3.4,
-     2,
-     1.75
-    ],
-    "lens": 32,
-    "type": "medium",
-    "focus": null
-   },
-   "w0": 48,
-   "w1": 58,
-   "t0": 14.826,
-   "t1": 16.927
+   ]
   },
   {
    "line": 7,
-   "scene": 4,
+   "scene": 14,
    "stage": "B",
    "time": "dinner",
    "cam": {
@@ -479,31 +344,11 @@
       "to": "stand_kitchen"
      }
     }
-   ],
-   "_cam": {
-    "ok": true,
-    "loc": [
-     -5.2,
-     -12.81,
-     3.79
-    ],
-    "tgt": [
-     -0.47,
-     1,
-     -0.71
-    ],
-    "lens": 20,
-    "type": "wide",
-    "focus": null
-   },
-   "w0": 58,
-   "w1": 66,
-   "t0": 16.927,
-   "t1": 18.808
+   ]
   },
   {
    "line": 8,
-   "scene": 4,
+   "scene": 14,
    "stage": "B",
    "time": "dinner",
    "cam": {
@@ -527,31 +372,11 @@
       "to": "sister"
      }
     }
-   ],
-   "_cam": {
-    "ok": true,
-    "loc": [
-     0,
-     -20.6,
-     1.95
-    ],
-    "tgt": [
-     0,
-     0,
-     1.25
-    ],
-    "lens": 36,
-    "type": "two",
-    "focus": null
-   },
-   "w0": 66,
-   "w1": 76,
-   "t0": 18.808,
-   "t1": 21.374
+   ]
   },
   {
    "line": 9,
-   "scene": 5,
+   "scene": 15,
    "stage": "B",
    "time": "dinner_cold",
    "cam": {
@@ -570,33 +395,13 @@
      }
     }
    ],
-   "_cam": {
-    "ok": true,
-    "loc": [
-     0.88,
-     -1.21,
-     3
-    ],
-    "tgt": [
-     -3.4,
-     2,
-     1.75
-    ],
-    "lens": 32,
-    "type": "medium",
-    "focus": null
-   },
    "absent": [
     "me"
-   ],
-   "w0": 76,
-   "w1": 85,
-   "t0": 21.374,
-   "t1": 23.324
+   ]
   },
   {
    "line": 10,
-   "scene": 5,
+   "scene": 15,
    "stage": "B",
    "time": "dinner_cold",
    "cam": {
@@ -615,31 +420,11 @@
      },
      "pose": "walk"
     }
-   ],
-   "_cam": {
-    "ok": true,
-    "loc": [
-     3.31,
-     2.57,
-     3
-    ],
-    "tgt": [
-     -2.54,
-     2.34,
-     1.75
-    ],
-    "lens": 32,
-    "type": "medium",
-    "focus": null
-   },
-   "w0": 85,
-   "w1": 93,
-   "t0": 23.324,
-   "t1": 25.112
+   ]
   },
   {
    "line": 11,
-   "scene": 90,
+   "scene": 100,
    "stage": "A",
    "time": "night",
    "cam": {
@@ -659,34 +444,11 @@
    ],
    "props": {
     "peek": true
-   },
-   "_cam": {
-    "ok": true,
-    "type": "window",
-    "loc": [
-     -3.4,
-     13.3,
-     4.6
-    ],
-    "tgt": [
-     -4.2,
-     18.8,
-     4.45
-    ],
-    "lens": 46,
-    "win": [
-     8,
-     -4
-    ]
-   },
-   "w0": 93,
-   "w1": 103,
-   "t0": 25.112,
-   "t1": 27.783
+   }
   },
   {
    "line": 12,
-   "scene": 90,
+   "scene": 100,
    "stage": "A",
    "time": "night",
    "cam": {
@@ -702,30 +464,11 @@
     "facing": {
      "to": "win_ours"
     }
-   },
-   "_cam": {
-    "ok": true,
-    "type": "pov",
-    "loc": [
-     -4.2,
-     17.45,
-     4.8
-    ],
-    "tgt": [
-     9,
-     -8.2,
-     4.5
-    ],
-    "lens": 34
-   },
-   "w0": 103,
-   "w1": 113,
-   "t0": 27.783,
-   "t1": 30.151
+   }
   },
   {
    "line": 13,
-   "scene": 90,
+   "scene": 100,
    "stage": "A",
    "time": "night",
    "cam": {
@@ -740,30 +483,11 @@
     "facing": {
      "to": "win_ours"
     }
-   },
-   "_cam": {
-    "loc": [
-     6.15,
-     -2.36,
-     8.02
-    ],
-    "tgt": [
-     9,
-     -8.2,
-     8.32
-    ],
-    "lens": 50,
-    "ok": true,
-    "type": "eyes"
-   },
-   "w0": 113,
-   "w1": 121,
-   "t0": 30.151,
-   "t1": 32.473
+   }
   },
   {
    "line": 14,
-   "scene": 90,
+   "scene": 100,
    "stage": "A",
    "time": "night",
    "cam": {
@@ -783,34 +507,11 @@
    ],
    "props": {
     "curtains": "closing"
-   },
-   "_cam": {
-    "ok": true,
-    "type": "window",
-    "loc": [
-     -3.4,
-     13.3,
-     4.6
-    ],
-    "tgt": [
-     -4.2,
-     18.8,
-     4.45
-    ],
-    "lens": 46,
-    "win": [
-     8,
-     -4
-    ]
-   },
-   "w0": 121,
-   "w1": 130,
-   "t0": 32.473,
-   "t1": 35.028
+   }
   },
   {
    "line": 15,
-   "scene": 6,
+   "scene": 16,
    "stage": "B",
    "time": "dinner_cold",
    "cam": {
@@ -825,31 +526,11 @@
      "spot": "stand_kitchen",
      "pose": "stand"
     }
-   ],
-   "_cam": {
-    "ok": true,
-    "loc": [
-     -0.02,
-     -1.82,
-     2.74
-    ],
-    "tgt": [
-     -3.4,
-     2,
-     1.99
-    ],
-    "lens": 32,
-    "type": "medium",
-    "focus": null
-   },
-   "w0": 130,
-   "w1": 139,
-   "t0": 35.028,
-   "t1": 37.894
+   ]
   },
   {
    "line": 16,
-   "scene": 7,
+   "scene": 17,
    "stage": "B",
    "time": "dinner",
    "cam": {
@@ -877,31 +558,11 @@
       "to": "me"
      }
     }
-   ],
-   "_cam": {
-    "ok": true,
-    "loc": [
-     0,
-     -11.6,
-     3.1
-    ],
-    "tgt": [
-     0,
-     0,
-     1.25
-    ],
-    "lens": 20,
-    "type": "wide",
-    "focus": null
-   },
-   "w0": 139,
-   "w1": 147,
-   "t0": 37.894,
-   "t1": 39.45
+   ]
   },
   {
    "line": 17,
-   "scene": 7,
+   "scene": 17,
    "stage": "B",
    "time": "dinner",
    "cam": {
@@ -929,31 +590,11 @@
       "to": "mimic"
      }
     }
-   ],
-   "_cam": {
-    "ok": true,
-    "loc": [
-     -6.06,
-     -9.32,
-     2.11
-    ],
-    "tgt": [
-     -1.23,
-     0.95,
-     1.31
-    ],
-    "lens": 40,
-    "type": "medium",
-    "focus": null
-   },
-   "w0": 147,
-   "w1": 156,
-   "t0": 39.45,
-   "t1": 41.644
+   ]
   },
   {
    "line": 18,
-   "scene": 7,
+   "scene": 17,
    "stage": "B",
    "time": "dinner",
    "cam": {
@@ -962,30 +603,11 @@
      "plate_front"
     ]
    },
-   "people": [],
-   "_cam": {
-    "loc": [
-     0.6,
-     -3.6,
-     3.35
-    ],
-    "tgt": [
-     0,
-     -0.6,
-     1.15
-    ],
-    "lens": 40,
-    "ok": true,
-    "type": "insert"
-   },
-   "w0": 156,
-   "w1": 165,
-   "t0": 41.644,
-   "t1": 43.618
+   "people": []
   },
   {
    "line": 19,
-   "scene": 7,
+   "scene": 17,
    "stage": "B",
    "time": "dinner_cold",
    "cam": {
@@ -1010,31 +632,11 @@
      "face": "mimic_stare",
      "pose": "tilt"
     }
-   ],
-   "_cam": {
-    "ok": true,
-    "loc": [
-     -4.43,
-     -12.51,
-     2.05
-    ],
-    "tgt": [
-     1.23,
-     0.95,
-     1.5
-    ],
-    "lens": 36,
-    "type": "two",
-    "focus": null
-   },
-   "w0": 165,
-   "w1": 176,
-   "t0": 43.618,
-   "t1": 45.742
+   ]
   },
   {
    "line": 20,
-   "scene": 7,
+   "scene": 17,
    "stage": "B",
    "time": "dinner_cold",
    "cam": {
@@ -1051,31 +653,11 @@
      "pose": "tilt",
      "facing": "camera"
     }
-   ],
-   "_cam": {
-    "ok": true,
-    "loc": [
-     1.22,
-     -3.82,
-     2.21
-    ],
-    "tgt": [
-     0,
-     1.9,
-     1.41
-    ],
-    "lens": 40,
-    "type": "medium",
-    "focus": null
-   },
-   "w0": 176,
-   "w1": 183,
-   "t0": 45.742,
-   "t1": 47.484
+   ]
   },
   {
    "line": 21,
-   "scene": 7,
+   "scene": 17,
    "stage": "B",
    "time": "dinner_cold",
    "cam": {
@@ -1106,31 +688,11 @@
       "to": "me"
      }
     }
-   ],
-   "_cam": {
-    "ok": true,
-    "loc": [
-     4.53,
-     -12.74,
-     2.11
-    ],
-    "tgt": [
-     -1.23,
-     0.95,
-     0.56
-    ],
-    "lens": 36,
-    "type": "two",
-    "focus": null
-   },
-   "w0": 183,
-   "w1": 192,
-   "t0": 47.484,
-   "t1": 50.026
+   ]
   },
   {
    "line": 22,
-   "scene": 7,
+   "scene": 17,
    "stage": "B",
    "time": "dinner_cold",
    "cam": {
@@ -1155,31 +717,11 @@
      "face": "mimic_copy",
      "pose": "tilt"
     }
-   ],
-   "_cam": {
-    "ok": true,
-    "loc": [
-     -5.89,
-     -13.77,
-     2.05
-    ],
-    "tgt": [
-     1.23,
-     0.95,
-     1.5
-    ],
-    "lens": 40,
-    "type": "medium",
-    "focus": null
-   },
-   "w0": 192,
-   "w1": 202,
-   "t0": 50.026,
-   "t1": 52.43
+   ]
   },
   {
    "line": 23,
-   "scene": 7,
+   "scene": 17,
    "stage": "B",
    "time": "dinner_cold",
    "cam": {
@@ -1187,40 +729,20 @@
     "subject": [
      "mimic"
     ],
-    "push": 0.2
+    "push": 0.1
    },
    "people": [
     {
      "id": "mimic",
      "spot": "seat_back",
-     "face": "mimic_wide",
+     "face": "mimic_grin",
      "facing": "camera"
     }
-   ],
-   "_cam": {
-    "ok": true,
-    "loc": [
-     1.58,
-     -5.53,
-     2.21
-    ],
-    "tgt": [
-     0,
-     1.9,
-     1.41
-    ],
-    "lens": 53,
-    "type": "close",
-    "focus": 7.6
-   },
-   "w0": 202,
-   "w1": 211,
-   "t0": 52.43,
-   "t1": 55.518
+   ]
   },
   {
    "line": 24,
-   "scene": 7,
+   "scene": 17,
    "stage": "B",
    "time": "dinner_cold",
    "cam": {
@@ -1246,127 +768,11 @@
       "to": "mimic"
      }
     }
-   ],
-   "_cam": {
-    "ok": true,
-    "loc": [
-     6.42,
-     -14.06,
-     2.11
-    ],
-    "tgt": [
-     -1.23,
-     0.95,
-     1.56
-    ],
-    "lens": 40,
-    "type": "medium",
-    "focus": null
-   },
-   "w0": 211,
-   "w1": 220,
-   "t0": 55.518,
-   "t1": 57.677
+   ]
   },
   {
    "line": 25,
-   "scene": 7,
-   "stage": "B",
-   "time": "dinner_cold",
-   "cam": {
-    "type": "medium",
-    "subject": [
-     "mimic"
-    ]
-   },
-   "people": [
-    {
-     "id": "mimic",
-     "spot": "seat_back",
-     "face": "mimic_smile",
-     "pose": "talk",
-     "facing": "camera"
-    }
-   ],
-   "_cam": {
-    "ok": true,
-    "loc": [
-     1.22,
-     -3.82,
-     2.21
-    ],
-    "tgt": [
-     0,
-     1.9,
-     1.41
-    ],
-    "lens": 40,
-    "type": "medium",
-    "focus": null
-   },
-   "w0": 220,
-   "w1": 223,
-   "t0": 57.677,
-   "t1": 58.652
-  },
-  {
-   "line": 26,
-   "scene": 7,
-   "stage": "B",
-   "time": "dinner_cold",
-   "cam": {
-    "type": "ots",
-    "subject": [
-     "mimic"
-    ],
-    "with": [
-     "me"
-    ],
-    "push": 0.1
-   },
-   "people": [
-    {
-     "id": "mimic",
-     "spot": "seat_back",
-     "face": "mimic_grin",
-     "pose": "talk",
-     "facing": {
-      "to": "seat_left"
-     }
-    },
-    {
-     "id": "me",
-     "spot": "seat_left",
-     "pose": "sit",
-     "facing": {
-      "to": "seat_back"
-     }
-    }
-   ],
-   "_cam": {
-    "ok": true,
-    "loc": [
-     -4.3,
-     -7.24,
-     2.21
-    ],
-    "tgt": [
-     0,
-     1.9,
-     0.16
-    ],
-    "lens": 38,
-    "type": "ots",
-    "focus": null
-   },
-   "w0": 223,
-   "w1": 227,
-   "t0": 58.652,
-   "t1": 59.963
-  },
-  {
-   "line": 27,
-   "scene": 8,
+   "scene": 18,
    "stage": "A",
    "time": "night",
    "cam": {
@@ -1382,30 +788,11 @@
     "facing": {
      "to": "win_ours"
     }
-   },
-   "_cam": {
-    "ok": true,
-    "type": "pov",
-    "loc": [
-     -4.2,
-     17.45,
-     4.8
-    ],
-    "tgt": [
-     9,
-     -8.2,
-     4.5
-    ],
-    "lens": 34
-   },
-   "w0": 227,
-   "w1": 231,
-   "t0": 59.963,
-   "t1": 61.496
+   }
   },
   {
-   "line": 27,
-   "scene": 9,
+   "line": 25,
+   "scene": 18,
    "stage": "A",
    "time": "night",
    "cam": {
@@ -1418,71 +805,19 @@
     {
      "id": "mom",
      "spot": "win_ours",
-     "pose": "stand"
+     "face": "worried",
+     "facing": {
+      "to": "cr_across"
+     }
     }
    ],
    "props": {
     "peek": true
-   },
-   "_cam": {
-    "ok": true,
-    "type": "window",
-    "loc": [
-     -3.4,
-     13.3,
-     4.6
-    ],
-    "tgt": [
-     -4.2,
-     18.8,
-     4.45
-    ],
-    "lens": 46,
-    "win": [
-     8,
-     -4
-    ]
-   },
-   "w0": 231,
-   "w1": 236,
-   "t0": 61.496,
-   "t1": 62.773
+   }
   },
   {
-   "line": 28,
-   "scene": 8,
-   "stage": "A",
-   "time": "night",
-   "cam": {
-    "type": "street",
-    "subject": [
-     "street"
-    ]
-   },
-   "people": [],
-   "_cam": {
-    "ok": true,
-    "type": "street",
-    "loc": [
-     -27,
-     -2,
-     4.5
-    ],
-    "tgt": [
-     2,
-     18,
-     5.2
-    ],
-    "lens": 20
-   },
-   "w0": 236,
-   "w1": 245,
-   "t0": 62.773,
-   "t1": 64.375
-  },
-  {
-   "line": 29,
-   "scene": 9,
+   "line": 26,
+   "scene": 19,
    "stage": "B",
    "time": "dinner_cold",
    "cam": {
@@ -1491,67 +826,28 @@
      "curtains"
     ]
    },
-   "people": [],
-   "_cam": {
-    "loc": [
-     0.6,
-     0.2999999999999998,
-     5.800000000000001
-    ],
-    "tgt": [
-     0,
-     3.3,
-     3.6
-    ],
-    "lens": 40,
-    "ok": true,
-    "type": "insert"
-   },
-   "w0": 245,
-   "w1": 254,
-   "t0": 64.375,
-   "t1": 65.907
+   "people": []
   },
   {
-   "line": 30,
-   "scene": 9,
+   "line": 27,
    "stage": "B",
    "time": "dinner_cold",
+   "scene": 19,
    "cam": {
     "type": "close",
     "subject": [
-     "me"
+     "mimic"
     ],
-    "push": 0.1
+    "push": 0.25
    },
    "people": [
     {
-     "id": "me",
-     "spot": "seat_left",
-     "pose": "sit",
+     "id": "mimic",
+     "spot": "seat_back",
+     "face": "mimic_wide",
      "facing": "camera"
     }
-   ],
-   "_cam": {
-    "ok": true,
-    "loc": [
-     3.82,
-     -3.84,
-     2.01
-    ],
-    "tgt": [
-     -2.45,
-     0,
-     1.25
-    ],
-    "lens": 53,
-    "type": "close",
-    "focus": 7.35
-   },
-   "w0": 254,
-   "w1": null,
-   "t0": 65.907,
-   "t1": 66.928707
+   ]
   }
  ]
 }

@@ -89,16 +89,18 @@ def zv_curtains(state="closed", t=None, x_range=(-60, 60), gap=None, lit=True):
                 p.scale.x = open_w
                 p.location.x = c.x + s * (hw - open_w / 2.0)
             else:
-                ta = (t if t is not None else 0.0) + ((int(abs(c.x)) * 7) % 11) * 0.08
-                half_w = hw * 0.6     # already half drawn when the shot starts: a still reads as closing
-                p.scale.x = half_w
-                p.location.x = c.x + s * (hw - half_w / 2.0)
+                # owner 2026-11-24: OPEN in the first frame, then closing window by window (each one a little later)
+                ta = (t if t is not None else 0.0) + 0.35 + (((int(abs(c.x)) * 7) + int(c.z * 3)) % 11) * 0.09
+                p.scale.x = open_w
+                p.location.x = c.x + s * (hw - open_w / 2.0)
+                key(p, "scale", F(t if t is not None else 0.0))
+                key(p, "location", F(t if t is not None else 0.0))
                 key(p, "scale", F(ta))
                 key(p, "location", F(ta))
                 p.scale.x = closed_w
                 p.location.x = c.x + s * (hw - closed_w / 2.0)
-                key(p, "scale", F(ta + 0.9))
-                key(p, "location", F(ta + 0.9))
+                key(p, "scale", F(ta + 1.1))
+                key(p, "location", F(ta + 1.1))
         n += 1
     return n
 

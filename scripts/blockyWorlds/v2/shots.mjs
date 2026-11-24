@@ -7,7 +7,7 @@ import { BODY_R, MIN_GAP, H, CREATURE_R } from "./stageA.mjs";
 import { checkStage, span, project } from "./stageCheck.mjs";
 import { facingProblems } from "./facing.mjs";
 import { CHARACTERS, NEIGHBOURS } from "./characters.mjs";
-import { stageOf } from "./stages.mjs";
+import { stageOf, STAGES } from "./stages.mjs";
 
 const d2 = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
 export const PROP_POINTS = { porch_light: [1.9, 17.62, 5.2], drain: [-3.0, -1.5, 0.05], house: [0, 22, 3], street: [0, -4, 2] };
@@ -138,6 +138,26 @@ export function solveCam(S0, row) {
   return { ok: true, loc: r2(best.loc), tgt: r2(best.tgt), lens, type, focus: type === "close" ? +d2(best.loc, C).toFixed(2) : null };
 }
 
+// ---- WHERE A LINE PUTS ITS PEOPLE: a place phrase belongs to the cast name (or I / me) just before it (4 words)
+const PLACE_WORDS = [
+  ["absent", /\b(?:wasn't|was not|weren't|were not|isn't|is not|not) (?:home|here|there|back)\b|\b(?:was|were) away\b/g],
+  ["inside", /\b(?:upstairs|downstairs|inside|indoors|in (?:my|her|his|our|the) (?:room|bedroom|bed|kitchen|house)|at home|in bed)\b/g],
+  ["outside", /\b(?:outside|outdoors|in the street|on the street|on the porch|in the yard|on the lawn|on the pavement)\b/g],
+];
+export function placeWords(story, n) {
+  const t = String(story.lines[n - 1]?.text ?? "").toLowerCase().replace(/[^a-z' ]/g, " ").replace(/\s+/g, " ");
+  const out = {};
+  for (const [kind, re] of PLACE_WORDS) for (const m of t.matchAll(re)) {
+    const before = t.slice(0, m.index).split(" ").filter(Boolean).slice(-4);
+    for (let j = before.length - 1; j >= 0; j--) {
+      const w = before[j];
+      const id = w === "i" || w === "me" ? "me" : Object.entries(story.aliases ?? {}).find(([k, al]) => k !== "creature" && al.some((a) => String(a).toLowerCase() === w))?.[0];
+      if (id) { out[id] ??= kind; break; }
+    }
+  }
+  return out;
+}
+
 // ---- THE FREE CHECKS of a whole story's rows (nothing renders while any fails)
 export function checkRows(S, story) {
   const out = [];
@@ -229,8 +249,18 @@ export function checkRows(S, story) {
   story.lines.forEach((L, k) => {
     const n = k + 1, rows = (byLine[n] ?? []).map((x) => x.r);
     if (!rows.length) { out.push(`line ${n}: no shot`); return; }
+    // THE PLACE MATCHES THE WORDS (owner 2026-11-24): "I was upstairs" = inside, never on the street; "I wasn't home"
+    // = not on screen; "Mom was outside" = on the street set
+    const where = placeWords(story, n);
+    for (const r of rows) for (const p of r.people ?? []) {
+      const kind = where[p.id], tag = `row ${story.rows.indexOf(r) + 1} (line ${n})`;
+      const inside = r.stage === "B" || Boolean(STAGES.A.spots[p.spot]?.inside && (r.stage ?? "A") === "A");
+      if (kind === "absent") out.push(`${tag}: the words say ${p.id} is not there ("${lineText(n)}") but the shot shows them: leave them out`);
+      else if (kind === "inside" && !inside) out.push(`${tag}: the words put ${p.id} inside ("${lineText(n)}") but the shot has them outside on the street set: use stage B or a window spot`);
+      else if (kind === "outside" && inside) out.push(`${tag}: the words put ${p.id} outside ("${lineText(n)}") but the shot has them indoors`);
+    }
     for (const id of names(n)) {
-      if (rows.some((r) => (r.absent ?? []).includes(id))) continue;   // the line says they are NOT there ("I wasn't home")
+      if (rows.some((r) => (r.absent ?? []).includes(id)) || where[id] === "absent") continue;   // the line says they are NOT there ("I wasn't home")
       const ids2 = story.alias_any?.[id] ?? [id];
       const shown = rows.some((r) => (r.people ?? []).some((p) => ids2.includes(p.id)) || (id === "creature" && r.creature) || (r.props && id in r.props && r.props[id] !== false) || (id === "curtains" && (r.stage === "B" || r.time === "night" || ["window", "street", "pov"].includes(r.cam?.type))) || (r.cam?.subject ?? []).includes(id) || (r.people ?? []).some((p) => p.holds === id) || r.creature?.holds === id);
       if (!shown) out.push(`line ${n}: names "${id}" but no shot shows it`);
@@ -266,7 +296,7 @@ export function composition(S, story, { wps = 3.8 } = {}) {
   const S0 = S;
   const per = story.rows.map((r) => {
     const S = r.stage ? stageOf(r) : S0;
-    const cam = r._cam ?? solveCam(S, r);
+    const cam = solveCam(S, r);   // always fresh (a saved _cam can be stale after an edit)
     const pl = placements(S, r);
     let n = 0, head = 0;
     for (const [id, p] of Object.entries(pl)) {
@@ -298,7 +328,7 @@ const py = (v) => JSON.stringify(v ?? null).replace(/\bnull\b/g, "None").replace
 export function rowPython(S0, story, r, { stageId = "A" } = {}) {
   const S = r.stage ? stageOf(r) : S0;
   stageId = r.stage ?? stageId;
-  const cam = r._cam ?? solveCam(S, r);
+  const cam = solveCam(S, r);   // always fresh (a saved _cam can be stale after an edit)
   const pl = placements(S, r);
   const L = [`zv_build(${py(stageId)}, ${py(r.time)}, t0, t1)`];
   if (r.props?.porch_light) L.push(`_pl = zv_porch_light(${r.props.porch_light === "on" ? "True" : "False"})`);
@@ -314,7 +344,11 @@ export function rowPython(S0, story, r, { stageId = "A" } = {}) {
     vars.push([v, p.id]);
     L.push(`${v} = ZChar(${py(story.cast[p.id].name)}, ZC_SPECS[${py(story.cast[p.id].spec)}], ${P(at)}, rot=0, badge=${p.id === "me" ? "True" : "False"})`);
     const dflt = CHARACTERS[story.cast[p.id].spec]?.default_face ?? (story.cast[p.id].spec?.startsWith("mimic") ? "mimic_smile" : "neutral");
-    L.push(`${v}.pose(t0, ${py(p.pose ?? "stand")})`, `zc_react(${v}, t0, ${py(p.face ?? dflt)}, ${py(dflt)})`);
+    // a reaction lands a beat late only when the same person was in the shot before (in the same scene); a fresh cut
+    // starts on the right face (owner 2026-11-24: "worried from the first frame, no smile")
+    const prevRow = story.rows?.[story.rows.indexOf(r) - 1];
+    const cont = prevRow && prevRow.scene === r.scene && (prevRow.stage ?? "A") === (r.stage ?? "A") && (prevRow.people ?? []).some((q) => q.id === p.id);
+    L.push(`${v}.pose(t0, ${py(p.pose ?? "stand")})`, cont ? `zc_react(${v}, t0, ${py(p.face ?? dflt)}, ${py((prevRow.people.find((q) => q.id === p.id).face) ?? dflt)})` : `${v}.express(t0, ${py(p.face ?? dflt)})`);
     const look = facingPoint(S, r, p.facing ?? "street", p.id, cam.loc);
     if (S.spots[p.spot]?.seat) { L.push(`zv_sit(${v}, t0, ${P(S.spots[p.spot].at)})`, `zc_look(${v}, t0, ${P(p.facing === "camera" && cam.loc ? cam.loc : look)})`); }
     else if (p.facing === "camera" || p.facing === "away" || ["side", "back"].includes(cam.type) || !cam.loc) L.push(`${v}.face_to(${P(look)})`);
@@ -335,7 +369,12 @@ export function rowPython(S0, story, r, { stageId = "A" } = {}) {
   else if (cam.ok && cam.type === "window") L.push(`cam = zv_window_cam(t0, t1, _wc, push=${+(r.cam?.push ?? 0.06)}, ch=p${(r.people ?? []).findIndex((p) => S.spots[p.spot]?.inside)})`);
   else if (cam.ok) { const end = cam.loc.map((x, i) => x + (cam.tgt[i] - x) * (r.cam?.push ?? 0.06)); L.push(`cam = Cam()`, `cam.key(t0, ${P(cam.loc)}, ${P(cam.tgt)}, lens=${cam.lens}${cam.focus ? `, focus=${cam.focus}, fstop=2.4` : ""})`, `cam.key(t1, ${P(end)}, ${P(cam.tgt)}, lens=${cam.lens}${cam.focus ? `, focus=${+(cam.focus * 0.94).toFixed(2)}, fstop=2.4` : ""})`); }
   else L.push(`cam = Cam()`, `cam.key(t0, (0, -20, 5), (0, 0, 2), lens=30)`);
-  if (S.build === "dining") L.push(`zv_empty_chairs(ZV_STAGES[${py(stageId)}], ${py((r.people ?? []).map((p) => p.spot))})`);
+  // the empty chairs; one standing between the lens and the table is left out (owner 2026-11-24: "the empty chair must
+  // not sit in the middle of the frame"), the plate stays (an insert of the empty place keeps its chair)
+  if (S.build === "dining") {
+    const skip = cam.ok && cam.type !== "insert" && cam.loc ? Object.entries(S.spots).filter(([k, sp]) => sp.seat && !(r.people ?? []).some((p) => p.spot === k) && sp.at[1] < 0 && cam.loc[1] < sp.at[1] - 0.3 && Math.abs(cam.loc[0] - sp.at[0]) < Math.abs(cam.loc[1] - sp.at[1]) * 1.2).map(([k]) => k) : [];
+    L.push(`zv_empty_chairs(ZV_STAGES[${py(stageId)}], ${py([...(r.people ?? []).map((p) => p.spot), ...skip])})`);
+  }
   // the background people (calm, behind the subject)
   backgroundFor(S, r, cam).forEach((b, k) => {
     const spec = NEIGHBOURS[b.who];

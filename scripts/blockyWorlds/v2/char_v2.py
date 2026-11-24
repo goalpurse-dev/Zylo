@@ -104,7 +104,36 @@ def zc_meta(n, parent, elems, m, coll):
         if rz:
             e.rotation = Euler((math.radians(rz[0]), math.radians(rz[1]), math.radians(rz[2]))).to_quaternion()
     mb.materials.append(m)
-    return ob
+    return zc_meta_bake(ob)
+
+
+def zc_meta_bake(ob):
+    """the metaball baked to a FIXED mesh once (owner 2026-11-24: the hair flickered: Blender re-meshes a metaball on a
+    world grid every frame, so a swaying head tore it into stripes). Same look, same parent, never rebuilt."""
+    mb = ob.data
+    mb.resolution = mb.render_resolution
+    bpy.context.view_layer.update()
+    try:
+        ev = ob.evaluated_get(bpy.context.evaluated_depsgraph_get())
+        me = D.meshes.new_from_object(ev)
+    except Exception as e:
+        print("zc_meta_bake: kept the metaball (%s)" % e)
+        return ob
+    if me is None or len(me.vertices) == 0:
+        print("zc_meta_bake: empty mesh, kept the metaball")
+        return ob
+    for p in me.polygons:
+        p.use_smooth = True
+    nm = ob.name
+    mo = D.objects.new(nm + "_mesh", me)
+    for cl in ob.users_collection:
+        cl.objects.link(mo)
+    mo.parent = ob.parent
+    mo.matrix_parent_inverse = ob.matrix_parent_inverse.copy()
+    mo.matrix_basis = ob.matrix_basis.copy()
+    D.objects.remove(ob, do_unlink=True)
+    D.metaballs.remove(mb)
+    return mo
 
 
 def zc_arc(n, pts, r, m, parent, coll):
@@ -983,6 +1012,9 @@ def zv_at_window(ch, wc, inside=0.9):
     ch.root.location = (wc.x + (r.x - hc.x), wc.y + inside + (r.y - hc.y), r.z + (wc.z + 0.45 - hc.z))
 
 
+ZV_WINDOW_FILL_W = 16.0   # measured against Mom in the dining room (owner 2026-11-24: the same skin in every shot)
+
+
 def zv_window_cam(t0, t1, wc, dist=6.2, lens=40, side=0.3, push=0.06, ch=None):
     """the face at the window from outside: the head high in the frame (the captions below), a slow push"""
     if wc is None:
@@ -990,6 +1022,9 @@ def zv_window_cam(t0, t1, wc, dist=6.2, lens=40, side=0.3, push=0.06, ch=None):
         cam.key(t0, (0, -20, 5), (0, 0, 2), lens=30)
         return cam
     hz = zc_head_c(ch).z if ch is not None else wc.z + 0.45
+    if ch is not None:   # the face light INSIDE the window (the curtains block the outside key): the same skin as in the kitchen
+        hc = zc_head_c(ch)
+        light(ch.name + "_wfill", "AREA", (hc.x + 0.15, wc.y + 0.15, hc.z + 0.3), ZV_WINDOW_FILL_W, (1.0, 0.9, 0.8), 0.6, target=tuple(hc))
     loc = Vector((wc.x + side, wc.y - dist, hz - 0.3))
     tgt = Vector((wc.x, wc.y + 0.9, hz - 0.62))    # the head high in the frame (a hat fits), both curtains at the sides
     f = (tgt - loc).length

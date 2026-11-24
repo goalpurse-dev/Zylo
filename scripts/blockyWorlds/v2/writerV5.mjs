@@ -109,6 +109,8 @@ THE RULES (they are checked in code; a row that breaks one comes back to you):
 - PEOPLE: at most 2 people per row, on DIFFERENT spots a body apart (porch_door is too close to porch_left / porch_right; porch_front and porch_hug are for a shield / a hug: then set "touch": true). A person keeps their spot in a scene unless the line's words move them (walked / ran / stepped / came ...). Two people never swap screen sides in a scene. Aim: two or more people in 25-50% of shots.
 - THE CREATURE / THE COPY: a monster only on its far spots (cr_*), never close (its close-up is camera "eyes"). The Mimic is a PERSON (people list, id "mimic") on people spots.
 - NAMED = SHOWN: everything a line names (people, the copy, the porch light ...) is in one of that line's rows (in people, as the creature, in cam.subject, held, or in props).
+- PLACE = WORDS: where a line puts someone is where the shot puts them ("I was upstairs" / "inside" / "at home" = stage B or a window spot; "outside" / "on the porch" = the street; "I wasn't home" = not in the shot).
+- NEVER the same shot twice in a row: the next row of the same subject changes the size (close / medium / wide) or the side.
 - THE RULE OBJECT STATE (porch_light on/off) changes only on a line whose words say so.
 - FACES: each character has a default face (leave "face" out for it); at most 2 big shock faces (terrified / crying) in the whole video.
 - STICKERS: at most 3 in the video, only on a joke or a beat ("!", "???", "ZZZ", "1 HOUR LATER").
