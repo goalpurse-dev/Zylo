@@ -1,0 +1,206 @@
+{
+ "aerial_main": {
+  "loc": [
+   -78,
+   -10,
+   34
+  ],
+  "tgt": [
+   8,
+   4,
+   2
+  ],
+  "lens": 18,
+  "shot": "top",
+  "people": [],
+  "aerial": true
+ },
+ "town_wide": {
+  "loc": [
+   0,
+   -72,
+   56
+  ],
+  "tgt": [
+   0,
+   30,
+   6
+  ],
+  "lens": 20,
+  "shot": "top",
+  "people": [],
+  "aerial": true
+ },
+ "sq_wide": {
+  "loc": [
+   0,
+   -5,
+   6.5
+  ],
+  "tgt": [
+   0,
+   28,
+   2
+  ],
+  "lens": 20,
+  "shot": "wide",
+  "people": [
+   "sq_front"
+  ]
+ },
+ "hero_med": {
+  "loc": [
+   1.89,
+   -1.13,
+   3.4
+  ],
+  "tgt": [
+   0,
+   14,
+   0.25
+  ],
+  "lens": 30,
+  "shot": "medium",
+  "people": [
+   "sq_front"
+  ]
+ },
+ "two_shot": {
+  "loc": [
+   0,
+   0.8,
+   3.2
+  ],
+  "tgt": [
+   0,
+   15.8,
+   0
+  ],
+  "lens": 26,
+  "shot": "two",
+  "people": [
+   "two_a",
+   "two_b"
+  ]
+ },
+ "hero_close": {
+  "loc": [
+   0.89,
+   2.78,
+   3
+  ],
+  "tgt": [
+   0,
+   14,
+   1.25
+  ],
+  "lens": 40,
+  "shot": "close",
+  "people": [
+   "sq_front"
+  ]
+ },
+ "big_low": {
+  "loc": [
+   2.5,
+   13,
+   1.1
+  ],
+  "tgt": [
+   0,
+   28,
+   9
+  ],
+  "lens": 18,
+  "shot": "low",
+  "people": [],
+  "fixed": true
+ },
+ "big_med": {
+  "loc": [
+   3.78,
+   7.34,
+   3.4
+  ],
+  "tgt": [
+   0,
+   20.3,
+   0.25
+  ],
+  "lens": 26,
+  "shot": "medium",
+  "people": [
+   "big_front"
+  ]
+ },
+ "clock_low": {
+  "loc": [
+   -12,
+   28,
+   1.3
+  ],
+  "tgt": [
+   -19,
+   47,
+   20
+  ],
+  "lens": 18,
+  "shot": "low",
+  "people": [],
+  "fixed": true
+ },
+ "market_med": {
+  "loc": [
+   -0.13,
+   17.1,
+   3.2
+  ],
+  "tgt": [
+   11,
+   26,
+   0.25
+  ],
+  "lens": 28,
+  "shot": "medium",
+  "people": [
+   "stall_buyer"
+  ]
+ },
+ "street_two": {
+  "loc": [
+   -30,
+   -7,
+   3.2
+  ],
+  "tgt": [
+   -30,
+   3,
+   0.25
+  ],
+  "lens": 20,
+  "shot": "two",
+  "people": [
+   "street_a",
+   "street_b"
+  ]
+ },
+ "creature_cam": {
+  "loc": [
+   2,
+   4,
+   3.2
+  ],
+  "tgt": [
+   -5.9,
+   30,
+   2
+  ],
+  "lens": 20,
+  "shot": "medium",
+  "people": [
+   "sq_front"
+  ],
+  "creature": "cr_tower",
+  "fixed": true
+ }
+}

@@ -1,0 +1,207 @@
+{
+ "aerial_main": {
+  "loc": [
+   -80,
+   -8,
+   36
+  ],
+  "tgt": [
+   6,
+   6,
+   2
+  ],
+  "lens": 18,
+  "shot": "top",
+  "people": [],
+  "aerial": true
+ },
+ "town_wide": {
+  "loc": [
+   0,
+   -58,
+   88
+  ],
+  "tgt": [
+   0,
+   30,
+   4
+  ],
+  "lens": 20,
+  "shot": "top",
+  "people": [],
+  "aerial": true
+ },
+ "plaza_wide": {
+  "loc": [
+   0,
+   -5,
+   6.5
+  ],
+  "tgt": [
+   0,
+   26,
+   2
+  ],
+  "lens": 20,
+  "shot": "wide",
+  "people": [
+   "plaza_front"
+  ]
+ },
+ "hero_med": {
+  "loc": [
+   1.86,
+   -0.88,
+   3.4
+  ],
+  "tgt": [
+   0,
+   14,
+   0.5
+  ],
+  "lens": 30,
+  "shot": "medium",
+  "people": [
+   "plaza_front"
+  ]
+ },
+ "two_shot": {
+  "loc": [
+   0,
+   1.05,
+   3.2
+  ],
+  "tgt": [
+   0,
+   15.8,
+   0.25
+  ],
+  "lens": 26,
+  "shot": "two",
+  "people": [
+   "two_a",
+   "two_b"
+  ]
+ },
+ "hero_close": {
+  "loc": [
+   0.89,
+   2.78,
+   3
+  ],
+  "tgt": [
+   0,
+   14,
+   1.5
+  ],
+  "lens": 40,
+  "shot": "close",
+  "people": [
+   "plaza_front"
+  ]
+ },
+ "big_low": {
+  "loc": [
+   2.5,
+   11.5,
+   1.1
+  ],
+  "tgt": [
+   0,
+   26,
+   9
+  ],
+  "lens": 18,
+  "shot": "low",
+  "people": [],
+  "fixed": true
+ },
+ "big_med": {
+  "loc": [
+   3.74,
+   5.49,
+   3.4
+  ],
+  "tgt": [
+   0,
+   18.2,
+   0.5
+  ],
+  "lens": 26,
+  "shot": "medium",
+  "people": [
+   "big_front"
+  ]
+ },
+ "shop_two": {
+  "loc": [
+   -39.9,
+   -6.45,
+   3.2
+  ],
+  "tgt": [
+   -39.9,
+   8.3,
+   0.25
+  ],
+  "lens": 26,
+  "shot": "two",
+  "people": [
+   "shop_a",
+   "shop_b"
+  ]
+ },
+ "street_med": {
+  "loc": [
+   3.58,
+   -9.47,
+   3
+  ],
+  "tgt": [
+   0,
+   0.4,
+   1
+  ],
+  "lens": 28,
+  "shot": "medium",
+  "people": [
+   "road_mid"
+  ]
+ },
+ "creature_cam": {
+  "loc": [
+   2,
+   4,
+   3.2
+  ],
+  "tgt": [
+   0.4,
+   30,
+   2.4
+  ],
+  "lens": 20,
+  "shot": "medium",
+  "people": [
+   "plaza_front"
+  ],
+  "creature": "cr_plaza_back",
+  "fixed": true
+ },
+ "fountain_med": {
+  "loc": [
+   -2.24,
+   19.48,
+   3.2
+  ],
+  "tgt": [
+   -8.5,
+   32,
+   0.5
+  ],
+  "lens": 28,
+  "shot": "medium",
+  "people": [
+   "fountain_side"
+  ]
+ }
+}

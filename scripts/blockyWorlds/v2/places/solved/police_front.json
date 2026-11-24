@@ -1,0 +1,87 @@
+{
+ "wide": {
+  "loc": [
+   -1.5,
+   -19,
+   6.5
+  ],
+  "tgt": [
+   -1.5,
+   5,
+   2.2
+  ],
+  "lens": 18,
+  "shot": "wide",
+  "people": [
+   "hero"
+  ]
+ },
+ "medium": {
+  "loc": [
+   -0.98,
+   -13.12,
+   3.4
+  ],
+  "tgt": [
+   -3,
+   2,
+   0.25
+  ],
+  "lens": 30,
+  "shot": "medium",
+  "people": [
+   "hero"
+  ]
+ },
+ "two": {
+  "loc": [
+   -3.6,
+   -11.7,
+   3.2
+  ],
+  "tgt": [
+   -3.6,
+   3.8,
+   0
+  ],
+  "lens": 26,
+  "shot": "two",
+  "people": [
+   "two_a",
+   "two_b"
+  ]
+ },
+ "close": {
+  "loc": [
+   -2.16,
+   -9.22,
+   3
+  ],
+  "tgt": [
+   -3,
+   2,
+   1.25
+  ],
+  "lens": 40,
+  "shot": "close",
+  "people": [
+   "hero"
+  ]
+ },
+ "sign": {
+  "loc": [
+   0,
+   -4.08,
+   3.92
+  ],
+  "tgt": [
+   0,
+   9.6,
+   8.6
+  ],
+  "lens": 30,
+  "shot": "insert",
+  "people": [],
+  "fixed": true
+ }
+}

@@ -1,0 +1,375 @@
+{
+ "towns": [
+  {
+   "id": "bright_city",
+   "name": "Bright City",
+   "look": "a colourful main street of shops with striped awnings, a plaza with a fountain and a big screen, glass towers behind",
+   "spots": {
+    "plaza_front": "plaza",
+    "two_a": "plaza",
+    "two_b": "plaza",
+    "big_front": "plaza, before the big thing",
+    "fountain_side": "plaza, by the fountain",
+    "plaza_right": "plaza",
+    "bench_by": "plaza, by the bench",
+    "shop_a": "pavement, before a shop",
+    "shop_b": "pavement, before a shop",
+    "shop_far": "pavement",
+    "south_a": "pavement",
+    "south_b": "pavement",
+    "road_mid": "street",
+    "road_far": "street"
+   },
+   "creature_spots": [
+    "cr_plaza_back",
+    "cr_street_far",
+    "cr_screen"
+   ],
+   "cameras": {
+    "aerial_main": {
+     "shot": "aerial",
+     "people": [],
+     "creature": null
+    },
+    "town_wide": {
+     "shot": "aerial",
+     "people": [],
+     "creature": null
+    },
+    "plaza_wide": {
+     "shot": "wide",
+     "people": [
+      "plaza_front"
+     ],
+     "creature": null
+    },
+    "hero_med": {
+     "shot": "medium",
+     "people": [
+      "plaza_front"
+     ],
+     "creature": null
+    },
+    "two_shot": {
+     "shot": "two",
+     "people": [
+      "two_a",
+      "two_b"
+     ],
+     "creature": null
+    },
+    "hero_close": {
+     "shot": "close",
+     "people": [
+      "plaza_front"
+     ],
+     "creature": null
+    },
+    "big_low": {
+     "shot": "low",
+     "people": [],
+     "creature": null
+    },
+    "big_med": {
+     "shot": "medium",
+     "people": [
+      "big_front"
+     ],
+     "creature": null
+    },
+    "shop_two": {
+     "shot": "two",
+     "people": [
+      "shop_a",
+      "shop_b"
+     ],
+     "creature": null
+    },
+    "street_med": {
+     "shot": "medium",
+     "people": [
+      "road_mid"
+     ],
+     "creature": null
+    },
+    "creature_cam": {
+     "shot": "medium",
+     "people": [
+      "plaza_front"
+     ],
+     "creature": "cr_plaza_back"
+    },
+    "fountain_med": {
+     "shot": "medium",
+     "people": [
+      "fountain_side"
+     ],
+     "creature": null
+    }
+   },
+   "times": [
+    "day",
+    "golden",
+    "dusk",
+    "night",
+    "storm",
+    "morning"
+   ],
+   "big_spot": "the plaza's middle: an empty circle in front of the big screen",
+   "texts": [
+    "screen"
+   ]
+  },
+  {
+   "id": "old_town",
+   "name": "Cosy Old Town",
+   "look": "a cobbled square with a clock tower and the town hall, small crooked houses, a market with stalls, old lamps, a well, a canal bridge",
+   "spots": {
+    "sq_front": "square",
+    "two_a": "square",
+    "two_b": "square",
+    "big_front": "square, before the big thing",
+    "well_side": "square, by the well",
+    "stall_buyer": "market, at a stall",
+    "hall_steps": "before the town hall",
+    "street_a": "street",
+    "street_b": "street",
+    "bridge_mid": "on the bridge",
+    "street_s": "street"
+   },
+   "creature_spots": [
+    "cr_tower",
+    "cr_street_end",
+    "cr_canal"
+   ],
+   "cameras": {
+    "aerial_main": {
+     "shot": "aerial",
+     "people": [],
+     "creature": null
+    },
+    "town_wide": {
+     "shot": "aerial",
+     "people": [],
+     "creature": null
+    },
+    "sq_wide": {
+     "shot": "wide",
+     "people": [
+      "sq_front"
+     ],
+     "creature": null
+    },
+    "hero_med": {
+     "shot": "medium",
+     "people": [
+      "sq_front"
+     ],
+     "creature": null
+    },
+    "two_shot": {
+     "shot": "two",
+     "people": [
+      "two_a",
+      "two_b"
+     ],
+     "creature": null
+    },
+    "hero_close": {
+     "shot": "close",
+     "people": [
+      "sq_front"
+     ],
+     "creature": null
+    },
+    "big_low": {
+     "shot": "low",
+     "people": [],
+     "creature": null
+    },
+    "big_med": {
+     "shot": "medium",
+     "people": [
+      "big_front"
+     ],
+     "creature": null
+    },
+    "clock_low": {
+     "shot": "low",
+     "people": [],
+     "creature": null
+    },
+    "market_med": {
+     "shot": "medium",
+     "people": [
+      "stall_buyer"
+     ],
+     "creature": null
+    },
+    "street_two": {
+     "shot": "two",
+     "people": [
+      "street_a",
+      "street_b"
+     ],
+     "creature": null
+    },
+    "creature_cam": {
+     "shot": "medium",
+     "people": [
+      "sq_front"
+     ],
+     "creature": "cr_tower"
+    }
+   },
+   "times": [
+    "day",
+    "golden",
+    "dusk",
+    "night",
+    "storm",
+    "morning"
+   ],
+   "big_spot": "the square's middle, in front of the town hall",
+   "texts": [
+    "townhall"
+   ]
+  },
+  {
+   "id": "suburb",
+   "name": "Our Suburb",
+   "look": "our street (Stage A: our house, porch, lawn, neighbours) widened: a cul-de-sac with five houses, a park corner, a bus stop",
+   "spots": {
+    "porch_door": "porch",
+    "porch_left": "porch",
+    "porch_right": "porch",
+    "step": "lawn",
+    "gate": "lawn",
+    "pave_left": "pavement",
+    "pave_mid": "pavement",
+    "pave_right": "pavement",
+    "pave_far": "pavement",
+    "road_left": "road",
+    "road_mid": "road",
+    "road_right": "road",
+    "porch_front": "porch",
+    "porch_hug": "porch",
+    "cul_front": "cul-de-sac, before the big thing",
+    "cul_a": "cul-de-sac",
+    "cul_b": "cul-de-sac",
+    "park_kid": "the park corner",
+    "bus_wait": "at the bus stop"
+   },
+   "creature_spots": [
+    "cr_road_south",
+    "cr_road_far",
+    "cr_across",
+    "cr_cul_far"
+   ],
+   "cameras": {
+    "aerial_main": {
+     "shot": "aerial",
+     "people": [],
+     "creature": null
+    },
+    "town_wide": {
+     "shot": "aerial",
+     "people": [],
+     "creature": null
+    },
+    "aerial_cul": {
+     "shot": "aerial",
+     "people": [],
+     "creature": null
+    },
+    "house_wide": {
+     "shot": "wide",
+     "people": [
+      "porch_left",
+      "porch_right"
+     ],
+     "creature": null
+    },
+    "porch_two": {
+     "shot": "two",
+     "people": [
+      "porch_left",
+      "porch_right"
+     ],
+     "creature": null
+    },
+    "pave_two": {
+     "shot": "two",
+     "people": [
+      "pave_left",
+      "pave_mid"
+     ],
+     "creature": null
+    },
+    "from_porch": {
+     "shot": "medium",
+     "people": [
+      "gate"
+     ],
+     "creature": "cr_road_south"
+    },
+    "step_med": {
+     "shot": "medium",
+     "people": [
+      "step"
+     ],
+     "creature": null
+    },
+    "cul_med": {
+     "shot": "medium",
+     "people": [
+      "cul_front"
+     ],
+     "creature": null
+    },
+    "big_low": {
+     "shot": "low",
+     "people": [],
+     "creature": null
+    },
+    "park_med": {
+     "shot": "medium",
+     "people": [
+      "park_kid"
+     ],
+     "creature": null
+    },
+    "bus_med": {
+     "shot": "medium",
+     "people": [
+      "bus_wait"
+     ],
+     "creature": null
+    }
+   },
+   "times": [
+    "day",
+    "golden",
+    "dusk",
+    "night",
+    "storm",
+    "morning"
+   ],
+   "big_spot": "the middle of the cul-de-sac (the turning circle)",
+   "texts": [
+    "busstop"
+   ]
+  }
+ ],
+ "side_sets": [],
+ "big_things": [],
+ "times": [],
+ "weathers": [],
+ "rain_things": [],
+ "people": [],
+ "animals": [],
+ "entities": [],
+ "props": [],
+ "effects": [],
+ "skipped": {}
+}

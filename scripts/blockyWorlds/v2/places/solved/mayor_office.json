@@ -1,0 +1,104 @@
+{
+ "wide": {
+  "loc": [
+   0,
+   -16.8,
+   6.5
+  ],
+  "tgt": [
+   0,
+   1.2,
+   2.2
+  ],
+  "lens": 18,
+  "shot": "wide",
+  "people": [
+   "hero"
+  ]
+ },
+ "medium": {
+  "loc": [
+   2.02,
+   -16.92,
+   3.4
+  ],
+  "tgt": [
+   0,
+   -1.8,
+   0.25
+  ],
+  "lens": 30,
+  "shot": "medium",
+  "people": [
+   "hero"
+  ]
+ },
+ "two": {
+  "loc": [
+   0,
+   -15.4,
+   3.2
+  ],
+  "tgt": [
+   0,
+   -0.4,
+   0
+  ],
+  "lens": 26,
+  "shot": "two",
+  "people": [
+   "two_a",
+   "two_b"
+  ]
+ },
+ "close": {
+  "loc": [
+   0.84,
+   -13.02,
+   3
+  ],
+  "tgt": [
+   0,
+   -1.8,
+   1.25
+  ],
+  "lens": 40,
+  "shot": "close",
+  "people": [
+   "hero"
+  ]
+ },
+ "nameplate": {
+  "loc": [
+   0.72,
+   -3.68,
+   2.92
+  ],
+  "tgt": [
+   0,
+   1,
+   1.3
+  ],
+  "lens": 34,
+  "shot": "insert",
+  "people": [],
+  "fixed": true
+ },
+ "mayor_med": {
+  "loc": [
+   1.47,
+   -12.59,
+   3.8
+  ],
+  "tgt": [
+   0,
+   4.6,
+   0
+  ],
+  "lens": 30,
+  "shot": "medium",
+  "people": [
+   "mayor"
+  ]
+ }
+}

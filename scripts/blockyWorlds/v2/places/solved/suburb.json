@@ -1,0 +1,206 @@
+{
+ "aerial_main": {
+  "loc": [
+   -70,
+   -14,
+   34
+  ],
+  "tgt": [
+   20,
+   6,
+   2
+  ],
+  "lens": 18,
+  "shot": "top",
+  "people": [],
+  "aerial": true
+ },
+ "town_wide": {
+  "loc": [
+   70,
+   -95,
+   72
+  ],
+  "tgt": [
+   70,
+   10,
+   4
+  ],
+  "lens": 18,
+  "shot": "top",
+  "people": [],
+  "aerial": true
+ },
+ "aerial_cul": {
+  "loc": [
+   138,
+   -32,
+   36
+  ],
+  "tgt": [
+   166,
+   0,
+   2
+  ],
+  "lens": 22,
+  "shot": "top",
+  "people": [],
+  "aerial": true
+ },
+ "house_wide": {
+  "loc": [
+   7,
+   -2,
+   5
+  ],
+  "tgt": [
+   0,
+   15,
+   3.5
+  ],
+  "lens": 22,
+  "shot": "wide",
+  "people": [
+   "porch_left",
+   "porch_right"
+  ]
+ },
+ "porch_two": {
+  "loc": [
+   0,
+   2.5,
+   2.9
+  ],
+  "tgt": [
+   0,
+   16,
+   0.75
+  ],
+  "lens": 24,
+  "shot": "two",
+  "people": [
+   "porch_left",
+   "porch_right"
+  ]
+ },
+ "pave_two": {
+  "loc": [
+   3.4,
+   -5.42,
+   2.2
+  ],
+  "tgt": [
+   -1.4,
+   8,
+   0.25
+  ],
+  "lens": 24,
+  "shot": "two",
+  "people": [
+   "pave_left",
+   "pave_mid"
+  ]
+ },
+ "from_porch": {
+  "loc": [
+   0.96,
+   17.48,
+   3
+  ],
+  "tgt": [
+   0,
+   10.8,
+   2.25
+  ],
+  "lens": 24,
+  "shot": "medium",
+  "people": [
+   "gate"
+  ],
+  "creature": "cr_road_south"
+ },
+ "step_med": {
+  "loc": [
+   4.21,
+   10.5,
+   2.6
+  ],
+  "tgt": [
+   0,
+   13.2,
+   1.75
+  ],
+  "lens": 28,
+  "shot": "medium",
+  "people": [
+   "step"
+  ]
+ },
+ "cul_med": {
+  "loc": [
+   143.63,
+   -3.55,
+   3.4
+  ],
+  "tgt": [
+   158.2,
+   0,
+   0.5
+  ],
+  "lens": 30,
+  "shot": "medium",
+  "people": [
+   "cul_front"
+  ]
+ },
+ "big_low": {
+  "loc": [
+   151,
+   -3,
+   1.1
+  ],
+  "tgt": [
+   166,
+   0,
+   9
+  ],
+  "lens": 18,
+  "shot": "low",
+  "people": [],
+  "fixed": true
+ },
+ "park_med": {
+  "loc": [
+   44,
+   3,
+   3.2
+  ],
+  "tgt": [
+   44,
+   17,
+   0.5
+  ],
+  "lens": 28,
+  "shot": "medium",
+  "people": [
+   "park_kid"
+  ]
+ },
+ "bus_med": {
+  "loc": [
+   142.22,
+   -5.97,
+   3.2
+  ],
+  "tgt": [
+   140,
+   7.6,
+   0.75
+  ],
+  "lens": 28,
+  "shot": "medium",
+  "people": [
+   "bus_wait"
+  ]
+ }
+}
