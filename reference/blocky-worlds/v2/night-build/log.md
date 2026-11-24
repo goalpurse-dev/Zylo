@@ -21,3 +21,4 @@
 - One builder for every place: v2/set_v2.py (python) + v2/places/*.mjs (data: prefabs expand to boxes/cylinders/spheres/texts/lights; obstacles for the free checks come from the same shapes). Runner: v2/placeTest.mjs (free checks + free local mock + one RunPod job + one sheet per place). Kit: v2/placeKit.mjs (checks, camera solver).
 - towns1 ($0.09, 72 stills): builder works; 66/72 pass. Fixed after it: my night/dusk/storm skies were far too light (linear colours), medium/close cameras sat too close (solver now aims at a head size per shot type), clock faces hid behind their rims.
 - Step 1 done: 3 towns, 72/72 stills pass (r2). Step 3 done: 21 side sets, 218/218 + inserts re-shot 1.8x farther (24/24). Sheets: sheet_<set>_r2.jpg, side_overview.jpg, inserts_overview.jpg.
+- Step 4 done: 6 big things on the old town square (29/29 + closes pulled back 4/4). sheet_big_things.jpg, fixes2.jpg.

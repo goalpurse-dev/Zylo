@@ -24,6 +24,12 @@
 - SIDE SET forest_edge: Forest edge: tall pines, bushes, a path into the trees, fallen logs.
 - SIDE SET alley: Dark alley: two brick walls, bins, crates, a puddle, one old lamp.
 - SIDE SET rooftop: Rooftop: a flat roof with a low wall, air units, a water tank, the city's towers around.
+- BIG THING giant_door: a giant door standing alone with a gold keyhole; it opens onto light or darkness (states: closed, open_light, open_dark).
+- BIG THING giant_statue: a giant stone townsperson on a plinth with a plaque (states: pointing, arms_down).
+- BIG THING machine: a strange machine with a glowing core, gauges, a screen with text, a funnel (states: on, off).
+- BIG THING hole: a deep black hole in the ground ringed by broken paving (states: open).
+- BIG THING huge_clock: a huge clock on a stand in the middle of town (states: five_to_twelve, midnight).
+- BIG THING gift_box: a giant gift box with a ribbon, a bow and a tag (states: closed, open).
 - TIMES: . WEATHER: . RAINING THINGS (any amount, starts/stops per shot): .
 - PROPS: . EFFECTS: .
 

@@ -1538,7 +1538,62 @@
    "texts": []
   }
  ],
- "big_things": [],
+ "big_things": [
+  {
+   "id": "giant_door",
+   "look": "a giant door standing alone with a gold keyhole; it opens onto light or darkness",
+   "states": [
+    "closed",
+    "open_light",
+    "open_dark"
+   ],
+   "close_camera": "giant_door_close"
+  },
+  {
+   "id": "giant_statue",
+   "look": "a giant stone townsperson on a plinth with a plaque",
+   "states": [
+    "pointing",
+    "arms_down"
+   ],
+   "close_camera": "giant_statue_close"
+  },
+  {
+   "id": "machine",
+   "look": "a strange machine with a glowing core, gauges, a screen with text, a funnel",
+   "states": [
+    "on",
+    "off"
+   ],
+   "close_camera": "machine_close"
+  },
+  {
+   "id": "hole",
+   "look": "a deep black hole in the ground ringed by broken paving",
+   "states": [
+    "open"
+   ],
+   "close_camera": "hole_close"
+  },
+  {
+   "id": "huge_clock",
+   "look": "a huge clock on a stand in the middle of town",
+   "states": [
+    "five_to_twelve",
+    "midnight"
+   ],
+   "close_camera": "huge_clock_close"
+  },
+  {
+   "id": "gift_box",
+   "look": "a giant gift box with a ribbon, a bow and a tag",
+   "states": [
+    "closed",
+    "open"
+   ],
+   "close_camera": "gift_box_close"
+  }
+ ],
  "times": [],
  "weathers": [],
  "rain_things": [],

@@ -147,6 +147,7 @@ class ZChar:
         self.hdim = (2.0, 1.9, 1.8)
         self.thigh = {'L': Obj(name + '_tl'), 'R': Obj(name + '_tr')}
         self.shoulder = {'L': Obj(name + '_sl'), 'R': Obj(name + '_sr')}
+        self.elbow = {'L': Obj(name + '_el'), 'R': Obj(name + '_er')}
         self.M = {'skin': 'skin'}
     def pose(self, t, name):
         assert name in ZC_POSES, "unknown pose %s" % name

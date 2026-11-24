@@ -73,11 +73,11 @@ Object.assign(P, {
 /** the big things: their prefab, their states, the close camera on the key detail (offset from the big spot) */
 export const BIG_THINGS = {
   giant_door: { states: { closed: {}, open_light: { state: "open", behind: "light" }, open_dark: { state: "open", behind: "dark" } }, close: { loc: [2.6, -6.5, 6.5], tgt: [1.96, 0, 6.75], lens: 40 }, look: "a giant door standing alone with a gold keyhole; it opens onto light or darkness" },
-  giant_statue: { states: { pointing: { pose: "point" }, arms_down: { pose: "down" } }, close: { loc: [0.5, -8, 3], tgt: [0, -3, 1.6], lens: 40 }, look: "a giant stone townsperson on a plinth with a plaque" },
-  machine: { states: { on: { on: true }, off: { on: false } }, close: { loc: [-1.5, -8.5, 6.6], tgt: [-1.8, -3, 6.2], lens: 40 }, look: "a strange machine with a glowing core, gauges, a screen with text, a funnel" },
+  giant_statue: { states: { pointing: { pose: "point" }, arms_down: { pose: "down" } }, close: { k: 1.9, loc: [0.5, -8, 3], tgt: [0, -3, 1.6], lens: 40 }, look: "a giant stone townsperson on a plinth with a plaque" },
+  machine: { states: { on: { on: true }, off: { on: false } }, close: { k: 1.9, loc: [-1.5, -8.5, 6.6], tgt: [-1.8, -3, 6.2], lens: 40 }, look: "a strange machine with a glowing core, gauges, a screen with text, a funnel" },
   hole: { states: { open: {} }, close: { loc: [0, -9, 8], tgt: [0, 0, 0], lens: 28 }, look: "a deep black hole in the ground ringed by broken paving" },
-  huge_clock: { states: { five_to_twelve: { time: [11, 55] }, midnight: { time: [12, 0] } }, close: { loc: [0.5, -9, 13], tgt: [0, 0, 13], lens: 36 }, look: "a huge clock on a stand in the middle of town" },
-  gift_box: { states: { closed: {}, open: { open: true } }, close: { loc: [3.6, -9, 3], tgt: [2.7, -4.6, 2.7], lens: 40 }, look: "a giant gift box with a ribbon, a bow and a tag" },
+  huge_clock: { states: { five_to_twelve: { time: [11, 55] }, midnight: { time: [12, 0] } }, close: { k: 1.9, loc: [0.5, -9, 13], tgt: [0, 0, 13], lens: 36 }, look: "a huge clock on a stand in the middle of town" },
+  gift_box: { states: { closed: {}, open: { open: true } }, close: { k: 1.9, loc: [3.6, -9, 3], tgt: [2.7, -4.6, 2.7], lens: 40 }, look: "a giant gift box with a ribbon, a bow and a tag" },
 };
 
 /** a town with a big thing on its big spot (the town's own cameras + `<kind>_close`) */
@@ -87,5 +87,5 @@ export function withBig(town, kind, state) {
   const add = (v) => [at[0] + v[0], at[1] + v[1], at[2] + v[2]];
   return { ...town, id: `${town.id}+${kind}.${state}`, big_filled: { kind, state },
     items: [...town.items, { p: kind, at: [at[0], at[1], at[2]], ...params }],
-    cameras: { ...town.cameras, [`${kind}_close`]: { loc: add(B.close.loc), tgt: add(B.close.tgt), lens: B.close.lens, shot: "insert", people: [], fixed: true } } };
+    cameras: { ...town.cameras, [`${kind}_close`]: { loc: add(B.close.tgt.map((t, i) => t + (B.close.loc[i] - t) * (B.close.k ?? 1))), tgt: add(B.close.tgt), lens: B.close.lens, shot: "insert", people: [], fixed: true } } };
 }

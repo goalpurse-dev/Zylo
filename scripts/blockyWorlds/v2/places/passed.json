@@ -26,5 +26,13 @@
   "forest_edge",
   "alley",
   "rooftop"
+ ],
+ "big_things": [
+  "giant_door",
+  "giant_statue",
+  "machine",
+  "hole",
+  "huge_clock",
+  "gift_box"
  ]
 }
