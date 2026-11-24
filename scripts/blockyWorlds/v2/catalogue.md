@@ -3,6 +3,27 @@
 - TOWN bright_city: Bright City: a colourful main street of shops with striped awnings, a plaza with a fountain and a big screen, glass towers behind. Middle spot for a big thing: the plaza's middle: an empty circle in front of the big screen.
 - TOWN old_town: Cosy Old Town: a cobbled square with a clock tower and the town hall, small crooked houses, a market with stalls, old lamps, a well, a canal bridge. Middle spot for a big thing: the square's middle, in front of the town hall.
 - TOWN suburb: Our Suburb: our street (Stage A: our house, porch, lawn, neighbours) widened: a cul-de-sac with five houses, a park corner, a bus stop. Middle spot for a big thing: the middle of the cul-de-sac (the turning circle).
+- SIDE SET classroom: Classroom: desks, a board with replaceable text, the teacher's desk, a clock, a window.
+- SIDE SET hallway: School hallway: a corridor of lockers, posters, a door.
+- SIDE SET school_front: School front: the school with a sign, steps, a flag, a yellow school bus at the kerb.
+- SIDE SET bedroom: Kid's bedroom: a bed, a desk, a window, a poster, a rug, a toy box, a lamp.
+- SIDE SET living_room: Living room: a sofa, a TV with replaceable text, a coffee table, a rug, a lamp, a window.
+- SIDE SET kitchen: Kitchen: a counter, a stove, a fridge, a table, a window.
+- SIDE SET grandma_room: Grandma's room: an armchair, a knitting basket, pictures, a cabinet, a lamp, lace curtains.
+- SIDE SET shop_inside: Shop inside: shelves of goods, a counter with a till, a sign.
+- SIDE SET cafe: Cafe: a counter with a coffee machine, a menu board with replaceable text, little tables.
+- SIDE SET mayor_office: The Mayor's office: a big desk with a name plate, a big chair, two flags, a portrait, a red carpet.
+- SIDE SET control_room: The secret control room: a wall of screens showing the town, a console with levers and big labelled buttons, one huge red button under a cover.
+- SIDE SET townhall_front: Town hall front: the town hall with columns, steps and its sign; flower beds; old lamps.
+- SIDE SET playground: Park playground: a slide, swings, a sandbox, a bench, trees, a fence.
+- SIDE SET basketball: Basketball court: a blue court with lines, two hoops, a tall fence, a bench.
+- SIDE SET hospital_room: Hospital room: a hospital bed, a heart monitor, a chair, a window with light curtains.
+- SIDE SET police_front: Police station front: the police station with its sign and a blue lamp, a police car.
+- SIDE SET basement: Basement: a boiler, pipes, shelves, a bare bulb, boxes.
+- SIDE SET attic: Attic: a sloping roof, an old trunk, boxes, a round window, a bare bulb.
+- SIDE SET forest_edge: Forest edge: tall pines, bushes, a path into the trees, fallen logs.
+- SIDE SET alley: Dark alley: two brick walls, bins, crates, a puddle, one old lamp.
+- SIDE SET rooftop: Rooftop: a flat roof with a low wall, air units, a water tank, the city's towers around.
 - TIMES: . WEATHER: . RAINING THINGS (any amount, starts/stops per shot): .
 - PROPS: . EFFECTS: .
 

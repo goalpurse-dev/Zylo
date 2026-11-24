@@ -361,7 +361,1183 @@
    ]
   }
  ],
- "side_sets": [],
+ "side_sets": [
+  {
+   "id": "classroom",
+   "name": "Classroom",
+   "look": "desks, a board with replaceable text, the teacher's desk, a clock, a window",
+   "spots": {
+    "hero": "Classroom",
+    "two_a": "Classroom",
+    "two_b": "Classroom",
+    "teacher": "at the board"
+   },
+   "creature_spots": [],
+   "cameras": {
+    "wide": {
+     "shot": "wide",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "medium": {
+     "shot": "medium",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "two": {
+     "shot": "two",
+     "people": [
+      "two_a",
+      "two_b"
+     ],
+     "creature": null
+    },
+    "close": {
+     "shot": "close",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "board": {
+     "shot": "insert",
+     "people": [],
+     "creature": null
+    }
+   },
+   "times": [
+    "day",
+    "night"
+   ],
+   "big_spot": null,
+   "texts": [
+    "board"
+   ]
+  },
+  {
+   "id": "hallway",
+   "name": "School hallway",
+   "look": "a corridor of lockers, posters, a door",
+   "spots": {
+    "hero": "School hallway",
+    "two_a": "School hallway",
+    "two_b": "School hallway",
+    "far_end": ""
+   },
+   "creature_spots": [],
+   "cameras": {
+    "wide": {
+     "shot": "wide",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "medium": {
+     "shot": "medium",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "two": {
+     "shot": "two",
+     "people": [
+      "two_a",
+      "two_b"
+     ],
+     "creature": null
+    },
+    "close": {
+     "shot": "close",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "locker": {
+     "shot": "insert",
+     "people": [],
+     "creature": null
+    }
+   },
+   "times": [
+    "day",
+    "night"
+   ],
+   "big_spot": null,
+   "texts": [
+    "poster"
+   ]
+  },
+  {
+   "id": "school_front",
+   "name": "School front",
+   "look": "the school with a sign, steps, a flag, a yellow school bus at the kerb",
+   "spots": {
+    "hero": "School front",
+    "two_a": "School front",
+    "two_b": "School front",
+    "by_bus": ""
+   },
+   "creature_spots": [],
+   "cameras": {
+    "wide": {
+     "shot": "wide",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "medium": {
+     "shot": "medium",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "two": {
+     "shot": "two",
+     "people": [
+      "two_a",
+      "two_b"
+     ],
+     "creature": null
+    },
+    "close": {
+     "shot": "close",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "sign": {
+     "shot": "insert",
+     "people": [],
+     "creature": null
+    }
+   },
+   "times": [
+    "day",
+    "morning"
+   ],
+   "big_spot": null,
+   "texts": [
+    "school",
+    "bus"
+   ]
+  },
+  {
+   "id": "bedroom",
+   "name": "Kid's bedroom",
+   "look": "a bed, a desk, a window, a poster, a rug, a toy box, a lamp",
+   "spots": {
+    "hero": "Kid's bedroom",
+    "two_a": "Kid's bedroom",
+    "two_b": "Kid's bedroom",
+    "bedside": ""
+   },
+   "creature_spots": [],
+   "cameras": {
+    "wide": {
+     "shot": "wide",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "medium": {
+     "shot": "medium",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "two": {
+     "shot": "two",
+     "people": [
+      "two_a",
+      "two_b"
+     ],
+     "creature": null
+    },
+    "close": {
+     "shot": "close",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "bed": {
+     "shot": "insert",
+     "people": [],
+     "creature": null
+    }
+   },
+   "times": [
+    "day",
+    "night"
+   ],
+   "big_spot": null,
+   "texts": []
+  },
+  {
+   "id": "living_room",
+   "name": "Living room",
+   "look": "a sofa, a TV with replaceable text, a coffee table, a rug, a lamp, a window",
+   "spots": {
+    "hero": "Living room",
+    "two_a": "Living room",
+    "two_b": "Living room"
+   },
+   "creature_spots": [],
+   "cameras": {
+    "wide": {
+     "shot": "wide",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "medium": {
+     "shot": "medium",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "two": {
+     "shot": "two",
+     "people": [
+      "two_a",
+      "two_b"
+     ],
+     "creature": null
+    },
+    "close": {
+     "shot": "close",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "tv": {
+     "shot": "insert",
+     "people": [],
+     "creature": null
+    }
+   },
+   "times": [
+    "day",
+    "night"
+   ],
+   "big_spot": null,
+   "texts": [
+    "tv"
+   ]
+  },
+  {
+   "id": "kitchen",
+   "name": "Kitchen",
+   "look": "a counter, a stove, a fridge, a table, a window",
+   "spots": {
+    "hero": "Kitchen",
+    "two_a": "Kitchen",
+    "two_b": "Kitchen"
+   },
+   "creature_spots": [],
+   "cameras": {
+    "wide": {
+     "shot": "wide",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "medium": {
+     "shot": "medium",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "two": {
+     "shot": "two",
+     "people": [
+      "two_a",
+      "two_b"
+     ],
+     "creature": null
+    },
+    "close": {
+     "shot": "close",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "stove": {
+     "shot": "insert",
+     "people": [],
+     "creature": null
+    }
+   },
+   "times": [
+    "day",
+    "night"
+   ],
+   "big_spot": null,
+   "texts": []
+  },
+  {
+   "id": "grandma_room",
+   "name": "Grandma's room",
+   "look": "an armchair, a knitting basket, pictures, a cabinet, a lamp, lace curtains",
+   "spots": {
+    "hero": "Grandma's room",
+    "two_a": "Grandma's room",
+    "two_b": "Grandma's room"
+   },
+   "creature_spots": [],
+   "cameras": {
+    "wide": {
+     "shot": "wide",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "medium": {
+     "shot": "medium",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "two": {
+     "shot": "two",
+     "people": [
+      "two_a",
+      "two_b"
+     ],
+     "creature": null
+    },
+    "close": {
+     "shot": "close",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "chair": {
+     "shot": "insert",
+     "people": [],
+     "creature": null
+    }
+   },
+   "times": [
+    "day",
+    "night"
+   ],
+   "big_spot": null,
+   "texts": []
+  },
+  {
+   "id": "shop_inside",
+   "name": "Shop inside",
+   "look": "shelves of goods, a counter with a till, a sign",
+   "spots": {
+    "hero": "Shop inside",
+    "two_a": "Shop inside",
+    "two_b": "Shop inside",
+    "keeper": "behind the counter"
+   },
+   "creature_spots": [],
+   "cameras": {
+    "wide": {
+     "shot": "wide",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "medium": {
+     "shot": "medium",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "two": {
+     "shot": "two",
+     "people": [
+      "two_a",
+      "two_b"
+     ],
+     "creature": null
+    },
+    "close": {
+     "shot": "close",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "shelf": {
+     "shot": "insert",
+     "people": [],
+     "creature": null
+    }
+   },
+   "times": [
+    "day",
+    "night"
+   ],
+   "big_spot": null,
+   "texts": [
+    "shop_sign"
+   ]
+  },
+  {
+   "id": "cafe",
+   "name": "Cafe",
+   "look": "a counter with a coffee machine, a menu board with replaceable text, little tables",
+   "spots": {
+    "hero": "Cafe",
+    "two_a": "Cafe",
+    "two_b": "Cafe"
+   },
+   "creature_spots": [],
+   "cameras": {
+    "wide": {
+     "shot": "wide",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "medium": {
+     "shot": "medium",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "two": {
+     "shot": "two",
+     "people": [
+      "two_a",
+      "two_b"
+     ],
+     "creature": null
+    },
+    "close": {
+     "shot": "close",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "menu": {
+     "shot": "insert",
+     "people": [],
+     "creature": null
+    }
+   },
+   "times": [
+    "day",
+    "night"
+   ],
+   "big_spot": null,
+   "texts": [
+    "menu"
+   ]
+  },
+  {
+   "id": "mayor_office",
+   "name": "The Mayor's office",
+   "look": "a big desk with a name plate, a big chair, two flags, a portrait, a red carpet",
+   "spots": {
+    "hero": "The Mayor's office",
+    "two_a": "The Mayor's office",
+    "two_b": "The Mayor's office",
+    "mayor": "behind the desk"
+   },
+   "creature_spots": [],
+   "cameras": {
+    "wide": {
+     "shot": "wide",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "medium": {
+     "shot": "medium",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "two": {
+     "shot": "two",
+     "people": [
+      "two_a",
+      "two_b"
+     ],
+     "creature": null
+    },
+    "close": {
+     "shot": "close",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "nameplate": {
+     "shot": "insert",
+     "people": [],
+     "creature": null
+    },
+    "mayor_med": {
+     "shot": "medium",
+     "people": [
+      "mayor"
+     ],
+     "creature": null
+    }
+   },
+   "times": [
+    "day",
+    "night"
+   ],
+   "big_spot": null,
+   "texts": [
+    "nameplate"
+   ]
+  },
+  {
+   "id": "control_room",
+   "name": "The secret control room",
+   "look": "a wall of screens showing the town, a console with levers and big labelled buttons, one huge red button under a cover",
+   "spots": {
+    "hero": "The secret control room",
+    "two_a": "The secret control room",
+    "two_b": "The secret control room",
+    "mayor": "behind the console",
+    "at_red": "at the red button"
+   },
+   "creature_spots": [],
+   "cameras": {
+    "wide": {
+     "shot": "wide",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "medium": {
+     "shot": "medium",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "two": {
+     "shot": "two",
+     "people": [
+      "two_a",
+      "two_b"
+     ],
+     "creature": null
+    },
+    "close": {
+     "shot": "close",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "red": {
+     "shot": "insert",
+     "people": [],
+     "creature": null
+    },
+    "buttons": {
+     "shot": "insert",
+     "people": [],
+     "creature": null
+    },
+    "screens": {
+     "shot": "insert",
+     "people": [],
+     "creature": null
+    },
+    "mayor_med": {
+     "shot": "aerial",
+     "people": [
+      "mayor"
+     ],
+     "creature": null
+    }
+   },
+   "times": [
+    "night",
+    "dusk"
+   ],
+   "big_spot": null,
+   "texts": [
+    "btn1",
+    "btn2",
+    "btn3",
+    "red_label"
+   ]
+  },
+  {
+   "id": "townhall_front",
+   "name": "Town hall front",
+   "look": "the town hall with columns, steps and its sign; flower beds; old lamps",
+   "spots": {
+    "hero": "Town hall front",
+    "two_a": "Town hall front",
+    "two_b": "Town hall front",
+    "on_steps": ""
+   },
+   "creature_spots": [],
+   "cameras": {
+    "wide": {
+     "shot": "wide",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "medium": {
+     "shot": "medium",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "two": {
+     "shot": "two",
+     "people": [
+      "two_a",
+      "two_b"
+     ],
+     "creature": null
+    },
+    "close": {
+     "shot": "close",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "sign": {
+     "shot": "insert",
+     "people": [],
+     "creature": null
+    }
+   },
+   "times": [
+    "day",
+    "night"
+   ],
+   "big_spot": null,
+   "texts": [
+    "townhall"
+   ]
+  },
+  {
+   "id": "playground",
+   "name": "Park playground",
+   "look": "a slide, swings, a sandbox, a bench, trees, a fence",
+   "spots": {
+    "hero": "Park playground",
+    "two_a": "Park playground",
+    "two_b": "Park playground"
+   },
+   "creature_spots": [],
+   "cameras": {
+    "wide": {
+     "shot": "wide",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "medium": {
+     "shot": "medium",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "two": {
+     "shot": "two",
+     "people": [
+      "two_a",
+      "two_b"
+     ],
+     "creature": null
+    },
+    "close": {
+     "shot": "close",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "swing": {
+     "shot": "insert",
+     "people": [],
+     "creature": null
+    }
+   },
+   "times": [
+    "day",
+    "night"
+   ],
+   "big_spot": null,
+   "texts": []
+  },
+  {
+   "id": "basketball",
+   "name": "Basketball court",
+   "look": "a blue court with lines, two hoops, a tall fence, a bench",
+   "spots": {
+    "hero": "Basketball court",
+    "two_a": "Basketball court",
+    "two_b": "Basketball court"
+   },
+   "creature_spots": [],
+   "cameras": {
+    "wide": {
+     "shot": "wide",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "medium": {
+     "shot": "medium",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "two": {
+     "shot": "two",
+     "people": [
+      "two_a",
+      "two_b"
+     ],
+     "creature": null
+    },
+    "close": {
+     "shot": "close",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "hoop": {
+     "shot": "insert",
+     "people": [],
+     "creature": null
+    }
+   },
+   "times": [
+    "day",
+    "night"
+   ],
+   "big_spot": null,
+   "texts": []
+  },
+  {
+   "id": "hospital_room",
+   "name": "Hospital room",
+   "look": "a hospital bed, a heart monitor, a chair, a window with light curtains",
+   "spots": {
+    "hero": "Hospital room",
+    "two_a": "Hospital room",
+    "two_b": "Hospital room",
+    "bedside": ""
+   },
+   "creature_spots": [],
+   "cameras": {
+    "wide": {
+     "shot": "wide",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "medium": {
+     "shot": "medium",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "two": {
+     "shot": "two",
+     "people": [
+      "two_a",
+      "two_b"
+     ],
+     "creature": null
+    },
+    "close": {
+     "shot": "close",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "monitor": {
+     "shot": "insert",
+     "people": [],
+     "creature": null
+    }
+   },
+   "times": [
+    "day",
+    "night"
+   ],
+   "big_spot": null,
+   "texts": []
+  },
+  {
+   "id": "police_front",
+   "name": "Police station front",
+   "look": "the police station with its sign and a blue lamp, a police car",
+   "spots": {
+    "hero": "Police station front",
+    "two_a": "Police station front",
+    "two_b": "Police station front"
+   },
+   "creature_spots": [],
+   "cameras": {
+    "wide": {
+     "shot": "wide",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "medium": {
+     "shot": "medium",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "two": {
+     "shot": "two",
+     "people": [
+      "two_a",
+      "two_b"
+     ],
+     "creature": null
+    },
+    "close": {
+     "shot": "close",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "sign": {
+     "shot": "insert",
+     "people": [],
+     "creature": null
+    }
+   },
+   "times": [
+    "day",
+    "night"
+   ],
+   "big_spot": null,
+   "texts": [
+    "police"
+   ]
+  },
+  {
+   "id": "basement",
+   "name": "Basement",
+   "look": "a boiler, pipes, shelves, a bare bulb, boxes",
+   "spots": {
+    "hero": "Basement",
+    "two_a": "Basement",
+    "two_b": "Basement"
+   },
+   "creature_spots": [],
+   "cameras": {
+    "wide": {
+     "shot": "wide",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "medium": {
+     "shot": "medium",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "two": {
+     "shot": "two",
+     "people": [
+      "two_a",
+      "two_b"
+     ],
+     "creature": null
+    },
+    "close": {
+     "shot": "close",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "boiler": {
+     "shot": "insert",
+     "people": [],
+     "creature": null
+    }
+   },
+   "times": [
+    "day",
+    "night"
+   ],
+   "big_spot": null,
+   "texts": []
+  },
+  {
+   "id": "attic",
+   "name": "Attic",
+   "look": "a sloping roof, an old trunk, boxes, a round window, a bare bulb",
+   "spots": {
+    "hero": "Attic",
+    "two_a": "Attic",
+    "two_b": "Attic"
+   },
+   "creature_spots": [],
+   "cameras": {
+    "wide": {
+     "shot": "wide",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "medium": {
+     "shot": "medium",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "two": {
+     "shot": "two",
+     "people": [
+      "two_a",
+      "two_b"
+     ],
+     "creature": null
+    },
+    "close": {
+     "shot": "close",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "trunk": {
+     "shot": "insert",
+     "people": [],
+     "creature": null
+    }
+   },
+   "times": [
+    "day",
+    "night"
+   ],
+   "big_spot": null,
+   "texts": []
+  },
+  {
+   "id": "forest_edge",
+   "name": "Forest edge",
+   "look": "tall pines, bushes, a path into the trees, fallen logs",
+   "spots": {
+    "hero": "Forest edge",
+    "two_a": "Forest edge",
+    "two_b": "Forest edge"
+   },
+   "creature_spots": [
+    "cr_trees"
+   ],
+   "cameras": {
+    "wide": {
+     "shot": "wide",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "medium": {
+     "shot": "medium",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "two": {
+     "shot": "two",
+     "people": [
+      "two_a",
+      "two_b"
+     ],
+     "creature": null
+    },
+    "close": {
+     "shot": "close",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "path": {
+     "shot": "insert",
+     "people": [],
+     "creature": null
+    }
+   },
+   "times": [
+    "day",
+    "night"
+   ],
+   "big_spot": null,
+   "texts": []
+  },
+  {
+   "id": "alley",
+   "name": "Dark alley",
+   "look": "two brick walls, bins, crates, a puddle, one old lamp",
+   "spots": {
+    "hero": "Dark alley",
+    "two_a": "Dark alley",
+    "two_b": "Dark alley"
+   },
+   "creature_spots": [
+    "cr_end"
+   ],
+   "cameras": {
+    "wide": {
+     "shot": "wide",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "medium": {
+     "shot": "medium",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "two": {
+     "shot": "two",
+     "people": [
+      "two_a",
+      "two_b"
+     ],
+     "creature": null
+    },
+    "close": {
+     "shot": "close",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "bins": {
+     "shot": "insert",
+     "people": [],
+     "creature": null
+    }
+   },
+   "times": [
+    "dusk",
+    "night"
+   ],
+   "big_spot": null,
+   "texts": []
+  },
+  {
+   "id": "rooftop",
+   "name": "Rooftop",
+   "look": "a flat roof with a low wall, air units, a water tank, the city's towers around",
+   "spots": {
+    "hero": "Rooftop",
+    "two_a": "Rooftop",
+    "two_b": "Rooftop"
+   },
+   "creature_spots": [],
+   "cameras": {
+    "wide": {
+     "shot": "wide",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "medium": {
+     "shot": "medium",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "two": {
+     "shot": "two",
+     "people": [
+      "two_a",
+      "two_b"
+     ],
+     "creature": null
+    },
+    "close": {
+     "shot": "close",
+     "people": [
+      "hero"
+     ],
+     "creature": null
+    },
+    "tank": {
+     "shot": "insert",
+     "people": [],
+     "creature": null
+    }
+   },
+   "times": [
+    "day",
+    "night"
+   ],
+   "big_spot": null,
+   "texts": []
+  }
+ ],
  "big_things": [],
  "times": [],
  "weathers": [],

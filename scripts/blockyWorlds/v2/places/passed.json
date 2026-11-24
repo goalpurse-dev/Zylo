@@ -3,5 +3,28 @@
   "bright_city",
   "old_town",
   "suburb"
+ ],
+ "side_sets": [
+  "classroom",
+  "hallway",
+  "school_front",
+  "bedroom",
+  "living_room",
+  "kitchen",
+  "grandma_room",
+  "shop_inside",
+  "cafe",
+  "mayor_office",
+  "control_room",
+  "townhall_front",
+  "playground",
+  "basketball",
+  "hospital_room",
+  "police_front",
+  "basement",
+  "attic",
+  "forest_edge",
+  "alley",
+  "rooftop"
  ]
 }
