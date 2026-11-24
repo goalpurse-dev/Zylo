@@ -382,6 +382,10 @@ class ZChar:
         r = 0.05 * hs
         # the Mimic's smile: too wide, ear to ear
         zc_arc(n + "_m_wide", [(-0.62 * hs, 0.16 * hs), (-0.4 * hs, -0.08 * hs), (0.0, -0.13 * hs), (0.4 * hs, -0.08 * hs), (0.62 * hs, 0.16 * hs)], r, line_m, mo("wide"), C)
+        _tw = mo("too_wide")
+        # the last smile: far too wide, past the cheeks, the corners curling up (with a second line: the teeth)
+        zc_arc(n + "_m_toowide", [(-0.9 * hs, 0.34 * hs), (-0.7 * hs, 0.0), (-0.36 * hs, -0.2 * hs), (0.0, -0.25 * hs), (0.36 * hs, -0.2 * hs), (0.7 * hs, 0.0), (0.9 * hs, 0.34 * hs)], r * 1.15, line_m, _tw, C)
+        zc_arc(n + "_m_toowide2", [(-0.66 * hs, 0.06 * hs), (-0.33 * hs, -0.07 * hs), (0.0, -0.1 * hs), (0.33 * hs, -0.07 * hs), (0.66 * hs, 0.06 * hs)], r * 0.6, line_m, _tw, C)
         zc_arc(n + "_m_line", [(-0.16 * hs, 0), (0, -0.01 * hs), (0.16 * hs, 0)], r, line_m, mo("line"), C)
         zc_arc(n + "_m_small", [(-0.08 * hs, 0), (0.08 * hs, 0)], r, line_m, mo("small_line"), C)
         zc_arc(n + "_m_smile", [(-0.27 * hs, 0.07 * hs), (-0.1 * hs, -0.06 * hs), (0.1 * hs, -0.06 * hs), (0.27 * hs, 0.07 * hs)], r, line_m, mo("smile"), C)
@@ -645,7 +649,7 @@ class ZCritter:
         zc_ellipse(n + "_m_grin", 0.22, 0.16, 0.02, mouth_m, g, self.coll, top_flat=True, y=0.0)
         o = mo("small_o")
         zc_ellipse(n + "_m_so", 0.08, 0.1, 0.0, mouth_m, o, self.coll, y=0.0)
-        for k in ("big_o", "frown_open", "grit", "small_line", "smirk", "side_line", "wide"):
+        for k in ("big_o", "frown_open", "grit", "small_line", "smirk", "side_line", "wide", "too_wide"):
             M[k] = M["small_o"] if k in ("big_o", "frown_open") else (M["frown"] if k == "grit" else M["line"])
         self.F["blush"] = []
         self.F["tears"] = empty(n + "_tears", (0, 0, 0), self.root, self.coll)
@@ -676,13 +680,15 @@ def zv_open_window(i=8, wx=-4, light_on=True):
     bpy.context.view_layer.update()
     c = pane.matrix_world.translation.copy()
     dm = pane.dimensions
-    cut = box("zv_wcut%d" % i, (dm.x * 0.98, 3.0, dm.z * 0.98), (c.x, c.y + 1.2, c.z), None, 0.0)
+    # the opening: the window's upper 60 pct (a high sill: someone inside shows head and shoulders, never legs)
+    cut = box("zv_wcut%d" % i, (dm.x * 0.98, 6.0, dm.z * 0.58), (c.x, c.y + 2.7, c.z + dm.z * 0.2), None, 0.0)   # a room-deep pocket (the house is solid)
     cut.hide_render = True
     cut.display_type = "WIRE"
     md = house.modifiers.new("zv_window", "BOOLEAN")
     md.object = cut
     md.operation = "DIFFERENCE"
     D.objects.remove(pane, do_unlink=True)
+    box("zv_wsill%d" % i, (dm.x + 0.5, 0.5, 0.22), (c.x, c.y - 0.2, c.z + dm.z * 0.2 - dm.z * 0.29), mat("zv_sillw", zc_rgb("#F4F1EA"), 0.5), 0.03)
     box("zv_room%d" % i, (8, 0.2, 9), (c.x, c.y + 4.5, 4.5), mat("zv_roomwall", zc_rgb("#E9D9B8"), 0.9), 0.0)
     if light_on:
         light("zv_roomlamp%d" % i, "POINT", (c.x + 0.6, c.y + 2.5, c.z + 1.6), 220, (1.0, 0.82, 0.58), 0.8)
@@ -767,6 +773,7 @@ ZC_EXPR = {
     "shadow_aside":  {"brow_z": 0.0, "brow_tilt": 0, "lid": 0.2, "lid_tilt": 0, "low": 0.0, "mouth": "line", "look": (0.07, 0.0)},
     # the Mimic: almost right (eyes that never blink, a smile too wide, brows too still)
     "mimic_smile":   {"brow_z": 0.08, "brow_tilt": 0, "lid": 0.0001, "lid_tilt": 0, "low": 0.0, "mouth": "wide", "eye_scale": 0.86},
+    "mimic_wide":    {"brow_z": 0.1, "brow_tilt": 0, "lid": 0.0001, "lid_tilt": 0, "low": 0.0, "mouth": "too_wide", "eye_scale": 0.92},
     "mimic_stare":   {"brow_z": 0.12, "brow_tilt": 0, "lid": 0.0001, "lid_tilt": 0, "low": 0.0, "mouth": "line", "eye_scale": 0.8},
     "mimic_grin":    {"brow_z": 0.04, "brow_tilt": -8, "lid": 0.2, "lid_tilt": 10, "low": 0.0, "mouth": "wide", "eye_scale": 0.86, "look": (0.0, 0.03)},
     "mimic_copy":    {"brow_z": 0.04, "brow_tilt": 4, "lid": 0.0001, "lid_tilt": 0, "low": 0.1, "mouth": "smile", "eye_scale": 0.84},
@@ -964,3 +971,30 @@ def zc_look(ch, t, pt, max_head=35.0):
     h = max(-math.radians(max_head), min(math.radians(max_head), d))
     ch.neck.rotation_euler = (ch.neck.rotation_euler[0], ch.neck.rotation_euler[1], ch.neck.rotation_euler[2] + h)
     key(ch.neck, "rotation_euler", F(t), interp="CONSTANT")
+
+
+def zv_at_window(ch, wc, inside=0.9):
+    """someone standing inside an opened front window: the head in the opening, a little high (their body below the sill)"""
+    if wc is None:
+        return
+    bpy.context.view_layer.update()
+    hc = zc_head_c(ch)
+    r = ch.root.location
+    ch.root.location = (wc.x + (r.x - hc.x), wc.y + inside + (r.y - hc.y), r.z + (wc.z + 0.45 - hc.z))
+
+
+def zv_window_cam(t0, t1, wc, dist=6.2, lens=40, side=0.3, push=0.06, ch=None):
+    """the face at the window from outside: the head high in the frame (the captions below), a slow push"""
+    if wc is None:
+        cam = Cam()
+        cam.key(t0, (0, -20, 5), (0, 0, 2), lens=30)
+        return cam
+    hz = zc_head_c(ch).z if ch is not None else wc.z + 0.45
+    loc = Vector((wc.x + side, wc.y - dist, hz - 0.3))
+    tgt = Vector((wc.x, wc.y + 0.9, hz - 0.62))    # the head high in the frame (a hat fits), both curtains at the sides
+    f = (tgt - loc).length
+    cam = Cam()
+    cam.key(t0, tuple(loc), tuple(tgt), lens=lens, focus=f, fstop=2.4)
+    e = loc + (tgt - loc) * push
+    cam.key(t1, tuple(e), tuple(tgt), lens=lens, focus=f * (1.0 - push), fstop=2.4)
+    return cam

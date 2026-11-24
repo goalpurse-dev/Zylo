@@ -70,6 +70,7 @@ export function checkStage(S) {
   const inDeck = (p, m = 0) => p[0] > S.deck.x0 + m && p[0] < S.deck.x1 - m && p[1] > S.deck.y0 + m && p[1] < S.deck.y1 - m;
   // spots: clear of walls by a body; deck spots fully on the deck, ground spots fully off it
   for (const [k, s] of Object.entries(S.spots)) {
+    if (s.inside) continue;
     for (const o of walls) if ((o.box?.[4] ?? 0) < s.at[2] + H.adult && !(s.seat && o.furniture)) { const d = footDist(s.at, o); if (d < (s.seat ? 0.7 : BODY_R)) out.push(`spot ${k}: ${d.toFixed(2)} from ${o.n} (a body needs ${BODY_R})`); }
     if (s.on === "deck" && !inDeck(s.at, BODY_R)) out.push(`spot ${k}: not fully on the porch deck`);
     if (s.on !== "deck" && footDist(s.at, { box: [S.deck.x0, S.deck.x1, S.deck.y0, S.deck.y1] }) < BODY_R) out.push(`spot ${k}: its body overlaps the porch deck edge`);

@@ -64,7 +64,7 @@ def zv_curtains(state="closed", t=None, x_range=(-60, 60), gap=None, lit=True):
     n = 0
     for ob in list(D.objects):
         nm = ob.name
-        if not (nm.startswith("zw_hwin") and not nm.startswith("zw_hwinf") and not nm.startswith("zw_hwins")) or ob.type != "MESH":
+        if not (nm.startswith("zw_hwin") and not nm.startswith("zw_hwinf") and not nm.startswith("zw_hwins") and not nm.startswith("zw_hwin2f")) or ob.type != "MESH":
             continue
         c = ob.matrix_world.translation
         if not (x_range[0] <= c.x <= x_range[1]):
@@ -72,6 +72,8 @@ def zv_curtains(state="closed", t=None, x_range=(-60, 60), gap=None, lit=True):
         dm = ob.dimensions
         side = 1.0 if c.y > 0 else -1.0                  # north houses face -Y, south houses face +Y
         col = ZV_CURTAIN_COLS[(int(abs(c.x)) // 7 + (1 if c.y > 0 else 3)) % len(ZV_CURTAIN_COLS)]
+        if nm.startswith("zw_hwin8_") or nm.startswith("zw_hwin28_"):
+            col = "#B84A4A"     # our house: the same red curtains as the dining room inside
         m = mat("zv_curtain_%s%s" % (col[1:], "_lit" if lit and zw_night() else ""), zc_rgb(col), 0.85,
                 emit=zc_rgb(col) if (lit and zw_night()) else None, estr=0.35 if (lit and zw_night()) else 0.0)
         hw, hh = dm.x / 2.0, dm.z
@@ -80,7 +82,7 @@ def zv_curtains(state="closed", t=None, x_range=(-60, 60), gap=None, lit=True):
         for s in (-1, 1):
             closed_w = hw - g / 2.0
             open_w = hw * 0.22
-            p = box("%s_cur%d" % (nm, s), (1.0, 0.06, hh * 1.02), (c.x + s * (hw - closed_w / 2.0), y, c.z), m, 0.01)
+            p = box("zv_cur_%s_%d" % (nm[3:], s), (1.0, 0.06, hh * 1.02), (c.x + s * (hw - closed_w / 2.0), y, c.z), m, 0.01)
             if state == "closed":
                 p.scale.x = closed_w
             elif state == "open":
@@ -88,8 +90,9 @@ def zv_curtains(state="closed", t=None, x_range=(-60, 60), gap=None, lit=True):
                 p.location.x = c.x + s * (hw - open_w / 2.0)
             else:
                 ta = (t if t is not None else 0.0) + ((int(abs(c.x)) * 7) % 11) * 0.08
-                p.scale.x = open_w
-                p.location.x = c.x + s * (hw - open_w / 2.0)
+                half_w = hw * 0.6     # already half drawn when the shot starts: a still reads as closing
+                p.scale.x = half_w
+                p.location.x = c.x + s * (hw - half_w / 2.0)
                 key(p, "scale", F(ta))
                 key(p, "location", F(ta))
                 p.scale.x = closed_w
@@ -250,7 +253,7 @@ def zv_gate(S):
             if pts and (zw_span(cam, [p for p in pts if p.z > min(q.z for q in pts) + 0.78 * (max(q.z for q in pts) - min(q.z for q in pts))]) or (0, 1, -1, 2))[2] < 0.0:
                 lines.append("ZW_GATE|%s|zv|creature|head_cut|its eyes are above the frame" % sid)
             cov = max(0.0, min(1.0, u1) - max(0.0, u0)) * max(0.0, min(1.0, v1) - max(0.0, v0))
-            if cov > 0.7:
+            if cov > 0.7 and ZV_SHOT.get("cam") != "eyes":    # an eyes-only shot fills the frame on purpose
                 lines.append("ZW_GATE|%s|zv|creature|lens_wall|covers %d pct of the frame" % (sid, int(100 * cov)))
         elif (v1 - v0) < 0.12:
             lines.append("ZW_GATE|%s|zv|%s|small|body %.2f of the frame height" % (sid, who, v1 - v0))

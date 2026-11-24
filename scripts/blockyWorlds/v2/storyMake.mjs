@@ -32,13 +32,46 @@ if (!has("yes")) { say("dry run (add --yes)"); process.exit(0); }
 const KEY = process.env.ANTHROPIC_API_KEY;
 const S = { ...STAGE_A, cameras: {} };
 
+// THE OWNER'S STORY (2026-11-24): the curtains rule, the Mayor, Mom's peek, the dinner, the smile
+const BRIEFS = {
+  curtains: {
+    topic: "In this town you can't look outside after dark; every curtain is closed before the sun goes down. One night Mom looked. The next day at dinner she wasn't Mom anymore. Kid-safe, eerie, nobody gets hurt. 60-80 seconds.",
+    outline: [
+      "1. THE RULE (line 1, by 3 s): In this town, you can't look outside after dark; every curtain is closed before the sun goes down. (I'm in front of our closed curtains.)",
+      "2. At dusk every house on our street closes its curtains, ours too.",
+      "3. Even the Mayor is scared: he pulls his own curtains shut, nervous.",
+      "4. One night Mom thought I wasn't home yet. Worried, she peeked through the curtains.",
+      "5. She saw the thing in the street (the Shadow, far across the street) looking straight back at her. Her face: terrified. I was safe inside and didn't see it.",
+      "6. The next day at dinner Mom acted strange: 2-3 small wrong details that build (you choose: she doesn't blink; she sets a place for nobody; she smiles before I finish talking; she copies my words a beat late; ...). My little sister may be at the table.",
+      "7. Then I realised: it's not Mom anymore. The smile, too wide, eyes that don't blink. The copy may say ONE short line (2-6 words), introduced by the narrator on the line before.",
+      "8. The last line flips the first one and invites a comment (e.g. the rule wasn't to keep it out...).",
+    ].join("\n"),
+    words: { minW: 190, maxW: 270 },
+    cast_menu: [{ id: "me", about: "the narrator, a kid in an orange hoodie" }, { id: "mom", about: "Mom, warm, red cardigan, a bob" }, { id: "mimic", about: "the wrong copy of Mom at dinner: almost right" }, { id: "mayor", about: "the Mayor, a suit, a sash, a top hat, nervous" }, { id: "sister", about: "my little sister, pigtails" }, { id: "creature", about: "the Shadow: a tall dark figure with glowing eyes, only ever far away" }],
+    cast: (sis) => ({ me: { name: "Me", spec: "me" }, mom: { name: "Mom", spec: "mom" }, mimic: { name: "Mom", spec: "mimic_mom" }, mayor: { name: "Mayor", spec: "mayor" }, sister: { name: sis ?? "Sis", spec: "sister" }, creature: { name: "Shadow", spec: "shadow" } }),
+    aliases: (sis) => ({ me: ["I", "me"], mom: ["mom", "mother"], sister: ["sister", ...(sis ? [sis.toLowerCase()] : [])], mayor: ["mayor"], creature: ["thing", "shadow"], curtains: ["curtain", "curtains"] }),
+    alias_any: { mom: ["mom", "mimic"] },
+    rule: { object: "curtains", start: "open", change_words: ["close", "closed", "closes", "closing", "shut", "pull", "pulled", "pulls", "open", "opened", "peek", "peeked", "drawn", "draw", "drew"], tell_person: null },
+    notes: [
+      "- Row 1 (the hook): stage B, me on seat_back (sitting, the closed curtains right behind me), camera close, facing the camera, time dinner.",
+      "- The dusk line: stage A, time sunset, camera street, props.curtains 'closing'; then our house (a wide or medium with me / Mom on the porch) with curtains 'closing'.",
+      "- The Mayor: stage A, mayor on win_mayor, camera window, pose hold_up2 (his arm up, pulling the curtain), face scared, props.curtains 'closing', time sunset.",
+      "- Mom's peek: stage A night: mom on win_ours, camera window, props.peek true (curtains closed with a slit), face worried. Then her view: camera pov, subject ['creature'], the creature on cr_across facing {to: win_ours}. Then back to mom on win_ours, camera window, face terrified (one of the two big shock faces) with push 0.15.",
+      "- Me safe inside: stage B, time dinner_cold, me on stand_kitchen or a seat, not seeing it.",
+      "- The dinner: stage B: mimic on seat_back (the closed curtains behind her), me on seat_left, sister on seat_right; seat_front is the empty place (insert plate_front for a place set for nobody). Warm (dinner) at first, dinner_cold as it gets wrong.",
+      "- The smile (the last big moment): mimic on seat_back, camera close, face mimic_wide (the too-wide smile, only here), facing camera, push 0.2, held over the line; the last line may stay on it or cut to me.",
+      "- Night rows on stage A: the engine closes every curtain by itself (leave props.curtains out, or say closed).",
+    ].join("\n"),
+  },
+};
+const BRIEF = BRIEFS[NAME] ?? null;
 const TOPIC = "In this town, something can copy the people you love. I think my mom isn't my mom. A creepy mimic story, kid-safe (eerie, nobody gets hurt), our own plot. Stage: our street, the house front, the porch, the door, a window; dusk into night. Cast: me (the narrator), Mom, the Mimic (a wrong copy of Mom), my little sister. 60-80 seconds.";
 const CAST_MENU = [{ id: "me", about: "the narrator, a kid in an orange hoodie" }, { id: "mom", about: "Mom, warm, red cardigan, a bob" }, { id: "mimic", about: "the copy of Mom: almost right" }, { id: "sister", about: "my little sister, cheeky, pigtails" }];
 
 // ---- 1 the script
 let W = load("script.json");
 if (!W) {
-  const r = await writeStory({ callJson, apiKey: KEY, topic: TOPIC, cast: CAST_MENU, meter });
+  const r = await writeStory({ callJson, apiKey: KEY, topic: BRIEF?.topic ?? TOPIC, cast: BRIEF?.cast_menu ?? CAST_MENU, meter, outline: BRIEF?.outline ?? null, words: BRIEF?.words ?? null, both: Boolean(BRIEF) });
   W = { ...r }; save("script.json", W);
   say(`script "${r.script.title}": ${r.script.lines.length} lines, ${r.script.lines.reduce((a, l) => a + l.text.split(/\s+/).length, 0)} words, tell ${r.script.tell}; ${r.problems.length} problem(s) left${r.problems.length ? ": " + r.problems.join(" | ") : ""}; $${r.costUsd}`);
 }
@@ -48,7 +81,10 @@ if (!upTo("plan")) process.exit(0);
 
 // ---- 2 the story object + the shot rows (planned, checked, re-planned)
 const sisterName = (SC.lines.map((l) => l.text).join(" ").match(/\bsister,? (\w+)/i) ?? [])[1];
-const story = {
+const story = BRIEF ? {
+  title: SC.title, rule_text: SC.rule, tell: SC.tell, lines: SC.lines, both_stages: true, notes: BRIEF.notes,
+  cast: BRIEF.cast(sisterName), aliases: BRIEF.aliases(sisterName), alias_any: BRIEF.alias_any, props: {}, rule: BRIEF.rule,
+} : {
   title: SC.title, rule_text: SC.rule, tell: SC.tell, lines: SC.lines,
   cast: { me: { name: "Me", spec: "me" }, mom: { name: "Mom", spec: "mom" }, mimic: { name: "Mom", spec: "mimic_mom" }, sister: { name: sisterName ?? "Sis", spec: "sister" } },
   aliases: { me: ["I", "me"], mom: ["mom", "mother"], sister: ["sister", ...(sisterName ? [sisterName.toLowerCase()] : [])], mimic: ["copy", "mimic", "the thing"], porch_light: ["porch light"] },
@@ -56,7 +92,7 @@ const story = {
   props: { flashlight: { kind: "flashlight", hands: "R" }, phone: { kind: "phone", hands: "both" } },
   rule: { object: SC.tell === "porch_light" ? "porch_light" : null, start: "on", change_words: ["out", "off", "on", "lit", "flick", "flicked", "click"], tell_person: "mimic" },
 };
-let rows = load("rows.json");
+let rows = load("plan_rows.json") ?? (Array.isArray(load("rows.json")) ? load("rows.json") : null);
 if (!rows) {
   let r = await planRows({ callJson, apiKey: KEY, story, meter });
   rows = r.rows;
@@ -69,7 +105,7 @@ if (!rows) {
     const rp = await planRows({ callJson, apiKey: KEY, story, meter, previous: rows.filter((x) => lines.includes(x.line)), problems: probs, onlyLines: lines });
     rows = [...rows.filter((x) => !lines.includes(x.line)), ...rp.rows.filter((x) => lines.includes(x.line))].sort((a, b) => a.line - b.line);
   }
-  save("rows.json", rows);
+  save("plan_rows.json", rows);
 }
 story.rows = rows;
 const probs = checkRows(S, story);
@@ -83,7 +119,7 @@ const VD = path.join(OUT, "voice");
 let V = load("voice.json");
 if (!V) {
   L.check("voice", 0.3);
-  const r = await castVoice({ script: { lines: SC.lines.map((l) => ({ text: l.text, speaker: l.speaker === "mimic" ? "Mimic" : "narrator" })) }, voices: { Mimic: { type: "mom" } }, outDir: VD, apiKey: process.env.ELEVENLABS_KEY ?? process.env.ELEVENLABS_API_KEY, log: say });
+  const r = await castVoice({ script: { lines: SC.lines.map((l) => ({ text: l.text, speaker: l.speaker === "mimic" ? "Mimic" : "narrator" })) }, voices: { Mimic: { type: "mom" } }, pace: BRIEF ? 1.2 : null, outDir: VD, apiKey: process.env.ELEVENLABS_KEY ?? process.env.ELEVENLABS_API_KEY, log: say });
   L.add("voice", r.costUsd);
   V = { wav: r.wav, words: r.words, duration: r.duration }; save("voice.json", V);
   say(`voice: ${r.duration.toFixed(1)} s, $${r.costUsd}`);
@@ -126,7 +162,7 @@ if (!upTo("stills")) process.exit(0);
 
 // ---- 4 the stills (+ the automatic fixes of the shots the Blender checks failed: the camera pulled back, max 2)
 const run = (extra) => { const r = spawnSync("node", ["--env-file=.env.local", path.join(HERE, "storyStills.mjs"), "--story", NAME, "--yes", "--cap", String(CAP), "--out", OUT, ...extra], { encoding: "utf8", cwd: path.join(HERE, "..", "..", ".."), maxBuffer: 1 << 26 }); say(String(r.stdout).trim().split("\n").slice(-2).join(" | ")); if (r.status) say(`stills FAILED: ${String(r.stderr).slice(-400)}`); };
-if (!fs.existsSync(path.join(OUT, "rows.json")) || has("restills")) run(["--force"]);
+if (!fs.existsSync(path.join(OUT, "storyboard.jpg")) || has("restills")) run(["--force"]);
 for (let k = 0; k < 2; k++) {
   const res = JSON.parse(fs.readFileSync(path.join(OUT, "rows.json"), "utf8"));
   const bad = Object.entries(res).filter(([, v]) => v.fails.length).map(([n]) => Number(n));

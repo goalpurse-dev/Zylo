@@ -57,6 +57,22 @@ export function solveCam(S0, row) {
     let fx = fp[0] - a[0], fy = fp[1] - a[1]; const fl = Math.hypot(fx, fy) || 1; fx /= fl; fy /= fl;
     return { loc: [+(e[0] + fx * 6.5).toFixed(2), +(e[1] + fy * 6.5).toFixed(2), +(e[2] - 0.3).toFixed(2)], tgt: e.map((x) => +x.toFixed(2)), lens: 50, ok: true, type };
   }
+  const inside = (row.people ?? []).filter((p) => S.spots[p.spot]?.inside);
+  if (type === "window") {   // someone inside a front window, filmed from outside (the head high in the frame)
+    if (!inside.length) return { ok: false, why: "a window shot needs someone on a window spot (win_*)", type };
+    const a = S.spots[inside[0].spot].at;
+    return { ok: true, type, loc: [+(a[0] + 0.8).toFixed(2), +(a[1] - 5.5).toFixed(2), 4.6], tgt: [a[0], a[1], 4.45], lens: 46, win: S.spots[inside[0].spot].win };
+  }
+  if (inside.length) return { ok: false, why: `${inside[0].id} is inside a window: only a "window" camera films that spot`, type };
+  if (type === "pov") {      // through our window to the creature far across the street (its whole figure)
+    if (!pl.creature?.at) return { ok: false, why: "a pov shot needs the creature on a far spot", type };
+    const w = S.spots[c.from ?? "win_ours"]?.at ?? [-4.2, 18.8, 0], a = pl.creature.at;
+    return { ok: true, type, loc: [w[0], 17.45, 4.8], tgt: [a[0], a[1], a[2] + pl.creature.h * 0.5], lens: 34 };
+  }
+  if (type === "street") {   // the row of houses (no subject): the stage's own establishing camera
+    if (!S.street_cam) return { ok: false, why: "this stage has no street shot", type };
+    return { ok: true, type, ...S.street_cam };
+  }
   if (type === "insert") {   // a thing alone: from in front of it, close
     const p = S.props_at?.[c.subject?.[0]] ?? PROP_POINTS[c.subject?.[0]] ?? [0, 8, 1];
     const loc = c.subject?.[0] === "porch_light" ? [p[0] - 0.6, p[1] - 3.2, p[2] - 0.6] : [p[0] + 0.6, p[1] - 3.0, p[2] + 2.2];
@@ -86,7 +102,7 @@ export function solveCam(S0, row) {
   if (type === "ots" && subj[1] && pl[subj[1]]) { const o = pl[subj[1]].at; const v = [o[0] - m.at[0], o[1] - m.at[1]]; const l = Math.hypot(...v) || 1; dir = rot(v[0] / l, v[1] / l, 14); anchor = o; }
   const walkers = (row.people ?? []).filter((p) => subj.includes(p.id) && ["walk", "run"].includes(p.pose));
   const heads0 = walkers.map((p) => { const a = pl[p.id].at, f = facingPoint(S, row, p.facing ?? "street", p.id); const v = [f[0] - a[0], f[1] - a[1]], l = Math.hypot(...v) || 1, b = p.pose === "run" ? 2.6 : 1.6; return [a[0] - (v[0] / l) * b, a[1] - (v[1] / l) * b, a[2] + pl[p.id].h * 0.82]; });
-  const heads = [...heads0, ...subj.map((k) => [pl[k].at[0], pl[k].at[1], pl[k].at[2] + pl[k].h * (k === "creature" ? 0.85 : 0.82)]), ...(c.with ?? []).map((k) => PROP_POINTS[k]).filter(Boolean)];
+  const heads = [...heads0, ...subj.map((k) => [pl[k].at[0], pl[k].at[1], pl[k].at[2] + pl[k].h * (k === "creature" ? 0.85 : 0.82)]), ...(c.with ?? []).map((k) => S.props_at?.[k] ?? PROP_POINTS[k]).filter(Boolean)];
   const C = [0, 1, 2].map((i) => heads.reduce((a, h) => a + h[i], 0) / heads.length);
   const seated = subj.every((k) => k === "creature" ? false : (row.people ?? []).some((p) => p.id === k && S.spots[p.spot]?.seat));
   const lens = c.lens ?? ((LENS[type] ?? 30) + (seated && type !== "wide" ? 8 : 0));
@@ -105,7 +121,7 @@ export function solveCam(S0, row) {
       if (probs.length) continue;
       if (c.pull && c.pull > 1) { if (minD == null) minD = d * c.pull; if (d < minD - 1e-6) continue; }
       // the things it must also show ("with"), inside the frame
-      if ((c.with ?? []).some((k) => { const q = project(cam, PROP_POINTS[k] ?? [0, 0, 0]); return !q || q[0] < 0.08 || q[0] > 0.92 || q[1] < 0.16 || q[1] > 0.6; })) continue;
+      if ((c.with ?? []).some((k) => { const q = project(cam, S.props_at?.[k] ?? PROP_POINTS[k] ?? [0, 0, 0]); return !q || q[0] < 0.08 || q[0] > 0.92 || q[1] < 0.16 || q[1] > 0.6; })) continue;
       // the creature: always its WHOLE figure (feet to eyes) unless the shot is its eyes
       if (subj.includes("creature")) { const cs = span(cam, pl.creature.at, 1.2, 0, pl.creature.h); if (!cs || cs[2] < 0.02 || cs[3] > 0.98) continue; }
       const vs = peopleSpots.map((k) => span(cam, S.spots[k].at, 0.6, H.kid - 0.95, H.kid)).filter(Boolean).map((s) => (s[2] + s[3]) / 2);
@@ -143,7 +159,8 @@ export function checkRows(S, story) {
   if (h0) {
     if (!["close", "medium", "two"].includes(h0.cam?.type) || !(h0.people ?? []).length) out.push(`row 1 (the hook): a ${h0.cam?.type ?? "?"} shot${(h0.people ?? []).length ? "" : " with nobody"}: the first shot is a character, big, from the front`);
     if (h0.time === "night") out.push("row 1 (the hook): night: the first picture must be bright and sharp");
-    if (story.rule?.object && !story.rule?.tell_person && !((h0.cam?.with ?? []).includes(story.rule.object) || (h0.people ?? []).some((p) => p.holds === story.rule.object))) out.push(`row 1 (the hook): the rule object (${story.rule.object}) is not on or next to the character`);
+    const curtainsBehind = story.rule?.object === "curtains" && ((h0.stage === "B" && (h0.people ?? []).some((p) => p.spot === "stand_window" || p.spot === "seat_back")) || h0.props?.curtains === "closed");
+    if (story.rule?.object && !story.rule?.tell_person && !curtainsBehind && !((h0.cam?.with ?? []).includes(story.rule.object) || (h0.people ?? []).some((p) => p.holds === story.rule.object))) out.push(`row 1 (the hook): the rule object (${story.rule.object}) is not on or next to the character`);
   }
   if (h0 && story.rule?.tell_person && !(h0.people ?? []).some((p) => p.id === story.rule.tell_person) && !(story.rule.object && (h0.cam?.with ?? []).includes(story.rule.object))) out.push(`row 1 (the hook): the rule's tell is not in the first shot (show ${story.rule.tell_person}${story.rule.object ? ` or the ${story.rule.object}` : ""})`);
   const sideBack = story.rows.filter((r) => ["side", "back"].includes(r.cam?.type)).length;
@@ -169,7 +186,8 @@ export function checkRows(S, story) {
     // the rule object's state changes only on a line whose words say so
     const rs = r.props?.[story.rule?.object];
     if (rs && ruleState && rs !== ruleState && !story.rule.change_words.some((w) => new RegExp(`\\b${w}\\b`, "i").test(lineText(r.line)))) out.push(`${tag}: the ${story.rule.object} turns ${rs} on a line that does not say so`);
-    if (rs) ruleState = rs;
+    if (rs) ruleState = rs === "closing" ? "closed" : rs;
+    if (story.rule?.object === "curtains" && r.time === "night" && S.build !== "dining" && rs === "open" && !/\b(open|opened|opens|peek|peeked|peeks|pulled back|parted)\b/i.test(lineText(r.line))) out.push(`${tag}: the curtains are open after dark on a line that does not open them (the rule: closed after dark)`);
     // continuity in a scene: spots move only on a line with a movement word; two people never swap screen sides
     const sc = r.scene;
     lastSpot[sc] ??= {}; lastSide[sc] ??= {};
@@ -212,8 +230,9 @@ export function checkRows(S, story) {
     const n = k + 1, rows = (byLine[n] ?? []).map((x) => x.r);
     if (!rows.length) { out.push(`line ${n}: no shot`); return; }
     for (const id of names(n)) {
+      if (rows.some((r) => (r.absent ?? []).includes(id))) continue;   // the line says they are NOT there ("I wasn't home")
       const ids2 = story.alias_any?.[id] ?? [id];
-      const shown = rows.some((r) => (r.people ?? []).some((p) => ids2.includes(p.id)) || (id === "creature" && r.creature) || (r.props && id in r.props && r.props[id] !== false) || (r.cam?.subject ?? []).includes(id) || (r.people ?? []).some((p) => p.holds === id) || r.creature?.holds === id);
+      const shown = rows.some((r) => (r.people ?? []).some((p) => ids2.includes(p.id)) || (id === "creature" && r.creature) || (r.props && id in r.props && r.props[id] !== false) || (id === "curtains" && (r.stage === "B" || r.time === "night" || ["window", "street", "pov"].includes(r.cam?.type))) || (r.cam?.subject ?? []).includes(id) || (r.people ?? []).some((p) => p.holds === id) || r.creature?.holds === id);
       if (!shown) out.push(`line ${n}: names "${id}" but no shot shows it`);
     }
   });
@@ -284,6 +303,10 @@ export function rowPython(S0, story, r, { stageId = "A" } = {}) {
   const L = [`zv_build(${py(stageId)}, ${py(r.time)}, t0, t1)`];
   if (r.props?.porch_light) L.push(`_pl = zv_porch_light(${r.props.porch_light === "on" ? "True" : "False"})`);
   if (r.props?.street_lamps) L.push(`zv_street_lamps(True)`);
+  const insideP = (r.people ?? []).find((p) => S.spots[p.spot]?.inside);
+  const curt = S.build === "dining" ? null : (r.props?.curtains ?? (story.rule?.object === "curtains" && r.time === "night" ? "closed" : null));
+  if (curt) L.push(`zv_curtains(${py(curt)}, t0, gap=${py((r.props?.peek || curt === "closing") && insideP ? { [`zw_hwin${S.spots[insideP.spot].win[0]}_${S.spots[insideP.spot].win[1]}`]: r.props?.peek ? 0.7 : 1.0 } : null)})`);
+  if (insideP) L.push(`_wc = zv_open_window(${S.spots[insideP.spot].win[0]}, ${S.spots[insideP.spot].win[1]})`);
   if (r.props?.drain) L.push(`_dr = zc_prop("drain", "zv_drain")`, `_dr.location = ${P(PROP_POINTS.drain)}`, `_dr.scale = (0.85, 0.85, 0.85)`);
   const vars = [];
   (r.people ?? []).forEach((p, k) => {
@@ -296,6 +319,7 @@ export function rowPython(S0, story, r, { stageId = "A" } = {}) {
     if (S.spots[p.spot]?.seat) { L.push(`zv_sit(${v}, t0, ${P(S.spots[p.spot].at)})`, `zc_look(${v}, t0, ${P(p.facing === "camera" && cam.loc ? cam.loc : look)})`); }
     else if (p.facing === "camera" || p.facing === "away" || ["side", "back"].includes(cam.type) || !cam.loc) L.push(`${v}.face_to(${P(look)})`);
     else L.push(`${v}.turn(t0, ${P(look)}, ${P(cam.loc)})`);
+    if (S.spots[p.spot]?.inside) L.push(`zv_at_window(${v}, _wc)`);
     L.push(`zc_blinks(${v}, t0, t1)`, `zc_idle(${v}, t0, t1)`);
     if (["walk", "run"].includes(p.pose)) L.push(`zc_walk(${v}, t0, t1, run=${p.pose === "run" ? "True" : "False"})`);
     if (p.holds) L.push(`${v}.hold(t0, zc_prop(${py(story.props[p.holds]?.kind ?? p.holds)}, ${py(`zv_${p.holds}${k}`)}, on=${story.props[p.holds]?.on === false || r.props?.[p.holds] === "off" ? "False" : "True"}), ${py(p.hands ?? (story.props[p.holds]?.hands ?? "R"))})`);
@@ -308,7 +332,8 @@ export function rowPython(S0, story, r, { stageId = "A" } = {}) {
     if (c.holds) L.push(`_h = cr.hold(t0, zc_prop(${py(story.props[c.holds]?.kind ?? c.holds)}, "zv_crhold", on=True), "L")`);
   }
   if (cam.ok && cam.type === "insert" && r.cam?.subject?.[0] === "porch_light") L.push(`cam = Cam()`, `cam.key(t0, (_pl.x - 0.5, _pl.y - 4.4, _pl.z - 1.0), (_pl.x - 0.15, _pl.y, _pl.z - 0.45), lens=30, focus=4.4, fstop=2.2)`);
-  else if (cam.ok) { const end = cam.loc.map((x, i) => x + (cam.tgt[i] - x) * 0.06); L.push(`cam = Cam()`, `cam.key(t0, ${P(cam.loc)}, ${P(cam.tgt)}, lens=${cam.lens}${cam.focus ? `, focus=${cam.focus}, fstop=2.4` : ""})`, `cam.key(t1, ${P(end)}, ${P(cam.tgt)}, lens=${cam.lens}${cam.focus ? `, focus=${+(cam.focus * 0.94).toFixed(2)}, fstop=2.4` : ""})`); }
+  else if (cam.ok && cam.type === "window") L.push(`cam = zv_window_cam(t0, t1, _wc, push=${+(r.cam?.push ?? 0.06)}, ch=p${(r.people ?? []).findIndex((p) => S.spots[p.spot]?.inside)})`);
+  else if (cam.ok) { const end = cam.loc.map((x, i) => x + (cam.tgt[i] - x) * (r.cam?.push ?? 0.06)); L.push(`cam = Cam()`, `cam.key(t0, ${P(cam.loc)}, ${P(cam.tgt)}, lens=${cam.lens}${cam.focus ? `, focus=${cam.focus}, fstop=2.4` : ""})`, `cam.key(t1, ${P(end)}, ${P(cam.tgt)}, lens=${cam.lens}${cam.focus ? `, focus=${+(cam.focus * 0.94).toFixed(2)}, fstop=2.4` : ""})`); }
   else L.push(`cam = Cam()`, `cam.key(t0, (0, -20, 5), (0, 0, 2), lens=30)`);
   if (S.build === "dining") L.push(`zv_empty_chairs(ZV_STAGES[${py(stageId)}], ${py((r.people ?? []).map((p) => p.spot))})`);
   // the background people (calm, behind the subject)

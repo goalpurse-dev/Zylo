@@ -1,0 +1,25 @@
+{
+ "title": "Curtains shots test",
+ "lines": [
+  { "text": "the hook: me in front of the closed curtains", "speaker": "narrator" },
+  { "text": "the street at dusk, every curtain closing", "speaker": "narrator" },
+  { "text": "the Mayor pulls his curtains shut", "speaker": "narrator" },
+  { "text": "Mom peeks through the curtains", "speaker": "narrator" },
+  { "text": "her view: the thing across the street", "speaker": "narrator" },
+  { "text": "Mom, terrified", "speaker": "narrator" },
+  { "text": "the smile", "speaker": "narrator" }
+ ],
+ "cast": { "me": { "name": "Me", "spec": "me" }, "mom": { "name": "Mom", "spec": "mom" }, "mimic": { "name": "Mom", "spec": "mimic_mom" }, "mayor": { "name": "Mayor", "spec": "mayor" }, "creature": { "name": "Shadow", "spec": "shadow" } },
+ "aliases": {},
+ "props": {},
+ "rule": { "object": "curtains", "start": "open", "change_words": ["closing", "shut", "peeks"], "tell_person": null },
+ "rows": [
+  { "line": 1, "scene": 1, "stage": "B", "time": "dinner", "cam": { "type": "close", "subject": ["me"] }, "people": [{ "id": "me", "spot": "seat_back", "facing": "camera", "face": "worried" }] },
+  { "line": 2, "scene": 2, "stage": "A", "time": "sunset", "cam": { "type": "street", "subject": [] }, "people": [], "props": { "curtains": "closing" } },
+  { "line": 3, "scene": 3, "stage": "A", "time": "sunset", "cam": { "type": "window", "subject": ["mayor"] }, "people": [{ "id": "mayor", "spot": "win_mayor", "pose": "hold_up2", "face": "scared", "facing": "street" }], "props": { "curtains": "closing" } },
+  { "line": 4, "scene": 4, "stage": "A", "time": "night", "cam": { "type": "window", "subject": ["mom"] }, "people": [{ "id": "mom", "spot": "win_ours", "face": "worried", "facing": "street" }], "props": { "curtains": "closed", "peek": true } },
+  { "line": 5, "scene": 4, "stage": "A", "time": "night", "cam": { "type": "pov", "subject": ["creature"] }, "people": [], "creature": { "spot": "cr_across", "facing": { "to": "win_ours" } }, "props": { "curtains": "closed" } },
+  { "line": 6, "scene": 4, "stage": "A", "time": "night", "cam": { "type": "window", "subject": ["mom"], "push": 0.15 }, "people": [{ "id": "mom", "spot": "win_ours", "face": "terrified", "facing": "street" }], "props": { "curtains": "closed", "peek": true } },
+  { "line": 7, "scene": 5, "stage": "B", "time": "dinner_cold", "cam": { "type": "close", "subject": ["mimic"], "push": 0.2 }, "people": [{ "id": "mimic", "spot": "seat_back", "face": "mimic_wide", "facing": "camera" }] }
+ ]
+}

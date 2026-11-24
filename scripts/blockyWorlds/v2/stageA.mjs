@@ -12,6 +12,7 @@ export const CREATURE_R = 2.2;
 export const STAGE_A = {
   id: "A",
   open_side: [0, -1],                  // the side the cameras look from (the street); two-shots are taken from here
+  street_cam: { loc: [-27, -2, 4.5], tgt: [2, 18, 5.2], lens: 20 },   // the row of north houses, ours on the right
   name: "Our street",
   place: "suburb_street",              // the zw_build place
   remove: ["zw_hrail8", "zw_hrail28"], // the hero porch's rails (round 10: rails across every body on the porch)
@@ -31,6 +32,9 @@ export const STAGE_A = {
     road_mid:    { at: [0, 2.5, 0.06], tag: "road" },
     road_right:  { at: [5, 2.5, 0.06], tag: "road" },
     porch_front: { at: [1.3, 15.6, 0.6], tag: "porch", on: "deck" },   // in front of someone at porch_left (a shield)
+    // inside a front window (the window is opened by the engine; only the "window" camera films them)
+    win_ours:  { at: [-4.2, 18.8, 0], tag: "at our window, inside", inside: true, win: [8, -4] },
+    win_mayor: { at: [25.8, 18.8, 0], tag: "at the Mayor's window, inside", inside: true, win: [10, -4] },
     porch_hug:   { at: [0.0, 16.2, 0.6], tag: "porch", on: "deck" },   // beside porch_left, close enough to hug
   },
   // ---- where the creature may stand (always behind the people as the camera sees them, with a clear gap)

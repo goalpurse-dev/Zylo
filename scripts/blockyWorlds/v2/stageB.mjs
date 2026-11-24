@@ -18,6 +18,7 @@ export const STAGE_B = {
     seat_right: { at: [2.45, 0, 0], tag: "seat", seat: true, face: [0, 0], head: 2.1, booster: true },
     seat_front: { at: [0, -1.9, 0], tag: "seat", seat: true, face: [0, 0], head: 2.1 },    // the open side (the empty place)
     stand_kitchen: { at: [-3.4, 2.0, 0], tag: "standing" },
+    stand_window: { at: [-1.75, 2.2, 0], tag: "standing, the closed curtains behind" },
   },
   creature_spots: {},
   cameras: {},
@@ -34,7 +35,7 @@ export const STAGE_B = {
     { n: "chair_back_front", box: [-0.75, 0.75, -2.8, -2.4, 0, 2.5], furniture: true },
   ],
   deck: { x0: -99, x1: -98, y0: -99, y1: -98 },
-  props_at: { plate_front: [0, -0.6, 1.15], plate_back: [0, 0.6, 1.15], window: [0, 3.3, 3.6], lamp: [0, 0, 5.4] },
+  props_at: { curtains: [0, 3.3, 3.6], plate_front: [0, -0.6, 1.15], plate_back: [0, 0.6, 1.15], window: [0, 3.3, 3.6], lamp: [0, 0, 5.4] },
   background: {},
 };
 export const SEATED_R = 0.7;   // a seated body's half-width at the table edge (the legs go under the table)
