@@ -134,7 +134,8 @@
     "screen",
     "billboard"
    ],
-   "objects": []
+   "objects": [],
+   "object_states": {}
   },
   {
    "id": "old_town",
@@ -264,7 +265,8 @@
    "texts": [
     "townhall"
    ],
-   "objects": []
+   "objects": [],
+   "object_states": {}
   },
   {
    "id": "suburb",
@@ -418,7 +420,15 @@
    ],
    "objects": [
     "mailbox"
-   ]
+   ],
+   "object_states": {
+    "mailbox": [
+     "closed",
+     "open",
+     "letter",
+     "glowing"
+    ]
+   }
   }
  ],
  "side_sets": [
@@ -477,7 +487,8 @@
    "texts": [
     "board"
    ],
-   "objects": []
+   "objects": [],
+   "object_states": {}
   },
   {
    "id": "hallway",
@@ -534,7 +545,8 @@
    "texts": [
     "poster"
    ],
-   "objects": []
+   "objects": [],
+   "object_states": {}
   },
   {
    "id": "school_front",
@@ -592,7 +604,8 @@
     "school",
     "bus"
    ],
-   "objects": []
+   "objects": [],
+   "object_states": {}
   },
   {
    "id": "bedroom",
@@ -647,7 +660,8 @@
    ],
    "big_spot": null,
    "texts": [],
-   "objects": []
+   "objects": [],
+   "object_states": {}
   },
   {
    "id": "living_room",
@@ -703,7 +717,8 @@
    "texts": [
     "tv"
    ],
-   "objects": []
+   "objects": [],
+   "object_states": {}
   },
   {
    "id": "kitchen",
@@ -757,7 +772,8 @@
    ],
    "big_spot": null,
    "texts": [],
-   "objects": []
+   "objects": [],
+   "object_states": {}
   },
   {
    "id": "grandma_room",
@@ -811,7 +827,8 @@
    ],
    "big_spot": null,
    "texts": [],
-   "objects": []
+   "objects": [],
+   "object_states": {}
   },
   {
    "id": "shop_inside",
@@ -868,7 +885,8 @@
    "texts": [
     "shop_sign"
    ],
-   "objects": []
+   "objects": [],
+   "object_states": {}
   },
   {
    "id": "cafe",
@@ -924,7 +942,8 @@
    "texts": [
     "menu"
    ],
-   "objects": []
+   "objects": [],
+   "object_states": {}
   },
   {
    "id": "mayor_office",
@@ -988,7 +1007,8 @@
    "texts": [
     "nameplate"
    ],
-   "objects": []
+   "objects": [],
+   "object_states": {}
   },
   {
    "id": "control_room",
@@ -1073,7 +1093,21 @@
     "btn3",
     "red_label"
    ],
-   "objects": []
+   "objects": [
+    "screens",
+    "red"
+   ],
+   "object_states": {
+    "screens": [
+     "town",
+     "eyes"
+    ],
+    "red": [
+     "covered",
+     "open",
+     "pressed"
+    ]
+   }
   },
   {
    "id": "townhall_front",
@@ -1130,7 +1164,8 @@
    "texts": [
     "townhall"
    ],
-   "objects": []
+   "objects": [],
+   "object_states": {}
   },
   {
    "id": "playground",
@@ -1184,7 +1219,8 @@
    ],
    "big_spot": null,
    "texts": [],
-   "objects": []
+   "objects": [],
+   "object_states": {}
   },
   {
    "id": "basketball",
@@ -1238,7 +1274,8 @@
    ],
    "big_spot": null,
    "texts": [],
-   "objects": []
+   "objects": [],
+   "object_states": {}
   },
   {
    "id": "hospital_room",
@@ -1293,7 +1330,8 @@
    ],
    "big_spot": null,
    "texts": [],
-   "objects": []
+   "objects": [],
+   "object_states": {}
   },
   {
    "id": "police_front",
@@ -1349,7 +1387,8 @@
    "texts": [
     "police"
    ],
-   "objects": []
+   "objects": [],
+   "object_states": {}
   },
   {
    "id": "basement",
@@ -1403,7 +1442,8 @@
    ],
    "big_spot": null,
    "texts": [],
-   "objects": []
+   "objects": [],
+   "object_states": {}
   },
   {
    "id": "attic",
@@ -1457,7 +1497,8 @@
    ],
    "big_spot": null,
    "texts": [],
-   "objects": []
+   "objects": [],
+   "object_states": {}
   },
   {
    "id": "forest_edge",
@@ -1513,7 +1554,8 @@
    ],
    "big_spot": null,
    "texts": [],
-   "objects": []
+   "objects": [],
+   "object_states": {}
   },
   {
    "id": "alley",
@@ -1569,7 +1611,8 @@
    ],
    "big_spot": null,
    "texts": [],
-   "objects": []
+   "objects": [],
+   "object_states": {}
   },
   {
    "id": "rooftop",
@@ -1623,7 +1666,8 @@
    ],
    "big_spot": null,
    "texts": [],
-   "objects": []
+   "objects": [],
+   "object_states": {}
   }
  ],
  "big_things": [
@@ -2411,6 +2455,111 @@
    ],
    "attach": [
     "ground"
+   ],
+   "built": true
+  },
+  {
+   "id": "sunflower",
+   "look": "a giant sunflower on a tall stem",
+   "states": [
+    "bloom"
+   ],
+   "attach": [
+    "head"
+   ],
+   "built": true
+  },
+  {
+   "id": "top_hat",
+   "look": "a tall black top hat",
+   "states": [
+    "on",
+    "off"
+   ],
+   "attach": [
+    "head"
+   ],
+   "built": true
+  },
+  {
+   "id": "yellow_footprints",
+   "look": "a strip of yellow painted footprints on the ground",
+   "states": [
+    "plain"
+   ],
+   "attach": [
+    "ground"
+   ],
+   "built": true
+  },
+  {
+   "id": "cookie",
+   "look": "a round cookie with chocolate chips",
+   "states": [
+    "whole",
+    "bitten"
+   ],
+   "attach": [
+    "hand",
+    "ground"
+   ],
+   "built": true
+  },
+  {
+   "id": "flag",
+   "look": "a hand flag on a pole",
+   "states": [
+    "waving"
+   ],
+   "attach": [
+    "hand",
+    "ground"
+   ],
+   "built": true
+  },
+  {
+   "id": "watch",
+   "look": "a wristwatch tapped by Mom",
+   "states": [
+    "on"
+   ],
+   "attach": [
+    "hand"
+   ],
+   "built": true
+  },
+  {
+   "id": "doorbell",
+   "look": "a little round doorbell button on a plate, glowing",
+   "states": [
+    "off",
+    "glowing"
+   ],
+   "attach": [
+    "ground"
+   ],
+   "built": true
+  },
+  {
+   "id": "lost_sock",
+   "look": "a striped sock",
+   "states": [
+    "plain"
+   ],
+   "attach": [
+    "hand",
+    "ground"
+   ],
+   "built": true
+  },
+  {
+   "id": "shoes",
+   "look": "a pair of sneakers",
+   "states": [
+    "on"
+   ],
+   "attach": [
+    "feet"
    ],
    "built": true
   }

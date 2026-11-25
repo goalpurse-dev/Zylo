@@ -93,7 +93,17 @@
 - STORY PROP ladder: a wooden ladder (states: up; goes: ground).
 - STORY PROP bucket: a bucket with a handle (states: empty, full; goes: hand / ground).
 - STORY PROP street_lamps: a street lamp on a tall post (states: on, off; goes: ground) [built by an earlier story].
-- PLACE OBJECTS in suburb: mailbox (built into the place, several of them; its state is set per shot).
+- STORY PROP sunflower: a giant sunflower on a tall stem (states: bloom; goes: head) [built by an earlier story].
+- STORY PROP top_hat: a tall black top hat (states: on, off; goes: head) [built by an earlier story].
+- STORY PROP yellow_footprints: a strip of yellow painted footprints on the ground (states: plain; goes: ground) [built by an earlier story].
+- STORY PROP cookie: a round cookie with chocolate chips (states: whole, bitten; goes: hand / ground) [built by an earlier story].
+- STORY PROP flag: a hand flag on a pole (states: waving; goes: hand / ground) [built by an earlier story].
+- STORY PROP watch: a wristwatch tapped by Mom (states: on; goes: hand) [built by an earlier story].
+- STORY PROP doorbell: a little round doorbell button on a plate, glowing (states: off, glowing; goes: ground) [built by an earlier story].
+- STORY PROP lost_sock: a striped sock (states: plain; goes: hand / ground) [built by an earlier story].
+- STORY PROP shoes: a pair of sneakers (states: on; goes: feet) [built by an earlier story].
+- PLACE OBJECTS in suburb: mailbox (built into the place; states closed / open / letter / glowing; set per shot).
+- PLACE OBJECTS in control_room: screens (built into the place; states town / eyes; set per shot), red (built into the place; states covered / open / pressed; set per shot).
 
 ## Skipped
 - stretch_arms: 3 tries: scaling the arm (each axis) made it wider, not longer; needs the arm bone length in char_v2

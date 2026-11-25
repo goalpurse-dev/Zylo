@@ -253,9 +253,7 @@ def zv_frame_gate(S):
         if not best or best[0] <= 0.0:
             out.append("ZW_GATE|%s|zv|object|%s|not visible" % (sid, oid))
         elif best[0] < 0.0006 and max(best[1][1] - best[1][0], best[1][3] - best[1][2]) < 0.035:
-            out.append("ZW_GATE|%s|zv|object|%s|too small to read" % (sid, oid))
-        else:
-            boxes.append(best[1])
+            out.append("ZW_GATE|%s|zv|object|%s|too small to read" % (sid, oid))     # (objects are not judged for darkness: a shadow is dark)
     # THE ENTITY: when a row has one it must be seen (in frame, a readable size)
     if ZV_SHOT.get("entity_seen"):
         lo, hi = zv_name_bounds("Ent")
@@ -589,20 +587,20 @@ def zv_reveal_cam(P, c, at, kind, bounds=None):
     u = u.normalized() if u.length > 0.1 else Vector((0, -1, 0))
     side = Vector((-u.y, u.x, 0))
     if c["reveal"] == "low":
-        loc = Vector((H.x, H.y, 0)) + u * 16.0 + side * 2.6     # 12 behind the hero, a little to the side: the hero small, head above the captions
+        loc = Vector((H.x, H.y, 0)) + u * 20.0 + side * 3.0     # 12 behind the hero, a little to the side: the hero small, head above the captions
         loc.z = 2.2
         D_ = (Vector((E.x, E.y, 0)) - Vector((loc.x, loc.y, 0))).length
         top = bounds[1].z if bounds and bounds[1].z > -1e8 else Hh
-        tz = max(3.4, 0.3 * top)
+        tz = max(2.6, 0.22 * top)      # a low aim: the hero's head well above the captions, the lens fits the top
         tgt = Vector((E.x, E.y, tz))
         lens = max(12.0, min(30.0, 12.0 / math.tan(min(1.3, 1.12 * math.atan((top - tz) / max(1.0, D_))))))
     else:
         ez = (bounds[0].z + 0.84 * (bounds[1].z - bounds[0].z)) if bounds and bounds[1].z > -1e8 else 0.84 * Hh
-        D_ = 1.9 * Hh + 2.0         # far enough that the body never fills the lens; the face high in the frame
+        D_ = min(1.9 * Hh + 2.0, 14.0)      # never far enough to land inside a car / house; the lens frames the face + chest
         loc = E + u * D_ + side * 0.3
-        loc.z = max(1.2, ez - 0.08 * Hh)
-        tgt = Vector((E.x, E.y, ez - 0.1 * Hh))
-        lens = 28.0       # (the kit sensor is 24 mm high)
+        loc.z = max(1.2, ez - 0.05 * Hh)
+        tgt = Vector((E.x, E.y, ez - 0.08 * Hh))
+        lens = max(18.0, min(80.0, 24.0 * D_ / max(6.0, 0.6 * Hh)))      # (the kit sensor is 24 mm high)
     c["lens"] = lens
     return loc, tgt
 
@@ -685,7 +683,7 @@ def zv_place_test(pid, cam_name, time, weather, t0, t1, opt=None):
                 q = (loc.x + 6.0, loc.y, at[2])
             ch.turn(t0, (q[0], q[1], at[2] + 2.0), tuple(loc))
         if pp.get("holds") and pp["holds"] in ZV_RECIPES:
-            zv_attach(ch, zv_recipe(pp["holds"], "hold%d" % k, pp.get("hold_state"), pp.get("label"), ZV_SETINFO.get("night", False)), "hand", pp["holds"])
+            zv_attach(ch, zv_recipe(pp["holds"], "fw_hold%d" % k, pp.get("hold_state"), pp.get("label"), ZV_SETINFO.get("night", False)), "hand", pp["holds"])
         elif pp.get("holds"):
             zv_hold(ch, zv_prop(pp["holds"], "Hold%d" % k, label=pp.get("label")), "R")
         subs.append((pp.get("id", pp["spec"]), ch))
@@ -710,7 +708,7 @@ def zv_place_test(pid, cam_name, time, weather, t0, t1, opt=None):
         if c.get("reveal"):
             loc, tgt = zv_reveal_cam(P, c, at, en["kind"], (lo_, hi_))
         zv_entity_light(lo_, hi_, loc, ZV_SETINFO.get("night", False))
-    elif c.get("creature"):
+    elif c.get("creature") and opt.get("people") is None:      # (the camera's own test only: a story row never gets a creature its line does not name)
         at = P["creature_spots"][c["creature"]]["at"]
         cr = ZChar("Creature", ZC_SPECS["shadow"], tuple(at), rot=0, badge=False)
         cr.pose(t0, "stand")
@@ -731,9 +729,11 @@ def zv_place_test(pid, cam_name, time, weather, t0, t1, opt=None):
         if ob_.get("at") == "place":
             need.append((ob_["id"], "_obj_%s" % ob_["rid"]))
             continue
-        e_ = zv_recipe(ob_["rid"], "%s%d" % (ob_["id"], j), ob_.get("state"), ob_.get("label"), ZV_SETINFO.get("night", False))
+        worn = ob_.get("at") in ("head", "face", "back", "hand")     # worn / held: never "in front of" its own person       # a worn thing never counts as blocking its wearer (zp_f names are skipped by the gates)
+        nm_ = ("fw_" if worn else "") + "%s%d" % (ob_["id"], j)
+        e_ = zv_recipe(ob_["rid"], nm_, ob_.get("state"), ob_.get("label"), ZV_SETINFO.get("night", False))
         who = [ch for (i_, ch) in subs if i_ == ob_.get("who")] or [ch for (_, ch) in subs]
-        if ob_.get("at") in ("head", "hand", "back", "feet") and who:
+        if ob_.get("at") in ("head", "face", "hand", "back", "feet") and who:
             zv_attach(who[0], e_, ob_["at"], ob_["rid"])
         elif ob_.get("spot") in P["spots"]:
             e_.location = tuple(P["spots"][ob_["spot"]]["at"])
@@ -743,7 +743,7 @@ def zv_place_test(pid, cam_name, time, weather, t0, t1, opt=None):
         else:
             q_ = tgt + (loc - tgt) * 0.25
             e_.location = (q_.x, q_.y, zv_ground_z(q_.x, q_.y))
-        need.append((ob_["id"], "zo_%s%d" % (ob_["id"], j)))
+        need.append((ob_["id"], ("zp_" if worn else "zo_") + nm_))
         if ZV_SETINFO.get("night", False):     # a soft light on the key object after dark
             bpy.context.view_layer.update()
             m_ = e_.matrix_world.translation
@@ -775,7 +775,9 @@ def zv_place_test(pid, cam_name, time, weather, t0, t1, opt=None):
         for k, (bk, b) in enumerate(sorted(P.get("background", {}).items())):
             at = b["at"]
             if subj_d and math.hypot(at[0] - loc.x, at[1] - loc.y) < subj_d + 2.5:
-                continue      # background people only BEHIND the shot's subjects (never between the lens and them)
+                continue
+            if P.get("big") and ZV_PLACES[pid].get("id", "").count("+") and math.hypot(at[0] - P["big"]["at"][0], at[1] - P["big"]["at"][1]) < P["big"]["r"] + 1.0:
+                continue      # nobody stands inside the big thing      # background people only BEHIND the shot's subjects (never between the lens and them)
             ch = ZChar("Nb%d" % k, ZC_SPECS[nbs[k % 4]], tuple(at), rot=0, badge=False)
             react = opt.get("react")
             loop = b.get("loop", "stand")

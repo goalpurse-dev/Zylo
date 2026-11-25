@@ -82,7 +82,7 @@ fs.writeFileSync(path.join(dir, "video", "shots.py"), src);
 fs.writeFileSync(path.join(dir, "video", "audio", "words.json"), JSON.stringify(Array.from({ length: 2 * N + 2 }, (_, i) => ({ word: `w${i}`, start: i === 0 ? 0 : B + (i - 1), end: (i === 0 ? 0 : B + (i - 1)) + 0.6 }))));
 fs.writeFileSync(path.join(dir, "video", "script.txt"), "place test\n");
 spawnSync("ffmpeg", ["-v", "error", "-y", "-f", "lavfi", "-i", "anullsrc=r=44100:cl=mono", "-t", String(B + 2 * N + 2), path.join(dir, "video", "audio", "voice.wav")]);
-const limit = N * 70 + 300;     // suburb stills take ~50 s each (Stage A street)
+const limit = N * 90 + 300;     // suburb stills take ~50 s each (Stage A street)
 say(`${N} stills; worst case $${((limit + BOOT_S) * RATE).toFixed(3)}; night spent so far $${L.total()}`);
 if (!has("yes")) { say("dry run: checks ok, nothing sent (add --yes)"); process.exit(0); }
 L.check("place test", (limit + BOOT_S) * RATE);

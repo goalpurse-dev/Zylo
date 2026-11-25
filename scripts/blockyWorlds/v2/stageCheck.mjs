@@ -75,7 +75,7 @@ export function checkStage(S) {
     if (s.on === "deck" && !inDeck(s.at, BODY_R)) out.push(`spot ${k}: not fully on the porch deck`);
     if (s.on !== "deck" && footDist(s.at, { box: [S.deck.x0, S.deck.x1, S.deck.y0, S.deck.y1] }) < BODY_R) out.push(`spot ${k}: its body overlaps the porch deck edge`);
   }
-  for (const [k, s] of Object.entries(S.creature_spots)) for (const o of walls) { const d = footDist(s.at, o); if (d < CREATURE_R) out.push(`creature spot ${k}: ${d.toFixed(2)} from ${o.n}`); }
+  for (const [k, s] of Object.entries(S.creature_spots)) for (const o of walls) { if (String(o.n).startsWith("obj_big")) continue; const d = footDist(s.at, o); if (d < CREATURE_R) out.push(`creature spot ${k}: ${d.toFixed(2)} from ${o.n}`); }
   // spots that a camera uses together are a body apart
   for (const [ck, c] of Object.entries(S.cameras)) {
     const ps = c.people.map((k) => S.spots[k]);
@@ -90,7 +90,7 @@ export function checkStage(S) {
     const cr = c.creature ? { k: c.creature, at: S.creature_spots[c.creature].at, h: H.creature } : null;
     if (c.loc[0] > S.deck.x0 - 0.6 && c.loc[0] < S.deck.x1 + 0.6 && c.loc[1] > S.deck.y0 - 0.6 && c.loc[1] < S.deck.y1 && c.loc[2] < 0.6 + 1.2) out.push(`camera ${ck}: too close over the porch deck (the engine's camera guard would move it)`);
     const waist = c.shot === "wide" || c.shot === "top" ? [] : bodies.map((b) => ({ ...b, k: b.k, head: [b.at[0], b.at[1], b.at[2] + 1.1] }));
-    const subjects = [...waist, ...bodies.map((b) => ({ ...b, head: [b.at[0], b.at[1], b.at[2] + 0.88 * b.h] })), ...(cr ? [{ ...cr, head: [cr.at[0], cr.at[1], cr.at[2] + 0.8 * cr.h] }] : [])];
+    const subjects = [...waist, ...bodies.map((b) => ({ ...b, head: [b.at[0], b.at[1], b.at[2] + 0.88 * b.h] })), ...(cr ? [{ ...cr, head: [cr.at[0], cr.at[1], cr.at[2] + 0.8 * (c.monster ? 15 : cr.h)] }] : [])];
     for (const s of subjects) {
       const hits = new Set();
       for (let t = 0.03; t < 0.97; t += 0.01) {

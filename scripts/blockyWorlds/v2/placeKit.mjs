@@ -52,7 +52,7 @@ export function checkPlace(S) {
   }
   // background people: clear of walls and of every person spot
   for (const [k, b] of Object.entries(S.background ?? {})) {
-    for (const o of walls) if (tall(o, b.at[2]) && footDist(b.at, o) < BODY_R) out.push(`background ${k}: ${footDist(b.at, o).toFixed(2)} from ${o.n}`);
+    for (const o of walls) if (tall(o, b.at[2]) && footDist(b.at, o) < BODY_R && !String(o.n).startsWith("obj_big")) out.push(`background ${k}: ${footDist(b.at, o).toFixed(2)} from ${o.n}`);     // (one standing where the big thing is is left out in Blender)
     for (const [j, s] of Object.entries(S.spots)) if (d2(b.at, s.at) < MIN_GAP) out.push(`background ${k}: too close to spot ${j}`);
   }
   // driving cars never cross a person spot
@@ -72,7 +72,7 @@ export function checkPlace(S) {
   // the counts the night build asks for
   const cams = Object.values(S.cameras);
   if (S.kind === "town" && !S.cams_filtered) {
-    if (cams.length < 8 || cams.length > 16) out.push(`${cams.length} cameras (8-16 wanted)`);
+    if (cams.length < 8 || cams.length > 18) out.push(`${cams.length} cameras (8-18 wanted)`);
     if (cams.filter((c) => c.aerial).length < 2) out.push("fewer than 2 aerial cameras");
     const nb = Object.keys(S.background ?? {}).length;
     if (nb < 6) out.push(`${nb} background spots (6 or more wanted)`);

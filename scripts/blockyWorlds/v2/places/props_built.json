@@ -77,5 +77,798 @@
    }
   ],
   "built": true
+ },
+ "sunflower": {
+  "what": "a giant sunflower on a tall stem",
+  "h": 3,
+  "attach": [
+   "head"
+  ],
+  "states": [
+   "bloom"
+  ],
+  "prims": [
+   {
+    "solid": false,
+    "t": "cyl",
+    "at": [
+     0,
+     0,
+     1.2
+    ],
+    "r": 0.08,
+    "h": 2.4,
+    "c": "#3E8E3A"
+   },
+   {
+    "solid": false,
+    "t": "sph",
+    "at": [
+     0.2,
+     0,
+     0.8
+    ],
+    "r": 0.2,
+    "c": "#5DAA4A",
+    "sc": [
+     1.5,
+     0.4,
+     0.7
+    ]
+   },
+   {
+    "solid": false,
+    "t": "cyl",
+    "at": [
+     0,
+     -0.1,
+     2.6
+    ],
+    "r": 0.5,
+    "h": 0.1,
+    "c": "#FFD23F",
+    "rx": 90
+   },
+   {
+    "solid": false,
+    "t": "cyl",
+    "at": [
+     0,
+     -0.16,
+     2.6
+    ],
+    "r": 0.25,
+    "h": 0.12,
+    "c": "#5A3A1A",
+    "rx": 90
+   }
+  ],
+  "built": true
+ },
+ "top_hat": {
+  "what": "a tall black top hat",
+  "h": 1,
+  "attach": [
+   "head"
+  ],
+  "states": [
+   "on",
+   "off"
+  ],
+  "prims": [
+   {
+    "solid": false,
+    "t": "cyl",
+    "at": [
+     0,
+     0,
+     0.04
+    ],
+    "r": 0.45,
+    "h": 0.08,
+    "c": "#1A1A1A"
+   },
+   {
+    "solid": false,
+    "t": "cyl",
+    "at": [
+     0,
+     0,
+     0.5
+    ],
+    "r": 0.3,
+    "h": 0.85,
+    "c": "#222222"
+   },
+   {
+    "solid": false,
+    "t": "cyl",
+    "at": [
+     0,
+     0,
+     0.2
+    ],
+    "r": 0.31,
+    "h": 0.14,
+    "c": "#B22222",
+    "only": "on"
+   },
+   {
+    "solid": false,
+    "t": "cyl",
+    "at": [
+     0,
+     0,
+     0.2
+    ],
+    "r": 0.31,
+    "h": 0.14,
+    "c": "#FFD23F",
+    "e": "#FFD23F",
+    "es": 0.3,
+    "only": "off"
+   }
+  ],
+  "built": true
+ },
+ "yellow_footprints": {
+  "what": "a strip of yellow painted footprints on the ground",
+  "h": 0.3,
+  "attach": [
+   "ground"
+  ],
+  "states": [
+   "plain"
+  ],
+  "prims": [
+   {
+    "solid": false,
+    "t": "box",
+    "at": [
+     -0.3,
+     0,
+     0.03
+    ],
+    "s": [
+     0.5,
+     0.9,
+     0.06
+    ],
+    "c": "#FFD21F"
+   },
+   {
+    "solid": false,
+    "t": "box",
+    "at": [
+     0.35,
+     0.9,
+     0.03
+    ],
+    "s": [
+     0.5,
+     0.9,
+     0.06
+    ],
+    "c": "#FFD21F"
+   },
+   {
+    "solid": false,
+    "t": "box",
+    "at": [
+     -0.3,
+     1.8,
+     0.03
+    ],
+    "s": [
+     0.5,
+     0.9,
+     0.06
+    ],
+    "c": "#FFD21F"
+   },
+   {
+    "solid": false,
+    "t": "box",
+    "at": [
+     0.35,
+     2.7,
+     0.03
+    ],
+    "s": [
+     0.5,
+     0.9,
+     0.06
+    ],
+    "c": "#FFD21F"
+   },
+   {
+    "solid": false,
+    "t": "box",
+    "at": [
+     -0.3,
+     3.6,
+     0.03
+    ],
+    "s": [
+     0.5,
+     0.9,
+     0.06
+    ],
+    "c": "#FFD21F"
+   },
+   {
+    "solid": false,
+    "t": "box",
+    "at": [
+     0.35,
+     4.5,
+     0.03
+    ],
+    "s": [
+     0.5,
+     0.9,
+     0.06
+    ],
+    "c": "#FFD21F"
+   }
+  ],
+  "built": true
+ },
+ "cookie": {
+  "what": "a round cookie with chocolate chips",
+  "h": 0.5,
+  "attach": [
+   "hand",
+   "ground"
+  ],
+  "states": [
+   "whole",
+   "bitten"
+  ],
+  "prims": [
+   {
+    "solid": false,
+    "t": "cyl",
+    "at": [
+     0,
+     0,
+     0.05
+    ],
+    "r": 0.25,
+    "h": 0.1,
+    "c": "#C98B4A"
+   },
+   {
+    "solid": false,
+    "t": "sph",
+    "at": [
+     0.08,
+     -0.05,
+     0.11
+    ],
+    "r": 0.04,
+    "c": "#4A2A14"
+   },
+   {
+    "solid": false,
+    "t": "sph",
+    "at": [
+     -0.1,
+     0.05,
+     0.11
+    ],
+    "r": 0.04,
+    "c": "#4A2A14"
+   },
+   {
+    "solid": false,
+    "t": "sph",
+    "at": [
+     0.02,
+     0.12,
+     0.11
+    ],
+    "r": 0.04,
+    "c": "#4A2A14"
+   },
+   {
+    "solid": false,
+    "t": "sph",
+    "at": [
+     -0.05,
+     -0.12,
+     0.11
+    ],
+    "r": 0.04,
+    "c": "#4A2A14"
+   },
+   {
+    "solid": false,
+    "t": "sph",
+    "at": [
+     0.3,
+     -0.1,
+     0.02
+    ],
+    "r": 0.03,
+    "c": "#C98B4A",
+    "only": "bitten"
+   },
+   {
+    "solid": false,
+    "t": "sph",
+    "at": [
+     0.36,
+     0.05,
+     0.02
+    ],
+    "r": 0.03,
+    "c": "#C98B4A",
+    "only": "bitten"
+   }
+  ],
+  "built": true
+ },
+ "flag": {
+  "what": "a hand flag on a pole",
+  "h": 2,
+  "attach": [
+   "hand",
+   "ground"
+  ],
+  "states": [
+   "waving"
+  ],
+  "prims": [
+   {
+    "solid": false,
+    "t": "cyl",
+    "at": [
+     0,
+     0,
+     1
+    ],
+    "r": 0.04,
+    "h": 2,
+    "c": "#8B6B3E"
+   },
+   {
+    "solid": false,
+    "t": "box",
+    "at": [
+     0.5,
+     0,
+     1.6
+    ],
+    "s": [
+     1,
+     0.05,
+     0.7
+    ],
+    "c": "#C62828"
+   },
+   {
+    "solid": false,
+    "t": "box",
+    "at": [
+     0.5,
+     -0.03,
+     1.6
+    ],
+    "s": [
+     1,
+     0.03,
+     0.2
+    ],
+    "c": "#FFFFFF"
+   },
+   {
+    "solid": false,
+    "t": "sph",
+    "at": [
+     0,
+     0,
+     2.03
+    ],
+    "r": 0.07,
+    "c": "#E0B040"
+   }
+  ],
+  "built": true
+ },
+ "watch": {
+  "what": "a wristwatch tapped by Mom",
+  "h": 0.4,
+  "attach": [
+   "hand"
+  ],
+  "states": [
+   "on"
+  ],
+  "prims": [
+   {
+    "solid": false,
+    "t": "cyl",
+    "at": [
+     0,
+     0,
+     0.1
+    ],
+    "r": 0.18,
+    "h": 0.08,
+    "c": "#8A8A92"
+   },
+   {
+    "solid": false,
+    "t": "cyl",
+    "at": [
+     0,
+     0,
+     0.15
+    ],
+    "r": 0.14,
+    "h": 0.02,
+    "c": "#F5F5F0"
+   },
+   {
+    "solid": false,
+    "t": "box",
+    "at": [
+     0,
+     0,
+     0.05
+    ],
+    "s": [
+     0.1,
+     0.1,
+     0.1
+    ],
+    "c": "#3A2A20"
+   },
+   {
+    "solid": false,
+    "t": "box",
+    "at": [
+     0,
+     0,
+     0.17
+    ],
+    "s": [
+     0.02,
+     0.12,
+     0.01
+    ],
+    "c": "#111111"
+   }
+  ],
+  "built": true
+ },
+ "doorbell": {
+  "what": "a little round doorbell button on a plate, glowing",
+  "h": 0.5,
+  "attach": [
+   "ground"
+  ],
+  "states": [
+   "off",
+   "glowing"
+  ],
+  "prims": [
+   {
+    "solid": false,
+    "t": "box",
+    "at": [
+     0,
+     0,
+     0.25
+    ],
+    "s": [
+     0.35,
+     0.08,
+     0.5
+    ],
+    "c": "#6B4A2F"
+   },
+   {
+    "solid": false,
+    "t": "cyl",
+    "at": [
+     0,
+     -0.06,
+     0.25
+    ],
+    "r": 0.12,
+    "h": 0.06,
+    "c": "#D9D9D9",
+    "rx": 90
+   },
+   {
+    "solid": false,
+    "t": "cyl",
+    "at": [
+     0,
+     -0.1,
+     0.25
+    ],
+    "r": 0.08,
+    "h": 0.04,
+    "c": "#FFE08A",
+    "e": "#FFD23F",
+    "es": 1.5,
+    "only": "glowing",
+    "rx": 90
+   },
+   {
+    "solid": false,
+    "t": "cyl",
+    "at": [
+     0,
+     -0.1,
+     0.25
+    ],
+    "r": 0.08,
+    "h": 0.04,
+    "c": "#E8E8E8",
+    "only": "off",
+    "rx": 90
+   }
+  ],
+  "built": true
+ },
+ "lost_sock": {
+  "what": "a striped sock",
+  "h": 0.6,
+  "attach": [
+   "hand",
+   "ground"
+  ],
+  "states": [
+   "plain"
+  ],
+  "prims": [
+   {
+    "solid": false,
+    "t": "cyl",
+    "at": [
+     0,
+     0,
+     0.35
+    ],
+    "r": 0.11,
+    "h": 0.5,
+    "c": "#F2F2F2"
+   },
+   {
+    "solid": false,
+    "t": "cyl",
+    "at": [
+     0,
+     0,
+     0.55
+    ],
+    "r": 0.115,
+    "h": 0.1,
+    "c": "#E24A4A"
+   },
+   {
+    "solid": false,
+    "t": "cyl",
+    "at": [
+     0,
+     0,
+     0.4
+    ],
+    "r": 0.115,
+    "h": 0.08,
+    "c": "#E24A4A"
+   },
+   {
+    "solid": false,
+    "t": "box",
+    "at": [
+     0,
+     -0.1,
+     0.08
+    ],
+    "s": [
+     0.22,
+     0.4,
+     0.16
+    ],
+    "c": "#F2F2F2"
+   }
+  ],
+  "built": true
+ },
+ "shoes": {
+  "what": "a pair of sneakers",
+  "h": 0.3,
+  "attach": [
+   "feet"
+  ],
+  "states": [
+   "on"
+  ],
+  "prims": [
+   {
+    "solid": false,
+    "t": "box",
+    "at": [
+     -0.15,
+     -0.05,
+     0.1
+    ],
+    "s": [
+     0.22,
+     0.5,
+     0.2
+    ],
+    "c": "#3B6FD8"
+   },
+   {
+    "solid": false,
+    "t": "box",
+    "at": [
+     0.15,
+     -0.05,
+     0.1
+    ],
+    "s": [
+     0.22,
+     0.5,
+     0.2
+    ],
+    "c": "#3B6FD8"
+   },
+   {
+    "solid": false,
+    "t": "box",
+    "at": [
+     -0.15,
+     -0.05,
+     0.02
+    ],
+    "s": [
+     0.24,
+     0.52,
+     0.05
+    ],
+    "c": "#FFFFFF"
+   },
+   {
+    "solid": false,
+    "t": "box",
+    "at": [
+     0.15,
+     -0.05,
+     0.02
+    ],
+    "s": [
+     0.24,
+     0.52,
+     0.05
+    ],
+    "c": "#FFFFFF"
+   }
+  ],
+  "built": true
+ },
+ "needles": {
+  "what": "a pair of knitting needles",
+  "h": 0.9,
+  "attach": [
+   "hand"
+  ],
+  "states": [
+   "plain"
+  ],
+  "prims": [
+   {
+    "solid": false,
+    "t": "cyl",
+    "at": [
+     -0.08,
+     0,
+     0.45
+    ],
+    "r": 0.03,
+    "h": 0.9,
+    "c": "#C9A36B"
+   },
+   {
+    "solid": false,
+    "t": "cyl",
+    "at": [
+     0.08,
+     0,
+     0.45
+    ],
+    "r": 0.03,
+    "h": 0.9,
+    "c": "#C9A36B"
+   },
+   {
+    "solid": false,
+    "t": "sph",
+    "at": [
+     -0.08,
+     0,
+     0.9
+    ],
+    "r": 0.06,
+    "c": "#D94A4A"
+   },
+   {
+    "solid": false,
+    "t": "sph",
+    "at": [
+     0.08,
+     0,
+     0.9
+    ],
+    "r": 0.06,
+    "c": "#D94A4A"
+   }
+  ],
+  "built": true
+ },
+ "scarf": {
+  "what": "a long grey knitted scarf",
+  "h": 0.5,
+  "attach": [
+   "hand",
+   "ground"
+  ],
+  "states": [
+   "plain"
+  ],
+  "prims": [
+   {
+    "solid": false,
+    "t": "box",
+    "at": [
+     0,
+     0,
+     0.1
+    ],
+    "s": [
+     1.6,
+     0.4,
+     0.2
+    ],
+    "c": "#8A8D91"
+   },
+   {
+    "solid": false,
+    "t": "box",
+    "at": [
+     0.9,
+     0,
+     0.1
+    ],
+    "s": [
+     0.3,
+     0.4,
+     0.2
+    ],
+    "c": "#6F7276"
+   },
+   {
+    "solid": false,
+    "t": "box",
+    "at": [
+     -0.9,
+     0,
+     0.1
+    ],
+    "s": [
+     0.3,
+     0.4,
+     0.2
+    ],
+    "c": "#6F7276"
+   }
+  ],
+  "built": true
  }
 }

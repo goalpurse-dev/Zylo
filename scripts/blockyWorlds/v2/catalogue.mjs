@@ -32,7 +32,8 @@ export async function buildCatalogue() {
   const place = (id) => { const S = loadPlace(places[id]); return { id, name: S.name, look: S.look, spots: Object.fromEntries(Object.entries(S.spots).map(([k, v]) => [k, v.tag ?? ""])), creature_spots: Object.keys(S.creature_spots ?? {}),
     cameras: Object.fromEntries(Object.entries(S.cameras).map(([k, c]) => [k, { shot: c.shot === "top" ? "aerial" : c.shot, people: c.people, creature: c.creature ?? null }])), times: S.times, big_spot: S.big ? S.big.note : null,
     texts: [...new Set(S.prims.filter((q) => q.key).map((q) => q.key))],
-    objects: [...new Set(S.prims.filter((q) => /^obj_/.test(q.tag ?? "") && q.tag !== "obj_big").map((q) => q.tag.slice(4)))] }; };
+    objects: [...new Set(S.prims.filter((q) => /^obj_/.test(q.tag ?? "") && q.tag !== "obj_big").map((q) => q.tag.slice(4)))],
+    object_states: Object.fromEntries([...new Set(S.prims.filter((q) => /^obj_/.test(q.tag ?? "") && q.tag !== "obj_big").map((q) => q.tag.slice(4)))].map((o) => [o, [...new Set([...(S.states?.[o] ? [S.states[o]] : []), ...S.prims.filter((q) => q.tag === `obj_${o}` && String(q.only ?? "").startsWith(`${o}=`)).flatMap((q) => q.only.split("=")[1].split("|"))])]])) }; };
   const SP = allProps();
   const specs = { ...CHARACTERS, ...NEIGHBOURS, ...EXTRA_SPECS };
   return {
@@ -62,7 +63,7 @@ export function catalogueLines(C) {
   for (const e of C.entities) L.push(`ENTITY ${e.id} (${e.tone}): ${e.look} (states ${e.states.join("/")}; shown full, as a silhouette or eyes only).`);
   L.push(`PROPS: ${C.props.map((p) => p.id).join(", ")}. EFFECTS: ${C.effects.map((p) => p.id).join(", ")}.`);
   for (const p of C.story_props ?? []) L.push(`STORY PROP ${p.id}: ${p.look} (states: ${p.states.join(", ")}; goes: ${p.attach.join(" / ")})${p.built ? " [built by an earlier story]" : ""}.`);
-  for (const t of [...C.towns, ...C.side_sets]) if (t.objects?.length) L.push(`PLACE OBJECTS in ${t.id}: ${t.objects.map((o) => `${o} (built into the place, several of them; its state is set per shot)`).join(", ")}.`);
+  for (const t of [...C.towns, ...C.side_sets]) if (t.objects?.length) L.push(`PLACE OBJECTS in ${t.id}: ${t.objects.map((o) => `${o} (built into the place; states ${(t.object_states?.[o] ?? []).join(" / ") || "-"}; set per shot)`).join(", ")}.`);
   return L;
 }
 

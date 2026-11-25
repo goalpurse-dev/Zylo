@@ -461,13 +461,14 @@ def zv_recipe(rid, name, state=None, label=None, night=False):
     shapes with only="a|b" show only in those states"""
     R = ZV_RECIPES[rid]
     st = state if state in R.get("states", []) else R.get("states", ["-"])[0]
-    e = empty("zo_" + name, (0, 0, 0))
+    pre = "zp_" if name.startswith("fw_") else "zo_"      # worn: zp_fw_... (skipped by the blocking gates)
+    e = empty(pre + name, (0, 0, 0))
     for k, p in enumerate(R["prims"]):
         if p.get("only") and st not in str(p["only"]).split("|"):
             continue
         t, at = p["t"], tuple(p["at"])
         rot = (p.get("rx", 0.0), p.get("ry", 0.0), p.get("rz", 0.0))
-        nm = "zo_%s_%d" % (name, k)
+        nm = "%s%s_%d" % (pre, name, k)
         if t == "light":
             lo = light(nm, p.get("kind", "POINT"), at, p["w"], zv_hex(p["c"]), p.get("size", 0.8))
             lo.parent = e
@@ -533,8 +534,17 @@ def zv_attach(ch, e, where, rid):
         hc = ch.head.matrix_world.translation
         e.location = (hc.x, hc.y, top - 0.08)
         e.rotation_euler = (0, 0, yaw)
-        e.parent = ch.head
-        e.matrix_parent_inverse = ch.head.matrix_world.inverted()
+        e.parent = ch.root          # (on the root: the head's own size stays the head's for the framing gates)
+        e.matrix_parent_inverse = ch.root.matrix_world.inverted()
+        return e
+    if where == "face":       # on the front of the face, nose height (a glowing nose, glasses)
+        hc = ch.head.matrix_world.translation
+        hd = ch.hdim[1] * ch.k if hasattr(ch, "hdim") else 1.8 * ch.k
+        hh = ch.hdim[2] * ch.k if hasattr(ch, "hdim") else 1.75 * ch.k
+        e.location = (hc.x + fwd.x * (hd / 2 + 0.05), hc.y + fwd.y * (hd / 2 + 0.05), hc.z - 0.1 * ch.k - R.get("h", 0.3) / 2)
+        e.rotation_euler = (0, 0, yaw)
+        e.parent = ch.root
+        e.matrix_parent_inverse = ch.root.matrix_world.inverted()
         return e
     if where == "back":
         c = ch.torso.matrix_world.translation

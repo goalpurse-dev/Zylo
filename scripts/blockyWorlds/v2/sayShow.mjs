@@ -56,7 +56,7 @@ export function lineNeeds(text, { prevText = "", cast = [], objects = [] } = {})
   if (EVERYONE.test(t)) out.push({ what: "crowd", value: 6, text: "everyone: row.crowd with n >= 6 and an action (run / reach / point), never standing" });
   for (const o of objects) if (["object", "worn"].includes(o.kind) && namesObject(text, o) && o.via === "effect") out.push({ what: "effect", value: o.rid, text: `the effect ${o.rid} (${o.name}): row.effect.kind = ${o.rid}` });
   for (const o of objects) if (["object", "worn"].includes(o.kind) && namesObject(text, o) && o.via === "rain" && !out.some((n) => n.what === "rain")) out.push({ what: "rain", value: o.rid, text: `${o.name}: row.rain.kind = ${o.rid}` });
-  for (const o of objects) if (["object", "worn"].includes(o.kind) && namesObject(text, o) && (o.via ?? "object") === "object") out.push({ what: "object", value: o.id, text: `the story object ${o.id} (${o.name}) in a row: row.objects [{ id: "${o.id}", at: ${o.attach === "place" ? '"place"' : `"${o.attach}"`}${["head", "hand", "back", "feet"].includes(o.attach) ? ", who: <person id>" : ""}, state }]` });
+  for (const o of objects) if (["object", "worn"].includes(o.kind) && namesObject(text, o) && (o.via ?? "object") === "object") out.push({ what: "object", value: o.id, text: `the story object ${o.id} (${o.name}) in a row: row.objects [{ id: "${o.id}", at: ${o.attach === "place" ? '"place"' : `"${o.attach}"`}${["head", "face", "hand", "back", "feet"].includes(o.attach) ? ", who: <person id>" : ""}, state }]` });
   return out;
 }
 
@@ -74,7 +74,7 @@ function satisfied(need, rows, castOf) {
     if (need.what === "action") {
       const A = ACTIONS[need.value];
       // "I pressed it": the hand on the button AND the button going down, in one shot (owner 2026-11-25)
-      if (need.value === "press" && r.place === "control_room") return (r.people ?? []).some((p) => p.pose === "press") && r.states?.red === "pressed";
+      if (need.value === "press" && r.place === "control_room") return (r.people ?? []).some((p) => p.pose === "press") && (r.states?.red === "pressed" || (r.objects ?? []).some((o) => o.state === "pressed"));
       if (A.poses && (r.people ?? []).some((p) => A.poses.includes(p.pose))) return true;
       if (A.held && (r.people ?? []).some((p) => p.holds)) return true;
       if (A.crowd && r.crowd?.action === A.crowd) return true;
@@ -116,7 +116,9 @@ export function placeFitProblems(script, plan, sideSetIds, bigRe = null) {
   for (const sc of plan.scenes) for (const li of sc.lines) {
     const t = (script.lines[li - 1]?.text ?? "").toLowerCase();
     if (bigRe && bigRe.test(t) && sc.place === plan.town) continue;     // a line naming the big thing happens in the town (where it stands)
-    for (const [set, re] of Object.entries(PLACE_WORDS)) if (sideSetIds.includes(set) && re.test(t) && sc.place !== set && !(TOWN_HAS[sc.place] ?? []).includes(set)) out.push(`line ${li} names the ${set.replace(/_/g, " ")} but its scene is in ${sc.place}`);
+    const named = Object.entries(PLACE_WORDS).filter(([set, re]) => sideSetIds.includes(set) && re.test(t)).map(([set]) => set);
+    if (named.includes(sc.place) || named.some((set) => (TOWN_HAS[sc.place] ?? []).includes(set))) continue;     // a line naming several places fits any of them
+    for (const set of named.slice(0, 1)) out.push(`line ${li} names the ${set.replace(/_/g, " ")} but its scene is in ${sc.place}`);
   }
   return [...new Set(out)];
 }

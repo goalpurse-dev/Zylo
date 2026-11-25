@@ -16,7 +16,7 @@ import { writerProblems } from "./writerV5.mjs";
 import { BIG_THINGS, withBig } from "./places/bigthings.mjs";
 import { allPlaces, loadPlace, checkPlace } from "./placeKit.mjs";
 import { span } from "./stageCheck.mjs";
-import { lineNeeds, sayShowProblems, placeFitProblems, namesObject, PLACE_WORDS } from "./sayShow.mjs";
+import { lineNeeds, sayShowProblems, placeFitProblems, namesObject, PLACE_WORDS, TOWN_HAS } from "./sayShow.mjs";
 import { PROPS as LIB_PROPS, allProps, recipeProblems, saveBuilt } from "./places/props.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -72,7 +72,7 @@ if (!script) {
 // simple shapes with its states; free check, then a test still, then it joins the catalogue), or a rewrite of the line
 // to something that exists. Never silently left out.
 const OBJ = `You list THE STORY OBJECTS of an "In This Town" script: every thing the story depends on, so the shots can show each one.
-For each: id (snake_case), name, kind (object = a thing; worn = on / growing on a body; creature; person = a PERSON of the catalogue; place), words (the exact words of the lines that name it, every form used: "mailbox", "mailboxes"), does (what it does in the story: eats a letter, pops up on a head, opens, glows), main (true for the ONE thing the rule is about), attach (where it is in the shots: head / hand / back / feet / ground / place = a place's own object listed as PLACE OBJECTS, or the big thing / none for creatures, places, raining things), states (the states its lines need).
+For each: id (snake_case), name, kind (object = a thing; worn = on / growing on a body; creature; person = a PERSON of the catalogue; place), words (the exact words of the lines that name it, every form used: "mailbox", "mailboxes"), does (what it does in the story: eats a letter, pops up on a head, opens, glows), main (true for the ONE thing the rule is about), attach (where it is in the shots: head (on top of it) / face (on the face: a glowing nose, glasses) / hand / back / feet / ground / place = a place's own object listed as PLACE OBJECTS, or the big thing / none for creatures, places, raining things), states (the states its lines need).
 Resolve each to exactly one:
 - "catalogue" + catalogue_id: a STORY PROP, PLACE OBJECT, BIG THING, ENTITY, ANIMAL, RAINING THING, TOWN, SIDE SET or EFFECT id that IS that thing (a flower on a head = the flower prop, attach head);
 - "build" + recipe: a simple object the catalogue lacks, built from boxes, cylinders and spheres (a hat, a jar, a trophy, a snack bag). Recipe: { what, h (height in units: a kid is 3.04 tall; props about 1.5x real size so they read in a medium shot: a cup 0.55, a flower 1.0, a mailbox 2.4), attach (list), states (the first is the default), prims: 4-30 shapes { t: box | cyl | sph, at: [x, y, z] its CENTRE (the base at z = 0, the front faces -y), s: [w, d, h] for a box, r + h for an upright cylinder (rx: 90 lays it toward the camera), r for a sphere (sc: [x, y, z] squashes it), c: "#RRGGBB", e + es: a glow colour and strength, only: "state1|state2" = shown only in those states } }; the parts touch;
@@ -81,8 +81,9 @@ Things every town already has (street lamps, houses, trees, cars, shops, benches
 Never leave a thing out. Return the JSON only.`;
 const C0 = await buildCatalogue();
 const SPROPS = allProps();
-const catIds = { person: new Set(C0.people.map((p) => p.id)), prop: new Set(Object.keys(SPROPS)), entity: new Set(C0.entities.map((e) => e.id)), animal: new Set(C0.animals.map((a) => a.id)), big: new Set(C0.big_things.map((b) => b.id)), rain: new Set(C0.rain_things.map((r) => r.id)), place: new Set([...C0.towns, ...C0.side_sets].map((p) => p.id)), effect: new Set(C0.effects.map((e) => e.id)), old: new Set(C0.props.map((p) => p.id)) };
+const catIds = { weather: new Set([...C0.weathers.map((w) => w.id), ...C0.times.map((t) => t.id)]), person: new Set(C0.people.map((p) => p.id)), prop: new Set(Object.keys(SPROPS)), entity: new Set(C0.entities.map((e) => e.id)), animal: new Set(C0.animals.map((a) => a.id)), big: new Set(C0.big_things.map((b) => b.id)), rain: new Set(C0.rain_things.map((r) => r.id)), place: new Set([...C0.towns, ...C0.side_sets].map((p) => p.id)), effect: new Set(C0.effects.map((e) => e.id)), old: new Set(C0.props.map((p) => p.id)) };
 const PLACE_OBJ = Object.fromEntries([...C0.towns, ...C0.side_sets].map((p) => [p.id, p.objects ?? []]));
+const PLACE_OBJ_ST = Object.assign({}, ...[...C0.towns, ...C0.side_sets].map((p) => p.object_states ?? {}));
 function objProblems(L, sc) {
   const out = [];
   if (L.filter((o) => o.main).length !== 1) out.push("exactly one object is main (the thing the rule is about)");
@@ -90,22 +91,24 @@ function objProblems(L, sc) {
     const tag = `${o.id} (${o.name})`;
     if (!sc.lines.some((l) => namesObject(l.text, o)) && o.resolve !== "rewrite") out.push(`${tag}: none of its words (${(o.words ?? []).join(", ")}) is in any line`);
     if (o.resolve === "catalogue") {
-      const id = o.catalogue_id, known = Object.values(catIds).some((s) => s.has(id));
+      const id = o.catalogue_id, pobj = Object.values(PLACE_OBJ).some((v) => v.includes(id)), known = pobj || Object.values(catIds).some((s) => s.has(id));
       if (!known) out.push(`${tag}: catalogue_id ${id} is not in the catalogue`);
-      if (["object", "worn"].includes(o.kind) && !catIds.prop.has(id) && !catIds.big.has(id) && !catIds.rain.has(id) && !catIds.effect.has(id) && !catIds.old.has(id)) out.push(`${tag}: an object resolves to a STORY PROP, PLACE OBJECT, BIG THING, RAINING THING or EFFECT, not ${id}`);
+      if (["object", "worn"].includes(o.kind) && !catIds.prop.has(id) && !catIds.big.has(id) && !catIds.rain.has(id) && !catIds.effect.has(id) && !catIds.old.has(id) && !catIds.weather.has(id) && !pobj && !(o.attach === "place" && catIds.place.has(id))) out.push(`${tag}: an object resolves to a STORY PROP, PLACE OBJECT, BIG THING, RAINING THING or EFFECT, not ${id}`);
       if (o.kind === "person" && !catIds.person.has(id)) out.push(`${tag}: a person resolves to a PERSON id, not ${id}`);
       if (o.kind === "creature" && !catIds.entity.has(id) && !catIds.animal.has(id)) out.push(`${tag}: a creature resolves to an ENTITY or ANIMAL, not ${id}`);
-      if (o.attach === "place" && !catIds.big.has(id) && !Object.values(PLACE_OBJ).some((v) => v.includes(id))) out.push(`${tag}: attach place needs a PLACE OBJECT or the big thing (${id} is neither)`);
+      if (o.attach === "place" && !catIds.big.has(id) && !pobj && !catIds.place.has(id)) out.push(`${tag}: attach place needs a PLACE OBJECT or the big thing (${id} is neither)`);
       if (catIds.prop.has(id) && ["head", "hand", "back", "feet", "ground"].includes(o.attach) && !(SPROPS[id].attach ?? []).includes(o.attach) && !(o.attach === "ground")) out.push(`${tag}: the ${id} goes ${SPROPS[id].attach.join(" / ")}, not ${o.attach}`);
     } else if (o.resolve === "build") {
       if (!o.recipe) out.push(`${tag}: build needs a recipe`);
+      if (["person", "creature"].includes(o.kind)) out.push(`${tag}: people and creatures are never built: use the nearest PERSON / ENTITY / ANIMAL of the catalogue`);
       if (o.attach === "place") out.push(`${tag}: a built item is never a place's own object (attach ground / hand / head / back / feet); things every town has resolve to the town`);
       else { if (SPROPS[o.id] || catIds.place.has(o.id)) out.push(`${tag}: the id ${o.id} is already taken: pick another`); for (const p of recipeProblems(o.id, o.recipe)) out.push(`${tag} recipe: ${p}`); }
     } else if (o.resolve === "rewrite") {
       if (!(o.rewrite ?? []).length) out.push(`${tag}: rewrite needs the new lines`);
+      for (const w of o.rewrite ?? []) if (sc.lines[w.line - 1] && sc.lines[w.line - 1].text.trim() === String(w.text).trim()) out.push(`${tag}: the rewrite of line ${w.line} is the same text: say something the catalogue has (or resolve it to a catalogue item: a weather like fog is in the catalogue)`);
       for (const w of o.rewrite ?? []) if (!sc.lines[w.line - 1]) out.push(`${tag}: rewrite line ${w.line} does not exist`);
     }
-    if (o.kind === "worn" && !["head", "hand", "back", "feet"].includes(o.attach)) out.push(`${tag}: a worn thing goes on the head / hand / back / feet`);
+    if (o.kind === "worn" && !["head", "face", "hand", "back", "feet"].includes(o.attach)) out.push(`${tag}: a worn thing goes on the head / hand / back / feet`);
   }
   return out;
 }
@@ -113,7 +116,7 @@ let objects = load("objects.json");
 if (!objects) {
   const prim = { type: "object", additionalProperties: false, required: ["t", "at", "c"], properties: { t: { type: "string", enum: ["box", "cyl", "sph"] }, at: A_({ type: "number" }), s: A_({ type: "number" }), r: { type: "number" }, h: { type: "number" }, c: S_, e: S_, es: { type: "number" }, only: S_, rx: { type: "number" }, ry: { type: "number" }, rz: { type: "number" }, sc: A_({ type: "number" }), r2: { type: "number" } } };
   const schema = { type: "object", additionalProperties: false, required: ["objects"], properties: { objects: A_({ type: "object", additionalProperties: false, required: ["id", "name", "kind", "words", "does", "main", "attach", "states", "resolve"], properties: {
-    id: S_, name: S_, kind: { type: "string", enum: ["object", "worn", "creature", "person", "place"] }, words: A_(S_), does: S_, main: { type: "boolean" }, attach: { type: "string", enum: ["head", "hand", "back", "feet", "ground", "place", "none"] }, states: A_(S_),
+    id: S_, name: S_, kind: { type: "string", enum: ["object", "worn", "creature", "person", "place"] }, words: A_(S_), does: S_, main: { type: "boolean" }, attach: { type: "string", enum: ["head", "face", "hand", "back", "feet", "ground", "place", "none"] }, states: A_(S_),
     resolve: { type: "string", enum: ["catalogue", "build", "rewrite"] }, catalogue_id: S_, rewrite: A_({ type: "object", additionalProperties: false, required: ["line", "text"], properties: { line: I_, text: S_ } }),
     recipe: { type: "object", additionalProperties: false, required: ["what", "h", "attach", "states", "prims"], properties: { what: S_, h: { type: "number" }, attach: A_(S_), states: A_(S_), prims: A_(prim) } } } }) } };
   let prev = null, probs = [];
@@ -137,8 +140,8 @@ if (!objects) {
     const lst = [];
     for (const o of builds) {
       for (const st of o.recipe.states) lst.push({ place: "bright_city", cam: "hero_med", time: "day", opt: { label: `${o.id} ${st}`, people: [], objects: [{ id: o.id, rid: o.id, xy: [0, 12.6], state: st }], bg: false } });
-      const body = ["head", "hand", "back"].find((a) => o.recipe.attach.includes(a));
-      if (body) lst.push({ place: "bright_city", cam: body === "head" ? "hero_close" : "hero_med", time: "night", opt: { label: `${o.id} on ${body}`, people: [{ id: "me", spec: "me", spot: "plaza_front", pose: body === "hand" ? "hold_up" : "stand", face: "happy" }], objects: [{ id: o.id, rid: o.id, at: body, who: "me", state: o.recipe.states[0] }] } });
+      const body = ["face", "head", "hand", "back"].find((a) => o.recipe.attach.includes(a));
+      if (body) lst.push({ place: "bright_city", cam: ["head", "face"].includes(body) ? "hero_close" : "hero_med", time: "night", opt: { label: `${o.id} on ${body}`, people: [{ id: "me", spec: "me", spot: "plaza_front", pose: body === "hand" ? "hold_phone" : "stand", face: "happy" }], objects: [{ id: o.id, rid: o.id, at: body, who: "me", state: o.recipe.states[0] }] } });
     }
     fs.writeFileSync(path.join(OUT, "build_recipes.json"), JSON.stringify(rec));
     fs.writeFileSync(path.join(OUT, "build_list.json"), JSON.stringify(lst));
@@ -154,7 +157,7 @@ if (!objects) {
   }
   save("objects.json", objects);
 }
-const viaOf = (o) => (o.resolve === "build" ? "object" : catIds.big.has(o.catalogue_id) ? "object" : catIds.effect.has(o.catalogue_id) ? "effect" : catIds.rain.has(o.catalogue_id) ? "rain" : catIds.prop.has(o.catalogue_id) ? "object" : "none");
+const viaOf = (o) => (o.resolve === "build" ? "object" : Object.values(PLACE_OBJ).some((v) => v.includes(o.catalogue_id)) ? "object" : catIds.big.has(o.catalogue_id) ? "object" : catIds.effect.has(o.catalogue_id) ? "effect" : catIds.rain.has(o.catalogue_id) ? "rain" : catIds.prop.has(o.catalogue_id) ? "object" : "none");
 const OBJS = objects.filter((o) => !o.build_failed && o.resolve !== "rewrite").map((o) => ({ ...o, rid: o.resolve === "build" ? o.id : (catIds.big.has(o.catalogue_id) ? "big" : o.catalogue_id), attach: catIds.big.has(o.catalogue_id) ? "place" : (o.attach === "place" && !Object.values(PLACE_OBJ).some((v) => v.includes(o.catalogue_id)) ? "ground" : o.attach), via: viaOf(o) }));
 if (objects.some((o) => o.build_failed)) say(`NOT SHOWN (logged): ${objects.filter((o) => o.build_failed).map((o) => o.id).join(", ")}: the built item failed its test still`);
 
@@ -172,18 +175,23 @@ const sideIds = C.side_sets.map((s) => s.id);
 function planProblems(p) {
   const BIGW0 = { giant_door: /\b(door|keyhole)\b/, giant_statue: /\bstatue\b/, machine: /\bmachine\b/, hole: /\bhole\b/, huge_clock: /\bclock\b/, gift_box: /\b(gift|box|present|ribbon)\b/ };
   const out = [...placeFitProblems(script, p, sideIds, p.big_thing ? BIGW0[p.big_thing] : null)];
+  const townLines = p.scenes.filter((s) => s.place === p.town).reduce((a, s) => a + s.lines.length, 0);
+  if (townLines < script.lines.length * 0.25) out.push(`only ${townLines} of ${script.lines.length} lines in the town (at least a quarter stay in the town: put the outdoor lines there)`);
   const named = (id) => PLACE_WORDS[id] && script.lines.some((l) => PLACE_WORDS[id].test(l.text.toLowerCase()));
   if (p.side_sets.length > 3 || (p.side_sets.length === 3 && !p.side_sets.every(named))) out.push(p.side_sets.length > 3 ? "at most three side sets" : `a third side set only when the lines name all three places (${p.side_sets.filter((s) => !named(s)).join(", ")} is not named)`);
+  for (const c of p.cast) if (c.kind === "person" && c.id !== "me" && !catIds.person.has(c.library)) out.push(`cast ${c.id}: library must be a PERSON id of the catalogue (not ${c.library})`);
+  for (const s of p.side_sets) if ((TOWN_HAS[p.town] ?? []).includes(s)) out.push(`${s} is part of ${p.town} itself: its lines happen in the town (drop it from the side sets)`);
   for (const o of OBJS) {
     if (o.kind === "creature" && o.rid && !p.cast.some((c) => c.library === o.rid)) out.push(`the story object ${o.id} is the ${o.rid}: put it in the cast`);
     if (o.rid === "big" && p.big_thing !== o.catalogue_id) out.push(`the story object ${o.id} is the big thing ${o.catalogue_id}: choose it as the big thing`);
     if (o.via === "object" && o.attach === "place" && o.rid !== "big" && !(PLACE_OBJ[p.town] ?? []).includes(o.rid) && !p.side_sets.some((s) => (PLACE_OBJ[s] ?? []).includes(o.rid))) out.push(`the story object ${o.id} is a ${o.rid}, which only ${Object.entries(PLACE_OBJ).filter(([, v]) => v.includes(o.rid)).map(([k]) => k).join(" / ")} has: choose that place`);
-    if (o.kind === "place" && o.rid && catIds.place.has(o.rid) && p.town !== o.rid && !p.side_sets.includes(o.rid)) out.push(`the story place ${o.id} is ${o.rid}: choose it`);
+    if (o.kind === "place" && o.rid && sideIds.includes(o.rid) && !PLACE_WORDS[o.rid] && p.town !== o.rid && !p.side_sets.includes(o.rid) && !(TOWN_HAS[p.town] ?? []).includes(o.rid)) out.push(`the story place ${o.id} is ${o.rid}: choose it`);
   }
   // a big thing only stands in the town's middle: a line that names it happens in the town
   const BIGW = { giant_door: /\b(door|keyhole)\b/, giant_statue: /\bstatue\b/, machine: /\bmachine\b/, hole: /\bhole\b/, huge_clock: /\bclock\b/, gift_box: /\b(gift|box|present|ribbon)\b/ };
   if (p.big_thing && BIGW[p.big_thing]) for (const sc of p.scenes) if (sc.place !== p.town) for (const li of sc.lines) if (BIGW[p.big_thing].test((script.lines[li - 1]?.text ?? "").toLowerCase())) out.push(`line ${li} names the ${p.big_thing.replace("_", " ")}, which only stands in the town's middle, but its scene is in ${sc.place} (give the lines that name it a scene of their own in the town; the lines before can stay in ${sc.place})`);
-  if (!p.cast.some((c) => c.kind === "entity" && C.entities.some((e) => e.id === c.library))) out.push("the cast has no entity from the catalogue: every story has one (it can be what the rule is about)");
+  // (an entity only when the story has a creature: a creature only appears where its line names it)
+  if (OBJS.some((o) => o.kind === "creature") && !p.cast.some((c) => c.kind === "entity" || c.kind === "animal")) out.push("the story has a creature but the cast has none");
   for (const sc of p.scenes) if (sc.place !== p.town && !p.side_sets.includes(sc.place)) out.push(`scene ${sc.scene} is in ${sc.place}, which is not the town or a chosen side set`);
   for (const a of AVOID.split(",").filter(Boolean)) { const [k, v] = a.split(":"); if ((k === "town" && p.town === v) || (k === "side" && p.side_sets.includes(v)) || (k === "entity" && p.cast.some((c) => c.library === v))) out.push(`${v} is already used by another video: pick a different ${k === "side" ? "side set" : k}`); }
   return out;
@@ -209,6 +217,27 @@ if (!plan) {
     if (!probs.length) break;
     prev = plan;
   }
+  // THE PLAN REPAIR (in code, the story stays): a line that names a side set gets a scene of its own there (a third set
+  // when the lines name three), a side set the town already has goes back to the town; logged
+  if (probs.length) {
+    const fix = JSON.parse(JSON.stringify(plan)), notes = [];
+    for (const s of [...fix.side_sets]) if ((TOWN_HAS[fix.town] ?? []).includes(s)) { fix.side_sets = fix.side_sets.filter((x) => x !== s); for (const sc of fix.scenes) if (sc.place === s) sc.place = fix.town; notes.push(`${s} -> the town`); }
+    for (const pr of placeFitProblems(script, fix, sideIds)) {
+      const m = pr.match(/^line (\d+) names the (.+) but its scene is in/);
+      if (!m) continue;
+      const li = Number(m[1]), set = m[2].replace(/ /g, "_");
+      if (!fix.side_sets.includes(set)) { if (fix.side_sets.length >= 3) continue; fix.side_sets.push(set); }
+      const sc = fix.scenes.find((s) => s.lines.includes(li));
+      if (!sc) continue;
+      sc.lines = sc.lines.filter((x) => x !== li);
+      fix.scenes.push({ ...sc, scene: fix.scenes.length + 1, lines: [li], place: set });
+      notes.push(`line ${li} -> ${set}`);
+    }
+    fix.scenes = fix.scenes.filter((s) => s.lines.length).sort((a, b) => Math.min(...a.lines) - Math.min(...b.lines)).map((s, i) => ({ ...s, scene: i + 1 }));
+    const left = planProblems(fix);
+    say(`location plan repaired in code (${notes.join("; ") || "nothing to move"}): ${left.length} problem(s) left${left.length ? ": " + left.join("; ") : ""}`);
+    if (left.length < probs.length) plan = fix;
+  }
   save("plan.json", plan);
 }
 
@@ -227,7 +256,7 @@ const placeMenu = (id) => {
   const S0 = loadPlace(places[id]);
   const S = id === plan.town ? { ...S0, cameras: Object.fromEntries(Object.entries(S0.cameras).filter(([k]) => !blocked.has(k))) } : S0;
   const extra = id === plan.town && plan.big_thing ? { [`${plan.big_thing}_close`]: { shot: "insert", people: [] } } : {};
-  return `PLACE ${id} (${S.name}):\n${Object.entries({ ...S.cameras, ...extra }).map(([k, c]) => `- camera ${k}: ${c.shot === "top" ? "AERIAL" : c.shot}; people spots: ${c.people.length ? c.people.map((p) => `${p} (${S.spots[p]?.tag ?? ""})`).join(", ") : "none"}${c.reveal === "low" ? "; THE REVEAL: low, looking up at the whole creature, the hero small in front (facing: entity); on an open street, away from the big thing" : c.reveal === "face" ? "; THE REVEAL: close on the creature's face / eyes (on the street, away from the big thing)" : c.creature ? `; entity spot ${c.creature} (${S.big && S.creature_spots[c.creature] && Math.hypot(S.creature_spots[c.creature].at[0] - S.big.at[0], S.creature_spots[c.creature].at[1] - S.big.at[1]) < 9 ? "AT THE BIG THING: the creature by / coming out of it" : "far"})` : ""}`).join("\n")}${(PLACE_OBJ[id] ?? []).length ? `\nPLACE OBJECTS here (row.objects at "place"): ${PLACE_OBJ[id].map((o) => `${o} (states ${SPROPS[o]?.states.join(" / ")}; seen by cameras ${camsSeeing(id, o).join(", ")})`).join(", ")}` : ""}${id === plan.town && plan.big_thing ? `\nTHE BIG THING (row.objects at "place") is seen by cameras ${camsSeeing(id, "big").join(", ")}, ${plan.big_thing}_close` : ""}\n- camera hand_close: the hand of the first person (on any spot of this place) and what it holds\nAN ENTITY CAN ONLY BE IN A ROW ON ONE OF THESE CAMERAS: ${Object.entries(S.cameras).filter(([, c]) => c.creature).map(([k]) => k).join(", ") || "none on this place"}\nPROP STATES here: ${id === plan.town && plan.big_thing === "giant_door" ? "key = none / in / turned (seen on giant_door_close)" : ""}${id === "control_room" ? "red = covered / open (cover lifted) / pressed (seen on camera red; the hand on the button: camera press_side with a person on at_red, pose press)" : ""}`;
+  return `PLACE ${id} (${S.name}):\n${Object.entries({ ...S.cameras, ...extra }).map(([k, c]) => `- camera ${k}: ${c.shot === "top" ? "AERIAL" : c.shot}; people spots: ${c.people.length ? c.people.map((p) => `${p} (${S.spots[p]?.tag ?? ""})`).join(", ") : "none"}${c.reveal === "low" ? "; THE REVEAL: low, looking up at the whole creature, the hero small in front (facing: entity); on an open street, away from the big thing" : c.reveal === "face" ? "; THE REVEAL: close on the creature's face / eyes (on the street, away from the big thing)" : c.creature ? `; entity spot ${c.creature} (${S.big && S.creature_spots[c.creature] && Math.hypot(S.creature_spots[c.creature].at[0] - S.big.at[0], S.creature_spots[c.creature].at[1] - S.big.at[1]) < 9 ? "AT THE BIG THING: the creature by / coming out of it" : "far"})` : ""}`).join("\n")}${(PLACE_OBJ[id] ?? []).length ? `\nPLACE OBJECTS here (row.objects at "place"): ${PLACE_OBJ[id].map((o) => `${o} (states ${(SPROPS[o]?.states ?? PLACE_OBJ_ST[o] ?? []).join(" / ")}; seen by cameras ${camsSeeing(id, o).join(", ")})`).join(", ")}` : ""}${id === plan.town && plan.big_thing ? `\nTHE BIG THING (row.objects at "place") is seen by cameras ${camsSeeing(id, "big").join(", ")}, ${plan.big_thing}_close` : ""}\n- camera hand_close: the hand of the first person (on any spot of this place) and what it holds\nAN ENTITY CAN ONLY BE IN A ROW ON ONE OF THESE CAMERAS: ${Object.entries(S.cameras).filter(([, c]) => c.creature).map(([k]) => k).join(", ") || "none on this place"}\nPROP STATES here: ${id === plan.town && plan.big_thing === "giant_door" ? "key = none / in / turned (seen on giant_door_close)" : ""}${id === "control_room" ? "red = covered / open (cover lifted) / pressed (seen on camera red; the hand on the button: camera press_side with a person on at_red, pose press)" : ""}`;
 };
 const ROWS = `You plan the shot rows of an "In This Town" video. Each line gets 1-3 rows. Use ONLY the places of the location plan, ONLY their named cameras, and put people ONLY on that camera's own people spots (they are the tested framings).
 - THE OPENING: row 1 = line 1 on camera ${OPEN_CAM} of the town (the aerial that sees the middle spot), no people, with the story's weather / raining things if the first lines name them. Row 2 = line 1 again (from_word 3): "me" with the rule visible.
@@ -249,7 +278,7 @@ const rowSchema = { type: "object", additionalProperties: false, required: ["row
   entity: { type: "object", additionalProperties: false, required: ["id"], properties: { id: S_, state: { type: "string", enum: ["stand", "walk", "reach", "peek", "loom", "eyes"] }, show: { type: "string", enum: ["full", "silhouette", "eyes"] } } },
   rain: { type: "object", additionalProperties: false, required: ["kind"], properties: { kind: S_, amount: { type: "number" }, pile: { type: "number" }, falling: { type: "boolean" } } },
   states: { type: "object", additionalProperties: false, properties: { key: { type: "string", enum: ["none", "in", "turned"] }, red: { type: "string", enum: ["covered", "open", "pressed"] } } },
-  objects: A_({ type: "object", additionalProperties: false, required: ["id", "at"], properties: { id: { type: "string", enum: OBJS.filter((o) => ["object", "worn"].includes(o.kind) && o.via === "object").map((o) => o.id).concat(["-"]) }, at: { type: "string", enum: ["head", "hand", "back", "feet", "ground", "place"] }, who: S_, state: S_ } }),
+  objects: A_({ type: "object", additionalProperties: false, required: ["id", "at"], properties: { id: { type: "string", enum: OBJS.filter((o) => ["object", "worn"].includes(o.kind) && o.via === "object").map((o) => o.id).concat(["-"]) }, at: { type: "string", enum: ["head", "face", "hand", "back", "feet", "ground", "place"] }, who: S_, state: S_ } }),
   crowd: { type: "object", additionalProperties: false, required: ["n", "action"], properties: { n: I_, action: { type: "string", enum: ["run", "reach", "point", "cover_head", "hands_head"] } } },
   effect: { type: "object", additionalProperties: false, required: ["kind"], properties: { kind: { type: "string", enum: C.effects.map((e) => e.id) } } } } }) } };
 const sceneOf = (line) => plan.scenes.find((s) => s.lines.includes(line)) ?? plan.scenes[0];
@@ -289,10 +318,10 @@ function rowProblems(R) {
     if (elib && c.creature && ENT_H[elib] && !c.reveal) { const S2 = loadPlace(places[r.place]); const at = S2.creature_spots[c.creature]?.at; const cc = S2.cameras[r.cam]; const e = at && cc ? span(cc, at, 0.8, 0.85 * ENT_H[elib], 0.97 * ENT_H[elib]) : null; if (!e || e[2] < 0.03) out.push(`${tag}: camera ${r.cam} cannot frame the ${elib} (${ENT_H[elib]} tall): its eyes are above the frame; use a farther entity camera or show it as eyes / silhouette elsewhere`); }
     if (r.entity && !c.creature && C.entities.some((e) => e.id === castOf[r.entity.id]?.library)) out.push(`${tag}: camera ${r.cam} has no entity spot`);
     if (r.cam === "hand_close" && !r.people[0]?.holds && !(r.objects ?? []).some((o) => o.at === "hand" && o.who === r.people[0]?.id)) out.push(`${tag}: hand_close needs the first person holding something`);
-    for (const o of r.objects ?? []) {
+    for (const o of (r.objects ?? []).filter((q) => q.id !== "-")) {
       const O = objOf[o.id];
       if (!O) { out.push(`${tag}: ${o.id} is not a story object`); continue; }
-      if (["head", "hand", "back", "feet"].includes(o.at) && !r.people.some((p) => p.id === o.who)) out.push(`${tag}: ${o.id} at ${o.at} needs who = a person in this row`);
+      if (["head", "face", "hand", "back", "feet"].includes(o.at) && !r.people.some((p) => p.id === o.who)) out.push(`${tag}: ${o.id} at ${o.at} needs who = a person in this row`);
       if (o.at === "place" && O.rid !== "big" && !(PLACE_OBJ[r.place] ?? []).includes(O.rid)) out.push(`${tag}: ${r.place} has no ${O.rid} of its own`);
       if (o.at === "place" && O.rid === "big" && r.place !== plan.town) out.push(`${tag}: the big thing stands only in the town`);
       if (o.at === "place" && c.loc && !seesObj(r.place, c, O.rid)) out.push(`${tag}: camera ${r.cam} does not see a ${O.rid === "big" ? plan.big_thing : O.rid} at a readable size; cameras that do: ${camsSeeing(r.place, O.rid).join(", ") || "none"}`);
@@ -300,8 +329,8 @@ function rowProblems(R) {
     if (i && R[i - 1].cam === r.cam && R[i - 1].place === r.place) out.push(`${tag}: the same camera as the row before`);
   });
   for (let l = 1; l <= script.lines.length; l++) if (!R.some((r) => r.line === l)) out.push(`line ${l} has no row`);
-  const inTown = R.filter((r) => r.place === plan.town).length;
-  if (inTown < R.length * 0.5) out.push(`only ${inTown} of ${R.length} rows in the town (most stay in the town)`);
+  const inTown = R.filter((r) => r.place === plan.town).length, planTown = R.filter((r) => sceneOf(r.line).place === plan.town).length;
+  if (inTown < planTown * 0.8) out.push(`only ${inTown} of ${R.length} rows in the town (the plan has ${planTown} there)`);
   out.push(...sayShowProblems(script, R, { cast: plan.cast, objects: OBJS }));
   return out;
 }
@@ -335,13 +364,13 @@ if (left0.length) say(`FREE CHECKS STILL FAIL after the re-plans (logged; the fa
 
 // ---------------------------------------------------------------- 4. THE STILLS (through the place test; one automatic re-plan)
 const texts = Object.fromEntries((plan.texts ?? []).map((t) => [t.key, t.text]));
-function stillsOf(R, bad) {
+function stillsOf(R, bad, only = null) {
   const ids = new Set(), list = [];
   R.forEach((r, i) => {
-    if (bad.has(i + 1)) return;
+    if (bad.has(i + 1) || (only && !only.includes(r.line))) return;
     const sc = sceneOf(r.line);
     let pid = r.place;
-    const bigEarly = plan.big_thing && script.lines.slice(0, 3).some((l) => OBJS.some((o) => o.rid === "big" && namesObject(l.text, o)) || new RegExp(plan.big_thing.replace(/_/g, " ").split(" ").pop()).test(l.text.toLowerCase()));
+    const bigEarly = plan.big_thing && script.lines.slice(0, 3).some((l) => OBJS.some((o) => o.rid === "big" && namesObject(l.text, o)) || new RegExp(`\\b${plan.big_thing.replace(/_/g, " ").split(" ").pop()}\\b`).test(l.text.toLowerCase()));
     if (r.place === plan.town && plan.big_thing && !(i === 0 && !bigEarly)) {
       const st = sc.big_state && BIG_THINGS[plan.big_thing].states[sc.big_state] ? sc.big_state : Object.keys(BIG_THINGS[plan.big_thing].states)[0];
       pid = `${r.place}+${plan.big_thing}.${st}`;
@@ -359,16 +388,18 @@ function stillsOf(R, bad) {
   });
   return { ids, list };
 }
-function render(R, tag) {
+function render(R, tag, only = null) {
   const left = rowProblems(R);
   const bad = new Set(left.map((p) => Number((p.match(/^row (\d+)/) ?? [])[1])).filter(Boolean));
-  const { ids, list } = stillsOf(R, bad);
+  const { ids, list } = stillsOf(R, bad, only);
   fs.writeFileSync(path.join(OUT, `stills_${tag}.json`), JSON.stringify(list));
   say(`stills (${tag}): ${list.length} rows on ${[...ids].join(", ")}`);
   const camsUsed = [...new Set(list.map((x) => x.cam))].join(",");
+  fs.rmSync(path.join(ROOT, "runs", `story_${NAME}_${tag}`, "results.json"), { force: true });     // never read an older run's results
   const r = spawnSync("node", [path.join(HERE, "placeTest.mjs"), "--places", [...ids].join(","), "--cams", camsUsed + ",wide,medium", "--list", path.join(OUT, `stills_${tag}.json`), "--tag", `story_${NAME}_${tag}`, "--cap", "0.6", "--night_cap", arg("night_cap", "10"), "--yes"], { encoding: "utf8", env: process.env, maxBuffer: 1 << 26 });
   say((r.stdout || "").split("\n").filter((l) => /pass;|FAIL|spent|no image|wall/.test(l)).join("\n") + (r.status ? `\n(exit ${r.status}) ${(r.stderr || r.stdout || "").slice(-900)}` : ""));
   for (const f of fs.readdirSync(ROOT)) if (f.startsWith("sheet_") && f.includes(`story_${NAME}_${tag}`)) fs.rmSync(path.join(ROOT, f));
+  if (r.status || !fs.existsSync(path.join(ROOT, "runs", `story_${NAME}_${tag}`, "results.json"))) { say(`STILLS FAILED TO RUN (exit ${r.status}): stopped`); process.exit(1); }
   return { left, res: JSON.parse(fs.readFileSync(path.join(ROOT, "runs", `story_${NAME}_${tag}`, "results.json"), "utf8")) };
 }
 let { left, res } = render(rows, "a");
@@ -385,7 +416,13 @@ if (failedRows.length && !has("no-fix")) {
   const merged = [];
   for (let l = 1; l <= script.lines.length; l++) merged.push(...(lines.includes(l) && neu.some((x) => x.line === l) ? neu.filter((x) => x.line === l) : rows.filter((x) => x.line === l)));
   say(`automatic fix: lines ${lines.join(", ")} re-planned ($${rr.costUsd}); ${rowProblems(merged).length} free-check problem(s) after it`);
-  if (rowProblems(merged).length <= left.length) { rows = merged; save("rows.json", rows); ({ left, res } = render(rows, "b")); }
+  if (rowProblems(merged).length <= left.length) {
+    rows = merged; save("rows.json", rows);
+    const res0 = res, lineOf = (x) => Number(String(x.opt?.label ?? "").split("L")[1]) || 0;
+    const rb = render(rows, "b", lines);
+    left = rb.left;
+    res = { ...rb.res, rows: [...res0.rows.filter((x) => !lines.includes(lineOf(x))), ...rb.res.rows].sort((a, b) => lineOf(a) - lineOf(b) || Number(String(a.opt.label).split(" ")[0]) - Number(String(b.opt.label).split(" ")[0])) };
+  }
 }
 save("checks.json", { problems: left });
 // the storyboard sheet: the stills in row order with each line's words and PASS / what failed (one sheet, 1400 px wide)

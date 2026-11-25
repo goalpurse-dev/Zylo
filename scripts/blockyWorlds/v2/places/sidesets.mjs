@@ -80,8 +80,8 @@ export const SIDESETS = {
       { p: "frame", at: [0, 5.88, 5.4], w: 2.4, h: 3, c: "#2B3550" }, { p: "window", at: [-4.6, 5.85, 4.6], curtains: "#8C1E2A" }],
     hero: g(0, -1.8), two: [g(-1.6, -0.4), g(1.6, -0.4)], spots: { mayor: { at: g(0, 4.6), tag: "behind the desk" } }, cams: { nameplate: ins([0.4, -1.6, 2.2], [0, 1, 1.3], 34, ["nameplate"]), mayor_med: { loc: [0.6, -2.4, 3.8], tgt: [0, 4.6, 2.9], lens: 30, shot: "medium", people: ["mayor"] } } }),
   control_room: side("control_room", "The secret control room", "a wall of screens showing the town, a console with levers and big labelled buttons, one huge red button under a cover", {
-    items: [R({ wall: "#1C2030", floor: "#22262F", trim: "#3A4050" }), { p: "screens", at: [0, 5.8, 4.6], cols: 5, rows: 3 }, { p: "console", at: [-2, 2.5, 0], L: 9, labels: ["RAIN", "SUN", "STORM"] },
-      { p: "redbutton", at: [5, 2.5, 0] }, { prim: { t: "light", at: [0, 3.2, 5], w: 250, c: "#6AB0E8", solid: false } }],
+    items: [R({ wall: "#1C2030", floor: "#22262F", trim: "#3A4050" }), { p: "screens", at: [0, 5.8, 4.6], cols: 5, rows: 3, tag: "obj_screens" }, { p: "console", at: [-2, 2.5, 0], L: 9, labels: ["RAIN", "SUN", "STORM"] },
+      { p: "redbutton", at: [5, 2.5, 0], tag: "obj_red" }, { prim: { t: "light", at: [0, 3.2, 5], w: 250, c: "#6AB0E8", solid: false } }],
     hero: g(0, -0.8), two: [g(-1.6, -0.6), g(1.6, -0.6)], spots: { mayor: { at: g(-2, 4.8), tag: "behind the console" }, at_red: { at: g(5, -0.6), tag: "at the red button" } },
     cams: { red: ins([5, -1.0, 3.2], [5, 2.5, 1.0], 30, ["red_label"]), buttons: ins([-3.5, -0.6, 3.4], [-3.4, 2.0, 1.4], 30, ["btn1", "btn2", "btn3"]), screens: ins([0, -6, 4.6], [0, 5.8, 4.6], 24),
       mayor_med: { loc: [-1.6, -4.5, 6.4], tgt: [-2, 4.8, 2.2], lens: 30, shot: "top", people: ["mayor"], fixed: true },
