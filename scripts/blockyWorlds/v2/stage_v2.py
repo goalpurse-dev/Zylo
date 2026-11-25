@@ -255,9 +255,9 @@ def zv_gate(S):
             if pts and (zw_span(cam, [p for p in pts if p.z > min(q.z for q in pts) + 0.78 * (max(q.z for q in pts) - min(q.z for q in pts))]) or (0, 1, -1, 2))[2] < 0.0:
                 lines.append("ZW_GATE|%s|zv|creature|head_cut|its eyes are above the frame" % sid)
             cov = max(0.0, min(1.0, u1) - max(0.0, u0)) * max(0.0, min(1.0, v1) - max(0.0, v0))
-            if cov > 0.7 and ZV_SHOT.get("cam") != "eyes":    # an eyes-only shot fills the frame on purpose
+            if cov > 0.7 and ZV_SHOT.get("cam") not in ("eyes", "reveal_face"):    # an eyes-only shot fills the frame on purpose
                 lines.append("ZW_GATE|%s|zv|creature|lens_wall|covers %d pct of the frame" % (sid, int(100 * cov)))
-        elif (v1 - v0) < 0.12:
+        elif (v1 - v0) < 0.12 and not str(ZV_SHOT.get("cam", "")).startswith("reveal"):     # (a reveal: the hero small on purpose)
             lines.append("ZW_GATE|%s|zv|%s|small|body %.2f of the frame height" % (sid, who, v1 - v0))
         hp = zw_head_pts(ch) if who != "creature" else pts
         hs = zw_span(cam, hp) if hp else None

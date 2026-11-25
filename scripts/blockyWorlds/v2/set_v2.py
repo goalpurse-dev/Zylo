@@ -587,7 +587,7 @@ def zv_reveal_cam(P, c, at, kind, bounds=None):
     u = u.normalized() if u.length > 0.1 else Vector((0, -1, 0))
     side = Vector((-u.y, u.x, 0))
     if c["reveal"] == "low":
-        loc = Vector((H.x, H.y, 0)) + u * 20.0 + side * 3.0     # 12 behind the hero, a little to the side: the hero small, head above the captions
+        loc = Vector((H.x, H.y, 0)) + u * max(20.0, 2.4 * Hh) + side * 3.0     # 12 behind the hero, a little to the side: the hero small, head above the captions
         loc.z = 2.2
         D_ = (Vector((E.x, E.y, 0)) - Vector((loc.x, loc.y, 0))).length
         top = bounds[1].z if bounds and bounds[1].z > -1e8 else Hh
@@ -685,7 +685,7 @@ def zv_place_test(pid, cam_name, time, weather, t0, t1, opt=None):
         if pp.get("holds") and pp["holds"] in ZV_RECIPES:
             zv_attach(ch, zv_recipe(pp["holds"], "fw_hold%d" % k, pp.get("hold_state"), pp.get("label"), ZV_SETINFO.get("night", False)), "hand", pp["holds"])
         elif pp.get("holds"):
-            zv_hold(ch, zv_prop(pp["holds"], "Hold%d" % k, label=pp.get("label")), "R")
+            zv_hold(ch, zv_prop(pp["holds"], "zp_fwHold%d" % k, label=pp.get("label")), "R")     # (held: never a blocker of its own person)
         subs.append((pp.get("id", pp["spec"]), ch))
     for k, spot in enumerate([] if opt.get("people") is not None else c.get("people", [])):
         at = P["spots"][spot]["at"]

@@ -870,5 +870,210 @@
    }
   ],
   "built": true
+ },
+ "blanket": {
+  "what": "a folded blue blanket",
+  "h": 0.5,
+  "attach": [
+   "hand",
+   "ground"
+  ],
+  "states": [
+   "plain"
+  ],
+  "prims": [
+   {
+    "solid": false,
+    "t": "box",
+    "at": [
+     0,
+     0,
+     0.1
+    ],
+    "s": [
+     1.2,
+     0.9,
+     0.2
+    ],
+    "c": "#4A78C8"
+   },
+   {
+    "solid": false,
+    "t": "box",
+    "at": [
+     0,
+     0,
+     0.26
+    ],
+    "s": [
+     1,
+     0.7,
+     0.12
+    ],
+    "c": "#6A93DB"
+   },
+   {
+    "solid": false,
+    "t": "box",
+    "at": [
+     0,
+     -0.46,
+     0.15
+    ],
+    "s": [
+     1.2,
+     0.06,
+     0.1
+    ],
+    "c": "#F2D36B"
+   }
+  ],
+  "built": true
+ },
+ "glasses": {
+  "what": "round glasses",
+  "h": 0.3,
+  "attach": [
+   "face"
+  ],
+  "states": [
+   "on"
+  ],
+  "prims": [
+   {
+    "solid": false,
+    "t": "cyl",
+    "at": [
+     -0.2,
+     0,
+     0.15
+    ],
+    "r": 0.16,
+    "h": 0.04,
+    "c": "#222222",
+    "rx": 90
+   },
+   {
+    "solid": false,
+    "t": "cyl",
+    "at": [
+     0.2,
+     0,
+     0.15
+    ],
+    "r": 0.16,
+    "h": 0.04,
+    "c": "#222222",
+    "rx": 90
+   },
+   {
+    "solid": false,
+    "t": "box",
+    "at": [
+     0,
+     0,
+     0.17
+    ],
+    "s": [
+     0.16,
+     0.04,
+     0.04
+    ],
+    "c": "#222222"
+   },
+   {
+    "solid": false,
+    "t": "box",
+    "at": [
+     -0.38,
+     0.1,
+     0.17
+    ],
+    "s": [
+     0.04,
+     0.24,
+     0.04
+    ],
+    "c": "#222222"
+   },
+   {
+    "solid": false,
+    "t": "box",
+    "at": [
+     0.38,
+     0.1,
+     0.17
+    ],
+    "s": [
+     0.04,
+     0.24,
+     0.04
+    ],
+    "c": "#222222"
+   }
+  ],
+  "built": true
+ },
+ "red_thread": {
+  "what": "a long red thread hanging down",
+  "h": 2.4,
+  "attach": [
+   "ground"
+  ],
+  "states": [
+   "hang"
+  ],
+  "prims": [
+   {
+    "solid": false,
+    "t": "cyl",
+    "at": [
+     0,
+     0,
+     1.2
+    ],
+    "r": 0.03,
+    "h": 2.4,
+    "c": "#D62828"
+   },
+   {
+    "solid": false,
+    "t": "sph",
+    "at": [
+     0,
+     0,
+     0.05
+    ],
+    "r": 0.07,
+    "c": "#D62828"
+   },
+   {
+    "solid": false,
+    "t": "box",
+    "at": [
+     0,
+     0,
+     2.35
+    ],
+    "s": [
+     0.2,
+     0.05,
+     0.1
+    ],
+    "c": "#8A8A8A"
+   },
+   {
+    "solid": false,
+    "t": "sph",
+    "at": [
+     0.03,
+     0,
+     1.6
+    ],
+    "r": 0.04,
+    "c": "#E24040"
+   }
+  ],
+  "built": true
  }
 }
