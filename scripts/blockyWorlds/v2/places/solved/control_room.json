@@ -72,12 +72,12 @@
   "loc": [
    5,
    -3.8,
-   5.84
+   4.96
   ],
   "tgt": [
    5,
    2.5,
-   2.6
+   1
   ],
   "lens": 30,
   "shot": "insert",
@@ -131,6 +131,24 @@
   "shot": "top",
   "people": [
    "mayor"
+  ],
+  "fixed": true
+ },
+ "press_side": {
+  "loc": [
+   0.8,
+   -8.4,
+   4.6
+  ],
+  "tgt": [
+   4.9,
+   0.6,
+   1.5
+  ],
+  "lens": 24,
+  "shot": "medium",
+  "people": [
+   "at_red"
   ],
   "fixed": true
  }

@@ -8,7 +8,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { allPlaces, loadPlace } from "./placeKit.mjs";
 import { BIG_THINGS } from "./places/bigthings.mjs";
-import { CHARACTERS, NEIGHBOURS, EXTRA_SPECS, ANIMALS, ENTITIES } from "./characters.mjs";
+import { CHARACTERS, NEIGHBOURS, EXTRA_SPECS, ANIMALS, ENTITIES, ENTITY_TONE } from "./characters.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const PASSED_FILE = path.join(HERE, "places", "passed.json");
@@ -39,7 +39,7 @@ export async function buildCatalogue() {
     times: (P.times ?? []).map((k) => ({ id: k, look: TIMES[k] })), weathers: (P.weathers ?? []).map((k) => ({ id: k, look: WEATHERS[k] })),
     rain_things: (P.rain_things ?? []).map((k) => ({ id: k, look: RAIN_THINGS[k] ?? k })),
     people: (P.people ?? []).filter((k) => specs[k]).map((k) => ({ id: k, role: specs[k].role })),
-    animals: (P.animals ?? []).map((k) => ({ id: k, look: ANIMALS[k] })), entities: (P.entities ?? []).map((k) => ({ id: k, look: ENTITIES[k], states: ["stand", "walk", "reach", "peek", "loom", "eyes"], show: ["full", "silhouette", "eyes"] })),
+    animals: (P.animals ?? []).map((k) => ({ id: k, look: ANIMALS[k] })), entities: (P.entities ?? []).map((k) => ({ id: k, tone: ENTITY_TONE[k] ?? "scary", look: ENTITIES[k], states: ["stand", "walk", "reach", "peek", "loom", "eyes"], show: ["full", "silhouette", "eyes"] })),
     props: (P.props ?? []).map((k) => ({ id: k, look: PROPS[k] ?? k })), effects: (P.effects ?? []).map((k) => ({ id: k, look: EFFECTS[k] ?? k })),
     skipped: P.skipped ?? {},
   };
@@ -54,7 +54,7 @@ export function catalogueLines(C) {
   L.push(`TIMES: ${C.times.map((x) => x.id).join(", ")}. WEATHER: ${C.weathers.map((x) => x.id).join(", ")}. RAINING THINGS (any amount, starts/stops per shot): ${C.rain_things.map((x) => x.id).join(", ")}.`);
   for (const p of C.people) L.push(`PERSON ${p.id}: ${p.role}.`);
   for (const a of C.animals) L.push(`ANIMAL ${a.id}: ${a.look}.`);
-  for (const e of C.entities) L.push(`ENTITY ${e.id}: ${e.look} (states ${e.states.join("/")}; shown full, as a silhouette or eyes only).`);
+  for (const e of C.entities) L.push(`ENTITY ${e.id} (${e.tone}): ${e.look} (states ${e.states.join("/")}; shown full, as a silhouette or eyes only).`);
   L.push(`PROPS: ${C.props.map((p) => p.id).join(", ")}. EFFECTS: ${C.effects.map((p) => p.id).join(", ")}.`);
   return L;
 }

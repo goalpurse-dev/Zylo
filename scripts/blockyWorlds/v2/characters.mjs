@@ -115,23 +115,24 @@ export const EXTRA_SPECS = {
   cm4: rc(C.me, "cm4", "a classmate (yellow hoodie, bun)", { top: "#F2C14E", top_dark: "#D9A52E", hair: "#2A2A2A", hair_light: "#5A5A5A", skin: "#8D5524", skin_dark: "#74441C" }, { hair: "bun", height: 2.9, default_face: "smug" }),
   nb5: rc(C.mom, "nb5", "a neighbour", { top: "#C58AF9", top_dark: "#A56AD9", hair: "#E8E2D8", hair_light: "#FFFFFF" }, { hair: "short", default_face: "happy" }),
   nb6: rc(C.grandpa, "nb6", "an old neighbour", { top: "#4C8FD6", top_dark: "#3474B8", skin: "#8D5524", skin_dark: "#74441C" }, { default_face: "neutral" }),
-  baby: rc(C.sister, "baby", "a baby (pink bonnet)", { top: "#F6C7D8", top_dark: "#E8A8C0", legs: "#F6C7D8", legs_dark: "#E8A8C0", hair: "#C27A50" }, { height: 1.75, hair: "short", wear: ["bonnet"], default_face: "happy",
-    body: { ...C.sister.body, thigh: 0.55, shin: 0.45, torso_h: 1.25, head: 1.38 } }),
+  baby: rc(C.sister, "baby", "a baby (pink onesie, pink bonnet)", { top: "#F6C7D8", top_dark: "#E8A8C0", legs: "#F6C7D8", legs_dark: "#E8A8C0", shoe: "#FFFFFF", sole: "#F0E0E8", hair: "#8A5A3A", hair_light: "#B07A50" }, { height: 1.9, hair: "none", hair_top: 0.0, outfit: "plain", wear: ["bonnet"], default_face: "big_smile", sleeves: "long",
+    body: { ...C.sister.body, thigh: 0.6, shin: 0.5, upper_arm: 0.55, fore_arm: 0.5, torso_w: 1.8, torso_d: 1.15, torso_h: 1.3, head: 1.25 } }),
   villain_mayor: rc(C.mayor, "villain_mayor", "the Mayor as the villain (dark coat, sharp grin, the same top hat)", { top: "#16161E", top_dark: "#0C0C12", legs: "#16161E", legs_dark: "#0C0C12", sash: "#7A0F1E", accent: "#7A0F1E", trim: "#8C1E2A" }, { default_face: "smug", wear: ["bow_tie"] }),
   stretch_legs: { ...C.me, id: "stretch_legs", role: "the stretch effect: very long legs", stretch: { legs: 2.4 } },
   stretch_neck: { ...C.me, id: "stretch_neck", role: "the stretch effect: a very long neck", stretch: { neck: 2.8 } },
-  stretch_arms: { ...C.me, id: "stretch_arms", role: "the stretch effect: very long arms", stretch: { arms: 2.2 } },
+  stretch_arms: { ...C.me, id: "stretch_arms", role: "the stretch effect: very long arms (the arm bones themselves longer)", body: { ...C.me.body, upper_arm: 1.85, fore_arm: 1.75 } },
 };
 export const ANIMALS = { dog: "a dog (tan, floppy ears)", cat: "a cat (grey, yellow eyes)", bird: "a bird (blue, orange beak)" };
+export const ENTITY_TONE = { long_one: "scary", crawler: "scary", watcher: "scary", hollow: "scary", many_arms: "scary", rain_thing: "scary", giant_critter: "scary", ghost: "funny", robot: "funny", slime: "funny" };
 export const ENTITIES = {
   long_one: "the Long One: a person stretched far too tall (14), too many joints, a pale blank face",
-  crawler: "the Crawler: low on all fours, spider-bent limbs, its head turned upside down",
-  watcher: "the Watcher: a heavy body covered in eyes that all open at once",
-  hollow: "the Hollow: a townsperson with an empty dark face",
-  many_arms: "the Many-Arms: a shape in a doorway, eight arms reaching round the frame",
-  rain_thing: "the Rain Thing: a figure of dripping black water with a puddle",
+  crawler: "the Crawler: twice a person long, spider-bent limbs, its head upside down, glowing eyes",
+  watcher: "the Watcher: three times a person, a dark body covered in glowing eyes that all open at once",
+  hollow: "the Hollow: a townsperson twice too tall, an empty dark face with two pinpoint eyes",
+  many_arms: "the Many-Arms: a shape filling a tall doorway, eight long arms gripping round the frame, a pale face",
+  rain_thing: "the Rain Thing: three times a person, made of dripping black water, glowing eyes, a spreading puddle",
   ghost: "a ghost: a floating white sheet with dark eyes",
   robot: "a robot: boxy metal, a red visor",
   slime: "a slime: a big green glossy blob with eyes",
-  giant_critter: "the little creature, giant (7x)",
+  giant_critter: "the little creature grown as big as a house",
 };

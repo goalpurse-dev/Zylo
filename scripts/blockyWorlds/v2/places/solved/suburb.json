@@ -59,11 +59,12 @@
    3.5
   ],
   "lens": 22,
-  "shot": "wide",
+  "shot": "two",
   "people": [
    "porch_left",
    "porch_right"
-  ]
+  ],
+  "fixed": true
  },
  "porch_two": {
   "loc": [

@@ -10,9 +10,9 @@ function brightCity() {
   // the ground: the main street, two pavements, the plaza; lane marks
   items.push({ prim: { t: "box", at: [0, 0, -0.05], s: [200, 12, 0.1], c: "#3A3D45", rough: 0.8, solid: false } });
   for (let x = -96; x <= 96; x += 8) items.push({ prim: { t: "box", at: [x, 0, 0.01], s: [3.2, 0.3, 0.02], c: "#F2D25A", solid: false } });
-  items.push({ prim: { t: "box", at: [0, 8, 0.1], s: [200, 4, 0.2], c: "#CFC9BE", solid: false } }, { prim: { t: "box", at: [0, -8, 0.1], s: [200, 4, 0.2], c: "#CFC9BE", solid: false } });
-  items.push({ prim: { t: "box", at: [0, 28, 0.1], s: [44, 36, 0.2], c: "#E8DCC6", solid: false } });
-  items.push({ prim: { t: "cyl", at: [0, 26, 0.21], r: 7.5, h: 0.04, c: "#D7C3A2", v: 48, solid: false } });
+  items.push({ prim: { t: "box", at: [0, 8, 0.1], s: [200, 4, 0.2], c: "#B4AC9E", solid: false } }, { prim: { t: "box", at: [0, -8, 0.1], s: [200, 4, 0.2], c: "#B4AC9E", solid: false } });
+  items.push({ prim: { t: "box", at: [0, 28, 0.1], s: [44, 36, 0.2], c: "#CDBB9C", solid: false } });
+  items.push({ prim: { t: "cyl", at: [0, 26, 0.21], r: 7.5, h: 0.04, c: "#BBA582", v: 48, solid: false } });
   for (const x of [-7.4, 7.4]) items.push({ prim: { t: "box", at: [x, 2.0, 0.01], s: [0.5, 8.4, 0.02], c: "#FFFFFF", solid: false } });   // a crossing
   for (let k = 0; k < 7; k++) items.push({ prim: { t: "box", at: [-6 + k * 2, 0, 0.012], s: [1.0, 8.0, 0.02], c: "#F4F4F4", solid: false } });
   // north shops (fronts at y = 10), split by the plaza
@@ -22,7 +22,7 @@ function brightCity() {
   // south shops (fronts at y = -10, facing the street)
   [-64, -52, -40, -28, -16, -4, 8, 20, 32, 44, 56, 68].forEach((x, k) => items.push({ p: "shop", at: [x, -10, 0], rz: 180, w: 11.4, h: 10 + ((k + 1) % 3) * 1.5, c: cols[(k + 3) % 8][0], awn: cols[(k + 3) % 8][1], sign: cols[(k + 3) % 8][2] }));
   // the plaza: the screen building at its back, a fountain, benches, trees in planters
-  items.push({ prim: { t: "box", at: [0, 52, 9], s: [34, 8, 18], c: "#F4F1EA" } });
+  items.push({ prim: { t: "box", at: [0, 52, 9], s: [34, 8, 18], c: "#D9D2C4" } });
   items.push({ prim: { t: "box", at: [0, 52, 18.4], s: [35, 9, 0.8], c: "#3D7BE0", solid: false } });
   items.push({ p: "screen", at: [0, 47.8, 0], w: 20, h: 8.5, z: 10.5, text: "HAVE A NICE DAY", key: "screen" });
   items.push({ p: "fountain", at: [-14, 36, 0.2] });
@@ -34,6 +34,7 @@ function brightCity() {
   for (const x of [-34, -58, 34, 58]) items.push({ p: "lamp", at: [x, 6.6, pave] });
   for (const x of [-46, -22, 2, 26, 50]) items.push({ p: "lamp", at: [x, -6.6, pave], rz: 180 });
   for (const x of [-34, -10, 14, 38]) items.push({ p: "tree", at: [x, -7.6, pave], h: 7, r: 2.2 });
+  items.push({ p: "billboard", at: [15.5, 48.2, 0.2], rz: 0, w: 9, h: 4.5, z: 7, text: "TODAY: SUNNY", key: "billboard" });
   items.push({ p: "bin", at: [-23.5, 7.8, pave] }, { p: "hydrant", at: [23.5, 6.9, pave] }, { p: "seccam", at: [21, 11.5, pave], rz: 200 });
   // cars: parked at the kerbs, two driving
   items.push({ p: "car", at: [-46, 4.4, 0], c: "#E53935" }, { p: "car", at: [-34.5, 4.4, 0], c: "#3D7BE0" }, { p: "car", at: [46, 4.4, 0], c: "#FDD663" },
@@ -59,6 +60,7 @@ function brightCity() {
       bg_shop_w: { at: [-47, 8.4, pave], loop: "talk" }, bg_shop_e: { at: [47, 8.4, pave], loop: "phone" }, bg_s_w: { at: [-22, -8.4, pave], loop: "walk" },
       bg_s_e: { at: [20, -8.4, pave], loop: "stand" }, bg_plaza_back: { at: [14, 45, pave], loop: "talk" }, bg_plaza_l: { at: [-12, 26, pave], loop: "phone" },
       bg_fountain: { at: [-18.5, 31, pave], loop: "stand" }, bg_n_e: { at: [31, 8.4, pave], loop: "walk" },
+      bg_pl1: { at: [-6, 30.5, pave], loop: "talk" }, bg_pl2: { at: [6, 31.5, pave], loop: "carry" }, bg_pl3: { at: [-3, 40, pave], loop: "walk" }, bg_pl4: { at: [7, 39.5, pave], loop: "phone" }, bg_pl5: { at: [-7.5, 21.5, pave], loop: "point" },
     },
     cameras: {
       aerial_main: { loc: [-80, -8, 36], tgt: [6, 6, 2], lens: 18, shot: "top", people: [], aerial: true },
@@ -121,6 +123,7 @@ function oldTown() {
       bg_stall1: { at: [18.6, 18, 0], loop: "stand" }, bg_stall2: { at: [18.6, 34, 0], loop: "talk" }, bg_hall: { at: [-4, 42.5, 0], loop: "talk" },
       bg_street_w: { at: [-46, 3.0, 0], loop: "walk" }, bg_street_e: { at: [52, 3.0, 0], loop: "phone" }, bg_sq_l: { at: [-12, 34, 0], loop: "phone" },
       bg_sq_r: { at: [8, 37, 0], loop: "stand" }, bg_well: { at: [-18, 27, 0], loop: "talk" },
+      bg_sq1: { at: [-6, 31, 0], loop: "talk" }, bg_sq2: { at: [5.5, 32, 0], loop: "carry" }, bg_sq3: { at: [-3.5, 39.5, 0], loop: "walk" }, bg_sq4: { at: [-7.5, 25, 0], loop: "point" },
     },
     cameras: {
       aerial_main: { loc: [-78, -10, 34], tgt: [8, 4, 2], lens: 18, shot: "top", people: [], aerial: true },
@@ -177,12 +180,16 @@ function suburb() {
       bg_pave_sw: { at: [-14, -8.0, 0.25], loop: "talk" }, bg_pave_se: { at: [16, -8.0, 0.25], loop: "phone" }, bg_pave_nw: { at: [-20, 8.0, 0.25], loop: "walk" },
       bg_pave_ne: { at: [22, 8.0, 0.25], loop: "stand" }, bg_park: { at: [41.5, 13.5, 0.06], loop: "talk" }, bg_bus: { at: [134.4, 7.8, 0.25], loop: "phone" },
       bg_cul: { at: [170, 15.5, 0.25], loop: "stand" }, bg_cul2: { at: [176, -12, 0.25], loop: "walk" },
+      bg_cul3: { at: [160, 12.5, 0.25], loop: "talk" }, bg_cul4: { at: [152, -11, 0.25], loop: "carry" }, bg_cul5: { at: [182, 9, 0.25], loop: "phone" }, bg_cul6: { at: [166, -17, 0.25], loop: "walk" },
+      bg_st1: { at: [56, 8.2, 0.25], loop: "walk" }, bg_st2: { at: [64, -8.2, 0.25], loop: "talk" }, bg_st3: { at: [80, 8.2, 0.25], loop: "carry" }, bg_st4: { at: [88, -8.2, 0.25], loop: "phone" }, bg_st5: { at: [74, -8.2, 0.25], loop: "point" },
+      bg_h1: { at: [-6, 8.6, 0.25], loop: "walk" }, bg_h2: { at: [6.4, 8.4, 0.25], loop: "talk" }, bg_h3: { at: [-2, 4.6, 0.06], loop: "carry" }, bg_h4: { at: [-6, -8.2, 0.25], loop: "phone" }, bg_h5: { at: [8, -8.2, 0.25], loop: "walk" }, bg_h6: { at: [3.5, 4.8, 0.06], loop: "walk" }, bg_h7: { at: [-1.5, -1.4, 0.06], loop: "run" }, bg_h8: { at: [1.5, -8.2, 0.25], loop: "talk" },
     },
     cameras: {
       aerial_main: { loc: [-70, -14, 34], tgt: [20, 6, 2], lens: 18, shot: "top", people: [], aerial: true },
       town_wide: { loc: [70, -95, 72], tgt: [70, 10, 4], lens: 18, shot: "top", people: [], aerial: true },
       aerial_cul: { loc: [138, -32, 36], tgt: [166, 0, 2], lens: 22, shot: "top", people: [], aerial: true },
       ...Object.fromEntries(pick.map((k) => [k, SOLVED_A[k]])),
+      house_wide: { ...SOLVED_A.house_wide, shot: "two", fixed: true },     // the porch two-shot (the suburb's wides are its aerials)
       cul_med: { loc: [150, -2, 3.4], tgt: [158.2, 0, 2.6], lens: 30, shot: "medium", people: ["cul_front"] },
       big_low: { loc: [151, -3, 1.1], tgt: [166, 0, 9], lens: 18, shot: "low", people: [], fixed: true },
       park_med: { loc: [44, 9, 3.2], tgt: [44, 17, 2.4], lens: 28, shot: "medium", people: ["park_kid"] },

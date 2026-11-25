@@ -5,11 +5,13 @@ import { P, box, cyl, sph, txt, lit } from "./prefabs.mjs";
 const pick = (arr, i) => arr[((i % arr.length) + arr.length) % arr.length];
 const SCR = (at, s, c, o = {}) => box(at, s, c, { e: c, es: 1.4, solid: false, ...o });
 Object.assign(P, {
-  room({ w = 16, d = 12, h = 8, wall = "#E9D9B8", floor = "#A9764E", trim = "#F4EEE2", ceiling = false } = {}) {
-    const o = [box([0, -2, -0.1], [w + 8, d + 12, 0.2], floor, { solid: false, rough: 0.7 }), box([0, d / 2 + 0.15, h / 2], [w + 0.6, 0.3, h], wall),
-      box([-w / 2 - 0.15, 0, h / 2], [0.3, d, h], wall), box([w / 2 + 0.15, 0, h / 2], [0.3, d, h], wall),
+  room({ w = 16, d = 12, h = 8, wall = "#E9D9B8", floor = "#A9764E", trim = "#F4EEE2", ceiling = true, run = 12 } = {}) {
+    // the side walls and the ceiling run `run` past the open side, so a wide camera never sees void above or beside them
+    const o = [box([0, -2 - run / 2, -0.1], [w + 8, d + 12 + run, 0.2], floor, { solid: false, rough: 0.7 }), box([0, d / 2 + 0.15, h / 2], [w + 0.6, 0.3, h], wall, { tag: "wall" }),
+      box([-w / 2 - 0.15, -run / 2, h / 2], [0.3, d + run, h], wall, { tag: "wall", solid: false }), box([w / 2 + 0.15, -run / 2, h / 2], [0.3, d + run, h], wall, { tag: "wall", solid: false }),
+      box([-w / 2 - 0.15, 0, h / 2], [0.3, d, h], wall, { solid: true, sc: [0.001, 1, 1] }), box([w / 2 + 0.15, 0, h / 2], [0.3, d, h], wall, { solid: true, sc: [0.001, 1, 1] }),
       box([0, d / 2 - 0.05, 0.25], [w, 0.12, 0.5], trim, { solid: false }), box([-w / 2 + 0.05, 0, 0.25], [0.12, d, 0.5], trim, { solid: false }), box([w / 2 - 0.05, 0, 0.25], [0.12, d, 0.5], trim, { solid: false })];
-    if (ceiling) o.push(box([0, 0, h + 0.1], [w + 0.6, d, 0.2], wall, { solid: false }));
+    if (ceiling) o.push(box([0, -run / 2, h + 0.1], [w + 0.6, d + run, 0.2], wall, { solid: false, tag: "wall" }));
     return o;
   },
   window({ w = 3.6, h = 3, curtains = "#B84A4A" } = {}) {
@@ -98,8 +100,10 @@ Object.assign(P, {
   },
   // THE huge red button under a clear cover, on its own pedestal, with a label plate (key red_label)
   redbutton({ label = "DO NOT PRESS" } = {}) {
-    return [cyl([0, 0, 1.2], 1.4, 2.4, "#2B2F3A", { v: 24 }), cyl([0, 0, 2.6], 1.0, 0.45, "#E01E1E", { v: 32, e: "#FF2A2A", es: 1.2, solid: false }),
-      sph([0, 0, 2.6], 1.25, "#DDEEFF", { sc: [1, 1, 0.7], alpha: 0.28, rough: 0.05, solid: false }), box([0, -1.42, 1.5], [2.0, 0.06, 0.6], "#F2C14E", { solid: false }),
+    return [cyl([0, 0, 1.2], 1.4, 2.4, "#2B2F3A", { v: 24 }), cyl([0, 0, 2.6], 1.0, 0.45, "#E01E1E", { v: 32, e: "#FF2A2A", es: 1.2, solid: false, only: "red=covered|open" }),
+      cyl([0, 0, 2.47], 1.0, 0.2, "#FF3030", { v: 32, e: "#FF2A2A", es: 7, solid: false, only: "red=pressed" }), lit([0, -1.5, 3.5], 900, "#FF2020", { only: "red=pressed" }),
+      sph([0, 0, 2.6], 1.25, "#DDEEFF", { sc: [1, 1, 0.7], alpha: 0.28, rough: 0.05, solid: false, only: "red=covered" }),
+      sph([0, 1.3, 3.9], 1.25, "#DDEEFF", { sc: [1, 1, 0.7], rx: -60, alpha: 0.28, rough: 0.05, solid: false, only: "red=open|pressed" }), box([0, -1.42, 1.5], [2.0, 0.06, 0.6], "#F2C14E", { solid: false }),
       txt([0, -1.47, 1.5], label, 0.24, "#15181F", { key: "red_label" })];
   },
   hospitalbed() { return [box([0, 0, 1.3], [2.6, 5.0, 0.5], "#E8ECEF"), box([0, 0.2, 1.7], [2.5, 4.4, 0.35], "#FFFFFF", { solid: false }), box([0, -0.4, 1.95], [2.6, 3.0, 0.15], "#8FC3E3", { solid: false }), box([0, 2.3, 2.3], [2.7, 0.2, 1.8], "#C9CED6", { solid: false }), cyl([0, 0, 0.6], 0.1, 1.2, "#9AA4B0", { v: 8, solid: false })]; },

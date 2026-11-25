@@ -117,7 +117,8 @@
    ],
    "big_spot": "the plaza's middle: an empty circle in front of the big screen",
    "texts": [
-    "screen"
+    "screen",
+    "billboard"
    ]
   },
   {
@@ -283,7 +284,7 @@
      "creature": null
     },
     "house_wide": {
-     "shot": "wide",
+     "shot": "two",
      "people": [
       "porch_left",
       "porch_right"
@@ -981,6 +982,13 @@
      "shot": "aerial",
      "people": [
       "mayor"
+     ],
+     "creature": null
+    },
+    "press_side": {
+     "shot": "medium",
+     "people": [
+      "at_red"
      ],
      "creature": null
     }
@@ -1759,7 +1767,7 @@
   },
   {
    "id": "baby",
-   "role": "a baby (pink bonnet)"
+   "role": "a baby (pink onesie, pink bonnet)"
   },
   {
    "id": "villain_mayor",
@@ -1791,6 +1799,7 @@
  "entities": [
   {
    "id": "long_one",
+   "tone": "scary",
    "look": "the Long One: a person stretched far too tall (14), too many joints, a pale blank face",
    "states": [
     "stand",
@@ -1808,7 +1817,8 @@
   },
   {
    "id": "crawler",
-   "look": "the Crawler: low on all fours, spider-bent limbs, its head turned upside down",
+   "tone": "scary",
+   "look": "the Crawler: twice a person long, spider-bent limbs, its head upside down, glowing eyes",
    "states": [
     "stand",
     "walk",
@@ -1825,7 +1835,8 @@
   },
   {
    "id": "watcher",
-   "look": "the Watcher: a heavy body covered in eyes that all open at once",
+   "tone": "scary",
+   "look": "the Watcher: three times a person, a dark body covered in glowing eyes that all open at once",
    "states": [
     "stand",
     "walk",
@@ -1842,7 +1853,8 @@
   },
   {
    "id": "hollow",
-   "look": "the Hollow: a townsperson with an empty dark face",
+   "tone": "scary",
+   "look": "the Hollow: a townsperson twice too tall, an empty dark face with two pinpoint eyes",
    "states": [
     "stand",
     "walk",
@@ -1859,7 +1871,8 @@
   },
   {
    "id": "many_arms",
-   "look": "the Many-Arms: a shape in a doorway, eight arms reaching round the frame",
+   "tone": "scary",
+   "look": "the Many-Arms: a shape filling a tall doorway, eight long arms gripping round the frame, a pale face",
    "states": [
     "stand",
     "walk",
@@ -1876,7 +1889,8 @@
   },
   {
    "id": "rain_thing",
-   "look": "the Rain Thing: a figure of dripping black water with a puddle",
+   "tone": "scary",
+   "look": "the Rain Thing: three times a person, made of dripping black water, glowing eyes, a spreading puddle",
    "states": [
     "stand",
     "walk",
@@ -1893,6 +1907,7 @@
   },
   {
    "id": "ghost",
+   "tone": "funny",
    "look": "a ghost: a floating white sheet with dark eyes",
    "states": [
     "stand",
@@ -1910,6 +1925,7 @@
   },
   {
    "id": "robot",
+   "tone": "funny",
    "look": "a robot: boxy metal, a red visor",
    "states": [
     "stand",
@@ -1927,6 +1943,7 @@
   },
   {
    "id": "slime",
+   "tone": "funny",
    "look": "a slime: a big green glossy blob with eyes",
    "states": [
     "stand",
@@ -1944,7 +1961,8 @@
   },
   {
    "id": "giant_critter",
-   "look": "the little creature, giant (7x)",
+   "tone": "scary",
+   "look": "the little creature grown as big as a house",
    "states": [
     "stand",
     "walk",

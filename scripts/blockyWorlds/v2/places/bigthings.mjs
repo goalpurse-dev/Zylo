@@ -18,7 +18,11 @@ Object.assign(P, {
       for (let k = 0; k < 4; k++) o.push(box([0, -0.32, 2 + k * 3.6], [w * 0.92, 0.08, 0.25], "#1A100A", { solid: false }));
       o.push(cyl([w * 0.28, -0.36, h * 0.45], 0.55, 0.12, GOLD, { rx: 90, v: 24, metal: 0.8, rough: 0.3, solid: false }),
         cyl([w * 0.28, -0.44, h * 0.45 + 0.08], 0.16, 0.06, "#050505", { rx: 90, v: 16, solid: false }), box([w * 0.28, -0.44, h * 0.45 - 0.15], [0.14, 0.06, 0.34], "#050505", { solid: false }),
-        box([w * 0.28, -0.34, h * 0.45 - 0.2], [0.9, 0.06, 1.7], GOLD, { metal: 0.8, rough: 0.3, solid: false }));
+        box([w * 0.28, -0.34, h * 0.45 - 0.2], [0.9, 0.06, 1.7], GOLD, { metal: 0.8, rough: 0.3, solid: false }),
+        box([w * 0.28, -0.75, h * 0.45 + 0.05], [0.14, 0.8, 0.14], GOLD, { metal: 0.8, rough: 0.3, solid: false, only: "key=in|turned" }),
+        cyl([w * 0.28, -1.25, h * 0.45 + 0.05], 0.36, 0.1, GOLD, { rx: 90, v: 20, metal: 0.8, rough: 0.3, solid: false, only: "key=in" }),
+        cyl([w * 0.28, -1.25, h * 0.45 + 0.05], 0.36, 0.1, GOLD, { ry: 90, v: 20, metal: 0.8, rough: 0.3, solid: false, only: "key=turned" }),
+        lit([w * 0.28, -2.0, h * 0.45], 300, "#FFE2A0", { only: "key=turned" }));
     }
     if (sign) o.push(box([0, -0.95, h + 2.6], [w + 1, 0.2, 1.6], "#15181F", { solid: false }), txt([0, -1.08, h + 2.6], sign, 0.62, "#FFD36A", { key, e: "#FFD36A", es: 2 }));
     return o;
@@ -85,7 +89,7 @@ export function withBig(town, kind, state) {
   const B = BIG_THINGS[kind], at = town.big.at;
   const params = B.states[state] ?? {};
   const add = (v) => [at[0] + v[0], at[1] + v[1], at[2] + v[2]];
-  return { ...town, id: `${town.id}+${kind}.${state}`, big_filled: { kind, state },
+  return { ...town, id: `${town.id}+${kind}.${state}`, big_filled: { kind, state }, states: { key: "none", ...(town.states ?? {}) },
     items: [...town.items, { p: kind, at: [at[0], at[1], at[2]], ...params }],
     cameras: { ...town.cameras, [`${kind}_close`]: { loc: add(B.close.tgt.map((t, i) => t + (B.close.loc[i] - t) * (B.close.k ?? 1))), tgt: add(B.close.tgt), lens: B.close.lens, shot: "insert", people: [], fixed: true } } };
 }

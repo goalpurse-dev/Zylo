@@ -6,10 +6,11 @@ ZV_PLACES = {}          # filled by the runner: id -> payload
 ZV_TEXTS = {}           # this shot's replaceable texts: key -> text (a story's sign, screen, button labels)
 ZV_SETLOOK = {}
 ZV_SETINFO = {}
+ZV_STATES = {}           # this shot's prop states (e.g. {"key": "turned", "red": "pressed"}); a shape with only="key=in|turned" shows only then
 
 # ---------------------------------------------------------------- THE LIGHT TABLE (time of day), outdoor and indoor
 ZV_TIMES = {
-    "day":     {"sun": (1.0, 0.96, 0.9), "sun_e": 3.4, "el": 52, "az": -32, "sky": (0.50, 0.70, 1.0), "sky_s": 0.85, "night": False, "char": "day"},
+    "day":     {"sun": (1.0, 0.96, 0.9), "sun_e": 2.5, "el": 52, "az": -32, "sky": (0.42, 0.62, 0.95), "sky_s": 0.75, "night": False, "char": "day"},
     "morning": {"sun": (1.0, 0.84, 0.66), "sun_e": 2.8, "el": 20, "az": -62, "sky": (0.72, 0.80, 0.95), "sky_s": 0.8, "night": False, "char": "morning"},
     "golden":  {"sun": (1.0, 0.70, 0.40), "sun_e": 2.9, "el": 12, "az": 55, "sky": (0.95, 0.74, 0.52), "sky_s": 0.75, "night": False, "char": "sunset"},
     "dusk":    {"sun": (0.95, 0.50, 0.42), "sun_e": 1.1, "el": 5, "az": 68, "sky": (0.10, 0.055, 0.13), "sky_s": 1.0, "night": True, "char": "sunset"},
@@ -52,6 +53,10 @@ def zv_prims(prims, night, t0, t1, coll=None):
         when = p.get("when")
         if when == "night" and not night or when == "day" and night:
             continue
+        if p.get("only"):
+            nm_, vals_ = p["only"].split("=")
+            if ZV_STATES.get(nm_, "") not in vals_.split("|"):
+                continue
         t, at = p["t"], tuple(p["at"])
         rot = (p.get("rx", 0.0), p.get("ry", 0.0), p.get("rz", 0.0))
         nm = "zs%d_%s" % (k, p.get("tag", t))
@@ -175,6 +180,71 @@ def zv_set_look():
     vs.exposure = ZV_SETLOOK.get("exposure", 0.0)
 
 
+def zv_frame_gate(S):
+    """THE FRAMING GATE (fails a shot): over a third of the picture empty wall / void (indoors), a text the shot must
+    read under the captions, a subject's chest hidden (only a hat over a desk)"""
+    sc = bpy.context.scene
+    cam = sc.camera
+    if cam is None:
+        return []
+    sid, out = S.get("id", "?"), []
+    dg = bpy.context.evaluated_depsgraph_get()
+    mw = cam.matrix_world
+    fr = [mw @ v for v in cam.data.view_frame(scene=sc)]     # top-right, bottom-right, bottom-left, top-left
+    o = mw.translation.copy()
+    indoor = bool((ZV_PLACES.get(ZV_SETINFO.get("pid")) or {}).get("indoor"))
+    tl, tr, bl = fr[3], fr[0], fr[2]
+    empty_n, n = 0, 0
+    for i in range(9):
+        for j in range(16):
+            if j > 11:                       # the caption band is not judged
+                continue
+            q = tl + (tr - tl) * ((i + 0.5) / 9.0) + (bl - tl) * ((j + 0.5) / 16.0)
+            d = (q - o).normalized()
+            hit, loc, nrm, idx, hob, hm = sc.ray_cast(dg, o, d, distance=400.0)
+            n += 1
+            if (not hit and indoor) or (hit and hob is not None and "_wall" in hob.name and abs(nrm.dot(d)) > 0.8):
+                empty_n += 1
+    if n and empty_n / float(n) > 0.36 and ZV_SHOT.get("cam") not in ("screens",):
+        out.append("ZW_GATE|%s|zv|frame|empty|%d pct of the picture is empty wall or void" % (sid, int(100 * empty_n / n)))
+    if ZV_SHOT.get("read_texts"):
+        for ob in D.objects:
+            if ob.type == "FONT" and ob.name.endswith("_text"):
+                sp = zw_span(cam, [ob.matrix_world.translation])
+                if sp and 0.0 < sp[0] < 1.0 and 0.0 < sp[2] < 1.0 and sp[2] > 0.62:
+                    out.append("ZW_GATE|%s|zv|text|under_captions|%s at v %.2f" % (sid, ob.name[:20], sp[2]))
+    for who, ch in ZV_SHOT.get("subjects", []):
+        try:
+            c = ch.torso.matrix_world.translation + Vector((0, 0, 0.6 * ch.spec["body"]["torso_h"] * ch.k))
+        except Exception:
+            continue
+        sp = zw_span(cam, [c])
+        if not sp or not (0.0 < sp[0] < 1.0 and 0.0 < sp[2] < 1.0):
+            continue                          # a close on the face: the chest is out of frame on purpose
+        dv = c - o
+        hit, loc, nrm, idx, hob, hm = sc.ray_cast(dg, o, dv.normalized(), distance=max(0.1, dv.length - 0.4))
+        if hit and hob is not None and not hob.name.startswith(ch.name + "_") and not hob.name.startswith("zp_f") and not hob.hide_render:
+            out.append("ZW_GATE|%s|zv|%s|chest_hidden|%s in front of the chest" % (sid, who, hob.name[:30]))
+    for l in out:
+        print(l)
+    return out
+
+
+ZV_GATE2 = zw_gate
+
+
+def zw_gate(S):
+    keep = dict(ZV_SHOT)
+    out = list(ZV_GATE2(S) or [])
+    ZV_SHOT.update(keep)
+    try:
+        out += zv_frame_gate(S)
+    except Exception as e:
+        print("ZW_GATE|%s|zv_note|frame gate crash %s" % (S.get("id", "?"), str(e)[:100]))
+    ZV_SHOT.clear()
+    return out
+
+
 ZV_LOOK2 = zw_look_apply
 
 
@@ -202,18 +272,20 @@ def zv_view_pts(cam, n, d0=6.0, d1=45.0, z0=0.0, z1=16.0, seed=7, spread=0.62):
     return out
 
 
-ZV_STORM_PARTS = {"bolt": True, "clouds": True}
+ZV_STORM_PARTS = {"bolt": True, "clouds": True, "rain": True, "puddles": False}   # the wet layer rendered as a white cube in storms: off
 
 
 def zv_weather(w, t0, t1, cam):
-    if w in ("rain", "storm"):
-        m = mat("zs_rainm", (0.75, 0.85, 1.0), 0.2, emit=(0.75, 0.85, 1.0), estr=1.6 if w == "storm" else 1.2)
-        for k, p in enumerate(zv_view_pts(cam, 900 if w == "storm" else 650, z1=18)):
-            ob = box("zs_rain%d" % k, (0.11, 0.11, 2.6), tuple(p), m, 0.0, rot=(0, 6 if w == "storm" else 3, 0))
+    if w in ("rain", "storm") and ZV_STORM_PARTS.get("rain", True):
+        m = mat("zs_rainm", (0.75, 0.85, 1.0), 0.2, emit=(0.75, 0.85, 1.0), estr=1.4 if w == "storm" else 1.1)
+        for k, p in enumerate(zv_view_pts(cam, 900 if w == "storm" else 650, d0=5.0, d1=28.0, z1=14)):
+            ob = box("zp_frain%d" % k, (0.045, 0.045, 0.9), tuple(p), m, 0.0, rot=(0, 6 if w == "storm" else 3, 0))
+            ob.location.z += 2.5 * (t1 - t0)      # mid-shot (the still) the streaks are where the points are (motion blur draws the streak)
             key(ob, "location", F(t0))
-            ob.location.z -= 30 * (t1 - t0)
+            ob.location.z -= 5 * (t1 - t0)
             key(ob, "location", F(t1))
-        box("zs_puddles", (400, 400, 0.02), (0, 0, 0.215), mat("zs_wet", (0.25, 0.28, 0.33), 0.05, alpha=0.25), 0.0)
+        if ZV_STORM_PARTS.get("puddles", True):
+            box("zs_puddles", (400, 400, 0.02), (0, 0, 0.215), mat("zs_wet", (0.25, 0.28, 0.33), 0.05, alpha=0.25), 0.0)
     if w == "storm" and ZV_STORM_PARTS["bolt"]:
         zv_lightning(cam)
     if w == "storm" and ZV_STORM_PARTS["clouds"]:
@@ -223,7 +295,7 @@ def zv_weather(w, t0, t1, cam):
     if w == "snow":
         m = mat("zs_snowm", (1, 1, 1), 0.8, emit=(1, 1, 1), estr=0.3)
         for k, p in enumerate(zv_view_pts(cam, 520, z1=16, seed=11)):
-            ob = sphere("zs_snow%d" % k, 0.07 + 0.05 * ((k * 37) % 10) / 10.0, tuple(p), m, seg=6)
+            ob = sphere("zp_fsnow%d" % k, 0.07 + 0.05 * ((k * 37) % 10) / 10.0, tuple(p), m, seg=6)
             key(ob, "location", F(t0))
             ob.location.z -= 2.5 * (t1 - t0)
             ob.location.x += 0.6 * (t1 - t0)
@@ -236,13 +308,13 @@ def zv_weather(w, t0, t1, cam):
         f.z = 0
         f = f.normalized()
         rz = math.degrees(math.atan2(f.x, -f.y))
-        for k, d in enumerate((9, 15, 22, 30, 40, 55, 75)):
+        for k, d in enumerate((16, 24, 34, 48, 66)):
             c = lo + f * d
-            box("zp_fog%d" % k, (d * 1.6, 0.05, 40), (c.x, c.y, 20), mat("zs_fogm", (0.86, 0.88, 0.9), 0.9, emit=(0.86, 0.88, 0.9), estr=0.35, alpha=0.2), 0.0, rot=(0, 0, rz))
+            box("zp_fog%d" % k, (d * 1.6, 0.05, 40), (c.x, c.y, 20), mat("zs_fogm", (0.86, 0.88, 0.9), 0.9, emit=(0.86, 0.88, 0.9), estr=0.3, alpha=0.11), 0.0, rot=(0, 0, rz))
     if w == "wind":
         cols = ["#E07A2E", "#D9A426", "#B5432A", "#8FA33A"]
         for k, p in enumerate(zv_view_pts(cam, 260, z1=9, seed=5)):
-            ob = box("zs_leaf%d" % k, (0.32, 0.22, 0.02), tuple(p), mat("zs_leaf%d" % (k % 4), zc_rgb(cols[k % 4]), 0.8), 0.0, rot=((k * 47) % 180, (k * 29) % 180, (k * 13) % 360))
+            ob = box("zp_fleaf%d" % k, (0.32, 0.22, 0.02), tuple(p), mat("zs_leaf%d" % (k % 4), zc_rgb(cols[k % 4]), 0.8), 0.0, rot=((k * 47) % 180, (k * 29) % 180, (k * 13) % 360))
             key(ob, "location", F(t0))
             key(ob, "rotation_euler", F(t0))
             ob.location.x += 9 * (t1 - t0)
@@ -365,13 +437,29 @@ def zv_rain_things(spec, t0, t1, cam):
     "pile": 0-1 (how much has gathered by this shot)}. Falling ones fill the view; the pile lies on the ground (a ray
     down finds roofs, cars, the street), thicker in a few heaps. Built BEFORE the people (they stand in it)."""
     kind, amt = spec.get("kind", "key"), float(spec.get("amount", 1.0))
+    if kind.startswith("entity:"):     # it rains monsters: small copies of library entities falling, a few landed on the ground
+        kinds = kind.split(":")[1].split(",")
+        rnd = random.Random(23)
+        for k, p in enumerate(zv_view_pts(cam, 5, d0=10.0, d1=30.0, z0=7.0, z1=16.0, seed=71)):
+            e = ZEntity("RainE%d" % k, kinds[k % len(kinds)], tuple(p), rnd.random() * 360, "reach", "full", t0, t1)
+            e.root.scale = tuple(v * 0.32 for v in e.root.scale)
+            e.root.rotation_euler = (rnd.random() * 1.2, rnd.random() * 1.2, rnd.random() * 6.3)
+            key(e.root, "location", F(t0))
+            e.root.location.z -= 6 * (t1 - t0)
+            key(e.root, "location", F(t1))
+        if spec.get("pile", 0.5) > 0.1:
+            for k, p in enumerate(zv_view_pts(cam, 4, d0=17.0, d1=30.0, seed=73, spread=0.5)):
+                z = zv_ground_z(p.x, p.y)
+                e = ZEntity("LandE%d" % k, kinds[(k + 1) % len(kinds)], (p.x, p.y, z), math.degrees(math.atan2(cam[0][0] - p.x, -(cam[0][1] - p.y))), "loom", "full", t0, t1)
+                e.root.scale = tuple(v * 0.38 for v in e.root.scale)
+        return 9
     proto = zv_thing(kind, "zs_proto")
     proto.location = (0, 0, -50)
     rnd = random.Random(21)
     bpy.context.view_layer.update()
     if spec.get("falling", True):
         for k, p in enumerate(zv_view_pts(cam, int(90 * amt) + 6, d0=7.0, d1=30.0, z0=1.5, z1=15.0, seed=31)):
-            ob = zv_copy_thing(proto, "zs_fall%d" % k, tuple(p), (rnd.random() * 6.3, rnd.random() * 6.3, rnd.random() * 6.3), 1.0)
+            ob = zv_copy_thing(proto, "zp_ffall%d" % k, tuple(p), (rnd.random() * 6.3, rnd.random() * 6.3, rnd.random() * 6.3), 1.0)
             key(ob, "location", F(t0))
             ob.location.z -= 9 * (t1 - t0)
             key(ob, "location", F(t1))
@@ -392,6 +480,11 @@ ZC_POSES.update({
     "cover_head": {"shoulderL": (-150, -28, 0), "shoulderR": (-150, 28, 0), "elbowL": (-78, 0, 0), "elbowR": (-78, 0, 0), "neck": (14, 0, 0), "torso": (-6, 0, 0)},
     "umbrella":   {"shoulderR": (-118, 10, 0), "elbowR": (-40, 0, 0), "shoulderL": (0, -8, 0), "neck": (-6, 0, 0)},
     "hands_head": {"shoulderL": (-160, -40, 0), "shoulderR": (-160, 40, 0), "elbowL": (-95, 0, 0), "elbowR": (-95, 0, 0), "neck": (-4, 0, 0)},
+    "press":      {"shoulderR": (-62, 6, 0), "elbowR": (-28, 0, 0), "torso": (-14, 0, 0), "neck": (-18, 0, 0), "shoulderL": (-10, -10, 0)},
+    "catch":      {"shoulderL": (-150, -12, 0), "shoulderR": (-150, 12, 0), "elbowL": (-20, 0, 0), "elbowR": (-20, 0, 0), "neck": (-22, 0, 0), "torso": (6, 0, 0)},
+    "reach_up":   {"shoulderR": (-165, 4, 0), "elbowR": (-6, 0, 0), "neck": (-24, 0, 0), "torso": (4, 0, 0)},
+    "lean_in":    {"torso": (-20, 0, 0), "neck": (-10, 0, 0), "shoulderL": (-24, -6, 0), "shoulderR": (-24, 6, 0), "elbowL": (-30, 0, 0), "elbowR": (-30, 0, 0)},
+    "flinch":     {"torso": (10, 0, -12), "neck": (14, 0, -20), "shoulderL": (-110, -40, 0), "shoulderR": (-90, 30, 0), "elbowL": (-100, 0, 0), "elbowR": (-90, 0, 0)},
     "pick_up":    {"thighL": (-70, -6, 0), "kneeL": (100, 0, 0), "thighR": (-70, 6, 0), "kneeR": (100, 0, 0), "torso": (-30, 0, 0), "neck": (-20, 0, 0),
                    "shoulderR": (-75, 8, 0), "elbowR": (-10, 0, 0), "shoulderL": (-30, -8, 0), "hip_dz": -0.5, "hip_dy": 0.3},
 })
@@ -412,11 +505,19 @@ def zv_place_test(pid, cam_name, time, weather, t0, t1, opt=None):
     its creature, the background people on their calm loops (by day), optional raining things / texts"""
     opt = opt or {}
     P = ZV_PLACES[pid]
+    hand_close = cam_name == "hand_close"
+    if hand_close:      # the hand close-up: the place camera made for the holder's spot, then the base's detail camera on the hand
+        sp0 = (opt.get("people") or [{}])[0].get("spot")
+        cam_name = next((k for k, v in P["cameras"].items() if sp0 in v.get("people", [])), list(P["cameras"].keys())[0])
     c = P["cameras"][cam_name]
     ZV_TEXTS.clear()
     ZV_TEXTS.update(opt.get("texts") or {})
+    ZV_STATES.clear()
+    ZV_STATES.update(P.get("states") or {})
+    ZV_STATES.update(opt.get("states") or {})
     loc, tgt = Vector(c["loc"]), Vector(c["tgt"])
-    ZV_STORM_PARTS.update(opt.get("storm_parts") or {"bolt": True, "clouds": True})
+    ZV_STORM_PARTS.update({"bolt": True, "clouds": True, "rain": True, "puddles": False})
+    ZV_STORM_PARTS.update(opt.get("storm_parts") or {})
     info = zv_build_set(pid, time, weather, t0, t1, cam=(tuple(loc), tuple(tgt)))
     if opt.get("rain_things"):
         zv_rain_things(opt["rain_things"], t0, t1, (tuple(loc), tuple(tgt)))
@@ -431,8 +532,17 @@ def zv_place_test(pid, cam_name, time, weather, t0, t1, opt=None):
         elif look == "big" and P.get("big"):
             q = P["big"]["at"]
             ch.turn(t0, (q[0], q[1], at[2] + 4.0), tuple(loc))
-        else:
+        elif look == "camera":
             ch.face_to((loc.x, loc.y, at[2] + 2.0))
+        else:     # no facing given: three-quarter toward the other person, else the big thing, else past the lens
+            others = [q for q in (opt.get("people") or []) if q is not pp]
+            if others:
+                q = P["spots"][others[0]["spot"]]["at"]
+            elif P.get("big"):
+                q = P["big"]["at"]
+            else:
+                q = (loc.x + 6.0, loc.y, at[2])
+            ch.turn(t0, (q[0], q[1], at[2] + 2.0), tuple(loc))
         if pp.get("holds"):
             zv_hold(ch, zv_prop(pp["holds"], "Hold%d" % k, label=pp.get("label")), "R")
         subs.append((pp.get("id", pp["spec"]), ch))
@@ -459,17 +569,45 @@ def zv_place_test(pid, cam_name, time, weather, t0, t1, opt=None):
         cr.face_to((loc.x, loc.y, 2.0))
         zc_idle(cr, t0, t1, 0.6)
     nbs = ["nb1", "nb2", "nb3", "nb4"]
-    if opt.get("bg", True) and (not info["night"] or opt.get("rain_things")):
+    if opt.get("crowd"):
+        cw = opt["crowd"]
+        taken = [P["spots"][q["spot"]]["at"] for q in (opt.get("people") or [])] + [P["spots"][s_]["at"] for s_ in c.get("people", [])]
+        big = P.get("big")
+        n_ok, poses = 0, [cw.get("action", "run"), "reach", "point", "run", "hands_head", "reach_up", "run", "point"]
+        for k, q in enumerate(zv_view_pts((tuple(loc), tuple(tgt)), 60, d0=9.0, d1=24.0, z0=0, z1=0.01, seed=91, spread=0.42)):
+            if n_ok >= cw.get("n", 6):
+                break
+            if any(math.hypot(q.x - a[0], q.y - a[1]) < 2.6 for a in taken) or (big and math.hypot(q.x - big["at"][0], q.y - big["at"][1]) < big["r"] + 1.2):
+                continue
+            z = zv_ground_z(q.x, q.y)
+            if z > 1.0:
+                continue
+            ch = ZChar("Cw%d" % n_ok, ZC_SPECS[["nb1", "nb2", "nb3", "nb4", "nb5", "nb6", "cm1", "cm3"][n_ok % 8]], (q.x, q.y, z), rot=0, badge=False)
+            ch.pose(t0, poses[n_ok % len(poses)])
+            ch.express(t0, ["scared", "worried", "big_smile", "terrified"][n_ok % 4])
+            look = big["at"] if big else (tgt.x, tgt.y + 20, 0)
+            ch.face_to((look[0] + (k % 3 - 1) * 3, look[1], 2.0))
+            zc_idle(ch, t0, t1, 0.8)
+            taken.append((q.x, q.y))
+            n_ok += 1
+    subj_d = max([math.hypot(P["spots"][q]["at"][0] - loc.x, P["spots"][q]["at"][1] - loc.y) for q in [pp["spot"] for pp in (opt.get("people") or [])] + list(c.get("people", []))] or [0.0])
+    if opt.get("bg", True):
         for k, (bk, b) in enumerate(sorted(P.get("background", {}).items())):
             at = b["at"]
+            if subj_d and math.hypot(at[0] - loc.x, at[1] - loc.y) < subj_d + 2.5:
+                continue      # background people only BEHIND the shot's subjects (never between the lens and them)
             ch = ZChar("Nb%d" % k, ZC_SPECS[nbs[k % 4]], tuple(at), rot=0, badge=False)
             react = opt.get("react")
             loop = b.get("loop", "stand")
-            pose = {"talk": "talk", "phone": "hold_phone", "walk": "walk", "stand": "stand"}.get(loop, "stand")
+            pose = {"talk": "talk", "phone": "hold_phone", "walk": "walk", "stand": "stand", "carry": "hold_box", "point": "point", "run": "run"}.get(loop, "stand")
+            if opt.get("crowd") and k < opt["crowd"].get("n", 6):    # "everyone": the town in action
+                pose = [opt["crowd"].get("action", "run"), "reach", "point", "run", "cover_head", "hands_head"][k % 6] if opt["crowd"].get("mixed", True) else opt["crowd"]["action"]
             if react:
                 pose = ["cover_head", "umbrella", "pick_up", "point"][k % 4]
             ch.pose(t0, pose)
             ch.express(t0, "scared" if react and k % 4 == 0 else ("happy" if k % 3 == 0 else "neutral"))
+            if pose == "hold_box":
+                ch.hold(t0, zc_prop("box", "zs_bgbox%d" % k), "both")
             if pose == "hold_phone":
                 ch.hold(t0, zc_prop("phone", "zs_bgphone%d" % k), "both")
             if pose == "umbrella":
@@ -485,12 +623,23 @@ def zv_place_test(pid, cam_name, time, weather, t0, t1, opt=None):
         f = (tgt - loc)
         cam.key(t0, tuple(loc), tuple(tgt), lens=c["lens"])
         cam.key(t1, tuple(loc + f * 0.05 + Vector((f.y, -f.x, 0)).normalized() * 2.5), tuple(tgt), lens=c["lens"])
+    elif hand_close and subs:
+        bpy.context.view_layer.update()
+        hp = subs[0][1].hand["R"].matrix_world.translation.copy()
+        rt = subs[0][1].root.location
+        side = Vector((hp.x - rt.x, hp.y - rt.y, 0))
+        tocam = Vector((loc.x - hp.x, loc.y - hp.y, 0)).normalized()
+        d = (side.normalized() * 1.0 + tocam * 0.8).normalized() if side.length > 0.05 else tocam
+        cl = hp + d * 2.4 + Vector((0, 0, 0.3))      # on the hand's open side, a little above (the head stays behind it)
+        cam.key(t0, tuple(cl), tuple(hp), lens=35)
+        cam.key(t1, tuple(cl + (hp - cl) * 0.08), tuple(hp), lens=35)
+        subs = []          # a hand close: no head in frame on purpose
     else:
         cam.key(t0, tuple(loc), tuple(tgt), lens=c["lens"])
         cam.key(t1, tuple(loc + (tgt - loc) * 0.06), tuple(tgt), lens=c["lens"])
     for _, ch in subs:
         zc_char_light(ch, tuple(loc), ZV_SETINFO.get("char", "day"))
     ZV_SHOT.clear()
-    ZV_SHOT.update({"cam": cam_name, "subjects": subs, "creature": cr})
+    ZV_SHOT.update({"cam": cam_name, "subjects": subs, "creature": cr, "read_texts": bool(opt.get("read") or c.get("shot") == "insert")})
     return info
 # ===== END OF THE PLACE BUILDER =======================================================================================

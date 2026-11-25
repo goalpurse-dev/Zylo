@@ -63,13 +63,19 @@ export function checkPlace(S) {
       if (Math.hypot(dx, dy) < BODY_R) out.push(`a driving car crosses spot ${k}`);
     }
   }
+  // towns never look empty: every wide and aerial camera sees at least 5 background people (owner 2026-11-25)
+  if (S.kind === "town") for (const [ck, c] of Object.entries(S.cameras)) {
+    if (!["wide", "top"].includes(c.shot)) continue;
+    const n = Object.values(S.background ?? {}).filter((b) => { const sp = span(c, b.at, 0.6, 0, 3.2); return sp && sp[0] > 0.03 && sp[1] < 0.97 && sp[2] > 0.03 && sp[3] < 0.97; }).length;
+    if (n < 5) out.push(`camera ${ck}: ${n} background people in frame (at least 5)`);
+  }
   // the counts the night build asks for
   const cams = Object.values(S.cameras);
   if (S.kind === "town" && !S.cams_filtered) {
     if (cams.length < 8 || cams.length > 12) out.push(`${cams.length} cameras (8-12 wanted)`);
     if (cams.filter((c) => c.aerial).length < 2) out.push("fewer than 2 aerial cameras");
     const nb = Object.keys(S.background ?? {}).length;
-    if (nb < 6 || nb > 10) out.push(`${nb} background spots (6-10 wanted)`);
+    if (nb < 6) out.push(`${nb} background spots (6 or more wanted)`);
   }
   return out;
 }
@@ -116,8 +122,8 @@ export function solvePlace(P0) {
 
 /** what set_v2.py needs of a place (no functions, no derived checks) */
 export function placePayload(S) {
-  const { id, name, kind, sky, base, prims, spots, creature_spots, background, cameras, big, ground, walls_col, indoor, light } = S;
-  return { id, name, kind, sky, base: base ?? null, prims, spots, creature_spots: creature_spots ?? {}, background: background ?? {}, cameras, big: big ?? null, ground: ground ?? null, indoor: !!indoor, light: light ?? null };
+  const { id, name, kind, sky, base, prims, spots, creature_spots, background, cameras, big, ground, walls_col, indoor, light, states } = S;
+  return { id, name, kind, sky, base: base ?? null, states: states ?? null, prims, spots, creature_spots: creature_spots ?? {}, background: background ?? {}, cameras, big: big ?? null, ground: ground ?? null, indoor: !!indoor, light: light ?? null };
 }
 
 // node scripts/blockyWorlds/v2/placeKit.mjs [--solve] [ids...]   -> the free checks of the places (exit 1 on a problem)

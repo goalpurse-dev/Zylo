@@ -53,23 +53,23 @@
 - PERSON cm2: a classmate (blue dungarees, pigtails).
 - PERSON cm3: a classmate (purple hoodie).
 - PERSON cm4: a classmate (yellow hoodie, bun).
-- PERSON baby: a baby (pink bonnet).
+- PERSON baby: a baby (pink onesie, pink bonnet).
 - PERSON villain_mayor: the Mayor as the villain (dark coat, sharp grin, the same top hat).
 - PERSON stretch_legs: the stretch effect: very long legs.
 - PERSON stretch_neck: the stretch effect: a very long neck.
 - ANIMAL dog: a dog (tan, floppy ears).
 - ANIMAL cat: a cat (grey, yellow eyes).
 - ANIMAL bird: a bird (blue, orange beak).
-- ENTITY long_one: the Long One: a person stretched far too tall (14), too many joints, a pale blank face (states stand/walk/reach/peek/loom/eyes; shown full, as a silhouette or eyes only).
-- ENTITY crawler: the Crawler: low on all fours, spider-bent limbs, its head turned upside down (states stand/walk/reach/peek/loom/eyes; shown full, as a silhouette or eyes only).
-- ENTITY watcher: the Watcher: a heavy body covered in eyes that all open at once (states stand/walk/reach/peek/loom/eyes; shown full, as a silhouette or eyes only).
-- ENTITY hollow: the Hollow: a townsperson with an empty dark face (states stand/walk/reach/peek/loom/eyes; shown full, as a silhouette or eyes only).
-- ENTITY many_arms: the Many-Arms: a shape in a doorway, eight arms reaching round the frame (states stand/walk/reach/peek/loom/eyes; shown full, as a silhouette or eyes only).
-- ENTITY rain_thing: the Rain Thing: a figure of dripping black water with a puddle (states stand/walk/reach/peek/loom/eyes; shown full, as a silhouette or eyes only).
-- ENTITY ghost: a ghost: a floating white sheet with dark eyes (states stand/walk/reach/peek/loom/eyes; shown full, as a silhouette or eyes only).
-- ENTITY robot: a robot: boxy metal, a red visor (states stand/walk/reach/peek/loom/eyes; shown full, as a silhouette or eyes only).
-- ENTITY slime: a slime: a big green glossy blob with eyes (states stand/walk/reach/peek/loom/eyes; shown full, as a silhouette or eyes only).
-- ENTITY giant_critter: the little creature, giant (7x) (states stand/walk/reach/peek/loom/eyes; shown full, as a silhouette or eyes only).
+- ENTITY long_one (scary): the Long One: a person stretched far too tall (14), too many joints, a pale blank face (states stand/walk/reach/peek/loom/eyes; shown full, as a silhouette or eyes only).
+- ENTITY crawler (scary): the Crawler: twice a person long, spider-bent limbs, its head upside down, glowing eyes (states stand/walk/reach/peek/loom/eyes; shown full, as a silhouette or eyes only).
+- ENTITY watcher (scary): the Watcher: three times a person, a dark body covered in glowing eyes that all open at once (states stand/walk/reach/peek/loom/eyes; shown full, as a silhouette or eyes only).
+- ENTITY hollow (scary): the Hollow: a townsperson twice too tall, an empty dark face with two pinpoint eyes (states stand/walk/reach/peek/loom/eyes; shown full, as a silhouette or eyes only).
+- ENTITY many_arms (scary): the Many-Arms: a shape filling a tall doorway, eight long arms gripping round the frame, a pale face (states stand/walk/reach/peek/loom/eyes; shown full, as a silhouette or eyes only).
+- ENTITY rain_thing (scary): the Rain Thing: three times a person, made of dripping black water, glowing eyes, a spreading puddle (states stand/walk/reach/peek/loom/eyes; shown full, as a silhouette or eyes only).
+- ENTITY ghost (funny): a ghost: a floating white sheet with dark eyes (states stand/walk/reach/peek/loom/eyes; shown full, as a silhouette or eyes only).
+- ENTITY robot (funny): a robot: boxy metal, a red visor (states stand/walk/reach/peek/loom/eyes; shown full, as a silhouette or eyes only).
+- ENTITY slime (funny): a slime: a big green glossy blob with eyes (states stand/walk/reach/peek/loom/eyes; shown full, as a silhouette or eyes only).
+- ENTITY giant_critter (scary): the little creature grown as big as a house (states stand/walk/reach/peek/loom/eyes; shown full, as a silhouette or eyes only).
 - PROPS: phone, key, clock, money, food, book, pencil, backpack, ball, sign, umbrella, bike, coin, frog, letter, car, bus, seccam, screen. EFFECTS: lava, water, grow, glow, smoke, sparks, confetti, lights_out.
 
 ## Skipped

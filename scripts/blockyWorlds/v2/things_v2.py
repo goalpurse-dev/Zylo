@@ -2,6 +2,7 @@
 # Pasted after set_v2.py. All our own designs, built from simple shapes; kid-safe (eerie, never gory). World units: a
 # kid is 3.04 tall. Every entity has 6 states and 3 show modes (full / silhouette / eyes) so a shot can use any of them.
 ZV_ENT_STATES = ["stand", "walk", "reach", "peek", "loom", "eyes"]
+ZV_ENT_SCALE = {"crawler": 2.2, "watcher": 1.25, "rain_thing": 1.3, "hollow": 1.9, "many_arms": 1.5}
 ZV_SHOW = {"mode": "full"}
 
 
@@ -153,6 +154,9 @@ class ZEntity:
         self.root = empty(name + "_root", tuple(loc), None, None, (0, 0, rot))
         {"long_one": self._long_one, "crawler": self._crawler, "watcher": self._watcher, "hollow": self._hollow, "many_arms": self._many_arms,
          "rain_thing": self._rain_thing, "ghost": self._ghost, "robot": self._robot, "slime": self._slime, "giant_critter": self._giant_critter}[kind](t0, t1)
+        # the scary ones are clearly bigger than a person (owner 2026-11-25: 1.5-3x; the giant creature house-sized)
+        k = ZV_ENT_SCALE.get(kind, 1.0)
+        self.root.scale = (k, k, k)
         ZV_SHOW["mode"] = "full"
 
     def _eye(self, nm, at, r, parent, col="#FFF6D0", glow=6.0, pupil=True, scale=(1, 1, 1)):
@@ -202,7 +206,7 @@ class ZEntity:
     def _crawler(self, t0, t1):
         """low on all fours, the limbs bent up like a spider's, the head turned upside down (the face the wrong way)"""
         n, R = self.name, self.root
-        m, sk = zv_m("crawl", "#8E968A", 0.8), zv_m("crawl_skin", "#C9CDBF", 0.7)
+        m, sk = zv_m("crawl", "#3A3F3A", 0.8), zv_m("crawl_skin", "#B9BDB0", 0.7)
         up = {"stand": 0.0, "walk": 0.1, "reach": 0.6, "peek": -0.2, "loom": 1.2, "eyes": 0.0}[self.state]
         box(n + "_torso", (1.4, 3.6, 1.0), (0, 0.4, 1.9 + up), m, 0.4, rot=(-8 - up * 25, 0, 0), parent=R)
         for s in (-1, 1):
@@ -215,13 +219,13 @@ class ZEntity:
         H.rotation_euler = (0, math.radians(180), 0)     # upside down
         sphere(n + "_head", 0.75, (0, 0, 0), sk, (0.9, 0.85, 1.05), seg=16, parent=H)
         for s in (-1, 1):
-            self._eye(n + "_eye%d" % s, (s * 0.26, -0.6, 0.18), 0.14, H, col="#F2F2E8", glow=2.5)
+            self._eye(n + "_eye%d" % s, (s * 0.26, -0.6, 0.18), 0.17, H, col="#FFE36A", glow=9.0)
         box(n + "_grin", (0.6, 0.05, 0.08), (0, -0.7, -0.28), mat("zt_line", (0.05, 0.05, 0.05), 0.9), 0.0, parent=H)
 
     def _watcher(self, t0, t1):
         """a heavy body covered in eyes that all open at once (state stand = closed lids, every other state = open)"""
         n, R = self.name, self.root
-        m = zv_m("watch", "#3E3450", 0.85)
+        m = zv_m("watch", "#1E1828", 0.85)
         lean = self._lean()
         B = empty(n + "_b", (0, 0, 0), R)
         B.rotation_euler = (math.radians(-lean), 0, 0)
@@ -230,7 +234,7 @@ class ZEntity:
         sphere(n + "_body", 2.0, (0, 0, 4.6), m, (1.0, 0.8, 1.25), seg=24, parent=B)
         sphere(n + "_head", 1.1, (0, -0.1, 7.6), m, seg=18, parent=B)
         for s in (-1, 1):
-            cyl(n + "_arm%d" % s, 0.4, 3.4, (s * 2.1, -0.8 if self.state == "reach" else 0, 4.3), m, 10, rot=(-60 if self.state == "reach" else 0, s * 12, 0), parent=B)
+            cyl(n + "_arm%d" % s, 0.35, 5.6, (s * 2.2, -1.2 if self.state == "reach" else 0, 3.2), m, 10, rot=(-60 if self.state == "reach" else 0, s * 12, 0), parent=B)
         rnd = random.Random(9)
         openy = self.state != "stand"
         pts = [(0, -1.05, 7.7, 0.32)]
@@ -242,7 +246,7 @@ class ZEntity:
             pts.append((math.sin(a) * 1.0, -math.cos(a) * 0.95, 7.6 + rnd.uniform(-0.4, 0.5), 0.14))
         for k, (x, y, z, r) in enumerate(pts):
             if openy:
-                self._eye("%s_e%d" % (n, k), (x, y, z), r, B, col="#FFFBEA", glow=3.0)
+                self._eye("%s_e%d" % (n, k), (x, y, z), r, B, col="#FFF2A0", glow=7.0)
             else:
                 sphere("%s_lid%d" % (n, k), r * 1.05, (x, y, z), zv_m("lid", "#4E4262", 0.8), (1, 0.6, 0.7), seg=10, parent=B)
                 box("%s_lash%d" % (n, k), (r * 1.6, 0.04, 0.04), (x, y - r * 0.6, z), mat("zt_line", (0.05, 0.05, 0.05), 0.9), 0.0, parent=B)
@@ -252,12 +256,13 @@ class ZEntity:
         spec = dict(ZC_SPECS["nb2"])
         ch = ZChar(self.name + "_p", spec, (0, 0, 0), rot=0, badge=False)
         ch.root.parent = self.root
+        zv_stretch(ch, legs=1.25, neck=1.6)
         ch.pose(t0, {"stand": "stand", "walk": "walk", "reach": "reach", "peek": "peek", "loom": "lean", "eyes": "stand"}[self.state])
         hw, hd, hh = ch.hdim
         box(self.name + "_void", (hw * 0.92, 0.5, hh * 0.84), (0, -hd / 2 - 0.12, -0.02 * hh), mat("zt_void", (0.0, 0.0, 0.0), 1.0, spec=0.0), 0.2, parent=ch.head)
-        if self.state == "eyes":
+        if True:     # two pinpoint eyes glow in the void (every state)
             for s in (-1, 1):
-                self._eye(self.name + "_pin%d" % s, (s * hw * 0.2, -hd / 2 - 0.4, 0.05 * hh), 0.07, ch.head, col="#FFFFFF", glow=8.0, pupil=False)
+                self._eye(self.name + "_pin%d" % s, (s * hw * 0.2, -hd / 2 - 0.4, 0.05 * hh), 0.09, ch.head, col="#FFFFFF", glow=12.0, pupil=False)
         self.ch = ch
         if ZV_SHOW["mode"] in ("silhouette", "eyes"):
             for o in list(D.objects):
@@ -290,7 +295,7 @@ class ZEntity:
             hx, hz = side * (2.0 + L * 0.7), z - L * 0.5
             for f in range(4):
                 cyl("%s_f%d_%d" % (n, k, f), 0.045, 0.55, (hx + side * 0.15, -0.55 + 0.12 * (f - 1.5), hz - 0.25), sk, 6, rot=(side * 15, 0, 0), parent=R)
-        if self.state in ("loom", "reach"):
+        if self.state != "peek":
             sphere(n + "_face", 0.55, (0, -0.5, 5.8), zv_m("arms_face", "#D9D4CC", 0.7), (0.9, 0.6, 1.2), seg=14, parent=R)
             for s in (-1, 1):
                 self._eye(n + "_fe%d" % s, (s * 0.2, -0.82, 5.95), 0.09, R, col="#F4F4F4", glow=2.0)
@@ -323,7 +328,7 @@ class ZEntity:
             key(ob, "location", F(t1))
         cyl(n + "_puddle", 2.4, 0.03, (0, -0.2, 0.03), mat("zt_puddle", zc_rgb("#0A0D14"), 0.03, metal=0.3), 32, parent=R)
         for s in (-1, 1):
-            self._eye(n + "_eye%d" % s, (s * 0.25, -0.62, 7.35), 0.1, B, col="#9FD8FF", glow=6.0, pupil=False)
+            self._eye(n + "_eye%d" % s, (s * 0.26, -0.62, 7.35), 0.16, B, col="#BFE8FF", glow=10.0, pupil=False)
 
     def _ghost(self, t0, t1):
         n, R = self.name, self.root
@@ -376,7 +381,7 @@ class ZEntity:
     def _giant_critter(self, t0, t1):
         cr = ZCritter(self.name + "_c", ZC_SPECS["critter"], (0, 0, 0), rot=0)
         cr.root.parent = self.root
-        k = 7.0
+        k = 16.0
         cr.root.scale = (cr.root.scale[0] * k, cr.root.scale[1] * k, cr.root.scale[2] * k)
         cr.express(t0, {"stand": "happy", "walk": "big_smile", "reach": "angry", "peek": "scared", "loom": "angry", "eyes": "angry"}[self.state])
         self.ch = cr

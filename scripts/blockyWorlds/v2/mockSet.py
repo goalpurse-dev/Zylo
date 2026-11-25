@@ -50,6 +50,8 @@ class Obj:
         self.data = MagicMock()
         self.users_collection = [COLL]
         self.matrix_parent_inverse = MagicMock()
+        self.matrix_world = MagicMock()
+        self.matrix_world.translation = Vector(loc)
         self.animation_data = MagicMock()
         self.hide_render = False
         COUNT["objects"] += 1
@@ -148,6 +150,7 @@ class ZChar:
         self.thigh = {'L': Obj(name + '_tl'), 'R': Obj(name + '_tr')}
         self.shoulder = {'L': Obj(name + '_sl'), 'R': Obj(name + '_sr')}
         self.elbow = {'L': Obj(name + '_el'), 'R': Obj(name + '_er')}
+        self.hand = {'L': Obj(name + '_hl'), 'R': Obj(name + '_hr')}
         self.M = {'skin': 'skin'}
     def pose(self, t, name):
         assert name in ZC_POSES, "unknown pose %s" % name
@@ -182,7 +185,7 @@ for k, v in list(globals().items()):
     if k in ("mat", "box", "cyl", "sphere", "text", "light", "empty", "key", "Cam", "F", "zc_rgb", "ZC_POSES", "ZC_SPECS", "ZChar", "zc_prop", "zc_mat", "ZCritter"):
         g[k] = v
 bpy = MagicMock()
-g.update({"bpy": bpy, "D": MagicMock(), "ZW_T": {}, "ZV_TIME": {"t": None}, "ZV_SHOT": {}, "ZV_STAGES": {}, "zw_look_apply": lambda: None,
+g.update({"bpy": bpy, "D": MagicMock(), "zw_gate": lambda S: [], "zw_span": lambda cam, pts: None, "zc_detail_cam": lambda t0, t1, ch, part="buttons", push=0.06: None, "ZW_T": {}, "ZV_TIME": {"t": None}, "ZV_SHOT": {}, "ZV_STAGES": {}, "zw_look_apply": lambda: None,
           "zv_build": lambda sid, time, t0, t1: {}, "zc_blinks": lambda ch, t0, t1, every=2.6: None, "zc_idle": lambda ch, t0, t1, amp=1.0: None,
           "zc_char_light": lambda ch, cam_loc, time="day": None, "zc_walk": lambda ch, t0, t1, run=False, back=1.6: None,
           "zc_look": lambda ch, t, pt, max_head=35.0: None, "zc_react": lambda ch, t0, face, default="neutral", delay=0.27: None})

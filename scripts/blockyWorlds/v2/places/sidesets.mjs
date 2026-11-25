@@ -21,7 +21,7 @@ function side(id, name, look, o) {
   const two = o.two ?? [g(-1.6, -0.6), g(1.6, -0.6)], hero = o.hero ?? g(0, -1.8);
   return { id, name, kind: "side", look, indoor: o.indoor !== false, ground: o.ground ?? null, light: o.light ?? null,
     items: o.items, spots: { hero: { at: hero, tag: o.tag ?? name }, two_a: { at: two[0], tag: name }, two_b: { at: two[1], tag: name }, ...(o.spots ?? {}) },
-    creature_spots: o.creature_spots ?? {}, background: o.background ?? {}, cameras: { ...cams(hero, two, o.cams ?? {}, { far: o.far ?? 1 }) }, times: o.times ?? ["day", "night"] };
+    creature_spots: o.creature_spots ?? {}, background: o.background ?? {}, cameras: { ...cams(hero, two, o.cams ?? {}, { far: o.far ?? 1 }) }, times: o.times ?? ["day", "night"], states: o.states ?? null };
 }
 const R = (p) => ({ p: "room", at: [0, 0, 0], ...p });
 
@@ -83,10 +83,11 @@ export const SIDESETS = {
     items: [R({ wall: "#1C2030", floor: "#22262F", trim: "#3A4050" }), { p: "screens", at: [0, 5.8, 4.6], cols: 5, rows: 3 }, { p: "console", at: [-2, 2.5, 0], L: 9, labels: ["RAIN", "SUN", "STORM"] },
       { p: "redbutton", at: [5, 2.5, 0] }, { prim: { t: "light", at: [0, 3.2, 5], w: 250, c: "#6AB0E8", solid: false } }],
     hero: g(0, -0.8), two: [g(-1.6, -0.6), g(1.6, -0.6)], spots: { mayor: { at: g(-2, 4.8), tag: "behind the console" }, at_red: { at: g(5, -0.6), tag: "at the red button" } },
-    cams: { red: ins([5, -1.0, 4.4], [5, 2.5, 2.6], 30), buttons: ins([-3.5, -0.6, 4.4], [-3.4, 2.0, 2.6], 30), screens: ins([0, -6, 4.6], [0, 5.8, 4.6], 24),
-      mayor_med: { loc: [-1.6, -4.5, 6.4], tgt: [-2, 4.8, 2.2], lens: 30, shot: "top", people: ["mayor"], fixed: true } }, times: ["night", "dusk"] }),
+    cams: { red: ins([5, -1.0, 3.2], [5, 2.5, 1.0], 30), buttons: ins([-3.5, -0.6, 4.4], [-3.4, 2.0, 2.6], 30), screens: ins([0, -6, 4.6], [0, 5.8, 4.6], 24),
+      mayor_med: { loc: [-1.6, -4.5, 6.4], tgt: [-2, 4.8, 2.2], lens: 30, shot: "top", people: ["mayor"], fixed: true },
+      press_side: { loc: [0.8, -8.4, 4.6], tgt: [4.9, 0.6, 1.5], lens: 24, shot: "medium", people: ["at_red"], fixed: true } }, times: ["night", "dusk"], states: { red: "covered" } }),
   townhall_front: side("townhall_front", "Town hall front", "the town hall with columns, steps and its sign; flower beds; old lamps", {
-    indoor: false, ground: { c: "#B9AA8E" }, far: 1.4,
+    indoor: false, ground: { c: "#B9AA8E" }, far: 1.15,
     items: [{ p: "townhall", at: [0, 8, 0], sign: "TOWN HALL", key: "townhall" }, { p: "flowerbed", at: [-9, 5.5, 0] }, { p: "flowerbed", at: [9, 5.5, 0] }, { p: "lamp", at: [-13, 4, 0], style: "old", h: 6.5 }, { p: "lamp", at: [13, 4, 0], style: "old", h: 6.5 }],
     hero: g(0, 1.5), two: [g(-1.6, 2.6), g(1.6, 2.6)], spots: { on_steps: { at: g(5.5, 6.4) } }, cams: { sign: ins([0, 0, 7], [0, 8.6, 12.2], 30) } }),
   playground: side("playground", "Park playground", "a slide, swings, a sandbox, a bench, trees, a fence", {
@@ -102,7 +103,7 @@ export const SIDESETS = {
     items: [R({ wall: "#DDEFF0", floor: "#C9D6D8" }), { p: "hospitalbed", at: [-3.2, 2.6, 0] }, { p: "monitor", at: [-0.6, 4.6, 0] }, { p: "window", at: [4.2, 5.85, 4.4], curtains: "#8FC3E3" }, { p: "chair", at: [4.6, 1.6, 0], c: "#5A8FB0" }],
     hero: g(1.4, -1.6), two: [g(-0.2, -0.8), g(3.0, -0.8)], spots: { bedside: { at: g(0.9, 2.4) } }, cams: { monitor: ins([-0.6, 1.4, 3.8], [-0.6, 4.4, 3.6], 30) } }),
   police_front: side("police_front", "Police station front", "the police station with its sign and a blue lamp, a police car", {
-    indoor: false, ground: { c: "#C9C4BA" }, far: 1.4,
+    indoor: false, ground: { c: "#C9C4BA" }, far: 1.15,
     items: [{ prim: { t: "box", at: [0, 15, 5.5], s: [26, 10, 11], c: "#D9DCE3" } }, { prim: { t: "box", at: [0, 9.8, 8.2], s: [10, 0.4, 1.8], c: "#1E3A8A", solid: false } },
       { prim: { t: "text", at: [0, 9.55, 8.2], body: "POLICE", size: 1.1, c: "#FFFFFF", key: "police", solid: false } }, { p: "bluelight", at: [0, 9.6, 10.0] },
       { prim: { t: "box", at: [0, 9.9, 2.4], s: [3.4, 0.2, 4.8], c: "#2B3550", solid: false } }, ...[-8, 8].map((x) => ({ prim: { t: "box", at: [x, 9.9, 4], s: [3.4, 0.2, 2.6], c: "#A9D2EE", e: "#FFE2A0", es: 1, glow: "night", solid: false } })),

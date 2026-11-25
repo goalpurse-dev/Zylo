@@ -68,7 +68,25 @@ const BRIEFS = {
     ].join("\n"),
   },
 };
-const BRIEF = BRIEFS[NAME] ?? null;
+// ANY TOPIC (the golden set, a customer's topic): the whole cast we have, both stages, the writer picks the rule's thing
+function topicBrief(topic) {
+  return {
+    topic: `${topic}. Kid-safe: eerie or funny, nobody gets hurt. 60-80 seconds. Our own plot.`,
+    outline: null,
+    words: { minW: 190, maxW: 300 },
+    cast_menu: [{ id: "me", about: "the narrator, a kid in an orange hoodie" }, { id: "mom", about: "Mom, red cardigan, a bob" }, { id: "dad", about: "Dad" }, { id: "sister", about: "my little sister, pigtails" }, { id: "grandpa", about: "Grandpa, grey hair, cardigan" }, { id: "mayor", about: "the Mayor, suit, sash, top hat" }, { id: "mimic", about: "a wrong copy of Mom (only if the story needs a copy)" }, { id: "creature", about: "the Shadow: a tall dark figure with glowing eyes, only ever far away (the town's only monster)" }],
+    cast: (sis) => ({ me: { name: "Me", spec: "me" }, mom: { name: "Mom", spec: "mom" }, dad: { name: "Dad", spec: "dad" }, sister: { name: sis ?? "Sis", spec: "sister" }, grandpa: { name: "Grandpa", spec: "grandpa" }, mayor: { name: "Mayor", spec: "mayor" }, mimic: { name: "Mom", spec: "mimic_mom" }, creature: { name: "Shadow", spec: "shadow" } }),
+    aliases: (sis) => ({ me: ["I", "me"], mom: ["mom", "mother"], dad: ["dad", "father"], sister: ["sister", ...(sis ? [sis.toLowerCase()] : [])], grandpa: ["grandpa", "grandad"], mayor: ["mayor"], creature: ["shadow", "monster"], curtains: ["curtain", "curtains"], porch_light: ["porch light"] }),
+    alias_any: { mom: ["mom", "mimic"] },
+    rule: null,   // from the writer's tell (below)
+    notes: [
+      "- Row 1 (the hook): the narrator or the line's character big, from the front (close or medium), not at night; the rule's thing next to them when it can be shown.",
+      "- Indoors = stage B (the dining room); the street, the porch, the house fronts = stage A. Night rows on stage A: the curtains close by themselves.",
+      "- Only what the menu has: when the topic names something we cannot show, show its effect on people (faces, poses, where they look) instead.",
+    ].join("\n"),
+  };
+}
+const BRIEF = arg("topic") ? topicBrief(arg("topic")) : (BRIEFS[NAME] ?? null);
 const TOPIC = "In this town, something can copy the people you love. I think my mom isn't my mom. A creepy mimic story, kid-safe (eerie, nobody gets hurt), our own plot. Stage: our street, the house front, the porch, the door, a window; dusk into night. Cast: me (the narrator), Mom, the Mimic (a wrong copy of Mom), my little sister. 60-80 seconds.";
 const CAST_MENU = [{ id: "me", about: "the narrator, a kid in an orange hoodie" }, { id: "mom", about: "Mom, warm, red cardigan, a bob" }, { id: "mimic", about: "the copy of Mom: almost right" }, { id: "sister", about: "my little sister, cheeky, pigtails" }];
 
@@ -87,7 +105,8 @@ if (!upTo("plan")) process.exit(0);
 const sisterName = (SC.lines.map((l) => l.text).join(" ").match(/\bsister,? (\w+)/i) ?? [])[1];
 const story = BRIEF ? {
   title: SC.title, rule_text: SC.rule, tell: SC.tell, lines: SC.lines, both_stages: true, notes: BRIEF.notes,
-  cast: BRIEF.cast(sisterName), aliases: BRIEF.aliases(sisterName), alias_any: BRIEF.alias_any, props: {}, rule: BRIEF.rule, spec_overrides: BRIEF.spec_overrides ?? null,
+  cast: BRIEF.cast(sisterName), aliases: BRIEF.aliases(sisterName), alias_any: BRIEF.alias_any, props: {}, spec_overrides: BRIEF.spec_overrides ?? null,
+  rule: BRIEF.rule ?? (["porch_light", "curtains"].includes(SC.tell) ? { object: SC.tell, start: SC.tell === "porch_light" ? "on" : "open", change_words: ["on", "off", "out", "lit", "flick", "flicked", "click", "close", "closed", "closing", "shut", "pull", "pulled", "open", "opened", "peek", "peeked"], tell_person: null } : ["head_tilt", "wide_smile", "grey"].includes(SC.tell) ? { object: null, start: null, change_words: [], tell_person: "mimic" } : null),
 } : {
   title: SC.title, rule_text: SC.rule, tell: SC.tell, lines: SC.lines,
   cast: { me: { name: "Me", spec: "me" }, mom: { name: "Mom", spec: "mom" }, mimic: { name: "Mom", spec: "mimic_mom" }, sister: { name: sisterName ?? "Sis", spec: "sister" } },
@@ -104,12 +123,12 @@ function autoFix(rs) {
     const alike = [...new Set(probs.filter((p) => /same subject as the shot before|the same shot as the row before/.test(p)).map((p) => Number(p.match(/^row (\d+)/)?.[1])).filter(Boolean))];
     const gone = probs.filter((p) => /is not there .* but the shot shows them/.test(p)).map((p) => ({ i: Number(p.match(/^row (\d+)/)[1]), id: p.match(/the words say (\w+) is not there/)[1] }));
     if (!alike.length && !gone.length) break;
-    for (const g of gone) { const r = rs[g.i - 1]; rs = rs.map((x, j) => (j === g.i - 1 ? { ...x, people: (r.people ?? []).filter((q) => q.id !== g.id), cam: { ...r.cam, subject: (r.cam?.subject ?? []).filter((q) => q !== g.id) }, absent: [...(r.absent ?? []), g.id] } : x)); }
+    for (const g of gone) { say(`auto fix: row ${g.i}: ${g.id} left out (the words say they are not there)`); const r = rs[g.i - 1]; rs = rs.map((x, j) => (j === g.i - 1 ? { ...x, people: (r.people ?? []).filter((q) => q.id !== g.id), cam: { ...r.cam, subject: (r.cam?.subject ?? []).filter((q) => q !== g.id) }, absent: [...(r.absent ?? []), g.id] } : x)); }
     for (const i of alike) {
       const r = rs[i - 1];
       const tries = [{ ...r.cam, side: "left" }, { ...r.cam, side: "right" }, { ...r.cam, type: r.cam.type === "close" ? "medium" : "close" }, { ...r.cam, type: "wide" }];
       const before = checkRows(S, { ...story, rows: rs }).length;
-      for (const c of tries) { const cand = rs.map((x, j) => (j === i - 1 ? { ...x, cam: c } : x)); if (checkRows(S, { ...story, rows: cand }).length < before) { rs = cand; break; } }
+      for (const c of tries) { const cand = rs.map((x, j) => (j === i - 1 ? { ...x, cam: c } : x)); if (checkRows(S, { ...story, rows: cand }).length < before) { say(`auto fix: row ${i}: two shots alike in a row -> ${c.type}${c.side ? ` from the ${c.side}` : ""}`); rs = cand; break; } }
     }
   }
   return rs;
@@ -136,6 +155,9 @@ save("checks.json", { problems: probs, composition: composition(S, story) });
 say(`plan: ${rows.length} rows; free checks: ${probs.length} problem(s) left${probs.length ? ":\n- " + probs.join("\n- ") : ""}`);
 say(`composition: ${JSON.stringify(composition(S, story))}`);
 if (!upTo("voice")) process.exit(0);
+// --novoice (the golden set): no voice, no timing: the stills straight from the plan
+if (has("novoice")) fs.writeFileSync(path.join(HERE, "stories", `${NAME}.json`), JSON.stringify({ ...story, rows }, noCam, 1));
+else {
 
 // ---- 3 the voice (the owner's voice, 1.2x creepy) + the two pace samples (15 s each)
 const VOICE = arg("voice");
@@ -196,6 +218,7 @@ say(`timing: ${V.duration.toFixed(1)} s, ${rows.length} shots, the longest ${lon
 fs.writeFileSync(path.join(HERE, "stories", `${NAME}.json`), JSON.stringify({ ...story, rows }, noCam, 1));
 save("timed_rows.json", rows);
 save("timed_words.json", tw.map((w) => ({ word: w.word, start: w.start, end: w.end, line: w.line })));
+}
 if (!upTo("stills")) process.exit(0);
 
 // ---- 4 the stills (+ the automatic fixes of the shots the Blender checks failed: the camera pulled back, max 2)
