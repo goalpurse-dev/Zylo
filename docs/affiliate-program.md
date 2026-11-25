@@ -3,7 +3,7 @@
 Branch `affiliate` (folder `C:\Users\Public\Zylo-affiliate`). Not on laptop-transfer or main.
 
 ## Where things are
-- Rules (rates, 30-day hold, €25 minimum, 5 credits, reserved words…): `supabase/functions/_shared/affiliate/config.js`
+- Rules (rates, 30-day hold, €25 minimum, 30 sign-up credits, reserved words…): `supabase/functions/_shared/affiliate/config.js`
 - Database: `supabase/migrations/20261217100000_affiliate_program.sql` (rollback in `supabase/rollbacks/`)
 - API: `supabase/functions/affiliate-api` (logic in `_shared/affiliate/api.js`)
 - Payment hook: `supabase/functions/stripe-webhook/index.ts` (first payment → commission; `charge.refunded` / `charge.dispute.created` → reversed)
@@ -21,7 +21,7 @@ Order matters only one way: a webhook deployed before the migration just skips t
 
 ## Testing on the preview (no real money)
 1. Account A opens /affiliate → "Get my code" → copy code / link.
-2. Account B (new, in a private window) opens the link or types the code in the survey (or on /affiliate, "Did a creator send you?") → 5 credits.
+2. Account B (new, in a private window) opens the link or types the code in the survey (or on /affiliate, "Did a creator send you?") → 30 credits.
 3. /admin/affiliates → Test tools → B's email, €38, pro → "Simulate payment" → A's page shows €7.60 pending.
 4. Table → A → Edit → "Test: skip 30 days" → available. Repeat with more referred accounts until ≥ €25 → Payout queue → "Mark as paid".
 5. Refund: another referred account → Simulate payment → Simulate refund → reversed.

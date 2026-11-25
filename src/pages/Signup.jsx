@@ -8,6 +8,8 @@ import { rememberSignupRoute } from "../lib/onboarding";
 import { authError, formatCountdown } from "../lib/authErrors";
 import { useCooldown } from "../hooks/useCooldown";
 import ConfirmEmailNotice from "../components/auth/ConfirmEmailNotice.jsx";
+import CreatorCodeField from "../components/affiliate/CreatorCodeField.jsx";
+import { codeWorthSaving, saveSignupCode, signupCodeData } from "../lib/affiliate";
 
 export default function Signup() {
 
@@ -23,6 +25,7 @@ export default function Signup() {
   const [err, setErr] = useState("");
   const [confirmFor, setConfirmFor] = useState(""); // the account exists; this address still has to be confirmed
   const cooldown = useCooldown(); // Supabase said "slow down": the button counts down instead of a red error
+  const [creator, setCreator] = useState({ code: "", state: "idle" }); // "Have a creator code?"
 
 async function handleSubmit(e) {
   e.preventDefault();
@@ -30,7 +33,9 @@ async function handleSubmit(e) {
 
   try {
     rememberSignupRoute("signup_page_email");
-    const res = await signUpWithEmailPassword(email, password);
+    const code = codeWorthSaving(creator) ? creator.code : "";
+    if (code) saveSignupCode(code);
+    const res = await signUpWithEmailPassword(email, password, signupCodeData(code));
 
     if (res.status === "created") {
 
@@ -64,7 +69,8 @@ async function handleSubmit(e) {
   async function handleGoogle() {
     setErr(""); setMsg("");
     rememberSignupRoute("signup_page_google");
-    try { await signInWithGoogle(); } 
+    if (codeWorthSaving(creator)) saveSignupCode(creator.code);
+    try { await signInWithGoogle(); }
     catch (e2) { setErr(authError(e2, "Google sign-in failed.").message); }
   }
 
@@ -92,6 +98,7 @@ async function handleSubmit(e) {
           placeholder="Password (min 6 chars)"
           className={AUTH_INPUT}
         />
+        <CreatorCodeField onChange={setCreator} />
         <button type="submit" disabled={loading || cooldown.secondsLeft > 0} className={AUTH_BUTTON}>
           {loading ? "Creating..." : cooldown.secondsLeft > 0 ? `Try again in ${formatCountdown(cooldown.secondsLeft)}` : "Create my account"}
         </button>

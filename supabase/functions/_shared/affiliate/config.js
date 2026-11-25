@@ -27,7 +27,7 @@ export const AFFILIATE = Object.freeze({
   creditValueEur: 0.02,
   holdDays: 30,
   minCashPayoutEur: 25,
-  signupBonusCredits: 5,
+  signupBonusCredits: 30,
   linkSignupBonus: true,
   claimWindowDays: 7,
   refStorageDays: 60,

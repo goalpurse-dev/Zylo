@@ -64,6 +64,54 @@ export function captureRefFromUrl() {
 // Answers that settle the stored link for good (anything else, e.g. a network error, tries again next time).
 const FINAL = new Set(["claimed", "already_attributed", "self", "too_old", "already_paid", "unknown_code", "no_profile"]);
 
+/* ---------- a code typed on the sign-up form ---------- */
+// Kept in this browser AND in the new account (user_metadata.creator_code), so a confirmation link opened on
+// another device still finds it. Claimed once, right after the first sign-in (OnboardingGate), before the survey.
+const SIGNUP_KEY = "zyvo:signup-code";
+
+export function saveSignupCode(code) {
+  const c = cleanCode(code);
+  if (!c || codeProblem(c)) return;
+  try { localStorage.setItem(SIGNUP_KEY, JSON.stringify({ code: c, at: Date.now() })); } catch { /* the account keeps it too */ }
+}
+function readSignupCode() {
+  try {
+    const raw = localStorage.getItem(SIGNUP_KEY);
+    if (!raw) return null;
+    const { code, at } = JSON.parse(raw);
+    return code && Date.now() - at < AFFILIATE.claimWindowDays * 86400_000 ? code : null;
+  } catch { return null; }
+}
+function clearSignupCode() { try { localStorage.removeItem(SIGNUP_KEY); } catch { /* nothing to clear */ } }
+
+/** The sign-up field ({ code, state }): worth saving unless known to be wrong (invalid / own / rate-limited). */
+export const codeWorthSaving = (c) => Boolean(c?.code) && !["invalid", "self", "limited"].includes(c.state);
+
+/** For supabase.auth.signUp's options.data: the code travels with the new account. */
+export const signupCodeData = (code) => {
+  const c = cleanCode(code);
+  return c && !codeProblem(c) ? { creator_code: c } : {};
+};
+
+/** The sign-up form's code, if there is one: claimed as a typed code (the link's own code counts as the link). */
+export async function claimSignupCode(user) {
+  const doneKey = `zyvo:signup-code-done:${user?.id}`;
+  try { if (localStorage.getItem(doneKey)) { clearSignupCode(); return null; } } catch { /* asked again at worst: the server answers once */ }
+  const code = readSignupCode() ?? cleanCode(user?.user_metadata?.creator_code ?? "");
+  if (!code || codeProblem(code)) return null;
+  try {
+    const r = await affiliateApi("claim", { code, source: readStoredRef() === code ? "link" : "code" });
+    if (FINAL.has(r?.result)) {
+      clearSignupCode();
+      try { localStorage.setItem(doneKey, "1"); } catch { /* see above */ }
+      if (r.result === "claimed" || r.result === "already_attributed") clearStoredRef();
+    }
+    return r;
+  } catch {
+    return null;
+  }
+}
+
 /** A new account that arrived through a link and didn't type a code: the link's creator. Once. */
 export async function claimFromStoredRef() {
   const code = readStoredRef();

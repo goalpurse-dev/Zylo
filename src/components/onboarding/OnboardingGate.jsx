@@ -6,12 +6,18 @@ import { useAuth } from "../../context/AuthContext";
 import { FIRST_VIDEO_PATH, beginAdminPreview, fetchOnboardingStatus, localOnboardingTest, takeSignupRoute, trackFunnel } from "../../lib/onboarding";
 import { hasCheckoutIntent } from "../../lib/payments";
 import { toast } from "sonner";
-import { claimFromStoredRef } from "../../lib/affiliate";
+import { claimFromStoredRef, claimSignupCode } from "../../lib/affiliate";
 
 // A new account that came through a creator's ?ref link and didn't type a code (no survey, or skipped it):
 // the link's creator, and the sign-up credits. The server refuses old or paying accounts, so this is safe anywhere.
 async function claimLink() {
   const r = await claimFromStoredRef();
+  if (r?.result === "claimed" && r.bonusCredits > 0) toast.success(`+${r.bonusCredits} free credits from ${r.displayName ?? "your creator"}'s code`);
+}
+
+// The code typed on the sign-up form: claimed once, before the survey (which then skips "Which creator?").
+async function claimFromSignup(user) {
+  const r = await claimSignupCode(user);
   if (r?.result === "claimed" && r.bonusCredits > 0) toast.success(`+${r.bonusCredits} free credits from ${r.displayName ?? "your creator"}'s code`);
 }
 
@@ -77,7 +83,7 @@ export default function OnboardingGate() {
     // Someone on their way to Stripe pays first: they answer when they are back.
     if (hasCheckoutIntent()) return undefined;
     let live = true;
-    fetchOnboardingStatus(userId).then((status) => {
+    claimFromSignup(user).then(() => fetchOnboardingStatus(userId)).then((status) => {
       if (!live) return;
       if (status.enrolled && !status.surveyDone) setShowSurvey(true);
       else claimLink();

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { ArrowLeft, Briefcase, Check, Clapperboard, Compass, Film, MoreHorizontal, Rocket, Smartphone, Sprout, Users } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
+import { affiliateApi } from "../../lib/affiliate";
 import { EMAIL_CONSENT_TEXT, rememberSurveyGoals, requestWelcomeEmail, trackFunnel } from "../../lib/onboarding";
 import { BrandLogo } from "./brandLogos.jsx";
 import BuildingPlan from "./BuildingPlan.jsx";
@@ -65,8 +66,17 @@ export default function OnboardingSurvey({ onDone, preview = false, withPlan = t
   const [hope, setHope] = useState("");
   const [consent, setConsent] = useState(false);
   const [saving, setSaving] = useState(false);
+  // a creator already on the account (the sign-up form's code): no "Which creator?" follow-up
+  const [hasCreator, setHasCreator] = useState(false);
+  const askCreator = (id) => AFFILIATE.creatorPlatforms.includes(id) && !hasCreator;
 
   useEffect(() => { trackFunnel("survey_started"); }, []);
+  useEffect(() => {
+    if (preview || step !== 3) return undefined;
+    let live = true;
+    affiliateApi("claimStatus").then((r) => { if (live) setHasCreator(r?.reason === "already_attributed"); }).catch(() => {});
+    return () => { live = false; };
+  }, [step, preview]);
   const answered = (question, answer) => trackFunnel("survey_answer", { question, answer });
   // the end of the survey, however it ends: the welcome email goes now (the server decides whether it may)
   const leave = (skipped) => { requestWelcomeEmail(); onDone({ goals, skipped }); };
@@ -113,9 +123,9 @@ export default function OnboardingSurvey({ onDone, preview = false, withPlan = t
       <>
         <h1 className="text-[27px] font-black leading-tight tracking-tight text-white sm:text-[32px]">Where did you hear about Zyvo?</h1>
         <div className="mt-5 grid gap-2 sm:grid-cols-2">
-          {HEARD.map((h) => <AnswerCard key={h.id} {...h} testId={`heard-${h.id}`} picked={heardFrom === h.id} onClick={() => { setHeardFrom(h.id); answered("heard_from", h.id); if (!AFFILIATE.creatorPlatforms.includes(h.id)) setStep(4); }} />)}
+          {HEARD.map((h) => <AnswerCard key={h.id} {...h} testId={`heard-${h.id}`} picked={heardFrom === h.id} onClick={() => { setHeardFrom(h.id); answered("heard_from", h.id); if (!askCreator(h.id)) setStep(4); }} />)}
         </div>
-        {AFFILIATE.creatorPlatforms.includes(heardFrom) && (
+        {askCreator(heardFrom) && (
           <CreatorFollowUp platform={heardFrom} preview={preview} onAnswered={(a, c) => { answered("creator_code", a); if (c) setCreator(c); }} onNext={() => setStep(4)} />
         )}
       </>

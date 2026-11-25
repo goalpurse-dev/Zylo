@@ -10,6 +10,8 @@ import { checkSignupEmail } from "../lib/emailCheck";
 import { useCooldown } from "../hooks/useCooldown";
 import ForgotPassword from "./auth/ForgotPassword.jsx";
 import { AUTH_BUTTON, AUTH_INPUT, AuthPitch, GoogleButton, OrUseEmail } from "./auth/AuthSplit.jsx";
+import CreatorCodeField from "./affiliate/CreatorCodeField.jsx";
+import { codeWorthSaving, saveSignupCode, signupCodeData } from "../lib/affiliate";
 
 // Where to land after signing in when the browser leaves the page on the way
 // (Google, or the link in the confirmation email): pages/AuthCallback.jsx reads it once.
@@ -29,6 +31,7 @@ export default function AuthModal({ mode: initialMode, onClose, title, subtitle,
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const cooldown = useCooldown(); // Supabase said "slow down": the button counts down instead of a red error
+  const [creator, setCreator] = useState({ code: "", state: "idle" }); // "Have a creator code?" (sign-up only)
 
   const isSignup = mode === "signup";
   const [confirmFor, setConfirmFor] = useState(""); // this address still has to be confirmed
@@ -50,6 +53,7 @@ export default function AuthModal({ mode: initialMode, onClose, title, subtitle,
   const handleGoogle = async () => {
     rememberReturn();
     rememberSignupRoute(signupRoute("google"));
+    if (isSignup && codeWorthSaving(creator)) saveSignupCode(creator.code);
     onSignUp?.();
     await supabase.auth.signInWithOAuth({
       provider: "google",
@@ -70,20 +74,23 @@ export default function AuthModal({ mode: initialMode, onClose, title, subtitle,
       const firstTouch = readFirstTouch();
       rememberReturn();
       rememberSignupRoute(signupRoute("email"));
+      const code = codeWorthSaving(creator) ? creator.code : "";
+      if (code) saveSignupCode(code);
+      const data0 = {
+        ...(firstTouch ? {
+          first_touch_landing_page: firstTouch.landingPage,
+          first_touch_utm_source: firstTouch.utm_source,
+          first_touch_utm_medium: firstTouch.utm_medium,
+          first_touch_utm_campaign: firstTouch.utm_campaign,
+        } : {}),
+        ...signupCodeData(code),
+      };
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: firstTouch
-          ? {
-              ...(returnTo ? { emailRedirectTo: `${window.location.origin}/auth/callback` } : {}),
-              data: {
-                first_touch_landing_page: firstTouch.landingPage,
-                first_touch_utm_source: firstTouch.utm_source,
-                first_touch_utm_medium: firstTouch.utm_medium,
-                first_touch_utm_campaign: firstTouch.utm_campaign,
-              },
-            }
-          : returnTo ? { emailRedirectTo: `${window.location.origin}/auth/callback` } : undefined,
+        options: Object.keys(data0).length || returnTo
+          ? { ...(returnTo ? { emailRedirectTo: `${window.location.origin}/auth/callback` } : {}), ...(Object.keys(data0).length ? { data: data0 } : {}) }
+          : undefined,
       });
       if (error) fail(error);
       else if (data.session) { onSignUp?.(); onClose(true); } // confirmations off — signed in immediately
@@ -160,6 +167,7 @@ export default function AuthModal({ mode: initialMode, onClose, title, subtitle,
                 required
                 className={AUTH_INPUT}
               />
+              {isSignup && <div className="mt-3"><CreatorCodeField onChange={setCreator} /></div>}
               {!isSignup && (
                 <div className="mt-2 text-right">
                   <button

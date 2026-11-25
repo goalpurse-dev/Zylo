@@ -1,6 +1,11 @@
 // Shared styles, formatters and the count-up hook for the /affiliate page (kept out of parts.jsx so that
 // file exports only components).
 import { useEffect, useRef, useState } from "react";
+import { normalizeHandles } from "../../../../supabase/functions/_shared/affiliate/rules.js";
+
+// "Where do you post?" rows: a new empty one, and the filled-in ones cleaned (what join / setHandles send).
+export const emptyRow = () => ({ platform: "tiktok", handle: "" });
+export const validHandles = (rows) => normalizeHandles(rows);
 
 export const CARD = "rounded-[22px] border border-white/[0.09] bg-white/[0.035]";
 export const LABEL = "text-[11.5px] font-bold uppercase tracking-[0.12em] text-white/45";

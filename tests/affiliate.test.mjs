@@ -5,7 +5,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { AFFILIATE } from "../supabase/functions/_shared/affiliate/config.js";
-import { activityText, ago, availableAt, cleanCode, codeCandidates, codeProblem, commissionFor, dailySeries, eur, hashIp, pct, publicName } from "../supabase/functions/_shared/affiliate/rules.js";
+import { activityText, ago, availableAt, cleanCode, codeCandidates, codeProblem, commissionFor, dailySeries, eur, hashIp, normalizeHandle, normalizeHandles, pct, profileUrl, publicName } from "../supabase/functions/_shared/affiliate/rules.js";
 
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
 
@@ -15,7 +15,7 @@ test("the brief's business rules are the config's defaults", () => {
   assert.equal(AFFILIATE.creditValueEur, 0.02);
   assert.equal(AFFILIATE.holdDays, 30);
   assert.equal(AFFILIATE.minCashPayoutEur, 25);
-  assert.equal(AFFILIATE.signupBonusCredits, 5);
+  assert.equal(AFFILIATE.signupBonusCredits, 30);
   assert.equal(AFFILIATE.refStorageDays, 60);
   assert.deepEqual([AFFILIATE.codeMinLength, AFFILIATE.codeMaxLength], [3, 20]);
   for (const w of ["zyvo", "admin", "support", "free"]) assert.ok(AFFILIATE.reservedCodes.includes(w), w);
@@ -98,7 +98,7 @@ test("survey: the creator code is a follow-up for TikTok / YouTube / Instagram o
   const survey = read("src/components/onboarding/OnboardingSurvey.jsx");
   assert.match(survey, /Where did you hear about Zyvo\?/);
   assert.deepEqual([...survey.matchAll(/\{ id: "(\w+)", (?:brand|icon)[^}]*label: "([^"]+)" \}/g)].slice(-6).map((m) => m[2]), ["TikTok", "YouTube", "Instagram", "A friend", "Google", "Other"]);
-  assert.match(survey, /AFFILIATE\.creatorPlatforms\.includes\(heardFrom\) && \(\s*<CreatorFollowUp/);
+  assert.match(survey, /askCreator\(heardFrom\) && \(\s*<CreatorFollowUp/);
   assert.deepEqual([...AFFILIATE.creatorPlatforms], ["tiktok", "youtube", "instagram"]);
   assert.equal(AFFILIATE.codeChecksPerMinute, 10);
   assert.equal(AFFILIATE.ipBonusCooldownDays, 7);
@@ -120,4 +120,58 @@ test("no page links to the old Creations slot by position; /affiliate reaches th
   assert.ok(vercel.rewrites.some((r) => r.source === "/affiliate" && r.destination === "/app-shell"));
   assert.match(read("src/App.jsx"), /<Route path=\{AFFILIATE_PATH\}/);
   assert.match(read("src/App.jsx"), /<Route path="\/admin\/affiliates"/);
+});
+
+test("30 credits everywhere: the video line, the sign-up field and the survey read the config", () => {
+  assert.match(read("src/pages/workspace/affiliate/parts.jsx"), /Use code \$\{code\} on tryzyvo\.com for \$\{bonus\} free credits/);
+  assert.match(read("src/components/affiliate/CreatorCodeField.jsx"), /\{AFFILIATE\.signupBonusCredits\} free credits/);
+  assert.match(read("src/components/onboarding/CreatorCodeStep.jsx"), /get \{AFFILIATE\.signupBonusCredits\} starting credits/);
+  for (const f of ["src/pages/workspace/affiliate/parts.jsx", "src/components/affiliate/CreatorCodeField.jsx", "src/components/onboarding/CreatorCodeStep.jsx", "src/pages/workspace/affiliate/AffiliatePage.jsx"]) {
+    assert.doesNotMatch(read(f), /\b5 (free|starting) credits/, f);
+  }
+});
+
+test("channels: handles cleaned from @names and profile links, linked to the profile", () => {
+  assert.deepEqual(normalizeHandle("tiktok", "@maya.makes"), { platform: "tiktok", handle: "maya.makes" });
+  assert.deepEqual(normalizeHandle("tiktok", "https://www.tiktok.com/@maya.makes?lang=en"), { platform: "tiktok", handle: "maya.makes" });
+  assert.deepEqual(normalizeHandle("youtube", "youtube.com/@MayaMakes"), { platform: "youtube", handle: "MayaMakes" });
+  assert.deepEqual(normalizeHandle("instagram", "https://instagram.com/maya_ig/"), { platform: "instagram", handle: "maya_ig" });
+  assert.equal(normalizeHandle("instagram", "https://tiktok.com/@maya"), null, "a link to another site");
+  assert.equal(normalizeHandle("tiktok", "has spaces"), null);
+  assert.equal(normalizeHandle("myspace", "maya"), null);
+  assert.deepEqual(normalizeHandle("other", "https://twitch.tv/maya"), { platform: "other", handle: "https://twitch.tv/maya" });
+  assert.equal(normalizeHandle("other", "javascript:alert(1)"), null, "only http(s) links");
+  assert.equal(normalizeHandles([{ platform: "tiktok", handle: "a1" }, { platform: "tiktok", handle: "A1" }, { platform: "youtube", handle: "" }]).length, 1, "no duplicates, no empties");
+  assert.equal(profileUrl({ platform: "tiktok", handle: "maya.makes" }), "https://www.tiktok.com/@maya.makes");
+  assert.equal(profileUrl({ platform: "youtube", handle: "MayaMakes" }), "https://www.youtube.com/@MayaMakes");
+  assert.equal(profileUrl({ platform: "instagram", handle: "maya_ig" }), "https://www.instagram.com/maya_ig");
+  assert.equal(profileUrl({ platform: "other", handle: "My blog" }), null);
+  assert.equal(codeCandidates({ fullName: "Maya K", email: "x@y.z", userId: "0a1b", handles: [{ platform: "tiktok", handle: "maya.makes" }] })[0], "MAYAMAKES");
+});
+
+test("sign-up form: 'Have a creator code?' on both forms, saved with the sign-up, claimed before the survey", () => {
+  const field = read("src/components/affiliate/CreatorCodeField.jsx");
+  assert.match(field, /Have a creator code\?/);
+  assert.match(field, /We couldn't find that creator/);
+  assert.match(field, /useState\(Boolean\(ref\.current\)\)/, "opened automatically with a ?ref link");
+  for (const f of ["src/pages/Signup.jsx", "src/components/AuthModal.jsx"]) {
+    const src = read(f);
+    assert.match(src, /<CreatorCodeField onChange=\{setCreator\} \/>/, f);
+    assert.match(src, /saveSignupCode\(/, f);
+    assert.match(src, /signupCodeData\(code\)/, f);
+  }
+  assert.match(read("src/components/onboarding/OnboardingGate.jsx"), /claimFromSignup\(user\)\.then\(\(\) => fetchOnboardingStatus\(userId\)\)/);
+  const survey = read("src/components/onboarding/OnboardingSurvey.jsx");
+  assert.match(survey, /const askCreator = \(id\) => AFFILIATE\.creatorPlatforms\.includes\(id\) && !hasCreator/);
+  assert.match(survey, /setHasCreator\(r\?\.reason === "already_attributed"\)/);
+});
+
+test("joining asks 'Where do you post?' first; admin shows the channels as links", () => {
+  const page = read("src/pages/workspace/affiliate/AffiliatePage.jsx");
+  assert.match(page, /Where do you post\?/);
+  assert.match(page, /canJoin=\{!user \|\| handles\.length > 0\}/);
+  assert.match(page, /affiliateApi\("join", \{ handles \}\)/);
+  assert.match(page, /<ChannelsCard handles=\{affiliate\.handles\}/);
+  assert.match(read("src/pages/admin/Affiliates.jsx"), /<ChannelLinks handles=\{a\.handles\} small \/>/);
+  assert.match(read("supabase/migrations/20261217120000_affiliate_handles.sql"), /'no_handles'/);
 });

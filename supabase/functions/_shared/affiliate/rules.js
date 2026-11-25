@@ -34,19 +34,80 @@ export const CODE_PROBLEM_TEXT = {
   edit_used: "You've already changed your code once.",
 };
 
+/* ---------- the affiliate's channels ("Where do you post?") ---------- */
+export const HANDLE_PLATFORMS = ["tiktok", "youtube", "instagram", "other"];
+export const PLATFORM_LABEL = { tiktok: "TikTok", youtube: "YouTube", instagram: "Instagram", other: "Other" };
+const PROFILE_HOSTS = { tiktok: /(?:^|\.)tiktok\.com$/i, youtube: /(?:^|\.)youtube\.com$/i, instagram: /(?:^|\.)instagram\.com$/i };
+const MAX_HANDLES = 6;
+
 /**
- * Code candidates for a new affiliate, best first: their name, their email's name, then those with
- * numbers, then a random one. The server takes the first that is valid and free.
+ * One channel, cleaned: { platform, handle } or null. TikTok / YouTube / Instagram take "@name", "name" or the
+ * profile link and keep just the name (letters, numbers, . _ -, 2-40). "Other" keeps a link (https) or a short name.
  */
-export function codeCandidates({ fullName, email, userId }, cfg = AFFILIATE) {
+export function normalizeHandle(platform, raw) {
+  if (!HANDLE_PLATFORMS.includes(platform)) return null;
+  let v = String(raw ?? "").trim();
+  if (!v) return null;
+  if (platform === "other") {
+    if (/^https?:\/\//i.test(v)) {
+      try { const u = new URL(v); return u.protocol === "https:" || u.protocol === "http:" ? { platform, handle: u.href.slice(0, 200) } : null; } catch { return null; }
+    }
+    v = v.replace(/^@/, "").slice(0, 60);
+    return /^[\p{L}\p{N} ._@-]{2,60}$/u.test(v) ? { platform, handle: v } : null;
+  }
+  if (/^(https?:\/\/)?(www\.|m\.)?[a-z]+\.com\//i.test(v)) {
+    try {
+      const u = new URL(/^https?:\/\//i.test(v) ? v : `https://${v}`);
+      if (!PROFILE_HOSTS[platform].test(u.hostname)) return null;
+      v = u.pathname.split("/").filter(Boolean).find((p) => p.startsWith("@")) ?? u.pathname.split("/").filter(Boolean)[0] ?? "";
+    } catch { return null; }
+  }
+  v = v.replace(/^@/, "");
+  return /^[A-Za-z0-9._-]{2,40}$/.test(v) ? { platform, handle: v } : null;
+}
+
+/** All valid channels from a list of { platform, handle }, no duplicates, at most 6. */
+export function normalizeHandles(list) {
+  const out = [];
+  for (const item of Array.isArray(list) ? list : []) {
+    const h = normalizeHandle(item?.platform, item?.handle);
+    if (h && !out.some((o) => o.platform === h.platform && o.handle.toLowerCase() === h.handle.toLowerCase())) out.push(h);
+    if (out.length >= MAX_HANDLES) break;
+  }
+  return out;
+}
+
+/** The public profile a channel points at, or null ("Other" without a link). */
+export function profileUrl({ platform, handle }) {
+  if (platform === "tiktok") return `https://www.tiktok.com/@${handle}`;
+  if (platform === "youtube") return `https://www.youtube.com/@${handle}`;
+  if (platform === "instagram") return `https://www.instagram.com/${handle}`;
+  return /^https?:\/\//i.test(handle) ? handle : null;
+}
+
+/** The handle a code is made from: the name part (a link's last part for "Other"). */
+function handleBase(h, cfg) {
+  if (!h) return "";
+  const name = h.platform === "other" && /^https?:\/\//i.test(h.handle)
+    ? (() => { try { const u = new URL(h.handle); return u.pathname.split("/").filter(Boolean).pop() ?? u.hostname.split(".")[0]; } catch { return ""; } })()
+    : h.handle;
+  return cleanCode(name, cfg);
+}
+
+/**
+ * Code candidates for a new affiliate, best first: their first channel's handle, their name, their email's
+ * name, then those with numbers, then a random one. The server takes the first that is valid and free.
+ */
+export function codeCandidates({ fullName, email, userId, handles }, cfg = AFFILIATE) {
   const out = [];
   const add = (c) => { if (c && !codeProblem(c, cfg) && !out.includes(c)) out.push(c); };
+  const fromHandle = handleBase(normalizeHandles(handles)[0], cfg);
   const fromName = cleanCode(fullName, cfg);
   const fromEmail = cleanCode(String(email ?? "").split("@")[0], cfg);
   const first = cleanCode(String(fullName ?? "").trim().split(/\s+/)[0], cfg);
-  for (const base of [fromName, first, fromEmail]) add(base);
+  for (const base of [fromHandle, fromName, first, fromEmail]) add(base);
   const seed = String(userId ?? "").replace(/[^0-9a-f]/gi, "");
-  for (const base of [first || fromName || fromEmail].filter(Boolean)) {
+  for (const base of [fromHandle || first || fromName || fromEmail].filter(Boolean)) {
     for (let i = 0; i < 6; i++) {
       const n = seed ? parseInt(seed.slice(i * 2, i * 2 + 4) || "0", 16) % 1000 : Math.floor(Math.random() * 1000);
       add(`${base.slice(0, cfg.codeMaxLength - 3)}${n}`);

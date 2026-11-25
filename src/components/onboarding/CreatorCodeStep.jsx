@@ -1,5 +1,5 @@
 // The follow-up under "Where did you hear about Zyvo?" when the answer is TikTok, YouTube or Instagram: the creator's code
-// (prefilled from a ?ref link), checked on the server as it is typed, and 5 starting credits when it is applied. Skippable.
+// (prefilled from a ?ref link), checked on the server as it is typed, and the sign-up credits (config) when it is applied. Skippable.
 // The server decides the credits (valid, active, not your own, once per account, once per IP in 7 days) and rate-limits checks.
 import { useEffect, useRef, useState } from "react";
 import { Check, Loader2, X } from "lucide-react";

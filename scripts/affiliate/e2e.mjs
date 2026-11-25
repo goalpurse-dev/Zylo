@@ -1,6 +1,6 @@
 // The affiliate program end to end, offline and free: the REAL affiliate-api logic (_shared/affiliate/api.js)
 // on the REAL migration, in an in-memory Postgres (PGlite), with a small stand-in for supabase-js.
-// Walks: join → code → a new user signs up with the code (5 credits) → first payment → pending → 30 days →
+// Walks: join → code → a new user signs up with the code (30 credits) → first payment → pending → 30 days →
 // available → admin marks paid; plus refund reversal, self-referral, a flagged referral, credit payouts.
 //
 // PGlite is not a project dependency. Once: npm i --prefix <somewhere> @electric-sql/pglite@0.2.17
@@ -24,7 +24,7 @@ await pg.exec(`
     update profiles set credit_balance = credit_balance + p_amount where id = p_user_id;
     return true;
   end $$;`);
-for (const m of ["20261217100000_affiliate_program.sql", "20261217110000_affiliate_onboarding_followup.sql"]) {
+for (const m of ["20261217100000_affiliate_program.sql", "20261217110000_affiliate_onboarding_followup.sql", "20261217120000_affiliate_handles.sql"]) {
   await pg.exec(readFileSync(new URL(`../../supabase/migrations/${m}`, import.meta.url), "utf8"));
 }
 
@@ -119,19 +119,26 @@ const maya = await newUser("maya.k@example.com", "Maya Korhonen");
 console.log("1. Join");
 const before = await call(maya, "me");
 check("not joined yet", before.joined, false);
-const me = await call(maya, "join", {}, "9.9.9.9");
-check("joined with a code from the name", [me.joined, me.affiliate.code, me.affiliate.displayName], [true, "MAYAKORHONEN", "Maya"]);
-check("link", me.affiliate.link, "https://tryzyvo.com/?ref=MAYAKORHONEN");
+check("joining without a channel is refused", (await call(maya, "join", {}, "9.9.9.9")).problem, "handles");
+check("…and with only a bad one", (await call(maya, "join", { handles: [{ platform: "tiktok", handle: "not a handle!" }] }, "9.9.9.9")).problem, "handles");
+const HANDLES = [{ platform: "tiktok", handle: "https://www.tiktok.com/@maya.makes?lang=en" }, { platform: "youtube", handle: "@MayaMakesVideos" }];
+check("the suggested code comes from the first handle", (await call(maya, "suggestCode", { handles: HANDLES })).code, "MAYAMAKES");
+const me = await call(maya, "join", { handles: HANDLES }, "9.9.9.9");
+check("joined with that code; the name shown is the @handle", [me.joined, me.affiliate.code, me.affiliate.displayName], [true, "MAYAMAKES", "@maya.makes"]);
+check("channels cleaned and saved", me.affiliate.handles.map((h) => ({ platform: h.platform, handle: h.handle })), [{ platform: "tiktok", handle: "maya.makes" }, { platform: "youtube", handle: "MayaMakesVideos" }]);
+check("link", me.affiliate.link, "https://tryzyvo.com/?ref=MAYAMAKES");
+check("channels can be edited later", (await call(maya, "setHandles", { handles: [...HANDLES, { platform: "instagram", handle: "maya_ig" }] })).handles.length, 3);
+check("…never to none", (await call(maya, "setHandles", { handles: [] })).problem, "handles");
 check("empty stats", [me.stats.clicks, me.stats.signups, me.stats.buyers, me.stats.earnedCents], [0, 0, 0, 0]);
 check("edit the code once", (await call(maya, "setCode", { code: "maya" })).ok, true);
 check("a second edit is refused", (await call(maya, "setCode", { code: "maya2" })).problem, "edit_used");
-check("reserved word refused", (await call(owner, "join").then(() => call(owner, "setCode", { code: "zyvo" }))).problem, "reserved");
+check("reserved word refused", (await call(owner, "join", { handles: [{ platform: "other", handle: "https://zyvo.example/owner" }] }).then(() => call(owner, "setCode", { code: "zyvo" }))).problem, "reserved");
 
 console.log("2. Link click (hashed IP), lookup");
 check("click counted", (await call(null, "click", { code: "Maya", ua: "test" }, "5.5.5.5")).counted, true);
 check("same visitor again within 30 min → not counted twice", (await call(null, "click", { code: "MAYA" }, "5.5.5.5")).counted, false);
 check("no raw IP stored", (await pg.query("select ip_hash from referral_clicks")).rows.every((r) => r.ip_hash && !r.ip_hash.includes("5.5.5.5")), true);
-check("lookup any case → display name", await call(null, "lookup", { code: "maya" }), { valid: true, code: "MAYA", displayName: "Maya" });
+check("lookup any case → display name", await call(null, "lookup", { code: "maya" }), { valid: true, code: "MAYA", displayName: "@maya.makes" });
 check("lookup unknown", (await call(null, "lookup", { code: "nobody1" })).valid, false);
 check("own code in lookup → self", (await call(maya, "lookup", { code: "maya" })).reason, "self");
 
@@ -140,7 +147,7 @@ check("self-referral blocked", (await call(maya, "claim", { code: "MAYA", source
 const buyer = await newUser("buyer@example.com", "Bob Buyer");
 check("new user may claim", (await call(buyer, "claimStatus")).eligible, true);
 const cl = await call(buyer, "claim", { code: "maya", source: "code" }, "7.7.7.7");
-check("claimed, 5 credits", [cl.result, cl.displayName, cl.bonusCredits, await balance(buyer)], ["claimed", "Maya", 5, 5]);
+check("claimed, 30 credits", [cl.result, cl.displayName, cl.bonusCredits, await balance(buyer)], ["claimed", "@maya.makes", 30, 30]);
 check("can't switch creator later", (await call(buyer, "claim", { code: (await call(owner, "me")).affiliate.code })).result, "already_attributed");
 check("claimStatus now names the creator", (await call(buyer, "claimStatus")).creator?.code, "MAYA");
 
@@ -209,18 +216,28 @@ check("disabled code doesn't validate", (await call(null, "lookup", { code: "MAY
 check("admin rate override", (await call(owner, "adminUpdate", { affiliateId: affId, status: "active", cashRate: 0.25 })).ok, true);
 check("new since last visit", (await call(maya, "markSeen")).ok, true);
 
+console.log("7b. Code on the sign-up form, then the survey");
+const su = await newUser("signup@example.com", "Sid");
+const sc = await call(su, "claim", { code: "maya", source: "code" }, "5.4.3.2");
+check("sign-up code: +30 credits once", [sc.result, sc.bonusCredits, await balance(su)], ["claimed", 30, 30]);
+check("the survey sees a creator already (skips 'Which creator?')", (await call(su, "claimStatus")).reason, "already_attributed");
+check("entering it again in the survey: no second credits", [(await call(su, "claim", { code: "MAYA", source: "code", platform: "tiktok" }, "5.4.3.2")).result, await balance(su)], ["already_attributed", 30]);
+const fk = await newUser("fake@example.com", "F");
+check("a fake code gets nothing", [(await call(fk, "claim", { code: "NOSUCHCREATOR", source: "code" }, "5.4.3.3")).result, await balance(fk)], ["unknown_code", 0]);
+check("own code refused (sign-up or survey)", (await call(maya, "claim", { code: "MAYA", source: "code" }, "5.4.3.4")).result, "self");
+
 console.log("8. Survey follow-up: platform saved, same-IP credit cooldown, rate limit");
 await call(owner, "adminUpdate", { affiliateId: affId, status: "active" });
 const t1 = await newUser("tt1@example.com", "T1");
 const p1 = await call(t1, "claim", { code: "MAYA", source: "code", platform: "tiktok" }, "3.3.3.3");
-check("TikTok sign-up: claimed, 5 credits", [p1.result, p1.bonusCredits], ["claimed", 5]);
+check("TikTok sign-up: claimed, 30 credits", [p1.result, p1.bonusCredits], ["claimed", 30]);
 check("platform saved on the referral", (await pg.query("select platform from referrals where referred_user_id = $1", [t1.id])).rows[0].platform, "tiktok");
 const t2 = await newUser("tt2@example.com", "T2");
 const p2 = await call(t2, "claim", { code: "MAYA", source: "code", platform: "youtube" }, "3.3.3.3");
 check("same IP within 7 days: still counts for the creator, no credits", [p2.result, p2.bonusCredits, p2.bonusSkipped, await balance(t2)], ["claimed", 0, "ip_recent", 0]);
 await pg.query("update referrals set created_at = now() - interval '8 days' where referred_user_id = $1", [t1.id]);
 const t3 = await newUser("tt3@example.com", "T3");
-check("after 7 days the same IP may get credits again (another creator: a 3rd sign-up from one IP for MAYA is held for review)", (await call(t3, "claim", { code: (await call(owner, "me")).affiliate.code, source: "code", platform: "instagram" }, "3.3.3.3")).bonusCredits, 5);
+check("after 7 days the same IP may get credits again (another creator: a 3rd sign-up from one IP for MAYA is held for review)", (await call(t3, "claim", { code: (await call(owner, "me")).affiliate.code, source: "code", platform: "instagram" }, "3.3.3.3")).bonusCredits, 30);
 check("a made-up platform: still claimed", (await call(await newUser("tt4@example.com", "T4"), "claim", { code: "MAYA", source: "code", platform: "myspace" }, "2.2.2.2")).result, "claimed");
 check("...saved as no platform", (await pg.query("select platform from referrals r join auth.users u on u.id = r.referred_user_id where u.email = 'tt4@example.com'")).rows[0].platform, null);
 ov = await call(owner, "adminOverview");

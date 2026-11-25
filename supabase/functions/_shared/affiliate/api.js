@@ -5,7 +5,13 @@
 // Admin = a verified email in ADMIN_EMAILS (as the Content Machine); anyone else gets NOT_FOUND for those.
 // Referred users are never named to the affiliate: the page gets times, plans and amounts only.
 import { AFFILIATE } from "./config.js";
-import { cleanCode, codeCandidates, codeProblem, clientIp, dailySeries, hashIp, publicName } from "./rules.js";
+import { cleanCode, codeCandidates, codeProblem, clientIp, dailySeries, hashIp, normalizeHandles, publicName } from "./rules.js";
+
+// The name a follower sees when they type the code: the creator's @handle (what their viewers know), else a first name.
+function displayNameFor(handles, fullName, code) {
+  const social = handles.find((h) => h.platform !== "other");
+  return social ? `@${social.handle}`.slice(0, 40) : publicName({ fullName }, code);
+}
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const PAID_REASONS = ["topup", "plan_renewal", "plan_upgrade"];
@@ -111,7 +117,7 @@ export function createAffiliateHandler({ sb, getUser, adminEmails = [], salt = "
       affiliate: {
         code: a.code, displayName: a.display_name, status: a.status, cashRate: n(a.cash_rate), creditRate: n(a.credit_rate),
         payoutType: a.payout_type, payoutMethod: a.payout_method, payoutEmail: a.payout_email,
-        codeEditsLeft: Math.max(0, cfg.codeEditsAllowed - n(a.code_edits)), createdAt: a.created_at,
+        codeEditsLeft: Math.max(0, cfg.codeEditsAllowed - n(a.code_edits)), createdAt: a.created_at, handles: a.handles ?? [],
         link: `${cfg.siteUrl}/?ref=${a.code}`,
       },
       stats: {
@@ -189,7 +195,7 @@ export function createAffiliateHandler({ sb, getUser, adminEmails = [], salt = "
     const affiliates = list.map((a) => {
       const s = byId.get(a.id) ?? {};
       return {
-        id: a.id, code: a.code, displayName: a.display_name, email: emails.get(a.user_id) ?? null, status: a.status,
+        id: a.id, code: a.code, displayName: a.display_name, email: emails.get(a.user_id) ?? null, status: a.status, handles: a.handles ?? [],
         cashRate: n(a.cash_rate), creditRate: n(a.credit_rate), payoutType: a.payout_type, payoutMethod: a.payout_method, payoutEmail: a.payout_email,
         clicks: n(s.clicks), signups: n(s.signups), buyers: n(s.buyers), flagged: n(s.flagged),
         pendingCents: n(s.pending_cents), availableCents: n(s.available_cents), paidCents: n(s.paid_cents), createdAt: a.created_at, note: a.admin_note,
@@ -276,16 +282,33 @@ export function createAffiliateHandler({ sb, getUser, adminEmails = [], salt = "
         await sb.from("affiliates").update({ last_seen_at: new Date(now()).toISOString() }).eq("user_id", user.id);
         return { ok: true };
       }
+      case "suggestCode": {
+        // "Your code will be …" before joining: the first free candidate for these channels
+        const meta = user.user_metadata ?? {};
+        const candidates = codeCandidates({ fullName: meta.full_name || meta.name || "", email: user.email, userId: user.id, handles: body.handles }, cfg);
+        return { code: must(await sb.rpc("affiliate_free_code", { p_candidates: candidates }), "suggest code") ?? null };
+      }
       case "join": {
+        const handles = normalizeHandles(body.handles);
+        if (!handles.length) return { ok: false, problem: "handles" };
         const meta = user.user_metadata ?? {};
         const fullName = meta.full_name || meta.name || "";
-        const candidates = codeCandidates({ fullName, email: user.email, userId: user.id }, cfg);
+        const candidates = codeCandidates({ fullName, email: user.email, userId: user.id, handles }, cfg);
         const r = must(await sb.rpc("affiliate_join", {
-          p_user_id: user.id, p_candidates: candidates, p_display_name: publicName({ fullName }, candidates[0] ?? "Creator"),
-          p_cash_rate: cfg.cashRate, p_credit_rate: cfg.creditRate, p_ip_hash: await ipHashOf(req),
+          p_user_id: user.id, p_candidates: candidates, p_display_name: displayNameFor(handles, fullName, candidates[0] ?? "Creator"),
+          p_cash_rate: cfg.cashRate, p_credit_rate: cfg.creditRate, p_ip_hash: await ipHashOf(req), p_handles: handles,
         }), "join");
         if (r?.result === "no_free_code") fail(409, "NO_CODE", "Couldn't make a code. Try again.");
+        if (r?.result === "no_handles") return { ok: false, problem: "handles" };
         return await mePayload(user, req);
+      }
+      case "setHandles": {
+        const a = await affiliateByUser(user.id);
+        if (!a) fail(400, "NOT_JOINED", "Join first.");
+        const handles = normalizeHandles(body.handles);
+        if (!handles.length) return { ok: false, problem: "handles" };
+        must(await sb.from("affiliates").update({ handles, updated_at: new Date(now()).toISOString() }).eq("id", a.id), "handles");
+        return { ok: true, handles };
       }
       case "setCode": {
         const a = await affiliateByUser(user.id);

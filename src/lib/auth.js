@@ -3,28 +3,32 @@ import { supabase } from "./supabaseClient";
 import { readFirstTouch } from "./firstTouch";
 import { checkSignupEmail } from "./emailCheck";
 
-function firstTouchSignUpOptions() {
+// extraData: more fields for the new account's user_metadata (the sign-up form's creator code).
+function firstTouchSignUpOptions(extraData = {}) {
   const firstTouch = readFirstTouch();
-  if (!firstTouch) return undefined;
+  if (!firstTouch && !Object.keys(extraData).length) return undefined;
   return {
     data: {
-      first_touch_landing_page: firstTouch.landingPage,
-      first_touch_utm_source: firstTouch.utm_source,
-      first_touch_utm_medium: firstTouch.utm_medium,
-      first_touch_utm_campaign: firstTouch.utm_campaign,
+      ...(firstTouch ? {
+        first_touch_landing_page: firstTouch.landingPage,
+        first_touch_utm_source: firstTouch.utm_source,
+        first_touch_utm_medium: firstTouch.utm_medium,
+        first_touch_utm_campaign: firstTouch.utm_campaign,
+      } : {}),
+      ...extraData,
     },
   };
 }
 
 /** Create account with email + password (friendlier errors) */
 // src/lib/auth.js
-export async function signUpWithEmailPassword(email, password) {
+export async function signUpWithEmailPassword(email, password, extraData = {}) {
 
   // A typo, a throwaway inbox or a domain with no mail server never becomes an account.
   const check = await checkSignupEmail(email);
   if (!check.ok) throw new Error(check.message);
 
-  const { data, error } = await supabase.auth.signUp({ email, password, options: firstTouchSignUpOptions() });
+  const { data, error } = await supabase.auth.signUp({ email, password, options: firstTouchSignUpOptions(extraData) });
 
   if (error) throw error;
 

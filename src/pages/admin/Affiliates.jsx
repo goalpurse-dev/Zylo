@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { affiliateApi } from "../../lib/affiliate";
 import { eur } from "../../../supabase/functions/_shared/affiliate/rules.js";
 import NotFoundRedirect from "../../components/NotFoundRedirect";
+import { ChannelLinks } from "../workspace/affiliate/channels.jsx";
 
 const when = (iso) => (iso ? new Date(iso).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "–");
 const pctOf = (r) => `${Math.round(Number(r) * 100)}%`;
@@ -50,7 +51,8 @@ function AffiliateRow({ a, onChanged }) {
     <>
       <tr className="border-t border-white/[0.06] align-top">
         <td className="px-2 py-2 font-black tracking-wide text-white">{a.code}</td>
-        <td className="px-2 py-2 text-white/70"><div>{a.displayName}</div><div className="text-[11.5px] text-white/40">{a.email ?? "–"}</div></td>
+        <td className="px-2 py-2 text-white/70"><div>{a.displayName}</div><div className="text-[11.5px] text-white/40">{a.email ?? "–"}</div>
+          {a.handles?.length > 0 && <div className="mt-1.5" data-testid="admin-handles"><ChannelLinks handles={a.handles} small /></div>}</td>
         <td className="px-2 py-2 text-right tabular-nums">{a.clicks}</td>
         <td className="px-2 py-2 text-right tabular-nums">{a.signups}
           {a.signups > 0 && <div className="whitespace-nowrap text-[11px] text-white/40" title="Where their sign-ups heard about Zyvo">{platformLine(a.platforms)}</div>}

@@ -25,7 +25,8 @@ export function Confetti({ run }) {
 }
 
 /* ---------- not joined ---------- */
-export function JoinHero({ config, proPrice, onJoin, busy, signedIn }) {
+// form: "Where do you post?" (signed in only), shown above the button; canJoin: at least one valid channel.
+export function JoinHero({ config, proPrice, onJoin, busy, signedIn, form = null, canJoin = true }) {
   const buyers = config.example.buyers;
   const cash = buyers * proPrice * config.cashRate;
   const credits = buyers * proPrice * config.creditRate;
@@ -42,11 +43,12 @@ export function JoinHero({ config, proPrice, onJoin, busy, signedIn }) {
         <p className="mx-auto mt-3 max-w-[440px] text-[15.5px] leading-snug text-white/65">
           Share your code. Earn {Math.round(config.cashRate * 100)}% cash or {Math.round(config.creditRate * 100)}% in credits on every new buyer you bring.
         </p>
-        <button type="button" onClick={onJoin} disabled={busy} data-testid="affiliate-join"
+        {form && <div className="mx-auto mt-6 max-w-[460px] text-left">{form}</div>}
+        <button type="button" onClick={onJoin} disabled={busy || !canJoin} data-testid="affiliate-join"
           className="mx-auto mt-6 flex min-h-[56px] w-full max-w-[360px] items-center justify-center gap-2 rounded-2xl bg-lime-300 text-[17px] font-black text-[#11150D] shadow-[0_10px_40px_rgba(190,242,100,0.25)] transition hover:bg-lime-200 active:scale-[0.98] disabled:opacity-60">
           {busy ? "Creating your code…" : signedIn ? "Get my code" : "Sign up to get my code"}<ArrowRight className="h-5 w-5" aria-hidden="true" />
         </button>
-        <p className="mt-2.5 text-[12.5px] text-white/40">Free · instant · no approval</p>
+        <p className="mt-2.5 text-[12.5px] text-white/40">{signedIn && !canJoin ? "Add where you post to get your code" : "Free · instant · no approval"}</p>
       </section>
 
       <section aria-labelledby="how-it-works">

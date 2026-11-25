@@ -10,7 +10,8 @@ import { usePlanPrices } from "../../../lib/planPrices";
 import { affiliateApi } from "../../../lib/affiliate";
 import { AFFILIATE } from "../../../../supabase/functions/_shared/affiliate/config.js";
 import { CODE_PROBLEM_TEXT, cleanCode } from "../../../../supabase/functions/_shared/affiliate/rules.js";
-import { CARD } from "./ui.js";
+import { CARD, LABEL, emptyRow, validHandles } from "./ui.js";
+import { ChannelsCard, HandlesEditor } from "./channels.jsx";
 import { Activity, CodeCard, Confetti, DailyChart, Earnings, EditCode, Funnel, JoinHero, PayoutSettings, RulesFaq, SayThis, StatsRow } from "./parts.jsx";
 
 const LOCAL_CONFIG = AFFILIATE; // a signed-out visitor: the same rules, read from the config file
@@ -97,6 +98,10 @@ export default function AffiliatePage() {
   const [justJoined, setJustJoined] = useState(false);
   const [editing, setEditing] = useState(false);
   const [banner, setBanner] = useState(null);
+  const [rows, setRows] = useState([emptyRow()]); // "Where do you post?" before joining
+  const [suggested, setSuggested] = useState(null); // "Your code will be …"
+  const handles = validHandles(rows);
+  const handlesKey = JSON.stringify(handles);
   const seenSent = useRef(false);
 
   useEffect(() => { document.title = "Affiliate · Earn with Zyvo"; }, []);
@@ -116,13 +121,23 @@ export default function AffiliatePage() {
     return () => clearTimeout(t);
   }, [data]);
 
+  // the code they'd get, from their first channel (unique: the server picks the first free one)
+  useEffect(() => {
+    if (!user || data?.joined || !handles.length) { setSuggested(null); return undefined; }
+    let live = true;
+    const t = setTimeout(() => affiliateApi("suggestCode", { handles }).then((r) => { if (live) setSuggested(r?.code ?? null); }).catch(() => {}), 500);
+    return () => { live = false; clearTimeout(t); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, data?.joined, handlesKey]);
+
   const onCopy = async (text, msg) => { if (await copyText(text)) toast.success(msg); else toast.error("Couldn't copy. Long-press to copy instead."); };
 
   const join = async () => {
     if (!user) { navigate("/signup"); return; }
     setJoining(true);
     try {
-      const next = await affiliateApi("join");
+      const next = await affiliateApi("join", { handles });
+      if (next?.ok === false) { toast.error("Add at least one place where you post."); setJoining(false); return; }
       setJustJoined(true);
       setData(next);
       seenSent.current = true; // a brand-new affiliate has nothing "new since last visit"
@@ -139,6 +154,16 @@ export default function AffiliatePage() {
       if (!r.ok) return CODE_PROBLEM_TEXT[r.problem] ?? "That code can't be used.";
       toast.success(`Your code is now ${r.code}`);
       setEditing(false);
+      await load();
+      return null;
+    } catch (e) { return e.message; }
+  };
+
+  const saveHandles = async (list) => {
+    try {
+      const r = await affiliateApi("setHandles", { handles: list });
+      if (!r.ok) return "Add at least one place where you post.";
+      toast.success("Saved");
       await load();
       return null;
     } catch (e) { return e.message; }
@@ -174,7 +199,14 @@ export default function AffiliatePage() {
     const config = data?.config ?? LOCAL_CONFIG;
     return page(
       <>
-        <JoinHero config={config} proPrice={proPrice} onJoin={join} busy={joining} signedIn={Boolean(user)} />
+        <JoinHero config={config} proPrice={proPrice} onJoin={join} busy={joining} signedIn={Boolean(user)} canJoin={!user || handles.length > 0}
+          form={user ? (
+            <div data-testid="affiliate-where">
+              <p className={LABEL}>Where do you post?</p>
+              <div className="mt-2.5"><HandlesEditor rows={rows} onChange={setRows} /></div>
+              {suggested && <p className="mt-3 text-[13.5px] text-white/60" data-testid="affiliate-suggested">Your code will be <span className="font-black tracking-wide text-lime-300">{suggested}</span> <span className="text-white/40">(you can change it once later)</span></p>}
+            </div>
+          ) : null} />
         {data?.claim?.eligible && <RedeemCard bonus={data.claim.bonusCredits} onDone={load} />}
         <RulesFaq config={config} />
       </>,
@@ -194,6 +226,7 @@ export default function AffiliatePage() {
       {editing
         ? <EditCode current={affiliate.code} config={config} onSave={saveCode} onCancel={() => setEditing(false)} />
         : <CodeCard affiliate={affiliate} onCopy={onCopy} onEdit={() => setEditing(true)} justJoined={justJoined} />}
+      <ChannelsCard handles={affiliate.handles} onSave={saveHandles} />
       <SayThis code={affiliate.code} bonus={config.signupBonusCredits} onCopy={onCopy} />
       <StatsRow stats={stats} />
       <div className="grid gap-3 lg:grid-cols-2">
