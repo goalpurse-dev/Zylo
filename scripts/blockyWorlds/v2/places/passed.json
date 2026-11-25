@@ -138,5 +138,28 @@
   "stretch_arms": "3 tries: scaling the arm (each axis) made it wider, not longer; needs the arm bone length in char_v2",
   "billboard": "built but not placed in a town or tested",
   "rain_coin_letter": "coin and letter rain use the same code as keys but were not rendered as rain"
- }
+ },
+ "story_props": [
+  "letter",
+  "envelope",
+  "mailbox",
+  "flower",
+  "bouquet",
+  "book",
+  "box",
+  "bag",
+  "toy",
+  "lamp",
+  "mirror",
+  "door",
+  "window",
+  "sign",
+  "cup",
+  "plate",
+  "cake",
+  "balloon",
+  "rope",
+  "ladder",
+  "bucket"
+ ]
 }

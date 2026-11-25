@@ -453,6 +453,103 @@ def zv_prop(kind, name, label=None, col=None):
     return e
 
 
+ZV_RECIPES = {}     # filled by the runner: the prop library + this story's built props (places/props.mjs)
+
+
+def zv_recipe(rid, name, state=None, label=None, night=False):
+    """a prop from its recipe (simple shapes in local units, base at z = 0, front -y) under an empty named zo_<name>;
+    shapes with only="a|b" show only in those states"""
+    R = ZV_RECIPES[rid]
+    st = state if state in R.get("states", []) else R.get("states", ["-"])[0]
+    e = empty("zo_" + name, (0, 0, 0))
+    for k, p in enumerate(R["prims"]):
+        if p.get("only") and st not in str(p["only"]).split("|"):
+            continue
+        t, at = p["t"], tuple(p["at"])
+        rot = (p.get("rx", 0.0), p.get("ry", 0.0), p.get("rz", 0.0))
+        nm = "zo_%s_%d" % (name, k)
+        if t == "light":
+            lo = light(nm, p.get("kind", "POINT"), at, p["w"], zv_hex(p["c"]), p.get("size", 0.8))
+            lo.parent = e
+            continue
+        m = zv_mat(p, night)
+        if t == "box":
+            ob = box(nm, tuple(p["s"]), at, m, p.get("bev", 0.02), rot=rot, parent=e)
+        elif t == "cyl":
+            ob = cyl(nm, p["r"], p["h"], at, m, p.get("v", 20), rot=rot, r2=p.get("r2"), parent=e)
+        elif t == "sph":
+            ob = sphere(nm, p["r"], at, m, tuple(p.get("sc", (1, 1, 1))), seg=p.get("v", 14), rot=rot, parent=e)
+        elif t == "text":
+            ob = text(nm, str(label or p.get("body", ""))[:14], at, p.get("size", 0.3), m, rot=(90 + rot[0], rot[1], rot[2]), parent=e)
+        else:
+            continue
+        if p.get("sc") and t != "sph":
+            ob.scale = tuple(p["sc"])
+    return e
+
+
+def zv_kids(o):
+    out = []
+    for c in o.children:
+        out.append(c)
+        out.extend(zv_kids(c))
+    return out
+
+
+def zv_obj_bounds(e):
+    """the world bounding box (min, max) of a prop's meshes"""
+    bpy.context.view_layer.update()
+    lo, hi = [1e9] * 3, [-1e9] * 3
+    for ob in [e] + zv_kids(e):
+        if ob.type not in ("MESH", "FONT", "CURVE"):
+            continue
+        for v in ob.bound_box:
+            w = ob.matrix_world @ Vector(v)
+            for i in range(3):
+                lo[i], hi[i] = min(lo[i], w[i]), max(hi[i], w[i])
+    return Vector(lo), Vector(hi)
+
+
+def zv_attach(ch, e, where, rid):
+    """a prop on a body: on the head (on top of the hair), in a hand (its grip), on the back, at the feet"""
+    R = ZV_RECIPES[rid]
+    bpy.context.view_layer.update()
+    yaw = ch.root.rotation_euler[2]
+    fwd = Vector((math.sin(yaw), -math.cos(yaw), 0.0))      # the front of a character faces -y at yaw 0
+    if where == "hand":
+        g = Vector(R.get("grip", (0, 0, R.get("h", 1.0) * 0.45)))
+        hp = ch.hand["R"].matrix_world.translation.copy()
+        e.rotation_euler = (0, 0, yaw)
+        e.location = (hp.x - (g.x * math.cos(yaw) - g.y * math.sin(yaw)), hp.y - (g.x * math.sin(yaw) + g.y * math.cos(yaw)), hp.z - g.z)
+        e.parent = ch.hand["R"]
+        e.matrix_parent_inverse = ch.hand["R"].matrix_world.inverted()
+        return e
+    if where == "head":
+        top = -1e9
+        for ob in [ch.head] + zv_kids(ch.head):
+            if ob.type == "MESH":
+                for v in ob.bound_box:
+                    top = max(top, (ob.matrix_world @ Vector(v)).z)
+        hc = ch.head.matrix_world.translation
+        e.location = (hc.x, hc.y, top - 0.08)
+        e.rotation_euler = (0, 0, yaw)
+        e.parent = ch.head
+        e.matrix_parent_inverse = ch.head.matrix_world.inverted()
+        return e
+    if where == "back":
+        c = ch.torso.matrix_world.translation
+        e.location = c - fwd * 0.9 * ch.k - Vector((0, 0, 0.3))
+        e.rotation_euler = (0, 0, yaw)
+        e.parent = ch.torso
+        e.matrix_parent_inverse = ch.torso.matrix_world.inverted()
+        return e
+    r0 = ch.root.location     # feet: on the ground in front of the character, a little to its side
+    side = Vector((fwd.y, -fwd.x, 0))
+    e.location = (r0.x + fwd.x * 1.3 + side.x * 0.9, r0.y + fwd.y * 1.3 + side.y * 0.9, r0.z)
+    e.rotation_euler = (0, 0, yaw)
+    return e
+
+
 def zv_hold(ch, prop, hands="R"):
     """a world-size prop into a hand (the hand lives inside the character's scale)"""
     ch.hold(0.0, prop, hands)       # the base places it at the hand (and scales it to local units)
@@ -494,7 +591,8 @@ def zv_effect(kind, t0, t1, at=(0, 0, 0), size=1.0, cam=None, opt=None):
         sphere("zt_glowb", 1.2 * size, (at.x, at.y, at.z + 1.5), mat("zt_glowm", zc_rgb(opt.get("col", "#FFE2A0")), 0.5, emit=zc_rgb(opt.get("col", "#FFE2A0")), estr=2.0, alpha=0.25), seg=16)
     elif kind == "smoke":
         for k in range(24):
-            ob = sphere("zt_smoke%d" % k, (0.5 + rnd.random() * 0.8) * size, (at.x + rnd.uniform(-1, 1) * size, at.y + rnd.uniform(-1, 1) * size, at.z + 0.6 + k * 0.35 * size), mat("zt_smokem", zc_rgb("#8C8C94"), 0.95, alpha=0.6), seg=10)
+            r_ = (0.7 + rnd.random() * 0.9) * size * (1.0 + 0.04 * k)     # soft puffs: smooth, see-through, growing as they rise
+            ob = sphere("zt_smoke%d" % k, r_, (at.x + rnd.uniform(-1, 1) * size, at.y + rnd.uniform(-1, 1) * size, at.z + 0.6 + k * 0.35 * size), mat("zt_smokem", zc_rgb("#C9CCD2"), 1.0, emit=zc_rgb("#C9CCD2"), estr=0.15, alpha=0.22), (1.0, 1.0, 0.8), seg=24)
             key(ob, "location", F(t0))
             ob.location.z += 1.5
             key(ob, "location", F(t1))

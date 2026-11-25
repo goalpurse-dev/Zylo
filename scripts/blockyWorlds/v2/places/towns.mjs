@@ -4,6 +4,21 @@
 // Spot: { at: [x, y, z], tag }; camera: { loc, tgt, lens, shot, people, creature?, fixed? }; shot "top" = aerial.
 
 const pave = 0.2;
+import { placeProp } from "./props.mjs";
+// THE REVEAL CAMERAS (owner 2026-11-25): per town, an entity spot on an open street with a hero spot 8 in front of it;
+// "low" = near the ground 7 behind the hero (small, in a lower corner), looking up at the whole entity; "face" = close
+// on its face / eyes. set_v2.py zv_reveal_cam remakes both from the entity's real size; these numbers are nominal.
+function reveal(E, H) {
+  const ux = H[0] - E[0], uy = H[1] - E[1], L = Math.hypot(ux, uy), u = [ux / L, uy / L], sd = [-u[1], u[0]];
+  return {
+    creature_spots: { cr_reveal: { at: E, far: false, reveal: true } }, spots: { rv_hero: { at: H, tag: "on the street, the entity in front" } },
+    cameras: {
+      reveal_low: { loc: [+(H[0] + u[0] * 7 + sd[0] * 1.6).toFixed(2), +(H[1] + u[1] * 7 + sd[1] * 1.6).toFixed(2), 0.9], tgt: [E[0], E[1], 3.2], lens: 26, shot: "low", people: ["rv_hero"], creature: "cr_reveal", reveal: "low", monster: true, fixed: true },
+      reveal_face: { loc: [+(E[0] + u[0] * 4.5).toFixed(2), +(E[1] + u[1] * 4.5).toFixed(2), 4.5], tgt: [E[0], E[1], 5.4], lens: 35, shot: "close", people: [], creature: "cr_reveal", reveal: "face", monster: true, fixed: true },
+    },
+  };
+}
+const withReveal = (T, E, H) => { const r = reveal(E, H); return { ...T, spots: { ...T.spots, ...r.spots }, creature_spots: { ...T.creature_spots, ...r.creature_spots }, cameras: { ...T.cameras, ...r.cameras } }; };
 // ---------------------------------------------------------------------------------------- A. BRIGHT CITY
 function brightCity() {
   const items = [];
@@ -153,7 +168,11 @@ function suburb() {
   items.push({ prim: { t: "cyl", at: [C[0], 0, 0.12], r: 18.5, h: 0.25, c: "#ECE8E1", v: 64, solid: false } }, { prim: { t: "cyl", at: [C[0], 0, 0.13], r: 15, h: 0.25, c: "#474C5A", v: 64, solid: false } });
   items.push({ prim: { t: "box", at: [152, 0, 0.13], s: [6, 12, 0.25], c: "#474C5A", solid: false } });
   const hc = [["#F4D6A0", "#9E4A32"], ["#BFD9E8", "#4E5A6A"], ["#D8E8C8", "#7A4A3A"], ["#F4C7B8", "#5B6E8C"], ["#E8E0F4", "#8C3B2E"]];
-  [0, 60, -60, 120, -120].forEach((th, k) => { const a = th * Math.PI / 180; items.push({ p: "house", at: [C[0] + 30 * Math.cos(a), 30 * Math.sin(a), 0], rz: th - 90, w: 11, d: 9, h: 7.5, c: hc[k][0], roof: hc[k][1] }); });
+  [0, 60, -60, 120, -120, 30, -30, 90, -90].forEach((th, k) => { const a = th * Math.PI / 180; items.push({ p: "house", at: [C[0] + 30 * Math.cos(a), 30 * Math.sin(a), 0], rz: th - 90, w: 11, d: 9, h: 7.5, c: hc[k % 5][0], roof: hc[k % 5][1] });
+    const m = [C[0] + 21.5 * Math.cos(a) - 3.4 * Math.sin(a), 21.5 * Math.sin(a) + 3.4 * Math.cos(a), 0.25];      // its mailbox, at the pavement in front
+    items.push({ prims: placeProp("mailbox"), at: m, rz: th - 90 }); });
+  // a mailbox in front of every street house (Stage A's houses: north fronts face the street at y ~ 10, south at y ~ -10)
+  for (const x of [-120, -90, -60, -30, 0, 30, 60, 90, 120]) items.push({ prims: placeProp("mailbox"), at: [x + 4.6, 10.4, 0.25], rz: 0 }, { prims: placeProp("mailbox"), at: [x + 16.2, -10.6, 0.25], rz: 180 });
   // the park corner (between two houses north of the street): grass, a slide, swings, a bench, a tree, a fence
   items.push({ prim: { t: "box", at: [45, 19, 0.03], s: [15, 17, 0.06], c: "#79B85A", solid: false } });
   items.push({ p: "slide", at: [40.5, 22, 0] }, { p: "swing", at: [48, 23, 0] }, { p: "bench", at: [50.8, 15, 0], rz: -90 }, { p: "tree", at: [51, 27, 0], h: 8, r: 2.4 }, { p: "fence", at: [45, 27.8, 0], L: 14, h: 1.4 });
@@ -174,7 +193,7 @@ function suburb() {
     big: { at: [C[0], 0, 0.25], r: 6.5, note: "the middle of the cul-de-sac (the turning circle)" },
     spots: { ...spots,
       cul_front: { at: [158.2, 0, 0.25], tag: "cul-de-sac, before the big thing" }, cul_a: { at: [157.5, -4.5, 0.25], tag: "cul-de-sac" }, cul_b: { at: [157.5, 4.5, 0.25], tag: "cul-de-sac" },
-      park_kid: { at: [44, 17, 0.06], tag: "the park corner" }, bus_wait: { at: [140, 7.6, 0.25], tag: "at the bus stop" } },
+      park_kid: { at: [44, 17, 0.06], tag: "the park corner" }, mailbox_by: { at: [2.8, 9.4, 0.25], tag: "by our mailbox" }, bus_wait: { at: [140, 7.6, 0.25], tag: "at the bus stop" } },
     creature_spots: { cr_road_south: STAGE_A.creature_spots.cr_road_south, cr_road_far: STAGE_A.creature_spots.cr_road_far, cr_across: STAGE_A.creature_spots.cr_across, cr_cul_far: { at: [188, 0, 0.25], far: true }, cr_cul_mid: { at: [168, 0, 0.25], far: true } },
     background: {
       bg_pave_sw: { at: [-14, -8.0, 0.25], loop: "talk" }, bg_pave_se: { at: [16, -8.0, 0.25], loop: "phone" }, bg_pave_nw: { at: [-20, 8.0, 0.25], loop: "walk" },
@@ -192,11 +211,15 @@ function suburb() {
       house_wide: { ...SOLVED_A.house_wide, shot: "two", fixed: true },     // the porch two-shot (the suburb's wides are its aerials)
       cul_med: { loc: [150, -2, 3.4], tgt: [158.2, 0, 2.6], lens: 30, shot: "medium", people: ["cul_front"] },
       big_low: { loc: [151, -3, 1.1], tgt: [166, 0, 9], lens: 18, shot: "low", people: [], fixed: true },
-      park_med: { loc: [44, 9, 3.2], tgt: [44, 17, 2.4], lens: 28, shot: "medium", people: ["park_kid"] },
+      park_side: { loc: [37.5, 10.5, 3.1], tgt: [44, 17, 2.3], lens: 28, shot: "medium", people: ["park_kid"], fixed: true },     // from the side: the bench no longer hides the hero
+      mailbox_med: { loc: [5.5, 1.5, 3.2], tgt: [3.7, 9.8, 2.3], lens: 26, shot: "medium", people: ["mailbox_by"], fixed: true },     // the hero by our mailbox
+      mailbox_close: { loc: [4.9, 7.2, 2.6], tgt: [4.6, 10.4, 2.1], lens: 30, shot: "insert", people: [], fixed: true },          // our mailbox: its door, its flag, the letter
+      cul_far: { loc: [126, -4, 4], tgt: [168, 0, 8], lens: 30, shot: "wide", people: [], creature: "cr_cul_mid", monster: true, fixed: true },     // a house-sized creature whole
       bus_med: { loc: [141, 1.5, 3.2], tgt: [140, 7.6, 2.4], lens: 28, shot: "medium", people: ["bus_wait"] },
     },
+    states: { mailbox: "closed" },
     times: ["day", "golden", "dusk", "night", "storm", "morning"],
   };
 }
 
-export const TOWNS = { bright_city: brightCity(), old_town: oldTown(), suburb: suburb() };
+export const TOWNS = { bright_city: withReveal(brightCity(), [-36, 0.4, 0], [-28, -1.2, 0]), old_town: withReveal(oldTown(), [-58, 0.5, 0], [-50, -0.6, 0]), suburb: withReveal(suburb(), [100, 0.4, 0.06], [92, -1.0, 0.06]) };

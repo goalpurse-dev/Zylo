@@ -14,7 +14,7 @@ ZV_TIMES = {
     "morning": {"sun": (1.0, 0.84, 0.66), "sun_e": 2.8, "el": 20, "az": -62, "sky": (0.72, 0.80, 0.95), "sky_s": 0.8, "night": False, "char": "morning"},
     "golden":  {"sun": (1.0, 0.70, 0.40), "sun_e": 2.9, "el": 12, "az": 55, "sky": (0.95, 0.74, 0.52), "sky_s": 0.75, "night": False, "char": "sunset"},
     "dusk":    {"sun": (0.95, 0.50, 0.42), "sun_e": 1.1, "el": 5, "az": 68, "sky": (0.10, 0.055, 0.13), "sky_s": 1.0, "night": True, "char": "sunset"},
-    "night":   {"sun": (0.55, 0.65, 1.0), "sun_e": 0.3, "el": 40, "az": 20, "sky": (0.008, 0.012, 0.034), "sky_s": 1.0, "night": True, "char": "night"},
+    "night":   {"sun": (0.55, 0.65, 1.0), "sun_e": 0.85, "el": 38, "az": 20, "sky": (0.018, 0.026, 0.065), "sky_s": 1.0, "night": True, "char": "night"},
     "storm":   {"sun": (0.6, 0.66, 0.8), "sun_e": 0.5, "el": 45, "az": 0, "sky": (0.03, 0.035, 0.045), "sky_s": 1.0, "night": True, "char": "storm"},
 }
 ZV_INDOOR = {   # indoor: a ceiling light, a soft fill from the open side, the window's colour
@@ -153,6 +153,9 @@ def zv_build_set(pid, time="day", weather="clear", t0=0.0, t1=1.0, cam=None):
             for k, (x, y, z, r) in enumerate(((-60, 150, 70, 14), (10, 170, 85, 18), (70, 140, 75, 12), (-20, 190, 95, 16))):
                 sphere("zs_cloud%d" % k, r, (x, y, z), mat("zs_cloud", (1, 1, 1), 0.9, emit=(1, 1, 1), estr=0.35), (2.2, 1.0, 0.55), seg=16)
         ZV_SETLOOK.update({"exposure": 0.0})
+    if P.get("base") == "suburb" and night and weather not in ("danger", "eclipse"):    # Stage A's night: moonlight on the ground
+        light("zs_moon", "SUN", (0, 0, 60), 3.2, (0.55, 0.65, 1.0), 2.0, rot=(52, 0, 25))
+        zv_world((0.045, 0.06, 0.12), 1.0)
     ZV_SETINFO.clear()
     ZV_SETINFO.update({"pid": pid, "time": time, "weather": weather, "night": night, "char": L.get("char", "day") if weather not in ("danger", "eclipse") else "night"})
     if P.get("base") != "suburb":     # the suburb keeps Stage A's own light table (stage_v2 ZV_LIGHT)
@@ -226,6 +229,63 @@ def zv_frame_gate(S):
         hit, loc, nrm, idx, hob, hm = sc.ray_cast(dg, o, dv.normalized(), distance=max(0.1, dv.length - 0.4))
         if hit and hob is not None and not hob.name.startswith(ch.name + "_") and not hob.name.startswith("zp_f") and not hob.hide_render:
             out.append("ZW_GATE|%s|zv|%s|chest_hidden|%s in front of the chest" % (sid, who, hob.name[:30]))
+    # STORY OBJECTS: every object the line names is in frame, big enough, and not hidden (owner 2026-11-25)
+    boxes = []
+    for oid, pre in ZV_SHOT.get("need") or []:
+        obs = [ob for ob in D.objects if (ob.name.startswith(pre) if pre.startswith("zo_") else pre in ob.name) and ob.type in ("MESH", "FONT") and not ob.hide_render]
+        best = None
+        for ob in obs:
+            pts = [ob.matrix_world @ Vector(v) for v in ob.bound_box]
+            sp = zw_span(cam, pts)
+            if not sp:
+                continue
+            u0, u1, v0, v1 = max(0.0, sp[0]), min(1.0, sp[1]), max(0.0, sp[2]), min(0.62, sp[3])
+            if u1 <= u0 or v1 <= v0:
+                continue
+            ctr = sum(pts, Vector((0, 0, 0))) / 8.0
+            dv = ctr - o
+            hit, loc_, nrm, idx, hob, hm = sc.ray_cast(dg, o, dv.normalized(), distance=dv.length + 0.5)
+            mine = hit and hob is not None and (hob.name.startswith(pre) if pre.startswith("zo_") else pre in hob.name)
+            clear = (not hit) or mine or hob.name.startswith("zp_f") or (loc_ - o).length > dv.length - 0.3
+            a = (u1 - u0) * (v1 - v0) * (1.0 if clear else 0.0)
+            if best is None or a > best[0]:
+                best = (a, (u0, u1, v0, v1))
+        if not best or best[0] <= 0.0:
+            out.append("ZW_GATE|%s|zv|object|%s|not visible" % (sid, oid))
+        elif best[0] < 0.0006 and max(best[1][1] - best[1][0], best[1][3] - best[1][2]) < 0.035:
+            out.append("ZW_GATE|%s|zv|object|%s|too small to read" % (sid, oid))
+        else:
+            boxes.append(best[1])
+    # THE ENTITY: when a row has one it must be seen (in frame, a readable size)
+    if ZV_SHOT.get("entity_seen"):
+        lo, hi = zv_name_bounds("Ent")
+        sp = zw_span(cam, [Vector((x, y, z)) for x in (lo.x, hi.x) for y in (lo.y, hi.y) for z in (lo.z, hi.z)]) if lo.x < 1e8 else None
+        if not sp or sp[1] < 0.02 or sp[0] > 0.98 or sp[3] < 0.02 or sp[2] > 0.62:
+            out.append("ZW_GATE|%s|zv|entity|out_of_frame|the creature is not in the picture" % sid)
+        elif (min(0.62, sp[3]) - max(0.0, sp[2])) < 0.14:
+            out.append("ZW_GATE|%s|zv|entity|too_small|the creature fills %d pct of the height (14 wanted)" % (sid, int(100 * (min(0.62, sp[3]) - max(0.0, sp[2])))))
+        else:
+            boxes.append((max(0.0, sp[0]), min(1.0, sp[1]), max(0.0, sp[2]), min(0.62, sp[3])))
+    # THE HAND CLOSE: no face filling the frame
+    hh = ZV_SHOT.get("hand_head")
+    if hh is not None:
+        pts = [hh.head.matrix_world @ Vector(v) for v in hh.head.bound_box]
+        sp = zw_span(cam, pts)
+        if sp:
+            a = max(0.0, min(1.0, sp[1]) - max(0.0, sp[0])) * max(0.0, min(1.0, sp[3]) - max(0.0, sp[2]))
+            if a > 0.10:
+                out.append("ZW_GATE|%s|zv|hand|face_in_frame|the face fills %d pct of a hand close-up" % (sid, int(100 * a)))
+    # the subjects' boxes for the darkness check after the render (placeTest.mjs)
+    for who, ch in ZV_SHOT.get("subjects", []):
+        try:
+            pts = [ob.matrix_world @ Vector(v) for ob in (ch.head, ch.torso) for v in ob.bound_box]
+        except Exception:
+            continue
+        sp = zw_span(cam, pts)
+        if sp and sp[1] > 0 and sp[0] < 1 and sp[3] > 0 and sp[2] < 1:
+            boxes.append((max(0.0, sp[0]), min(1.0, sp[1]), max(0.0, sp[2]), min(1.0, sp[3])))
+    for b in boxes:
+        print("ZW_GATE|%s|zvbox|%.3f|%.3f|%.3f|%.3f" % (sid, b[0], b[1], b[2], b[3]))
     for l in out:
         print(l)
     return out
@@ -278,12 +338,12 @@ ZV_STORM_PARTS = {"bolt": True, "clouds": True, "rain": True, "puddles": False} 
 
 def zv_weather(w, t0, t1, cam):
     if w in ("rain", "storm") and ZV_STORM_PARTS.get("rain", True):
-        m = mat("zs_rainm", (0.75, 0.85, 1.0), 0.2, emit=(0.75, 0.85, 1.0), estr=1.4 if w == "storm" else 1.1)
-        for k, p in enumerate(zv_view_pts(cam, 900 if w == "storm" else 650, d0=5.0, d1=28.0, z1=14)):
-            ob = box("zp_frain%d" % k, (0.045, 0.045, 0.9), tuple(p), m, 0.0, rot=(0, 6 if w == "storm" else 3, 0))
-            ob.location.z += 2.5 * (t1 - t0)      # mid-shot (the still) the streaks are where the points are (motion blur draws the streak)
+        m = mat("zs_rainm", (0.78, 0.86, 1.0), 0.2, emit=(0.78, 0.86, 1.0), estr=0.45 if w == "storm" else 0.35, alpha=0.38)
+        for k, p in enumerate(zv_view_pts(cam, 700 if w == "storm" else 520, d0=6.0, d1=30.0, z1=14)):
+            ob = box("zp_frain%d" % k, (0.016, 0.016, 0.42), tuple(p), m, 0.0, rot=(0, 6 if w == "storm" else 3, 0))
+            ob.location.z += 1.5 * (t1 - t0)      # mid-shot (the still) the streaks are where the points are
             key(ob, "location", F(t0))
-            ob.location.z -= 5 * (t1 - t0)
+            ob.location.z -= 3 * (t1 - t0)
             key(ob, "location", F(t1))
         if ZV_STORM_PARTS.get("puddles", True):
             box("zs_puddles", (400, 400, 0.02), (0, 0, 0.215), mat("zs_wet", (0.25, 0.28, 0.33), 0.05, alpha=0.25), 0.0)
@@ -309,9 +369,10 @@ def zv_weather(w, t0, t1, cam):
         f.z = 0
         f = f.normalized()
         rz = math.degrees(math.atan2(f.x, -f.y))
-        for k, d in enumerate((16, 24, 34, 48, 66)):
+        dt = (tg - lo).length
+        for k, d in enumerate((dt + 14, dt + 26, dt + 42, dt + 64)):
             c = lo + f * d
-            box("zp_fog%d" % k, (d * 1.6, 0.05, 40), (c.x, c.y, 20), mat("zs_fogm", (0.86, 0.88, 0.9), 0.9, emit=(0.86, 0.88, 0.9), estr=0.3, alpha=0.11), 0.0, rot=(0, 0, rz))
+            box("zp_fog%d" % k, (d * 1.8, 0.05, 50), (c.x, c.y, 25), mat("zs_fogm", (0.80, 0.83, 0.87), 0.9, emit=(0.80, 0.83, 0.87), estr=0.25, alpha=0.16), 0.0, rot=(0, 0, rz))
     if w == "wind":
         cols = ["#E07A2E", "#D9A426", "#B5432A", "#8FA33A"]
         for k, p in enumerate(zv_view_pts(cam, 260, z1=9, seed=5)):
@@ -501,12 +562,83 @@ def zv_umbrella(ch, col="#E53935"):
 
 
 # ---------------------------------------------------------------- THE TEST STILL OF A PLACE CAMERA
+def zv_name_bounds(prefix):
+    """the world box of every mesh whose name starts with prefix"""
+    bpy.context.view_layer.update()
+    lo, hi = [1e9] * 3, [-1e9] * 3
+    for ob in D.objects:
+        if ob.name.startswith(prefix) and ob.type in ("MESH", "FONT") and not ob.hide_render:
+            for v in ob.bound_box:
+                w = ob.matrix_world @ Vector(v)
+                for i in range(3):
+                    lo[i], hi[i] = min(lo[i], w[i]), max(hi[i], w[i])
+    return Vector(lo), Vector(hi)
+
+
+ZV_ENT_H = {"giant_critter": 15.5, "long_one": 14.5, "watcher": 11, "many_arms": 11.5, "rain_thing": 10.5, "crawler": 6.5, "hollow": 6.5, "ghost": 5.5, "robot": 7.5, "slime": 3.5}
+
+
+def zv_reveal_cam(P, c, at, kind, bounds=None):
+    """THE REVEAL CAMERAS (owner 2026-11-25): "low" = near the ground behind the hero (small in the foreground), looking
+    up at the whole entity; "face" = close on its face / eyes, a little below them. Made from the entity's real size."""
+    E = Vector(at)
+    Hh = (bounds[1].z - max(0.0, bounds[0].z)) if bounds and bounds[1].z > -1e8 else ZV_ENT_H.get(kind, 6.0)
+    hs = P["spots"].get((c.get("people") or [None])[0]) if c.get("people") else None
+    H = Vector(hs["at"]) if hs else Vector(c["loc"])
+    u = Vector((H.x - E.x, H.y - E.y, 0))
+    u = u.normalized() if u.length > 0.1 else Vector((0, -1, 0))
+    side = Vector((-u.y, u.x, 0))
+    if c["reveal"] == "low":
+        loc = Vector((H.x, H.y, 0)) + u * 16.0 + side * 2.6     # 12 behind the hero, a little to the side: the hero small, head above the captions
+        loc.z = 2.2
+        D_ = (Vector((E.x, E.y, 0)) - Vector((loc.x, loc.y, 0))).length
+        top = bounds[1].z if bounds and bounds[1].z > -1e8 else Hh
+        tz = max(3.4, 0.3 * top)
+        tgt = Vector((E.x, E.y, tz))
+        lens = max(12.0, min(30.0, 12.0 / math.tan(min(1.3, 1.12 * math.atan((top - tz) / max(1.0, D_))))))
+    else:
+        ez = (bounds[0].z + 0.84 * (bounds[1].z - bounds[0].z)) if bounds and bounds[1].z > -1e8 else 0.84 * Hh
+        D_ = 1.9 * Hh + 2.0         # far enough that the body never fills the lens; the face high in the frame
+        loc = E + u * D_ + side * 0.3
+        loc.z = max(1.2, ez - 0.08 * Hh)
+        tgt = Vector((E.x, E.y, ez - 0.1 * Hh))
+        lens = 28.0       # (the kit sensor is 24 mm high)
+    c["lens"] = lens
+    return loc, tgt
+
+
+def zv_entity_light(lo, hi, cam_loc, night):
+    """each entity's own rim light + eye glow: its shape reads at night (the giant creature at dusk is the standard)"""
+    if lo.x > 1e8:
+        return
+    c = (lo + hi) / 2
+    h = max(1.0, hi.z - lo.z)
+    d = Vector((c.x - cam_loc.x, c.y - cam_loc.y, 0))
+    d = d.normalized() if d.length > 0.1 else Vector((0, 1, 0))
+    side = Vector((-d.y, d.x, 0))
+    k = 1.0 if night else 0.35
+    light("zs_entrim", "AREA", tuple(c + d * (0.7 * h) + side * 0.4 * h + Vector((0, 0, 0.45 * h))), k * 260 * h * h, (0.62, 0.8, 1.0), 0.5 * h, target=tuple(c + Vector((0, 0, 0.2 * h))))
+    light("zs_entrim2", "AREA", tuple(c + d * (0.7 * h) - side * 0.5 * h + Vector((0, 0, 0.2 * h))), k * 160 * h * h, (0.75, 0.6, 1.0), 0.5 * h, target=tuple(c))
+    light("zs_entfill", "AREA", tuple(c - d * (0.9 * h) + Vector((0, 0, 0.3 * h))), k * 45 * h * h, (0.55, 0.62, 0.85), 0.8 * h, target=tuple(c))
+    if night:
+        for ob in D.objects:
+            if ob.name.startswith("Ent") and ob.type == "MESH":
+                for ms in ob.material_slots:
+                    m = ms.material
+                    if m and m.use_nodes:
+                        b = next((x for x in m.node_tree.nodes if x.type == "BSDF_PRINCIPLED"), None)
+                        if b and "Emission Strength" in b.inputs and b.inputs["Emission Strength"].default_value > 0.5:
+                            b.inputs["Emission Strength"].default_value = max(b.inputs["Emission Strength"].default_value * 2.2, 12.0)
+
+
 def zv_place_test(pid, cam_name, time, weather, t0, t1, opt=None):
     """a place camera's still: the place at its time + weather, the camera's people spots filled (the hero + Mom),
     its creature, the background people on their calm loops (by day), optional raining things / texts"""
     opt = opt or {}
     P = ZV_PLACES[pid]
     hand_close = cam_name == "hand_close"
+    if hand_close and opt.get("people") and opt["people"][0].get("pose") in ("hold_up", "hold_up2", "stand", None):
+        opt["people"][0]["pose"] = "hold_phone"      # the hand held out at chest height (a raised hand puts the face in the close-up)
     if hand_close:      # the hand close-up: the place camera made for the holder's spot, then the base's detail camera on the hand
         sp0 = (opt.get("people") or [{}])[0].get("spot")
         cam_name = next((k for k, v in P["cameras"].items() if sp0 in v.get("people", [])), list(P["cameras"].keys())[0])
@@ -519,6 +651,11 @@ def zv_place_test(pid, cam_name, time, weather, t0, t1, opt=None):
     loc, tgt = Vector(c["loc"]), Vector(c["tgt"])
     ZV_STORM_PARTS.update({"bolt": True, "clouds": True, "rain": True, "puddles": False})
     ZV_STORM_PARTS.update(opt.get("storm_parts") or {})
+    if opt.get("rain_things"):
+        ZV_STORM_PARTS["rain"] = False      # objects raining: no water rain on top of them (owner 2026-11-25)
+    for ob_ in opt.get("objects") or []:     # a place's own story object (the suburb's mailboxes): its state
+        if ob_.get("at") == "place" and ob_.get("state"):
+            ZV_STATES[ob_["rid"]] = ob_["state"]
     info = zv_build_set(pid, time, weather, t0, t1, cam=(tuple(loc), tuple(tgt)))
     if opt.get("rain_things"):
         zv_rain_things(opt["rain_things"], t0, t1, (tuple(loc), tuple(tgt)))
@@ -535,6 +672,9 @@ def zv_place_test(pid, cam_name, time, weather, t0, t1, opt=None):
             ch.turn(t0, (q[0], q[1], at[2] + 4.0), tuple(loc))
         elif look == "camera":
             ch.face_to((loc.x, loc.y, at[2] + 2.0))
+        elif look == "entity" and c.get("creature"):
+            q = P["creature_spots"][c["creature"]]["at"]
+            ch.turn(t0, (q[0], q[1], at[2] + 3.0), tuple(loc), max_body=80.0)
         else:     # no facing given: three-quarter toward the other person, else the big thing, else past the lens
             others = [q for q in (opt.get("people") or []) if q is not pp]
             if others:
@@ -544,7 +684,9 @@ def zv_place_test(pid, cam_name, time, weather, t0, t1, opt=None):
             else:
                 q = (loc.x + 6.0, loc.y, at[2])
             ch.turn(t0, (q[0], q[1], at[2] + 2.0), tuple(loc))
-        if pp.get("holds"):
+        if pp.get("holds") and pp["holds"] in ZV_RECIPES:
+            zv_attach(ch, zv_recipe(pp["holds"], "hold%d" % k, pp.get("hold_state"), pp.get("label"), ZV_SETINFO.get("night", False)), "hand", pp["holds"])
+        elif pp.get("holds"):
             zv_hold(ch, zv_prop(pp["holds"], "Hold%d" % k, label=pp.get("label")), "R")
         subs.append((pp.get("id", pp["spec"]), ch))
     for k, spot in enumerate([] if opt.get("people") is not None else c.get("people", [])):
@@ -561,7 +703,13 @@ def zv_place_test(pid, cam_name, time, weather, t0, t1, opt=None):
     if c.get("creature") and opt.get("entity"):     # one of the library's entities at the camera's creature spot
         at = P["creature_spots"][c["creature"]]["at"]
         en = opt["entity"]
+        if c.get("reveal"):
+            loc, tgt = zv_reveal_cam(P, c, at, en["kind"])
         cr = ZEntity("Ent", en["kind"], tuple(at), math.degrees(math.atan2(loc.x - at[0], -(loc.y - at[1]))), en.get("state", "stand"), en.get("show", "full"), t0, t1)
+        lo_, hi_ = zv_name_bounds("Ent")
+        if c.get("reveal"):
+            loc, tgt = zv_reveal_cam(P, c, at, en["kind"], (lo_, hi_))
+        zv_entity_light(lo_, hi_, loc, ZV_SETINFO.get("night", False))
     elif c.get("creature"):
         at = P["creature_spots"][c["creature"]]["at"]
         cr = ZChar("Creature", ZC_SPECS["shadow"], tuple(at), rot=0, badge=False)
@@ -578,6 +726,28 @@ def zv_place_test(pid, cam_name, time, weather, t0, t1, opt=None):
         else:
             aa = (tgt.x, tgt.y, 0.0)
         ZAnimal("Animal", opt["animal"], tuple(aa), math.degrees(math.atan2(loc.x - aa[0], -(loc.y - aa[1]))))
+    need = []
+    for j, ob_ in enumerate(opt.get("objects") or []):
+        if ob_.get("at") == "place":
+            need.append((ob_["id"], "_obj_%s" % ob_["rid"]))
+            continue
+        e_ = zv_recipe(ob_["rid"], "%s%d" % (ob_["id"], j), ob_.get("state"), ob_.get("label"), ZV_SETINFO.get("night", False))
+        who = [ch for (i_, ch) in subs if i_ == ob_.get("who")] or [ch for (_, ch) in subs]
+        if ob_.get("at") in ("head", "hand", "back", "feet") and who:
+            zv_attach(who[0], e_, ob_["at"], ob_["rid"])
+        elif ob_.get("spot") in P["spots"]:
+            e_.location = tuple(P["spots"][ob_["spot"]]["at"])
+        elif ob_.get("xy"):
+            e_.location = (ob_["xy"][0], ob_["xy"][1], zv_ground_z(ob_["xy"][0], ob_["xy"][1]))
+            e_.rotation_euler = (0, 0, math.atan2(loc.x - ob_["xy"][0], -(loc.y - ob_["xy"][1])))
+        else:
+            q_ = tgt + (loc - tgt) * 0.25
+            e_.location = (q_.x, q_.y, zv_ground_z(q_.x, q_.y))
+        need.append((ob_["id"], "zo_%s%d" % (ob_["id"], j)))
+        if ZV_SETINFO.get("night", False):     # a soft light on the key object after dark
+            bpy.context.view_layer.update()
+            m_ = e_.matrix_world.translation
+            light("zo_lt%d" % j, "POINT", (m_.x + (loc.x - m_.x) * 0.15, m_.y + (loc.y - m_.y) * 0.15, m_.z + 1.5), 90, (1.0, 0.9, 0.75), 0.6)
     nbs = ["nb1", "nb2", "nb3", "nb4"]
     if opt.get("crowd"):
         cw = opt["crowd"]
@@ -639,17 +809,20 @@ def zv_place_test(pid, cam_name, time, weather, t0, t1, opt=None):
         rt = subs[0][1].root.location
         side = Vector((hp.x - rt.x, hp.y - rt.y, 0))
         tocam = Vector((loc.x - hp.x, loc.y - hp.y, 0)).normalized()
-        d = (side.normalized() * 1.0 + tocam * 0.8).normalized() if side.length > 0.05 else tocam
-        cl = hp + d * 2.4 + Vector((0, 0, 0.3))      # on the hand's open side, a little above (the head stays behind it)
-        cam.key(t0, tuple(cl), tuple(hp), lens=35)
-        cam.key(t1, tuple(cl + (hp - cl) * 0.08), tuple(hp), lens=35)
+        d = (side.normalized() * 1.0 + tocam * 0.3).normalized() if side.length > 0.05 else tocam
+        aim = hp - Vector((0, 0, 0.3))                # the hand and its prop from the outer side: the face is beside / above the frame
+        cl = hp + d * 2.1 - Vector((0, 0, 0.3))
+        cam.key(t0, tuple(cl), tuple(aim), lens=52)
+        cam.key(t1, tuple(cl + (aim - cl) * 0.05), tuple(aim), lens=52)
+        ZV_SHOT["hand_head"] = subs[0][1]
         subs = []          # a hand close: no head in frame on purpose
     else:
         cam.key(t0, tuple(loc), tuple(tgt), lens=c["lens"])
         cam.key(t1, tuple(loc + (tgt - loc) * 0.06), tuple(tgt), lens=c["lens"])
     for _, ch in subs:
         zc_char_light(ch, tuple(loc), ZV_SETINFO.get("char", "day"))
+    hh_ = ZV_SHOT.get("hand_head")
     ZV_SHOT.clear()
-    ZV_SHOT.update({"cam": cam_name, "subjects": subs, "creature": cr, "read_texts": (c.get("reads") or None) if c.get("shot") == "insert" else (opt.get("read") or None)})
+    ZV_SHOT.update({"cam": cam_name, "subjects": subs, "creature": cr, "need": need, "hand_head": hh_, "entity_seen": bool(opt.get("entity")), "read_texts": (c.get("reads") or None) if c.get("shot") == "insert" else (opt.get("read") or None)})
     return info
 # ===== END OF THE PLACE BUILDER =======================================================================================

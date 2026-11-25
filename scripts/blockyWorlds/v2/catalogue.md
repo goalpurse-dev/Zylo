@@ -71,6 +71,29 @@
 - ENTITY slime (funny): a slime: a big green glossy blob with eyes (states stand/walk/reach/peek/loom/eyes; shown full, as a silhouette or eyes only).
 - ENTITY giant_critter (scary): the little creature grown as big as a house (states stand/walk/reach/peek/loom/eyes; shown full, as a silhouette or eyes only).
 - PROPS: phone, key, clock, money, food, book, pencil, backpack, ball, sign, umbrella, bike, coin, frog, letter, car, bus, seccam, screen. EFFECTS: lava, water, grow, glow, smoke, sparks, confetti, lights_out.
+- STORY PROP letter: a folded letter with a red stamp (states: plain; goes: hand / ground / mouth).
+- STORY PROP envelope: a sealed envelope with a red heart seal (states: closed, open; goes: hand / ground).
+- STORY PROP mailbox: a mailbox on a post with a red flag and a door that opens (states: closed, open, letter, glowing; goes: ground).
+- STORY PROP flower: a flower with pink petals (grows on a head: bud, then bloom) (states: bloom, bud; goes: head / hand / ground).
+- STORY PROP bouquet: a bouquet of flowers in paper (states: fresh; goes: hand).
+- STORY PROP book: a thick book (states: closed, open; goes: hand / ground).
+- STORY PROP box: a cardboard box with tape (closed or open) (states: closed, open; goes: hand / ground).
+- STORY PROP bag: a shopping bag with handles (states: full; goes: hand / ground).
+- STORY PROP toy: a teddy bear toy (states: sit; goes: hand / ground).
+- STORY PROP lamp: a table lamp (off / on) (states: on, off; goes: ground / hand).
+- STORY PROP mirror: a tall oval mirror on a stand (normal / glowing / eyes in it) (states: normal, glowing, eyes; goes: ground).
+- STORY PROP door: a door in a frame (closed / open / glowing light behind) (states: closed, open, glowing; goes: ground).
+- STORY PROP window: a window in a frame (dark / lit / a face in it) (states: lit, dark, face; goes: ground).
+- STORY PROP sign: a sign on a post with words on it (states: plain; goes: ground / hand).
+- STORY PROP cup: a mug (states: full; goes: hand / ground).
+- STORY PROP plate: a plate of food (states: full, empty; goes: hand / ground).
+- STORY PROP cake: a birthday cake with candles (states: lit, out; goes: ground / hand).
+- STORY PROP balloon: a balloon on a string (states: full; goes: hand).
+- STORY PROP rope: a coiled rope (states: coiled; goes: hand / ground / back).
+- STORY PROP ladder: a wooden ladder (states: up; goes: ground).
+- STORY PROP bucket: a bucket with a handle (states: empty, full; goes: hand / ground).
+- STORY PROP street_lamps: a street lamp on a tall post (states: on, off; goes: ground) [built by an earlier story].
+- PLACE OBJECTS in suburb: mailbox (built into the place, several of them; its state is set per shot).
 
 ## Skipped
 - stretch_arms: 3 tries: scaling the arm (each axis) made it wider, not longer; needs the arm bone length in char_v2

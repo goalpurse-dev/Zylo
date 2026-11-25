@@ -25,8 +25,20 @@ export const PLACE_WORDS = { classroom: /\b(classroom|class|teacher|lesson)\b/, 
   hospital_room: /\bhospital\b/, police_front: /\bpolice station\b/, basement: /\bbasement\b/, attic: /\battic\b/, forest_edge: /\b(forest|woods)\b/, alley: /\balley\b/, rooftop: /\b(rooftop|on the roof)\b/,
   playground: /\b(playground|swings?)\b/, basketball: /\bbasketball\b/, townhall_front: /\btown hall\b/ };
 
+// STORY OBJECTS (owner 2026-11-25): a line that names one of the story's objects (its words) shows it
+export const wordsRe = (words) => new RegExp(`\\b(${words.map((w) => String(w).toLowerCase().replace(/[^a-z0-9' -]/g, "").trim()).filter(Boolean).join("|")})\\b`);
+export const namesObject = (text, o) => (o.words ?? []).length > 0 && wordsRe(o.words).test(` ${text.replace(/\b[A-Z][A-Z']+\b/g, " ").toLowerCase()} `);
+const MONSTER_ANY = /\b(monsters?|creatures?|something|thing|shadows?|eyes|it was|beast|giant)\b/;
+/** does this line name the creature (its catalogue words, its cast name, its story-object words, or a monster word)? */
+export function namesCreature(text, lib, { cast = [], objects = [] } = {}) {
+  const t = ` ${text.toLowerCase()} `;
+  if (ENTITY_WORDS[lib]?.test(t) || MONSTER_ANY.test(t)) return true;
+  if (cast.some((c) => c.library === lib && new RegExp(`\\b${c.name.toLowerCase().replace(/^the /, "").replace(/[^a-z0-9 ']/g, "")}\\b`).test(t))) return true;
+  return objects.some((o) => o.kind === "creature" && o.catalogue_id === lib && namesObject(text, o));
+}
+
 /** a line's needs: [{ what, value, text }] */
-export function lineNeeds(text, { prevText = "", cast = [] } = {}) {
+export function lineNeeds(text, { prevText = "", cast = [], objects = [] } = {}) {
   // words printed on signs / buttons (ALL CAPS) are not actions: "DON'T PRESS THAT" is a label
   const t = ` ${text.replace(/\b[A-Z][A-Z']+\b/g, " ").toLowerCase()} `, out = [];
   const rainy = /\brain(s|ed|ing)?\b/.test(t) || (/^\s*on \w+days?,/.test(t) && /\brain/.test(prevText.toLowerCase()));
@@ -42,6 +54,9 @@ export function lineNeeds(text, { prevText = "", cast = [] } = {}) {
   for (const [k, re] of Object.entries(ENTITY_WORDS)) if (re.test(t) && !rainy) out.push({ what: "entity", value: k, text: `the entity ${k} in a row (row.entity)` });
   for (const c of cast.filter((c) => c.kind === "entity")) if (new RegExp(`\\b${c.name.toLowerCase().replace(/^the /, "")}\\b`).test(t) && !rainy) out.push({ what: "entity", value: c.library, text: `${c.name} in a row (row.entity id ${c.id})` });
   if (EVERYONE.test(t)) out.push({ what: "crowd", value: 6, text: "everyone: row.crowd with n >= 6 and an action (run / reach / point), never standing" });
+  for (const o of objects) if (["object", "worn"].includes(o.kind) && namesObject(text, o) && o.via === "effect") out.push({ what: "effect", value: o.rid, text: `the effect ${o.rid} (${o.name}): row.effect.kind = ${o.rid}` });
+  for (const o of objects) if (["object", "worn"].includes(o.kind) && namesObject(text, o) && o.via === "rain" && !out.some((n) => n.what === "rain")) out.push({ what: "rain", value: o.rid, text: `${o.name}: row.rain.kind = ${o.rid}` });
+  for (const o of objects) if (["object", "worn"].includes(o.kind) && namesObject(text, o) && (o.via ?? "object") === "object") out.push({ what: "object", value: o.id, text: `the story object ${o.id} (${o.name}) in a row: row.objects [{ id: "${o.id}", at: ${o.attach === "place" ? '"place"' : `"${o.attach}"`}${["head", "hand", "back", "feet"].includes(o.attach) ? ", who: <person id>" : ""}, state }]` });
   return out;
 }
 
@@ -54,8 +69,12 @@ function satisfied(need, rows, castOf) {
     if (need.what === "weather") return r.weather === need.value;
     if (need.what === "entity") return ent(r) === need.value || (r.rain && String(r.rain.kind).includes(need.value));
     if (need.what === "crowd") return (r.crowd?.n ?? 0) >= 6 && r.crowd?.action && r.crowd.action !== "stand";
+    if (need.what === "object") return (r.objects ?? []).some((o) => o.id === need.value);
+    if (need.what === "effect") return r.effect?.kind === need.value;
     if (need.what === "action") {
       const A = ACTIONS[need.value];
+      // "I pressed it": the hand on the button AND the button going down, in one shot (owner 2026-11-25)
+      if (need.value === "press" && r.place === "control_room") return (r.people ?? []).some((p) => p.pose === "press") && r.states?.red === "pressed";
       if (A.poses && (r.people ?? []).some((p) => A.poses.includes(p.pose))) return true;
       if (A.held && (r.people ?? []).some((p) => p.holds)) return true;
       if (A.crowd && r.crowd?.action === A.crowd) return true;
@@ -67,13 +86,18 @@ function satisfied(need, rows, castOf) {
 }
 
 /** the free checks of SHOW WHAT IS SAID + ACTING; returns problems */
-export function sayShowProblems(script, rows, { cast = [] } = {}) {
+export function sayShowProblems(script, rows, { cast = [], objects = [] } = {}) {
   const out = [], castOf = Object.fromEntries(cast.map((c) => [c.id, c]));
   script.lines.forEach((l, i) => {
     const R = rows.filter((r) => r.line === i + 1);
-    for (const need of lineNeeds(l.text, { prevText: script.lines[i - 1]?.text ?? "", cast })) if (!satisfied(need, R, castOf)) out.push(`line ${i + 1} ("${l.text.slice(0, 40)}"): show ${need.text}`);
+    for (const need of lineNeeds(l.text, { prevText: script.lines[i - 1]?.text ?? "", cast, objects })) if (!satisfied(need, R, castOf)) out.push(`line ${i + 1} ("${l.text.slice(0, 40)}"): show ${need.text}`);
+    // a creature only in a shot whose line names it (owner 2026-11-25)
+    for (const r of R) { const lib = r.entity ? castOf[r.entity.id]?.library : null; if (lib && !namesCreature(l.text, lib, { cast, objects }) && !(r.rain && String(r.rain.kind).startsWith("entity:"))) out.push(`line ${i + 1}: the ${lib.replace(/_/g, " ")} is in a row but the line does not name it (a creature only where its line names it)`); }
     if (!SLEEP.test(l.text.toLowerCase())) for (const r of R) for (const p of r.people ?? []) if (p.face === "sleepy") out.push(`line ${i + 1}: ${p.id} has closed eyes (face sleepy) but the line is not about sleep`);
   });
+  // THE MAIN OBJECT: in at least a third of the shots (owner 2026-11-25)
+  const main = objects.find((o) => o.main && ["object", "worn"].includes(o.kind) && (o.via ?? "object") === "object");
+  if (main) { const n = rows.filter((r) => (r.objects ?? []).some((o) => o.id === main.id)).length; if (n < rows.length / 3) out.push(`the main story object ${main.id} is in ${n} of ${rows.length} rows (at least a third: ${Math.ceil(rows.length / 3)})`); }
   // ACTING: the hero never stands facing the lens shot after shot
   let run = 0;
   rows.forEach((r, i) => {
@@ -87,10 +111,11 @@ export function sayShowProblems(script, rows, { cast = [] } = {}) {
 // what the towns themselves contain (a line naming one of these fits the town too)
 export const TOWN_HAS = { old_town: ["townhall_front", "playground"], bright_city: ["shop_inside", "cafe"], suburb: ["playground"] };
 /** the location plan fits the words: a scene whose lines name a side set happens there */
-export function placeFitProblems(script, plan, sideSetIds) {
+export function placeFitProblems(script, plan, sideSetIds, bigRe = null) {
   const out = [];
   for (const sc of plan.scenes) for (const li of sc.lines) {
     const t = (script.lines[li - 1]?.text ?? "").toLowerCase();
+    if (bigRe && bigRe.test(t) && sc.place === plan.town) continue;     // a line naming the big thing happens in the town (where it stands)
     for (const [set, re] of Object.entries(PLACE_WORDS)) if (sideSetIds.includes(set) && re.test(t) && sc.place !== set && !(TOWN_HAS[sc.place] ?? []).includes(set)) out.push(`line ${li} names the ${set.replace(/_/g, " ")} but its scene is in ${sc.place}`);
   }
   return [...new Set(out)];

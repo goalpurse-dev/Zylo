@@ -88,6 +88,9 @@ Object.assign(P, {
       o.push(SCR([x, 0.05, z], [sw, 0.1, sh], pick(skies, c + r * 2)), SCR([x, -0.01, z - sh * 0.38], [sw, 0.06, sh * 0.22], "#6FB04A"));
       for (let b = 0; b < 3; b++) o.push(SCR([x - sw * 0.3 + b * sw * 0.3, -0.03, z - sh * 0.1 + ((b + c) % 2) * 0.15], [sw * 0.22, 0.05, sh * (0.35 + ((b + r) % 3) * 0.1)], pick(["#F28B82", "#FDD663", "#8AB4F8", "#C58AF9"], b + c + r)));
       o.push(sph([x + sw * 0.4, -0.08, z + sh * 0.36], 0.08, "#FF2020", { e: "#FF2020", es: 5, solid: false }));
+      // state screens = eyes: every screen goes dark and shows a pair of glowing eyes (the thing is watching)
+      o.push(box([x, -0.1, z], [sw, 0.04, sh], "#05060A", { solid: false, only: "screens=eyes" }));
+      for (const s of [-1, 1]) o.push(sph([x + s * sw * 0.18, -0.16, z + sh * 0.05], sh * 0.16, "#FFF6B0", { sc: [1.25, 0.4, 0.8], e: "#FFF06A", es: 10, solid: false, only: "screens=eyes" }), sph([x + s * sw * 0.18, -0.24, z + sh * 0.05], sh * 0.06, "#101010", { solid: false, only: "screens=eyes" }));
     }
     return o;
   },

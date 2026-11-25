@@ -65,14 +65,14 @@ export function checkPlace(S) {
   }
   // towns never look empty: every wide and aerial camera sees at least 5 background people (owner 2026-11-25)
   if (S.kind === "town") for (const [ck, c] of Object.entries(S.cameras)) {
-    if (!["wide", "top"].includes(c.shot)) continue;
+    if (!["wide", "top"].includes(c.shot) || c.monster) continue;      // night / monster shots may skip it (owner 2026-11-25)
     const n = Object.values(S.background ?? {}).filter((b) => { const sp = span(c, b.at, 0.6, 0, 3.2); return sp && sp[0] > 0.03 && sp[1] < 0.97 && sp[2] > 0.03 && sp[3] < 0.97; }).length;
     if (n < 5) out.push(`camera ${ck}: ${n} background people in frame (at least 5)`);
   }
   // the counts the night build asks for
   const cams = Object.values(S.cameras);
   if (S.kind === "town" && !S.cams_filtered) {
-    if (cams.length < 8 || cams.length > 12) out.push(`${cams.length} cameras (8-12 wanted)`);
+    if (cams.length < 8 || cams.length > 16) out.push(`${cams.length} cameras (8-16 wanted)`);
     if (cams.filter((c) => c.aerial).length < 2) out.push("fewer than 2 aerial cameras");
     const nb = Object.keys(S.background ?? {}).length;
     if (nb < 6) out.push(`${nb} background spots (6 or more wanted)`);

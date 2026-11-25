@@ -35,6 +35,16 @@ class Vector:
         return Vector((self.x, self.y, self.z))
 
 
+class Mat:
+    """a world matrix stand-in: translation only"""
+    def __init__(self, loc):
+        self.translation = Vector(loc)
+    def __matmul__(self, v):
+        return Vector(v) + self.translation
+    def inverted(self):
+        return self
+
+
 COUNT = {"objects": 0}
 COLL = MagicMock()
 
@@ -50,8 +60,10 @@ class Obj:
         self.data = MagicMock()
         self.users_collection = [COLL]
         self.matrix_parent_inverse = MagicMock()
-        self.matrix_world = MagicMock()
-        self.matrix_world.translation = Vector(loc)
+        self.matrix_world = Mat(loc)
+        self.type = "MESH"
+        self.bound_box = [(0.0, 0.0, 0.0), (0.1, 0.1, 0.1)] * 4
+        self.material_slots = []
         self.animation_data = MagicMock()
         self.hide_render = False
         COUNT["objects"] += 1
@@ -127,6 +139,8 @@ class Cam:
         pass
     def key(self, t, loc, target, lens=None, roll=0.0, focus=None, fstop=None, interp="BEZIER", ease=None):
         _num3(loc, "camera loc"); _num3(target, "camera target")
+        if os.environ.get("MOCK_CAM"):
+            print("CAM", [round(v, 2) for v in loc], [round(v, 2) for v in target], lens)
 
 
 def zc_rgb(h):
@@ -158,7 +172,7 @@ class ZChar:
         assert isinstance(face, str)
     def face_to(self, p):
         _num3(p, "face_to")
-    def turn(self, t, p, cam):
+    def turn(self, t, p, cam, max_body=45.0, max_head=35.0):
         _num3(p, "turn")
     def hold(self, t, prop, hands="R"):
         assert prop is not None, "hold: no prop"

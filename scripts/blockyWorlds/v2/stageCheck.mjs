@@ -54,7 +54,7 @@ export function framing(S, ck, c) {
     if (hd[0] < 0.1 || hd[1] > 0.9 || hd[2] < 0.05 || hd[3] > 0.6) out.push(`camera ${ck}: ${k}'s head is cut or under the captions (u ${f2(hd.slice(0, 2))}, v ${f2(hd.slice(2))})`);
     else if (bd && bd[3] - bd[2] < 0.12 && c.shot !== "wide") out.push(`camera ${ck}: ${k} is small (${(bd[3] - bd[2]).toFixed(2)} of the frame)`);
   }
-  if (c.creature) {
+  if (c.creature && !c.reveal) {     // a reveal camera is made from the entity's real size in Blender (zv_reveal_cam)
     const at = S.creature_spots[c.creature].at;
     const e = span(c, at, 0.8, 0.86 * H.creature, 0.97 * H.creature);   // (measured: the Shadow's eyes near its top)
     if (!e || e[0] < 0.08 || e[1] > 0.92 || e[2] < 0.08 || e[3] > 0.6) out.push(`camera ${ck}: the creature's eyes are not in frame${e ? ` (u ${f2(e.slice(0, 2))}, v ${f2(e.slice(2))})` : ""}`);

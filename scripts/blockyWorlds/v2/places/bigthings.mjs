@@ -90,6 +90,6 @@ export function withBig(town, kind, state) {
   const params = B.states[state] ?? {};
   const add = (v) => [at[0] + v[0], at[1] + v[1], at[2] + v[2]];
   return { ...town, id: `${town.id}+${kind}.${state}`, big_filled: { kind, state }, states: { key: "none", ...(town.states ?? {}) },
-    items: [...town.items, { p: kind, at: [at[0], at[1], at[2]], ...params }],
+    items: [...town.items, { p: kind, at: [at[0], at[1], at[2]], tag: "obj_big", ...params }],
     cameras: { ...town.cameras, [`${kind}_close`]: { reads: { giant_statue: ["plaque"], machine: ["machine_screen"], gift_box: ["gift_tag"], giant_door: ["door_sign"] }[kind] ?? [], loc: add(B.close.tgt.map((t, i) => t + (B.close.loc[i] - t) * (B.close.k ?? 1))), tgt: add(B.close.tgt), lens: B.close.lens, shot: "insert", people: [], fixed: true } } };
 }

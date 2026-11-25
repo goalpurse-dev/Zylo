@@ -18,12 +18,14 @@
     "south_a": "pavement",
     "south_b": "pavement",
     "road_mid": "street",
-    "road_far": "street"
+    "road_far": "street",
+    "rv_hero": "on the street, the entity in front"
    },
    "creature_spots": [
     "cr_plaza_back",
     "cr_street_far",
-    "cr_screen"
+    "cr_screen",
+    "cr_reveal"
    ],
    "cameras": {
     "aerial_main": {
@@ -105,6 +107,18 @@
       "fountain_side"
      ],
      "creature": null
+    },
+    "reveal_low": {
+     "shot": "low",
+     "people": [
+      "rv_hero"
+     ],
+     "creature": "cr_reveal"
+    },
+    "reveal_face": {
+     "shot": "close",
+     "people": [],
+     "creature": "cr_reveal"
     }
    },
    "times": [
@@ -119,7 +133,8 @@
    "texts": [
     "screen",
     "billboard"
-   ]
+   ],
+   "objects": []
   },
   {
    "id": "old_town",
@@ -136,12 +151,14 @@
     "street_a": "street",
     "street_b": "street",
     "bridge_mid": "on the bridge",
-    "street_s": "street"
+    "street_s": "street",
+    "rv_hero": "on the street, the entity in front"
    },
    "creature_spots": [
     "cr_tower",
     "cr_street_end",
-    "cr_canal"
+    "cr_canal",
+    "cr_reveal"
    ],
    "cameras": {
     "aerial_main": {
@@ -221,6 +238,18 @@
       "sq_front"
      ],
      "creature": "cr_tower"
+    },
+    "reveal_low": {
+     "shot": "low",
+     "people": [
+      "rv_hero"
+     ],
+     "creature": "cr_reveal"
+    },
+    "reveal_face": {
+     "shot": "close",
+     "people": [],
+     "creature": "cr_reveal"
     }
    },
    "times": [
@@ -234,7 +263,8 @@
    "big_spot": "the square's middle, in front of the town hall",
    "texts": [
     "townhall"
-   ]
+   ],
+   "objects": []
   },
   {
    "id": "suburb",
@@ -259,13 +289,17 @@
     "cul_a": "cul-de-sac",
     "cul_b": "cul-de-sac",
     "park_kid": "the park corner",
-    "bus_wait": "at the bus stop"
+    "mailbox_by": "by our mailbox",
+    "bus_wait": "at the bus stop",
+    "rv_hero": "on the street, the entity in front"
    },
    "creature_spots": [
     "cr_road_south",
     "cr_road_far",
     "cr_across",
-    "cr_cul_far"
+    "cr_cul_far",
+    "cr_cul_mid",
+    "cr_reveal"
    ],
    "cameras": {
     "aerial_main": {
@@ -314,13 +348,6 @@
      ],
      "creature": "cr_road_south"
     },
-    "step_med": {
-     "shot": "medium",
-     "people": [
-      "step"
-     ],
-     "creature": null
-    },
     "cul_med": {
      "shot": "medium",
      "people": [
@@ -333,12 +360,29 @@
      "people": [],
      "creature": null
     },
-    "park_med": {
+    "park_side": {
      "shot": "medium",
      "people": [
       "park_kid"
      ],
      "creature": null
+    },
+    "mailbox_med": {
+     "shot": "medium",
+     "people": [
+      "mailbox_by"
+     ],
+     "creature": null
+    },
+    "mailbox_close": {
+     "shot": "insert",
+     "people": [],
+     "creature": null
+    },
+    "cul_far": {
+     "shot": "wide",
+     "people": [],
+     "creature": "cr_cul_mid"
     },
     "bus_med": {
      "shot": "medium",
@@ -346,6 +390,18 @@
       "bus_wait"
      ],
      "creature": null
+    },
+    "reveal_low": {
+     "shot": "low",
+     "people": [
+      "rv_hero"
+     ],
+     "creature": "cr_reveal"
+    },
+    "reveal_face": {
+     "shot": "close",
+     "people": [],
+     "creature": "cr_reveal"
     }
    },
    "times": [
@@ -359,6 +415,9 @@
    "big_spot": "the middle of the cul-de-sac (the turning circle)",
    "texts": [
     "busstop"
+   ],
+   "objects": [
+    "mailbox"
    ]
   }
  ],
@@ -417,7 +476,8 @@
    "big_spot": null,
    "texts": [
     "board"
-   ]
+   ],
+   "objects": []
   },
   {
    "id": "hallway",
@@ -473,7 +533,8 @@
    "big_spot": null,
    "texts": [
     "poster"
-   ]
+   ],
+   "objects": []
   },
   {
    "id": "school_front",
@@ -530,7 +591,8 @@
    "texts": [
     "school",
     "bus"
-   ]
+   ],
+   "objects": []
   },
   {
    "id": "bedroom",
@@ -584,7 +646,8 @@
     "night"
    ],
    "big_spot": null,
-   "texts": []
+   "texts": [],
+   "objects": []
   },
   {
    "id": "living_room",
@@ -639,7 +702,8 @@
    "big_spot": null,
    "texts": [
     "tv"
-   ]
+   ],
+   "objects": []
   },
   {
    "id": "kitchen",
@@ -692,7 +756,8 @@
     "night"
    ],
    "big_spot": null,
-   "texts": []
+   "texts": [],
+   "objects": []
   },
   {
    "id": "grandma_room",
@@ -745,7 +810,8 @@
     "night"
    ],
    "big_spot": null,
-   "texts": []
+   "texts": [],
+   "objects": []
   },
   {
    "id": "shop_inside",
@@ -801,7 +867,8 @@
    "big_spot": null,
    "texts": [
     "shop_sign"
-   ]
+   ],
+   "objects": []
   },
   {
    "id": "cafe",
@@ -856,7 +923,8 @@
    "big_spot": null,
    "texts": [
     "menu"
-   ]
+   ],
+   "objects": []
   },
   {
    "id": "mayor_office",
@@ -919,7 +987,8 @@
    "big_spot": null,
    "texts": [
     "nameplate"
-   ]
+   ],
+   "objects": []
   },
   {
    "id": "control_room",
@@ -1003,7 +1072,8 @@
     "btn2",
     "btn3",
     "red_label"
-   ]
+   ],
+   "objects": []
   },
   {
    "id": "townhall_front",
@@ -1059,7 +1129,8 @@
    "big_spot": null,
    "texts": [
     "townhall"
-   ]
+   ],
+   "objects": []
   },
   {
    "id": "playground",
@@ -1112,7 +1183,8 @@
     "night"
    ],
    "big_spot": null,
-   "texts": []
+   "texts": [],
+   "objects": []
   },
   {
    "id": "basketball",
@@ -1165,7 +1237,8 @@
     "night"
    ],
    "big_spot": null,
-   "texts": []
+   "texts": [],
+   "objects": []
   },
   {
    "id": "hospital_room",
@@ -1219,7 +1292,8 @@
     "night"
    ],
    "big_spot": null,
-   "texts": []
+   "texts": [],
+   "objects": []
   },
   {
    "id": "police_front",
@@ -1274,7 +1348,8 @@
    "big_spot": null,
    "texts": [
     "police"
-   ]
+   ],
+   "objects": []
   },
   {
    "id": "basement",
@@ -1327,7 +1402,8 @@
     "night"
    ],
    "big_spot": null,
-   "texts": []
+   "texts": [],
+   "objects": []
   },
   {
    "id": "attic",
@@ -1380,7 +1456,8 @@
     "night"
    ],
    "big_spot": null,
-   "texts": []
+   "texts": [],
+   "objects": []
   },
   {
    "id": "forest_edge",
@@ -1435,7 +1512,8 @@
     "night"
    ],
    "big_spot": null,
-   "texts": []
+   "texts": [],
+   "objects": []
   },
   {
    "id": "alley",
@@ -1490,7 +1568,8 @@
     "night"
    ],
    "big_spot": null,
-   "texts": []
+   "texts": [],
+   "objects": []
   },
   {
    "id": "rooftop",
@@ -1543,7 +1622,8 @@
     "night"
    ],
    "big_spot": null,
-   "texts": []
+   "texts": [],
+   "objects": []
   }
  ],
  "big_things": [
@@ -2054,6 +2134,285 @@
   {
    "id": "screen",
    "look": "a big screen with text"
+  }
+ ],
+ "story_props": [
+  {
+   "id": "letter",
+   "look": "a folded letter with a red stamp",
+   "states": [
+    "plain"
+   ],
+   "attach": [
+    "hand",
+    "ground",
+    "mouth"
+   ],
+   "built": false
+  },
+  {
+   "id": "envelope",
+   "look": "a sealed envelope with a red heart seal",
+   "states": [
+    "closed",
+    "open"
+   ],
+   "attach": [
+    "hand",
+    "ground"
+   ],
+   "built": false
+  },
+  {
+   "id": "mailbox",
+   "look": "a mailbox on a post with a red flag and a door that opens",
+   "states": [
+    "closed",
+    "open",
+    "letter",
+    "glowing"
+   ],
+   "attach": [
+    "ground"
+   ],
+   "built": false
+  },
+  {
+   "id": "flower",
+   "look": "a flower with pink petals (grows on a head: bud, then bloom)",
+   "states": [
+    "bloom",
+    "bud"
+   ],
+   "attach": [
+    "head",
+    "hand",
+    "ground"
+   ],
+   "built": false
+  },
+  {
+   "id": "bouquet",
+   "look": "a bouquet of flowers in paper",
+   "states": [
+    "fresh"
+   ],
+   "attach": [
+    "hand"
+   ],
+   "built": false
+  },
+  {
+   "id": "book",
+   "look": "a thick book",
+   "states": [
+    "closed",
+    "open"
+   ],
+   "attach": [
+    "hand",
+    "ground"
+   ],
+   "built": false
+  },
+  {
+   "id": "box",
+   "look": "a cardboard box with tape (closed or open)",
+   "states": [
+    "closed",
+    "open"
+   ],
+   "attach": [
+    "hand",
+    "ground"
+   ],
+   "built": false
+  },
+  {
+   "id": "bag",
+   "look": "a shopping bag with handles",
+   "states": [
+    "full"
+   ],
+   "attach": [
+    "hand",
+    "ground"
+   ],
+   "built": false
+  },
+  {
+   "id": "toy",
+   "look": "a teddy bear toy",
+   "states": [
+    "sit"
+   ],
+   "attach": [
+    "hand",
+    "ground"
+   ],
+   "built": false
+  },
+  {
+   "id": "lamp",
+   "look": "a table lamp (off / on)",
+   "states": [
+    "on",
+    "off"
+   ],
+   "attach": [
+    "ground",
+    "hand"
+   ],
+   "built": false
+  },
+  {
+   "id": "mirror",
+   "look": "a tall oval mirror on a stand (normal / glowing / eyes in it)",
+   "states": [
+    "normal",
+    "glowing",
+    "eyes"
+   ],
+   "attach": [
+    "ground"
+   ],
+   "built": false
+  },
+  {
+   "id": "door",
+   "look": "a door in a frame (closed / open / glowing light behind)",
+   "states": [
+    "closed",
+    "open",
+    "glowing"
+   ],
+   "attach": [
+    "ground"
+   ],
+   "built": false
+  },
+  {
+   "id": "window",
+   "look": "a window in a frame (dark / lit / a face in it)",
+   "states": [
+    "lit",
+    "dark",
+    "face"
+   ],
+   "attach": [
+    "ground"
+   ],
+   "built": false
+  },
+  {
+   "id": "sign",
+   "look": "a sign on a post with words on it",
+   "states": [
+    "plain"
+   ],
+   "attach": [
+    "ground",
+    "hand"
+   ],
+   "built": false
+  },
+  {
+   "id": "cup",
+   "look": "a mug",
+   "states": [
+    "full"
+   ],
+   "attach": [
+    "hand",
+    "ground"
+   ],
+   "built": false
+  },
+  {
+   "id": "plate",
+   "look": "a plate of food",
+   "states": [
+    "full",
+    "empty"
+   ],
+   "attach": [
+    "hand",
+    "ground"
+   ],
+   "built": false
+  },
+  {
+   "id": "cake",
+   "look": "a birthday cake with candles",
+   "states": [
+    "lit",
+    "out"
+   ],
+   "attach": [
+    "ground",
+    "hand"
+   ],
+   "built": false
+  },
+  {
+   "id": "balloon",
+   "look": "a balloon on a string",
+   "states": [
+    "full"
+   ],
+   "attach": [
+    "hand"
+   ],
+   "built": false
+  },
+  {
+   "id": "rope",
+   "look": "a coiled rope",
+   "states": [
+    "coiled"
+   ],
+   "attach": [
+    "hand",
+    "ground",
+    "back"
+   ],
+   "built": false
+  },
+  {
+   "id": "ladder",
+   "look": "a wooden ladder",
+   "states": [
+    "up"
+   ],
+   "attach": [
+    "ground"
+   ],
+   "built": false
+  },
+  {
+   "id": "bucket",
+   "look": "a bucket with a handle",
+   "states": [
+    "empty",
+    "full"
+   ],
+   "attach": [
+    "hand",
+    "ground"
+   ],
+   "built": false
+  },
+  {
+   "id": "street_lamps",
+   "look": "a street lamp on a tall post",
+   "states": [
+    "on",
+    "off"
+   ],
+   "attach": [
+    "ground"
+   ],
+   "built": true
   }
  ],
  "effects": [

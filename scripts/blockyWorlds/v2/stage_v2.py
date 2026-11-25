@@ -159,7 +159,7 @@ ZV_LIGHT = {
     "day":     {"sun": (1.0, 0.97, 0.92), "sun_k": 1.0, "sky_k": 1.0, "sky_tint": (1.0, 1.0, 1.0), "exposure": 0.0},
     "morning": {"sun": (1.0, 0.82, 0.62), "sun_k": 0.85, "sky_k": 0.9, "sky_tint": (1.05, 0.92, 0.8), "exposure": -0.1},
     "sunset":  {"sun": (1.0, 0.62, 0.42), "sun_k": 0.7, "sky_k": 0.7, "sky_tint": (1.1, 0.75, 0.65), "exposure": -0.3},
-    "night":   {"sun": (0.55, 0.65, 1.0), "sun_k": 0.10, "sky_k": 0.42, "sky_tint": (0.55, 0.65, 1.0), "exposure": -0.6},
+    "night":   {"sun": (0.55, 0.65, 1.0), "sun_k": 0.30, "sky_k": 0.75, "sky_tint": (0.55, 0.65, 1.0), "exposure": 0.15},     # moonlight on the ground (owner 2026-11-25)
     "storm":   {"sun": (0.5, 0.6, 0.9), "sun_k": 0.08, "sky_k": 0.18, "sky_tint": (0.5, 0.6, 0.85), "exposure": -0.7},
 }
 ZV_TIME = {"t": None}

@@ -85,7 +85,7 @@ export const SIDESETS = {
     hero: g(0, -0.8), two: [g(-1.6, -0.6), g(1.6, -0.6)], spots: { mayor: { at: g(-2, 4.8), tag: "behind the console" }, at_red: { at: g(5, -0.6), tag: "at the red button" } },
     cams: { red: ins([5, -1.0, 3.2], [5, 2.5, 1.0], 30, ["red_label"]), buttons: ins([-3.5, -0.6, 3.4], [-3.4, 2.0, 1.4], 30, ["btn1", "btn2", "btn3"]), screens: ins([0, -6, 4.6], [0, 5.8, 4.6], 24),
       mayor_med: { loc: [-1.6, -4.5, 6.4], tgt: [-2, 4.8, 2.2], lens: 30, shot: "top", people: ["mayor"], fixed: true },
-      press_side: { loc: [0.8, -8.4, 4.6], tgt: [4.9, 0.6, 1.5], lens: 24, shot: "medium", people: ["at_red"], fixed: true } }, times: ["night", "dusk"], states: { red: "covered" } }),
+      press_side: { loc: [0.8, -8.4, 4.6], tgt: [4.9, 0.6, 1.5], lens: 24, shot: "medium", people: ["at_red"], fixed: true } }, times: ["night", "dusk"], states: { red: "covered", screens: "town" } }),
   townhall_front: side("townhall_front", "Town hall front", "the town hall with columns, steps and its sign; flower beds; old lamps", {
     indoor: false, ground: { c: "#B9AA8E" }, far: 1.15,
     items: [{ p: "townhall", at: [0, 8, 0], sign: "TOWN HALL", key: "townhall" }, { p: "flowerbed", at: [-9, 5.5, 0] }, { p: "flowerbed", at: [9, 5.5, 0] }, { p: "lamp", at: [-13, 4, 0], style: "old", h: 6.5 }, { p: "lamp", at: [13, 4, 0], style: "old", h: 6.5 }],

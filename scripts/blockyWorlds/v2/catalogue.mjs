@@ -8,6 +8,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { allPlaces, loadPlace } from "./placeKit.mjs";
 import { BIG_THINGS } from "./places/bigthings.mjs";
+import { allProps } from "./places/props.mjs";
 import { CHARACTERS, NEIGHBOURS, EXTRA_SPECS, ANIMALS, ENTITIES, ENTITY_TONE } from "./characters.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -30,7 +31,9 @@ export async function buildCatalogue() {
   const P = readPassed(), places = await allPlaces();
   const place = (id) => { const S = loadPlace(places[id]); return { id, name: S.name, look: S.look, spots: Object.fromEntries(Object.entries(S.spots).map(([k, v]) => [k, v.tag ?? ""])), creature_spots: Object.keys(S.creature_spots ?? {}),
     cameras: Object.fromEntries(Object.entries(S.cameras).map(([k, c]) => [k, { shot: c.shot === "top" ? "aerial" : c.shot, people: c.people, creature: c.creature ?? null }])), times: S.times, big_spot: S.big ? S.big.note : null,
-    texts: [...new Set(S.prims.filter((q) => q.key).map((q) => q.key))] }; };
+    texts: [...new Set(S.prims.filter((q) => q.key).map((q) => q.key))],
+    objects: [...new Set(S.prims.filter((q) => /^obj_/.test(q.tag ?? "") && q.tag !== "obj_big").map((q) => q.tag.slice(4)))] }; };
+  const SP = allProps();
   const specs = { ...CHARACTERS, ...NEIGHBOURS, ...EXTRA_SPECS };
   return {
     towns: (P.towns ?? []).filter((id) => places[id]).map(place),
@@ -40,7 +43,9 @@ export async function buildCatalogue() {
     rain_things: (P.rain_things ?? []).map((k) => ({ id: k, look: RAIN_THINGS[k] ?? k })),
     people: (P.people ?? []).filter((k) => specs[k]).map((k) => ({ id: k, role: specs[k].role })),
     animals: (P.animals ?? []).map((k) => ({ id: k, look: ANIMALS[k] })), entities: (P.entities ?? []).map((k) => ({ id: k, tone: ENTITY_TONE[k] ?? "scary", look: ENTITIES[k], states: ["stand", "walk", "reach", "peek", "loom", "eyes"], show: ["full", "silhouette", "eyes"] })),
-    props: (P.props ?? []).map((k) => ({ id: k, look: PROPS[k] ?? k })), effects: (P.effects ?? []).map((k) => ({ id: k, look: EFFECTS[k] ?? k })),
+    props: (P.props ?? []).map((k) => ({ id: k, look: PROPS[k] ?? k })),
+    story_props: Object.entries(SP).filter(([k, R]) => R.built || (P.story_props ?? []).includes(k)).map(([k, R]) => ({ id: k, look: R.what, states: R.states, attach: R.attach, built: !!R.built })),
+    effects: (P.effects ?? []).map((k) => ({ id: k, look: EFFECTS[k] ?? k })),
     skipped: P.skipped ?? {},
   };
 }
@@ -56,6 +61,8 @@ export function catalogueLines(C) {
   for (const a of C.animals) L.push(`ANIMAL ${a.id}: ${a.look}.`);
   for (const e of C.entities) L.push(`ENTITY ${e.id} (${e.tone}): ${e.look} (states ${e.states.join("/")}; shown full, as a silhouette or eyes only).`);
   L.push(`PROPS: ${C.props.map((p) => p.id).join(", ")}. EFFECTS: ${C.effects.map((p) => p.id).join(", ")}.`);
+  for (const p of C.story_props ?? []) L.push(`STORY PROP ${p.id}: ${p.look} (states: ${p.states.join(", ")}; goes: ${p.attach.join(" / ")})${p.built ? " [built by an earlier story]" : ""}.`);
+  for (const t of [...C.towns, ...C.side_sets]) if (t.objects?.length) L.push(`PLACE OBJECTS in ${t.id}: ${t.objects.map((o) => `${o} (built into the place, several of them; its state is set per shot)`).join(", ")}.`);
   return L;
 }
 

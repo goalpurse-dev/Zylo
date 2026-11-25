@@ -1,0 +1,81 @@
+{
+ "street_lamps": {
+  "what": "a street lamp on a tall post",
+  "h": 4,
+  "attach": [
+   "ground"
+  ],
+  "states": [
+   "on",
+   "off"
+  ],
+  "prims": [
+   {
+    "solid": false,
+    "t": "cyl",
+    "at": [
+     0,
+     0,
+     0.15
+    ],
+    "r": 0.25,
+    "h": 0.3,
+    "c": "#2B2B2B"
+   },
+   {
+    "solid": false,
+    "t": "cyl",
+    "at": [
+     0,
+     0,
+     2
+    ],
+    "r": 0.08,
+    "h": 4,
+    "c": "#2B2B2B"
+   },
+   {
+    "solid": false,
+    "t": "box",
+    "at": [
+     0,
+     0,
+     4
+    ],
+    "s": [
+     0.6,
+     0.6,
+     0.1
+    ],
+    "c": "#2B2B2B"
+   },
+   {
+    "solid": false,
+    "t": "sph",
+    "at": [
+     0,
+     0,
+     3.75
+    ],
+    "r": 0.3,
+    "c": "#FFE9A0",
+    "e": "#FFD66B",
+    "es": 1.5,
+    "only": "on"
+   },
+   {
+    "solid": false,
+    "t": "sph",
+    "at": [
+     0,
+     0,
+     3.75
+    ],
+    "r": 0.3,
+    "c": "#8A8672",
+    "only": "off"
+   }
+  ],
+  "built": true
+ }
+}

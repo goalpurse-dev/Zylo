@@ -153,23 +153,6 @@
   "people": [],
   "fixed": true
  },
- "park_med": {
-  "loc": [
-   44,
-   3,
-   3.2
-  ],
-  "tgt": [
-   44,
-   17,
-   0.5
-  ],
-  "lens": 28,
-  "shot": "medium",
-  "people": [
-   "park_kid"
-  ]
- },
  "bus_med": {
   "loc": [
    142.22,
