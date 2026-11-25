@@ -27,6 +27,7 @@ import { CUTAWAY_PATH } from "./data/cutawayExplainer";
 import { BLOCKY_WORLDS_PATH } from "./data/blockyWorlds";
 import { MCP_CONNECT_PATH, MCP_PATH, MCP_STUDIO_PATH, OLD_CONNECT_CLAUDE_PATH, OLD_STUDIO_PROJECTS_PATH } from "./data/studioKit";
 import { AFFILIATE_PATH, captureRefFromUrl } from "./lib/affiliate";
+import { REWARDS_PATH, captureInviteFromUrl } from "./lib/rewards";
 import BlockyWorldsGate from "./components/viral-tools/blocky-worlds/BlockyWorldsGate";
 
 // pages…
@@ -64,6 +65,8 @@ const ContentMachinePage = lazy(() => import("./pages/admin/ContentMachine"));
 const AffiliatesAdminPage = lazy(() => import("./pages/admin/Affiliates"));
 const CheckoutRemindersAdminPage = lazy(() => import("./pages/admin/CheckoutReminders"));
 const AffiliatePage = lazy(() => import("./pages/workspace/affiliate/AffiliatePage.jsx"));
+const RewardsPage = lazy(() => import("./pages/workspace/rewards/RewardsPage.jsx"));
+const RewardsAdminPage = lazy(() => import("./pages/admin/Rewards"));
 const TextToVoice = lazy(() => import("./pages/tools/TextToVoice"));
 
 // already lazy
@@ -478,6 +481,7 @@ function AppWithRouting() {
     "/workspace",
     "/long-form",
     "/affiliate",
+    "/rewards",
     "/welcome"
   ];
 
@@ -497,7 +501,7 @@ function AppWithRouting() {
   }, [location.pathname, computeHide]);
 
   // A creator's link (?ref=CODE) on any page: remembered for sign-up, counted once, taken out of the address.
-  React.useEffect(() => { captureRefFromUrl(); }, [location.search]);
+  React.useEffect(() => { captureRefFromUrl(); captureInviteFromUrl(); }, [location.search]);
 
   const mainClass = hideNav
     ? "min-h-screen bg-[#0B1117] text-white p-0"
@@ -870,6 +874,8 @@ return (
   <Route path="/workspace/earnings"         element={<EarningsCalculatorPage />} />
   {/* The affiliate program (public: a visitor sees how it works, joining needs an account) */}
   <Route path={AFFILIATE_PATH}             element={<AffiliatePage />} />
+  {/* Rewards: free credits for paying users (videos + invites); public page, locked for free plans */}
+  <Route path={REWARDS_PATH}               element={<RewardsPage />} />
   <Route path="/long-form"                       element={<LongFormPage />} />
   <Route path="/long-form/new"                   element={<LongFormNewPage />} />
   <Route path="/long-form/create"                element={<LongFormProductionSetupPage />} />
@@ -970,6 +976,7 @@ return (
           <Route path="/admin/funnel" element={<FunnelPage />} />
           <Route path="/admin/content-machine" element={<ContentMachinePage />} />
           <Route path="/admin/affiliates" element={<AffiliatesAdminPage />} />
+          <Route path="/admin/rewards" element={<RewardsAdminPage />} />
           <Route path="/admin/checkout-reminders" element={<CheckoutRemindersAdminPage />} />
 
         

@@ -3,6 +3,8 @@
 export const db: Record<string, any[]> = { profiles: [], credit_grants: [], billing_events_processed: [], offer_redemptions: [], signup_bonuses: [], commissions: [], affiliate_calls: [], funnel_events: [], cutaway_free_previews: [] };
 /** The affiliate functions (migration 20261217100000), modelled just enough: referred users, one commission each. missing: not installed. */
 export const affiliateFake: { missing: boolean; referred: Set<string> } = { missing: false, referred: new Set() };
+/** Rewards (migration 20261218100000): invited users; the first paid event rewards them once; a refund reverses it. */
+export const rewardsFake: { invited: Set<string>; rewarded: { user: string; payment_id: string; payment_intent: string | null; status: string; args: any }[] } = { invited: new Set(), rewarded: [] };
 /** Return an error message to make the matching call fail. */
 export const inject: { fail: ((call: { table?: string; op: string; payload?: any }) => string | null) | null } = { fail: null };
 const UNIQUE: Record<string, string> = { credit_grants: "external_id", billing_events_processed: "event_id" };
@@ -53,6 +55,20 @@ export function createClient(..._args: any[]): any {
         db.credit_grants.push({ user_id: args.p_user_id, reason: "offer_bonus", amount: args.p_credits, external_id: ext });
         p.credit_balance = (p.credit_balance ?? 0) + args.p_credits;
         return Promise.resolve({ data: true, error: null });
+      }
+      if (name === "rewards_record_payment" || name === "rewards_reverse_payment") {
+        if (affiliateFake.missing) return Promise.resolve({ data: null, error: { code: "PGRST202", message: `Could not find the function public.${name}` } });
+        db.affiliate_calls.push({ name, args });
+        const ok = (data: any) => Promise.resolve({ data, error: null });
+        if (name === "rewards_record_payment") {
+          if (!rewardsFake.invited.has(args.p_user_id)) return ok({ result: "not_invited" });
+          if (rewardsFake.rewarded.some((r) => r.user === args.p_user_id)) return ok({ result: "done" });
+          rewardsFake.rewarded.push({ user: args.p_user_id, payment_id: args.p_payment_id, payment_intent: args.p_payment_intent, status: "rewarded", args });
+          return ok({ result: "rewarded", inviter_credits: args.p_inviter_credits, friend_credits: args.p_friend_credits });
+        }
+        const hit = rewardsFake.rewarded.filter((r) => r.status === "rewarded" && ((args.p_payment_id && r.payment_id === args.p_payment_id) || (args.p_payment_intent && r.payment_intent === args.p_payment_intent)));
+        hit.forEach((r) => { r.status = "reversed"; });
+        return ok({ reversed: hit.length });
       }
       if (name.startsWith("affiliate_")) {
         if (affiliateFake.missing) return Promise.resolve({ data: null, error: { code: "PGRST202", message: `Could not find the function public.${name}` } });

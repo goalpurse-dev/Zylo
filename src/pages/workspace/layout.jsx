@@ -178,6 +178,7 @@ useEffect(() => {
     "/workspace/earn/rules":         "Earn",
     "/workspace/earnings":           "Earnings Calculator",
     "/affiliate":                    "Affiliate",
+    "/rewards":                      "Rewards",
     "/long-form":                    "Long Form",
     "/long-form/new":                "Long Form",
   };

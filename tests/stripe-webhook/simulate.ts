@@ -9,7 +9,7 @@
 // It does not prove the SQL of grant_credits_once (the fake copies its
 // contract) or real Stripe payloads: that is what the Stripe CLI test run is for.
 // deno-lint-ignore-file no-explicit-any
-import { affiliateFake, db, inject } from "./fakeSupabase.ts";
+import { affiliateFake, db, inject, rewardsFake } from "./fakeSupabase.ts";
 
 const SECRET = "whsec_simulation";
 Deno.env.set("SUPABASE_URL", "http://fake");
@@ -358,6 +358,27 @@ console.log("\n15. Affiliate program: first payment → one commission, refund �
   inject.fail = null;
   const re5 = await q(ev5);
   check("the retry → credits not granted twice, commission made", [re5.body.granted, re5.body.affiliate_commission, db.profiles.find((p) => p.id === E).credit_balance], [false, true, 750]);
+}
+
+console.log("\n16. Rewards: an invited friend's first purchase rewards both once; a refund takes it back");
+{
+  const F = "00000000-0000-4000-8000-000000000b01";
+  db.profiles.push({ ...prof(1), id: F, stripe_customer_id: "cus_b1" });
+  rewardsFake.invited.add(F);
+  stripe.subs.sub_b1 = subscription("sub_b1", "cus_b1", "active");
+  const r1 = await q(evt("invoice.payment_succeeded", invoice("in_b1", "cus_b1", "sub_b1", STARTER, { amount_paid: 1900, payment_intent: "pi_b1" })));
+  check("invited friend's first invoice → plan + credits as before, plus the invite reward", [r1.status, r1.body.plan_credits, r1.body.invite_reward], [200, 750, true]);
+  check("amounts from the rewards config (500 / 300)", [rewardsFake.rewarded[0].args.p_inviter_credits, rewardsFake.rewarded[0].args.p_friend_credits], [500, 300]);
+  const r2 = await q(evt("invoice.payment_succeeded", invoice("in_b2", "cus_b1", "sub_b1", STARTER, { amount_paid: 1900, billing_reason: "subscription_cycle" })));
+  check("the renewal → no second reward", [r2.body.invite_reward, rewardsFake.rewarded.length], [undefined, 1]);
+  const rf = await q(evt("charge.refunded", { id: "ch_b1", payment_intent: "pi_b1", invoice: "in_b1", refunded: true }));
+  check("refund of that first purchase → the invite reward is reversed", [rf.body.invite_reversed, rewardsFake.rewarded[0].status], [1, "reversed"]);
+  const G = "00000000-0000-4000-8000-000000000b02";
+  db.profiles.push({ ...prof(1), id: G, stripe_customer_id: "cus_b2" });
+  rewardsFake.invited.add(G);
+  stripe.lineItems.cs_b2 = [{ price: { id: MINI }, quantity: 1 }];
+  const pk = await q(evt("checkout.session.completed", { id: "cs_b2", mode: "payment", status: "complete", payment_status: "paid", customer: "cus_b2", metadata: { user_id: G }, amount_total: 1000, payment_intent: "pi_b2" }));
+  check("a credit pack as the first purchase rewards too", [pk.body.topup_credits, pk.body.invite_reward], [300, true]);
 }
 
 console.log("\nPlan-change numbers (new-subscriber amounts 750 / 1,600 / 3,200 unless noted):");

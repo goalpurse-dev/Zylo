@@ -156,6 +156,7 @@ export default function AffiliatesAdmin() {
             <p className="text-[13px] text-white/50">{data.affiliates.length} affiliates · {pctOf(data.config.cashRate)} cash / {pctOf(data.config.creditRate)} credits by default · {data.config.holdDays}-day hold · cash from {eur(data.config.minCashPayoutCents)}</p>
           </div>
           <nav className="flex gap-2 text-[13px]">
+            <Link to="/admin/rewards" className={ghost}>Rewards</Link>
             <Link to="/admin/content-machine" className={ghost}>Content Machine</Link>
             <Link to="/admin/ops" className={ghost}>Ops</Link>
             <button type="button" onClick={load} className={ghost}>Refresh</button>

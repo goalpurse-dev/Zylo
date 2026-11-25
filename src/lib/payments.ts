@@ -2,6 +2,8 @@ import { toast } from "sonner";
 import { supabase } from "./supabaseClient";
 // @ts-ignore plain JS module
 import { claimFromStoredRef, claimSignupCode, readStoredRef } from "./affiliate";
+// @ts-ignore plain JS module
+import { claimStoredInvite } from "./rewards";
 // One source for price ids: the map the webhook and create-checkout-session read.
 // @ts-ignore plain JS module shared with the edge functions
 import { PLAN_PRICE_IDS } from "../../supabase/functions/_shared/stripePlanPrices.js";
@@ -151,7 +153,7 @@ export async function startCheckout(params: CheckoutParams, options?: { resumed?
   // A creator code from the sign-up form, or a ?ref link, still waiting (e.g. a plan picked before sign-up goes
   // straight here): attach it first, so this first payment counts for them. At most 4 s; checkout never waits
   // longer or fails on it. The sign-up code goes first: a typed code wins over the link.
-  const attach = async () => { await claimSignupCode(session.user); if (readStoredRef()) await claimFromStoredRef(); };
+  const attach = async () => { await claimSignupCode(session.user); if (readStoredRef()) await claimFromStoredRef(); await claimStoredInvite(); };
   await Promise.race([attach(), new Promise((resolve) => setTimeout(resolve, 4000))]).catch(() => {});
 
   const body = checked.type === "topup"

@@ -7,12 +7,15 @@ import { FIRST_VIDEO_PATH, beginAdminPreview, fetchOnboardingStatus, localOnboar
 import { hasCheckoutIntent } from "../../lib/payments";
 import { toast } from "sonner";
 import { claimFromStoredRef, claimSignupCode } from "../../lib/affiliate";
+import { claimStoredInvite } from "../../lib/rewards";
 
 // A new account that came through a creator's ?ref link and didn't type a code (no survey, or skipped it):
 // the link's creator, and the sign-up credits. The server refuses old or paying accounts, so this is safe anywhere.
 async function claimLink() {
   const r = await claimFromStoredRef();
   if (r?.result === "claimed" && r.bonusCredits > 0) toast.success(`+${r.bonusCredits} free credits from ${r.displayName ?? "your creator"}'s code`);
+  // then a friend's invite link (Rewards): refused on the server when an affiliate referred them (the affiliate wins)
+  await claimStoredInvite();
 }
 
 // The code typed on the sign-up form: claimed once, before the survey (which then skips "Which creator?").

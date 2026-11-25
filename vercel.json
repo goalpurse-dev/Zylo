@@ -496,6 +496,10 @@
       "destination": "/app-shell"
     },
     {
+      "source": "/rewards",
+      "destination": "/app-shell"
+    },
+    {
       "source": "/connect-claude",
       "destination": "/app-shell"
     },

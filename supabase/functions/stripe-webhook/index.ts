@@ -5,6 +5,7 @@ import { PLAN_PRICE_MAP, planCreditsFor, prorationCreditShare } from "../_shared
 import { OFFER, offerBonusFor } from "../_shared/offer.js";
 import { SIGNUP_BONUS, signupBonusFor } from "../_shared/signupBonus.js";
 import { AFFILIATE } from "../_shared/affiliate/config.js";
+import { REWARDS } from "../_shared/rewards/config.js";
 
 /* =================== CONFIG =================== */
 /** Recurring plan prices → plan + monthly credits (current and legacy), with the
@@ -242,6 +243,19 @@ async function recordAffiliatePayment(o: { userId: string; paymentId: string; pa
     p_hold_days: AFFILIATE.holdDays, p_credit_value_cents: Math.round(AFFILIATE.creditValueEur * 100), p_is_test: false,
   });
 }
+/**
+ * Rewards (_shared/rewards/config.js; migration 20261218100000): an invited friend's FIRST paid purchase → the inviter
+ * and the friend get their credits, once (the SQL decides; an affiliate referral wins, the inviter must be on a paid plan).
+ */
+async function recordInvitePayment(o: { userId: string; paymentId: string; paymentIntent: unknown; amountCents: number }) {
+  if (!o.paymentId || !(o.amountCents > 0)) return null;
+  const intent = typeof o.paymentIntent === "string" ? o.paymentIntent : (o.paymentIntent as any)?.id ?? null;
+  return await affiliateRpc("rewards_record_payment", {
+    p_user_id: o.userId, p_payment_id: o.paymentId, p_payment_intent: intent, p_inviter_credits: REWARDS.invite.inviterCredits,
+    p_friend_credits: REWARDS.invite.friendCredits, p_max_per_month: REWARDS.invite.maxPerMonth, p_ip_days: REWARDS.invite.ipCooldownDays,
+    p_paid_plans: [...REWARDS.paidPlans],
+  });
+}
 
 /* ---------- Stripe read helpers ---------- */
 /** GET from Stripe; a failed request throws (the event fails and Stripe retries). */
@@ -357,7 +371,8 @@ async function handleEvent(type: string, eventId: string, obj: any): Promise<Rec
         userId, paymentId: s.id, paymentIntent: s.payment_intent, currency: s.currency, plan: "topup", paidAt: unixToIso(s.created),
         amountCents: (Number(s.amount_total) || 0) - (AFFILIATE.excludeTax ? Number(s.total_details?.amount_tax) || 0 : 0),
       });
-      return { ok: true, topup_credits: totalCredits, granted, ...(affiliate?.result === "created" ? { affiliate_commission: true } : {}) };
+      const invite = await recordInvitePayment({ userId, paymentId: s.id, paymentIntent: s.payment_intent, amountCents: Number(s.amount_total) || 0 });
+      return { ok: true, topup_credits: totalCredits, granted, ...(affiliate?.result === "created" ? { affiliate_commission: true } : {}), ...(invite?.result === "rewarded" ? { invite_reward: true } : {}) };
     }
 
     // Initial subscription checkout — store IDs; credits come on invoice.payment_succeeded
@@ -520,7 +535,8 @@ async function handleEvent(type: string, eventId: string, obj: any): Promise<Rec
       userId, paymentId: inv.id, paymentIntent: inv?.payment_intent, currency: inv?.currency, plan: plan ?? changedTo?.plan ?? null, paidAt: paidAtIso,
       amountCents: (Number(inv?.amount_paid) || 0) - (AFFILIATE.excludeTax ? Number(inv?.tax) || 0 : 0),
     });
-    const aff = affiliate?.result === "created" ? { affiliate_commission: true } : {};
+    const invite = await recordInvitePayment({ userId, paymentId: inv.id, paymentIntent: inv?.payment_intent, amountCents: Number(inv?.amount_paid) || 0 });
+    const aff = { ...(affiliate?.result === "created" ? { affiliate_commission: true } : {}), ...(invite?.result === "rewarded" ? { invite_reward: true } : {}) };
 
     return hasProration
       ? { ok: true, plan_credits: planCredits, plan_change: true, credits, granted, ...(offer.eligible ? { bonus } : {}), ...(signupBonus ? { signup_bonus: true } : {}), ...aff }
@@ -655,8 +671,9 @@ async function handleEvent(type: string, eventId: string, obj: any): Promise<Rec
   }
 
   /* ── charge.refunded / charge.dispute.created ─────────────────────── */
-  //   Only the affiliate program uses these: an unpaid commission on the refunded or disputed payment is
-  //   reversed (already paid out: kept, and the admin sees it in the logs). Credits are not touched.
+  //   The affiliate program: an unpaid commission on the refunded or disputed payment is reversed (already paid
+  //   out: kept, and the admin sees it in the logs). Rewards: when it was an invited friend's first purchase (within
+  //   REWARDS.invite.clawbackDays), the unspent invite credits of both are taken back. Plan credits are not touched.
   //   These events must be switched on for this endpoint in the Stripe Dashboard.
   if (type === "charge.refunded" || type === "charge.dispute.created") {
     const isDispute = type === "charge.dispute.created";
@@ -667,7 +684,8 @@ async function handleEvent(type: string, eventId: string, obj: any): Promise<Rec
     if (!paymentIntent && !invoiceId) return { ok: true, reason: "no-payment-reference" };
     const r = await affiliateRpc("affiliate_reverse_payment", { p_payment_id: invoiceId, p_payment_intent: paymentIntent, p_reason: type });
     if (r?.already_paid) console.warn(`[stripe-webhook] ${type} event=${eventId}: the affiliate commission on ${paymentIntent ?? invoiceId} was already paid out`);
-    return { ok: true, affiliate_reversed: r?.reversed ?? 0 };
+    const iv = await affiliateRpc("rewards_reverse_payment", { p_payment_id: invoiceId, p_payment_intent: paymentIntent, p_window_days: REWARDS.invite.clawbackDays, p_reason: type });
+    return { ok: true, affiliate_reversed: r?.reversed ?? 0, ...(iv?.reversed ? { invite_reversed: iv.reversed } : {}) };
   }
 
   // ── All other events (payment_intent.*, charge.*, 3DS events, etc.) ──

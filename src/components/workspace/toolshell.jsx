@@ -5,6 +5,8 @@ import { useStudioOpen } from "../studio-kit/useStudioOpen";
 import { MCP_PATH } from "../../data/studioKit";
 import EarnBadge from "../affiliate/EarnBadge.jsx";
 import { AFFILIATE_PATH } from "../../lib/affiliate";
+import { REWARDS_PATH } from "../../lib/rewards";
+import { Gift } from "lucide-react";
 import Logo from "../../assets/logo-mark.webp";
 import { optImg } from "../../lib/optImage";
 import { ALL_PINNABLE_TOOLS, DesktopCreatePanel, DesktopWorkspacePanel, useShortFormTools } from "./CreateMenu";
@@ -47,7 +49,7 @@ function NavItem({ icon, iconSrc, label, active, onClick, badge, earn }) {
       </span>
       <span className="text-[13.5px] font-semibold">{label}</span>
       {badge && <NewBadge className="ml-auto" />}
-      {earn && <EarnBadge className="ml-auto" />}
+      {earn && <EarnBadge className="ml-auto" label={typeof earn === "string" ? earn : "Earn"} />}
     </button>
   );
 }
@@ -217,6 +219,14 @@ export default function ToolShell({ onClose }) {
               label="Earnings"
               active={!anyPanelOpen && isActive("/workspace/earnings")}
               onClick={() => go("/workspace/earnings")}
+            />
+
+            <NavItem
+              icon={Gift}
+              label="Rewards"
+              earn="Free credits"
+              active={!anyPanelOpen && isActive(REWARDS_PATH)}
+              onClick={() => go(REWARDS_PATH)}
             />
 
             <NavItem

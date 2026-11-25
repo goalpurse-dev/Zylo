@@ -243,6 +243,15 @@ export default function TopRow({ onMenuClick, title }) {
                 )}
               </div>
 
+              {/* Rewards: free credits for videos and invites (desktop only: the phone has it in More) */}
+              <button
+                onClick={() => navigate("/rewards")}
+                data-testid="topbar-earn-credits"
+                className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-lime-300/25 text-lime-200 text-sm font-semibold hover:border-lime-300/50 hover:bg-lime-300/[0.06] transition"
+              >
+                Earn credits
+              </button>
+
               {/* Add Credits (credit packs) — paid plans only; free accounts see Upgrade */}
               {credits > 1 && planCode !== "free" && (
                 <button

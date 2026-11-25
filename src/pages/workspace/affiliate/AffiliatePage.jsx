@@ -2,9 +2,10 @@
 // Joined: the code, what to say, numbers, the 30-day chart, earnings, activity (no personal data), payout
 // settings, rules. Rules and numbers: supabase/functions/_shared/affiliate/config.js; API: affiliate-api.
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { REWARDS_PATH } from "../../../lib/rewards";
 import { toast } from "sonner";
-import { AlertTriangle, Check, Gift, PartyPopper, X } from "lucide-react";
+import { AlertTriangle, ArrowRight, Check, Gift, PartyPopper, X } from "lucide-react";
 import { useAuth } from "../../../context/AuthContext";
 import { usePlanPrices } from "../../../lib/planPrices";
 import { affiliateApi } from "../../../lib/affiliate";
@@ -84,6 +85,17 @@ function RedeemCard({ bonus, onDone }) {
         {state.s === "self" && <span className="text-amber-200">That's your own code</span>}
       </p>
     </section>
+  );
+}
+
+// Affiliate = cash for creators; Rewards = free credits for paying users
+function ToRewards() {
+  return (
+    <Link to={REWARDS_PATH} className={`${CARD} flex items-center gap-3 p-4 transition hover:border-white/20`} data-testid="affiliate-to-rewards">
+      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/[0.06] text-lime-300"><Gift className="h-5 w-5" aria-hidden="true" /></span>
+      <span className="flex-1 text-[14.5px] font-bold text-white">Just want free credits? See Rewards</span>
+      <ArrowRight className="h-4 w-4 text-white/50" aria-hidden="true" />
+    </Link>
   );
 }
 
@@ -208,7 +220,9 @@ export default function AffiliatePage() {
             </div>
           ) : null} />
         {data?.claim?.eligible && <RedeemCard bonus={data.claim.bonusCredits} onDone={load} />}
-        <RulesFaq config={config} />
+        <ToRewards />
+        <ToRewards />
+      <RulesFaq config={config} />
       </>,
     );
   }

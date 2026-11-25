@@ -1,10 +1,11 @@
 import { useEffect, useState, isValidElement } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ChevronRight, Clapperboard, Home, Folder, HandCoins, LayoutGrid, Menu, Plug, Sparkles, X } from "lucide-react";
+import { ChevronRight, Clapperboard, Home, Folder, Gift, HandCoins, LayoutGrid, Menu, Plug, Sparkles, X } from "lucide-react";
 import { useStudioOpen } from "../studio-kit/useStudioOpen";
 import { MCP_PATH } from "../../data/studioKit";
 import EarnBadge from "../affiliate/EarnBadge.jsx";
 import { AFFILIATE_PATH } from "../../lib/affiliate";
+import { REWARDS_PATH } from "../../lib/rewards";
 import { createPortal } from "react-dom";
 import MobileCreateMenu, { WORKSPACE_TOOLS } from "./CreateMenu";
 import { BLOCKY_STORIES_PATH } from "../../data/blockyStories";
@@ -124,11 +125,13 @@ function CenteredActionMenu({ open, onClose, title, items, columns = 3 }) {
 /* ─── More: a bottom sheet with large rows ───────────────────────────────── */
 const MORE_ITEMS = [
   { id: "creations", label: "Creations", sub: "Everything you've made", path: "/workspace/creations", icon: Folder },
+  { id: "rewards", label: "Rewards", sub: "Free credits for videos and invites", path: REWARDS_PATH, icon: Gift, earn: "Free credits" },
   { id: "affiliate", label: "Affiliate", sub: "Share your code, get paid", path: AFFILIATE_PATH, icon: HandCoins, earn: true },
 ];
-// owner-only until STUDIO_KIT_PUBLIC: shown only when the server says MCP is open for this account
+// owner-only until STUDIO_KIT_PUBLIC: shown only when the server says MCP is open for this account (after the owner's
+// Creations · Rewards · Affiliate order)
 const MCP_ITEM = { id: "mcp", label: "MCP", sub: "Claude + Roblox Studio templates", path: MCP_PATH, icon: Plug };
-const useMoreItems = () => (useStudioOpen() === "open" ? [MORE_ITEMS[0], MCP_ITEM, ...MORE_ITEMS.slice(1)] : MORE_ITEMS);
+const useMoreItems = () => (useStudioOpen() === "open" ? [...MORE_ITEMS, MCP_ITEM] : MORE_ITEMS);
 
 function MoreSheet({ open, onClose }) {
   const navigate = useNavigate();
@@ -173,7 +176,7 @@ function MoreSheet({ open, onClose }) {
                   <Icon className="h-[22px] w-[22px]" strokeWidth={1.9} />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="flex items-center gap-2 text-[15.5px] font-bold text-white">{item.label}{item.earn && <EarnBadge />}</span>
+                  <span className="flex items-center gap-2 text-[15.5px] font-bold text-white">{item.label}{item.earn && <EarnBadge label={typeof item.earn === "string" ? item.earn : "Earn"} />}</span>
                   <span className="mt-0.5 block text-[12.5px] text-white/45">{item.sub}</span>
                 </span>
                 <ChevronRight className="h-4 w-4 shrink-0 text-white/25" />
