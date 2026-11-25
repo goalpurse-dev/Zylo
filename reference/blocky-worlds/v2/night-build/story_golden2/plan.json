@@ -1,0 +1,109 @@
+{
+ "town": "suburb",
+ "side_sets": [
+  "alley"
+ ],
+ "big_thing": "gift_box",
+ "cast": [
+  {
+   "id": "me",
+   "kind": "person",
+   "library": "me",
+   "name": "Me"
+  },
+  {
+   "id": "mom",
+   "kind": "person",
+   "library": "mom",
+   "name": "Mom"
+  },
+  {
+   "id": "grandpa",
+   "kind": "person",
+   "library": "grandpa",
+   "name": "Grandpa"
+  },
+  {
+   "id": "giant_critter",
+   "kind": "entity",
+   "library": "giant_critter",
+   "name": "The Letter Keeper"
+  }
+ ],
+ "texts": [],
+ "scenes": [
+  {
+   "scene": 1,
+   "lines": [
+    1,
+    2,
+    3,
+    4
+   ],
+   "place": "suburb",
+   "time": "golden",
+   "weather": "clear"
+  },
+  {
+   "scene": 2,
+   "lines": [
+    5,
+    6,
+    7,
+    8
+   ],
+   "place": "suburb",
+   "time": "dusk",
+   "weather": "clear"
+  },
+  {
+   "scene": 3,
+   "lines": [
+    9,
+    10,
+    11,
+    12,
+    13
+   ],
+   "place": "suburb",
+   "time": "night",
+   "weather": "fog"
+  },
+  {
+   "scene": 4,
+   "lines": [
+    14
+   ],
+   "place": "alley",
+   "time": "night",
+   "weather": "fog"
+  },
+  {
+   "scene": 5,
+   "lines": [
+    15,
+    16,
+    17
+   ],
+   "place": "suburb",
+   "time": "night",
+   "weather": "fog",
+   "big_state": "closed"
+  },
+  {
+   "scene": 6,
+   "lines": [
+    18,
+    19,
+    20,
+    21,
+    22,
+    23
+   ],
+   "place": "suburb",
+   "time": "night",
+   "weather": "fog",
+   "big_state": "open"
+  }
+ ]
+}

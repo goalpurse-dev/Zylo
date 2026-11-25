@@ -1,0 +1,116 @@
+{
+ "title": "The Hungry Mailboxes",
+ "rule": "Every mailbox eats one letter a night, and nobody knows where they go.",
+ "ending": "The kid follows the mailboxes' trail to the alley and finds a giant gift box. It opens to show a glowing giant critter reading all the letters, and it turns to the kid with a letter addressed to him.",
+ "planted": [
+  {
+   "detail": "a letter sticking out of the mailbox slot",
+   "line": 3,
+   "payoff_line": 18
+  },
+  {
+   "detail": "Grandpa's habit of writing a letter every night",
+   "line": 6,
+   "payoff_line": 21
+  },
+  {
+   "detail": "the gift box tag with the kid's name",
+   "line": 15,
+   "payoff_line": 20
+  }
+ ],
+ "lines": [
+  {
+   "text": "In this town, every mailbox eats one letter a night.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "Nobody knows where the letters go.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "Tonight, a white letter sticks out of our mailbox.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "Mom says we must never pull one back.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "The street lamps flicker on as dusk falls.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "Grandpa writes his letter on the porch, like always.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "He slides it into the mailbox slot.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "Crunch. The mailbox swallows it in one bite.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "I wait until the whole street goes quiet.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "At midnight, the mailbox lid creaks open by itself.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "A tiny glow pours out of the slot.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "I follow the glow down the dark street.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "Every mailbox glows the same pale light.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "The glow leads me into a dark alley.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "A giant gift box waits there, tied with a ribbon.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "Its tag has my name on it.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "The ribbon slowly unties itself.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "The lid lifts, and a giant creature sits inside.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "It holds our white letter in huge paws.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "It reads every word by its own glowing eyes.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "It turns and hands me a letter with my name.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "It is in Grandpa's handwriting.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "Tell me, would you open the letter?",
+   "speaker": "narrator"
+  }
+ ]
+}

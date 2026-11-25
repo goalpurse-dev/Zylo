@@ -1,0 +1,354 @@
+[
+ {
+  "line": 1,
+  "place": "suburb",
+  "cam": "aerial_cul",
+  "weather": "clear",
+  "people": []
+ },
+ {
+  "line": 1,
+  "from_word": 3,
+  "place": "suburb",
+  "cam": "porch_two",
+  "weather": "clear",
+  "people": [
+   {
+    "id": "me",
+    "spot": "porch_left",
+    "pose": "point",
+    "face": "thinking",
+    "facing": "porch_right"
+   }
+  ]
+ },
+ {
+  "line": 2,
+  "place": "suburb",
+  "cam": "pave_two",
+  "people": [
+   {
+    "id": "me",
+    "spot": "pave_left",
+    "pose": "talk",
+    "face": "worried",
+    "facing": "pave_mid"
+   },
+   {
+    "id": "mom",
+    "spot": "pave_mid",
+    "pose": "stand",
+    "face": "neutral",
+    "facing": "me"
+   }
+  ]
+ },
+ {
+  "line": 3,
+  "place": "suburb",
+  "cam": "house_wide",
+  "people": [
+   {
+    "id": "me",
+    "spot": "porch_left",
+    "pose": "point",
+    "face": "worried",
+    "facing": "porch_right"
+   }
+  ]
+ },
+ {
+  "line": 4,
+  "place": "suburb",
+  "cam": "porch_two",
+  "people": [
+   {
+    "id": "mom",
+    "spot": "porch_right",
+    "pose": "talk",
+    "face": "angry",
+    "facing": "me"
+   },
+   {
+    "id": "me",
+    "spot": "porch_left",
+    "pose": "flinch",
+    "face": "worried",
+    "facing": "mom"
+   }
+  ]
+ },
+ {
+  "line": 5,
+  "place": "suburb",
+  "cam": "town_wide",
+  "weather": "clear",
+  "people": []
+ },
+ {
+  "line": 6,
+  "place": "suburb",
+  "cam": "porch_two",
+  "people": [
+   {
+    "id": "grandpa",
+    "spot": "porch_right",
+    "pose": "reach",
+    "face": "happy",
+    "facing": "porch_left"
+   }
+  ]
+ },
+ {
+  "line": 7,
+  "place": "suburb",
+  "cam": "hand_close",
+  "people": [
+   {
+    "id": "grandpa",
+    "spot": "porch_right",
+    "pose": "reach",
+    "face": "neutral",
+    "holds": "letter",
+    "label": "letter"
+   }
+  ]
+ },
+ {
+  "line": 8,
+  "place": "suburb",
+  "cam": "house_wide",
+  "people": [
+   {
+    "id": "grandpa",
+    "spot": "porch_right",
+    "pose": "stand",
+    "face": "smug",
+    "facing": "porch_left"
+   },
+   {
+    "id": "me",
+    "spot": "porch_left",
+    "pose": "flinch",
+    "face": "worried",
+    "facing": "grandpa"
+   }
+  ]
+ },
+ {
+  "line": 9,
+  "place": "suburb",
+  "cam": "pave_two",
+  "weather": "fog",
+  "people": [
+   {
+    "id": "me",
+    "spot": "pave_left",
+    "pose": "look_back",
+    "face": "worried",
+    "facing": "pave_mid"
+   }
+  ]
+ },
+ {
+  "line": 10,
+  "place": "suburb",
+  "cam": "porch_two",
+  "weather": "fog",
+  "people": [
+   {
+    "id": "me",
+    "spot": "porch_left",
+    "pose": "lean_in",
+    "face": "scared",
+    "facing": "porch_right"
+   }
+  ]
+ },
+ {
+  "line": 11,
+  "place": "suburb",
+  "cam": "house_wide",
+  "weather": "fog",
+  "people": [
+   {
+    "id": "me",
+    "spot": "porch_left",
+    "pose": "reach",
+    "face": "thinking",
+    "facing": "porch_right"
+   }
+  ],
+  "effect": {
+   "kind": "glow"
+  }
+ },
+ {
+  "line": 12,
+  "place": "suburb",
+  "cam": "pave_two",
+  "weather": "fog",
+  "people": [
+   {
+    "id": "me",
+    "spot": "pave_left",
+    "pose": "walk",
+    "face": "worried",
+    "facing": "pave_mid"
+   }
+  ],
+  "effect": {
+   "kind": "glow"
+  }
+ },
+ {
+  "line": 13,
+  "place": "suburb",
+  "cam": "town_wide",
+  "weather": "fog",
+  "people": [],
+  "effect": {
+   "kind": "glow"
+  }
+ },
+ {
+  "line": 14,
+  "place": "alley",
+  "cam": "wide",
+  "weather": "fog",
+  "people": [
+   {
+    "id": "me",
+    "spot": "hero",
+    "pose": "walk",
+    "face": "scared",
+    "facing": "big"
+   }
+  ]
+ },
+ {
+  "line": 15,
+  "place": "suburb",
+  "cam": "cul_med",
+  "weather": "fog",
+  "people": [
+   {
+    "id": "me",
+    "spot": "cul_front",
+    "pose": "look_back",
+    "face": "worried",
+    "facing": "big"
+   }
+  ]
+ },
+ {
+  "line": 16,
+  "place": "suburb",
+  "cam": "gift_box_close",
+  "weather": "fog",
+  "people": []
+ },
+ {
+  "line": 17,
+  "place": "suburb",
+  "cam": "big_low",
+  "weather": "fog",
+  "people": [],
+  "effect": {
+   "kind": "sparks"
+  }
+ },
+ {
+  "line": 18,
+  "place": "suburb",
+  "cam": "from_porch",
+  "weather": "fog",
+  "people": [
+   {
+    "id": "me",
+    "spot": "gate",
+    "pose": "flinch",
+    "face": "terrified",
+    "facing": "giant_critter"
+   }
+  ],
+  "entity": {
+   "id": "giant_critter",
+   "state": "eyes",
+   "show": "eyes"
+  }
+ },
+ {
+  "line": 19,
+  "place": "suburb",
+  "cam": "cul_med",
+  "weather": "fog",
+  "people": [
+   {
+    "id": "me",
+    "spot": "cul_front",
+    "pose": "lean_in",
+    "face": "worried",
+    "facing": "big"
+   }
+  ]
+ },
+ {
+  "line": 20,
+  "place": "suburb",
+  "cam": "big_low",
+  "weather": "fog",
+  "people": []
+ },
+ {
+  "line": 21,
+  "place": "suburb",
+  "cam": "hand_close",
+  "weather": "fog",
+  "people": [
+   {
+    "id": "me",
+    "spot": "cul_front",
+    "pose": "catch",
+    "face": "worried",
+    "holds": "letter",
+    "label": "Me"
+   }
+  ],
+  "states": {
+   "key": "turned"
+  }
+ },
+ {
+  "line": 22,
+  "place": "suburb",
+  "cam": "cul_med",
+  "weather": "fog",
+  "people": [
+   {
+    "id": "me",
+    "spot": "cul_front",
+    "pose": "hold_up",
+    "face": "sad",
+    "facing": "big",
+    "holds": "letter",
+    "label": "Me"
+   }
+  ]
+ },
+ {
+  "line": 23,
+  "place": "suburb",
+  "cam": "park_med",
+  "weather": "fog",
+  "people": [
+   {
+    "id": "me",
+    "spot": "park_kid",
+    "pose": "point",
+    "face": "thinking",
+    "facing": "big"
+   }
+  ]
+ }
+]

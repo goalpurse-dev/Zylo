@@ -1,0 +1,18 @@
+{
+ "stills": 23,
+ "pass": 23,
+ "render_fails": [],
+ "check_problems": [
+  "row 19 (line 18): camera from_porch cannot frame the giant_critter (15.5 tall): its eyes are above the frame; use a farther entity camera or show it as eyes / silhouette elsewhere"
+ ],
+ "town": "suburb",
+ "side_sets": [
+  "alley"
+ ],
+ "cast": [
+  "me",
+  "mom",
+  "grandpa",
+  "giant_critter"
+ ]
+}

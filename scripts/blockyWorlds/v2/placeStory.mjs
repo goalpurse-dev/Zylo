@@ -163,6 +163,10 @@ function rowProblems(R) {
     if (r.people.length > 2) out.push(`${tag}: ${r.people.length} people (at most 2)`);
     for (const p of r.people) { if (!c.people.includes(p.spot)) out.push(`${tag}: camera ${r.cam} is tested with spots ${c.people.join(", ") || "none"}, not ${p.spot}`); if (!castOf[p.id] && p.id !== "me") out.push(`${tag}: ${p.id} is not in the cast`); }
     if (new Set(r.people.map((p) => p.spot)).size < r.people.length) out.push(`${tag}: two people on one spot`);
+    // an entity's camera must frame ITS height (a house-sized creature does not fit a camera made for the Shadow)
+    const ENT_H = { giant_critter: 15.5, long_one: 14.5, watcher: 11, many_arms: 11.5, rain_thing: 10.5, crawler: 6.5, hollow: 6.5, ghost: 5.5, robot: 7.5, slime: 3.5 };
+    const elib = r.entity ? castOf[r.entity.id]?.library : null;
+    if (elib && c.creature && ENT_H[elib]) { const S2 = loadPlace(places[r.place]); const at = S2.creature_spots[c.creature]?.at; const cc = S2.cameras[r.cam]; const e = at && cc ? span(cc, at, 0.8, 0.85 * ENT_H[elib], 0.97 * ENT_H[elib]) : null; if (!e || e[2] < 0.03) out.push(`${tag}: camera ${r.cam} cannot frame the ${elib} (${ENT_H[elib]} tall): its eyes are above the frame; use a farther entity camera or show it as eyes / silhouette elsewhere`); }
     if (r.entity && !c.creature && C.entities.some((e) => e.id === castOf[r.entity.id]?.library)) out.push(`${tag}: camera ${r.cam} has no entity spot`);
     if (r.cam === "hand_close" && !r.people[0]?.holds) out.push(`${tag}: hand_close needs the first person holding something`);
     if (i && R[i - 1].cam === r.cam && R[i - 1].place === r.place) out.push(`${tag}: the same camera as the row before`);

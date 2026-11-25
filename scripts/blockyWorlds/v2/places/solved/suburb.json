@@ -120,23 +120,6 @@
   ],
   "creature": "cr_road_south"
  },
- "step_med": {
-  "loc": [
-   4.21,
-   10.5,
-   2.6
-  ],
-  "tgt": [
-   0,
-   13.2,
-   1.75
-  ],
-  "lens": 28,
-  "shot": "medium",
-  "people": [
-   "step"
-  ]
- },
  "cul_med": {
   "loc": [
    143.63,

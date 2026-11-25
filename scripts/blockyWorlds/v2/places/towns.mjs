@@ -165,7 +165,7 @@ function suburb() {
   const base = [...STAGE_A.obstacles];
   for (const x of [-120, -90, -60, -30, 0, 30, 60, 90, 120]) base.push({ n: "sub_house_n" + x, box: [x - 7, x + 7, 18, 30, 0, 19.5] }, { n: "sub_house_s" + x, box: [x + 5, x + 19, -30, -18, 0, 19.5] });
   for (let k = 0; k < 12; k++) base.push({ n: "sub_lamp" + k, cyl: [-110 + k * 20, 10.2, 0.3, 9.0] });
-  const pick = ["house_wide", "porch_two", "pave_two", "from_porch", "step_med"];
+  const pick = ["house_wide", "porch_two", "pave_two", "from_porch"];     // step_med dropped: it fails the framing check (head under the captions)
   const spots = Object.fromEntries(Object.entries(STAGE_A.spots).filter(([, v]) => !v.inside));
   return {
     id: "suburb", name: "Our Suburb", kind: "town", base: "suburb", sky: "town", deck: STAGE_A.deck, base_obstacles: base,
@@ -175,12 +175,12 @@ function suburb() {
     spots: { ...spots,
       cul_front: { at: [158.2, 0, 0.25], tag: "cul-de-sac, before the big thing" }, cul_a: { at: [157.5, -4.5, 0.25], tag: "cul-de-sac" }, cul_b: { at: [157.5, 4.5, 0.25], tag: "cul-de-sac" },
       park_kid: { at: [44, 17, 0.06], tag: "the park corner" }, bus_wait: { at: [140, 7.6, 0.25], tag: "at the bus stop" } },
-    creature_spots: { cr_road_south: STAGE_A.creature_spots.cr_road_south, cr_road_far: STAGE_A.creature_spots.cr_road_far, cr_across: STAGE_A.creature_spots.cr_across, cr_cul_far: { at: [188, 0, 0.25], far: true } },
+    creature_spots: { cr_road_south: STAGE_A.creature_spots.cr_road_south, cr_road_far: STAGE_A.creature_spots.cr_road_far, cr_across: STAGE_A.creature_spots.cr_across, cr_cul_far: { at: [188, 0, 0.25], far: true }, cr_cul_mid: { at: [168, 0, 0.25], far: true } },
     background: {
       bg_pave_sw: { at: [-14, -8.0, 0.25], loop: "talk" }, bg_pave_se: { at: [16, -8.0, 0.25], loop: "phone" }, bg_pave_nw: { at: [-20, 8.0, 0.25], loop: "walk" },
       bg_pave_ne: { at: [22, 8.0, 0.25], loop: "stand" }, bg_park: { at: [41.5, 13.5, 0.06], loop: "talk" }, bg_bus: { at: [134.4, 7.8, 0.25], loop: "phone" },
       bg_cul: { at: [170, 15.5, 0.25], loop: "stand" }, bg_cul2: { at: [176, -12, 0.25], loop: "walk" },
-      bg_cul3: { at: [160, 12.5, 0.25], loop: "talk" }, bg_cul4: { at: [152, -11, 0.25], loop: "carry" }, bg_cul5: { at: [182, 9, 0.25], loop: "phone" }, bg_cul6: { at: [166, -17, 0.25], loop: "walk" },
+      bg_cul3: { at: [160, 12.5, 0.25], loop: "talk" }, bg_cul4: { at: [152, -11, 0.25], loop: "carry" }, bg_cul5: { at: [182, 9, 0.25], loop: "phone" }, bg_cul6: { at: [166, -17, 0.25], loop: "walk" }, bg_cul7: { at: [151, 5.5, 0.25], loop: "talk" }, bg_cul8: { at: [146, -5.5, 0.25], loop: "walk" }, bg_cul9: { at: [176, -7, 0.25], loop: "point" }, bg_cul10: { at: [158, -9, 0.25], loop: "carry" }, bg_cul11: { at: [163, 9.5, 0.25], loop: "run" }, bg_cul12: { at: [155, 10, 0.25], loop: "point" },
       bg_st1: { at: [56, 8.2, 0.25], loop: "walk" }, bg_st2: { at: [64, -8.2, 0.25], loop: "talk" }, bg_st3: { at: [80, 8.2, 0.25], loop: "carry" }, bg_st4: { at: [88, -8.2, 0.25], loop: "phone" }, bg_st5: { at: [74, -8.2, 0.25], loop: "point" },
       bg_h1: { at: [-6, 8.6, 0.25], loop: "walk" }, bg_h2: { at: [6.4, 8.4, 0.25], loop: "talk" }, bg_h3: { at: [-2, 4.6, 0.06], loop: "carry" }, bg_h4: { at: [-6, -8.2, 0.25], loop: "phone" }, bg_h5: { at: [8, -8.2, 0.25], loop: "walk" }, bg_h6: { at: [3.5, 4.8, 0.06], loop: "walk" }, bg_h7: { at: [-1.5, -1.4, 0.06], loop: "run" }, bg_h8: { at: [1.5, -8.2, 0.25], loop: "talk" },
     },
