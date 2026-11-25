@@ -1012,12 +1012,59 @@ def zv_place_test(pid, cam_name, time, weather, t0, t1, opt=None):
         ZV_SHOT["hand_head"] = subs[0][1]
         subs = []          # a hand close: no head in frame on purpose
     else:
-        cam.key(t0, tuple(loc), tuple(tgt), lens=c["lens"], roll=c.get("roll", 0.0))
-        cam.key(t1, tuple(loc + (tgt - loc) * 0.06), tuple(tgt), lens=c["lens"], roll=c.get("roll", 0.0))
+        top_ = None
+        if opt.get("move") == "tilt_up" and (opt.get("giant") or opt.get("entity")):
+            lo_t, hi_t = zv_name_bounds("Ent")
+            top_ = hi_t.z * 0.9 if hi_t.z > -1e8 else None
+        zv_cam_move(cam, opt.get("move"), loc, tgt, c["lens"], t0, t1, c.get("roll", 0.0), top_)
     for _, ch in subs:
         zc_char_light(ch, tuple(loc), ZV_SETINFO.get("char", "day"))
     hh_ = ZV_SHOT.get("hand_head")
     ZV_SHOT.clear()
     ZV_SHOT.update({"cam": cam_name, "subjects": subs, "creature": cr, "need": need, "hand_head": hh_, "entity_seen": bool(opt.get("entity") or opt.get("giant")), "read_texts": (c.get("reads") or None) if c.get("shot") == "insert" else (opt.get("read") or None)})
     return info
+# ---------------------------------------------------------------- CAMERA MOVES for the video step (overnight build 2)
+ZV_CAM_MOVES = ["push_in", "pull_back", "tilt_up", "orbit", "follow", "handheld", "whip"]
+
+
+def zv_cam_move(cam, move, loc, tgt, lens, t0, t1, roll=0.0, top=None):
+    """push_in / pull_back (a reveal) / tilt_up (to a giant's head) / orbit / follow (behind the hero) / handheld (shake) /
+    whip (a quick pan away at the end); keyed over the shot"""
+    d = tgt - loc
+    if move == "push_in":
+        cam.key(t0, tuple(loc), tuple(tgt), lens=lens, roll=roll)
+        cam.key(t1, tuple(loc + d * 0.35), tuple(tgt), lens=lens, roll=roll)
+    elif move == "pull_back":
+        cam.key(t0, tuple(loc + d * 0.45), tuple(tgt), lens=lens, roll=roll)
+        cam.key(t1, tuple(loc - d * 0.35), tuple(tgt), lens=lens, roll=roll)
+    elif move == "tilt_up":
+        hi = Vector((tgt.x, tgt.y, top if top else tgt.z + 14.0))
+        cam.key(t0, tuple(loc), tuple(tgt), lens=lens, roll=roll)
+        cam.key(t1, tuple(loc), tuple(hi), lens=lens, roll=roll)
+    elif move == "orbit":
+        r = Vector((loc.x - tgt.x, loc.y - tgt.y, 0))
+        for j in range(5):
+            a = math.radians(-25 + 50 * j / 4.0)
+            p = Vector((tgt.x + r.x * math.cos(a) - r.y * math.sin(a), tgt.y + r.x * math.sin(a) + r.y * math.cos(a), loc.z))
+            cam.key(t0 + (t1 - t0) * j / 4.0, tuple(p), tuple(tgt), lens=lens, roll=roll)
+    elif move == "follow":
+        f = Vector((d.x, d.y, 0)).normalized()
+        cam.key(t0, tuple(loc), tuple(tgt), lens=lens, roll=roll)
+        cam.key(t1, tuple(loc + f * 2.5), tuple(tgt + f * 2.5), lens=lens, roll=roll)
+    elif move == "handheld":
+        rnd = random.Random(11)
+        t = t0
+        while t <= t1 + 1e-6:
+            j = Vector((rnd.uniform(-0.12, 0.12), rnd.uniform(-0.12, 0.12), rnd.uniform(-0.08, 0.08)))
+            cam.key(t, tuple(loc + j), tuple(tgt + j * 2.0), lens=lens, roll=roll + rnd.uniform(-1.5, 1.5))
+            t += 0.25
+    elif move == "whip":
+        side = Vector((-d.y, d.x, 0)).normalized()
+        tw = t0 + (t1 - t0) * 0.75
+        cam.key(t0, tuple(loc), tuple(tgt), lens=lens, roll=roll)
+        cam.key(tw, tuple(loc), tuple(tgt), lens=lens, roll=roll)
+        cam.key(t1, tuple(loc), tuple(tgt + side * d.length * 1.4), lens=lens, roll=roll + 6)
+    else:
+        cam.key(t0, tuple(loc), tuple(tgt), lens=lens, roll=roll)
+        cam.key(t1, tuple(loc + d * 0.06), tuple(tgt), lens=lens, roll=roll)
 # ===== END OF THE PLACE BUILDER =======================================================================================

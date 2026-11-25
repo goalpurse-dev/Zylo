@@ -15,11 +15,11 @@ const d2 = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
 export async function allPlaces() {
   const out = {};
   await import("./places/bigthings.mjs");
-  for (const f of ["towns.mjs", "sidesets.mjs"]) {
+  for (const f of ["towns.mjs", "sidesets.mjs", "sidesets2.mjs"]) {
     const p = path.join(HERE, "places", f);
     if (!fs.existsSync(p)) continue;
     const m = await import(`./places/${f}`);
-    Object.assign(out, m.TOWNS ?? {}, m.SIDESETS ?? {});
+    Object.assign(out, m.TOWNS ?? {}, m.SIDESETS ?? {}, m.SIDESETS2 ?? {});
   }
   return out;
 }

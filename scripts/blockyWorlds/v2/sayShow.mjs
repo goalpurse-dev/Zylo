@@ -54,6 +54,7 @@ export function lineNeeds(text, { prevText = "", cast = [], objects = [] } = {})
   for (const [k, re] of Object.entries(ENTITY_WORDS)) if (re.test(t) && !rainy) out.push({ what: "entity", value: k, text: `the entity ${k} in a row (row.entity)` });
   for (const c of cast.filter((c) => c.kind === "entity")) if (new RegExp(`\\b${c.name.toLowerCase().replace(/^the /, "")}\\b`).test(t) && !rainy) out.push({ what: "entity", value: c.library, text: `${c.name} in a row (row.entity id ${c.id})` });
   const ANIMAL_W = { bird: /\b(birds?)\b/, dog: /\b(dogs?|puppy|pup)\b/, cat: /\b(cats?|kitten)\b/ };
+  for (const c of cast.filter((c) => c.kind === "giant")) if (namesCreature(text, c.library, { cast }) || /giant/.test(t)) out.push({ what: "giant", value: c.library, text: `the giant ${c.name} in a row (row.giant id ${c.id})` });
   for (const c of cast.filter((c) => c.kind === "animal")) if ((ANIMAL_W[c.library]?.test(t) || new RegExp(`\\b${c.name.toLowerCase().replace(/^the /, "").replace(/[^a-z0-9 ']/g, "")}\\b`).test(t))) out.push({ what: "entity", value: c.library, text: `the animal ${c.name} in a row (row.entity id ${c.id})` });
   if (EVERYONE.test(t)) out.push({ what: "crowd", value: 6, text: "everyone: row.crowd with n >= 6 and an action (run / reach / point), never standing" });
   for (const o of objects) if (["object", "worn"].includes(o.kind) && namesObject(text, o) && o.via === "effect") out.push({ what: "effect", value: o.rid, text: `the effect ${o.rid} (${o.name}): row.effect.kind = ${o.rid}` });
@@ -73,6 +74,7 @@ function satisfied(need, rows, castOf) {
     if (need.what === "crowd") return (r.crowd?.n ?? 0) >= 6 && r.crowd?.action && r.crowd.action !== "stand";
     if (need.what === "object") return (r.objects ?? []).some((o) => o.id === need.value);
     if (need.what === "effect") return r.effect?.kind === need.value;
+    if (need.what === "giant") return Boolean(r.giant) && castOf[r.giant.id]?.library === need.value;
     if (need.what === "action") {
       const A = ACTIONS[need.value];
       // "I pressed it": the hand on the button AND the button going down, in one shot (owner 2026-11-25)
@@ -94,6 +96,7 @@ export function sayShowProblems(script, rows, { cast = [], objects = [] } = {}) 
     const R = rows.filter((r) => r.line === i + 1);
     for (const need of lineNeeds(l.text, { prevText: script.lines[i - 1]?.text ?? "", cast, objects })) if (!satisfied(need, R, castOf)) out.push(`line ${i + 1} ("${l.text.slice(0, 40)}"): show ${need.text}`);
     // a creature only in a shot whose line names it (owner 2026-11-25)
+    for (const r of R) { const gl = r.giant ? castOf[r.giant.id]?.library : null; if (gl && !namesCreature(l.text, gl, { cast, objects }) && !/\bgiant\b/i.test(l.text)) out.push(`line ${i + 1}: the giant ${gl} is in a row but the line does not name it`); }
     for (const r of R) { const lib = r.entity ? castOf[r.entity.id]?.library : null; if (lib && !namesCreature(l.text, lib, { cast, objects }) && !(r.rain && String(r.rain.kind).startsWith("entity:"))) out.push(`line ${i + 1}: the ${lib.replace(/_/g, " ")} is in a row but the line does not name it (a creature only where its line names it)`); }
     if (!SLEEP.test(l.text.toLowerCase())) for (const r of R) for (const p of r.people ?? []) if (p.face === "sleepy") out.push(`line ${i + 1}: ${p.id} has closed eyes (face sleepy) but the line is not about sleep`);
   });

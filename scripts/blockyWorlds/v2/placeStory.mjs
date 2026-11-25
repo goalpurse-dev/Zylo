@@ -18,6 +18,8 @@ import { allPlaces, loadPlace, checkPlace } from "./placeKit.mjs";
 import { span } from "./stageCheck.mjs";
 import { lineNeeds, sayShowProblems, placeFitProblems, namesObject, PLACE_WORDS, TOWN_HAS } from "./sayShow.mjs";
 import { PROPS as LIB_PROPS, allProps, recipeProblems, saveBuilt } from "./places/props.mjs";
+import { readMoves } from "./moves.mjs";
+const MV = readMoves();
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const argv = process.argv.slice(2), has = (k) => argv.includes(`--${k}`), arg = (k, d = null) => (has(k) ? argv[argv.indexOf(`--${k}`) + 1] : d);
@@ -228,7 +230,7 @@ if (!plan) {
   const rk = [...C.rain_things.map((t) => t.id), ...C.entities.map((e) => `entity:${e.id}`)];
   const schema = { type: "object", additionalProperties: false, required: ["town", "side_sets", "cast", "scenes", "texts"], properties: {
     town: { type: "string", enum: C.towns.map((t) => t.id) }, side_sets: A_({ type: "string", enum: sideIds }), big_thing: { type: "string", enum: C.big_things.map((b) => b.id) },
-    cast: A_({ type: "object", additionalProperties: false, required: ["id", "kind", "library", "name"], properties: { id: S_, kind: { type: "string", enum: ["person", "entity", "animal"] }, library: S_, name: S_ } }),
+    cast: A_({ type: "object", additionalProperties: false, required: ["id", "kind", "library", "name"], properties: { id: S_, kind: { type: "string", enum: ["person", "entity", "animal", "giant"] }, library: S_, name: S_ } }),
     texts: A_({ type: "object", additionalProperties: false, required: ["key", "text"], properties: { key: S_, text: S_ } }),
     scenes: A_({ type: "object", additionalProperties: false, required: ["scene", "lines", "place", "time", "weather"], properties: { scene: I_, lines: A_(I_), place: S_, time: { type: "string", enum: C.times.map((t) => t.id) }, weather: { type: "string", enum: C.weathers.map((t) => t.id) },
       big_state: S_, rain_things: { type: "object", additionalProperties: false, required: ["kind", "amount", "pile", "falling"], properties: { kind: S_, amount: { type: "number" }, pile: { type: "number" }, falling: { type: "boolean" } } } } }) } };
@@ -293,20 +295,30 @@ const ROWS = `You plan the shot rows of an "In This Town" video. Each line gets 
 - At most 2 people per row. An entity only on a camera with an entity spot. Inserts and aerials have no people (except crowd / rain). Never the same camera twice in a row.
 - holds: a prop id (key, phone ...) in the right hand; label = its tag text.
 - STORY OBJECTS (checked in code AND in the render: an object its line names must be VISIBLE in that shot): row.objects [{ id, at, who, state }]: at "place" = the place's own one (PLACE OBJECTS, or the big thing in the town) on a camera that sees it; head / hand / back / feet need who = a person in that row; ground = on the floor in front of the camera. The MAIN object is in at least a third of ALL rows. Show its states from the lines (the mailbox open, the letter sticking out, glowing).
+- ACTING (checked): every person in every row does a MOVE from the acting library (pose = a move name: run, sprint_look_back, crouch_hide, peek_corner, back_away, look_up_slowly ...), never just standing; crowds use a crowd move.
+- A GIANT (building-sized) is row.giant { id (its cast id), state }: only on a camera with an entity spot or a REVEAL / eye-level / window camera; window_out shows its eye at the window (state peek_window).
+- A SMALL SCARE (the night bedroom) is row.scare { kind }: under_bed on camera bed_low, closet on closet_gap, door_hand on wide.
+- The video's camera move per row: row.move (push_in, pull_back, tilt_up to a giant, orbit, follow behind, handheld in danger, whip for a quick turn).
 - A CREATURE only in rows whose line names it; when a line names it, it is clearly seen: use a REVEAL camera (low or face) for its big moments; a house-sized creature needs a far or reveal camera.
 Return the JSON only.`;
 // the tested poses and faces only (the base + our reaction poses); anything else is not offered
 const POSES_OK = ["stand", "walk", "run", "point", "hold_up", "hold_up2", "hold_phone", "hold_box", "hold_stick", "talk", "reach", "reach_up", "catch", "press", "lean_in", "flinch", "crouch2", "cover_head", "hands_head", "look_back", "peek", "shield", "pick_up", "umbrella", "lean"];
+const MOVES_OK = (C.moves ?? []).length ? C.moves : [];
+const POSE_ENUM = MOVES_OK.length ? MOVES_OK : POSES_OK;
+const GIANT_IDS = (C.giants ?? []).map((g) => g.id), SCARE_IDS = (C.scares ?? []).map((s) => s.id), CAMMOVE_IDS = C.cam_moves ?? [];
 const FACES_OK = ["neutral", "happy", "big_smile", "worried", "scared", "terrified", "sad", "angry", "smug", "thinking", "sleepy"];
 let rows = load("rows.json");
 const rowSchema = { type: "object", additionalProperties: false, required: ["rows"], properties: { rows: A_({ type: "object", additionalProperties: false, required: ["line", "place", "cam", "people"], properties: {
   line: I_, from_word: I_, place: { type: "string", enum: usedPlaces }, cam: S_, weather: { type: "string", enum: C.weathers.map((t) => t.id) },
-  people: A_({ type: "object", additionalProperties: false, required: ["id", "spot"], properties: { id: S_, spot: S_, pose: { type: "string", enum: POSES_OK }, face: { type: "string", enum: FACES_OK }, facing: S_, holds: S_, label: S_ } }),
+  people: A_({ type: "object", additionalProperties: false, required: ["id", "spot"], properties: { id: S_, spot: S_, pose: { type: "string", enum: POSE_ENUM }, face: { type: "string", enum: FACES_OK }, facing: S_, holds: S_, label: S_ } }),
   entity: { type: "object", additionalProperties: false, required: ["id"], properties: { id: S_, state: { type: "string", enum: ["stand", "walk", "reach", "peek", "loom", "eyes"] }, show: { type: "string", enum: ["full", "silhouette", "eyes"] } } },
   rain: { type: "object", additionalProperties: false, required: ["kind"], properties: { kind: S_, amount: { type: "number" }, pile: { type: "number" }, falling: { type: "boolean" } } },
   states: { type: "object", additionalProperties: false, properties: { key: { type: "string", enum: ["none", "in", "turned"] }, red: { type: "string", enum: ["covered", "open", "pressed"] } } },
   objects: A_({ type: "object", additionalProperties: false, required: ["id", "at"], properties: { id: { type: "string", enum: OBJS.filter((o) => ["object", "worn"].includes(o.kind) && o.via === "object").map((o) => o.id).concat(["-"]) }, at: { type: "string", enum: ["head", "face", "hand", "back", "feet", "ground", "place"] }, who: S_, state: S_ } }),
-  crowd: { type: "object", additionalProperties: false, required: ["n", "action"], properties: { n: I_, action: { type: "string", enum: ["run", "reach", "point", "cover_head", "hands_head"] } } },
+  crowd: { type: "object", additionalProperties: false, required: ["n", "action"], properties: { n: I_, action: { type: "string", enum: ["run", "reach", "point", "cover_head", "hands_head", ...(C.crowd_moves ?? [])] } } },
+  ...(GIANT_IDS.length ? { giant: { type: "object", additionalProperties: false, required: ["id", "state"], properties: { id: S_, state: { type: "string", enum: (C.giants[0] ?? {}).states ?? ["stand"] } } } } : {}),
+  ...(SCARE_IDS.length ? { scare: { type: "object", additionalProperties: false, required: ["kind"], properties: { kind: { type: "string", enum: SCARE_IDS } } } } : {}),
+  ...(CAMMOVE_IDS.length ? { move: { type: "string", enum: CAMMOVE_IDS } } : {}),
   effect: { type: "object", additionalProperties: false, required: ["kind"], properties: { kind: { type: "string", enum: C.effects.map((e) => e.id) } } } } }) } };
 const sceneOf = (line) => plan.scenes.find((s) => s.lines.includes(line)) ?? plan.scenes[0];
 const NEEDS = script.lines.map((l, i) => lineNeeds(l.text, { prevText: script.lines[i - 1]?.text ?? "", cast: plan.cast, objects: OBJS }));
@@ -353,6 +365,9 @@ function rowProblems(R) {
     const elib = r.entity ? castOf[r.entity.id]?.library : null;
     if (elib && c.creature && ENT_H[elib] && !c.reveal) { const S2 = loadPlace(places[r.place]); const at = S2.creature_spots[c.creature]?.at; const cc = S2.cameras[r.cam]; const e = at && cc ? span(cc, at, 0.8, 0.85 * ENT_H[elib], 0.97 * ENT_H[elib]) : null; if (!e || e[2] < 0.03) out.push(`${tag}: camera ${r.cam} cannot frame the ${elib} (${ENT_H[elib]} tall): its eyes are above the frame; use a farther entity camera or show it as eyes / silhouette elsewhere`); }
     if (r.entity && !c.creature && C.entities.some((e) => e.id === castOf[r.entity.id]?.library)) out.push(`${tag}: camera ${r.cam} has no entity spot`);
+    if (MOVES_OK.length) for (const p of r.people) if (!MOVES_OK.includes(p.pose)) out.push(`${tag}: ${p.id} must do a move from the acting library (not ${p.pose ?? "standing"})`);
+    if (r.giant) { const lib = castOf[r.giant.id]?.library; if (!GIANT_IDS.includes(lib)) out.push(`${tag}: ${r.giant.id} is not a giant of the cast`); else if (!(c.creature || c.reveal || c.eye_at)) out.push(`${tag}: camera ${r.cam} cannot show a giant (use a reveal / eye-level / window camera or one with an entity spot)`); }
+    if (r.scare) { const want = { under_bed: "bed_low", closet: "closet_gap", door_hand: "wide" }[r.scare.kind]; if (r.place !== "night_bedroom" || r.cam !== want) out.push(`${tag}: the scare ${r.scare.kind} is on camera ${want} of the night bedroom`); }
     if (r.cam === "hand_close" && !r.people[0]?.holds && !(r.objects ?? []).some((o) => o.at === "hand" && o.who === r.people[0]?.id)) out.push(`${tag}: hand_close needs the first person holding something`);
     for (const o of (r.objects ?? []).filter((q) => q.id !== "-")) {
       const O = objOf[o.id];
@@ -431,8 +446,11 @@ function stillsOf(R, bad, only = null) {
     const isEnt = lib && C.entities.some((e) => e.id === lib), isAnimal = lib && C.animals.some((a) => a.id === lib);
     const ent = isEnt ? { kind: lib, state: r.entity.state ?? "stand", show: r.entity.show ?? "full" } : null;
     const rain = r.rain ? { amount: 0.8, pile: 0.5, falling: true, ...r.rain } : sc.rain_things;
-    list.push({ place: pid, cam: r.cam, time: sc.time, weather: r.weather ?? sc.weather, opt: { label: `${i + 1} L${r.line}`, texts, people: r.people.filter((p) => spec(p.id)).map((p) => ({ id: p.id, spec: spec(p.id), spot: p.spot, pose: p.pose ?? "stand", face: p.face, facing: p.facing, holds: objOf[p.holds]?.rid && objOf[p.holds].rid !== "big" ? objOf[p.holds].rid : (SPROPS[p.holds] || LEGACY_HOLD.includes(p.holds) ? p.holds : undefined), label: p.label })),
+    list.push({ place: pid, cam: r.cam, time: sc.time, weather: r.weather ?? sc.weather, opt: { label: `${i + 1} L${r.line}`, texts, people: r.people.filter((p) => spec(p.id)).map((p) => ({ id: p.id, spec: spec(p.id), spot: p.spot, pose: MV.moves[p.pose] ? MV.moves[p.pose][2] : (p.pose ?? "stand"), face: p.face, facing: p.facing, holds: objOf[p.holds]?.rid && objOf[p.holds].rid !== "big" ? objOf[p.holds].rid : (SPROPS[p.holds] || LEGACY_HOLD.includes(p.holds) ? p.holds : undefined), label: p.label })),
       ...((r.objects ?? []).length ? { objects: r.objects.filter((o) => objOf[o.id]).map((o) => ({ id: o.id, rid: objOf[o.id].rid, at: o.at, who: o.who, state: o.state, ...(o.at === "ground" ? {} : {}) })) } : {}),
+      ...(r.giant && castOf[r.giant.id] ? { giant: { kind: castOf[r.giant.id].library, state: r.giant.state ?? "stand" } } : {}),
+      ...(r.scare ? { scare: { kind: r.scare.kind, spot: { under_bed: "cr_under_bed", closet: "cr_closet", door_hand: "cr_door" }[r.scare.kind] } } : {}),
+      ...(r.move ? { move: r.move } : {}),
       ...(ent ? { entity: ent } : {}), ...(isAnimal ? { animal: lib } : {}), ...(rain ? { rain_things: rain, react: true } : {}), ...(r.effect ? { effect: { kind: r.effect.kind } } : {}), ...(r.states ? { states: r.states } : {}), ...(r.crowd ? { crowd: r.crowd } : {}),
       read: Object.entries(texts).filter(([, v]) => String(script.lines[r.line - 1]?.text ?? "").toUpperCase().includes(String(v).toUpperCase().slice(0, 8))).map(([k]) => k), bg: true } });
   });

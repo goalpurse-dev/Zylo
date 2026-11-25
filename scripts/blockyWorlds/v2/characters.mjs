@@ -103,6 +103,17 @@ export const CRITTER_FACES = ["happy", "angry", "scared", "sleepy", "big_smile",
 // worn by things_v2.py zv_wear), plus stretch variants for the stretch effect. Same base, our own colours.
 const C = CHARACTERS, rc = (b, id, role, colors, more = {}) => ({ ...b, id, role, fixed: true, badge_ok: false, ...more, colors: { ...b.colors, ...colors } });
 export const EXTRA_SPECS = {
+  // overnight build 2: ten more townspeople with clear roles (one readable piece / colour each)
+  firefighter: rc(C.dad, "firefighter", "the firefighter (red helmet, dark coat)", { top: "#3A3A42", top_dark: "#2A2A32", legs: "#3A3A42" }, { wear: ["helmet", "vest"], mustache: false, default_face: "neutral" }),
+  builder: rc(C.dad, "builder", "the builder (yellow hard hat, orange vest)", { top: "#5A7FA8", top_dark: "#46688E", skin: "#C68642", skin_dark: "#A86C32" }, { wear: ["hard_hat", "vest"], mustache: true }),
+  janitor: rc(C.grandpa, "janitor", "the night janitor (grey overalls, blue cap)", { top: "#8A9098", top_dark: "#6E747C", legs: "#6E747C" }, { wear: ["driver_cap"], default_face: "thinking" }),
+  reporter: rc(C.mom, "reporter", "the news reporter (red suit, glasses)", { top: "#C8343A", top_dark: "#A8242A", hair: "#F2D27A", hair_light: "#FFE6A8" }, { hair: "bob", wear: ["glasses"], default_face: "big_smile" }),
+  scientist: rc(C.dad, "scientist", "the scientist (white coat, glasses)", { top: "#F4F6FA", top_dark: "#D9DEE6", hair: "#E8E2D8", hair_light: "#FFFFFF", skin: "#F0C8A0", skin_dark: "#D8AA82" }, { wear: ["glasses"], mustache: false, default_face: "thinking" }),
+  guard: rc(C.dad, "guard", "the night guard (black uniform, cap with a badge)", { top: "#1E1E24", top_dark: "#141418", legs: "#1E1E24", skin: "#8D5524", skin_dark: "#74441C" }, { wear: ["police_cap"], mustache: false, default_face: "neutral" }),
+  taxi_driver: rc(C.dad, "taxi_driver", "the taxi driver (yellow shirt, blue cap)", { top: "#F2C200", top_dark: "#D4A800", skin: "#E0AC69", skin_dark: "#C89054" }, { wear: ["driver_cap"], mustache: true, default_face: "happy" }),
+  mail_carrier: rc(C.mom, "mail_carrier", "the mail carrier (blue uniform, satchel)", { top: "#3D6FC0", top_dark: "#2E58A0", hair: "#1E1A18", hair_light: "#4A4038", skin: "#C68642", skin_dark: "#A86C32" }, { hair: "bun", wear: ["driver_cap"], default_face: "happy" }),
+  painter: rc(C.me, "painter", "the painter (beret, paint-spotted smock)", { top: "#F4F0E6", top_dark: "#DAD4C6", hair: "#B5562A", hair_light: "#E8935A" }, { wear: ["beret"], default_face: "big_smile" }),
+  grandma: rc(C.mom, "grandma", "Grandma (grey bun, glasses, lilac cardigan)", { top: "#B59AD8", top_dark: "#9A80BE", hair: "#D8D8DC", hair_light: "#F4F4F6", skin: "#F0C8A0", skin_dark: "#D8AA82" }, { hair: "bun", wear: ["glasses"], height: 3.2, default_face: "happy" }),
   teacher: rc(C.mom, "teacher", "the teacher (glasses, cardigan)", { top: "#6A994E", top_dark: "#55803D", hair: "#5A3A28" }, { hair: "bun", wear: ["glasses"], default_face: "neutral" }),
   shopkeeper: rc(C.dad, "shopkeeper", "the shopkeeper (green apron)", { top: "#F2F2EE", top_dark: "#D8D8D2", skin: "#E0AC69", skin_dark: "#C89054" }, { wear: ["apron"], mustache: false }),
   police: rc(C.dad, "police", "the police officer (navy cap with a badge)", { top: "#2B3F73", top_dark: "#1E2E58", legs: "#1E2A4A", legs_dark: "#151E36", skin: "#8D5524", skin_dark: "#74441C" }, { wear: ["police_cap"], mustache: false, default_face: "neutral" }),
@@ -123,6 +134,12 @@ export const EXTRA_SPECS = {
   stretch_arms: { ...C.me, id: "stretch_arms", role: "the stretch effect: very long arms (the arm bones themselves longer)", body: { ...C.me.body, upper_arm: 1.85, fore_arm: 1.75 } },
 };
 export const ANIMALS = { dog: "a dog (tan, floppy ears)", cat: "a cat (grey, yellow eyes)", bird: "a bird (blue, orange beak)" };
+// overnight build 2: the building-sized giants (giants_v2.py) and the small scares
+export const GIANTS = { stilt: "a building-tall thin pale figure: endless legs, a long neck, an oval head with two glowing slits; walks between towers, bends down to the street, peeks into windows",
+  mound: "a building-wide heavy hill of a creature: a lumpy hide, heavy knuckled arms, a row of small glowing eyes; its steps crack the ground",
+  folder: "a tall stack of hinged pale panels that unfolds like a folding screen, glowing eyes in the gaps, long folding arms" };
+export const GIANT_STATES = ["stand", "walk", "turn_head", "bend_down", "peek_window", "reach_down", "cover_eyes", "crouch_behind"];
+export const SCARES = { under_bed: "two glowing eyes in the dark gap under the bed", closet: "eyes in the gap of the closet door", door_hand: "a long pale hand curling round the door edge" };
 export const ENTITY_TONE = { long_one: "scary", crawler: "scary", watcher: "scary", hollow: "scary", many_arms: "scary", rain_thing: "scary", giant_critter: "scary", ghost: "funny", robot: "funny", slime: "funny" };
 export const ENTITIES = {
   long_one: "the Long One: a person stretched far too tall (14), too many joints, a pale blank face",

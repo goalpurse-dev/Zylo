@@ -9,7 +9,8 @@ import { fileURLToPath } from "node:url";
 import { allPlaces, loadPlace } from "./placeKit.mjs";
 import { BIG_THINGS } from "./places/bigthings.mjs";
 import { allProps } from "./places/props.mjs";
-import { CHARACTERS, NEIGHBOURS, EXTRA_SPECS, ANIMALS, ENTITIES, ENTITY_TONE } from "./characters.mjs";
+import { CHARACTERS, NEIGHBOURS, EXTRA_SPECS, ANIMALS, ENTITIES, ENTITY_TONE, GIANTS, GIANT_STATES, SCARES } from "./characters.mjs";
+import { readMoves } from "./moves.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const PASSED_FILE = path.join(HERE, "places", "passed.json");
@@ -47,6 +48,9 @@ export async function buildCatalogue() {
     props: (P.props ?? []).map((k) => ({ id: k, look: PROPS[k] ?? k })),
     story_props: Object.entries(SP).filter(([k, R]) => R.built || (P.story_props ?? []).includes(k)).map(([k, R]) => ({ id: k, look: R.what, states: R.states, attach: R.attach, built: !!R.built })),
     effects: (P.effects ?? []).map((k) => ({ id: k, look: EFFECTS[k] ?? k })),
+    giants: (P.giants ?? []).filter((k) => GIANTS[k]).map((k) => ({ id: k, tone: "scary", look: GIANTS[k], states: GIANT_STATES })),
+    scares: (P.scares ?? []).filter((k) => SCARES[k]).map((k) => ({ id: k, look: SCARES[k] })),
+    moves: (P.moves ?? []).filter((k) => readMoves().moves[k]), crowd_moves: (P.crowd_moves ?? []).filter((k) => readMoves().crowd.includes(k)), cam_moves: P.cam_moves ?? [],
     skipped: P.skipped ?? {},
   };
 }
@@ -62,6 +66,10 @@ export function catalogueLines(C) {
   for (const a of C.animals) L.push(`ANIMAL ${a.id}: ${a.look}.`);
   for (const e of C.entities) L.push(`ENTITY ${e.id} (${e.tone}): ${e.look} (states ${e.states.join("/")}; shown full, as a silhouette or eyes only).`);
   L.push(`PROPS: ${C.props.map((p) => p.id).join(", ")}. EFFECTS: ${C.effects.map((p) => p.id).join(", ")}.`);
+  for (const g of C.giants ?? []) L.push(`GIANT ${g.id} (building-sized, scary): ${g.look} (moves: ${g.states.join("/")}).`);
+  if ((C.scares ?? []).length) L.push(`SMALL SCARES (in the night bedroom): ${C.scares.map((s) => `${s.id} = ${s.look}`).join("; ")}.`);
+  if ((C.moves ?? []).length) L.push(`ACTING MOVES (every person in every shot does one): ${C.moves.join(", ")}. CROWD MOVES: ${(C.crowd_moves ?? []).join(", ")}.`);
+  if ((C.cam_moves ?? []).length) L.push(`CAMERA MOVES (video): ${C.cam_moves.join(", ")}.`);
   for (const p of C.story_props ?? []) L.push(`STORY PROP ${p.id}: ${p.look} (states: ${p.states.join(", ")}; goes: ${p.attach.join(" / ")})${p.built ? " [built by an earlier story]" : ""}.`);
   for (const t of [...C.towns, ...C.side_sets]) if (t.objects?.length) L.push(`PLACE OBJECTS in ${t.id}: ${t.objects.map((o) => `${o} (built into the place; states ${(t.object_states?.[o] ?? []).join(" / ") || "-"}; set per shot)`).join(", ")}.`);
   return L;

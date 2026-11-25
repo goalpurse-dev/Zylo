@@ -59,6 +59,39 @@ Object.assign(P, {
   },
 });
 
+// ---- vehicles (step 7): our own shapes
+Object.assign(P, {
+  truck({ c = "#4C8FD6", move = null } = {}) {
+    return [box([1.8, 0, 2.2], [3.0, 3.4, 3.4], c, { move }), box([-2.4, 0, 2.6], [6.6, 3.6, 4.2], "#E8E8E8", { move }), box([3.25, 0, 2.9], [0.1, 3.0, 1.4], "#9CC6E4", { solid: false, move }),
+      ...[-4.2, -1.6, 2.2].flatMap((x) => [-1.75, 1.75].map((y) => cyl([x, y, 0.8], 0.8, 0.5, "#26282E", { rx: 90, v: 16, solid: false, move })))];
+  },
+  police_car({ move = null } = {}) {
+    return [...P.car({ c: "#F4F4F4", move }), box([0, 0, 1.2], [7.7, 3.35, 0.5], "#1E2A4A", { solid: false, move }), box([0.4, -0.5, 3.0], [0.8, 0.6, 0.35], "#3A6BFF", { e: "#3A6BFF", es: 8, solid: false, move }), box([0.4, 0.5, 3.0], [0.8, 0.6, 0.35], "#FF3A3A", { e: "#FF3A3A", es: 8, solid: false, move }),
+      lit([0.4, -0.5, 3.6], 400, "#3A6BFF", { when: "night" }), lit([0.4, 0.5, 3.6], 400, "#FF3A3A", { when: "night" })];
+  },
+  ambulance({ move = null } = {}) {
+    return [...P.truck({ c: "#FFFFFF", move }), box([-2.4, -1.82, 2.6], [5.0, 0.05, 0.6], "#D63A2F", { solid: false, move }), box([1.8, 0, 4.0], [1.2, 0.8, 0.35], "#FF3A3A", { e: "#FF3A3A", es: 8, solid: false, move })];
+  },
+  train({ L = 30, c = "#C24A3A" } = {}) {
+    const o = [box([0, 0, 2.6], [L, 3.8, 4.6], c), box([0, 0, 5.0], [L - 1, 3.2, 0.3], "#8A8E94", { solid: false })];
+    for (let x = -L / 2 + 2.5; x < L / 2 - 1; x += 3.6) o.push(box([x, -1.92, 3.3], [2.4, 0.06, 1.5], "#FFF4D6", { e: "#FFE9B0", es: 2.5, glow: "night", solid: false }));
+    o.push(box([L / 2, 0, 2.0], [0.1, 2.4, 1.0], "#FFF6D8", { e: "#FFF2C0", es: 5, solid: false }));
+    return o;
+  },
+  helicopter({ z = 30 } = {}) {
+    return [sph([0, 0, z], 2.4, "#2E3440", { sc: [1.6, 1.0, 0.9] }), box([-5, 0, z + 0.4], [6, 0.5, 0.5], "#2E3440", { solid: false }), box([0, 0, z + 2.2], [11, 0.4, 0.08], "#1A1A1A", { solid: false }),
+      box([0, 0, z + 2.2], [0.4, 11, 0.08], "#1A1A1A", { solid: false }), sph([1.8, -1.0, z - 0.4], 0.6, "#9CC6E4", { solid: false }),
+      cyl([2.2, 0, z - 12], 0.3, 22, "#FFFFFF", { r2: 4.5, e: "#E8F0FF", es: 1.4, alpha: 0.16, solid: false, ry: 8 }), lit([2.2, 0, z - 1.6], 1500, "#F0F4FF", { kind: "SPOT", size: 0.6 })];
+  },
+  far_crowd({ n = 60, w = 40, d = 30, seed = 3 } = {}) {
+    // a cheap far crowd: little capsule people (2 shapes each) for aerials and plazas
+    const o = [], cols = ["#E53935", "#3D7BE0", "#F2C14E", "#6A994E", "#C58AF9", "#F28B82", "#4FB3BF", "#FFFFFF"];
+    for (let k = 0; k < n; k++) { const x = (hsh(k * 7 + seed) - 0.5) * w, y = (hsh(k * 13 + seed + 1) - 0.5) * d;
+      o.push(cyl([x, y, 0.75], 0.32, 1.5, cols[k % 8], { v: 6, solid: false }), sph([x, y, 1.75], 0.3, "#E8C09A", { v: 6, solid: false })); }
+    return o;
+  },
+});
+
 export function megacity() {
   const items = [];
   // the ground: the wide avenue (lanes), the two pavements, the plaza, the parking lot, the water east
@@ -100,6 +133,9 @@ export function megacity() {
   items.push({ p: "taxi", at: [-20, -1.8, 0], move: [14, 0, 0] }, { p: "taxi", at: [10, 1.8, 0], rz: 180, move: [-14, 0, 0] }, { p: "taxi", at: [-90, -5.2, 0], move: [12, 0, 0] });
   items.push({ p: "car", at: [60, -5.2, 0], c: "#3D7BE0", move: [12, 0, 0] }, { p: "car", at: [-70, 5.2, 0], rz: 180, c: "#E53935", move: [-12, 0, 0] }, { p: "car", at: [100, 1.8, 0], rz: 180, c: "#F2F2F2", move: [-12, 0, 0] });
   for (const [x, y, c] of [[39, -21, "#7FB86A"], [47.8, -21, "#B06AC8"], [56.6, -31, "#F2C200"], [65.4, -21, "#3D7BE0"], [43.4, -31, "#E8E8E8"]]) items.push({ p: "car", at: [x, y, 0.12], rz: 90, c });
+  // step 7: emergency vehicles on the avenue, a bus, the helicopter with its searchlight, far crowds for the aerials
+  items.push({ p: "police_car", at: [-62, -4.4, 0], rz: 180 }, { p: "ambulance", at: [-112, 4.6, 0] }, { p: "truck", at: [118, -4.6, 0], rz: 180, c: "#6A994E" }, { p: "bus", at: [86, 4.4, 0] });
+  items.push({ p: "helicopter", at: [14, 40, 0], z: 46 }, { p: "far_crowd", at: [0, 47, 0.2], n: 70, w: 36, d: 11 }, { p: "far_crowd", at: [-60, 9.4, 0.2], n: 30, w: 70, d: 2.4, seed: 9 }, { p: "far_crowd", at: [60, -9.4, 0.2], n: 30, w: 70, d: 2.4, seed: 21 });
   const T = {
     id: "megacity", name: "The Night Megacity", kind: "town", sky: "city", ground: { c: "#3A3D45" },
     look: "a dense night city: tall towers full of lit windows on both sides of a wide avenue with taxis, a fountain plaza under a giant scoreboard, billboards, a parking lot, an apartment with one lit room, rooftops with water towers, a long lit bridge over water, a clock tower, an alley, a subway entrance, a manhole",

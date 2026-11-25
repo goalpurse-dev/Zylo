@@ -144,3 +144,4 @@ export const SIDESETS = {
       ...[[-40, 70, 60], [-15, 90, 80], [15, 80, 70], [42, 66, 55], [0, 120, 100]].map(([x, y, h], k) => ({ p: "tower", at: [x, y, -40], w: 16, d: 16, h, i: k }))],
     hero: g(0, 1.5), two: [g(-1.6, 2.6), g(1.6, 2.6)], cams: { tank: ins([5, 1, 4], [9, 9, 5.5], 26) }, times: ["day", "night"] }),
 };
+export { side, R, ins, g, gear };

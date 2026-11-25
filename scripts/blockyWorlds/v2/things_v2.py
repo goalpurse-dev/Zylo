@@ -34,6 +34,18 @@ def zv_wear(ch, kinds):
             box(n + "_visor", (hw * 0.75, 0.55 * hs, 0.06 * hs), (0, -hd / 2 - 0.12 * hs, top + 0.02 * hs), zc_mat(n, "visor", "#121418", rough=0.3), 0.02, rot=(-12, 0, 0), parent=H)
             if kind == "police_cap":
                 sphere(n + "_capbadge", 0.13 * hs, (0, -hd / 2 + 0.02, top + 0.32 * hs), zc_mat(n, "capbadge", "#E8C43C", rough=0.3, spec=0.8), (1, 0.4, 1.2), parent=H, seg=10)
+        elif kind in ("helmet", "hard_hat"):
+            m = zc_mat(n, kind, "#D63A2F" if kind == "helmet" else "#F2C200", rough=0.35)
+            sphere(n + "_helm", 1.02 * hw / 1.9, (0, 0.05 * hs, top + 0.12 * hs), m, (1.0, 1.05, 0.62), parent=H, seg=22)
+            cyl(n + "_helmb", 1.12 * hw / 1.9 * (1.25 if kind == "helmet" else 1.08), 0.08 * hs, (0, 0.12 * hs if kind == "helmet" else 0.0, top - 0.02 * hs), m, 28, parent=H)
+        elif kind == "beret":
+            m = zc_mat(n, "beret", "#2A2A6A", rough=0.9)
+            cyl(n + "_beret", 0.95 * hw / 1.9, 0.22 * hs, (0.12 * hs, 0.05 * hs, top + 0.12 * hs), m, 24, rot=(0, 10, 0), parent=H)
+        elif kind == "vest":
+            m = zc_mat(n, "vest", "#FF8A1E", rough=0.5)
+            tw = P.get("torso_w", 2.0)
+            box(n + "_vest", (tw * 1.04, 0.06, P.get("torso_h", 2.0) * 0.8), (0, -0.62, P.get("torso_h", 2.0) * 0.5), m, 0.02, parent=ch.torso)
+            box(n + "_vests", (tw * 1.04, 0.07, 0.14), (0, -0.66, P.get("torso_h", 2.0) * 0.45), zc_mat(n, "vests", "#E8F0F0", rough=0.3, spec=0.8), 0.0, parent=ch.torso)
         elif kind == "chef_hat":
             m = zc_mat(n, "chef", "#FFFFFF", rough=0.8)
             cyl(n + "_chefb", 0.62 * hw / 1.9 * 1.55, 0.5 * hs, (0, 0.05 * hs, top + 0.22 * hs), m, 28, parent=H)
@@ -599,6 +611,43 @@ def zv_effect(kind, t0, t1, at=(0, 0, 0), size=1.0, cam=None, opt=None):
     elif kind == "glow":
         light("zt_glow", "POINT", (at.x, at.y, at.z + 1.5), 600 * size, zc_rgb(opt.get("col", "#FFE2A0")), 1.5)
         sphere("zt_glowb", 1.2 * size, (at.x, at.y, at.z + 1.5), mat("zt_glowm", zc_rgb(opt.get("col", "#FFE2A0")), 0.5, emit=zc_rgb(opt.get("col", "#FFE2A0")), estr=2.0, alpha=0.25), seg=16)
+    elif kind == "cracks":
+        zg_cracks("zt_cr", at, 5.0 * size)
+    elif kind == "fireworks":
+        cols = ["#FF4FD8", "#4FF0FF", "#FFE36A", "#7FFF6A"]
+        lo = Vector(cam[0]) if cam else Vector((0, -30, 6))
+        tg = Vector(cam[1]) if cam else Vector((0, 10, 3))
+        f = (tg - lo).normalized()
+        for b in range(4):
+            c = lo + f * (50 + 10 * b) + Vector(((b - 1.5) * 14, 0, 30 + 6 * (b % 2)))
+            m = mat("zt_fw%d" % b, zc_rgb(cols[b]), 0.3, emit=zc_rgb(cols[b]), estr=12.0)
+            for k in range(22):
+                a1, a2 = rnd.random() * 6.28, rnd.random() * 3.14
+                r_ = 5.0 + rnd.random() * 2.0
+                sphere("zt_fwp%d_%d" % (b, k), 0.28, (c.x + r_ * math.cos(a1) * math.sin(a2), c.y + r_ * math.sin(a1) * math.sin(a2), c.z + r_ * math.cos(a2)), m, seg=6)
+            light("zt_fwl%d" % b, "POINT", tuple(c), 3000, zc_rgb(cols[b]), 3.0)
+    elif kind == "portal":
+        cyl("zt_portal", 2.6 * size, 0.3, (at.x, at.y, at.z + 3.0 * size), mat("zt_portalr", zc_rgb("#B57FFF"), 0.3, emit=zc_rgb("#B57FFF"), estr=8.0), 40, rot=(90, 0, 0))
+        cyl("zt_portald", 2.3 * size, 0.1, (at.x, at.y + 0.05, at.z + 3.0 * size), mat("zt_portalc", zc_rgb("#4FF0FF"), 0.2, emit=zc_rgb("#4FF0FF"), estr=3.0, alpha=0.75), 40, rot=(90, 0, 0))
+        light("zt_portall", "POINT", (at.x, at.y - 1.5, at.z + 3.0 * size), 1200, zc_rgb("#9FE8FF"), 2.0)
+    elif kind == "debris":     # falling debris that hurts nobody: chunks in the air, none near a person
+        m = mat("zt_debris", zc_rgb("#8A8276"), 0.9)
+        for k in range(18):
+            ob = box("zt_deb%d" % k, (0.5 + rnd.random(), 0.5 + rnd.random(), 0.4 + rnd.random() * 0.6), (at.x + rnd.uniform(-8, 8) * size, at.y + rnd.uniform(-2, 6) * size, at.z + 8 + rnd.random() * 14), m, 0.05, rot=(rnd.random() * 90, rnd.random() * 90, rnd.random() * 90))
+            key(ob, "location", F(t0))
+            ob.location.z -= 6.0 * (t1 - t0)
+            key(ob, "location", F(t1))
+    elif kind == "flares":
+        for k in range(3):
+            p_ = (at.x + (k - 1) * 2.4, at.y, at.z + 0.2)
+            cyl("zt_flare%d" % k, 0.08, 0.6, p_, mat("zt_flarem", zc_rgb("#FF3A2A"), 0.3, emit=zc_rgb("#FF5A3A"), estr=14.0), 8, rot=(70, 0, k * 40))
+            light("zt_flarel%d" % k, "POINT", (p_[0], p_[1], p_[2] + 0.6), 500, (1.0, 0.25, 0.15), 0.4)
+    elif kind == "sirens":     # flashing red / blue lights sweeping the scene
+        for k, col in enumerate(((1.0, 0.15, 0.1), (0.2, 0.35, 1.0))):
+            pl = light("zt_siren%d" % k, "POINT", (at.x + (k * 2 - 1) * 3.0, at.y - 2.0, at.z + 4.0), 1400, col, 1.0)
+            for j in range(int((t1 - t0) * 3) + 2):
+                pl.data.energy = 1400 if (j + k) % 2 == 0 else 120
+                pl.data.keyframe_insert("energy", frame=F(t0 + j / 3.0))
     elif kind == "searchlights":
         zv_searchlights(cam, t0, t1, int((opt or {}).get("n", 4)))
     elif kind == "smoke":

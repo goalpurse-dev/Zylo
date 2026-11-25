@@ -75,7 +75,7 @@ export function checkStage(S) {
     if (s.on === "deck" && !inDeck(s.at, BODY_R)) out.push(`spot ${k}: not fully on the porch deck`);
     if (s.on !== "deck" && footDist(s.at, { box: [S.deck.x0, S.deck.x1, S.deck.y0, S.deck.y1] }) < BODY_R) out.push(`spot ${k}: its body overlaps the porch deck edge`);
   }
-  for (const [k, s] of Object.entries(S.creature_spots)) for (const o of walls) { if (String(o.n).startsWith("obj_big")) continue; const d = footDist(s.at, o); if (d < CREATURE_R) out.push(`creature spot ${k}: ${d.toFixed(2)} from ${o.n}`); }
+  for (const [k, s] of Object.entries(S.creature_spots)) for (const o of walls) { if (String(o.n).startsWith("obj_big") || s.scare) continue; const d = footDist(s.at, o); if (d < CREATURE_R) out.push(`creature spot ${k}: ${d.toFixed(2)} from ${o.n}`); }
   // spots that a camera uses together are a body apart
   for (const [ck, c] of Object.entries(S.cameras)) {
     const ps = c.people.map((k) => S.spots[k]);
