@@ -599,6 +599,8 @@ def zv_effect(kind, t0, t1, at=(0, 0, 0), size=1.0, cam=None, opt=None):
     elif kind == "glow":
         light("zt_glow", "POINT", (at.x, at.y, at.z + 1.5), 600 * size, zc_rgb(opt.get("col", "#FFE2A0")), 1.5)
         sphere("zt_glowb", 1.2 * size, (at.x, at.y, at.z + 1.5), mat("zt_glowm", zc_rgb(opt.get("col", "#FFE2A0")), 0.5, emit=zc_rgb(opt.get("col", "#FFE2A0")), estr=2.0, alpha=0.25), seg=16)
+    elif kind == "searchlights":
+        zv_searchlights(cam, t0, t1, int((opt or {}).get("n", 4)))
     elif kind == "smoke":
         for k in range(24):
             r_ = (0.7 + rnd.random() * 0.9) * size * (1.0 + 0.04 * k)     # soft puffs: smooth, see-through, growing as they rise

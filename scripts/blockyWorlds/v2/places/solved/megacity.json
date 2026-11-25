@@ -1,0 +1,322 @@
+{
+ "aerial_avenue": {
+  "loc": [
+   -175,
+   0,
+   58
+  ],
+  "tgt": [
+   -50,
+   0,
+   4
+  ],
+  "lens": 20,
+  "shot": "top",
+  "people": [],
+  "aerial": true
+ },
+ "town_wide": {
+  "loc": [
+   0,
+   -82,
+   115
+  ],
+  "tgt": [
+   0,
+   24,
+   0
+  ],
+  "lens": 20,
+  "shot": "top",
+  "people": [],
+  "aerial": true
+ },
+ "low_up": {
+  "loc": [
+   -36,
+   -3,
+   0.8
+  ],
+  "tgt": [
+   -14,
+   8,
+   22
+  ],
+  "lens": 14,
+  "shot": "low",
+  "people": [],
+  "fixed": true
+ },
+ "roof_down": {
+  "loc": [
+   -60,
+   17,
+   73.2
+  ],
+  "tgt": [
+   2,
+   30,
+   0
+  ],
+  "lens": 20,
+  "shot": "wide",
+  "people": [],
+  "fixed": true
+ },
+ "window_out": {
+  "loc": [
+   -30.4,
+   -18.6,
+   11
+  ],
+  "tgt": [
+   -30,
+   12,
+   10.2
+  ],
+  "lens": 20,
+  "shot": "medium",
+  "people": [
+   "in_room"
+  ],
+  "fixed": true,
+  "eye_at": [
+   -30,
+   -6.5,
+   10.9
+  ]
+ },
+ "giant_eye": {
+  "loc": [
+   -60,
+   -6,
+   40
+  ],
+  "tgt": [
+   -86,
+   0.6,
+   40
+  ],
+  "lens": 32,
+  "shot": "close",
+  "people": [],
+  "creature": "cr_reveal",
+  "reveal": "eye",
+  "monster": true,
+  "fixed": true
+ },
+ "into_window": {
+  "loc": [
+   -30.5,
+   -5,
+   11.3
+  ],
+  "tgt": [
+   -30,
+   -14.5,
+   10.6
+  ],
+  "lens": 28,
+  "shot": "medium",
+  "people": [
+   "in_room"
+  ],
+  "fixed": true
+ },
+ "chase": {
+  "loc": [
+   -53.3,
+   -1.73,
+   3.6
+  ],
+  "tgt": [
+   -40,
+   0.6,
+   0.25
+  ],
+  "lens": 26,
+  "shot": "medium",
+  "people": [
+   "avenue_mid"
+  ]
+ },
+ "tilt_danger": {
+  "loc": [
+   -31.74,
+   -5.88,
+   2.4
+  ],
+  "tgt": [
+   -40,
+   0.6,
+   0.25
+  ],
+  "lens": 20,
+  "shot": "medium",
+  "people": [
+   "avenue_mid"
+  ],
+  "roll": 14
+ },
+ "plaza_wide": {
+  "loc": [
+   0,
+   -6,
+   7
+  ],
+  "tgt": [
+   0,
+   30,
+   1
+  ],
+  "lens": 20,
+  "shot": "wide",
+  "people": [
+   "plaza_front"
+  ]
+ },
+ "hero_med": {
+  "loc": [
+   1.86,
+   0.62,
+   3.4
+  ],
+  "tgt": [
+   0,
+   15.5,
+   0.5
+  ],
+  "lens": 30,
+  "shot": "medium",
+  "people": [
+   "plaza_front"
+  ]
+ },
+ "two_shot": {
+  "loc": [
+   0,
+   2.45,
+   3.2
+  ],
+  "tgt": [
+   0,
+   17.2,
+   0.25
+  ],
+  "lens": 26,
+  "shot": "two",
+  "people": [
+   "two_a",
+   "two_b"
+  ]
+ },
+ "big_low": {
+  "loc": [
+   4,
+   15,
+   1.1
+  ],
+  "tgt": [
+   8,
+   30,
+   10
+  ],
+  "lens": 18,
+  "shot": "low",
+  "people": [],
+  "fixed": true
+ },
+ "creature_cam": {
+  "loc": [
+   -2,
+   1.5,
+   4.4
+  ],
+  "tgt": [
+   3,
+   54,
+   0.5
+  ],
+  "lens": 20,
+  "shot": "medium",
+  "people": [
+   "plaza_front"
+  ],
+  "creature": "cr_plaza_back",
+  "fixed": true
+ },
+ "bridge_wide": {
+  "loc": [
+   160,
+   -5.5,
+   7
+  ],
+  "tgt": [
+   196,
+   0,
+   3
+  ],
+  "lens": 22,
+  "shot": "wide",
+  "people": [
+   "bridge_mid"
+  ]
+ },
+ "parking_med": {
+  "loc": [
+   48.56,
+   -2.93,
+   3.2
+  ],
+  "tgt": [
+   52,
+   -16.5,
+   0.5
+  ],
+  "lens": 28,
+  "shot": "medium",
+  "people": [
+   "park_lot"
+  ]
+ },
+ "reveal_low": {
+  "loc": [
+   -70.82,
+   -0.8,
+   0.9
+  ],
+  "tgt": [
+   -86,
+   0.6,
+   3.2
+  ],
+  "lens": 26,
+  "shot": "low",
+  "people": [
+   "rv_hero"
+  ],
+  "creature": "cr_reveal",
+  "reveal": "low",
+  "monster": true,
+  "fixed": true
+ },
+ "reveal_face": {
+  "loc": [
+   -81.59,
+   -0.28,
+   4.5
+  ],
+  "tgt": [
+   -86,
+   0.6,
+   5.4
+  ],
+  "lens": 35,
+  "shot": "close",
+  "people": [],
+  "creature": "cr_reveal",
+  "reveal": "face",
+  "monster": true,
+  "fixed": true
+ }
+}

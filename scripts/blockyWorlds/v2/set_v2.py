@@ -14,7 +14,7 @@ ZV_TIMES = {
     "morning": {"sun": (1.0, 0.84, 0.66), "sun_e": 2.8, "el": 20, "az": -62, "sky": (0.72, 0.80, 0.95), "sky_s": 0.8, "night": False, "char": "morning"},
     "golden":  {"sun": (1.0, 0.70, 0.40), "sun_e": 2.9, "el": 12, "az": 55, "sky": (0.95, 0.74, 0.52), "sky_s": 0.75, "night": False, "char": "sunset"},
     "dusk":    {"sun": (0.95, 0.50, 0.42), "sun_e": 1.1, "el": 5, "az": 68, "sky": (0.10, 0.055, 0.13), "sky_s": 1.0, "night": True, "char": "sunset"},
-    "night":   {"sun": (0.55, 0.65, 1.0), "sun_e": 0.85, "el": 38, "az": 20, "sky": (0.018, 0.026, 0.065), "sky_s": 1.0, "night": True, "char": "night"},
+    "night":   {"sun": (0.45, 0.55, 1.0), "sun_e": 0.5, "el": 38, "az": 20, "sky": (0.018, 0.026, 0.065), "sky_s": 1.0, "night": True, "char": "night"},
     "storm":   {"sun": (0.6, 0.66, 0.8), "sun_e": 0.5, "el": 45, "az": 0, "sky": (0.03, 0.035, 0.045), "sky_s": 1.0, "night": True, "char": "storm"},
 }
 ZV_INDOOR = {   # indoor: a ceiling light, a soft fill from the open side, the window's colour
@@ -22,7 +22,7 @@ ZV_INDOOR = {   # indoor: a ceiling light, a soft fill from the open side, the w
     "morning": {"lamp": (1.0, 0.88, 0.74), "lamp_w": 700, "fill_w": 700, "world": (0.30, 0.28, 0.27), "win": "#FFD9B0", "night": False, "char": "morning"},
     "golden":  {"lamp": (1.0, 0.80, 0.6), "lamp_w": 750, "fill_w": 600, "world": (0.30, 0.24, 0.2), "win": "#FFB070", "night": False, "char": "sunset"},
     "dusk":    {"lamp": (1.0, 0.78, 0.55), "lamp_w": 850, "fill_w": 450, "world": (0.05, 0.04, 0.07), "win": "#5A4A7A", "night": True, "char": "sunset"},
-    "night":   {"lamp": (1.0, 0.80, 0.55), "lamp_w": 850, "fill_w": 380, "world": (0.015, 0.018, 0.03), "win": "#14203F", "night": True, "char": "night"},
+    "night":   {"lamp": (1.0, 0.70, 0.42), "lamp_w": 700, "fill_w": 200, "world": (0.008, 0.012, 0.03), "win": "#3A62C8", "night": True, "char": "night"},     # warm in, cold out
     "storm":   {"lamp": (0.85, 0.88, 1.0), "lamp_w": 650, "fill_w": 320, "world": (0.015, 0.018, 0.026), "win": "#2A3344", "night": True, "char": "storm"},
 }
 ZV_WEATHERS = ["clear", "rain", "storm", "snow", "fog", "wind", "danger", "eclipse"]
@@ -34,6 +34,8 @@ def zv_hex(h):
 
 def zv_mat(p, night):
     """one material per look (cached by name): colour, roughness, metal, alpha, emission (glow:"night" only after dark)"""
+    if p.get("wg") and ZV_LOOK.get("on", True):
+        return zv_grid_mat(p, night)
     if p.get("win") and ZV_TEXTS.get("_window"):     # an indoor window shows the time of day outside
         p = dict(p, c=ZV_TEXTS["_window"], e=ZV_TEXTS["_window"])
     e = p.get("e")
@@ -154,7 +156,7 @@ def zv_build_set(pid, time="day", weather="clear", t0=0.0, t1=1.0, cam=None):
                 sphere("zs_cloud%d" % k, r, (x, y, z), mat("zs_cloud", (1, 1, 1), 0.9, emit=(1, 1, 1), estr=0.35), (2.2, 1.0, 0.55), seg=16)
         ZV_SETLOOK.update({"exposure": 0.0})
     if P.get("base") == "suburb" and night and weather not in ("danger", "eclipse"):    # Stage A's night: moonlight on the ground
-        light("zs_moon", "SUN", (0, 0, 60), 3.2, (0.55, 0.65, 1.0), 2.0, rot=(52, 0, 25))
+        light("zs_moon", "SUN", (0, 0, 60), 1.6, (0.55, 0.65, 1.0), 2.0, rot=(52, 0, 25))
         zv_world((0.045, 0.06, 0.12), 1.0)
     ZV_SETINFO.clear()
     ZV_SETINFO.update({"pid": pid, "time": time, "weather": weather, "night": night, "char": L.get("char", "day") if weather not in ("danger", "eclipse") else "night"})
@@ -163,12 +165,172 @@ def zv_build_set(pid, time="day", weather="clear", t0=0.0, t1=1.0, cam=None):
         ZW_T["_std"] = True
         ZV_TIME["t"] = None
     n = zv_prims(P["prims"], night, t0, t1)
+    if ZV_LOOK.get("on", True) and not P.get("indoor"):
+        zv_look_extras(P, cam, night, time)
+    elif ZV_LOOK.get("on", True) and night:
+        zv_look_glow(True)
     if not P.get("indoor"):
         zv_weather(weather if not (P.get("base") == "suburb" and weather == "storm" and time == "storm") else "clear", t0, t1, cam)
     elif weather in ("danger", "eclipse", "storm") and P.get("indoor"):
         zv_weather_indoor(weather, t0, t1)
     zv_set_look()
     return {"shapes": n, "night": night}
+
+
+# ---------------------------------------------------------------- THE LOOK PASS (overnight build 2, owner 2026-11-25)
+# Night / dusk: hundreds of lit windows (a window-grid shader on tower and shop walls, a random third dark), a deep
+# blue sky with a moon and stars, pools of light under the lamps (data: the lamp prefab), a slightly shiny ground,
+# soft haze for depth, glow around lights (compositor), searchlights on request; warm inside light against cold
+# outside light. ZV_LOOK["on"] = False renders the old look (the before / after sheet and the render-time check).
+ZV_LOOK = {"on": True}
+
+
+def zv_grid_mat(p, night):
+    """a wall with a grid of windows: by day blue glass, after dark warm lit squares (about a third stay dark)"""
+    cw, ch = p["wg"][0], p["wg"][1]
+    nm = "zs_grid_%s_%s_%s_%d" % (str(p.get("c"))[1:], cw, ch, 1 if night else 0)
+    m = D.materials.get(nm)
+    if m:
+        return m
+    m = D.materials.new(nm)
+    m.use_nodes = True
+    nt = m.node_tree
+    bs = next(x for x in nt.nodes if x.type == "BSDF_PRINCIPLED")
+    tc = nt.nodes.new("ShaderNodeTexCoord")
+    sx = nt.nodes.new("ShaderNodeSeparateXYZ")
+    ad = nt.nodes.new("ShaderNodeMath")
+    ad.operation = "ADD"
+    cx = nt.nodes.new("ShaderNodeCombineXYZ")
+    nt.links.new(tc.outputs["Object"], sx.inputs[0])
+    nt.links.new(sx.outputs["X"], ad.inputs[0])
+    nt.links.new(sx.outputs["Y"], ad.inputs[1])
+    nt.links.new(ad.outputs[0], cx.inputs["X"])
+    nt.links.new(sx.outputs["Z"], cx.inputs["Y"])
+    br = nt.nodes.new("ShaderNodeTexBrick")
+    br.offset = 0.0
+    br.squash = 1.0
+    br.inputs["Scale"].default_value = 1.0 / cw
+    br.inputs["Brick Width"].default_value = 1.0
+    br.inputs["Row Height"].default_value = ch / cw
+    br.inputs["Mortar Size"].default_value = 0.28
+    br.inputs["Bias"].default_value = -0.35
+    wall = zv_hex(p.get("c", "#888888"))
+    br.inputs["Mortar"].default_value = (wall[0], wall[1], wall[2], 1)
+    if night:
+        br.inputs["Color1"].default_value = (1.0, 0.78, 0.42, 1)
+        br.inputs["Color2"].default_value = (0.03, 0.035, 0.05, 1)
+    else:
+        br.inputs["Color1"].default_value = (0.55, 0.72, 0.85, 1)
+        br.inputs["Color2"].default_value = (0.36, 0.50, 0.62, 1)
+    nt.links.new(cx.outputs[0], br.inputs["Vector"])
+    nt.links.new(br.outputs["Color"], bs.inputs["Base Color"])
+    bs.inputs["Roughness"].default_value = 0.35
+    if night:
+        inv = nt.nodes.new("ShaderNodeMath")       # only the window squares glow (Fac = 1 on the mortar = the wall)
+        inv.operation = "SUBTRACT"
+        inv.inputs[0].default_value = 1.0
+        nt.links.new(br.outputs["Fac"], inv.inputs[1])
+        mul = nt.nodes.new("ShaderNodeMath")
+        mul.operation = "MULTIPLY"
+        nt.links.new(inv.outputs[0], mul.inputs[0])
+        mul.inputs[1].default_value = 2.2
+        key = "Emission Color" if "Emission Color" in bs.inputs else "Emission"
+        nt.links.new(br.outputs["Color"], bs.inputs[key])
+        nt.links.new(mul.outputs[0], bs.inputs["Emission Strength"])
+    return m
+
+
+def zv_look_world(night, time):
+    """a deep blue night sky with stars (a world shader: no objects), a moon in the camera's sky"""
+    W = bpy.context.scene.world
+    if not W or not W.use_nodes:
+        return
+    nt = W.node_tree
+    bg = next(x for x in nt.nodes if x.type == "BACKGROUND")
+    top = (0.022, 0.05, 0.16) if time != "dusk" else (0.09, 0.05, 0.17)
+    vo = nt.nodes.new("ShaderNodeTexVoronoi")
+    vo.inputs["Scale"].default_value = 260.0
+    ramp = nt.nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].position = 0.0
+    ramp.color_ramp.elements[0].color = (3.0, 3.0, 3.2, 1)
+    ramp.color_ramp.elements[1].position = 0.035
+    ramp.color_ramp.elements[1].color = (top[0], top[1], top[2], 1)
+    nt.links.new(vo.outputs["Distance"], ramp.inputs["Fac"])
+    nt.links.new(ramp.outputs["Color"], bg.inputs["Color"])
+    bg.inputs["Strength"].default_value = 1.0
+
+
+def zv_look_extras(P, cam, night, time):
+    sc = bpy.context.scene
+    lo = Vector(cam[0]) if cam else Vector((0, -30, 6))
+    tg = Vector(cam[1]) if cam else Vector((0, 10, 3))
+    f = (tg - lo)
+    f.z = 0
+    f = f.normalized() if f.length > 1e-3 else Vector((0, 1, 0))
+    rz = math.degrees(math.atan2(f.x, -f.y))
+    if night:
+        zv_look_world(night, time)
+        mc = lo + f * 320 + Vector((-f.y * 60, f.x * 60, 140))      # the moon, up in the camera's sky
+        sphere("zs_moon_disc", 9.0, tuple(mc), mat("zs_moonm2", (1.0, 0.97, 0.88), 0.5, emit=(1.0, 0.96, 0.85), estr=4.0), seg=24)
+        for k, d in enumerate((55.0, 90.0)):        # soft blue haze for depth (far only: the subjects stay clear)
+            c = lo + f * d
+            box("zp_fhaze%d" % k, (d * 2.2, 0.05, 60), (c.x, c.y, 30), mat("zs_hazem", (0.06, 0.09, 0.2), 0.9, emit=(0.06, 0.09, 0.2), estr=0.12, alpha=0.08), 0.0, rot=(0, 0, rz))
+        g = D.objects.get("zs_ground")             # a slightly shiny ground that picks up the lights
+        if g and g.active_material and g.active_material.use_nodes:
+            b = next((x for x in g.active_material.node_tree.nodes if x.type == "BSDF_PRINCIPLED"), None)
+            if b:
+                b.inputs["Roughness"].default_value = 0.32
+    zv_look_glow(night)
+
+
+def zv_look_glow(night):
+    """glow around lights after dark: the compositor's glare (fog glow), kept cheap"""
+    sc = bpy.context.scene
+    try:
+        sc.use_nodes = True
+        nt = sc.node_tree
+        rl = next((x for x in nt.nodes if x.type == "R_LAYERS"), None) or nt.nodes.new("CompositorNodeRLayers")
+        co = next((x for x in nt.nodes if x.type == "COMPOSITE"), None) or nt.nodes.new("CompositorNodeComposite")
+        old = next((x for x in nt.nodes if x.type == "GLARE"), None)
+        if old:
+            nt.nodes.remove(old)
+        if not night:
+            nt.links.new(rl.outputs["Image"], co.inputs["Image"])
+            return
+        gl = nt.nodes.new("CompositorNodeGlare")
+        try:
+            gl.glare_type = "BLOOM"
+        except Exception:
+            gl.glare_type = "FOG_GLOW"
+        try:
+            gl.quality = "MEDIUM"
+            gl.threshold = 0.9
+            gl.size = 7
+        except Exception:
+            pass
+        nt.links.new(rl.outputs["Image"], gl.inputs["Image"])
+        nt.links.new(gl.outputs["Image"], co.inputs["Image"])
+    except Exception as e:
+        print("ZW_NOTE|look glow skipped: %s" % str(e)[:80])
+
+
+def zv_searchlights(cam, t0, t1, n=4):
+    """white searchlight beams sweeping the sky behind the shot (usable in any town)"""
+    lo = Vector(cam[0]) if cam else Vector((0, -30, 6))
+    tg = Vector(cam[1]) if cam else Vector((0, 10, 3))
+    f = (tg - lo)
+    f.z = 0
+    f = f.normalized() if f.length > 1e-3 else Vector((0, 1, 0))
+    side = Vector((-f.y, f.x, 0))
+    m = mat("zs_beamm", (0.85, 0.9, 1.0), 0.5, emit=(0.85, 0.9, 1.0), estr=2.4, alpha=0.18)
+    for k in range(n):
+        base = lo + f * (60 + 25 * (k % 2)) + side * ((k - (n - 1) / 2.0) * 28)
+        ob = cyl("zp_fbeam%d" % k, 0.6, 160, (base.x, base.y, 80), m, 12, r2=7.0)
+        rx_, rz_ = math.radians(18 + 8 * (k % 3)), math.radians(-25 + 50 * k / max(1, n - 1))
+        ob.rotation_euler = (rx_, 0, rz_)
+        key(ob, "rotation_euler", F(t0))
+        ob.rotation_euler = (rx_, 0, rz_ + math.radians(10 if k % 2 else -10))     # the sweep
+        key(ob, "rotation_euler", F(t1))
 
 
 def zv_set_look():
@@ -573,7 +735,7 @@ def zv_name_bounds(prefix):
     return Vector(lo), Vector(hi)
 
 
-ZV_ENT_H = {"giant_critter": 15.5, "long_one": 14.5, "watcher": 11, "many_arms": 11.5, "rain_thing": 10.5, "crawler": 6.5, "hollow": 6.5, "ghost": 5.5, "robot": 7.5, "slime": 3.5}
+ZV_ENT_H = {"stilt": 52.0, "mound": 30.0, "folder": 44.0, "giant_critter": 15.5, "long_one": 14.5, "watcher": 11, "many_arms": 11.5, "rain_thing": 10.5, "crawler": 6.5, "hollow": 6.5, "ghost": 5.5, "robot": 7.5, "slime": 3.5}
 
 
 def zv_reveal_cam(P, c, at, kind, bounds=None):
@@ -586,6 +748,14 @@ def zv_reveal_cam(P, c, at, kind, bounds=None):
     u = Vector((H.x - E.x, H.y - E.y, 0))
     u = u.normalized() if u.length > 0.1 else Vector((0, -1, 0))
     side = Vector((-u.y, u.x, 0))
+    if c["reveal"] == "eye":       # level with its eyes (a rooftop / a high window): the face across the street
+        top = bounds[1].z if bounds and bounds[1].z > -1e8 else Hh
+        ez = top - 0.1 * Hh
+        D_ = max(12.0, 0.8 * Hh)
+        loc = Vector((E.x, E.y, 0)) + u * D_ + side * 0.5
+        loc.z = ez
+        c["lens"] = 32.0
+        return loc, Vector((E.x, E.y, ez - 0.04 * Hh))
     if c["reveal"] == "low":
         loc = Vector((H.x, H.y, 0)) + u * max(20.0, 2.4 * Hh) + side * 3.0     # 12 behind the hero, a little to the side: the hero small, head above the captions
         loc.z = 2.2
@@ -634,6 +804,7 @@ def zv_place_test(pid, cam_name, time, weather, t0, t1, opt=None):
     its creature, the background people on their calm loops (by day), optional raining things / texts"""
     opt = opt or {}
     P = ZV_PLACES[pid]
+    ZV_LOOK["on"] = opt.get("look", True)
     hand_close = cam_name == "hand_close"
     if hand_close and opt.get("people") and opt["people"][0].get("pose") in ("hold_up", "hold_up2", "stand", None):
         opt["people"][0]["pose"] = "hold_phone"      # the hand held out at chest height (a raised hand puts the face in the close-up)
@@ -715,6 +886,22 @@ def zv_place_test(pid, cam_name, time, weather, t0, t1, opt=None):
         cr.express(t0, "shadow_stare")
         cr.face_to((loc.x, loc.y, 2.0))
         zc_idle(cr, t0, t1, 0.6)
+    if opt.get("giant"):       # a building-sized giant (giants_v2.py): at the camera's creature spot, or its head at the window
+        gd = opt["giant"]
+        if c.get("eye_at"):
+            ea = c["eye_at"]
+            gat, hto = (ea[0], ea[1] + 7.0, 0.0), tuple(ea)
+        else:
+            gat, hto = tuple(P["creature_spots"][c["creature"]]["at"]), None
+        g_ = ZGiant("Ent", gd["kind"], gat, math.degrees(math.atan2(loc.x - gat[0], -(loc.y - gat[1]))), gd.get("state", "stand"), t0, t1, head_to=hto)
+        lo_, hi_ = zv_name_bounds("Ent")
+        if c.get("reveal"):
+            loc, tgt = zv_reveal_cam(P, c, gat, gd["kind"], (lo_, hi_))
+        zv_entity_light(lo_, hi_, loc, ZV_SETINFO.get("night", False))
+        cr = g_
+    if opt.get("scare") and opt["scare"].get("spot") in (P.get("creature_spots") or {}):
+        sc_ = opt["scare"]
+        zv_scare(sc_["kind"], P["creature_spots"][sc_["spot"]]["at"], tuple(loc), t0, t1)
     if opt.get("animal"):
         if c.get("creature"):
             aa = P["creature_spots"][c["creature"]]["at"]
@@ -763,8 +950,14 @@ def zv_place_test(pid, cam_name, time, weather, t0, t1, opt=None):
             if z > 1.0:
                 continue
             ch = ZChar("Cw%d" % n_ok, ZC_SPECS[["nb1", "nb2", "nb3", "nb4", "nb5", "nb6", "cm1", "cm3"][n_ok % 8]], (q.x, q.y, z), rot=0, badge=False)
-            ch.pose(t0, poses[n_ok % len(poses)])
-            ch.express(t0, ["scared", "worried", "big_smile", "terrified"][n_ok % 4])
+            if cw.get("action") in ZV_CROWD_MOVES:       # a crowd move of the acting library: this phase's poses
+                pz_ = ZV_CROWD_MOVES[cw["action"]][int(cw.get("phase", 1))][n_ok % 3]
+                ch.pose(t0, pz_)
+                zv_body_pose(ch, pz_, t0)
+                ch.express(t0, {"cheer": "big_smile", "freeze_all": "terrified", "all_look_up": "scared"}.get(cw["action"], ["scared", "terrified", "worried"][n_ok % 3]))
+            else:
+                ch.pose(t0, poses[n_ok % len(poses)])
+                ch.express(t0, ["scared", "worried", "big_smile", "terrified"][n_ok % 4])
             look = big["at"] if big else (tgt.x, tgt.y + 20, 0)
             ch.face_to((look[0] + (k % 3 - 1) * 3, look[1], 2.0))
             zc_idle(ch, t0, t1, 0.8)
@@ -819,12 +1012,12 @@ def zv_place_test(pid, cam_name, time, weather, t0, t1, opt=None):
         ZV_SHOT["hand_head"] = subs[0][1]
         subs = []          # a hand close: no head in frame on purpose
     else:
-        cam.key(t0, tuple(loc), tuple(tgt), lens=c["lens"])
-        cam.key(t1, tuple(loc + (tgt - loc) * 0.06), tuple(tgt), lens=c["lens"])
+        cam.key(t0, tuple(loc), tuple(tgt), lens=c["lens"], roll=c.get("roll", 0.0))
+        cam.key(t1, tuple(loc + (tgt - loc) * 0.06), tuple(tgt), lens=c["lens"], roll=c.get("roll", 0.0))
     for _, ch in subs:
         zc_char_light(ch, tuple(loc), ZV_SETINFO.get("char", "day"))
     hh_ = ZV_SHOT.get("hand_head")
     ZV_SHOT.clear()
-    ZV_SHOT.update({"cam": cam_name, "subjects": subs, "creature": cr, "need": need, "hand_head": hh_, "entity_seen": bool(opt.get("entity")), "read_texts": (c.get("reads") or None) if c.get("shot") == "insert" else (opt.get("read") or None)})
+    ZV_SHOT.update({"cam": cam_name, "subjects": subs, "creature": cr, "need": need, "hand_head": hh_, "entity_seen": bool(opt.get("entity") or opt.get("giant")), "read_texts": (c.get("reads") or None) if c.get("shot") == "insert" else (opt.get("read") or None)})
     return info
 # ===== END OF THE PLACE BUILDER =======================================================================================

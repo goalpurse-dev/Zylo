@@ -5,6 +5,7 @@
 
 const pave = 0.2;
 import { placeProp } from "./props.mjs";
+import { megacity } from "./megacity.mjs";
 // THE REVEAL CAMERAS (owner 2026-11-25): per town, an entity spot on an open street with a hero spot 8 in front of it;
 // "low" = near the ground 7 behind the hero (small, in a lower corner), looking up at the whole entity; "face" = close
 // on its face / eyes. set_v2.py zv_reveal_cam remakes both from the entity's real size; these numbers are nominal.
@@ -222,4 +223,4 @@ function suburb() {
   };
 }
 
-export const TOWNS = { bright_city: withReveal(brightCity(), [-36, 0.4, 0], [-28, -1.2, 0]), old_town: withReveal(oldTown(), [-58, 0.5, 0], [-50, -0.6, 0]), suburb: withReveal(suburb(), [100, 0.4, 0.06], [92, -1.0, 0.06]) };
+export const TOWNS = { bright_city: withReveal(brightCity(), [-36, 0.4, 0], [-28, -1.2, 0]), old_town: withReveal(oldTown(), [-58, 0.5, 0], [-50, -0.6, 0]), suburb: withReveal(suburb(), [100, 0.4, 0.06], [92, -1.0, 0.06]), megacity: withReveal(megacity(), [-86, 0.6, 0], [-78, -1.0, 0]) };

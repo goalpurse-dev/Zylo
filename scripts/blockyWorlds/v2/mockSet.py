@@ -208,7 +208,7 @@ class NL(list):
         return MagicMock()
 bpy.context.scene.world.node_tree.nodes = NL([MagicMock(type="BACKGROUND"), MagicMock(type="OUTPUT_WORLD")])
 bpy.context.scene.ray_cast.return_value = (True, Vector((0, 0, 0.2)), None, 0, None, None)
-srcs = ["set_v2.py"] + (["things_v2.py"] if os.path.exists(os.path.join(HERE, "things_v2.py")) else [])
+srcs = ["set_v2.py"] + (["things_v2.py"] if os.path.exists(os.path.join(HERE, "things_v2.py")) else []) + (["giants_v2.py", "acting_v2.py"] if os.path.exists(os.path.join(HERE, "giants_v2.py")) else [])
 for f in srcs:
     exec(compile(open(os.path.join(HERE, f), encoding="utf8").read(), f, "exec"), g)
 exec(compile(open(sys.argv[1], encoding="utf8").read(), "head", "exec"), g)

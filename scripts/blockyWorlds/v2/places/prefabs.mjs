@@ -33,7 +33,7 @@ const GLASS = "#A9D2EE", WARM = "#FFE2A0", DARK = "#2E2A2A";
 export const P = {
   // a colourful shop: two storeys, a striped awning, a sign board with replaceable text, shop window lit at night
   shop({ w = 11, d = 8, h = 11, c = "#F28B82", c2 = "#FFFFFF", awn = ["#E53935", "#FFFFFF"], sign = "SHOP", key = null, i = 0 } = {}) {
-    const o = [box([0, d / 2, h / 2], [w, d, h], c), box([0, d / 2, h + 0.3], [w + 0.4, d + 0.4, 0.6], c2, { solid: false }),
+    const o = [box([0, d / 2, h / 2], [w, d, h], c), box([0, d / 2 - 0.06, h * 0.75 + 0.1], [w - 0.4, d, h * 0.5 - 1.2], c, { wg: [2.2, 2.6], solid: false }), box([0, d / 2, h + 0.3], [w + 0.4, d + 0.4, 0.6], c2, { solid: false }),
       box([0, -0.1, 5.9], [w, 0.3, 0.35], c2, { solid: false }),
       box([-w * 0.17, -0.06, 2.6], [w * 0.46, 0.2, 3.4], GLASS, { e: WARM, es: 1.4, glow: "night", rough: 0.1, solid: false }),
       box([w * 0.3, -0.06, 2.2], [2.3, 0.2, 4.4], "#5A3A2A", { solid: false }),
@@ -48,7 +48,7 @@ export const P = {
   },
   // a glass tower behind the town: a body, floor bands, windows lit at random after dark
   tower({ w = 14, d = 14, h = 60, c = "#7FB4DA", band = "#E6F2FA", i = 0 } = {}) {
-    const o = [box([0, d / 2, h / 2], [w, d, h], c, { rough: 0.12, metal: 0.2 }), box([0, d / 2, h + 0.6], [w * 0.7, d * 0.7, 1.2], band, { solid: false })];
+    const o = [box([0, d / 2, h / 2], [w, d, h], c, { rough: 0.12, metal: 0.2, wg: [2.4, 3.6] }), box([0, d / 2, h + 0.6], [w * 0.7, d * 0.7, 1.2], band, { solid: false })];
     for (let z = 4, k = 0; z < h - 2; z += 4.2, k++) {
       o.push(box([0, -0.05, z], [w + 0.1, 0.12, 0.4], band, { solid: false }));
       o.push(box([-w / 2 - 0.05, d / 2, z], [0.12, d + 0.1, 0.4], band, { solid: false }));
@@ -102,7 +102,8 @@ export const P = {
     const o = [cyl([0, 0, h / 2], 0.17, h, c, { v: 10 })];
     if (style === "old") o.push(box([0, 0, h + 0.5], [0.9, 0.9, 1.2], "#FFE9B0", { e: "#FFD27A", es: 4, glow: "night", solid: false }), cyl([0, 0, h + 1.3], 0.75, 0.5, c, { v: 4, r2: 0.1, rz: 45, solid: false }));
     else o.push(box([0, -0.8, h], [0.3, 1.8, 0.2], c, { solid: false }), box([0, -1.6, h - 0.2], [0.7, 0.9, 0.25], "#FFF4D6", { e: "#FFE2A0", es: 5, glow: "night", solid: false }));
-    if (light) o.push(lit([0, style === "old" ? 0 : -1.6, h - 0.6], 320, "#FFD8A0", { when: "night" }));
+    if (light) o.push(lit([0, style === "old" ? 0 : -1.6, h - 0.6], 320, "#FFD8A0", { when: "night" }),
+      cyl([0, style === "old" ? 0 : -1.6, 0.04], 2.6, 0.02, "#FFD8A0", { e: "#FFC870", es: 0.7, alpha: 0.35, glow: "night", when: "night", solid: false, v: 24 }));     // the pool of light on the ground
     return o;
   },
   bench({ c = "#8A5A3A" } = {}) {

@@ -24,8 +24,17 @@ function side(id, name, look, o) {
     creature_spots: o.creature_spots ?? {}, background: o.background ?? {}, cameras: { ...cams(hero, two, o.cams ?? {}, { far: o.far ?? 1 }) }, times: o.times ?? ["day", "night"], states: o.states ?? null };
 }
 const R = (p) => ({ p: "room", at: [0, 0, 0], ...p });
+// a brass gear standing upright (its face to the camera): a disc, a hub and teeth round the rim
+const gear = (x, y, z, r, c = "#C9A24A") => [{ prim: { t: "cyl", at: [x, y, z], r, h: 0.35, c, metal: 0.7, rough: 0.35, rx: 90, v: 32 } }, { prim: { t: "cyl", at: [x, y - 0.25, z], r: r * 0.22, h: 0.3, c: "#8A6A2A", metal: 0.6, rx: 90, v: 16, solid: false } },
+  ...Array.from({ length: Math.max(8, Math.round(r * 7)) }, (_, k) => { const a = (k / Math.max(8, Math.round(r * 7))) * 2 * Math.PI; return { prim: { t: "box", at: [x + (r + 0.12) * Math.cos(a), y, z + (r + 0.12) * Math.sin(a)], s: [0.32, 0.3, 0.32], ry: -(a * 180) / Math.PI, c, metal: 0.7, solid: false } }; })];
 
 export const SIDESETS = {
+  gear_room: side("gear_room", "The clock tower's gear room", "inside the clock tower: huge brass gears turning, the giant clock face glowing from behind, a pendulum, a narrow stair", {
+    items: [R({ wall: "#6E6252", floor: "#4A3E32", trim: "#3A3028" }), ...gear(-3.6, 4.6, 3.6, 2.2), ...gear(0.4, 5.0, 5.4, 1.4, "#B8923E"), ...gear(3.8, 4.4, 2.6, 1.8), ...gear(1.6, 3.6, 1.6, 0.9, "#D4AE5A"),
+      { prim: { t: "cyl", at: [0, 5.85, 4.4], r: 2.6, h: 0.12, c: "#FFF1C8", e: "#FFE6A0", es: 2.2, rx: 90, v: 48, solid: false } }, { prim: { t: "box", at: [0, 5.75, 5.2], s: [0.16, 0.06, 1.6], c: "#2A2A2A", solid: false } }, { prim: { t: "box", at: [0.6, 5.75, 4.4], s: [1.3, 0.06, 0.14], c: "#2A2A2A", solid: false } },
+      { prim: { t: "cyl", at: [-5.6, 2.2, 3.4], r: 0.06, h: 4.6, c: "#8A6A2A", solid: false } }, { prim: { t: "cyl", at: [-5.6, 2.2, 1.0], r: 0.5, h: 0.2, c: "#C9A24A", metal: 0.7, rx: 90, v: 24, solid: false } },
+      ...[0, 1, 2, 3, 4].map((k) => ({ prim: { t: "box", at: [5.6, 0.4 + k * 0.9, 0.3 + k * 0.6], s: [1.6, 0.9, 0.2], c: "#5A4A3A" } })), { prim: { t: "light", at: [0, 4.6, 4.4], w: 500, c: "#FFD58A", solid: false } }],
+    cams: { gears: ins([-1.2, 0.8, 4.0], [-1.0, 4.6, 3.8], 26) }, times: ["night", "day", "dusk"] }),
   classroom: side("classroom", "Classroom", "desks, a board with replaceable text, the teacher's desk, a clock, a window", {
     items: [R({ wall: "#F3E6C4", floor: "#C9A26B" }), { p: "board", at: [0, 5.85, 4.2], text: "TODAY: MATH", key: "board" }, { p: "desk", at: [-4.6, 3.4, 0], w: 3.4, c: "#8A5A3A" },
       { p: "wallclock", at: [5.6, 5.85, 6.3] }, { p: "window", at: [-6.2, 5.85, 4.4], w: 2.4, curtains: null },

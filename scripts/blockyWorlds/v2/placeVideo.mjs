@@ -65,7 +65,7 @@ const places = await allPlaces();
 const payloads = {};
 for (const s of stills) if (!payloads[s.place]) { const [t, bk] = s.place.split("+"); payloads[s.place] = placePayload(loadPlace(bk ? withBig(places[t], ...bk.split(".")) : places[t])); }
 const LIB = ["worlds/worlds.py", "actions/actions.py", "worlds/acts.py", "worlds/pieces.py", "worlds/motion.py", "worlds/crowds.py", "worlds/town.py"].map((f) => fs.readFileSync(path.join(KIT, f), "utf8")).join("\n\n");
-const V2 = ["stage_v2.py", "char_v2.py", "set_v2.py", "things_v2.py"].map((f) => fs.readFileSync(path.join(HERE, f), "utf8")).join("\n\n");
+const V2 = ["stage_v2.py", "char_v2.py", "set_v2.py", "things_v2.py", "giants_v2.py", "acting_v2.py"].map((f) => fs.readFileSync(path.join(HERE, f), "utf8")).join("\n\n");
 const HEX = fs.readFileSync(path.join(HERE, "assets", "zyvo_badge96.hex"), "utf8").trim();
 const N = stills.length;
 const src = [`"""In This Town v2: ${script.title} (preview video)"""`, "from shotkit import *", "from rbx import story", "from rbx.story import *", "import math, random", "from mathutils import Vector, Euler", "",

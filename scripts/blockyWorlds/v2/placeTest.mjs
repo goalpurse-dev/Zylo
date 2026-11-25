@@ -53,7 +53,7 @@ if (has("studio")) for (const x of JSON.parse(fs.readFileSync(arg("studio"), "ut
 if (bad) process.exit(1);
 const N = stills.length;
 const LIB = ["worlds/worlds.py", "actions/actions.py", "worlds/acts.py", "worlds/pieces.py", "worlds/motion.py", "worlds/crowds.py", "worlds/town.py"].map((f) => fs.readFileSync(path.join(KIT, f), "utf8")).join("\n\n");
-const V2 = ["stage_v2.py", "char_v2.py", "set_v2.py", ...(fs.existsSync(path.join(HERE, "things_v2.py")) ? ["things_v2.py"] : [])].map((f) => fs.readFileSync(path.join(HERE, f), "utf8")).join("\n\n");
+const V2 = ["stage_v2.py", "char_v2.py", "set_v2.py", ...(fs.existsSync(path.join(HERE, "things_v2.py")) ? ["things_v2.py"] : []), ...(fs.existsSync(path.join(HERE, "giants_v2.py")) ? ["giants_v2.py", "acting_v2.py"] : [])].map((f) => fs.readFileSync(path.join(HERE, f), "utf8")).join("\n\n");
 const HEX = fs.readFileSync(path.join(HERE, "assets", "zyvo_badge96.hex"), "utf8").trim();
 const extraSpecs = (await import("./characters.mjs")).EXTRA_SPECS ?? {};
 // the prop library + props built on the spot (passed ones in props_built.json; a story's new ones via --recipes)
@@ -61,7 +61,7 @@ const RECIPES = { ...(await import("./places/props.mjs")).allProps(), ...(has("r
 const B = 60;
 const head = [`ZV_STAGES["A"] = ${py(STAGE_A)}`, `ZV_STAGES["B"] = ${py(STAGE_B)}`, `ZC_SPECS.update(${py({ ...CHARACTERS, ...NEIGHBOURS, ...extraSpecs })})`, `ZV_BADGE_HEX = ${JSON.stringify(HEX)}`, `ZV_RECIPES.update(${py(RECIPES)})`,
   ...Object.entries(payloads).map(([id, p]) => `ZV_PLACES[${py(id)}] = ${py(p)}`)];
-const call = (x) => x.studio ? `zv_studio_test(${py(x.studio.what)}, t0, t1, ${py(x.studio.opt ?? {})})` : `zv_place_test(${py(x.place)}, ${py(x.cam)}, ${py(x.time)}, ${py(x.weather)}, t0, t1, ${py({ ...OPT, ...(x.opt ?? {}) })})`;
+const call = (x) => x.studio?.move ? `zv_move_test(${py(x.studio.move)}, ${py(x.studio.phase ?? 1)}, t0, t1)` : x.studio ? `zv_studio_test(${py(x.studio.what)}, t0, t1, ${py(x.studio.opt ?? {})})` : `zv_place_test(${py(x.place)}, ${py(x.cam)}, ${py(x.time)}, ${py(x.weather)}, t0, t1, ${py({ ...OPT, ...(x.opt ?? {}) })})`;
 // ---- the free local mock run (python without Blender: every builder call checked for names and arguments)
 fs.writeFileSync(path.join(OUT, "mock_head.py"), head.join("\n"));
 fs.writeFileSync(path.join(OUT, "mock_calls.py"), stills.map((x) => `t0, t1 = 1.0, 2.0\n${call(x)}`).join("\n"));
