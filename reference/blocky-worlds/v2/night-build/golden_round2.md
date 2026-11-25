@@ -1,0 +1,16 @@
+# Golden round 2 (fix round 2, 2026-11-25): stills only, planner gets the story text + catalogue
+
+| # | status | stills | town | side sets | cast | built on the spot | last line |
+|---|---|---|---|---|---|---|---|
+| keys | FAIL: 25 L19 reveal_low: me head_cut head u 0.34-0.54 v 0.52-0.64 (captions below 0.62) / the main story objec | 28/29 | bright_city | control_room | me, mayor, slime, ghost, long_one | - | And the Mayor's lever labeled SATURDAY was already glowing. |
+| 2 | FAIL: 21 L19 reveal_low: me small body 0.11 of the frame height; object white_letter too small to read / 25 L2 | 24/27 | suburb | alley | me, mom, grandpa, giant_critter | - | Every mailbox on our street swings open, glowing, as a thousand white letters rise into the sky. And that was only the first letter. |
+| 3 | PASS | 21/21 | old_town | kitchen, classroom, school_front | me, sister, mom, cm1, teacher, mayor, nb1, bird | sunflower, top_hat | And the Mayor's sunflower had started to grow again. |
+| 4 | FAIL: 20 L18 cul_med: object yellow_footprints not visible / 21 L19 reveal_face: creature head_cut its eyes ar | 21/23 | suburb | - | me, mom, sister, grandpa, nb1, watcher | yellow_footprints | Out in the fog, the Watcher stands huge, holding one red ball. |
+| 5 | FAIL: 4 L3 wide: object cookie not visible / 5 L4 two: object cookie not visible / 6 L5 close: object cookie n | 19/27 | bright_city | kitchen, townhall_front | me, mom, sister, nb1, mayor | - | The Mayor's top hat started to glow too. That was only the first. |
+| 6 | FAIL: 1 L1 aerial_main: object doorbell too small to read / 4 L3 house_wide: object doorbell not visible / 10  | 12/23 | suburb | living_room | me, mom, sister, watcher | blanket | Its eyes all open, and that was only our street's first midnight. |
+| 7 | PASS | 28/28 | old_town | classroom, kitchen | me, teacher, mom, sister, grandpa, bus_driver, nb1 | glasses | And the gift box's ribbon was only starting to untie. |
+| 8 | FAIL: 29 L25 aerial_main: dark: frame p90 0.21 mean 0.18 / 31 L27 reveal_face: creature head_cut its eyes are | 26/28 | suburb | kitchen, classroom, school_front | me, mom, teacher, mayor, sister, hollow, watcher | - | And the Watcher was still chewing my cookie, hungry for more. |
+| 9 | FAIL: 5 L4 chair: frame empty 40 pct of the picture is empty wall or void / 11 L10 park_side: sister head_cut  | 17/22 | suburb | grandma_room | person, grandpa, nb1, mom, sister | red_thread | Snow, rain and frogs fall at once, and one red thread hangs down. |
+| 10 | FAIL: 2 L1 creature_cam: object lost_socks too small to read / 7 L6 sq_wide: object lost_socks not visible / 1 | 17/25 | old_town | - | me, mom, dad, sister, nb1, giant_critter | basket | Behind it, a second, bigger claw rises from the hole. |
+| 11 | FAIL: 23 L20 town_wide: dark: frame p90 0.23 mean 0.15 / 24 L21 aerial_cul: object clock not visible; dark: f | 22/25 | suburb | school_front | me, mom, grandpa, nb1, nb2 | - | And the clock still had one minute left to eat. |
+| 12 | FAIL: 5 L4 medium: object plate not visible / 7 L6 medium: object plate not visible / 8 L7 wide: object taped_ | 10/24 | old_town | bedroom | me, nb4, cat, giant_critter | big_hand | It held my brother's cookie in its hand, and it was still hungry. |
