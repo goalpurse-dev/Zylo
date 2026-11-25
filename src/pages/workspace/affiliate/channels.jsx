@@ -20,18 +20,19 @@ export function HandlesEditor({ rows, onChange }) {
       {rows.map((row, i) => {
         const bad = row.handle.trim() && !normalizeHandle(row.platform, row.handle);
         return (
-          <div key={i} className="rounded-2xl border border-white/10 bg-black/20 p-2.5">
-            <div className="flex items-center gap-1.5" role="radiogroup" aria-label={`Channel ${i + 1}: platform`}>
+          <div key={i} className="relative rounded-2xl border border-white/10 bg-black/20 p-2.5">
+            {rows.length > 1 && (
+              <button type="button" aria-label="Remove this channel" onClick={() => onChange(rows.filter((_, k) => k !== i))}
+                className="absolute -right-2 -top-2 z-[1] grid h-7 w-7 place-items-center rounded-full border border-white/15 bg-[#161816] text-white/55 hover:text-white"><X className="h-3.5 w-3.5" /></button>
+            )}
+            {/* 4 equal columns, icon over a small label: fits a 320 px phone */}
+            <div className="grid grid-cols-4 gap-1.5" role="radiogroup" aria-label={`Channel ${i + 1}: platform`}>
               {HANDLE_PLATFORMS.map((p) => (
                 <button key={p} type="button" role="radio" aria-checked={row.platform === p} onClick={() => set(i, { platform: p })} data-testid={`handle-${i}-${p}`}
-                  className={`flex min-h-[38px] flex-1 items-center justify-center gap-1.5 rounded-xl border px-1.5 text-[12.5px] font-bold transition ${row.platform === p ? "border-lime-300/70 bg-lime-300/[0.1] text-white" : "border-white/10 text-white/55 hover:border-white/20"}`}>
-                  <PlatformIcon platform={p} className="scale-[0.8]" /><span className="hidden min-[380px]:inline">{PLATFORM_LABEL[p]}</span>
+                  className={`flex min-h-[52px] min-w-0 flex-col items-center justify-center gap-1 rounded-xl border px-1 text-[11px] font-bold transition ${row.platform === p ? "border-lime-300/70 bg-lime-300/[0.1] text-white" : "border-white/10 text-white/55 hover:border-white/20"}`}>
+                  <PlatformIcon platform={p} className="scale-[0.85]" /><span className="max-w-full truncate">{PLATFORM_LABEL[p]}</span>
                 </button>
               ))}
-              {rows.length > 1 && (
-                <button type="button" aria-label="Remove this channel" onClick={() => onChange(rows.filter((_, k) => k !== i))}
-                  className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-white/40 hover:bg-white/10 hover:text-white/80"><X className="h-4 w-4" /></button>
-              )}
             </div>
             <div className={`mt-2 flex items-center rounded-xl border bg-white/[0.04] ${bad ? "border-amber-300/60" : "border-white/10 focus-within:border-lime-300/60"}`}>
               {row.platform !== "other" && <span className="pl-3.5 text-[15px] font-bold text-white/40" aria-hidden="true">@</span>}
