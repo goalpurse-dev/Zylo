@@ -16,7 +16,7 @@ function cams(hero, two, extra = {}, { far = 1 } = {}) {
   };
 }
 // inserts: the camera pulled back 1.8x from its target (the first sheet: the key object filled or left the frame)
-const ins = (loc, tgt, lens = 30) => ({ loc: loc.map((v, i) => +(tgt[i] + (v - tgt[i]) * 1.8).toFixed(2)), tgt, lens, shot: "insert", people: [], fixed: true });
+const ins = (loc, tgt, lens = 30, reads = []) => ({ loc: loc.map((v, i) => +(tgt[i] + (v - tgt[i]) * 1.8).toFixed(2)), tgt, lens, shot: "insert", people: [], fixed: true, reads });
 function side(id, name, look, o) {
   const two = o.two ?? [g(-1.6, -0.6), g(1.6, -0.6)], hero = o.hero ?? g(0, -1.8);
   return { id, name, kind: "side", look, indoor: o.indoor !== false, ground: o.ground ?? null, light: o.light ?? null,
@@ -30,7 +30,7 @@ export const SIDESETS = {
     items: [R({ wall: "#F3E6C4", floor: "#C9A26B" }), { p: "board", at: [0, 5.85, 4.2], text: "TODAY: MATH", key: "board" }, { p: "desk", at: [-4.6, 3.4, 0], w: 3.4, c: "#8A5A3A" },
       { p: "wallclock", at: [5.6, 5.85, 6.3] }, { p: "window", at: [-6.2, 5.85, 4.4], w: 2.4, curtains: null },
       ...[-5.6, 5.6].flatMap((x) => [-0.6, 2.4].flatMap((y) => [{ p: "desk", at: [x, y, 0], w: 2.2, d: 1.4, h: 1.4 }, { p: "chair", at: [x, y + 1.15, 0], c: "#E8505B", h: 0.9 }]))],
-    spots: { teacher: { at: g(1.6, 4.4), tag: "at the board" } }, cams: { board: ins([0, -1.2, 4.2], [0, 5.8, 4.2], 30) } }),
+    spots: { teacher: { at: g(1.6, 4.4), tag: "at the board" } }, cams: { board: ins([0, -1.2, 4.2], [0, 5.8, 4.2], 30, ["board"]) } }),
   hallway: side("hallway", "School hallway", "a corridor of lockers, posters, a door", {
     items: [R({ d: 8, wall: "#EFE8D8", floor: "#D8D2C4" }), { p: "lockers", at: [0, 2.95, 0], n: 11, c: "#3E7CB1" }, { p: "poster", at: [-5, 3.86, 6.5], text: "GO TEAM", key: "poster", c: "#E8505B" },
       { p: "poster", at: [4.5, 3.86, 6.5], c: "#F2B705" }, { p: "door", at: [7.85, 0.5, 0], rz: 90 }],
@@ -43,7 +43,7 @@ export const SIDESETS = {
       { prim: { t: "box", at: [0, 14.9, 2.4], s: [3.6, 0.2, 4.8], c: "#5A3A2A", solid: false } }, { prim: { t: "box", at: [0, 14, 0.3], s: [10, 2, 0.6], c: "#D8D2C4", solid: false } },
       { p: "flag", at: [-10, 12, 0] }, { prim: { t: "box", at: [0, -6, -0.02], s: [80, 8, 0.06], c: "#474C5A", solid: false } },
       { p: "bus", at: [9, -5.5, 0], text: "SCHOOL BUS", key: "bus" }, { p: "tree", at: [-16, 11, 0] }, { p: "tree", at: [17, 11, 0] }],
-    hero: g(-3, 3), two: [g(-6.2, 4), g(-3, 6)], spots: { by_bus: { at: g(4, -1.4) } }, cams: { sign: ins([0, 4, 6], [0, 14.6, 11.4], 30) }, times: ["day", "morning"] }),
+    hero: g(-3, 3), two: [g(-6.2, 4), g(-3, 6)], spots: { by_bus: { at: g(4, -1.4) } }, cams: { sign: ins([0, 4, 6], [0, 14.6, 11.4], 30, ["school"]) }, times: ["day", "morning"] }),
   bedroom: side("bedroom", "Kid's bedroom", "a bed, a desk, a window, a poster, a rug, a toy box, a lamp", {
     items: [R({ wall: "#BFD9E8", floor: "#C9A26B" }), { p: "bed", at: [-4.6, 3.0, 0], c: "#E8505B" }, { p: "window", at: [3.2, 5.85, 4.4] }, { p: "desk", at: [5.4, 4.6, 0] },
       { p: "chair", at: [5.4, 3.2, 0], rz: 180 }, { p: "poster", at: [-1.2, 5.88, 4.6], c: "#F2B705" }, { p: "rug", at: [0.6, -0.4, 0], r: 2.6, c: "#3E7CB1" },
@@ -72,24 +72,24 @@ export const SIDESETS = {
     items: [R({ wall: "#F4E1C1", floor: "#6E4428" }), { p: "counter", at: [3, 3.4, 0], L: 8, c: "#B5523B" }, { p: "coffeemachine", at: [5.4, 3.4, 2.1] },
       { p: "board", at: [3, 5.85, 5.4], w: 5, h: 2, text: "COCOA 2", key: "menu", c: "#2B2B33" }, { p: "cafetable", at: [-4.6, 0.4, 0] }, { p: "cafetable", at: [-4.6, -3.6, 0] },
       { p: "chair", at: [-6.2, 0.4, 0], rz: -90, c: "#3A3A40" }, { p: "window", at: [-4.6, 5.85, 4.4], curtains: null }],
-    hero: g(0, -1.8), two: [g(-1.6, -0.9), g(1.6, -0.9)], cams: { menu: ins([3, -0.6, 4.8], [3, 5.8, 5.4], 30) } }),
+    hero: g(0, -1.8), two: [g(-1.6, -0.9), g(1.6, -0.9)], cams: { menu: ins([3, -0.6, 4.8], [3, 5.8, 5.4], 30, ["menu"]) } }),
   mayor_office: side("mayor_office", "The Mayor's office", "a big desk with a name plate, a big chair, two flags, a portrait, a red carpet", {
     items: [R({ wall: "#6E4428", floor: "#3A2A20" }), { p: "rug", at: [0, 0, 0], r: 4.2, c: "#8C1E2A" }, { p: "desk", at: [0, 2.2, 0], w: 5, d: 2.4, h: 1.7, c: "#4E2A1A", leg: "#4E2A1A" },
       { prim: { t: "box", at: [0, 0.98, 1.2], s: [2.6, 0.08, 0.6], c: "#D9B24A", solid: false } }, { prim: { t: "text", at: [0, 0.92, 1.2], body: "THE MAYOR", size: 0.3, c: "#2B1A10", key: "nameplate", solid: false } },
       { p: "armchair", at: [3.6, 4.4, 0], c: "#7A1E2A" }, { p: "flag", at: [-5.4, 4.8, 0] }, { p: "flag", at: [5.6, 2.0, 0], c1: "#C8283C", c2: "#F4F1EA" },
       { p: "frame", at: [0, 5.88, 5.4], w: 2.4, h: 3, c: "#2B3550" }, { p: "window", at: [-4.6, 5.85, 4.6], curtains: "#8C1E2A" }],
-    hero: g(0, -1.8), two: [g(-1.6, -0.4), g(1.6, -0.4)], spots: { mayor: { at: g(0, 4.6), tag: "behind the desk" } }, cams: { nameplate: ins([0.4, -1.6, 2.2], [0, 1, 1.3], 34), mayor_med: { loc: [0.6, -2.4, 3.8], tgt: [0, 4.6, 2.9], lens: 30, shot: "medium", people: ["mayor"] } } }),
+    hero: g(0, -1.8), two: [g(-1.6, -0.4), g(1.6, -0.4)], spots: { mayor: { at: g(0, 4.6), tag: "behind the desk" } }, cams: { nameplate: ins([0.4, -1.6, 2.2], [0, 1, 1.3], 34, ["nameplate"]), mayor_med: { loc: [0.6, -2.4, 3.8], tgt: [0, 4.6, 2.9], lens: 30, shot: "medium", people: ["mayor"] } } }),
   control_room: side("control_room", "The secret control room", "a wall of screens showing the town, a console with levers and big labelled buttons, one huge red button under a cover", {
     items: [R({ wall: "#1C2030", floor: "#22262F", trim: "#3A4050" }), { p: "screens", at: [0, 5.8, 4.6], cols: 5, rows: 3 }, { p: "console", at: [-2, 2.5, 0], L: 9, labels: ["RAIN", "SUN", "STORM"] },
       { p: "redbutton", at: [5, 2.5, 0] }, { prim: { t: "light", at: [0, 3.2, 5], w: 250, c: "#6AB0E8", solid: false } }],
     hero: g(0, -0.8), two: [g(-1.6, -0.6), g(1.6, -0.6)], spots: { mayor: { at: g(-2, 4.8), tag: "behind the console" }, at_red: { at: g(5, -0.6), tag: "at the red button" } },
-    cams: { red: ins([5, -1.0, 3.2], [5, 2.5, 1.0], 30), buttons: ins([-3.5, -0.6, 4.4], [-3.4, 2.0, 2.6], 30), screens: ins([0, -6, 4.6], [0, 5.8, 4.6], 24),
+    cams: { red: ins([5, -1.0, 3.2], [5, 2.5, 1.0], 30, ["red_label"]), buttons: ins([-3.5, -0.6, 3.4], [-3.4, 2.0, 1.4], 30, ["btn1", "btn2", "btn3"]), screens: ins([0, -6, 4.6], [0, 5.8, 4.6], 24),
       mayor_med: { loc: [-1.6, -4.5, 6.4], tgt: [-2, 4.8, 2.2], lens: 30, shot: "top", people: ["mayor"], fixed: true },
       press_side: { loc: [0.8, -8.4, 4.6], tgt: [4.9, 0.6, 1.5], lens: 24, shot: "medium", people: ["at_red"], fixed: true } }, times: ["night", "dusk"], states: { red: "covered" } }),
   townhall_front: side("townhall_front", "Town hall front", "the town hall with columns, steps and its sign; flower beds; old lamps", {
     indoor: false, ground: { c: "#B9AA8E" }, far: 1.15,
     items: [{ p: "townhall", at: [0, 8, 0], sign: "TOWN HALL", key: "townhall" }, { p: "flowerbed", at: [-9, 5.5, 0] }, { p: "flowerbed", at: [9, 5.5, 0] }, { p: "lamp", at: [-13, 4, 0], style: "old", h: 6.5 }, { p: "lamp", at: [13, 4, 0], style: "old", h: 6.5 }],
-    hero: g(0, 1.5), two: [g(-1.6, 2.6), g(1.6, 2.6)], spots: { on_steps: { at: g(5.5, 6.4) } }, cams: { sign: ins([0, 0, 7], [0, 8.6, 12.2], 30) } }),
+    hero: g(0, 1.5), two: [g(-1.6, 2.6), g(1.6, 2.6)], spots: { on_steps: { at: g(5.5, 6.4) } }, cams: { sign: ins([0, 0, 7], [0, 8.6, 12.2], 30, ["townhall"]) } }),
   playground: side("playground", "Park playground", "a slide, swings, a sandbox, a bench, trees, a fence", {
     indoor: false, ground: { c: "#79B85A" }, far: 1.3,
     items: [{ p: "slide", at: [-5, 5, 0] }, { p: "swing", at: [4.5, 6, 0] }, { p: "sandbox", at: [-6.5, -2, 0] }, { p: "bench", at: [6.5, -1, 0], rz: -90 }, { p: "tree", at: [-11, 10, 0] }, { p: "tree", at: [10, 11, 0] }, { p: "fence", at: [0, 11, 0], L: 26 }],
@@ -108,7 +108,7 @@ export const SIDESETS = {
       { prim: { t: "text", at: [0, 9.55, 8.2], body: "POLICE", size: 1.1, c: "#FFFFFF", key: "police", solid: false } }, { p: "bluelight", at: [0, 9.6, 10.0] },
       { prim: { t: "box", at: [0, 9.9, 2.4], s: [3.4, 0.2, 4.8], c: "#2B3550", solid: false } }, ...[-8, 8].map((x) => ({ prim: { t: "box", at: [x, 9.9, 4], s: [3.4, 0.2, 2.6], c: "#A9D2EE", e: "#FFE2A0", es: 1, glow: "night", solid: false } })),
       { p: "car", at: [9, 1.5, 0], c: "#F2F2F2" }, { prim: { t: "box", at: [9.4, 1.5, 3.05], s: [0.6, 2.2, 0.35], c: "#1E4FD8", e: "#3060FF", es: 3, solid: false } }, { prim: { t: "box", at: [9, 1.5, 1.4], s: [5, 3.36, 0.5], c: "#1E3A8A", solid: false } }],
-    hero: g(-3, 2), two: [g(-5.2, 3), g(-2, 4.6)], cams: { sign: ins([0, 2, 6], [0, 9.6, 8.6], 30) } }),
+    hero: g(-3, 2), two: [g(-5.2, 3), g(-2, 4.6)], cams: { sign: ins([0, 2, 6], [0, 9.6, 8.6], 30, ["police"]) } }),
   basement: side("basement", "Basement", "a boiler, pipes, shelves, a bare bulb, boxes", {
     items: [R({ wall: "#7A7A72", floor: "#5A5A55", trim: "#6A6A64" }), { p: "boiler", at: [-5.2, 3.6, 0] }, { p: "pipes", at: [0, 5.4, 6.6], L: 16 }, { p: "shelf", at: [4.6, 4.4, 0], c: "#6E6E66" },
       { p: "bulb", at: [0, 0.5, 6.2] }, { p: "crate", at: [5.8, -2.4, 0] }, { p: "crate", at: [5.8, -2.4, 1.4], s: 1.1 }],

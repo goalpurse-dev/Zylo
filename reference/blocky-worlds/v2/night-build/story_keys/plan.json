@@ -1,5 +1,5 @@
 {
- "town": "old_town",
+ "town": "bright_city",
  "side_sets": [
   "control_room"
  ],
@@ -12,47 +12,43 @@
    "name": "Me"
   },
   {
-   "id": "villain_mayor",
+   "id": "mayor",
    "kind": "person",
-   "library": "villain_mayor",
+   "library": "mayor",
    "name": "The Mayor"
   },
   {
    "id": "nb1",
    "kind": "person",
    "library": "nb1",
-   "name": "Neighbour Bea"
+   "name": "Neighbour"
   },
   {
    "id": "nb3",
    "kind": "person",
    "library": "nb3",
-   "name": "Old Mr. Pim"
+   "name": "Old Neighbour"
   },
   {
    "id": "slime",
    "kind": "entity",
    "library": "slime",
-   "name": "Gloop"
+   "name": "Slime"
   },
   {
    "id": "ghost",
    "kind": "entity",
    "library": "ghost",
-   "name": "Boo"
+   "name": "Ghost"
   },
   {
    "id": "long_one",
    "kind": "entity",
    "library": "long_one",
-   "name": "The Long One"
+   "name": "Long One"
   }
  ],
  "texts": [
-  {
-   "key": "townhall",
-   "text": "TOWN HALL"
-  },
   {
    "key": "btn1",
    "text": "FRIDAY DROP"
@@ -62,12 +58,12 @@
    "text": "MONSTERS"
   },
   {
-   "key": "btn3",
-   "text": "SUNNY DAY"
-  },
-  {
    "key": "red_label",
    "text": "DON'T PRESS THAT, KID"
+  },
+  {
+   "key": "screen",
+   "text": "IT RAINS KEYS"
   }
  ],
  "scenes": [
@@ -77,80 +73,56 @@
     1,
     2
    ],
-   "place": "old_town",
+   "place": "bright_city",
    "time": "day",
-   "weather": "clear",
-   "big_state": "closed"
+   "weather": "rain",
+   "big_state": "closed",
+   "rain_things": {
+    "kind": "frog",
+    "amount": 0.5,
+    "pile": 0.3,
+    "falling": true
+   }
   },
   {
    "scene": 2,
    "lines": [
     3,
-    4
+    4,
+    5,
+    6,
+    7,
+    8
    ],
-   "place": "old_town",
+   "place": "bright_city",
    "time": "day",
    "weather": "rain",
    "big_state": "closed",
    "rain_things": {
     "kind": "key",
-    "amount": 0.4,
-    "pile": 0.1,
+    "amount": 0.7,
+    "pile": 0.4,
     "falling": true
    }
   },
   {
    "scene": 3,
    "lines": [
-    5,
-    6
-   ],
-   "place": "old_town",
-   "time": "day",
-   "weather": "rain",
-   "big_state": "closed",
-   "rain_things": {
-    "kind": "key",
-    "amount": 0.8,
-    "pile": 0.5,
-    "falling": true
-   }
-  },
-  {
-   "scene": 4,
-   "lines": [
-    7,
-    8
-   ],
-   "place": "old_town",
-   "time": "day",
-   "weather": "rain",
-   "big_state": "closed",
-   "rain_things": {
-    "kind": "key",
-    "amount": 0.3,
-    "pile": 0.7,
-    "falling": true
-   }
-  },
-  {
-   "scene": 5,
-   "lines": [
     9
    ],
-   "place": "old_town",
-   "time": "golden",
+   "place": "bright_city",
+   "time": "day",
    "weather": "clear",
    "big_state": "open_light",
    "rain_things": {
     "kind": "key",
     "amount": 0,
-    "pile": 0.7,
+    "pile": 0.4,
     "falling": false
    }
   },
   {
-   "scene": 6,
+   "scene": 4,
    "lines": [
     10,
     11,
@@ -163,28 +135,27 @@
    ],
    "place": "control_room",
    "time": "day",
-   "weather": "clear"
-  },
-  {
-   "scene": 7,
-   "lines": [
-    18,
-    19
-   ],
-   "place": "old_town",
-   "time": "storm",
-   "weather": "danger",
+   "weather": "clear",
    "big_state": "open_light"
   },
   {
-   "scene": 8,
+   "scene": 5,
    "lines": [
+    18,
+    19,
     20,
     21
    ],
-   "place": "control_room",
-   "time": "night",
-   "weather": "danger"
+   "place": "bright_city",
+   "time": "storm",
+   "weather": "storm",
+   "big_state": "open_light",
+   "rain_things": {
+    "kind": "entity:slime,ghost,long_one",
+    "amount": 0.7,
+    "pile": 0.3,
+    "falling": true
+   }
   }
  ]
 }

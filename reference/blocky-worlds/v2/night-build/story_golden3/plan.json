@@ -1,0 +1,132 @@
+{
+ "town": "old_town",
+ "side_sets": [
+  "kitchen",
+  "school_front"
+ ],
+ "cast": [
+  {
+   "id": "me",
+   "kind": "person",
+   "library": "me",
+   "name": "Me"
+  },
+  {
+   "id": "sister",
+   "kind": "person",
+   "library": "sister",
+   "name": "Little Sister"
+  },
+  {
+   "id": "mom",
+   "kind": "person",
+   "library": "mom",
+   "name": "Mom"
+  },
+  {
+   "id": "cm1",
+   "kind": "person",
+   "library": "cm1",
+   "name": "Classmate"
+  },
+  {
+   "id": "teacher",
+   "kind": "person",
+   "library": "teacher",
+   "name": "Teacher"
+  },
+  {
+   "id": "mayor",
+   "kind": "person",
+   "library": "mayor",
+   "name": "The Mayor"
+  },
+  {
+   "id": "bird",
+   "kind": "animal",
+   "library": "bird",
+   "name": "Blue Bird"
+  },
+  {
+   "id": "nb1",
+   "kind": "person",
+   "library": "nb1",
+   "name": "Neighbour"
+  },
+  {
+   "id": "nb3",
+   "kind": "person",
+   "library": "nb3",
+   "name": "Old Neighbour"
+  },
+  {
+   "id": "robot",
+   "kind": "entity",
+   "library": "robot",
+   "name": "Garden Robot"
+  }
+ ],
+ "texts": [
+  {
+   "key": "townhall",
+   "text": "TOWN HALL"
+  },
+  {
+   "key": "school",
+   "text": "SCHOOL"
+  }
+ ],
+ "scenes": [
+  {
+   "scene": 1,
+   "lines": [
+    1,
+    2
+   ],
+   "place": "old_town",
+   "time": "day",
+   "weather": "clear"
+  },
+  {
+   "scene": 2,
+   "lines": [
+    3,
+    4,
+    5
+   ],
+   "place": "kitchen",
+   "time": "morning",
+   "weather": "clear"
+  },
+  {
+   "scene": 3,
+   "lines": [
+    6,
+    7,
+    8
+   ],
+   "place": "school_front",
+   "time": "day",
+   "weather": "clear"
+  },
+  {
+   "scene": 4,
+   "lines": [
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19
+   ],
+   "place": "old_town",
+   "time": "golden",
+   "weather": "clear"
+  }
+ ]
+}

@@ -1,0 +1,19 @@
+{
+ "stills": 26,
+ "pass": 26,
+ "render_fails": [],
+ "check_problems": [],
+ "town": "bright_city",
+ "side_sets": [
+  "control_room"
+ ],
+ "cast": [
+  "me",
+  "mayor",
+  "nb1",
+  "nb3",
+  "slime",
+  "ghost",
+  "long_one"
+ ]
+}

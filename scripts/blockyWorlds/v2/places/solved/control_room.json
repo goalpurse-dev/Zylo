@@ -82,23 +82,31 @@
   "lens": 30,
   "shot": "insert",
   "people": [],
-  "fixed": true
+  "fixed": true,
+  "reads": [
+   "red_label"
+  ]
  },
  "buttons": {
   "loc": [
    -3.58,
    -2.68,
-   5.84
+   5
   ],
   "tgt": [
    -3.4,
    2,
-   2.6
+   1.4
   ],
   "lens": 30,
   "shot": "insert",
   "people": [],
-  "fixed": true
+  "fixed": true,
+  "reads": [
+   "btn1",
+   "btn2",
+   "btn3"
+  ]
  },
  "screens": {
   "loc": [
@@ -114,7 +122,8 @@
   "lens": 24,
   "shot": "insert",
   "people": [],
-  "fixed": true
+  "fixed": true,
+  "reads": []
  },
  "mayor_med": {
   "loc": [

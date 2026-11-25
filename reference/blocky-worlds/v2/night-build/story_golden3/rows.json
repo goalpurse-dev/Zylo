@@ -1,0 +1,300 @@
+[
+ {
+  "line": 1,
+  "place": "old_town",
+  "cam": "aerial_main",
+  "weather": "clear",
+  "people": []
+ },
+ {
+  "line": 1,
+  "from_word": 3,
+  "place": "old_town",
+  "cam": "hero_med",
+  "people": [
+   {
+    "id": "me",
+    "spot": "sq_front",
+    "pose": "point",
+    "face": "thinking",
+    "facing": "big"
+   }
+  ]
+ },
+ {
+  "line": 2,
+  "place": "old_town",
+  "cam": "sq_wide",
+  "people": [],
+  "crowd": {
+   "n": 8,
+   "action": "run"
+  }
+ },
+ {
+  "line": 3,
+  "place": "kitchen",
+  "cam": "two",
+  "people": [
+   {
+    "id": "me",
+    "spot": "two_a",
+    "pose": "flinch",
+    "face": "worried",
+    "facing": "sister"
+   },
+   {
+    "id": "sister",
+    "spot": "two_b",
+    "pose": "stand",
+    "face": "scared",
+    "facing": "me"
+   }
+  ]
+ },
+ {
+  "line": 4,
+  "place": "kitchen",
+  "cam": "close",
+  "people": [
+   {
+    "id": "me",
+    "spot": "hero",
+    "pose": "lean_in",
+    "face": "worried",
+    "facing": "sister"
+   }
+  ]
+ },
+ {
+  "line": 5,
+  "place": "kitchen",
+  "cam": "two",
+  "people": [
+   {
+    "id": "mom",
+    "spot": "two_a",
+    "pose": "reach",
+    "face": "happy",
+    "facing": "me"
+   },
+   {
+    "id": "me",
+    "spot": "two_b",
+    "pose": "look_back",
+    "face": "happy",
+    "facing": "mom"
+   }
+  ]
+ },
+ {
+  "line": 6,
+  "place": "school_front",
+  "cam": "medium",
+  "people": [
+   {
+    "id": "me",
+    "spot": "hero",
+    "pose": "flinch",
+    "face": "worried",
+    "facing": "cm1"
+   }
+  ]
+ },
+ {
+  "line": 7,
+  "place": "school_front",
+  "cam": "two",
+  "people": [
+   {
+    "id": "me",
+    "spot": "two_a",
+    "pose": "lean_in",
+    "face": "sad",
+    "facing": "cm1"
+   },
+   {
+    "id": "cm1",
+    "spot": "two_b",
+    "pose": "point",
+    "face": "happy",
+    "facing": "me"
+   }
+  ]
+ },
+ {
+  "line": 8,
+  "place": "school_front",
+  "cam": "medium",
+  "people": [
+   {
+    "id": "teacher",
+    "spot": "hero",
+    "pose": "talk",
+    "face": "big_smile",
+    "facing": "me"
+   }
+  ]
+ },
+ {
+  "line": 9,
+  "place": "old_town",
+  "cam": "big_med",
+  "people": [
+   {
+    "id": "mayor",
+    "spot": "big_front",
+    "pose": "walk",
+    "face": "smug",
+    "facing": "big"
+   }
+  ]
+ },
+ {
+  "line": 10,
+  "place": "old_town",
+  "cam": "hero_close",
+  "people": [
+   {
+    "id": "mayor",
+    "spot": "sq_front",
+    "pose": "stand",
+    "face": "smug",
+    "facing": "big"
+   }
+  ]
+ },
+ {
+  "line": 11,
+  "place": "old_town",
+  "cam": "hero_med",
+  "people": [
+   {
+    "id": "mayor",
+    "spot": "sq_front",
+    "pose": "talk",
+    "face": "smug",
+    "facing": "big"
+   }
+  ]
+ },
+ {
+  "line": 12,
+  "place": "old_town",
+  "cam": "hero_close",
+  "people": [
+   {
+    "id": "mayor",
+    "spot": "sq_front",
+    "pose": "talk",
+    "face": "angry",
+    "facing": "big"
+   }
+  ]
+ },
+ {
+  "line": 13,
+  "place": "old_town",
+  "cam": "creature_cam",
+  "people": [
+   {
+    "id": "mayor",
+    "spot": "sq_front",
+    "pose": "flinch",
+    "face": "scared",
+    "facing": "bird"
+   }
+  ],
+  "entity": {
+   "id": "bird",
+   "state": "walk",
+   "show": "full"
+  }
+ },
+ {
+  "line": 14,
+  "place": "old_town",
+  "cam": "sq_wide",
+  "people": [],
+  "crowd": {
+   "n": 8,
+   "action": "point"
+  }
+ },
+ {
+  "line": 15,
+  "place": "old_town",
+  "cam": "hero_med",
+  "people": [
+   {
+    "id": "me",
+    "spot": "sq_front",
+    "pose": "look_back",
+    "face": "thinking",
+    "facing": "big"
+   }
+  ]
+ },
+ {
+  "line": 16,
+  "place": "old_town",
+  "cam": "two_shot",
+  "people": [
+   {
+    "id": "mayor",
+    "spot": "two_a",
+    "pose": "hands_head",
+    "face": "worried",
+    "facing": "me"
+   },
+   {
+    "id": "me",
+    "spot": "two_b",
+    "pose": "reach_up",
+    "face": "happy",
+    "facing": "mayor"
+   }
+  ],
+  "effect": {
+   "kind": "grow"
+  }
+ },
+ {
+  "line": 17,
+  "place": "old_town",
+  "cam": "hero_close",
+  "people": [
+   {
+    "id": "mayor",
+    "spot": "sq_front",
+    "pose": "reach_up",
+    "face": "worried",
+    "facing": "big"
+   }
+  ]
+ },
+ {
+  "line": 18,
+  "place": "old_town",
+  "cam": "town_wide",
+  "people": [],
+  "crowd": {
+   "n": 8,
+   "action": "reach"
+  }
+ },
+ {
+  "line": 19,
+  "place": "old_town",
+  "cam": "hero_med",
+  "people": [
+   {
+    "id": "me",
+    "spot": "sq_front",
+    "pose": "point",
+    "face": "thinking",
+    "facing": "big"
+   }
+  ]
+ }
+]

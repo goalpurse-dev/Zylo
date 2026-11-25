@@ -1,0 +1,23 @@
+{
+ "stills": 20,
+ "pass": 20,
+ "render_fails": [],
+ "check_problems": [],
+ "town": "old_town",
+ "side_sets": [
+  "kitchen",
+  "school_front"
+ ],
+ "cast": [
+  "me",
+  "sister",
+  "mom",
+  "cm1",
+  "teacher",
+  "mayor",
+  "bird",
+  "nb1",
+  "nb3",
+  "robot"
+ ]
+}

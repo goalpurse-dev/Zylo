@@ -1,0 +1,95 @@
+{
+ "title": "The Sorry Garden",
+ "rule": "Every time you say sorry, a flower grows on your head.",
+ "ending": "The whole town becomes a field of flowers on heads, and the Mayor's top hat lifts off on a giant sunflower stem after he says sorry last.",
+ "planted": [
+  {
+   "detail": "A tiny red flower on my head after my first sorry",
+   "line": 4,
+   "payoff_line": 15
+  },
+  {
+   "detail": "Mayor's tall top hat on his bare head",
+   "line": 10,
+   "payoff_line": 17
+  }
+ ],
+ "lines": [
+  {
+   "text": "In this town, every sorry grows a flower on your head.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "Everyone walks carefully across the cobbled square.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "Yesterday I bumped into my little sister in the kitchen.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "I said sorry, and a tiny red flower popped up.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "Mom smiled and watered it with a cup.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "At school, I stepped on a classmate's backpack.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "I said sorry again, and a yellow flower grew.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "The teacher had a whole bouquet on her head.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "Then the Mayor marched out in front of the town hall.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "His tall top hat sat proudly on his bare head.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "Chin high, the Mayor said,",
+   "speaker": "narrator"
+  },
+  {
+   "text": "I never say sorry.",
+   "speaker": "other"
+  },
+  {
+   "text": "Then a blue bird landed and knocked his hat off.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "Everyone gasped. A crowd of flower heads leaned in.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "My little red flower waved, as if it knew.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "He mumbled sorry, and a giant sunflower shot up.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "His top hat rose high, held up on the stem.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "Now the whole town is a garden of heads.",
+   "speaker": "narrator"
+  },
+  {
+   "text": "In this town, who will be brave enough to say sorry first?",
+   "speaker": "narrator"
+  }
+ ]
+}

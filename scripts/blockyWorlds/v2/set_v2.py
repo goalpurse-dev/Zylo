@@ -59,7 +59,7 @@ def zv_prims(prims, night, t0, t1, coll=None):
                 continue
         t, at = p["t"], tuple(p["at"])
         rot = (p.get("rx", 0.0), p.get("ry", 0.0), p.get("rz", 0.0))
-        nm = "zs%d_%s" % (k, p.get("tag", t))
+        nm = "zs%d_%s" % (k, p.get("tag", t)) if not (t == "text" and p.get("key")) else "zs%d_k%s_text" % (k, p["key"])
         if t == "light":
             light(nm, p.get("kind", "POINT"), at, p["w"], zv_hex(p["c"]), p.get("size", 0.8))
             continue
@@ -207,9 +207,10 @@ def zv_frame_gate(S):
                 empty_n += 1
     if n and empty_n / float(n) > 0.36 and ZV_SHOT.get("cam") not in ("screens",):
         out.append("ZW_GATE|%s|zv|frame|empty|%d pct of the picture is empty wall or void" % (sid, int(100 * empty_n / n)))
-    if ZV_SHOT.get("read_texts"):
+    rk = ZV_SHOT.get("read_texts")
+    if rk:
         for ob in D.objects:
-            if ob.type == "FONT" and ob.name.endswith("_text"):
+            if ob.type == "FONT" and ob.name.endswith("_text") and (rk is True or any(("_k%s_" % q) in ob.name for q in rk)):
                 sp = zw_span(cam, [ob.matrix_world.translation])
                 if sp and 0.0 < sp[0] < 1.0 and 0.0 < sp[2] < 1.0 and sp[2] > 0.62:
                     out.append("ZW_GATE|%s|zv|text|under_captions|%s at v %.2f" % (sid, ob.name[:20], sp[2]))
@@ -568,6 +569,15 @@ def zv_place_test(pid, cam_name, time, weather, t0, t1, opt=None):
         cr.express(t0, "shadow_stare")
         cr.face_to((loc.x, loc.y, 2.0))
         zc_idle(cr, t0, t1, 0.6)
+    if opt.get("animal"):
+        if c.get("creature"):
+            aa = P["creature_spots"][c["creature"]]["at"]
+        elif subs:
+            r0 = subs[0][1].root.location
+            aa = (r0.x + 1.8, r0.y - 0.6, r0.z)
+        else:
+            aa = (tgt.x, tgt.y, 0.0)
+        ZAnimal("Animal", opt["animal"], tuple(aa), math.degrees(math.atan2(loc.x - aa[0], -(loc.y - aa[1]))))
     nbs = ["nb1", "nb2", "nb3", "nb4"]
     if opt.get("crowd"):
         cw = opt["crowd"]
@@ -640,6 +650,6 @@ def zv_place_test(pid, cam_name, time, weather, t0, t1, opt=None):
     for _, ch in subs:
         zc_char_light(ch, tuple(loc), ZV_SETINFO.get("char", "day"))
     ZV_SHOT.clear()
-    ZV_SHOT.update({"cam": cam_name, "subjects": subs, "creature": cr, "read_texts": bool(opt.get("read") or c.get("shot") == "insert")})
+    ZV_SHOT.update({"cam": cam_name, "subjects": subs, "creature": cr, "read_texts": (c.get("reads") or None) if c.get("shot") == "insert" else (opt.get("read") or None)})
     return info
 # ===== END OF THE PLACE BUILDER =======================================================================================

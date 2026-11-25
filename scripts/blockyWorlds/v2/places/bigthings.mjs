@@ -10,7 +10,7 @@ Object.assign(P, {
     const o = [box([-w / 2 - 0.6, 0, h / 2], [1.2, 1.6, h + 0.4], "#3A2A20"), box([w / 2 + 0.6, 0, h / 2], [1.2, 1.6, h + 0.4], "#3A2A20"),
       box([0, 0, h + 0.8], [w + 2.4, 1.8, 1.2], "#3A2A20"), box([0, -0.3, 0.15], [w + 2.6, 2.4, 0.3], "#5A4A3A", { solid: false })];
     if (state === "open") {
-      o.push(box([-w / 2 + 0.2, -w / 2 + 0.2, h / 2], [0.5, w, h], "#2A1A12", { solid: false }));
+      o.push(box([-w / 2 + 0.2, -w / 2 + 0.2, h / 2], [0.5, w, h], "#2A1A12"));     // the swung panel is a real obstacle for the checks
       o.push(box([0, 0.2, h / 2], [w, 0.1, h], behind === "light" ? "#FFF4D0" : "#000000", behind === "light" ? { e: "#FFE9A8", es: 6, solid: false } : { rough: 1, solid: false }));
       if (behind === "light") o.push(lit([0, -3, h / 2], 2500, "#FFE2A0"));
     } else {
@@ -91,5 +91,5 @@ export function withBig(town, kind, state) {
   const add = (v) => [at[0] + v[0], at[1] + v[1], at[2] + v[2]];
   return { ...town, id: `${town.id}+${kind}.${state}`, big_filled: { kind, state }, states: { key: "none", ...(town.states ?? {}) },
     items: [...town.items, { p: kind, at: [at[0], at[1], at[2]], ...params }],
-    cameras: { ...town.cameras, [`${kind}_close`]: { loc: add(B.close.tgt.map((t, i) => t + (B.close.loc[i] - t) * (B.close.k ?? 1))), tgt: add(B.close.tgt), lens: B.close.lens, shot: "insert", people: [], fixed: true } } };
+    cameras: { ...town.cameras, [`${kind}_close`]: { reads: { giant_statue: ["plaque"], machine: ["machine_screen"], gift_box: ["gift_tag"], giant_door: ["door_sign"] }[kind] ?? [], loc: add(B.close.tgt.map((t, i) => t + (B.close.loc[i] - t) * (B.close.k ?? 1))), tgt: add(B.close.tgt), lens: B.close.lens, shot: "insert", people: [], fixed: true } } };
 }

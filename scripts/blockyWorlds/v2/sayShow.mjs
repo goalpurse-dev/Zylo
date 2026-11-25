@@ -49,7 +49,7 @@ export function lineNeeds(text, { prevText = "", cast = [] } = {}) {
 function satisfied(need, rows, castOf) {
   const ent = (r) => (r.entity ? castOf[r.entity.id]?.library ?? r.entity.id : null);
   return rows.some((r) => {
-    if (need.what === "rain") return Boolean(r.rain) && !String(r.rain.kind).startsWith("entity:") && (need.value === "any" || r.rain.kind === need.value);
+    if (need.what === "rain") return Boolean(r.rain) && (need.value === "any" || r.rain.kind === need.value);     // "it rains something": any raining thing, creatures too
     if (need.what === "rain_entity") return Boolean(r.rain) && String(r.rain.kind).startsWith("entity:") && need.value.every((k) => r.rain.kind.includes(k));
     if (need.what === "weather") return r.weather === need.value;
     if (need.what === "entity") return ent(r) === need.value || (r.rain && String(r.rain.kind).includes(need.value));
@@ -84,12 +84,14 @@ export function sayShowProblems(script, rows, { cast = [] } = {}) {
   return out;
 }
 
+// what the towns themselves contain (a line naming one of these fits the town too)
+export const TOWN_HAS = { old_town: ["townhall_front", "playground"], bright_city: ["shop_inside", "cafe"], suburb: ["playground"] };
 /** the location plan fits the words: a scene whose lines name a side set happens there */
 export function placeFitProblems(script, plan, sideSetIds) {
   const out = [];
   for (const sc of plan.scenes) for (const li of sc.lines) {
     const t = (script.lines[li - 1]?.text ?? "").toLowerCase();
-    for (const [set, re] of Object.entries(PLACE_WORDS)) if (sideSetIds.includes(set) && re.test(t) && sc.place !== set) out.push(`line ${li} names the ${set.replace(/_/g, " ")} but its scene is in ${sc.place}`);
+    for (const [set, re] of Object.entries(PLACE_WORDS)) if (sideSetIds.includes(set) && re.test(t) && sc.place !== set && !(TOWN_HAS[sc.place] ?? []).includes(set)) out.push(`line ${li} names the ${set.replace(/_/g, " ")} but its scene is in ${sc.place}`);
   }
   return [...new Set(out)];
 }
