@@ -13,6 +13,8 @@ import { useQuickGenerate, useQuickPrice } from "../create/useQuickGenerate";
 import { refreshRecent } from "../create/useRecent";
 import { trackCreate } from "../create/useCatalog";
 import { prepareTown, startTown } from "../../lib/townHandover";
+import { mergeLive, stepLine } from "../../lib/townLive";
+import TownLiveFeed from "./TownLiveFeed";
 import { LIVE } from "../../../supabase/functions/_shared/liveFeatures.js";
 
 const fmt = (s) => (s < 60 ? `${s}s` : `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`);
@@ -65,6 +67,9 @@ export function GenerateCard({ card }) {
   const [busy, setBusy] = useState(false);
   // In This Town: the lines saved as written + the exact price for that length (nothing charged yet)
   const [town, setTown] = useState(null); // { draftId, credits }
+  // In This Town's live feed (docs/in-this-town-live-feed.md): the stills as they come, and the last step line
+  const [feed, setFeed] = useState(null);
+  const [lastStatus, setLastStatus] = useState(null);
   const timer = useRef(null);
   const cutawayLen = card.seconds > 45 ? 60 : 30;
 
@@ -82,8 +87,10 @@ export function GenerateCard({ card }) {
     if (!run?.runId || ["done", "failed"].includes(run.status)) return undefined;
     const tick = async () => {
       try {
-        const v = MAESTRO_MOCK ? { status: Date.now() - run.startedAt > 6000 ? "done" : "render", pct: Math.min(99, Math.round((Date.now() - run.startedAt) / 60)), finalUrl: "/in-this-town/stories/milo.mp4" }
+        const v = import.meta.env.DEV && MAESTRO_MOCK && run.kind === "town" ? (await import("../../lib/maestroMock.js")).mockTownStatus(run.startedAt)
+          : MAESTRO_MOCK ? { status: Date.now() - run.startedAt > 6000 ? "done" : "render", pct: Math.min(99, Math.round((Date.now() - run.startedAt) / 60)), finalUrl: "/in-this-town/stories/milo.mp4" }
           : run.kind === "town" ? await worldsCall("status", { runId: run.runId }) : await cutawayServer.status(run.runId);
+        if (run.kind === "town") { setFeed((prev) => mergeLive(prev, v?.live)); setLastStatus({ status: v?.status, stage: v?.stage, progress: v?.progress }); }
         const done = v?.status === "done", failed = v?.status === "failed";
         save({ ...run, status: done ? "done" : failed ? "failed" : "making", pct: Number(v?.pct ?? v?.renderPct ?? 0), url: v?.finalUrl ?? v?.downloadUrl ?? null, error: failed ? (v?.reason ?? "It didn't work. Your credits were given back.") : null });
         if (done) refreshRecent();
@@ -163,7 +170,7 @@ export function GenerateCard({ card }) {
           </div>
         </div>
       ) : (
-        <div className="mt-3">
+        card.how === "town" ? <TownLiveFeed feed={feed} line={stepLine(lastStatus, feed)} pct={run.pct} /> : <div className="mt-3">
           <p className="flex items-center gap-2 text-[13.5px] font-semibold text-amber-100"><Loader2 className="h-4 w-4 animate-spin" />Making your video… {card.how === "town" ? "usually 10-25 minutes" : "a few minutes"}. You can leave this page.</p>
           <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-lime-300 transition-all" style={{ width: `${Math.max(4, run.pct ?? 0)}%` }} /></div>
         </div>
