@@ -1,3 +1,5 @@
+import { lazy as studioLazy, Suspense as StudioSuspense } from "react";
+import { useStudioV2 } from "../../lib/studioV2.js";
 import { Outlet, useLocation } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
@@ -22,7 +24,7 @@ import useBlockyWorldsAccess from "../../components/viral-tools/blocky-worlds/ap
 const TOWN_ANNOUNCEMENT = "in_this_town_launch";
 
 // ── Promo banner ──────────────────────────────────────────────
-export default function WorkspaceLayout() {
+function WorkspaceLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const noticeRef = useRef(null);
 
@@ -317,4 +319,13 @@ useEffect(() => {
    
     </div>
   );
+}
+
+// Studio v2, OWNER-ONLY (owner 2026-11-27): the owner's account (asked on the server, src/lib/studioV2.js) gets the
+// new version; everyone else, signed out or in, gets the function above exactly as before.
+const LayoutStudio = studioLazy(() => import("./layoutStudio.jsx"));
+export default function WorkspaceLayoutSwitch(props) {
+  const { on } = useStudioV2();
+  if (on) return <StudioSuspense fallback={null}><LayoutStudio {...props} /></StudioSuspense>;
+  return <WorkspaceLayout {...props} />;
 }

@@ -440,6 +440,30 @@
       "destination": "https://ilpiwoxubnevmxxikyvx.supabase.co/functions/v1/zyvo-mcp/:path*"
     },
     {
+      "source": "/ai-studio",
+      "destination": "/app-shell"
+    },
+    {
+      "source": "/generate",
+      "destination": "/app-shell"
+    },
+    {
+      "source": "/maestro",
+      "destination": "/app-shell"
+    },
+    {
+      "source": "/maestro/(.*)",
+      "destination": "/app-shell"
+    },
+    {
+      "source": "/create",
+      "destination": "/app-shell"
+    },
+    {
+      "source": "/create/(.*)",
+      "destination": "/app-shell"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "/api/$1"
     },

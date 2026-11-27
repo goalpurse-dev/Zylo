@@ -1,3 +1,5 @@
+import { lazy as studioLazy, Suspense as StudioSuspense } from "react";
+import { useStudioV2 } from "../../lib/studioV2.js";
 // Home (the site root, "/"): the Long Form launch layout, built from the previous
 // Home's pieces (gradient headline, zyvo suite coverflow). The previous Home is
 // home.jsx, behind USE_LEGACY_HOME (src/data/homeContent.js) for one release.
@@ -18,7 +20,7 @@ import { useFeatureFlag } from "../../lib/featureFlags";
 import FirstVideoHomeCard from "../../components/onboarding/FirstVideoHomeCard.jsx";
 import SpamNote from "../../components/onboarding/SpamNote.jsx";
 
-export default function HomeV2() {
+function HomeV2() {
   const [longFormCreations, setLongFormCreations] = useState([]);
   // Blocky Stories is on Home only once it is switched on for EVERYONE (the global blocky_v1 switch). No
   // user is passed on purpose: an account's own switch doesn't count here, so nothing shows before launch.
@@ -95,4 +97,13 @@ export default function HomeV2() {
       </div>
     </div>
   );
+}
+
+// Studio v2, OWNER-ONLY (owner 2026-11-27): the owner's account (asked on the server, src/lib/studioV2.js) gets the
+// new version; everyone else, signed out or in, gets the function above exactly as before.
+const HomeStudio = studioLazy(() => import("./HomeV2Studio.jsx"));
+export default function HomeV2Switch(props) {
+  const { on } = useStudioV2();
+  if (on) return <StudioSuspense fallback={null}><HomeStudio {...props} /></StudioSuspense>;
+  return <HomeV2 {...props} />;
 }

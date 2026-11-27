@@ -27,6 +27,7 @@ import { CUTAWAY_PATH } from "./data/cutawayExplainer";
 import { BLOCKY_WORLDS_PATH } from "./data/blockyWorlds";
 import { MCP_CONNECT_PATH, MCP_PATH, MCP_STUDIO_PATH, OLD_CONNECT_CLAUDE_PATH, OLD_STUDIO_PROJECTS_PATH } from "./data/studioKit";
 import BlockyWorldsGate from "./components/viral-tools/blocky-worlds/BlockyWorldsGate";
+import StudioV2Only from "./components/StudioV2Only";
 
 // pages…
 //import Home from "./pages/Home";
@@ -77,6 +78,12 @@ const BlockyWorlds = lazy(() => import("./pages/workspace/BlockyWorlds"));
 const StudioProjects = lazy(() => import("./pages/studio/StudioProjects"));
 const ConnectClaude = lazy(() => import("./pages/studio/ConnectClaude"));
 const McpLayout = lazy(() => import("./pages/studio/McpLayout"));
+// Studio v2 (docs/studio-v2-plan.md), OWNER-ONLY for now: the Create hub, the studios, the Director, Quick Generate, Maestro
+const CreateHub = lazy(() => import("./pages/create/CreateHub"));
+const StudioPage = lazy(() => import("./pages/create/StudioPage"));
+const DirectorPage = lazy(() => import("./pages/create/DirectorPage"));
+const QuickGenerate = lazy(() => import("./pages/create/QuickGenerate"));
+const MaestroPage = lazy(() => import("./pages/maestro/MaestroPage"));
 const McpTemplates = lazy(() => import("./pages/studio/McpTemplates"));
 const McpTemplateGuide = lazy(() => import("./pages/studio/McpTemplateGuide"));
 const ConnectAuthorize = lazy(() => import("./pages/studio/ConnectAuthorize"));
@@ -828,6 +835,15 @@ return (
   <Route path={BLOCKY_WORLDS_PATH} element={<BlockyWorldsGate><BlockyWorlds /></BlockyWorldsGate>} />
   {/* The MCP section (Zyvo Studio Kit + connector, docs/zyvo-studio-kit-plan.md): Connect, Templates, MCP Studio.
       The old addresses redirect to the tabs, keeping ?connected=1 / ?tab=code and a project's #<id>. */}
+  {/* Studio v2, OWNER-ONLY (owner 2026-11-27): StudioV2Only asks the server (src/lib/studioV2.js); anyone else gets what an
+      unknown address gives today */}
+  <Route path="/create" element={<StudioV2Only><CreateHub /></StudioV2Only>} />
+  <Route path="/maestro" element={<StudioV2Only><MaestroPage /></StudioV2Only>} />
+  <Route path="/maestro/:chatId" element={<StudioV2Only><MaestroPage /></StudioV2Only>} />
+  <Route path="/generate" element={<StudioV2Only><QuickGenerate /></StudioV2Only>} />
+  <Route path="/ai-studio" element={<StudioV2Only><Navigate replace to="/generate" /></StudioV2Only>} />
+  <Route path="/create/director/:draftId" element={<StudioV2Only><DirectorPage /></StudioV2Only>} />
+  <Route path="/create/:studioId" element={<StudioV2Only><StudioPage /></StudioV2Only>} />
   <Route path={MCP_PATH} element={<McpLayout />}>
     <Route index element={<Navigate replace to={MCP_CONNECT_PATH} />} />
     <Route path="connect" element={<ConnectClaude />} />

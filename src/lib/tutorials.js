@@ -3,10 +3,11 @@
 // To add one: a line with the tool key, the tool's name, the video's title and its YouTube link.
 // The thumbnail is YouTube's own image of the video. Newest first.
 //   tool keys: in_this_town, cutaway, long_form, ai_fruit_story, blocky_stories, behind_the_scenes
+//   studios: the Create studios whose page shows it at the bottom (short-form, long-form, 3d, explainer)
 export const TUTORIALS = [
-  { tool: "in_this_town", toolName: "In This Town", title: 'How to Make VIRAL Roblox "In This Town" Animations With Claude AI (FULL TUTORIAL)', url: "https://www.youtube.com/watch?v=nb9acc6kWzo" },
-  { tool: "cutaway", toolName: "Cutaway Explainer", title: "How To Make Viral 3D Explainer Videos With AI", url: "https://www.youtube.com/watch?v=3KjCOOJhhzo" },
-  { tool: "long_form", toolName: "Long Form", title: "How To Make Viral 2D History Stickman Videos With AI", url: "https://www.youtube.com/watch?v=cDVliwgwe_I" },
+  { tool: "in_this_town", toolName: "In This Town", title: 'How to Make VIRAL Roblox "In This Town" Animations With Claude AI (FULL TUTORIAL)', url: "https://www.youtube.com/watch?v=nb9acc6kWzo", studios: ["short-form", "3d"] },
+  { tool: "cutaway", toolName: "Cutaway Explainer", title: "How To Make Viral 3D Explainer Videos With AI", url: "https://www.youtube.com/watch?v=3KjCOOJhhzo", studios: ["explainer", "3d"] },
+  { tool: "long_form", toolName: "Long Form", title: "How To Make Viral 2D History Stickman Videos With AI", url: "https://www.youtube.com/watch?v=cDVliwgwe_I", studios: ["long-form"] },
 ];
 
 /** The 11-character video id of a YouTube link, or null. */
@@ -20,3 +21,5 @@ export const tutorialThumb = (t) => { const id = youtubeVideoId(t.url); return i
 export const liveTutorials = (list = TUTORIALS) => list.filter((t) => youtubeVideoId(t.url));
 /** A tool's newest tutorial, or null. */
 export const tutorialFor = (tool, list = TUTORIALS) => liveTutorials(list).find((t) => t.tool === tool) ?? null;
+/** A studio page's tutorials (the `studios` field above), newest first. */
+export const tutorialsForStudio = (studioId, list = TUTORIALS) => liveTutorials(list).filter((t) => t.studios?.includes(studioId));
