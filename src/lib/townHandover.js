@@ -8,9 +8,10 @@
 // BLOCKY_WORLDS_THREEJS_OWNER_IDS on the Studio worker); every other account would get today's engine. The chat itself
 // is owner-only for now (_shared/studioV2/access.js).
 import { narrationOf } from "../../supabase/functions/_shared/director/storyboard.js";
+import { TOWN_RANGE, townLengthOf, townPrice } from "../../supabase/functions/_shared/director/styles.js";
 
 export const TOWN_LINE_MAX = 400;
-export const TOWN_LENGTHS = Object.freeze({ min: 30, max: 180, step: 10 });
+export const TOWN_LENGTHS = TOWN_RANGE;
 
 /** the plan's narration as In This Town lines, word for word (one line per plan line; a long one split at sentence ends) */
 export function townLines(draft) {
@@ -29,23 +30,21 @@ export function townLines(draft) {
   return out;
 }
 
-/** the plan's length as one In This Town length (30-180 s in 10 s steps) */
-export function townLength(seconds) {
-  const n = Math.round(Number(seconds || 60) / TOWN_LENGTHS.step) * TOWN_LENGTHS.step;
-  return Math.min(TOWN_LENGTHS.max, Math.max(TOWN_LENGTHS.min, n));
-}
+/** the plan's length as one In This Town length (60-120 s in 10 s steps; the same rounding as the price) */
+export const townLength = townLengthOf;
 
 /**
- * save the lines as written and get the exact price. call = worldsCall (blocky-worlds-api).
- * Returns { draftId, credits, problems }: problems are In This Town's own script checks (nothing was charged).
+ * save the lines as written (the price is already known: townPrice(seconds), the number on the button and the one the
+ * server charges). call = worldsCall (blocky-worlds-api). Returns { draftId, credits, lengthSec, problems }: problems are
+ * In This Town's own script checks (nothing was charged).
  */
 export async function prepareTown(call, draft, seconds) {
   const lengthSec = townLength(seconds);
+  const credits = townPrice(lengthSec);
   const lines = townLines(draft);
-  if (!lines.length) return { draftId: null, credits: null, lengthSec, problems: ["The plan has no lines yet."] };
+  if (!lines.length) return { draftId: null, credits, lengthSec, problems: ["The plan has no lines yet."] };
   const saved = await call("saveScript", { lines: lines.map((text) => ({ text })), title: String(draft.title ?? "").slice(0, 80), lengthSec });
-  const q = await call("quote", { draftId: saved.id, lengthSec });
-  return { draftId: saved.id, credits: Number(q?.credits ?? NaN), lengthSec, problems: q?.problems ?? saved?.check?.problems ?? [] };
+  return { draftId: saved.id, credits, lengthSec, problems: saved?.check?.problems ?? [] };
 }
 
 /** start the saved draft (charged now; the server refunds it if the video can't be made) */

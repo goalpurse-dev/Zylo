@@ -9,6 +9,8 @@ import { LIVE } from "../../supabase/functions/_shared/liveFeatures.js";
 export const REFERENCE_MOCK = Boolean(import.meta.env?.DEV) && typeof window !== "undefined" && new URLSearchParams(window.location.search).get("mock") === "1";
 /** the reference inputs are shown only once the scanner is live (_shared/liveFeatures.js), or in the localhost mock */
 export const REFERENCE_UI = LIVE.referenceScan || REFERENCE_MOCK;
+/** reference pictures (plain uploads with a role) need no scanner */
+export const REFERENCE_IMAGES_UI = LIVE.referenceImages || REFERENCE_MOCK;
 
 export class ReferenceUploadError extends Error {}
 

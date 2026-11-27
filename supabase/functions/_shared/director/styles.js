@@ -37,8 +37,18 @@
 //   views         optional: REAL public views of our best video in this style (a number), shown as "2.5M views" on the
 //                 card. Leave it out until there is a real number: never an estimate. examples[].views works the same.
 
-// the only import: In This Town's one flat price, so every page shows what the template really charges
-import { BLENDER_FLAT } from "../blockyWorlds/blenderPricing.js";
+// In This Town made from the chat (owner 2026-11-27): 60 to 120 s, priced per length. THE ONE PRICE SOURCE for the chat:
+// Maestro's words, the plan and Generate cards and the button all read TOWN_PRICES, and the server charges the same
+// numbers (blocky-worlds-api start -> compute_tool_price "blocky-worlds:video-<s>", the rows of
+// _shared/blockyWorlds/pricing.js PRICES; tests/townPrice.test.mjs keeps the two equal). Kept here as plain numbers so the
+// site doesn't load the whole cost model. (The In This Town PAGE still charges its own flat price, BLENDER_FLAT.)
+export const TOWN_RANGE = Object.freeze({ min: 60, max: 120, step: 10 });
+export const TOWN_LENGTHS = Object.freeze([60, 90, 120]);
+export const TOWN_PRICES = Object.freeze({ 60: 219, 70: 250, 80: 282, 90: 313, 100: 344, 110: 376, 120: 407 });
+/** a length as one In This Town length: 60-120 s in 10 s steps */
+export const townLengthOf = (seconds) => Math.min(TOWN_RANGE.max, Math.max(TOWN_RANGE.min, Math.round(Number(seconds || TOWN_RANGE.min) / TOWN_RANGE.step) * TOWN_RANGE.step));
+/** the credits an In This Town video of that length costs (what the button says and the server charges) */
+export const townPrice = (seconds) => TOWN_PRICES[townLengthOf(seconds)];
 
 export const STUDIOS = Object.freeze([
   {
@@ -90,7 +100,7 @@ export const STYLES = Object.freeze([
     examplePrompt: "In this town, everybody laughs when it rains. Except me.",
     sceneRules: ["Open on the town's rule in the first line.", "One kid tells it in first person.", "Show every thing the line names on screen.", "End with a twist about the rule."],
     voice: NARRATOR, engine: { path: "/workspace/in-this-town", handoff: "town-stash", direct: "town" }, inputKind: "script",
-    formats: ["9:16"], lengths: [30, 45, 60], price: [[30, BLENDER_FLAT.credits]], included: ALL_VOICE, // one flat price per video (what the In This Town page charges)
+    formats: ["9:16"], lengths: [...TOWN_LENGTHS], defaultLength: 60, price: TOWN_LENGTHS.map((s) => [s, TOWN_PRICES[s]]), included: ALL_VOICE, // one flat price per video (what the In This Town page charges)
     tier: "free", worksInClaude: true,
     claude: { kit: "zyvo-roblox-story", honest: "With your Claude it's built in your own Roblox Studio: you play it and record it, so it takes longer but costs far less.", sample: "/media/studio-kit/bedtime-free.mp4" },
     variants: [

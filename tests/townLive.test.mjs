@@ -39,13 +39,21 @@ test("a repaired shot replaces its old still; an older answer never brings the o
 test("the chat wires it: the status answer's live feed, the grid only for In This Town; the dev mock never ships", () => {
   const card = readFileSync(new URL("../src/components/maestro/MaestroCards.jsx", import.meta.url), "utf8");
   assert.match(card, /setFeed\(\(prev\) => mergeLive\(prev, v\?\.live\)\)/);
-  assert.match(card, /card\.how === "town" \? <TownLiveFeed feed=\{feed\} line=\{stepLine\(lastStatus, feed\)\} pct=\{run\.pct\} \/>/);
+  assert.match(card, /card\.how === "town" \? <TownLiveFeed feed=\{feed\} line=\{stepLine\(lastStatus, feed\)\} pct=\{run\.pct\} minutes=\{townMinutes\(card\.seconds\)\}/);
+  // the review pause: Continue and a change to one shot go to the In This Town API (contract: docs/in-this-town-live-feed.md)
+  assert.match(card, /worldsCall\("reviewContinue", \{ runId: run\.runId \}\)/);
+  assert.match(card, /worldsCall\("reviewChange", \{ runId: run\.runId, shot: n, note \}\)/);
+  const r = mergeLive(null, { v: 1, shots: [], review: { open: true, until: "2026-11-27T12:00:30Z", seconds: 60, notes: [{ n: 4, note: "closer", state: "queued" }] } }, 0);
+  assert.deepEqual(r.review, { open: true, until: Date.parse("2026-11-27T12:00:30Z"), seconds: 60, notes: [{ n: 4, note: "closer", state: "queued" }] });
+  assert.equal(mergeLive(null, { v: 1, shots: [] }).review, null, "no pause unless the engine sends one");
   assert.match(card, /import\.meta\.env\.DEV && MAESTRO_MOCK && run\.kind === "town" \? \(await import\("\.\.\/\.\.\/lib\/maestroMock\.js"\)\)\.mockTownStatus/);
   // the mock walks every state the display handles
   const at = (s) => mockTownStatus(0, s * 1000);
   assert.equal(at(1).live.shots.every((x) => x.state === "pending"), true);
   assert.equal(at(10).live.shots[3].state, "fail");
-  assert.equal(at(20).live.shots[3].state, "repaired");
-  assert.equal(at(20).live.shots[3].v, 2);
-  assert.equal(at(30).status, "done");
+  assert.equal(at(20).live.review.open, true, "the review pause after the test shots");
+  assert.equal(at(27).live.shots[3].state, "repaired");
+  assert.equal(at(27).live.shots[3].v, 2);
+  assert.equal(at(27).live.review, undefined);
+  assert.equal(at(33).status, "done");
 });

@@ -29,7 +29,7 @@ test("plans: the live prices and the real monthly credits, what each is for, no 
     assert.ok(line.includes(`€${PRICES.plans[plan].yearly} a year`), line);
     assert.ok(line.includes(`${credits.toLocaleString("en-US")} credits a month`), line);
     assert.ok(line.includes(PLAN_FIT[plan]), line);
-    assert.ok(line.includes(`≈ ${Math.floor(credits / TOWN_VIDEO_CREDITS)} In This Town videos`), line);
+    assert.ok(line.includes(`≈ ${Math.floor(credits / TOWN_VIDEO_CREDITS)} 60-second In This Town videos`), line);
     assert.ok(line.includes(`≈ ${Math.floor(credits / QUICK_IMAGE_CREDITS).toLocaleString("en-US")} quick images`), line);
   }
   assert.match(K, /There is no plan above Generative/);
@@ -49,7 +49,7 @@ test("every template's price and how many each plan makes: credits ÷ price, rou
     const line = K.split("\n").find((l) => l.startsWith(`- ${s.name}`));
     assert.ok(line, s.id);
     for (const v of videoPrices(s)) {
-      const credits = s.engine?.direct === "town" ? TOWN_VIDEO_CREDITS : creditsFor(s, v.seconds);
+      const credits = creditsFor(s, v.seconds); // In This Town: its exact price per length (TOWN_PRICES)
       assert.equal(v.credits, credits, s.id);
       for (const [plan, pc] of Object.entries(PLAN_CREDITS)) {
         const name = { starter: "Starter", pro: "Pro", generative: "Generative" }[plan];
@@ -103,13 +103,13 @@ function maestroWith(script, u) {
 
 test("offer_plan: a card with the live price, the real credits and THEIR videos a month; the account line rides along", async () => {
   const { m, calls } = maestroWith([
-    { stop_reason: "tool_use", content: [{ type: "tool_use", id: "t1", name: "offer_plan", input: { plan: "pro", reason: "One channel, 3 videos a week.", style_id: "in-this-town", length_sec: 30 } }], usage: {} },
+    { stop_reason: "tool_use", content: [{ type: "tool_use", id: "t1", name: "offer_plan", input: { plan: "pro", reason: "One channel, 3 videos a week.", style_id: "in-this-town", length_sec: 60 } }], usage: {} },
     { stop_reason: "end_turn", content: [{ type: "text", text: "Pro fits." }], usage: {} },
   ], { plan: "free", paid: false, owner: false, credits: 120, hasSub: false });
   const r = await m.handle("u1", { action: "send", text: "best plan?" });
   const card = r.messages[1].cards[0];
   assert.equal(card.type, "plan_offer");
-  assert.deepEqual([card.plan, card.price, card.credits, card.town, card.images, card.theirs.count, card.theirs.perVideo], ["pro", 38, 1600, 5, 228, 5, 313]);
+  assert.deepEqual([card.plan, card.price, card.credits, card.town, card.images, card.theirs.count, card.theirs.perVideo], ["pro", 38, 1600, 7, 228, 7, 219]);
   assert.equal(card.hasPlan, false);
   assert.match(calls[0].system[1].text, /ACCOUNT \(this user, now\): plan Free; balance 120 credits\./);
   assert.ok(calls[0].system[0].text.includes("ZYVO FACTS"), "the knowledge is in the cached prompt");
@@ -139,7 +139,7 @@ test("the cards open the normal checkout only: subscribe() from the pricing page
   assert.match(read("src/lib/payments.ts"), /saveCheckoutIntent\(checked\);\s+window\.location\.href = "\/signup";/);
 });
 
-test("offer_plan works out the gap itself: 13 In This Town a month on Generative (10) = a Max pack; 60 fruit dramas = Max packs", async () => {
+test("offer_plan works out the gap itself: 22 In This Town (60 s) a month on Generative (14) = 2 Max packs; 60 fruit dramas = Max packs", async () => {
   const run = async (input) => {
     const { m } = maestroWith([
       { stop_reason: "tool_use", content: [{ type: "tool_use", id: "t1", name: "offer_plan", input }], usage: {} },
@@ -148,8 +148,8 @@ test("offer_plan works out the gap itself: 13 In This Town a month on Generative
     const r = await m.handle("u1", { action: "send", text: "which plan" });
     return r.messages[1].cards[0];
   };
-  const town = await run({ plan: "generative", reason: "x", style_id: "in-this-town", length_sec: 30, needed_per_month: 13 });
-  assert.deepEqual([town.theirs.count, town.theirs.needed, town.theirs.extra], [10, 13, { name: "Max", count: 1, credits: 900 }]); // 13×313−3,200 = 869 ≤ 900
+  const town = await run({ plan: "generative", reason: "x", style_id: "in-this-town", length_sec: 60, needed_per_month: 22 });
+  assert.deepEqual([town.theirs.count, town.theirs.needed, town.theirs.extra], [14, 22, { name: "Max", count: 2, credits: 900 }]); // 60 s: 22×219−3,200 = 1,618 ≤ 2×900
   const fruit = await run({ plan: "generative", reason: "x", style_id: "ai-fruit-story", length_sec: 15, needed_per_month: 60 });
   const missing = 60 * creditsFor(STYLES.find((s) => s.id === "ai-fruit-story"), 15) - 3200;
   assert.deepEqual([fruit.theirs.count, fruit.theirs.extra.name, fruit.theirs.extra.count], [37, "Max", Math.ceil(missing / 900)]);

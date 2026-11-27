@@ -6,6 +6,12 @@
 //   - a repaired shot REPLACES its old still (same shot number, a higher version), never the other way round
 //   - then the finished video (the existing finalUrl)
 
+/**
+ * about how long an In This Town video takes, in minutes (owner 2026-11-27: "about 10 minutes" on the making card).
+ * From the owner's first chat run: 60 s finished in 8.4 min (planning ~3 min + ~5.5 min per minute of video).
+ */
+export const townMinutes = (seconds) => Math.max(5, Math.round(3 + (5.5 * (Number(seconds) || 60)) / 60));
+
 /** keep a still's signed link while it is fresh (the server re-signs every answer; reloading 38 images every 8 s is waste) */
 export const THUMB_KEEP_MS = 40 * 60 * 1000;
 
@@ -58,8 +64,27 @@ export function mergeLive(prev, live, now = Date.now()) {
     detail: String(live.step?.detail ?? "") || (total ? `${done} of ${total} shots` : ""),
     count: { done, total, pass: Number(live.count?.pass) || 0, fail: Number(live.count?.fail) || 0 },
     shots, videoReady: live.video?.ready === true, updatedAt: live.updatedAt ?? null,
+    review: reviewOf(live.review),
   };
 }
+
+/**
+ * THE REVIEW PAUSE (owner 2026-11-27; the proposed contract in docs/in-this-town-live-feed.md "review"): after the test
+ * shots the run waits for the owner: Continue, or a change to one shot; with no answer it carries on by itself at
+ * `until` (60 s). Absent = no pause (the chat shows nothing extra).
+ *   live.review = { open: boolean, until: ISO, seconds: 60, notes: [{ n, note, state: "queued" | "done" | "skipped" }] }
+ */
+export function reviewOf(r) {
+  if (!r || typeof r !== "object") return null;
+  const until = Date.parse(r.until);
+  return {
+    open: r.open === true, until: Number.isFinite(until) ? until : null, seconds: Number(r.seconds) || 60,
+    notes: Array.isArray(r.notes) ? r.notes.filter((x) => Number.isInteger(Number(x?.n))).map((x) => ({ n: Number(x.n), note: String(x.note ?? "").slice(0, 300), state: String(x.state ?? "queued") })) : [],
+  };
+}
+/** seconds left in the pause (0 when it is over or has no end) */
+export const reviewLeft = (review, now = Date.now()) => (review?.open && review.until ? Math.max(0, Math.ceil((review.until - now) / 1000)) : 0);
+export const REVIEW_NOTE_MAX = 300;
 
 export const stepWords = (stage) => TOWN_STEPS.find((s) => s.id === stage)?.words ?? "Making your video";
 

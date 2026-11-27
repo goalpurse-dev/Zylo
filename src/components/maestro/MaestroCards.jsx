@@ -13,7 +13,9 @@ import { useQuickGenerate, useQuickPrice } from "../create/useQuickGenerate";
 import { refreshRecent } from "../create/useRecent";
 import { trackCreate } from "../create/useCatalog";
 import { prepareTown, startTown } from "../../lib/townHandover";
-import { mergeLive, stepLine } from "../../lib/townLive";
+import { mergeLive, stepLine, townMinutes } from "../../lib/townLive";
+import { creditsFor, townPrice } from "../../../supabase/functions/_shared/director/styles.js";
+import { mcpTemplatePath } from "../../data/studioKit";
 import TownLiveFeed from "./TownLiveFeed";
 import { LIVE } from "../../../supabase/functions/_shared/liveFeatures.js";
 
@@ -25,6 +27,9 @@ const writeRun = (draftId, run) => { try { localStorage.setItem(runKey(draftId),
 /** the plan, right in the chat: title, hook, every scene; quick changes go back to Maestro */
 export function PlanCard({ card, onAsk }) {
   const style = styleById(card.styleId);
+  const [generate, setGenerate] = useState(false);
+  const how = style?.engine?.direct ?? "page";
+  const genCard = { type: "generate", draftId: card.draftId, styleId: card.styleId, title: card.title, seconds: card.seconds, how, credits: how === "town" ? townPrice(card.seconds) : creditsFor(style, card.seconds), exact: how === "town", autoStart: true };
   const version = style?.variants?.find((v) => v.id === card.variant);
   return (
     <div className="mt-3 overflow-hidden rounded-2xl border border-lime-300/25 bg-gradient-to-br from-lime-300/[0.07] to-transparent" data-testid="maestro-plan">
@@ -47,6 +52,12 @@ export function PlanCard({ card, onAsk }) {
             </li>
           ))}
         </ol>
+        {!generate && (
+          <button type="button" onClick={() => setGenerate(true)} className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-lime-300 px-4 py-2.5 text-[14.5px] font-black text-[#11150D] hover:bg-lime-200" data-testid="plan-generate">
+            <Sparkles className="h-4 w-4" />{how === "page" ? `Open ${style?.name ?? "the template"} with this plan` : `Generate · ${genCard.credits} credits`}
+          </button>
+        )}
+        {generate && <GenerateCard card={genCard} />}
         <div className="mt-3 flex flex-wrap gap-1.5">
           {["Make the hook better", "Make it shorter", "Change the ending"].map((t) => <button key={t} type="button" onClick={() => onAsk(t)} className="rounded-full border border-white/12 bg-white/[0.04] px-3 py-1 text-[12.5px] font-semibold text-white/90 hover:border-lime-300/40">{t}</button>)}
           <Link to={directorPath(card.draftId)} className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-[12.5px] font-semibold text-lime-200 hover:underline">Edit scenes<ExternalLink className="h-3 w-3" /></Link>
@@ -102,6 +113,25 @@ export function GenerateCard({ card }) {
   }, [run?.runId, run?.status]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const short = !MAESTRO_MOCK && credits != null && Number(balance) < Number(credits);
+  const started = useRef(false);
+  const doneRef = useRef(null);
+  useEffect(() => {
+    if (!card.autoStart || started.current || run || short || balance == null) return;
+    started.current = true;
+    go();
+  }, [card.autoStart, run, short, balance]); // eslint-disable-line react-hooks/exhaustive-deps
+  // the finished video: in view with its Download button (owner 2026-11-27: no scrolling)
+  // the chat scrolls so the Download row sits just above the chat bar (which floats over the page); again once the video
+  // knows its size
+  const fitDone = () => {
+    const row = doneRef.current, sc = document.getElementById("workspace-scroll");
+    if (!row || !sc) return;
+    const bar = document.querySelector('[data-testid="maestro-composer"]');
+    const limit = (bar ? bar.getBoundingClientRect().top : window.innerHeight) - 16;
+    const over = row.getBoundingClientRect().bottom - limit;
+    if (over > 0) sc.scrollBy({ top: over, behavior: "smooth" });
+  };
+  useEffect(() => { if (run?.status === "done") requestAnimationFrame(fitDone); }, [run?.status]);
 
   const go = async () => {
     setBusy(true);
@@ -111,17 +141,11 @@ export function GenerateCard({ card }) {
       if (card.how === "page") { navigate(handoffToZyvo(draft, style)); return; }
       if (MAESTRO_MOCK) { save({ kind: card.how, runId: "mock", status: "making", pct: 0, startedAt: Date.now() }); return; }
       if (card.how === "town") {
-        // the plan's lines go to In This Town word for word (no rewrite); the exact price first, charged only at start
-        let t = town;
-        if (!t) {
-          const p = await prepareTown(worldsCall, draft, card.seconds);
-          if (p.problems?.length) { save({ status: "failed", error: `${p.problems[0]} Nothing was charged.` }); return; }
-          t = { draftId: p.draftId, credits: p.credits };
-          setTown(t);
-          // a different price than the button showed: show it and wait for a second press
-          if (Number.isFinite(t.credits) && t.credits !== Number(credits)) { setCredits(t.credits); setExact(true); return; }
-        }
-        if (Number.isFinite(t.credits) && Number(balance) < t.credits) { setCredits(t.credits); return; }
+        // ONE press (owner 2026-11-27): the plan's lines go to In This Town word for word (no rewrite), then it starts at
+        // the price on the button (townPrice = the server's row for that length)
+        const t = town ?? (await prepareTown(worldsCall, draft, card.seconds));
+        if (t.problems?.length) { save({ status: "failed", error: `${t.problems[0]} Nothing was charged.` }); return; }
+        setTown(t);
         const r = await startTown(worldsCall, t.draftId);
         save({ kind: "town", runId: r.id, status: "making", pct: 0, startedAt: Date.now() });
       } else {
@@ -158,19 +182,22 @@ export function GenerateCard({ card }) {
             </button>
           )}
           <p className="mt-1.5 text-center text-[11.5px] text-white/55">
-            {card.how === "page" ? `About ${credits} credits. You see the exact price on the next screen before anything is charged.` : exact ? "Taken from your balance when you press it. If the video fails, every credit comes back." : `About ${credits} credits.`}
+            {card.how === "town" ? `Takes about ${townMinutes(card.seconds)} minutes. If the video fails, every credit comes back.` : card.how === "page" ? `About ${credits} credits. You see the exact price on the next screen before anything is charged.` : exact ? "Taken from your balance when you press it. If the video fails, every credit comes back." : `About ${credits} credits.`}
           </p>
         </>
       ) : run.status === "done" ? (
-        <div className="mt-3">
-          <video src={run.url} controls playsInline className="max-h-[460px] rounded-2xl" />
+        <div className="mt-3" ref={doneRef} data-testid="maestro-video-done">
+          <video src={run.url} controls playsInline onLoadedMetadata={fitDone} className="block h-auto max-h-[min(calc(100dvh-440px),520px)] min-h-[200px] w-auto max-w-full rounded-2xl" />
+          {/* the whole result (Download + the free way) is scrolled to just above the chat bar (owner 2026-11-27) */}
           <div className="mt-2 flex gap-2">
             <button type="button" onClick={() => saveMediaToDevice({ url: run.url, filename: `${card.title || "zyvo-video"}.mp4`, title: card.title }).catch(() => window.open(run.url, "_blank"))} className="inline-flex items-center gap-1.5 rounded-lg bg-lime-300 px-3 py-1.5 text-[13px] font-black text-[#11150D]"><Download className="h-3.5 w-3.5" />Download</button>
             <Link to="/workspace/creations" className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 px-3 py-1.5 text-[13px] font-bold text-white">In your Library</Link>
           </div>
+          {card.how === "town" && <Link to={mcpTemplatePath("in-this-town")} className="mt-2 block text-[12.5px] font-semibold text-lime-200 hover:underline" data-testid="free-way">Can't afford a plan? There's a free way to make these</Link>}
         </div>
       ) : (
-        card.how === "town" ? <TownLiveFeed feed={feed} line={stepLine(lastStatus, feed)} pct={run.pct} /> : <div className="mt-3">
+        card.how === "town" ? <TownLiveFeed feed={feed} line={stepLine(lastStatus, feed)} pct={run.pct} minutes={townMinutes(card.seconds)}
+          onContinue={() => (MAESTRO_MOCK ? Promise.resolve() : worldsCall("reviewContinue", { runId: run.runId }))} onChange={(n, note) => (MAESTRO_MOCK ? Promise.resolve() : worldsCall("reviewChange", { runId: run.runId, shot: n, note }))} /> : <div className="mt-3">
           <p className="flex items-center gap-2 text-[13.5px] font-semibold text-amber-100"><Loader2 className="h-4 w-4 animate-spin" />Making your video… {card.how === "town" ? "usually 10-25 minutes" : "a few minutes"}. You can leave this page.</p>
           <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-lime-300 transition-all" style={{ width: `${Math.max(4, run.pct ?? 0)}%` }} /></div>
         </div>

@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
-import { ArrowUp, Coins, Loader2, MessageSquare, Paperclip, Plus, Trash2, X } from "lucide-react";
+import { ArrowUp, Coins, FileText, Film, ImagePlus, Loader2, MessageSquare, Plus, Trash2, X } from "lucide-react";
 import { BreakdownCard, ScanProgress } from "../../components/reference/ReferenceInputs";
 import { useReferenceScan } from "../../components/reference/useReferenceScan";
-import { REFERENCE_MOCK, REFERENCE_UI, uploadReferenceImage } from "../../lib/references";
+import { REFERENCE_IMAGES_UI, REFERENCE_MOCK, REFERENCE_UI, uploadReferenceImage } from "../../lib/references";
 import { REFERENCE as REF_LIMITS, referenceLink } from "../../../supabase/functions/_shared/reference/breakdown.js";
 import { useProfileCredits } from "../../hooks/useProfileCredits";
 import { clearPendingPrompt, peekPendingPrompt } from "../../lib/pendingPrompt";
@@ -128,14 +128,20 @@ export default function MaestroPage() {
   const [dragOver, setDragOver] = useState(false);
   const [attachError, setAttachError] = useState(null);
   const attachInput = useRef(null);
+  const imageInput = useRef(null);
+  // "+" (owner 2026-11-27): reference images, or the user's own script (kept word for word)
+  const [plusOpen, setPlusOpen] = useState(false);
+  const [script, setScript] = useState("");
+  const [scriptOpen, setScriptOpen] = useState(false);
+  const scriptWords = script.trim() ? script.trim().split(/\s+/).length : 0;
   const scanning = Boolean(rs.scan && rs.scan.status !== "done" && rs.scan.status !== "failed");
   const attach = async (files) => {
-    if (!REFERENCE_UI) return;
+    if (!REFERENCE_UI && !REFERENCE_IMAGES_UI) return;
     if (!signedIn) { setSignIn(true); return; }
     setAttachError(null);
     for (const file of [...files]) {
-      if (/^video\//.test(file.type) || /\.(mp4|mov|webm)$/i.test(file.name)) { if (!rs.scan) rs.fromFile(file); }
-      else if (/^image\//.test(file.type) && refImages.length < REF_LIMITS.maxImages) {
+      if (/^video\//.test(file.type) || /\.(mp4|mov|webm)$/i.test(file.name)) { if (REFERENCE_UI && !rs.scan) rs.fromFile(file); }
+      else if (REFERENCE_IMAGES_UI && /^image\//.test(file.type) && refImages.length < REF_LIMITS.maxImages) {
         try { const im = await uploadReferenceImage(file); setRefImages((l) => [...l, im].slice(0, REF_LIMITS.maxImages)); }
         catch (e) { setAttachError(e.message || "That image didn't upload."); }
       }
@@ -165,9 +171,11 @@ export default function MaestroPage() {
         chatId: chat?.id ?? chatId, text: t, templateId,
         ...(reference ? { reference, ...(REFERENCE_MOCK ? { referenceCard: rs.scan.card } : {}) } : {}),
         ...(refImages.length ? { referenceImages: refImages.map(({ path, role }) => ({ path, role })) } : {}),
+        ...(script.trim() ? { script: script.trim() } : {}),
       });
       if (reference) rs.clear();
       setRefImages([]);
+      setScript(""); setScriptOpen(false);
       setMessages((list) => [...list, ...r.messages]);
       setNewest(r.messages[1]?.id ?? null);
       setLeft(r.left);
@@ -177,7 +185,7 @@ export default function MaestroPage() {
       setError(e.code === "DAILY_LIMIT" ? e.message : e.code === "SIGN_IN" ? "Sign in to chat with Maestro." : e.message || "Maestro couldn't answer. Try again.");
       setText(t); setTag(templateId);
     } finally { setSending(null); }
-  }, [chat, chatId, navigate, sending, signedIn, tag, rs, refImages]);
+  }, [chat, chatId, navigate, sending, signedIn, tag, rs, refImages, script]);
 
   const pick = (s) => { setTag(s.id); setText((v) => v.replace(/^\/\S*\s*/, "")); requestAnimationFrame(() => box.current?.focus()); trackCreate("style_selected", { style: s.id, placement: "maestro" }); };
   const remove = async (id) => { setChats((l) => l.filter((c) => c.id !== id)); await deleteChat(id).catch(() => {}); refreshMaestroChats(); if (id === (chat?.id ?? chatId)) navigate(MAESTRO_PATH); };
@@ -204,14 +212,21 @@ export default function MaestroPage() {
         </div>
         <div
           className={`relative rounded-[22px] border bg-[#16181a]/95 p-3 shadow-[0_-10px_50px_rgba(0,0,0,.5)] backdrop-blur-md ${dragOver ? "border-lime-300" : "border-white/[0.12]"}`}
-          onDragOver={(e) => { if (!REFERENCE_UI) return; e.preventDefault(); setDragOver(true); }} onDragLeave={() => setDragOver(false)}
-          onDrop={(e) => { if (!REFERENCE_UI) return; e.preventDefault(); setDragOver(false); attach(e.dataTransfer?.files ?? []); }}
+          onDragOver={(e) => { if (!REFERENCE_UI && !REFERENCE_IMAGES_UI) return; e.preventDefault(); setDragOver(true); }} onDragLeave={() => setDragOver(false)}
+          onDrop={(e) => { if (!REFERENCE_UI && !REFERENCE_IMAGES_UI) return; e.preventDefault(); setDragOver(false); attach(e.dataTransfer?.files ?? []); }}
           data-testid="maestro-composer"
         >
           {dragOver && <div className="pointer-events-none absolute inset-0 z-10 grid place-items-center rounded-[22px] bg-lime-300/10 text-[14px] font-bold text-lime-200">Drop a video or images</div>}
           {tag && <div className="mb-1.5"><TemplateTag id={tag} onRemove={() => setTag(null)} /></div>}
-          {(rs.scan || rs.error || refImages.length > 0 || attachError) && (
+          {(rs.scan || rs.error || refImages.length > 0 || attachError || scriptOpen) && (
             <div className="mb-2 space-y-2" data-testid="maestro-attachments">
+              {scriptOpen && (
+                <div className="rounded-2xl border border-white/10 bg-black/25 p-2.5" data-testid="maestro-script">
+                  <div className="mb-1.5 flex items-center gap-2 text-[12.5px] font-bold text-white/85"><FileText className="h-3.5 w-3.5 text-lime-300" />My script<span className="font-semibold text-white/50">· Maestro keeps every word{scriptWords ? ` · ${scriptWords} words` : ""}</span>
+                    <button type="button" aria-label="Remove the script" onClick={() => { setScript(""); setScriptOpen(false); }} className="ml-auto text-white/55 hover:text-white"><X className="h-3.5 w-3.5" /></button></div>
+                  <textarea value={script} onChange={(e) => setScript(e.target.value)} maxLength={4000} rows={4} autoFocus placeholder="Paste your script here. Then tell Maestro which template and length." className="w-full resize-y rounded-xl bg-white/[0.05] px-2.5 py-2 text-[14px] leading-snug text-white placeholder:text-white/40 focus:outline-none" />
+                </div>
+              )}
               {scanning && <ScanProgress scan={rs.scan} />}
               {rs.scan?.status === "done" && (
                 <div className="relative">
@@ -236,10 +251,21 @@ export default function MaestroPage() {
           )}
           <div className="flex items-end gap-2">
             <label htmlFor="maestro-box" className="sr-only">Message Maestro</label>
+            <input ref={imageInput} type="file" accept="image/*" multiple className="hidden" onChange={(e) => { attach(e.target.files ?? []); e.target.value = ""; }} />
+            <div className="relative mb-1.5 shrink-0">
+              <button type="button" onClick={() => (signedIn ? setPlusOpen((o) => !o) : setSignIn(true))} aria-label="Add a script or reference images" aria-expanded={plusOpen} title="Add a script or reference images" className="grid h-9 w-9 place-items-center rounded-full text-white/75 hover:bg-white/[0.08] hover:text-white" data-testid="maestro-plus">
+                <Plus className="h-5 w-5" />
+              </button>
+              {plusOpen && (
+                <div className="absolute bottom-11 left-0 z-20 w-56 rounded-2xl border border-white/12 bg-[#1b1d20] p-1.5 shadow-xl" role="menu" data-testid="maestro-plus-menu">
+                  {REFERENCE_IMAGES_UI && <button type="button" role="menuitem" onClick={() => { setPlusOpen(false); imageInput.current?.click(); }} className="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-[13.5px] font-semibold text-white hover:bg-white/[0.07]"><ImagePlus className="h-4 w-4 text-lime-300" />Reference images<span className="ml-auto text-[11px] text-white/45">up to {REF_LIMITS.maxImages}</span></button>}
+                  <button type="button" role="menuitem" onClick={() => { setPlusOpen(false); setScriptOpen(true); }} className="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-[13.5px] font-semibold text-white hover:bg-white/[0.07]" data-testid="maestro-add-script"><FileText className="h-4 w-4 text-lime-300" />My script</button>
+                  {REFERENCE_UI && <button type="button" role="menuitem" onClick={() => { setPlusOpen(false); attachInput.current?.click(); }} className="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-[13.5px] font-semibold text-white hover:bg-white/[0.07]"><Film className="h-4 w-4 text-lime-300" />Reference video</button>}
+                </div>
+              )}
+            </div>
             {REFERENCE_UI && <><input ref={attachInput} type="file" accept="video/mp4,video/quicktime,video/webm,.mp4,.mov,.webm,image/*" multiple className="hidden" onChange={(e) => { attach(e.target.files ?? []); e.target.value = ""; }} />
-            <button type="button" onClick={() => (signedIn ? attachInput.current?.click() : setSignIn(true))} aria-label="Attach a reference video or images" title="Attach a reference video or images" className="mb-1.5 grid h-9 w-9 shrink-0 place-items-center rounded-full text-white/70 hover:bg-white/[0.08] hover:text-white" data-testid="maestro-attach">
-              <Paperclip className="h-[18px] w-[18px]" />
-            </button></>}
+            </>}
             <textarea id="maestro-box" ref={box} rows={2} value={text} maxLength={4000} onPaste={onPaste}
               onChange={(e) => setText(e.target.value)} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
               onKeyDown={(e) => {
@@ -307,6 +333,7 @@ export default function MaestroPage() {
               <div key={m.id} className="flex justify-end" data-role="user">
                 <div className="max-w-[85%] rounded-[20px] rounded-br-md bg-white/[0.09] px-4 py-2.5 text-[15.5px] leading-snug text-white">
                   {m.templateId && <div className="mb-1"><TemplateTag id={m.templateId} /></div>}
+                  {(() => { const a = m.cards?.find((c) => c?.type === "attached"); return a ? <div className="mb-1 flex flex-wrap gap-1.5 text-[11.5px] font-bold text-lime-200">{a.script && <span className="inline-flex items-center gap-1 rounded-full bg-lime-300/10 px-2 py-0.5"><FileText className="h-3 w-3" />My script · {a.words} words</span>}{a.images?.length > 0 && <span className="inline-flex items-center gap-1 rounded-full bg-lime-300/10 px-2 py-0.5"><ImagePlus className="h-3 w-3" />{a.images.length} picture{a.images.length > 1 ? "s" : ""}</span>}</div> : null; })()}
                   <span className="whitespace-pre-wrap">{m.text}</span>
                 </div>
               </div>

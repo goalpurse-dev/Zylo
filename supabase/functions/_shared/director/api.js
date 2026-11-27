@@ -5,7 +5,7 @@
 //   user   (userId) -> { plan, paid }
 // Planning costs no credits, so it is capped per user per day (LIMITS.plansPerDay / revisionsPerDay).
 import { creditsFor, studioById, styleById, variantOf } from "./styles.js";
-import { applyRevision, cleanStoryboard, fitToLength, formatOk, LIMITS, monthStart, planRequest, reviseRequest, totalSeconds } from "./storyboard.js";
+import { applyRevision, cleanStoryboard, fitToLength, formatOk, LIMITS, monthStart, planRequest, reviseRequest, totalSeconds, withOwnScript } from "./storyboard.js";
 import { COPY_PARTS, REFERENCE, cardSummary, defaultCopy, engineSettings, townNote } from "../reference/breakdown.js";
 
 export class DirectorError extends Error {
@@ -22,6 +22,8 @@ function cleanExtras(e, userId) {
   // only a file in the user's own folder of the private user bucket (uploadUserFile's path)
   if (ref && PATH_RE.test(ref) && ref.startsWith(`${userId}/`)) out.reference_image = ref;
   const copy = text(e?.copy_script, LIMITS.copyScriptMax); if (copy) out.copy_script = copy;
+  // the user's own script: its words become the narration, unchanged (withOwnScript)
+  const own = text(e?.own_script, LIMITS.ownScriptMax); if (own) out.own_script = own;
   const avoid = text(e?.avoid, LIMITS.avoidMax); if (avoid) out.avoid = avoid;
   // where the user said they want it made (the choice screen opens on it)
   if (e?.where === "claude" || e?.where === "zyvo") out.where = e.where;
@@ -105,7 +107,9 @@ export function makeDirector({ store, llm, user, references = null, now = () => 
       let sb;
       try {
         const raw = await llm(planRequest({ style, idea, lengthSec, format, extras, variant, reference: breakdown }), "plan");
-        sb = fitToLength(cleanStoryboard(raw), lengthSec);
+        sb = cleanStoryboard(raw);
+        // their own script: every word kept (the scenes' pictures stay the planner's); its length is the script's own
+        sb = extras.own_script ? withOwnScript(sb, extras.own_script) : fitToLength(sb, lengthSec);
         if (!sb.scenes.length) throw new Error("no scenes");
       } catch (e) {
         console.error("[director] plan failed:", e?.message ?? e);

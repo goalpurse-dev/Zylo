@@ -82,8 +82,8 @@ export function mockTownStatus(startedAt, now = Date.now()) {
   const total = 12;
   const stills = ["/in-this-town/stories/milo.webp", "/in-this-town/stories/plane.webp", "/in-this-town/stories/tower.webp"];
   const done = Math.max(0, Math.min(total, Math.floor((t - 2) / 1.2)));
-  const repaired = t > 19;
-  const stage = t < 2 ? "directing" : done < total ? "previews" : !repaired ? "fixing" : t < 25 ? "rendering" : "done";
+  const repaired = t > 26; // the review pause runs from all shots done (~16 s) until the repair
+  const stage = t < 2 ? "directing" : done < total ? "previews" : !repaired ? "fixing" : t < 32 ? "rendering" : "done";
   const shots = Array.from({ length: total }, (_, i) => {
     const n = i + 1;
     if (n > done) return { n, line: Math.ceil(n / 2), text: `Line ${Math.ceil(n / 2)} of the story.`, state: "pending", v: 0, thumbUrl: null };
@@ -92,13 +92,13 @@ export function mockTownStatus(startedAt, now = Date.now()) {
       : { n, line: 2, text: "Line 2 of the story.", state: "fail", v: 1, thumbUrl: stills[0], why: "the face is cut off" };
     return { n, line: Math.ceil(n / 2), text: `Line ${Math.ceil(n / 2)} of the story.`, state: "pass", v: 1, thumbUrl: stills[n % 3] };
   });
-  const detail = stage === "rendering" ? `${Math.min(8, Math.floor((t - 19) * 1.5) + 1)} of 8 parts` : stage === "directing" ? "every shot" : `${done} of ${total} shots`;
+  const detail = stage === "rendering" ? `${Math.min(8, Math.floor((t - 26) * 1.5) + 1)} of 8 parts` : stage === "directing" ? "every shot" : `${done} of ${total} shots`;
   const words = { directing: "Planning every shot", previews: "Test-shooting every shot", fixing: "Fixing weak shots", rendering: "Making the final video", done: "Done" }[stage];
   const isDone = stage === "done";
   return {
     status: isDone ? "done" : stage === "rendering" ? "render" : "plan", pct: isDone ? 100 : Math.min(99, Math.round(t * 3.8)), stage,
     progress: { stage, pct: Math.round(t * 3.8), detail },
     finalUrl: isDone ? "/in-this-town/stories/milo.mp4" : null,
-    live: { v: 1, runId: "mock", engine: "threejs", step: { stage, words, detail }, count: { done, total, pass: done - (done >= 4 && !repaired ? 1 : 0), fail: done >= 4 && !repaired ? 1 : 0 }, shots, video: { ready: isDone }, updatedAt: new Date(now).toISOString() },
+    live: { v: 1, runId: "mock", engine: "threejs", step: { stage, words, detail }, count: { done, total, pass: done - (done >= 4 && !repaired ? 1 : 0), fail: done >= 4 && !repaired ? 1 : 0 }, shots, review: stage === "fixing" ? { open: true, until: new Date(startedAt + 26000).toISOString(), seconds: 60, notes: [] } : undefined, video: { ready: isDone }, updatedAt: new Date(now).toISOString() },
   };
 }

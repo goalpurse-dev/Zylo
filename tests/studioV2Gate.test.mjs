@@ -53,7 +53,7 @@ test("the site: every Studio v2 route is wrapped; the browser asks maestro-api a
   assert.match(read("src/components/StudioV2Only.jsx"), /return <NotFoundRedirect \/>;/);
 });
 
-test("In This Town from the chat: the plan's lines word for word, no rewrite, the exact price before the charge", async () => {
+test("In This Town from the chat: the plan's lines word for word, no rewrite, one press at the price on the button", async () => {
   const draft = { title: "The Sneeze", hook: "In this town, nobody sneezes.", scenes: [
     { narration: "In this town, nobody sneezes. Except me." },
     { narration: "Mom says it's rude." },
@@ -64,21 +64,22 @@ test("In This Town from the chat: the plan's lines word for word, no rewrite, th
   assert.ok(lines.every((l) => l.length <= TOWN_LINE_MAX));
   const words = (t) => t.split(/\s+/).filter(Boolean);
   assert.deepEqual(words(lines.join(" ")), words(narrationOf(draft).replace(/\n/g, " ")), "every word, in order, nothing added or changed");
-  assert.deepEqual([25, 30, 45, 60, 64, 200].map(townLength), [30, 30, 50, 60, 60, 180]);
+  assert.deepEqual([25, 45, 60, 64, 86, 200].map(townLength), [60, 60, 60, 60, 90, 120], "60-120 s, the same rounding as the price");
   const calls = [];
-  const call = async (action, body) => { calls.push([action, body]); return action === "saveScript" ? { id: "d1", check: { problems: [] } } : { credits: 313, problems: [] }; };
+  const call = async (action, body) => { calls.push([action, body]); return { id: "d1", check: { problems: [] } }; };
   const p = await prepareTown(call, draft, 60);
-  assert.deepEqual(calls.map((c) => c[0]), ["saveScript", "quote"], "nothing is started (or charged) while preparing");
+  assert.deepEqual(calls.map((c) => c[0]), ["saveScript"], "nothing is started (or charged) while preparing");
   assert.deepEqual(calls[0][1].lines.map((l) => l.text), lines);
   assert.equal(calls[0][1].lengthSec, 60);
-  assert.deepEqual(p, { draftId: "d1", credits: 313, lengthSec: 60, problems: [] });
+  assert.deepEqual(p, { draftId: "d1", credits: 219, lengthSec: 60, problems: [] }, "the price on the button (TOWN_PRICES[60])");
   const card = read("src/components/maestro/MaestroCards.jsx");
   assert.doesNotMatch(card, /adaptStory/, "the chat never sends the plan through the rewriter");
   assert.match(card, /prepareTown\(worldsCall, draft, card\.seconds\)/);
+  assert.doesNotMatch(card, /second press/, "one press starts it");
 });
 
 test("only what is live: Rewards, Affiliate and the reference scanner stay out until switched on", () => {
-  assert.deepEqual({ ...LIVE }, { rewards: false, affiliate: false, referenceScan: false });
+  assert.deepEqual({ ...LIVE }, { rewards: false, affiliate: false, referenceScan: false, referenceImages: true });
   const off = zyvoKnowledge({ prices: null, at: Date.parse("2026-12-01T00:00:00Z") });
   assert.doesNotMatch(off, /^REWARDS|^AFFILIATE/m);
   const on = zyvoKnowledge({ prices: null, at: Date.parse("2026-12-01T00:00:00Z"), live: { rewards: true, affiliate: true } });

@@ -7,9 +7,8 @@
 // MONEY: Maestro never spends. Making something is a card with the price and a button the USER presses (the page then
 // calls the template's own start, which charges as it always does). Chatting is included in the plan: a daily number
 // of messages (MAESTRO.limits), the model by plan (Haiku on Free, Sonnet on paid plans).
-import { STYLES, creditsFor, styleById, variantOf } from "../director/styles.js";
+import { STYLES, TOWN_LENGTHS, creditsFor, styleById, townPrice, variantOf } from "../director/styles.js";
 import { totalSeconds } from "../director/storyboard.js";
-import { BLENDER_FLAT } from "../blockyWorlds/blenderPricing.js";
 import { CLAUDE_PRICES } from "../openaiBackup.js";
 import { PLAN_NAMES, PLAN_ORDER, accountLine, packFacts, planFacts, videoPrices, videosFor, zyvoKnowledge } from "./knowledge.js";
 import { PLAN_FIT, PLAN_LINES } from "../billingPolicy.js";
@@ -35,15 +34,17 @@ export const modelFor = (paid, owner = false) => (paid || owner ? MAESTRO.models
 // eslint-disable-next-line no-control-regex -- strips control characters on purpose
 const clean = (v, max) => String(v ?? "").replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, "").trim().slice(0, max);
 const UUID = /^[0-9a-f-]{36}$/i;
+/** the user's own script from "+" (the Director keeps it word for word) */
+export const OWN_SCRIPT_MAX = 4000;
 export class MaestroError extends Error {
   constructor(code, message, status = 400, extra = {}) { super(message); this.code = code; this.status = status; this.extra = extra; }
 }
 
 /** how a template gets made from the chat: started right here ("town", "cutaway") or on its own page */
 export const howMade = (style) => style?.engine?.direct ?? "page";
-/** the credits the Generate card shows (In This Town: its one flat price; others: our estimate, the page shows exact) */
+/** the credits the Generate card shows (In This Town: the exact price for that length, the one the server charges; others: our estimate, the page shows exact) */
 export function generatePrice(style, seconds) {
-  if (howMade(style) === "town") return { credits: BLENDER_FLAT.credits, exact: true };
+  if (howMade(style) === "town") return { credits: townPrice(seconds), exact: true };
   return { credits: creditsFor(style, seconds), exact: false };
 }
 
@@ -53,7 +54,7 @@ function templateLine(s) {
   const versions = s.variants?.length ? ` Versions: ${s.variants.map((v) => `${v.name} (${v.id})`).join(", ")}.` : "";
   const shape = s.formats.length > 1 ? "tall 9:16 or wide 16:9" : s.formats[0] === "16:9" ? "wide 16:9" : "tall 9:16";
   const lo = creditsFor(s, Math.min(...s.lengths)), hi = creditsFor(s, Math.max(...s.lengths));
-  const price = howMade(s) === "town" ? `${BLENDER_FLAT.credits} credits flat` : lo === hi ? `about ${lo} credits` : `about ${lo}-${hi} credits`;
+  const price = howMade(s) === "town" ? `exactly ${TOWN_LENGTHS.map((l) => `${l} s ${townPrice(l)} credits`).join(", ")}` : lo === hi ? `about ${lo} credits` : `about ${lo}-${hi} credits`;
   const where = howMade(s) === "page" ? "Opens its own page to make it." : "Can be made right here in the chat.";
   return `- ${s.id} · ${s.name} [${s.category}${s.tier === "paid" ? ", paid plans" : ", free plan too"}]: ${s.direction} Hook formula: "${s.hook}".${versions} Lengths: ${lengths}. Shape: ${shape}. Voice: ${s.included?.voice ? "yes" : "no"}. ${price}. ${where}`;
 }
@@ -77,6 +78,11 @@ export function systemPrompt(styles = STYLES, live = LIVE) {
     "3. Call make_plan. Then tell the user in one line what the plan is (the card shows every scene) and ask if they want anything changed.",
     "4. For any change (\"make the hook better\", \"change scene 2\", \"shorter\"), call change_plan with their words. Only what they asked changes.",
     "5. When they are happy (or say make it / generate), call offer_generate. The card shows the price and a Generate now button. THE USER presses it; you never start, charge or promise anything yourself. Never say a video is being made or is done unless the chat shows it.",
+    "",
+    "SCRIPT AND PICTURES",
+    "- Before your FIRST make_plan in a chat, unless the user already attached a script or pictures, ask ONCE (together with the template's questions): \"Do you have a script or reference images? Tap + to add them, or say no and I'll write it.\" Never ask it again in that chat.",
+    "- [My script attached ...] means the user's own words: the plan uses them EXACTLY (the narration is their script, word for word). Never rewrite, shorten or add lines. Say in one line that their words stay as written and you plan the pictures for them.",
+    ...(live.referenceImages ? ["- [Reference images: ...] are the user's pictures with a role (style, character, place, product/logo): the plan follows them."] : []),
     "",
     ...(live.referenceScan ? [
       "REFERENCE VIDEOS",
@@ -264,7 +270,7 @@ export function makeMaestro({ store, claude, director, user, prices = async () =
         const variant = variantOf(style, String(a.variant_id ?? ""));
         // the reference this chat attached (its copy choices), or one the model names from an earlier turn (default choices)
         const ref = !live.referenceScan ? null : ctx.reference && (!a.reference_id || a.reference_id === ctx.reference.id) ? ctx.reference : UUID.test(String(a.reference_id ?? "")) ? { id: a.reference_id, copy: defaultCopy() } : null;
-        const extras = { where: "zyvo", ...(ref ? { reference: ref } : {}), ...(ctx.referenceImages?.length ? { reference_images: ctx.referenceImages } : {}) };
+        const extras = { where: "zyvo", ...(ref ? { reference: ref } : {}), ...(ctx.referenceImages?.length ? { reference_images: ctx.referenceImages } : {}), ...(ctx.ownScript ? { own_script: ctx.ownScript } : {}) };
         const r = await director.handle(userId, { action: "plan", styleId: style.id, variantId: variant?.id ?? null, idea: clean(a.idea, 600), lengthSec: Number(a.length_sec), format: a.format, extras });
         cards.push(planCard(r.draft));
         return { ok: true, plan: planForClaude(r.draft) };
@@ -340,14 +346,20 @@ export function makeMaestro({ store, claude, director, user, prices = async () =
           refCard = { type: "reference", scanId: b.reference.id, card: cardSummary(breakdown), copy };
         }
       }
-      const referenceImages = live.referenceScan && Array.isArray(b.referenceImages) ? b.referenceImages.slice(0, REFERENCE.maxImages).map((x) => ({ path: clean(x?.path, 300), role: REFERENCE.imageRoles.includes(x?.role) ? x.role : "style" })).filter((x) => x.path.startsWith(`${userId}/`)) : [];
+      const sentImages = live.referenceImages && Array.isArray(b.referenceImages) ? b.referenceImages.slice(0, REFERENCE.maxImages).map((x) => ({ path: clean(x?.path, 300), role: REFERENCE.imageRoles.includes(x?.role) ? x.role : "style" })).filter((x) => x.path.startsWith(`${userId}/`)) : [];
       const refLine = reference ? `[Reference video ${reference.id}: ${refCard.card.seconds} s, ${refCard.card.shots} shots (about ${refCard.card.avgShot} s each), ${refCard.card.pace}; hook: ${refCard.card.hook ?? "?"}; structure: ${refCard.card.structure ?? "?"}; look: ${refCard.card.look ?? "?"}; captions: ${refCard.card.captions}. COPY: ${COPY_PARTS.filter((p) => reference.copy[p.id]).map((p) => p.label).join(", ")}]\n` : "";
-      const imgLine = referenceImages.length ? `[Reference images: ${referenceImages.map((x, i) => `${i + 1} ${x.role}`).join(", ")}]\n` : "";
-      const content = `${tagged ? `[Template: ${tagged.name} (${tagged.id})]\n` : ""}${refLine}${imgLine}${text}`;
+      const sentScript = clean(b.script, OWN_SCRIPT_MAX);
+      const attached = sentScript || sentImages.length ? { type: "attached", ...(sentScript ? { script: sentScript, words: sentScript.split(/\s+/).filter(Boolean).length } : {}), ...(sentImages.length ? { images: sentImages } : {}) } : null;
+      const lastAttached = (key) => [...history].reverse().map((m) => (m.role === "user" ? (m.cards ?? []).find((c) => c?.type === "attached" && c[key]) : null)).find(Boolean)?.[key] ?? null;
+      const ownScript = sentScript || lastAttached("script") || null;
+      const referenceImages = sentImages.length ? sentImages : (live.referenceImages ? lastAttached("images") ?? [] : []);
+      const scriptLine = sentScript ? `[My script attached: ${attached.words} words. The plan uses it word for word]\n` : "";
+      const imgLine = sentImages.length ? `[Reference images: ${referenceImages.map((x, i) => `${i + 1} ${x.role}`).join(", ")}]\n` : "";
+      const content = `${tagged ? `[Template: ${tagged.name} (${tagged.id})]\n` : ""}${refLine}${scriptLine}${imgLine}${text}`;
       const turn = [{ role: "user", content }];
       const messages = [...history.flatMap((m) => (Array.isArray(m.raw) && m.raw.length ? m.raw : [{ role: m.role, content: m.text || "…" }])), ...turn];
       const usageId = await store.logUsage({ user_id: userId, chat_id: chat.id, model, ok: false });
-      const userRow = await store.insertMessage({ chat_id: chat.id, user_id: userId, role: "user", text, template_id: tagged?.id ?? null, raw: turn });
+      const userRow = await store.insertMessage({ chat_id: chat.id, user_id: userId, role: "user", text, template_id: tagged?.id ?? null, raw: turn, ...(attached ? { cards: [attached] } : {}) });
 
       const cards = refCard ? [refCard] : [];
       const added = [];
@@ -371,7 +383,7 @@ export function makeMaestro({ store, claude, director, user, prices = async () =
           if (round === MAESTRO.toolRounds) { finalText ||= "Here's where I got to."; break; }
           const results = [];
           for (const call of calls) {
-            const out = await runTool(userId, call, cards, { prices: sys.p, user: u, reference, referenceImages });
+            const out = await runTool(userId, call, cards, { prices: sys.p, user: u, reference, referenceImages, ownScript });
             results.push({ type: "tool_result", tool_use_id: call.id, content: JSON.stringify(out), ...(out.ok ? {} : { is_error: true }) });
           }
           added.push({ role: "user", content: results });

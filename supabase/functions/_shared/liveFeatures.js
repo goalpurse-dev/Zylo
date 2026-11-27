@@ -4,9 +4,11 @@
 // functions deployed, its page on main).
 //   rewards        free credits for videos and invites (/rewards, _shared/rewards/config.js)
 //   affiliate      the creator program (/affiliate, _shared/affiliate/config.js)
-//   referenceScan  "+ Reference video" / "+ Reference images", Maestro's paperclip (reference-api + the scan machine)
+//   referenceScan    "+ Reference video" and the scan (reference-api + the scan machine)
+//   referenceImages  reference pictures with a role (plain uploads to the user's own folder; the Director plans with them)
 export const LIVE = Object.freeze({
   rewards: false,
   affiliate: false,
   referenceScan: false,
+  referenceImages: true,
 });

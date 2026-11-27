@@ -3,7 +3,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { MAESTRO, generatePrice, howMade, limitFor, makeMaestro, modelFor, systemPrompt, toolDefs } from "../supabase/functions/_shared/maestro/brain.js";
 import { STYLES, styleById } from "../supabase/functions/_shared/director/styles.js";
-import { BLENDER_FLAT } from "../supabase/functions/_shared/blockyWorlds/blenderPricing.js";
+import { TOWN_PRICES } from "../supabase/functions/_shared/director/styles.js";
 
 const U = "11111111-1111-4111-8111-111111111111", V = "22222222-2222-4222-8222-222222222222";
 const DRAFT = "abcdef00-0000-4000-8000-000000000001";
@@ -23,7 +23,7 @@ function fakes({ plan = "free", paid = false, script = [] } = {}) {
     async logUsage(r) { t.usage.push({ ...r, id: t.usage.length + 1 }); return t.usage.length; },
     async markUsage(id, p) { Object.assign(t.usage[id - 1], p); },
   };
-  const draft = { id: DRAFT, style_id: "in-this-town", title: "Laugh and grow", hook: "In this town, every time you laugh you grow.", length_sec: 30, format: "9:16", extras: { variant: "funny" },
+  const draft = { id: DRAFT, style_id: "in-this-town", title: "Laugh and grow", hook: "In this town, every time you laugh you grow.", length_sec: 60, format: "9:16", extras: { variant: "funny" },
     scenes: [{ narration: "In this town, every time you laugh you grow.", visual: "A kid laughing", seconds: 15 }, { narration: "I laughed at a joke. Now I'm taller than the school.", visual: "Giant kid", seconds: 15 }] };
   const director = {
     async handle(userId, b) {
@@ -53,19 +53,20 @@ test("what Maestro knows: every template with its lengths, versions, price and h
   const p = systemPrompt();
   for (const s of STYLES) assert.ok(p.includes(`- ${s.id} · ${s.name}`), s.id);
   assert.match(p, /in-this-town · In This Town .*Versions: Funny \(funny\), Spooky \(spooky\), Wholesome \(wholesome\)/);
-  assert.match(p, new RegExp(`${BLENDER_FLAT.credits} credits flat`));
+  assert.match(p, /exactly 60 s 219 credits, 90 s 313 credits, 120 s 407 credits/);
   assert.match(p, /THE USER presses it; you never start, charge or promise anything yourself/);
   assert.match(p, /Ask that template's questions in ONE short message/);
   assert.equal(howMade(styleById("in-this-town")), "town");
   assert.equal(howMade(styleById("cutaway-explainer")), "cutaway");
   assert.equal(howMade(styleById("ai-fruit-story")), "page");
-  assert.deepEqual(generatePrice(styleById("in-this-town"), 30), { credits: BLENDER_FLAT.credits, exact: true });
+  assert.deepEqual(generatePrice(styleById("in-this-town"), 60), { credits: TOWN_PRICES[60], exact: true });
+  assert.deepEqual(generatePrice(styleById("in-this-town"), 120), { credits: TOWN_PRICES[120], exact: true });
   assert.deepEqual(toolDefs().map((t) => t.name), ["make_plan", "change_plan", "offer_generate", "offer_quick", "offer_plan", "offer_credits"]);
 });
 
 test("a chat: the template tag, a plan via the Director, a Generate card; the turn is replayed unchanged next time", async () => {
   const { m, t } = fakes({ plan: "pro", paid: true, script: [
-    { stop_reason: "tool_use", content: [{ type: "text", text: "On it." }, { type: "tool_use", id: "tu1", name: "make_plan", input: { style_id: "in-this-town", variant_id: "funny", idea: "every time you laugh you grow", length_sec: 30 } }], usage: { input_tokens: 100, output_tokens: 20 } },
+    { stop_reason: "tool_use", content: [{ type: "text", text: "On it." }, { type: "tool_use", id: "tu1", name: "make_plan", input: { style_id: "in-this-town", variant_id: "funny", idea: "every time you laugh you grow", length_sec: 60 } }], usage: { input_tokens: 100, output_tokens: 20 } },
     { stop_reason: "end_turn", content: [{ type: "text", text: "Here's your plan: 2 scenes. Want changes?" }], usage: { input_tokens: 120, output_tokens: 15 } },
     { stop_reason: "tool_use", content: [{ type: "tool_use", id: "tu2", name: "offer_generate", input: { draft_id: DRAFT } }], usage: { input_tokens: 150, output_tokens: 10 } },
     { stop_reason: "end_turn", content: [{ type: "text", text: "Press Generate now when you're ready." }], usage: { input_tokens: 160, output_tokens: 10 } },
@@ -73,7 +74,7 @@ test("a chat: the template tag, a plan via the Director, a Generate card; the tu
   const r1 = await m.handle(U, { action: "send", text: "every time you laugh you grow in size, crazy twist", templateId: "in-this-town" });
   assert.equal(t.calls[0].model, "claude-sonnet-5-5");
   assert.equal(t.calls[0].messages.at(-1).content, "[Template: In This Town (in-this-town)]\nevery time you laugh you grow in size, crazy twist");
-  assert.deepEqual(t.director[0], { userId: U, action: "plan", styleId: "in-this-town", variantId: "funny", idea: "every time you laugh you grow", lengthSec: 30, format: undefined, extras: { where: "zyvo" } });
+  assert.deepEqual(t.director[0], { userId: U, action: "plan", styleId: "in-this-town", variantId: "funny", idea: "every time you laugh you grow", lengthSec: 60, format: undefined, extras: { where: "zyvo" } });
   const reply = r1.messages[1];
   assert.equal(reply.text, "Here's your plan: 2 scenes. Want changes?");
   assert.equal(reply.cards[0].type, "plan");
@@ -88,7 +89,7 @@ test("a chat: the template tag, a plan via the Director, a Generate card; the tu
   assert.equal(sent[2].content[0].type, "tool_result");
   assert.equal(sent[3].content[0].text, "Here's your plan: 2 scenes. Want changes?");
   const card = r2.messages[1].cards[0];
-  assert.deepEqual([card.type, card.how, card.credits, card.exact], ["generate", "town", BLENDER_FLAT.credits, true]);
+  assert.deepEqual([card.type, card.how, card.credits, card.exact], ["generate", "town", TOWN_PRICES[60], true]);
   assert.equal(t.usage.filter((x) => x.ok).length, 2);
   assert.ok(t.usage[0].cost_usd > 0);
 });

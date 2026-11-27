@@ -15,6 +15,7 @@ export const LIMITS = Object.freeze({
   ideaMax: 600,
   askMax: 400,
   copyScriptMax: 4000,
+  ownScriptMax: 4000,       // the user's own script (kept word for word)
   avoidMax: 300,
   titleMax: 100,
   hookMax: 200,
@@ -73,6 +74,38 @@ export function narrationOf(sb) {
 export function scriptWithNotes(sb) {
   const notes = (sb?.scenes ?? []).map((s, i) => `Scene ${i + 1} (${s.seconds}s): ${s.visual}${s.camera ? ` | camera: ${s.camera}` : ""}`).join("\n");
   return `${narrationOf(sb)}\n\n---\nScene notes:\n${notes}`;
+}
+
+/** a script's sentences, exactly as written (only the spaces between them change) */
+export function scriptSentences(text) {
+  return String(text ?? "").replace(/\r/g, "").split(/\n+/)
+    .flatMap((p) => p.match(/[^.!?]+[.!?]+["'\u201d\u2019)\]]*|[^.!?]+$/g) ?? [])
+    .map((x) => x.trim()).filter(Boolean);
+}
+
+/**
+ * THE USER'S OWN SCRIPT, word for word (owner 2026-11-27): the planner's scenes keep their pictures, but their narration
+ * becomes the script's sentences, in order, every one of them, none changed. A scene never holds more than
+ * LIMITS.narrationMax characters (a later save would cut it): more sentences than fit make more scenes (they reuse the
+ * last scene's picture notes). The hook is the script's first sentence, so nothing is said twice.
+ */
+export function withOwnScript(sb, script) {
+  const sentences = scriptSentences(script);
+  if (!sentences.length || !sb?.scenes?.length) return sb;
+  const per = Math.max(1, Math.ceil(sentences.length / sb.scenes.length));
+  const groups = [];
+  let cur = [];
+  for (const s of sentences) {
+    const next = [...cur, s].join(" ");
+    if (cur.length && (cur.length >= per || next.length > LIMITS.narrationMax)) { groups.push(cur.join(" ")); cur = []; }
+    cur.push(s.slice(0, LIMITS.narrationMax));
+  }
+  if (cur.length) groups.push(cur.join(" "));
+  const scenes = groups.slice(0, LIMITS.scenesMax).map((narration, i) => {
+    const base = sb.scenes[Math.min(i, sb.scenes.length - 1)];
+    return { ...base, id: i < sb.scenes.length ? base.id : `s${i + 1}${newSceneId().slice(-4)}`, narration, seconds: clampInt(speakSeconds(narration), 1, LIMITS.sceneSecMax, 3) };
+  });
+  return { ...sb, hook: sentences[0].slice(0, LIMITS.hookMax), scenes };
 }
 
 /** scale scene seconds so the total lands on the target length (keeps the shape; every scene >= 1 s) */
@@ -142,6 +175,7 @@ export function planRequest({ style, idea, lengthSec, format, extras = {}, varia
     `Target length: ${lengthSec} seconds, ${scenesHint} scenes. Format: ${format === "16:9" ? "landscape 16:9" : "vertical 9:16"}.`,
     "Give scene ids s1, s2, s3...",
     `DATA (the user's idea):\n${JSON.stringify(clean(idea, LIMITS.ideaMax))}`,
+    extras.own_script ? `DATA (THE USER'S OWN SCRIPT: plan the pictures FOR these exact words, one scene per sentence or two, in order; never change, add or drop a word; the narration fields are replaced by these words after you answer):\n${JSON.stringify(clean(extras.own_script, LIMITS.ownScriptMax))}` : "",
     extras.copy_script ? `DATA (a script whose STYLE to copy: its pace, tone and structure, never its words or story):\n${JSON.stringify(clean(extras.copy_script, LIMITS.copyScriptMax))}` : "",
     extras.avoid ? `DATA (things to avoid):\n${JSON.stringify(clean(extras.avoid, LIMITS.avoidMax))}` : "",
     extras.reference_image ? "The user added a reference image for the look; keep visuals consistent with one look throughout." : "",

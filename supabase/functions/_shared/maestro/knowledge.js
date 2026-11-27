@@ -8,10 +8,10 @@
 //   Use with Claude   _shared/zyvoMcp/config.js         Maestro's limits  ./brain.js (passed in)
 // Plain JS, so the Node tests check every number against the same files.
 import { STUDIOS, STYLES, creditsFor } from "../director/styles.js";
-import { BLENDER_FLAT } from "../blockyWorlds/blenderPricing.js";
 import { PLAN_CREDITS, TOPUP_CREDITS } from "../stripePlanPrices.js";
 import { BILLING_FAQ, FAILED_RUNS, FREE_PLAN, PLAN_FIT, PLAN_LINES, WHERE_TO_CANCEL } from "../billingPolicy.js";
 import { QUICK_IMAGE_CREDITS, TOWN_VIDEO_CREDITS, planEquivalents } from "../planEquivalents.js";
+import { TOWN_LENGTHS, townPrice } from "../director/styles.js";
 import { REWARDS } from "../rewards/config.js";
 import { LIVE } from "../liveFeatures.js";
 import { AFFILIATE } from "../affiliate/config.js";
@@ -35,7 +35,7 @@ export function money(amount, currency = "eur") {
 const lengthLabel = (sec) => (sec < 60 ? `${sec} s` : `${sec / 60} min`);
 /** credits per video at each length; In This Town is one flat price at every length */
 export function videoPrices(style) {
-  if (style.engine?.direct === "town") return [{ seconds: null, credits: BLENDER_FLAT.credits, label: `${lengthLabel(Math.min(...style.lengths))}-${lengthLabel(Math.max(...style.lengths))}`, exact: true }];
+  if (style.engine?.direct === "town") return TOWN_LENGTHS.map((s) => ({ seconds: s, credits: townPrice(s), label: `${s} s`, exact: true }));
   return style.lengths.map((seconds) => ({ seconds, credits: creditsFor(style, seconds), label: lengthLabel(seconds), exact: false }));
 }
 /** how many videos `credits` make, rounded down */
@@ -75,7 +75,7 @@ export function zyvoKnowledge({ prices = null, at = Date.now(), maestroLimits = 
   for (const p of plans) {
     const eq = planEquivalents(p.credits);
     const price = priced ? `${money(p.monthly, cur)} a month, or ${money(p.yearly, cur)} a year (${money(Math.round((p.yearly / 12) * 100) / 100, cur)} a month)` : "price: see the pricing page";
-    L.push(`- ${p.name}: ${price}. ${fmt(p.credits)} credits a month. ${PLAN_LINES[p.plan].line} Best for: ${PLAN_FIT[p.plan]}. ${fmt(p.credits)} credits ≈ ${eq.town} In This Town videos or ≈ ${fmt(eq.images)} quick images.`);
+    L.push(`- ${p.name}: ${price}. ${fmt(p.credits)} credits a month. ${PLAN_LINES[p.plan].line} Best for: ${PLAN_FIT[p.plan]}. ${fmt(p.credits)} credits ≈ ${eq.town} 60-second In This Town videos or ≈ ${fmt(eq.images)} quick images.`);
   }
   L.push("- There is no plan above Generative. Someone running several channels takes Generative and adds credit packs when needed.");
   L.push(`- Free: ${FREE_PLAN}`);
@@ -87,7 +87,7 @@ export function zyvoKnowledge({ prices = null, at = Date.now(), maestroLimits = 
     L.push(`- ${s.name}${s.tier === "paid" ? " (paid plans)" : ""}: ${rows.join(" | ")}`);
   }
   L.push(`- Quick image: ${QUICK_IMAGE_CREDITS} credits each → ${plans.map((p) => `${p.name} ${videosFor(p.credits, QUICK_IMAGE_CREDITS)}`).join(", ")}. Quick clips (5-10 s, no voice): the card shows the exact price.`);
-  L.push(`- In This Town is one flat price (${TOWN_VIDEO_CREDITS} credits) at every length. Other prices are our estimates: the template's page shows the exact price before anything is charged.`);
+  L.push(`- In This Town, made in this chat: exactly ${TOWN_LENGTHS.map((s) => `${s} s ${townPrice(s)} credits`).join(", ")} (60 to 120 seconds; the button shows the same number). Other prices are our estimates: the template's page shows the exact price before anything is charged.`);
   L.push("");
   L.push("STUDIOS: " + STUDIOS.map((s) => `${s.name} (${s.line})`).join("; ") + ".");
   L.push("");

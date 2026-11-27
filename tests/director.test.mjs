@@ -2,7 +2,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import { BLENDER_FLAT } from "../supabase/functions/_shared/blockyWorlds/blenderPricing.js";
+import { TOWN_PRICES } from "../supabase/functions/_shared/director/styles.js";
 import { CATEGORIES, STUDIOS, STYLES, creditsFor, publicStyle, registryProblems, snapLength, styleById, stylesInStudio, visibleStyles } from "../supabase/functions/_shared/director/styles.js";
 import { applyRevision, cleanStoryboard, estimateCredits, fitToLength, narrationOf, planRequest, reviseRequest, scriptWithNotes, totalSeconds } from "../supabase/functions/_shared/director/storyboard.js";
 
@@ -36,15 +36,17 @@ test("registry: gated styles hide unless their switch is on", () => {
 test("credit estimate: interpolated between points, flat with one point, grows past the last", () => {
   const town = styleById("in-this-town");
   // In This Town: its one flat price (what its page really charges), at every length
-  assert.equal(creditsFor(town, 30), BLENDER_FLAT.credits);
-  assert.equal(creditsFor(town, 60), BLENDER_FLAT.credits);
+  assert.equal(creditsFor(town, 60), TOWN_PRICES[60]);
+  assert.equal(creditsFor(town, 90), TOWN_PRICES[90]);
+  assert.equal(creditsFor(town, 120), TOWN_PRICES[120]);
   const cut = styleById("cutaway-explainer");
   assert.equal(creditsFor(cut, 30), 136);
   assert.equal(creditsFor(cut, 45), Math.ceil(136 + 59 / 2), "interpolated");
   assert.equal(creditsFor(styleById("cartoon-drive-by"), 60), 167);
   assert.ok(creditsFor(styleById("long-form"), 600) === 250);
-  assert.equal(estimateCredits("in-this-town", 30), BLENDER_FLAT.credits);
-  assert.equal(snapLength(town, 50), 45);
+  assert.equal(estimateCredits("in-this-town", 60), TOWN_PRICES[60]);
+  assert.equal(snapLength(town, 50), 60);
+  assert.equal(snapLength(town, 100), 90);
 });
 
 test("connector view of a style has no site internals", () => {
@@ -131,28 +133,28 @@ function fakes({ paid = false, answer } = {}) {
 
 test("director: plan saves a draft fitted to the length, with the live estimate", async () => {
   const f = fakes();
-  const r = await f.director.handle(U, { action: "plan", styleId: "in-this-town", studioId: "3d", idea: "everybody sings", lengthSec: 30, format: "16:9" });
-  assert.equal(r.draft.seconds, 30);
+  const r = await f.director.handle(U, { action: "plan", styleId: "in-this-town", studioId: "3d", idea: "everybody sings", lengthSec: 60, format: "16:9" });
+  assert.equal(r.draft.seconds, 60);
   assert.equal(r.draft.format, "9:16", "a format the style can't make falls back");
-  assert.equal(r.draft.credits, BLENDER_FLAT.credits);
+  assert.equal(r.draft.credits, TOWN_PRICES[60]);
   assert.equal(f.store.t.drafts[0].user_id, U);
-  await assert.rejects(f.director.handle(U, { action: "plan", styleId: "in-this-town", idea: "x y z", lengthSec: 15 }), /can be 30, 45, 60 seconds/);
+  await assert.rejects(f.director.handle(U, { action: "plan", styleId: "in-this-town", idea: "x y z", lengthSec: 15 }), /can be 60, 90, 120 seconds/);
   await assert.rejects(f.director.handle(U, { action: "plan", styleId: "nope", idea: "abc", lengthSec: 30 }), /Pick a template/);
 });
 
 test("director: the daily plan cap counts only plans that worked", async () => {
   const f = fakes({ answer: () => { throw new Error("down"); } });
-  await assert.rejects(f.director.handle(U, { action: "plan", styleId: "in-this-town", idea: "abc", lengthSec: 30 }), (e) => e.code === "PLANNER");
+  await assert.rejects(f.director.handle(U, { action: "plan", styleId: "in-this-town", idea: "abc", lengthSec: 60 }), (e) => e.code === "PLANNER");
   assert.equal(await f.store.countUsage(U, "plan"), 0);
   const g = fakes();
   for (let i = 0; i < 20; i++) g.store.t.usage.push({ user_id: U, kind: "plan", ok: true });
-  await assert.rejects(g.director.handle(U, { action: "plan", styleId: "in-this-town", idea: "abc", lengthSec: 30 }), (e) => e instanceof DirectorError && e.code === "DAILY_LIMIT" && e.status === 429);
+  await assert.rejects(g.director.handle(U, { action: "plan", styleId: "in-this-town", idea: "abc", lengthSec: 60 }), (e) => e instanceof DirectorError && e.code === "DAILY_LIMIT" && e.status === 429);
   assert.equal(g.calls.length, 0, "no model call over the cap");
 });
 
 test("director: chat changes only what was asked, keeps a short history; another user can't touch it", async () => {
   const f = fakes();
-  const { draft } = await f.director.handle(U, { action: "plan", styleId: "in-this-town", idea: "everybody sings", lengthSec: 30 });
+  const { draft } = await f.director.handle(U, { action: "plan", styleId: "in-this-town", idea: "everybody sings", lengthSec: 60 });
   const r = await f.director.handle(U, { action: "revise", draftId: draft.id, ask: "change scene 2 so he finds a door" });
   assert.equal(r.draft.title, "T", "title wasn't listed as changed");
   assert.equal(r.draft.scenes[1].narration, "He finds a door.");
@@ -164,7 +166,7 @@ test("director: chat changes only what was asked, keeps a short history; another
 
 test("director: save cleans edits; get gives the plan status (free: 2 Claude videos a month)", async () => {
   const f = fakes();
-  const { draft } = await f.director.handle(U, { action: "plan", styleId: "in-this-town", idea: "everybody sings", lengthSec: 30 });
+  const { draft } = await f.director.handle(U, { action: "plan", styleId: "in-this-town", idea: "everybody sings", lengthSec: 60 });
   const s = await f.director.handle(U, { action: "save", draftId: draft.id, title: "Mine", scenes: [{ narration: "Only one", visual: "v", seconds: 5 }] });
   assert.equal(s.draft.title, "Mine");
   assert.equal(s.draft.scenes.length, 1);
@@ -174,21 +176,21 @@ test("director: save cleans edits; get gives the plan status (free: 2 Claude vid
   const g = await f.director.handle(U, { action: "get", draftId: draft.id });
   assert.deepEqual([g.plan.paid, g.plan.claudeVideosLeft], [false, 1]);
   const paid = fakes({ paid: true });
-  const p = await paid.director.handle(U, { action: "plan", styleId: "in-this-town", idea: "abc", lengthSec: 30 });
+  const p = await paid.director.handle(U, { action: "plan", styleId: "in-this-town", idea: "abc", lengthSec: 60 });
   assert.equal((await paid.director.handle(U, { action: "get", draftId: p.draft.id })).plan.claudeVideosLeft, null);
 });
 
 test("director: a reference image must be the user's own upload", async () => {
   const f = fakes();
-  await f.director.handle(U, { action: "plan", styleId: "in-this-town", idea: "abc", lengthSec: 30, extras: { reference_image: `${V}/director/x.png`, avoid: "spiders" } });
+  await f.director.handle(U, { action: "plan", styleId: "in-this-town", idea: "abc", lengthSec: 60, extras: { reference_image: `${V}/director/x.png`, avoid: "spiders" } });
   assert.deepEqual(f.store.t.drafts[0].extras, { avoid: "spiders" });
-  await f.director.handle(U, { action: "plan", styleId: "in-this-town", idea: "abc", lengthSec: 30, extras: { reference_image: `${U}/director/abc-x.png` } });
+  await f.director.handle(U, { action: "plan", styleId: "in-this-town", idea: "abc", lengthSec: 60, extras: { reference_image: `${U}/director/abc-x.png` } });
   assert.equal(f.store.t.drafts[1].extras.reference_image, `${U}/director/abc-x.png`);
 });
 
 test("director: a style's version goes into the plan request; 'where' is kept (Claude only for Claude styles)", async () => {
   const f = fakes();
-  await f.director.handle(U, { action: "plan", styleId: "in-this-town", variantId: "spooky", idea: "the streetlights", lengthSec: 30, extras: { where: "claude" } });
+  await f.director.handle(U, { action: "plan", styleId: "in-this-town", variantId: "spooky", idea: "the streetlights", lengthSec: 60, extras: { where: "claude" } });
   assert.match(f.calls[0].req.messages[1].content, /Version: Spooky\. Make it eerie/);
   assert.deepEqual(f.store.t.drafts[0].extras, { where: "claude", variant: "spooky" });
   await f.director.handle(U, { action: "plan", styleId: "ai-fruit-story", variantId: "spooky", idea: "a mango", lengthSec: 30, extras: { where: "claude" } });
